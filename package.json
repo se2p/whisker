@@ -1,0 +1,46 @@
+{
+    "name": "whisker",
+    "version": "0.1.0",
+    "description": "A Testing Framework for Scratch 3.0",
+    "author": "Marvin Kreis",
+    "license": "BSD-3-Clause",
+    "homepage": "https://github.com/marvinkreis/whisker",
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/marvinkreis/whisker"
+    },
+    "main": "./dist/node/whisker.js",
+    "scripts": {
+        "build": "webpack --progress --colors --bail",
+        "build:prod": "NODE_ENV=production webpack --progress --colors --bail",
+        "docs": "jsdoc -c .jsdoc.json",
+        "lint": "eslint . && format-message lint src/**/*.js",
+        "lint:fix": "eslint . --fix",
+        "tap": "tap ./test/{unit,integration}/*.js",
+        "tap:unit": "tap ./test/unit/*.js",
+        "tap:integration": "tap ./test/integration/*.js"
+    },
+    "dependencies": {
+        "scratch-vm": "^0.2.0-prerelease.20180921133209",
+        "scratch-audio": "^0.1.0-prerelease.20180625202813",
+        "scratch-blocks": "^0.1.0-prerelease.1537303399",
+        "scratch-render": "^0.1.0-prerelease.20180918201144",
+        "scratch-storage": "^1.0.2",
+        "scratch-svg-renderer": "^0.2.0-prerelease.20180907141232"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.1.0",
+        "@babel/preset-env": "^7.1.0",
+        "babel-eslint": "^9.0.0",
+        "babel-loader": "^8.0.2",
+        "docdash": "^1.0.0",
+        "eslint": "^5.6.0",
+        "eslint-config-scratch": "^5.0.0",
+        "expose-loader": "^0.7.5",
+        "jsdoc": "^3.5.5",
+        "tap": "^12.0.1",
+        "uglifyjs-webpack-plugin": "^2.0.1",
+        "webpack": "^4.19.1",
+        "webpack-cli": "^3.1.1"
+    }
+}

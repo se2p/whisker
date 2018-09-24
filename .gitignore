@@ -1,0 +1,11 @@
+# NPM
+/node_modules
+
+# Editor
+/.idea
+/.vscode
+
+# Build
+/dist
+/playground
+/docs

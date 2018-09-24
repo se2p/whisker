@@ -1,0 +1,13 @@
+# Development files
+/.babelrc
+/.editorconfig
+/.eslintignore
+.eslintrc.js
+/.git
+/.gitattributes
+/.gitignore
+/.jsdoc.json
+/test
+
+# Build created files
+/playground
