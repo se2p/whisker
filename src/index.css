@@ -1,0 +1,87 @@
+#main {
+    margin-top: 1%;
+    width: 90%;
+    alignment: left;
+}
+
+#scratch-stage {
+    width: 100%;
+    border: 1px solid gray;
+}
+
+#output {
+    display: none;
+
+    width: 100%;
+    padding: 5px;
+
+    border: 1px solid lightgray;
+}
+
+#test-code {
+    display: none;
+}
+
+.CodeMirror {
+    width: 100%;
+    border: 1px solid lightgray;
+}
+
+#apply-tests {
+    display: none;
+}
+
+#tests {
+    width: 100%;
+    border: 1px solid lightgray;
+}
+
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.table > thead > tr > td {
+    vertical-align: middle;
+}
+
+.child-table > tbody > tr {
+    border-left: none;
+    border-right: none;
+}
+
+.child-table > tbody > tr:first-child > td {
+    border-top: none;
+}
+
+.child-table > tbody > tr:last-child > td {
+    border-bottom: none;
+}
+
+.child-table > tbody > tr > td {
+    border-right: none;
+    border-left: none;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+/* Inherit row color to all child tables. */
+.table table > tbody > tr:nth-of-type(n) {
+    background-color: inherit;
+}
+
+/* Color rows by .odd/.even instead of :nth-of-type(2n+1). */
+.table-striped > tbody > .odd:nth-of-type(n) {
+    background: transparent;
+}
+.table-striped > tbody > .even:nth-of-type(n) {
+    background-color: rgba(0,0,0,.05);
+}
+
+/* Color child table rows the same color as their leading row. */
+.table-striped > tbody > .odd:nth-of-type(n) + tr:not(.odd):not(.even) {
+    background: transparent;
+}
+.table-striped > tbody > .even:nth-of-type(n) + tr:not(.odd):not(.even) {
+    background-color: rgba(0,0,0,.05);
+}

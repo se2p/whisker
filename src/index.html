@@ -1,0 +1,89 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Whisker Playground</title>
+    <link rel="shortcut icon" href="https://beta.scratch.mit.edu/static/favicon.ico">
+
+    <link rel="stylesheet" href="whisker-gui.css"/>
+    <script defer src="whisker-gui.js"></script>
+</head>
+
+<body>
+    <div id="main" class="container-fluid">
+        <div class="container-fluid row">
+
+            <div id="left-col" class="col-md-5 col-sm-12">
+                <canvas id="scratch-stage"></canvas>
+                <pre id="output" class="mt-2"></pre>
+                <p></p>
+
+                <form>
+                    <div class="form-group">
+                        <label for="project-filechooser">Scratch Project</label>
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <label id="project-filechooser-label" class="custom-file-label" for="project-filechooser">Choose Scratch Project</label>
+                                <input type="file" multiple class="custom-file-input" id="project-filechooser" onchange="Playground.loadProject()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="test-filechooser">Tests</label>
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <label id="test-filechooser-label" class="custom-file-label" for="test-filechooser">Choose Tests File</label>
+                                <input type="file" multiple class="custom-file-input" id="test-filechooser" onchange="Playground.loadTests();">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <button id="green-flag" class="btn btn-outline-success" type="button" onclick="Playground.greenFlag();"><i class="fas fa-flag"></i></button>
+                                <button id="stop" class="btn btn-danger" type="button" onclick="Playground.stop();" disabled><i class="fas fa-stop"></i></button>
+                                <button id="reset" class="btn btn-outline-secondary" type="button" onclick="Playground.loadProject();">Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="enable-input" checked="checked" onclick="Playground.toggleInput();">
+                            <label class="custom-control-label" for="enable-input">Enable Input</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="right-col" class="col-md-7 col-sm-12">
+                <table id="tests" class="display table table-sm table-striped">
+                    <thead class="thead-light">
+                        <tr>
+                            <th></th>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Categories</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div class="my-3"></div>
+                <pre><textarea id="test-code" name="test-code" title="test-code"></textarea></pre>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <button id="apply-tests" class="btn btn-sm btn-outline-secondary mr-3" type="button" onclick="Playground.applyTests();">Load Tests From Editor</button>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="show-editor" onclick="Playground.toggleEditor();">
+                            <label class="custom-control-label" for="show-editor">Show Editor</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
