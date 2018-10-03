@@ -1,19 +1,9 @@
-const VirtualMachine = require('scratch-vm');
-const ScratchStorage = require('scratch-storage');
-const ScratchRender = require('scratch-render');
-const ScratchSVGRenderer = require('scratch-svg-renderer');
-const AudioEngine = require('scratch-audio');
+const Test = require('./test-runner/test');
+const TestRunner = require('./test-runner/test-runner');
+const WhiskerUtil = require('./test/test-util');
 
-const Whisker = {
-    VirtualMachine: VirtualMachine,
-    ScratchStorage: ScratchStorage,
-    ScratchRender: ScratchRender,
-    ScratchSVGRenderer: ScratchSVGRenderer,
-    AudioEngine: AudioEngine
+module.exports = {
+    Test,
+    TestRunner,
+    WhiskerUtil
 };
-
-Whisker.loadFromString = function (src) {
-    return eval(src);
-};
-
-module.exports = Whisker;
