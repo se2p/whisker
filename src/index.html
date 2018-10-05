@@ -4,7 +4,8 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Whisker Playground</title>
+
+    <title>Whisker Web GUI</title>
     <link rel="shortcut icon" href="https://beta.scratch.mit.edu/static/favicon.ico">
 
     <link rel="stylesheet" href="whisker-gui.css"/>
@@ -12,53 +13,75 @@
 </head>
 
 <body>
-    <div id="main" class="container-fluid">
-        <div class="container-fluid row">
+    <div id="main" class="container-fluid row">
+        <div id="left-col" class="col-md-5 col-sm-12">
+            <canvas id="scratch-stage"></canvas>
 
-            <div id="left-col" class="col-md-5 col-sm-12">
-                <canvas id="scratch-stage"></canvas>
-                <pre id="output" class="mt-2"></pre>
-                <p></p>
-
-                <form>
-                    <div class="form-group">
-                        <label for="project-filechooser">Scratch Project</label>
-                        <div class="input-group">
-                            <div class="custom-file">
-                                <label id="project-filechooser-label" class="custom-file-label" for="project-filechooser">Choose Scratch Project</label>
-                                <input type="file" multiple class="custom-file-input" id="project-filechooser" onchange="Playground.loadProject()">
-                            </div>
+            <form class="mt-3">
+                <div class="form-group">
+                    <label for="fileselect-project">Scratch Project</label>
+                    <div class="input-group">
+                        <div class="custom-file">
+                            <label id="fileselect-project-label" class="custom-file-label" for="fileselect-project">Choose Scratch Project</label>
+                            <input id="fileselect-project" type="file" multiple class="custom-file-input">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="test-filechooser">Tests</label>
-                        <div class="input-group">
-                            <div class="custom-file">
-                                <label id="test-filechooser-label" class="custom-file-label" for="test-filechooser">Choose Tests File</label>
-                                <input type="file" multiple class="custom-file-input" id="test-filechooser" onchange="Playground.loadTests();">
-                            </div>
+                </div>
+                <div class="form-group">
+                    <label for="fileselect-tests">Tests</label>
+                    <div class="input-group">
+                        <div class="custom-file">
+                            <label id="fileselect-tests-label" class="custom-file-label" for="fileselect-tests">Choose Tests File</label>
+                            <input id="fileselect-tests" type="file" multiple class="custom-file-input">
                         </div>
                     </div>
+                </div>
+                <label for="scratch-controls">Scratch Controls</label>
+                <div id="scratch-controls">
                     <div class="form-group">
                         <div class="form-row">
                             <div class="col">
-                                <button id="green-flag" class="btn btn-outline-success" type="button" onclick="Playground.greenFlag();"><i class="fas fa-flag"></i></button>
-                                <button id="stop" class="btn btn-danger" type="button" onclick="Playground.stop();" disabled><i class="fas fa-stop"></i></button>
-                                <button id="reset" class="btn btn-outline-secondary" type="button" onclick="Playground.loadProject();">Reset</button>
+                                <button id="green-flag" class="btn btn-outline-success" type="button"><i class="fas fa-flag"></i></button>
+                                <button id="stop" class="btn btn-danger" type="button" disabled><i class="fas fa-stop"></i></button>
+                                <button id="reset" class="btn btn-outline-secondary" type="button">Reset</button>
+                                <button id="run-all-tests" class="btn btn-outline-secondary" type="button">Run All Tests</button>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="enable-input" checked="checked" onclick="Playground.toggleInput();">
-                            <label class="custom-control-label" for="enable-input">Enable Input</label>
+                            <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
+                            <label class="custom-control-label" for="toggle-input">Enable Input</label>
                         </div>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
 
-            <div id="right-col" class="col-md-7 col-sm-12">
-                <table id="tests" class="display table table-sm table-striped">
+            <form class="mt-3">
+                <label for="toggle-components">Toggle Components</label>
+                <div id="toggle-components" class="form-group">
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="btn-group-toggle">
+                                <label class="btn btn-outline-primary">
+                                    <input id="toggle-tests" class="checkbox-button" type="checkbox" autocomplete="off"> Tests
+                                </label>
+                                <label class="btn btn-outline-primary">
+                                    <input id="toggle-editor" class="checkbox-button" type="checkbox" autocomplete="off"> Editor
+                                </label>
+                                <label class="btn btn-outline-primary">
+                                    <input id="toggle-output" class="checkbox-button" type="checkbox" autocomplete="off"> Output
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="right-col" class="col-md-7 col-sm-12">
+            <div id="test-table" style="display: none;">
+                <table class="display table table-sm table-striped mt-4">
                     <thead class="thead-light">
                         <tr>
                             <th></th>
@@ -71,14 +94,45 @@
                     <tbody>
                     </tbody>
                 </table>
-                <div class="my-3"></div>
-                <pre><textarea id="test-code" name="test-code" title="test-code"></textarea></pre>
-                <form class="form-inline">
+            </div>
+
+            <div id="test-editor" class="mt-4" style="display: none;">
+                <form class="form-inline mt-3">
                     <div class="form-group">
-                        <button id="apply-tests" class="btn btn-sm btn-outline-secondary mr-3" type="button" onclick="Playground.applyTests();">Load Tests From Editor</button>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="show-editor" onclick="Playground.toggleEditor();">
-                            <label class="custom-control-label" for="show-editor">Show Editor</label>
+                        <div class="form-row">
+                            <div class="col">
+                                <button class="editor-apply btn btn-sm btn-outline-secondary" type="button">Load Tests From Editor</button>
+                                <button class="editor-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="output-run" class="mt-4" style="display: none;">
+                <label for="output-run">TAP13</label>
+                <pre class="output-content"></pre>
+                <form class="form-inline mt-2">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
+                                <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="output-log" class="mt-4" style="display: none;">
+                <label for="output-log">Log</label>
+                <pre class="output-content"></pre>
+                <form class="form-inline mt-2">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
+                                <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                            </div>
                         </div>
                     </div>
                 </form>

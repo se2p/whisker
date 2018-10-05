@@ -13,14 +13,9 @@
     "scripts": {
         "build": "webpack --progress --colors --bail",
         "build:prod": "NODE_ENV=production webpack --progress --colors --bail",
-        "coverage": "tap ./test/{unit,integration}/*.js --coverage --coverage-report=lcov",
-        "docs": "jsdoc -c .jsdoc.json",
         "lint": "eslint . && format-message lint src/**/*.js",
         "lint:fix": "eslint . --fix",
-        "package": "pkg --target node10-win-x64,node10-linux-x64,node10-macos-x64 .",
-        "tap": "tap ./test/{unit,integration}/*.js",
-        "tap:unit": "tap ./test/unit/*.js",
-        "tap:integration": "tap ./test/integration/*.js"
+        "package": "pkg --target node10-win-x64,node10-linux-x64,node10-macos-x64 ."
     },
     "dependencies": {
         "codemirror": "^5.40.2",
@@ -28,13 +23,21 @@
         "jquery": "^3.3.1",
         "datatables.net": "^1.10.19",
         "datatables.net-bs4": "^1.10.19",
-        "@fortawesome/fontawesome-free": "^5.3.1"
+        "file-saver": "^2.0.0-rc.4",
+        "@fortawesome/fontawesome-free": "^5.3.1",
+        "scratch-audio": "^0.1.0-prerelease.20180625202813",
+        "scratch-blocks": "^0.1.0-prerelease.1537303399",
+        "scratch-render": "^0.1.0-prerelease.20180918201144",
+        "scratch-storage": "^1.0.2",
+        "scratch-svg-renderer": "^0.2.0-prerelease.20180907141232",
+        "scratch-vm": "^0.2.0-prerelease.20180921133209"
     },
     "devDependencies": {
         "@babel/core": "^7.1.0",
         "@babel/preset-env": "^7.1.0",
-        "babel-eslint": "^9.0.0",
+        "babel-eslint": "^10.0.1",
         "babel-loader": "^8.0.2",
+        "babel-preset-minify": "^0.5.0",
         "copy-webpack-plugin": "^4.5.2",
         "css-loader": "^1.0.0",
         "eslint": "^5.6.0",
@@ -42,7 +45,6 @@
         "imports-loader": "^0.8.0",
         "mini-css-extract-plugin": "^0.4.3",
         "optimize-css-assets-webpack-plugin": "^5.0.1",
-        "uglifyjs-webpack-plugin": "^2.0.1",
         "webpack": "^4.19.1",
         "webpack-cli": "^3.1.1"
     }
