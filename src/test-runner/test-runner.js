@@ -1,7 +1,7 @@
 const EventEmitter = require('events');
 const Test = require('./test');
 const TestResult = require('./test-result');
-const WhiskerUtil = require('../test/test-util');
+const WhiskerUtil = require('../test/whisker-util');
 const assert = require('./assert');
 const isAssertionError = require('../util/is-assertion-error');
 
@@ -11,12 +11,13 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
+     * @param {object=} props .
      * @returns {Promise<Array>} .
      */
-    async runTests (vm, project, tests) {
+    async runTests (vm, project, tests, props) {
         const results = [];
 
-        this.emit(TestRunner.RUN_START);
+        this.emit(TestRunner.RUN_START, tests);
 
         for (const test of tests) {
             let result;
@@ -27,7 +28,7 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
-                result = await this._executeTest(vm, project, test);
+                result = await this._executeTest(vm, project, test, props);
                 switch (result.status) {
                 case Test.SUCCESS: this.emit(TestRunner.TEST_SUCCESS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
@@ -38,7 +39,7 @@ class TestRunner extends EventEmitter {
             results.push(result);
         }
 
-        this.emit(TestRunner.RUN_END);
+        this.emit(TestRunner.RUN_END, results);
         return results;
     }
 
@@ -54,21 +55,24 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test} test .
+     * @param {object=} props .
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest (vm, project, test) {
+    async _executeTest (vm, project, test, props) {
         const result = new TestResult(test);
 
-        const util = new WhiskerUtil(vm, project);
+        const util = new WhiskerUtil(vm, project, props);
         await util.prepare();
 
         try {
             const testDriver = util.getTestDriver({
-                assert: assert,
                 log: message => {
                     this._log(test, message);
                     result.log.push(message);
+                },
+                extend: {
+                    assert: assert
                 }
             });
 
@@ -98,6 +102,7 @@ class TestRunner extends EventEmitter {
     /**
      * @param {Test} test .
      * @param {string} message .
+     * @private
      */
     _log (test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);

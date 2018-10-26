@@ -59,7 +59,7 @@ class Variable {
     /**
      * @returns {ScratchVariable} .
      */
-    get scratchVariable () {
+    getScratchVariable () {
         return this._variable;
     }
 
@@ -101,9 +101,6 @@ class Sprite {
         this._variables = {};
     }
 
-
-    /* ===== Wrapper-defined properties ===== */
-
     /**
      * @returns {boolean} .
      */
@@ -117,9 +114,6 @@ class Sprite {
     get old () {
         return {...this._old};
     }
-
-
-    /* ===== Static target properties ===== */
 
     /**
      * @returns {boolean} .
@@ -148,8 +142,6 @@ class Sprite {
     get id () {
         return this._target.id;
     }
-
-    /* ===== Dynamic target properties ===== */
 
     /**
      * @returns {object.<string, number>} .
@@ -322,20 +314,26 @@ class Sprite {
         return this._target.colorIsTouchingColor(targetRgb, maskRgb);
     }
 
-    /* ===== Variable getters ===== */
-
     /**
+     * @param {Function=} condition .
      * @param {boolean=} skipStage .
      * @returns {Variable[]} .
      */
-    getVariables (skipStage = true) {
+    getVariables (condition, skipStage = true) {
         const originalVariables = this._target.getAllVariableNamesInScopeByType(ScratchVariable.SCALAR_TYPE, skipStage)
             .map(name => this._target.lookupVariableByNameAndType(name, ScratchVariable.SCALAR_TYPE, skipStage));
-        let wrappedVariables = originalVariables.map(this._wrapVariable.bind(this));
+
+        let variables = originalVariables.map(this._wrapVariable.bind(this));
+
         if (!skipStage && !this.isStage) {
-            wrappedVariables = wrappedVariables.concat(this._sprites.getStage().getVariables(skipStage));
+            variables = variables.concat(this._sprites.getStage().getVariables(skipStage));
         }
-        return wrappedVariables;
+
+        if (condition) {
+            variables = variables.filter(variable => condition(variable));
+        }
+
+        return variables;
     }
 
     /**
@@ -378,8 +376,6 @@ class Sprite {
         }
     }
 
-    /* ===== Sprite getters ===== */
-
     /**
      * @returns {Sprite[]} .
      */
@@ -410,7 +406,7 @@ class Sprite {
     /**
      * @returns {RenderedTarget} .
      */
-    get scratchTarget () {
+    getScratchTarget () {
         return this._target;
     }
 
@@ -449,8 +445,18 @@ class Sprite {
 }
 
 class Sprites {
+    /**
+     * @param {VMWrapper} vmWrapper .
+     */
     constructor (vmWrapper) {
+        /**
+         * @type {VMWrapper} .
+         */
         this.vmWrapper = vmWrapper;
+
+        /**
+         * @type {{}}
+         */
         this.sprites = {};
     }
 
@@ -475,19 +481,19 @@ class Sprites {
      * @returns {Sprite[]} .
      */
     getSprites (condition, skipStage = true) {
-        const sprites = this.vmWrapper.vm.runtime.targets
+        let sprites = this.vmWrapper.vm.runtime.targets
             .filter(target => target.sprite)
             .map(this.wrapTarget.bind(this));
 
-        if (!condition) {
-            condition = () => true;
-        }
-
         if (skipStage) {
-            return sprites.filter(sprite => !sprite.isStage && condition(sprite));
+            sprites = sprites.filter(sprite => !sprite.isStage);
         }
-        return sprites.filter(condition);
 
+        if (condition) {
+            sprites = sprites.filter(condition);
+        }
+
+        return sprites;
     }
 
     /**
@@ -499,6 +505,16 @@ class Sprites {
         return this.getSprites()
             .filter(sprite => !sprite.isStage && sprite.isPointInBounds(x, y))
             .sort((a, b) => b.layerOrder - a.layerOrder);
+    }
+
+    /**
+     * @param {number} x .
+     * @param {number} y .
+     * @returns {?Sprite} .
+     */
+    getSpriteAtPoint (x, y) {
+        const sprites = this.getSpritesAtPoint(x, y);
+        return (sprites.length > 0) ? sprites[0] : null;
     }
 
     /**

@@ -32,14 +32,14 @@ class WaitingPromise {
  * queue gives back a {@link Promise} that is resolved (or rejected) with the callback's return value.
  */
 class Stepper {
-    constructor (intervalTime) {
+    constructor (stepTime) {
 
         /**
          * The time between callbacks.
          * @type {number}
          * @private
          */
-        this._intervalTime = intervalTime;
+        this._stepTime = stepTime;
 
         /**
          * Queue of {@link WaitingPromise WaitingPromises} to be executed.
@@ -96,11 +96,19 @@ class Stepper {
 
         if (!this._interval) {
             log.debug('Starting stepper');
-            this._interval = setInterval(this._executeNext.bind(this), this._intervalTime);
+            this._interval = setInterval(this._executeNext.bind(this), this._stepTime);
             this._executeNext();
         }
 
         return promise;
+    }
+
+    setStepTime (stepTime) {
+        this._stepTime = stepTime;
+        if (this._interval) {
+            clearInterval(this._interval);
+            this._interval = setInterval(this._executeNext.bind(this), this._stepTime);
+        }
     }
 }
 

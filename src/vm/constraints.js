@@ -1,30 +1,4 @@
 const isAssertionError = require('../util/is-assertion-error');
-const {AssertionError} = require('assert');
-
-class ConstraintAssertionError extends AssertionError {
-    constructor (constraint, error) {
-        super({
-            message: error.message,
-            actual: error.actual,
-            expected: error.expected,
-            operator: error.operator
-        });
-
-        /**
-         * @type {Constraint}
-         */
-        this.constraint = constraint;
-
-        /**
-         * @type {Error}
-         */
-        this.error = error;
-    }
-
-    toString () {
-        return `ConstraintAssertionError: ${this.message}`;
-    }
-}
 
 class Constraint {
     constructor (constraints, callback, name) {
@@ -58,7 +32,7 @@ class Constraint {
     }
 
     /**
-     * @returns {(ConstraintAssertionError|null)} .
+     * @returns {?AssertionError} .
      */
     _check () {
         try {
@@ -67,7 +41,8 @@ class Constraint {
         } catch (error) {
             this.error = error;
             if (isAssertionError(error)) {
-                return new ConstraintAssertionError(this, error);
+                error.constraint = this.name ? this.name : '[no name]';
+                return error;
             }
             throw error;
         }
@@ -101,7 +76,7 @@ class Constraints {
     }
 
     /**
-     * @returns {(null|ConstraintAssertionError)} .
+     * @returns {?AssertionError} .
      */
     checkConstraints () {
         const constraintsToCheck = [...this.constraints];
@@ -112,13 +87,7 @@ class Constraints {
 
                 if (constraintError) {
                     this.removeConstraint(constraint);
-
-                    if (this.vmWrapper.actionOnConstraintFailure ===
-                            this.vmWrapper.constructor.ON_CONSTRAINT_FAILURE_FAIL ||
-                        this.vmWrapper.actionOnConstraintFailure ===
-                            this.vmWrapper.constructor.ON_CONSTRAINT_FAILURE_STOP) {
-                        return constraintError;
-                    }
+                    return constraintError;
                 }
             }
         }
@@ -168,6 +137,5 @@ class Constraints {
 
 module.exports = {
     Constraint,
-    ConstraintAssertionError,
     Constraints
 };

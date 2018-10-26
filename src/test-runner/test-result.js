@@ -1,8 +1,11 @@
 class TestResult {
+    /**
+     * @param {Test} test .
+     */
     constructor (test) {
 
         /**
-         * @type {Test}
+         * @type {Test} .
          */
         this.test = test;
 
@@ -12,7 +15,7 @@ class TestResult {
         this.status = null;
 
         /**
-         * @type {?string}
+         * @type {?Error}
          */
         this.error = null;
 

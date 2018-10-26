@@ -1,7 +1,24 @@
-const defaults = require('lodash.defaults');
+/**
+ * Input data parameters:
+ * {
+ *     device,
+ *     isDown,
+ *     key,
+ *     x,
+ *     y,
+ *     sprite,
+ *     xOffset,
+ *     yOffset,
+ *     duration
+ *         Just used to release keys for now
+ *         Maybe use it to smoothly move the mouse later
+ *         A duration of 0 means only one action
+ * }
+ */
+
 
 class Input {
-    constructor (inputs, time, device, data, name) {
+    constructor (inputs, time, data, name) {
 
         /**
          * @type {Inputs}
@@ -10,26 +27,24 @@ class Input {
 
         /**
          * @type {number}
-         * @private
          */
         this._time = time;
 
         /**
-         * @type {string}
-         * @private
-         */
-        this._device = device;
-
-        /**
          * @type {object}
-         * @private
          */
         this._data = data;
 
         /**
          * @type {boolean}
          */
-        this._active = true;
+        this._active = false;
+
+        /**
+         * @type {*}
+         * Initial state is always null.
+         */
+        this._state = null;
 
         /**
          * @type {number}
@@ -44,15 +59,80 @@ class Input {
 
     /**
      * @param {number} elapsedTime .
-     * @param {VirtualMachine} vm .
-     * @returns {boolean} .
+     * @returns {boolean} If the input is done and should be removed.
      */
-    _perform (elapsedTime, vm) {
+    _perform (elapsedTime) {
         if (elapsedTime >= this._time - this._timeElapsedBefore) {
-            vm.postIOData(this._device, this._inputs.convertData(this._data));
-            return true;
+            if (!this._state) {
+                this._inputs.vmWrapper.vm.postIOData(this._data.device, this._convertData(this._data));
+                if (this._data.duration) {
+                    this._state = true;
+                } else {
+                    return true;
+                }
+            }
+            if (this._state && elapsedTime >= this._data.duration + this._time - this._timeElapsedBefore) {
+                const data = this._convertData(this._data);
+                data.isDown = !data.isDown;
+                this._inputs.vmWrapper.vm.postIOData(this._data.device, data);
+                return true;
+            }
         }
         return false;
+    }
+
+    /**
+     * @param {object} data .
+     * @returns {object} .
+     */
+    _convertData (data) {
+        data = {...data};
+
+        if (data.isDown === 'toggle') {
+            if (data.device === 'mouse') {
+                data.isDown = !this._inputs.isMouseDown();
+            } else if (data.device === 'keyboard') {
+                data.isDown = !this._inputs.isKeyDown(data.key);
+            }
+        }
+
+        if (data.device !== 'mouse') {
+            return data;
+        }
+
+        if (data.sprite) {
+            data.x = data.sprite.x;
+            data.y = data.sprite.y;
+        } else {
+            const mousePos = this._inputs.getMousePos();
+            if (!data.hasOwnProperty('x')) {
+                data.x = mousePos.x;
+            }
+            if (!data.hasOwnProperty('y')) {
+                data.y = mousePos.y;
+            }
+        }
+
+        data.x += data.xOffset || 0;
+        data.y += data.yOffset || 0;
+
+        /* Convert coordinates to client coordinates. */
+        const {x, y} = this._inputs.vmWrapper.getClientCoords(data.x, data.y);
+        data.x = x;
+        data.y = y;
+
+        const canvasRect = this._inputs.vmWrapper.getCanvasRect();
+        data.canvasWidth = canvasRect.width;
+        data.canvasHeight = canvasRect.height;
+
+        return data;
+    }
+
+    _reset () {
+        this._active = false;
+        this._state = null;
+        this._time = 0;
+        this._timeElapsedBefore = 0;
     }
 
     isActive () {
@@ -74,34 +154,32 @@ class Inputs {
         this.inputs = [];
     }
 
-    /**
-     * @param {number} elapsedTime .
-     */
-    performInputs (elapsedTime) {
+    performInputs () {
+        const runTimeElapsed = this.vmWrapper.getRunTimeElapsed();
         const inputsToPerform = [...this.inputs];
 
         for (const input of inputsToPerform) {
-            if (input._perform(elapsedTime, this.vmWrapper.vm)) {
+            if (input._perform(runTimeElapsed)) {
                 this.removeInput(input);
             }
         }
     }
 
     /**
-     * @param {(number|Input)} timeOrInput .
-     * @param {string=} device .
-     * @param {object=} data .
+     * @param {number} time .
+     * @param {(object|Input)} dataOrInput .
      * @param {any=} name .
      * @returns {Input} .
      */
-    addInput (timeOrInput, device, data, name) {
+    addInput (time, dataOrInput, name) {
         let input;
 
-        if (timeOrInput instanceof Input) {
-            input = timeOrInput;
+        if (dataOrInput instanceof Input) {
+            input = dataOrInput;
             this.removeInput(input);
+            input._time = time;
         } else {
-            input = new Input(this, timeOrInput, device, {...data}, name);
+            input = new Input(this, time, {...dataOrInput}, name);
         }
 
         input._active = true;
@@ -110,12 +188,35 @@ class Inputs {
     }
 
     /**
+     * @param {(object|Input)} dataOrInput .
+     * @param {any=} name .
+     * @returns {Input} .
+     */
+    inputImmediate (dataOrInput, name) {
+        let input;
+        const runTimeElapsed = this.vmWrapper.getRunTimeElapsed();
+
+        if (dataOrInput instanceof Input) {
+            input = dataOrInput;
+        } else {
+            input = new Input(this, runTimeElapsed, {...dataOrInput}, name);
+        }
+
+        input._active = true;
+
+        if (!input._perform(runTimeElapsed)) {
+            this.inputs.push(input);
+        }
+
+        return input;
+    }
+
+    /**
      * @param {Input} input .
      * @return {boolean} .
      */
     removeInput (input) {
-        input._active = false;
-        input._timeElapsedBefore = 0;
+        input._reset();
         const index = this.inputs.indexOf(input);
         if (index !== -1) {
             this.inputs.splice(index, 1);
@@ -125,8 +226,7 @@ class Inputs {
 
     clearInputs () {
         for (const input of this.inputs) {
-            input._active = false;
-            input._timeElapsedBefore = 0;
+            input._reset();
         }
         this.inputs = [];
     }
@@ -163,14 +263,6 @@ class Inputs {
         };
     }
 
-    // TODO remove
-    getClientMousePos () {
-        return {
-            x: this.vmWrapper.vm.runtime.ioDevices.mouse.getClientX(),
-            y: this.vmWrapper.vm.runtime.ioDevices.mouse.getClientY()
-        };
-    }
-
     /**
      * @returns {boolean} .
      */
@@ -183,36 +275,8 @@ class Inputs {
      * @returns {boolean} .
      */
     isKeyDown (key) {
-        return this.vmWrapper.vm.runtime.ioDevices.keyboard.isKeyDown(key);
-    }
-
-    /**
-     * @param {object} data .
-     * @returns {object} .
-     */
-    convertData (data) {
-        const newData = {};
-
-        /* Convert coordinates to client coordinates. */
-        if (data.x || data.y) {
-            const x = data.x || 0;
-            const y = data.y || 0;
-            const clientCoords = this.vmWrapper.getClientCoords(x, y);
-
-            if (data.x) {
-                newData.x = clientCoords.x;
-            }
-            if (data.y) {
-                newData.y = clientCoords.y;
-            }
-
-            const canvasRect = this.vmWrapper.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
-            newData.canvasWidth = canvasRect.width;
-            newData.canvasHeight = canvasRect.height;
-        }
-
-        defaults(newData, data);
-        return newData;
+        const scratchKey = this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(key);
+        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
     }
 }
 

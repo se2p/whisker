@@ -3,7 +3,7 @@ const assert = require('assert');
 /**
  * @param {number} actual .
  * @param {number} expected .
- * @param {number} message .
+ * @param {string=} message .
  */
 assert.greater = function (actual, expected, message) {
     if (actual <= expected) {
@@ -19,7 +19,7 @@ assert.greater = function (actual, expected, message) {
 /**
  * @param {number} actual .
  * @param {number} expected .
- * @param {number} message .
+ * @param {string=} message .
  */
 assert.greaterOrEqual = function (actual, expected, message) {
     if (actual < expected) {
@@ -35,7 +35,7 @@ assert.greaterOrEqual = function (actual, expected, message) {
 /**
  * @param {number} actual .
  * @param {number} expected .
- * @param {number} message .
+ * @param {string=} message .
  */
 assert.less = function (actual, expected, message) {
     if (actual >= expected) {
@@ -51,7 +51,7 @@ assert.less = function (actual, expected, message) {
 /**
  * @param {number} actual .
  * @param {number} expected .
- * @param {number} message .
+ * @param {string=} message .
  */
 assert.lessOrEqual = function (actual, expected, message) {
     if (actual > expected) {

@@ -2,12 +2,12 @@ const VMWrapper = require('../vm/vm-wrapper');
 const defaults = require('lodash.defaults');
 
 class WhiskerUtil {
-    constructor (vm, project) {
+    constructor (vm, project, props) {
 
         /**
          * @type {VMWrapper}
          */
-        this.vmWrapper = new VMWrapper(vm);
+        this.vmWrapper = new VMWrapper(vm, props);
 
         /**
          * @type {string}
@@ -23,11 +23,12 @@ class WhiskerUtil {
     }
 
     /**
-     * @param {object} extraMembers .
+     * @param {object=} props .
      * @returns {object} .
      */
-    getTestDriver (extraMembers) {
+    getTestDriver (props) {
         const testDriver = {};
+
         testDriver.vm = this.vmWrapper.vm;
 
         testDriver.run = this.vmWrapper.run.bind(this.vmWrapper);
@@ -40,6 +41,7 @@ class WhiskerUtil {
 
         testDriver.getSprites = this.vmWrapper.sprites.getSprites.bind(this.vmWrapper.sprites);
         testDriver.getSpritesAtPoint = this.vmWrapper.sprites.getSpritesAtPoint.bind(this.vmWrapper.sprites);
+        testDriver.getSpriteAtPoint = this.vmWrapper.sprites.getSpriteAtPoint.bind(this.vmWrapper.sprites);
         testDriver.getSprite = this.vmWrapper.sprites.getSprite.bind(this.vmWrapper.sprites);
         testDriver.getStage = this.vmWrapper.sprites.getStage.bind(this.vmWrapper.sprites);
 
@@ -48,6 +50,7 @@ class WhiskerUtil {
         testDriver.clearCallbacks = this.vmWrapper.callbacks.clearCallbacks.bind(this.vmWrapper.callbacks);
 
         testDriver.addInput = this.vmWrapper.inputs.addInput.bind(this.vmWrapper.inputs);
+        testDriver.inputImmediate = this.vmWrapper.inputs.inputImmediate.bind(this.vmWrapper.inputs);
         testDriver.removeInput = this.vmWrapper.inputs.removeInput.bind(this.vmWrapper.inputs);
         testDriver.clearInputs = this.vmWrapper.inputs.clearInputs.bind(this.vmWrapper.inputs);
         testDriver.resetMouse = this.vmWrapper.inputs.resetMouse.bind(this.vmWrapper.inputs);
@@ -57,14 +60,29 @@ class WhiskerUtil {
         testDriver.isMouseDown = this.vmWrapper.inputs.isMouseDown.bind(this.vmWrapper.inputs);
         testDriver.isKeyDown = this.vmWrapper.inputs.isKeyDown.bind(this.vmWrapper.inputs);
 
+        testDriver.registerRandomInputs = this.vmWrapper.randomInputs.registerRandomInputs
+            .bind(this.vmWrapper.randomInputs);
+        testDriver.clearRandomInputs = this.vmWrapper.randomInputs.clearRandomInputs
+            .bind(this.vmWrapper.randomInputs);
+        testDriver.setRandomInputInterval = this.vmWrapper.randomInputs.setRandomInputInterval
+            .bind(this.vmWrapper.randomInputs);
+
         testDriver.addConstraint = this.vmWrapper.constraints.addConstraint.bind(this.vmWrapper.constraints);
         testDriver.removeConstraint = this.vmWrapper.constraints.removeConstraint.bind(this.vmWrapper.constraints);
         testDriver.clearConstraints = this.vmWrapper.constraints.clearConstraints.bind(this.vmWrapper.constraints);
 
         testDriver.getStageSize = this.vmWrapper.getStageSize.bind(this.vmWrapper);
-        testDriver.end = this.vmWrapper.stop.bind(this.vmWrapper);
+        testDriver.end = this.vmWrapper.end.bind(this.vmWrapper);
 
-        defaults(testDriver, extraMembers);
+        if (props.log) {
+            testDriver.log = props.log;
+            this.vmWrapper.log = props.log;
+        }
+
+        if (props.extend) {
+            defaults(testDriver, props.extend);
+        }
+
         return testDriver;
     }
 
@@ -73,7 +91,7 @@ class WhiskerUtil {
     }
 
     end () {
-        this.vmWrapper.stop();
+        this.vmWrapper.end();
     }
 }
 
