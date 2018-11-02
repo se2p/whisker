@@ -48,12 +48,17 @@ class WhiskerUtil {
         testDriver.getSpriteAtPoint = this.vmWrapper.sprites.getSpriteAtPoint.bind(this.vmWrapper.sprites);
         testDriver.getSprite = this.vmWrapper.sprites.getSprite.bind(this.vmWrapper.sprites);
         testDriver.getStage = this.vmWrapper.sprites.getStage.bind(this.vmWrapper.sprites);
+        testDriver.getNewSprites = this.vmWrapper.sprites.getNewSprites.bind(this.vmWrapper.sprites);
+        testDriver.onSpriteMoved = this.vmWrapper.sprites.onSpriteMoved.bind(this.vmWrapper.sprites);
+        testDriver.onSpriteVisualChange = this.vmWrapper.sprites.onSpriteVisualChange.bind(this.vmWrapper.sprites);
 
         testDriver.addCallback = this.vmWrapper.callbacks.addCallback.bind(this.vmWrapper.callbacks);
+        testDriver.reAddCallback = this.vmWrapper.callbacks.reAddCallback.bind(this.vmWrapper.callbacks);
         testDriver.removeCallback = this.vmWrapper.callbacks.removeCallback.bind(this.vmWrapper.callbacks);
         testDriver.clearCallbacks = this.vmWrapper.callbacks.clearCallbacks.bind(this.vmWrapper.callbacks);
 
         testDriver.addInput = this.vmWrapper.inputs.addInput.bind(this.vmWrapper.inputs);
+        testDriver.reAddInput = this.vmWrapper.inputs.reAddInput.bind(this.vmWrapper.inputs);
         testDriver.inputImmediate = this.vmWrapper.inputs.inputImmediate.bind(this.vmWrapper.inputs);
         testDriver.removeInput = this.vmWrapper.inputs.removeInput.bind(this.vmWrapper.inputs);
         testDriver.clearInputs = this.vmWrapper.inputs.clearInputs.bind(this.vmWrapper.inputs);
@@ -72,6 +77,7 @@ class WhiskerUtil {
             .bind(this.vmWrapper.randomInputs);
 
         testDriver.addConstraint = this.vmWrapper.constraints.addConstraint.bind(this.vmWrapper.constraints);
+        testDriver.reAddConstraint = this.vmWrapper.constraints.reAddConstraint.bind(this.vmWrapper.constraints);
         testDriver.removeConstraint = this.vmWrapper.constraints.removeConstraint.bind(this.vmWrapper.constraints);
         testDriver.clearConstraints = this.vmWrapper.constraints.clearConstraints.bind(this.vmWrapper.constraints);
 

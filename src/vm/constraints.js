@@ -49,7 +49,7 @@ class Constraint {
     }
 
     enable () {
-        this._constraints.addConstraint(this);
+        this._constraints.reAddConstraint(this);
     }
 
     disable () {
@@ -94,21 +94,24 @@ class Constraints {
     }
 
     /**
-     * @param {(Function|Constraint)} functionOrConstraint .
+     * @param {Function} func .
      * @param {any=} name .
      * @returns {Constraint} .
      */
-    addConstraint (functionOrConstraint, name) {
-        let constraint;
+    addConstraint (func, name) {
+        const constraint = new Constraint(this, func, name);
+        constraint._active = true;
+        this.constraints.push(constraint);
+        return constraint;
+    }
 
-        if (functionOrConstraint instanceof Constraint) {
-            constraint = functionOrConstraint;
-            this.removeConstraint(constraint);
-            constraint.error = null;
-        } else {
-            constraint = new Constraint(this, functionOrConstraint, name);
-        }
-
+    /**
+     * @param {Constraint} constraint .
+     * @returns {Constraint} .
+     */
+    reAddConstraint (constraint) {
+        this.removeConstraint(constraint);
+        constraint.error = null;
         constraint._active = true;
         this.constraints.push(constraint);
         return constraint;

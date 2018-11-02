@@ -70,6 +70,8 @@ class TAP13Listener {
             yamlOutput.error = cleanYamlObject(result.error);
             if (isAssertionError(result.error)) {
                 delete yamlOutput.error.stack;
+            } else {
+                console.log(result.error);
             }
         }
         if (result.log.length) {

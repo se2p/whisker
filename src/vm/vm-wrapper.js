@@ -1,7 +1,7 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Stepper = require('./stepper');
 
-const {Sprites} = require('./sprites');
+const Sprites = require('./sprites');
 const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
@@ -107,7 +107,7 @@ class VMWrapper {
     }
 
     step () {
-        this.callbacks.callCallbacks();
+        this.callbacks.callCallbacks(false);
 
         if (!this.running) return;
 
@@ -116,6 +116,10 @@ class VMWrapper {
 
         this.sprites.update();
         this.vm.runtime._step();
+
+        if (!this.running) return;
+
+        this.callbacks.callCallbacks(true);
 
         if (!this.running) return;
 

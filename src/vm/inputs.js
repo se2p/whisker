@@ -167,21 +167,24 @@ class Inputs {
 
     /**
      * @param {number} time .
-     * @param {(object|Input)} dataOrInput .
+     * @param {object} data .
      * @param {any=} name .
      * @returns {Input} .
      */
-    addInput (time, dataOrInput, name) {
-        let input;
+    addInput (time, data, name) {
+        const input = new Input(this, time, {...data}, name);
+        input._active = true;
+        this.inputs.push(input);
+        return input;
+    }
 
-        if (dataOrInput instanceof Input) {
-            input = dataOrInput;
-            this.removeInput(input);
-            input._time = time;
-        } else {
-            input = new Input(this, time, {...dataOrInput}, name);
-        }
-
+    /**
+     * @param {number} time .
+     * @param {Input} input .
+     * @returns {Input} .
+     */
+    reAddInput (time, input) {
+        input._time = time;
         input._active = true;
         this.inputs.push(input);
         return input;

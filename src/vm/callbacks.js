@@ -1,5 +1,5 @@
 class Callback {
-    constructor (callbacks, callback, name) {
+    constructor (callbacks, callback, name, afterStep) {
 
         /**
          * @type {Callbacks}
@@ -19,6 +19,11 @@ class Callback {
         this._active = false;
 
         /**
+         * @type {boolean}
+         */
+        this._afterStep = Boolean(afterStep);
+
+        /**
          * @type {?any}
          */
         this.name = name;
@@ -32,7 +37,7 @@ class Callback {
     }
 
     enable () {
-        this._callbacks.addCallback(this);
+        this._callbacks.reAddCallback(this);
     }
 
     disable () {
@@ -53,11 +58,14 @@ class Callbacks {
         this.callbacks = [];
     }
 
-    callCallbacks () {
+    /**
+     * @param {boolean=} afterStep .
+     */
+    callCallbacks (afterStep) {
         const callbacksToCall = [...this.callbacks];
 
         for (const callback of callbacksToCall) {
-            if (callback.isActive()) {
+            if (callback.isActive() && callback._afterStep === afterStep) {
                 if (callback._call()) {
                     this.removeCallback(callback);
                 }
@@ -66,20 +74,23 @@ class Callbacks {
     }
 
     /**
-     * @param {(Function|Callback)} functionOrCallback .
+     * @param {Function} func .
+     * @param {boolean=} afterStep .
      * @param {any=} name .
      * @returns {Callback} .
      */
-    addCallback (functionOrCallback, name) {
-        let callback;
+    addCallback (func, afterStep = false, name) {
+        const callback = new Callback(this, func, name, afterStep);
+        callback._active = true;
+        this.callbacks.push(callback);
+        return callback;
+    }
 
-        if (functionOrCallback instanceof Callback) {
-            callback = functionOrCallback;
-            this.removeCallback(callback);
-        } else {
-            callback = new Callback(this, functionOrCallback, name);
-        }
-
+    /**
+     * @param {Callback} callback .
+     * @returns {Callback} .
+     */
+    reAddCallback (callback) {
         callback._active = true;
         this.callbacks.push(callback);
         return callback;
