@@ -80,6 +80,16 @@ class VMWrapper {
         this.runStartTime = 0;
 
         /**
+         * @type {number}
+         */
+        this.stepsExecuted = 0;
+
+        /**
+         * @type {number}
+         */
+        this.runStartStepsExecuted = 0;
+
+        /**
          * @type {boolean}
          */
         this.running = false;
@@ -98,28 +108,45 @@ class VMWrapper {
 
     step () {
         this.callbacks.callCallbacks();
+
+        if (!this.running) return;
+
         this.randomInputs.performRandomInput();
         this.inputs.performInputs();
 
         this.sprites.update();
         this.vm.runtime._step();
 
+        if (!this.running) return;
+
         return this.constraints.checkConstraints();
     }
 
     /**
-     * @param {Function} condition .
-     * @param {number} timeout .
+     * @param {Function?} condition .
+     * @param {number=} timeout .
+     * @param {number=} steps .
      * @returns {number} .
      */
-    async run (condition, timeout) {
+    async run (condition, timeout, steps) {
+        condition = condition || (() => false);
+        timeout = timeout || Infinity;
+        steps = steps || Infinity;
+
         this.running = true;
         this.runStartTime = Date.now();
+        this.runStartStepsExecuted = this.getTotalStepsExecuted();
 
         let constraintError = null;
 
-        while (this.running && this.getRunTimeElapsed() < timeout && !condition()) {
+        while (this.running &&
+               this.getRunTimeElapsed() < timeout &&
+               this.getRunStepsExecuted() < steps &&
+               !condition()) {
+
             constraintError = await this.stepper.step(this.step.bind(this));
+
+            this.stepsExecuted++;
 
             if (constraintError &&
                (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
@@ -145,15 +172,35 @@ class VMWrapper {
      * @returns {number} .
      */
     async runForTime (time) {
-        return await this.run(() => false, time);
+        return await this.run(null, time);
     }
 
     /**
      * @param {Function} condition .
-     * @returns {Promise<RunSummary>} .
+     * @param {number=} timeout .
+     * @returns {number} .
      */
-    async runUntil (condition) {
-        return await this.run(condition, Infinity);
+    async runUntil (condition, timeout) {
+        return await this.run(condition, timeout);
+    }
+
+    /**
+     * @param {Function} callback .
+     * @param {number=} timeout .
+     * @returns {number} .
+     */
+    async runUntilChanges (callback, timeout) {
+        const initialValue = callback();
+        return await this.run(() => callback() !== initialValue, timeout);
+    }
+
+    /**
+     * @param {number} steps .
+     * @param {number=} timeout .
+     * @returns {number} .
+     */
+    async runForSteps (steps, timeout) {
+        return await this.run(null, timeout, steps);
     }
 
     cancelRun () {
@@ -173,6 +220,23 @@ class VMWrapper {
     getRunTimeElapsed () {
         if (this.running) {
             return Date.now() - this.runStartTime;
+        }
+        return 0;
+    }
+
+    /**
+     * @return {number} .
+     */
+    getTotalStepsExecuted () {
+        return this.stepsExecuted;
+    }
+
+    /**
+     * @return {number} .
+     */
+    getRunStepsExecuted () {
+        if (this.running) {
+            return this.stepsExecuted - this.runStartStepsExecuted;
         }
         return 0;
     }

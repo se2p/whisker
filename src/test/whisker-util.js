@@ -34,10 +34,14 @@ class WhiskerUtil {
         testDriver.run = this.vmWrapper.run.bind(this.vmWrapper);
         testDriver.runForTime = this.vmWrapper.runForTime.bind(this.vmWrapper);
         testDriver.runUntil = this.vmWrapper.runUntil.bind(this.vmWrapper);
+        testDriver.runUntilChanges = this.vmWrapper.runUntilChanges.bind(this.vmWrapper);
+        testDriver.runForSteps = this.vmWrapper.runForSteps.bind(this.vmWrapper);
         testDriver.cancelRun = this.vmWrapper.cancelRun.bind(this.vmWrapper);
         testDriver.onConstraintFailure = this.vmWrapper.onConstraintFailure.bind(this.vmWrapper);
         testDriver.getTotalTimeElapsed = this.vmWrapper.getTotalTimeElapsed.bind(this.vmWrapper);
         testDriver.getRunTimeElapsed = this.vmWrapper.getRunTimeElapsed.bind(this.vmWrapper);
+        testDriver.getTotalStepsExecuted = this.vmWrapper.getTotalStepsExecuted.bind(this.vmWrapper);
+        testDriver.getRunStepsExecuted = this.vmWrapper.getRunStepsExecuted.bind(this.vmWrapper);
 
         testDriver.getSprites = this.vmWrapper.sprites.getSprites.bind(this.vmWrapper.sprites);
         testDriver.getSpritesAtPoint = this.vmWrapper.sprites.getSpritesAtPoint.bind(this.vmWrapper.sprites);
