@@ -1,14 +1,21 @@
 const {AssertionError} = require('assert');
 
-const assert = {};
+class AssumptionError extends AssertionError {
+    constructor (props) {
+        super(props);
+        this.name = 'AssumptionError';
+    }
+}
+
+const assume = {};
 
 /**
  * @param {boolean} condition .
  * @param {string=} message .
  */
-assert.ok = function (condition, message) {
+assume.ok = function (condition, message) {
     if (!condition) {
-        throw new AssertionError({
+        throw new AssumptionError({
             message: message,
             actual: false,
             expected: true,
@@ -17,8 +24,8 @@ assert.ok = function (condition, message) {
     }
 };
 
-assert.fail = function (message) {
-    throw new AssertionError({
+assume.fail = function (message) {
+    throw new AssumptionError({
         message: message,
         actual: null,
         expected: null,
@@ -31,10 +38,10 @@ assert.fail = function (message) {
  * @param {number} expected .
  * @param {string=} message .
  */
-assert.equal = function (actual, expected, message) {
+assume.equal = function (actual, expected, message) {
     /* eslint-disable-next-line eqeqeq */
     if (!(actual == expected)) {
-        throw new AssertionError({
+        throw new AssumptionError({
             message: message,
             actual: actual,
             expected: expected,
@@ -48,9 +55,9 @@ assert.equal = function (actual, expected, message) {
  * @param {number} expected .
  * @param {string=} message .
  */
-assert.strictEqual = function (actual, expected, message) {
+assume.strictEqual = function (actual, expected, message) {
     if (!(actual === expected)) {
-        throw new AssertionError({
+        throw new AssumptionError({
             message: message,
             actual: actual,
             expected: expected,
@@ -64,9 +71,9 @@ assert.strictEqual = function (actual, expected, message) {
  * @param {number} expected .
  * @param {string=} message .
  */
-assert.greater = function (actual, expected, message) {
+assume.greater = function (actual, expected, message) {
     if (!(actual > expected)) {
-        throw new AssertionError({
+        throw new AssumptionError({
             message: message,
             actual: actual,
             expected: expected,
@@ -80,9 +87,9 @@ assert.greater = function (actual, expected, message) {
  * @param {number} expected .
  * @param {string=} message .
  */
-assert.greaterOrEqual = function (actual, expected, message) {
+assume.greaterOrEqual = function (actual, expected, message) {
     if (!(actual >= expected)) {
-        throw new AssertionError({
+        throw new AssumptionError({
             message: message,
             actual: actual,
             expected: expected,
@@ -96,9 +103,9 @@ assert.greaterOrEqual = function (actual, expected, message) {
  * @param {number} expected .
  * @param {string=} message .
  */
-assert.less = function (actual, expected, message) {
+assume.less = function (actual, expected, message) {
     if (!(actual < expected)) {
-        throw new AssertionError({
+        throw new AssumptionError({
             message: message,
             actual: actual,
             expected: expected,
@@ -112,9 +119,9 @@ assert.less = function (actual, expected, message) {
  * @param {number} expected .
  * @param {string=} message .
  */
-assert.lessOrEqual = function (actual, expected, message) {
+assume.lessOrEqual = function (actual, expected, message) {
     if (!(actual <= expected)) {
-        throw new AssertionError({
+        throw new AssumptionError({
             message: message,
             actual: actual,
             expected: expected,
@@ -124,6 +131,6 @@ assert.lessOrEqual = function (actual, expected, message) {
 };
 
 module.exports = {
-    AssertionError,
-    assert
+    AssumptionError,
+    assume
 };

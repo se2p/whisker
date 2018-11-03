@@ -1,6 +1,6 @@
 const TestRunner = require('./test-runner');
 const Test = require('./test');
-const isAssertionError = require('../util/is-assertion-error');
+const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const yaml = require('js-yaml');
 const cleanYamlObject = require('clean-yaml-object');
 
@@ -66,14 +66,16 @@ class TAP13Listener {
         if (!success) {
             yamlOutput.severity = result.status;
         }
+
         if (result.error) {
             yamlOutput.error = cleanYamlObject(result.error);
-            if (isAssertionError(result.error)) {
+            if (isAssertionError(result.error) || isAssumptionError(result.error)) {
                 delete yamlOutput.error.stack;
             } else {
-                console.log(result.error);
+                console.log(result.error); // TODO for debugging, remove later
             }
         }
+
         if (result.log.length) {
             yamlOutput.log = result.log;
         }

@@ -2,8 +2,9 @@ const EventEmitter = require('events');
 const Test = require('./test');
 const TestResult = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
-const assert = require('./assert');
-const isAssertionError = require('../util/is-assertion-error');
+const {assert} = require('./assert');
+const {assume} = require('./assume');
+const {isAssertionError, isAssumptionError} = require('../util/is-error');
 
 class TestRunner extends EventEmitter {
 
@@ -33,6 +34,7 @@ class TestRunner extends EventEmitter {
                 case Test.SUCCESS: this.emit(TestRunner.TEST_SUCCESS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
                 case Test.ERROR: this.emit(TestRunner.TEST_ERROR, result); break;
+                case Test.SKIP: this.emit(TestRunner.TEST_SKIP, result); break;
                 }
             }
 
@@ -65,22 +67,23 @@ class TestRunner extends EventEmitter {
         const util = new WhiskerUtil(vm, project, props);
         await util.prepare();
 
-        try {
-            const testDriver = util.getTestDriver({
+        const testDriver = util.getTestDriver({
+            extend: {
+                assert: assert,
+                assume: assume,
                 log: message => {
                     this._log(test, message);
                     result.log.push(message);
-                },
-                extend: {
-                    assert: assert
                 }
-            });
+            }
+        });
 
-            this.emit(TestRunner.TEST_START, test);
+        this.emit(TestRunner.TEST_START, test);
 
-            util.start();
+        util.start();
+
+        try {
             await test.test(testDriver);
-
             result.status = Test.SUCCESS;
 
         } catch (e) {
@@ -88,6 +91,8 @@ class TestRunner extends EventEmitter {
 
             if (isAssertionError(e)) {
                 result.status = Test.FAIL;
+            } else if (isAssumptionError(e)) {
+                result.status = Test.SKIP;
             } else {
                 result.status = Test.ERROR;
             }

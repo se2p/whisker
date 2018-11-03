@@ -1,4 +1,4 @@
-const isAssertionError = require('../util/is-assertion-error');
+const {isAssertionError} = require('../util/is-error');
 
 class Constraint {
     constructor (constraints, callback, name) {

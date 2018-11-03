@@ -84,11 +84,6 @@ class WhiskerUtil {
         testDriver.getStageSize = this.vmWrapper.getStageSize.bind(this.vmWrapper);
         testDriver.end = this.vmWrapper.end.bind(this.vmWrapper);
 
-        if (props.log) {
-            testDriver.log = props.log;
-            this.vmWrapper.log = props.log;
-        }
-
         if (props.extend) {
             defaults(testDriver, props.extend);
         }
