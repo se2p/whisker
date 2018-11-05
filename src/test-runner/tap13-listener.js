@@ -5,37 +5,41 @@ const yaml = require('js-yaml');
 const cleanYamlObject = require('clean-yaml-object');
 
 class TAP13Listener {
-    constructor (print) {
-        this.print = print;
-        this.tests = null;
-    }
+    constructor (testRunner, print) {
+        /**
+         * @type {TestRunner}
+         */
+        this.testRunner = testRunner;
 
-    /**
-     * @param {TestRunner} testRunner .
-     */
-    register (testRunner) {
+        /**
+         * @type {Function}
+         */
+        this.print = print;
+
+        this.tests = null;
+
         this._onRunStart = this.onRunStart.bind(this);
         this._onTestDone = this.onTestDone.bind(this);
         this._onRunEnd = this.onRunEnd.bind(this);
+        this._onRunCancel = this.onRunCancel.bind(this);
 
         testRunner.on(TestRunner.RUN_START, this._onRunStart);
+        testRunner.on(TestRunner.RUN_END, this._onRunEnd);
+        testRunner.on(TestRunner.RUN_CANCEL, this._onRunCancel);
         testRunner.on(TestRunner.TEST_SUCCESS, this._onTestDone);
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
         testRunner.on(TestRunner.TEST_ERROR, this._onTestDone);
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
-        testRunner.on(TestRunner.RUN_END, this._onRunEnd);
     }
 
-    /**
-     * @param {TestRunner} testRunner .
-     */
-    unregister (testRunner) {
-        testRunner.off(TestRunner.RUN_START, this._onRunStart);
-        testRunner.off(TestRunner.TEST_SUCCESS, this._onTestDone);
-        testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
-        testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
-        testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
-        testRunner.off(TestRunner.RUN_END, this._onRunEnd);
+    unregister () {
+        this.testRunner.off(TestRunner.RUN_START, this._onRunStart);
+        this.testRunner.off(TestRunner.RUN_END, this._onRunEnd);
+        this.testRunner.off(TestRunner.RUN_CANCEL, this._onRunCancel);
+        this.testRunner.off(TestRunner.TEST_SUCCESS, this._onTestDone);
+        this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
+        this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
+        this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
     }
 
     /**
@@ -58,7 +62,7 @@ class TAP13Listener {
      * @param {TestResult} result .
      */
     onTestDone (result) {
-        const success = (result.status === Test.SUCCESS);
+        const success = (result.status === Test.PASS);
         const testName = result.test.name ? ` - ${result.test.name}` : '';
         const testIndex = this.tests.indexOf(result.test) + 1;
         const yamlOutput = {};
@@ -71,8 +75,6 @@ class TAP13Listener {
             yamlOutput.error = cleanYamlObject(result.error);
             if (isAssertionError(result.error) || isAssumptionError(result.error)) {
                 delete yamlOutput.error.stack;
-            } else {
-                console.log(result.error); // TODO for debugging, remove later
             }
         }
 
@@ -93,6 +95,7 @@ class TAP13Listener {
      */
     onRunEnd (results) {
         const numTests = results.length;
+        const numPass = results.filter(result => result.status === Test.PASS).length;
         const numFail = results.filter(result => result.status === Test.FAIL).length;
         const numError = results.filter(result => result.status === Test.ERROR).length;
         const numSkip = results.filter(result => result.status === Test.SKIP).length;
@@ -100,11 +103,23 @@ class TAP13Listener {
         this.print(
             [
                 `# tests: ${numTests}`,
+                `# pass: ${numPass}`,
                 `# fail: ${numFail}`,
                 `# error: ${numError}`,
                 `# skip: ${numSkip}`
             ].join('\n')
         );
+    }
+
+    /**
+     * @param {string=} reason .
+     */
+    onRunCancel (reason) {
+        if (reason) {
+            this.print(`Bail out! ${reason}`);
+        } else {
+            this.print('Bail out!');
+        }
     }
 
     /**

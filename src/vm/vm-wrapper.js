@@ -133,6 +133,12 @@ class VMWrapper {
      * @returns {number} .
      */
     async run (condition, timeout, steps) {
+        if (this.running) {
+            /* eslint-disable-next-line no-console */
+            throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
+                          'missing any await-statements in your test.');
+        }
+
         condition = condition || (() => false);
         timeout = timeout || Infinity;
         steps = steps || Infinity;
@@ -160,7 +166,7 @@ class VMWrapper {
         }
 
         this.running = false;
-        const timeElapsed = this.getRunTimeElapsed();
+        const timeElapsed = Date.now() - this.runStartTime;
 
         this.inputs.updateInputs(timeElapsed);
 

@@ -1,4 +1,6 @@
 module.exports = function (api) {
+    api.cache(true);
+
     return {
         presets: [
             [
@@ -11,8 +13,7 @@ module.exports = function (api) {
                             'last 2 Opera versions',
                             'last 2 Safari versions'
                         ]
-                    },
-                    forceAllTransforms: api.env('production')
+                    }
                 }
             ]
         ],

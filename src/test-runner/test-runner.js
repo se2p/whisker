@@ -2,8 +2,7 @@ const EventEmitter = require('events');
 const Test = require('./test');
 const TestResult = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
-const {assert} = require('./assert');
-const {assume} = require('./assume');
+const {assert, assume} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 
 class TestRunner extends EventEmitter {
@@ -31,7 +30,7 @@ class TestRunner extends EventEmitter {
             } else {
                 result = await this._executeTest(vm, project, test, props);
                 switch (result.status) {
-                case Test.SUCCESS: this.emit(TestRunner.TEST_SUCCESS, result); break;
+                case Test.PASS: this.emit(TestRunner.TEST_SUCCESS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
                 case Test.ERROR: this.emit(TestRunner.TEST_ERROR, result); break;
                 case Test.SKIP: this.emit(TestRunner.TEST_SKIP, result); break;
@@ -84,7 +83,7 @@ class TestRunner extends EventEmitter {
 
         try {
             await test.test(testDriver);
-            result.status = Test.SUCCESS;
+            result.status = Test.PASS;
 
         } catch (e) {
             result.error = e;
@@ -125,6 +124,13 @@ class TestRunner extends EventEmitter {
      */
     static get RUN_END () {
         return 'runEnd';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static get RUN_CANCEL () {
+        return 'runCancel';
     }
 
     /**

@@ -1,6 +1,6 @@
 module.exports = {
     root: true,
-    extends: ['scratch', 'scratch/es6'],
+    extends: ['scratch', 'scratch/node', 'scratch/es6'],
     env: {
         browser: true
     }
