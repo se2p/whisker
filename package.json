@@ -26,7 +26,7 @@
         "js-yaml": "^3.12.0",
         "lodash.defaults": "^4.2.0",
         "minilog": "^3.1.0",
-        "scratch-vm": "^0.2.0-prerelease.20180921133209"
+        "scratch-vm": "^0.2.0-prerelease.20181108204010"
     },
     "devDependencies": {
         "@babel/core": "^7.1.0",
