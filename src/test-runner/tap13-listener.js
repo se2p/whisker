@@ -26,7 +26,7 @@ class TAP13Listener {
         testRunner.on(TestRunner.RUN_START, this._onRunStart);
         testRunner.on(TestRunner.RUN_END, this._onRunEnd);
         testRunner.on(TestRunner.RUN_CANCEL, this._onRunCancel);
-        testRunner.on(TestRunner.TEST_SUCCESS, this._onTestDone);
+        testRunner.on(TestRunner.TEST_PASS, this._onTestDone);
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
         testRunner.on(TestRunner.TEST_ERROR, this._onTestDone);
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
@@ -36,7 +36,7 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.RUN_START, this._onRunStart);
         this.testRunner.off(TestRunner.RUN_END, this._onRunEnd);
         this.testRunner.off(TestRunner.RUN_CANCEL, this._onRunCancel);
-        this.testRunner.off(TestRunner.TEST_SUCCESS, this._onTestDone);
+        this.testRunner.off(TestRunner.TEST_PASS, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);

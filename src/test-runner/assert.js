@@ -18,8 +18,6 @@ const getMessage = function (message) {
     if (message.length) {
         return message.join('');
     }
-    /* eslint-disable-next-line no-undefined */
-    return undefined;
 };
 
 const assume = {};

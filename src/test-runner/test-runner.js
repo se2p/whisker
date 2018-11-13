@@ -30,7 +30,7 @@ class TestRunner extends EventEmitter {
             } else {
                 result = await this._executeTest(vm, project, test, props);
                 switch (result.status) {
-                case Test.PASS: this.emit(TestRunner.TEST_SUCCESS, result); break;
+                case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
                 case Test.ERROR: this.emit(TestRunner.TEST_ERROR, result); break;
                 case Test.SKIP: this.emit(TestRunner.TEST_SKIP, result); break;
@@ -143,8 +143,8 @@ class TestRunner extends EventEmitter {
     /**
      * @returns {string} .
      */
-    static get TEST_SUCCESS () {
-        return 'testSuccess';
+    static get TEST_PASS () {
+        return 'testPass';
     }
 
     /**

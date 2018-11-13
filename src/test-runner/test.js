@@ -25,7 +25,7 @@ class Test extends EventEmitter {
      * @returns {string} .
      */
     static get PASS () {
-        return 'success';
+        return 'pass';
     }
 
     /**
