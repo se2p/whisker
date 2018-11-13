@@ -98,6 +98,9 @@ class TestRunner extends EventEmitter {
 
         } finally {
             util.end();
+            if (props && props.coverage) {
+                result.setCoverage(util.getCoverage());
+            }
         }
 
         return result;

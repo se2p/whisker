@@ -10,15 +10,8 @@ const {Constraints} = require('./constraints');
 class VMWrapper {
     /**
      * @param {VirtualMachine} vm .
-     * @param {object=} props .
      */
-    constructor (vm, props) {
-        if (!props) {
-            props = {
-                verbose: false
-            };
-        }
-
+    constructor (vm) {
         /**
          * @type {VirtualMachine}
          */
@@ -28,16 +21,6 @@ class VMWrapper {
          * @type {Stepper}
          */
         this.stepper = new Stepper(Runtime.THREAD_STEP_INTERVAL);
-
-        /**
-         * @type {boolean}
-         */
-        this.verbose = Boolean(props.verbose);
-
-        /**
-         * @type {function}
-         */
-        this.log = () => {};
 
         /**
          * @type {Sprites}

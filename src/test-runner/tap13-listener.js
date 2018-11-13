@@ -1,5 +1,6 @@
 const TestRunner = require('./test-runner');
 const Test = require('./test');
+const CoverageGenerator = require('../vm/coverage');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const yaml = require('js-yaml');
 const cleanYamlObject = require('clean-yaml-object');
@@ -82,9 +83,13 @@ class TAP13Listener {
             yamlOutput.log = result.log;
         }
 
+        if (result.coverage) {
+            yamlOutput.coverage = TAP13Listener.formatCoverage(result.coverage);
+        }
+
         const output = [`${success ? 'ok' : 'not ok'} ${testIndex}${testName}`];
         if (Object.keys(yamlOutput).length) {
-            output.push(TAP13Listener.resultToYAML(yamlOutput));
+            output.push(TAP13Listener.descriptionToYAML(yamlOutput));
         }
 
         this.print(output.join('\n'));
@@ -100,15 +105,27 @@ class TAP13Listener {
         const numError = results.filter(result => result.status === Test.ERROR).length;
         const numSkip = results.filter(result => result.status === Test.SKIP).length;
 
-        this.print(
-            [
-                `# tests: ${numTests}`,
-                `# pass: ${numPass}`,
-                `# fail: ${numFail}`,
-                `# error: ${numError}`,
-                `# skip: ${numSkip}`
-            ].join('\n')
-        );
+        const summary = [
+            ``,
+            `# Summary:`,
+            `# tests: ${numTests}`,
+            `# pass: ${numPass}`,
+            `# fail: ${numFail}`,
+            `# error: ${numError}`,
+            `# skip: ${numSkip}`
+        ];
+
+        if (results.length > 0 && results[0].hasOwnProperty('coverage')) {
+            const coverage = CoverageGenerator.mergeCoverage(results.map(res => res.coverage));
+            const coverageString = TAP13Listener.coverageToYAML(coverage);
+            summary.push(
+                '',
+                '# Coverage:',
+                coverageString
+            );
+        }
+
+        this.print(summary.join('\n'));
     }
 
     /**
@@ -123,17 +140,51 @@ class TAP13Listener {
     }
 
     /**
-     * @param {object} result .
+     * @param {object} description .
      * @return {string} .
      */
-    static resultToYAML (result) {
+    static descriptionToYAML (description) {
         return [
             '  ---',
-            yaml.safeDump(result)
+            yaml.safeDump(description)
                 .trim()
                 .replace(/^/mg, '  '),
             '  ...'
         ].join('\n');
+    }
+
+    static coverageToYAML (coverage) {
+        const formattedCoverage = TAP13Listener.formatCoverage(coverage);
+        return yaml.safeDump(formattedCoverage)
+            .trim()
+            .replace(/^/mg, '# ');
+    }
+
+
+    static formatCoverageRecord (coverageRecord) {
+        const {covered, total} = coverageRecord;
+        let percentage;
+        if (total === 0) {
+            percentage = NaN;
+        } else {
+            percentage = (covered / total).toFixed(2);
+        }
+        return `${percentage} (${covered}/${total})`;
+    }
+
+    static formatCoverage (coverage) {
+        const individualCoverage = coverage.getCoveragePerSprite();
+        const combinedCoverage = coverage.getCoverage();
+
+        const individualCoverageObj = {};
+        for (const [spriteName, coverageRecord] of individualCoverage) {
+            individualCoverageObj[spriteName] = TAP13Listener.formatCoverageRecord(coverageRecord);
+        }
+
+        return {
+            combined: TAP13Listener.formatCoverageRecord(combinedCoverage),
+            individual: individualCoverageObj
+        };
     }
 }
 
