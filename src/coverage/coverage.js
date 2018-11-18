@@ -1,6 +1,7 @@
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
 
+/* Only works with Scratch 3.0 (.sb3) projects. sb2 projects can be easily converted by saving them with Scratch 3.0. */
 class Coverage {
     constructor (coveredBlockIdsPerSprite, blockIdsPerSprite) {
 

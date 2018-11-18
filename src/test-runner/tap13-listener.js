@@ -1,6 +1,5 @@
 const TestRunner = require('./test-runner');
 const Test = require('./test');
-const CoverageGenerator = require('../vm/coverage');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const yaml = require('js-yaml');
 const cleanYamlObject = require('clean-yaml-object');
@@ -107,24 +106,13 @@ class TAP13Listener {
 
         const summary = [
             ``,
-            `# Summary:`,
+            `# summary:`,
             `# tests: ${numTests}`,
             `# pass: ${numPass}`,
             `# fail: ${numFail}`,
             `# error: ${numError}`,
             `# skip: ${numSkip}`
         ];
-
-        if (results.length > 0 && results[0].hasOwnProperty('coverage')) {
-            const coverage = CoverageGenerator.mergeCoverage(results.map(res => res.coverage));
-            const coverageString = TAP13Listener.coverageToYAML(coverage);
-            summary.push(
-                '',
-                '# Coverage:',
-                coverageString
-            );
-        }
-
         this.print(summary.join('\n'));
     }
 
@@ -153,6 +141,10 @@ class TAP13Listener {
         ].join('\n');
     }
 
+    /**
+     * @param {object} coverage .
+     * @return {string} .
+     */
     static coverageToYAML (coverage) {
         const formattedCoverage = TAP13Listener.formatCoverage(coverage);
         return yaml.safeDump(formattedCoverage)
@@ -160,18 +152,10 @@ class TAP13Listener {
             .replace(/^/mg, '# ');
     }
 
-
-    static formatCoverageRecord (coverageRecord) {
-        const {covered, total} = coverageRecord;
-        let percentage;
-        if (total === 0) {
-            percentage = NaN;
-        } else {
-            percentage = (covered / total).toFixed(2);
-        }
-        return `${percentage} (${covered}/${total})`;
-    }
-
+    /**
+     * @param {object} coverage .
+     * @return {string} .
+     */
     static formatCoverage (coverage) {
         const individualCoverage = coverage.getCoveragePerSprite();
         const combinedCoverage = coverage.getCoverage();
@@ -185,6 +169,21 @@ class TAP13Listener {
             combined: TAP13Listener.formatCoverageRecord(combinedCoverage),
             individual: individualCoverageObj
         };
+    }
+
+    /**
+     * @param {object} coverageRecord .
+     * @return {string} .
+     */
+    static formatCoverageRecord (coverageRecord) {
+        const {covered, total} = coverageRecord;
+        let percentage;
+        if (total === 0) {
+            percentage = NaN;
+        } else {
+            percentage = (covered / total).toFixed(2);
+        }
+        return `${percentage} (${covered}/${total})`;
     }
 }
 

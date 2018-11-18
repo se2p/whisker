@@ -11,10 +11,9 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
-     * @param {object=} props .
      * @returns {Promise<Array>} .
      */
-    async runTests (vm, project, tests, props) {
+    async runTests (vm, project, tests) {
         const results = [];
 
         this.emit(TestRunner.RUN_START, tests);
@@ -28,7 +27,7 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
-                result = await this._executeTest(vm, project, test, props);
+                result = await this._executeTest(vm, project, test);
                 switch (result.status) {
                 case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
@@ -56,14 +55,13 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test} test .
-     * @param {object=} props .
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest (vm, project, test, props) {
+    async _executeTest (vm, project, test) {
         const result = new TestResult(test);
 
-        const util = new WhiskerUtil(vm, project, props);
+        const util = new WhiskerUtil(vm, project);
         await util.prepare();
 
         const testDriver = util.getTestDriver({
@@ -98,9 +96,6 @@ class TestRunner extends EventEmitter {
 
         } finally {
             util.end();
-            if (props && props.coverage) {
-                result.setCoverage(util.getCoverage());
-            }
         }
 
         return result;

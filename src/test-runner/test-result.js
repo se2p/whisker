@@ -24,10 +24,6 @@ class TestResult {
          */
         this.log = [];
     }
-
-    setCoverage (coverage) {
-        this.coverage = coverage;
-    }
 }
 
 module.exports = TestResult;
