@@ -1,7 +1,8 @@
 const {$} = require('./web-libs');
 
-const {TestRunner, TAP13Listener} = require('../../whisker-test');
+const {TestRunner, TAP13Listener, CoverageGenerator} = require('../../whisker-test');
 const Runtime = require('scratch-vm/src/engine/runtime');
+const Thread = require('scratch-vm/src/engine/thread');
 
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
@@ -16,9 +17,33 @@ const loadTestsFromString = function (string) {
     /* eslint-disable-next-line no-eval */
     let tests = eval(`${string}; module.exports;`);
     tests = TestRunner.convertTests(tests);
+    Whisker.tests = tests;
     Whisker.testEditor.setValue(string);
     Whisker.testTable.setTests(tests);
     return tests;
+};
+
+
+const _runTestsWithCoverage = async function (vm, project, tests) {
+    await Whisker.scratch.vm.loadProject(project);
+    CoverageGenerator.prepareThread(Thread);
+    CoverageGenerator.prepare(vm);
+
+    const summary = await Whisker.testRunner.runTests(vm, project, tests);
+    const coverage = CoverageGenerator.getCoverage();
+
+    CoverageGenerator.restoreThread(Thread);
+
+    const formattedSummary = TAP13Listener.formatSummary(summary);
+    const formattedCoverage = TAP13Listener.formatCoverage(coverage);
+
+    const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
+
+    Whisker.outputRun.println([
+        summaryString,
+        coverageString
+    ].join('\n'));
 };
 
 const runTests = async function (tests) {
@@ -26,18 +51,17 @@ const runTests = async function (tests) {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    return await Whisker.testRunner.runTests(Whisker.scratch.vm, project, tests);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
 };
 
 const runAllTests = async function () {
     Whisker.scratch.stop();
-    const tests = loadTestsFromString(await Whisker.testFileSelect.loadAsString());
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
         const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
-        Whisker.outputRun.println(`#project: ${Whisker.projectFileSelect.getName(i)}`);
-        await Whisker.testRunner.runTests(Whisker.scratch.vm, project, tests);
+        Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
         Whisker.outputRun.println();
     }
 };
@@ -80,7 +104,7 @@ const initComponents = function () {
         fileSelect => fileSelect.loadAsString().then(string => loadTestsFromString(string)));
 
     Whisker.testRunner = new TestRunner();
-    Whisker.testRunner.on(TestRunner.TEST_LOG,
+    Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.log(result.error));
 

@@ -84,7 +84,7 @@
     background: transparent;
 }
 .table-striped > tbody > .even:nth-of-type(n) {
-    background-color: rgba(0,0,0,.05);
+    background-color: rgba(0,0,0,.03);
 }
 
 /* Color child table rows the same color as their leading row. */
@@ -92,5 +92,5 @@
     background: transparent;
 }
 .table-striped > tbody > .even:nth-of-type(n) + tr:not(.odd):not(.even) {
-    background-color: rgba(0,0,0,.05);
+    background-color: rgba(0,0,0,.03);
 }

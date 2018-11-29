@@ -15,12 +15,8 @@ class TestEditor {
             indentUnit: 4,
             smartIndent: true,
             indentWithTabs: false,
-            matchBrackets: true,
             mode: 'application/javascript',
-            autoCloseBrackets: true,
-            styleActiveLine: true,
-            extraKeys: {'Ctrl-Space': 'autocomplete'},
-            keyMap: 'default'
+            extraKeys: {Tab: 'insertSoftTab'}
         });
 
         $(div)
