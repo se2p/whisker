@@ -20,11 +20,9 @@ class TAP13Listener {
 
         this._onRunStart = this.onRunStart.bind(this);
         this._onTestDone = this.onTestDone.bind(this);
-        this._onRunEnd = this.onRunEnd.bind(this);
         this._onRunCancel = this.onRunCancel.bind(this);
 
         testRunner.on(TestRunner.RUN_START, this._onRunStart);
-        testRunner.on(TestRunner.RUN_END, this._onRunEnd);
         testRunner.on(TestRunner.RUN_CANCEL, this._onRunCancel);
         testRunner.on(TestRunner.TEST_PASS, this._onTestDone);
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
@@ -34,7 +32,6 @@ class TAP13Listener {
 
     unregister () {
         this.testRunner.off(TestRunner.RUN_START, this._onRunStart);
-        this.testRunner.off(TestRunner.RUN_END, this._onRunEnd);
         this.testRunner.off(TestRunner.RUN_CANCEL, this._onRunCancel);
         this.testRunner.off(TestRunner.TEST_PASS, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
@@ -95,28 +92,6 @@ class TAP13Listener {
     }
 
     /**
-     * @param {TestResult[]} results .
-     */
-    onRunEnd (results) {
-        const numTests = results.length;
-        const numPass = results.filter(result => result.status === Test.PASS).length;
-        const numFail = results.filter(result => result.status === Test.FAIL).length;
-        const numError = results.filter(result => result.status === Test.ERROR).length;
-        const numSkip = results.filter(result => result.status === Test.SKIP).length;
-
-        const summary = [
-            ``,
-            `# summary:`,
-            `# tests: ${numTests}`,
-            `# pass: ${numPass}`,
-            `# fail: ${numFail}`,
-            `# error: ${numError}`,
-            `# skip: ${numSkip}`
-        ];
-        this.print(summary.join('\n'));
-    }
-
-    /**
      * @param {string=} reason .
      */
     onRunCancel (reason) {
@@ -142,19 +117,38 @@ class TAP13Listener {
     }
 
     /**
-     * @param {object} coverage .
+     * @param {object} extra .
      * @return {string} .
      */
-    static coverageToYAML (coverage) {
-        const formattedCoverage = TAP13Listener.formatCoverage(coverage);
-        return yaml.safeDump(formattedCoverage)
+    static extraToYAML (extra) {
+        return yaml.safeDump(extra)
             .trim()
             .replace(/^/mg, '# ');
     }
 
     /**
+     * @param {TestResult[]} summary .
+     * @return {object} .
+     */
+    static formatSummary (summary) {
+        const tests = summary.length;
+        const pass = summary.filter(result => result.status === Test.PASS).length;
+        const fail = summary.filter(result => result.status === Test.FAIL).length;
+        const error = summary.filter(result => result.status === Test.ERROR).length;
+        const skip = summary.filter(result => result.status === Test.SKIP).length;
+
+        return {
+            tests,
+            pass,
+            fail,
+            error,
+            skip
+        };
+    }
+
+    /**
      * @param {object} coverage .
-     * @return {string} .
+     * @return {object} .
      */
     static formatCoverage (coverage) {
         const individualCoverage = coverage.getCoveragePerSprite();

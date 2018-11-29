@@ -1,10 +1,7 @@
 const defaults = require('lodash.defaults');
-const EventEmitter = require('events');
 
-class Test extends EventEmitter {
+class Test {
     constructor (props) {
-        super();
-
         if (!props.test && props instanceof Function) {
             props = {
                 test: props,
