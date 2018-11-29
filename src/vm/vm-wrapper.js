@@ -76,6 +76,16 @@ class VMWrapper {
          * @type {boolean}
          */
         this.running = false;
+
+        /**
+         * @type {boolean}
+         */
+        this.projectRunning = false;
+
+        this._onRunStart = this.onRunStart.bind(this);
+        this._onRunStop = this.onRunStop.bind(this);
+        this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
+        this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
     }
 
     /**
@@ -270,6 +280,9 @@ class VMWrapper {
 
         this.inputs.resetMouse();
         this.inputs.resetKeyboard();
+
+        this.vm.removeListener(Runtime.PROJECT_RUN_START, this._onRunStart);
+        this.vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
     }
 
     /**
@@ -316,6 +329,18 @@ class VMWrapper {
      */
     getCanvasRect () {
         return this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
+    }
+
+    isProjectRunning () {
+        return this.projectRunning;
+    }
+
+    onRunStart () {
+        this.projectRunning = true;
+    }
+
+    onRunStop () {
+        this.projectRunning = false;
     }
 
     /**

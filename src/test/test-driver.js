@@ -1,6 +1,10 @@
 const defaults = require('lodash.defaults');
 
 class TestDriver {
+    /**
+     * @param {VMWrapper} vmWrapper .
+     * @param {object} props .
+     */
     constructor (vmWrapper, props) {
         this.vm = vmWrapper.vm;
 
@@ -15,6 +19,7 @@ class TestDriver {
         this.getRunTimeElapsed = vmWrapper.getRunTimeElapsed.bind(vmWrapper);
         this.getTotalStepsExecuted = vmWrapper.getTotalStepsExecuted.bind(vmWrapper);
         this.getRunStepsExecuted = vmWrapper.getRunStepsExecuted.bind(vmWrapper);
+        this.isProjectRunning = vmWrapper.isProjectRunning.bind(vmWrapper);
 
         this.getSprites = vmWrapper.sprites.getSprites.bind(vmWrapper.sprites);
         this.getSpritesAtPoint = vmWrapper.sprites.getSpritesAtPoint.bind(vmWrapper.sprites);
