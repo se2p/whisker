@@ -6,6 +6,7 @@ class TestDriver {
      * @param {object} props .
      */
     constructor (vmWrapper, props) {
+        this.vmWrapper = vmWrapper;
         this.vm = vmWrapper.vm;
 
         this.run = vmWrapper.run.bind(vmWrapper);
@@ -47,12 +48,10 @@ class TestDriver {
         this.isMouseDown = vmWrapper.inputs.isMouseDown.bind(vmWrapper.inputs);
         this.isKeyDown = vmWrapper.inputs.isKeyDown.bind(vmWrapper.inputs);
 
-        this.registerRandomInputs = vmWrapper.randomInputs.registerRandomInputs
-            .bind(vmWrapper.randomInputs);
-        this.clearRandomInputs = vmWrapper.randomInputs.clearRandomInputs
-            .bind(vmWrapper.randomInputs);
-        this.setRandomInputInterval = vmWrapper.randomInputs.setRandomInputInterval
-            .bind(vmWrapper.randomInputs);
+        this.registerRandomInputs = vmWrapper.randomInputs.registerRandomInputs.bind(vmWrapper.randomInputs);
+        this.clearRandomInputs = vmWrapper.randomInputs.clearRandomInputs.bind(vmWrapper.randomInputs);
+        this.setRandomInputInterval = vmWrapper.randomInputs.setRandomInputInterval.bind(vmWrapper.randomInputs);
+        this.detectRandomInputs = vmWrapper.randomInputs.detectRandomInputs.bind(vmWrapper.randomInputs);
 
         this.addConstraint = vmWrapper.constraints.addConstraint.bind(vmWrapper.constraints);
         this.reAddConstraint = vmWrapper.constraints.reAddConstraint.bind(vmWrapper.constraints);

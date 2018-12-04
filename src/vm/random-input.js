@@ -138,11 +138,10 @@ class RandomInputs {
     }
 
     /**
-     * @param {RandomInput[]} randomInputs .
+     * @param {object[]} randomInputs .
      */
     registerRandomInputs (randomInputs) {
-        this.randomInputs =
-            this.randomInputs.concat(randomInputs.map(data => new RandomInput(data)));
+        this.randomInputs = this.randomInputs.concat(randomInputs.map(data => new RandomInput(data)));
     }
 
     clearRandomInputs () {
@@ -154,6 +153,137 @@ class RandomInputs {
      */
     setRandomInputInterval (frequency) {
         this.frequency = frequency;
+    }
+
+    detectRandomInputs (props) {
+        if (typeof props === 'undefined') {
+            props = {};
+        }
+        if (!props.hasOwnProperty('duration')) {
+            props.duration = [0, 2 * this.frequency];
+        }
+        if (!props.hasOwnProperty('xOffset')) {
+            props.xOffset = [0, 50];
+        }
+        if (!props.hasOwnProperty('yOffset')) {
+            props.yOffset = [0, 50];
+        }
+
+        for (const target of this.vmWrapper.vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                const blocks = target.blocks._blocks;
+                for (const blockId of Object.keys(blocks)) {
+                    this._detectRandomInput(target, blocks[blockId], props);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param {RenderedTarget} target .
+     * @param {object} block .
+     * @param {{
+     *      duration:(number[]|number),
+     *      xOffset: (number[]|number),
+     *      yOffset: (number[]|number)
+     * }} props .
+     * @private
+     */
+    _detectRandomInput (target, block, props) {
+        if (typeof block.opcode === 'undefined') {
+            return;
+        }
+
+        const fields = target.blocks.getFields(block);
+        const stageSize = this.vmWrapper.getStageSize();
+
+        switch (block.opcode) {
+        case 'event_whenkeypressed':
+        case 'sensing_keyoptions':
+            this.registerRandomInputs([{
+                device: 'keyboard',
+                key: fields.KEY_OPTION.value,
+                duration: props.duration
+            }]);
+            break;
+        case 'sensing_mousex':
+        case 'sensing_mousey':
+            this.registerRandomInputs([{
+                device: 'mouse',
+                x: [-(stageSize.width / 2), stageSize.width / 2],
+                y: [-(stageSize.height / 2), stageSize.height / 2]
+            }]);
+            break;
+        case 'sensing_distancetomenu':
+            if (fields.hasOwnProperty('DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
+                this.registerRandomInputs([{
+                    device: 'mouse',
+                    x: [-(stageSize.width / 2), stageSize.width / 2],
+                    y: [-(stageSize.height / 2), stageSize.height / 2]
+                }]);
+            }
+            break;
+        case 'event_whenthisspriteclicked': {
+            const sprite = this.vmWrapper.sprites.wrapTarget(target);
+            if (sprite === this.vmWrapper.sprites.getStage()) {
+                this.registerRandomInputs([{
+                    device: 'mouse',
+                    isDown: true,
+                    x: [-(stageSize.width / 2), stageSize.width / 2],
+                    y: [-(stageSize.height / 2), stageSize.height / 2],
+                    duration: props.duration
+                }]);
+            } else {
+                this.registerRandomInputs([{
+                    device: 'mouse',
+                    isDown: true,
+                    sprite: this.vmWrapper.sprites.wrapTarget(target),
+                    xOffset: props.xOffset,
+                    yOffset: props.yOffset,
+                    duration: props.duration
+                }]);
+            }
+            break;
+        }
+        case 'event_whenstageclicked':
+            this.registerRandomInputs([{
+                device: 'mouse',
+                isDown: true,
+                x: [-(stageSize.width / 2), stageSize.width / 2],
+                y: [-(stageSize.height / 2), stageSize.height / 2],
+                duration: props.duration
+            }]);
+            break;
+        case 'sensing_mousedown':
+            this.registerRandomInputs([{
+                device: 'mouse',
+                isDown: true,
+                duration: props.duration
+            }]);
+            break;
+        case 'sensing_touchingobjectmenu': {
+            if (fields.hasOwnProperty('DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
+                const sprite = this.vmWrapper.sprites.wrapTarget(target);
+                if (sprite === this.vmWrapper.sprites.getStage()) {
+                    this.registerRandomInputs([{
+                        device: 'mouse',
+                        x: [-(stageSize.width / 2), stageSize.width / 2],
+                        y: [-(stageSize.height / 2), stageSize.height / 2],
+                        duration: props.duration
+                    }]);
+                } else {
+                    this.registerRandomInputs([{
+                        device: 'mouse',
+                        sprite: this.vmWrapper.sprites.wrapTarget(target),
+                        xOffset: props.xOffset,
+                        yOffset: props.yOffset,
+                        duration: props.duration
+                    }]);
+                }
+            }
+            break;
+        }
+        }
     }
 }
 

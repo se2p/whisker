@@ -35,6 +35,10 @@ class Input {
          */
         this._data = data;
 
+        if (this._data.hasOwnProperty('key')) {
+            this._data.key = Input.scratchKeyToKeyString(this._data.key);
+        }
+
         /**
          * @type {boolean}
          */
@@ -137,6 +141,27 @@ class Input {
 
     isActive () {
         return this._active;
+    }
+
+    /**
+     * @param {string} scratchKey .
+     * @return {string} .
+     */
+    static scratchKeyToKeyString (scratchKey) {
+        switch (scratchKey) {
+        case 'space':
+            return ' ';
+        case 'left arrow':
+            return 'Left';
+        case 'up arrow':
+            return 'Up';
+        case 'right arrow':
+            return 'Right';
+        case 'down arrow':
+            return 'Down';
+        default:
+            return scratchKey;
+        }
     }
 }
 

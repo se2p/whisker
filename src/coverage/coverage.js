@@ -122,7 +122,7 @@ class CoverageGenerator {
                 }
 
                 for (const scriptId of target.blocks.getScripts()) {
-                    this._addBlocks(target.blocks, blockIds, target.blocks.getBlock(scriptId).id);
+                    this._addBlocks(target.blocks, blockIds, scriptId);
                 }
             }
         }
