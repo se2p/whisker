@@ -11,9 +11,16 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
+     * @param {{extend: object}} props .
      * @returns {Promise<Array>} .
      */
-    async runTests (vm, project, tests) {
+    async runTests (vm, project, tests, props) {
+        if (typeof props === 'undefined') {
+            props = {extend: {}};
+        } else if (!props.hasOwnProperty('extend')) {
+            props.extend = {};
+        }
+
         const results = [];
 
         this.emit(TestRunner.RUN_START, tests);
@@ -27,7 +34,7 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
-                result = await this._executeTest(vm, project, test);
+                result = await this._executeTest(vm, project, test, props);
                 switch (result.status) {
                 case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
@@ -55,10 +62,11 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test} test .
+     * @param {{extend: object}} props .
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest (vm, project, test) {
+    async _executeTest (vm, project, test, props) {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project);
@@ -71,7 +79,8 @@ class TestRunner extends EventEmitter {
                 log: message => {
                     this._log(test, message);
                     result.log.push(message);
-                }
+                },
+                ...props.extend
             }
         });
 
