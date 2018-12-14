@@ -303,7 +303,8 @@ class Inputs {
      * @returns {boolean} .
      */
     isKeyDown (key) {
-        const scratchKey = this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(key);
+        const keyString = Input.scratchKeyToKeyString(key);
+        const scratchKey = this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
         return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
     }
 }
