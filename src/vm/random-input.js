@@ -105,9 +105,9 @@ class RandomInputs {
             return;
         }
 
-        const runTimeElapsed = this.vmWrapper.getRunTimeElapsed();
+        const timeElapsed = this.vmWrapper.getTotalTimeElapsed();
 
-        if (runTimeElapsed < this.lastInputTime + this.frequency) {
+        if (timeElapsed < this.lastInputTime + this.frequency) {
             return;
         }
 
@@ -129,7 +129,7 @@ class RandomInputs {
         let randomWeight = MathUtil.randomFloat(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
-                this.lastInputTime = runTimeElapsed;
+                this.lastInputTime = timeElapsed;
                 randomInput.register(this.vmWrapper.inputs);
                 return;
             }
@@ -228,7 +228,7 @@ class RandomInputs {
             if (sprite === this.vmWrapper.sprites.getStage()) {
                 this.registerRandomInputs([{
                     device: 'mouse',
-                    isDown: true,
+                    isDown: 'toggle',
                     x: [-(stageSize.width / 2), stageSize.width / 2],
                     y: [-(stageSize.height / 2), stageSize.height / 2],
                     duration: props.duration
@@ -236,7 +236,7 @@ class RandomInputs {
             } else {
                 this.registerRandomInputs([{
                     device: 'mouse',
-                    isDown: true,
+                    isDown: 'toggle',
                     sprite: this.vmWrapper.sprites.wrapTarget(target),
                     xOffset: props.xOffset,
                     yOffset: props.yOffset,
@@ -248,7 +248,7 @@ class RandomInputs {
         case 'event_whenstageclicked':
             this.registerRandomInputs([{
                 device: 'mouse',
-                isDown: true,
+                isDown: 'toggle',
                 x: [-(stageSize.width / 2), stageSize.width / 2],
                 y: [-(stageSize.height / 2), stageSize.height / 2],
                 duration: props.duration
@@ -257,7 +257,7 @@ class RandomInputs {
         case 'sensing_mousedown':
             this.registerRandomInputs([{
                 device: 'mouse',
-                isDown: true,
+                isDown: 'toggle',
                 duration: props.duration
             }]);
             break;
