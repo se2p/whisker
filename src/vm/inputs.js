@@ -65,10 +65,12 @@ class Input {
      * @param {number} elapsedTime .
      * @returns {boolean} If the input is done and should be removed.
      */
+    // TODO: split this method for every possible input device
     _perform (elapsedTime) {
         if (elapsedTime >= this._time - this._timeElapsedBefore) {
+            const data = this._convertData(this._data);
             if (!this._state) {
-                this._inputs.vmWrapper.vm.postIOData(this._data.device, this._convertData(this._data));
+                this._performSingle(data);
                 if (this._data.duration) {
                     this._state = true;
                 } else {
@@ -76,13 +78,25 @@ class Input {
                 }
             }
             if (this._state && elapsedTime >= this._data.duration + this._time - this._timeElapsedBefore) {
-                const data = this._convertData(this._data);
                 data.isDown = !data.isDown;
-                this._inputs.vmWrapper.vm.postIOData(this._data.device, data);
+                this._performSingle(data);
                 return true;
             }
         }
         return false;
+    }
+
+    _performSingle (data) {
+        switch (data.device) {
+        case 'mouse':
+        case 'keyboard':
+            this._inputs.vmWrapper.vm.postIOData(data.device, data);
+            break;
+        case 'text':
+            this._inputs.vmWrapper.vm.runtime.emit('ANSWER', data.answer);
+            break;
+        default: throw new Error(`Invalid device for input ${data.device}`);
+        }
     }
 
     /**
@@ -232,7 +246,9 @@ class Inputs {
 
         input._active = true;
 
-        if (!input._perform(runTimeElapsed)) {
+        if (input._perform(runTimeElapsed)) {
+            input._reset();
+        } else {
             this.inputs.push(input);
         }
 

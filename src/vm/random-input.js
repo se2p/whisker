@@ -10,7 +10,10 @@ const MathUtil = require('../util/math-util');
  *     sprite,
  *     xOffset: [ ],
  *     yOffset: [ ],
- *     duration: [ ]
+ *     duration: [ ],
+ *     answer, // for text
+ *     length: [ ] // for text
+ *     chars: [ ] // for text
  *     TODO "group": only have one input active at a time for every group?
  * }
  */
@@ -43,10 +46,23 @@ class RandomInput {
             randomData.isDown = MathUtil.randomBoolean();
         }
 
-        for (const prop of ['duration', 'x', 'y', 'xOffset', 'yOffset']) {
+        for (const prop of ['duration', 'x', 'y', 'xOffset', 'yOffset', 'length']) {
             if (randomData.hasOwnProperty(prop)) {
                 randomData[prop] = RandomInput.getRandomProp(randomData[prop]);
             }
+        }
+
+        if (randomData.device === 'text') {
+            let answer = (typeof randomData.answer === 'undefined') ? '' : randomData.answer;
+            const length = (typeof randomData.length === 'undefined') ? 2 : randomData.length;
+            const chars = (typeof randomData.answer === 'undefined') ?
+                '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
+
+            for (let i = 0; i < length; i++) {
+                answer += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            randomData.answer = answer;
         }
 
         this.input = inputs.inputImmediate(randomData);
@@ -71,7 +87,7 @@ class RandomInput {
                 return prop[0];
             } else if (prop.length >= 2) {
                 const [min, max] = prop;
-                return MathUtil.randomFloat(min, max);
+                return MathUtil.randomInt(min, max);
             }
         }
     }
@@ -283,6 +299,11 @@ class RandomInputs {
             }
             break;
         }
+        case 'sensing_askandwait':
+            this.registerRandomInputs([{
+                device: 'text',
+                length: [1, 3]
+            }]);
         }
     }
 }

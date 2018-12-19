@@ -11,7 +11,7 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
-     * @param {{extend: object}} props .
+     * @param {{extend: object}=} props .
      * @returns {Promise<Array>} .
      */
     async runTests (vm, project, tests, props) {

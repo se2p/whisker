@@ -1,7 +1,7 @@
 {
     "id": "whisker",
     "version": "0.1.0",
-    "description": "A Testing Framework for Scratch 3.0",
+    "description": "A Testing Utility for Scratch 3.0",
     "author": "Marvin Kreis",
     "license": "BSD-3-Clause",
     "homepage": "https://github.com/marvinkreis/whisker",
