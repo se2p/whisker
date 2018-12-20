@@ -61,8 +61,10 @@ const runAllTests = async function () {
     for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
         const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
         Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+        Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
         await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
         Whisker.outputRun.println();
+        Whisker.outputLog.println();
     }
 };
 
