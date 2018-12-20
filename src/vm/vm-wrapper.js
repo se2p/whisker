@@ -7,6 +7,8 @@ const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
 
+const {startRecord, record, endRecord} = require('../util/timer');
+
 class VMWrapper {
     /**
      * @param {VirtualMachine} vm .
@@ -100,23 +102,38 @@ class VMWrapper {
     }
 
     step () {
+        startRecord();
+
         this.callbacks.callCallbacks(false);
+        record();
 
         if (!this.running) return;
 
         this.randomInputs.performRandomInput();
+        record();
+
         this.inputs.performInputs();
+        record();
 
         this.sprites.update();
+        record();
+
         this.vm.runtime._step();
+        record();
 
         if (!this.running) return;
 
         this.callbacks.callCallbacks(true);
+        record();
 
         if (!this.running) return;
 
-        return this.constraints.checkConstraints();
+        const rv = this.constraints.checkConstraints();
+        record();
+
+        endRecord();
+
+        return rv;
     }
 
     /**
