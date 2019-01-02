@@ -285,6 +285,10 @@ class VMWrapper {
         this.vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
     }
 
+    greenFlag () {
+        this.vm.greenFlag();
+    }
+
     /**
      * @param {number} x .
      * @param {number} y .

@@ -58,6 +58,7 @@ class TestDriver {
         this.removeConstraint = vmWrapper.constraints.removeConstraint.bind(vmWrapper.constraints);
         this.clearConstraints = vmWrapper.constraints.clearConstraints.bind(vmWrapper.constraints);
 
+        this.greenFlag = vmWrapper.greenFlag.bind(vmWrapper);
         this.getStageSize = vmWrapper.getStageSize.bind(vmWrapper);
         this.end = vmWrapper.end.bind(vmWrapper);
 
