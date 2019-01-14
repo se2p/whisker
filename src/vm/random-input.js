@@ -54,7 +54,7 @@ class RandomInput {
 
         if (randomData.device === 'text') {
             let answer = (typeof randomData.answer === 'undefined') ? '' : randomData.answer;
-            const length = (typeof randomData.length === 'undefined') ? 2 : randomData.length;
+            const length = (typeof randomData.length === 'undefined') ? 0 : randomData.length;
             const chars = (typeof randomData.answer === 'undefined') ?
                 '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
 
@@ -185,19 +185,31 @@ class RandomInputs {
             props.yOffset = [0, 50];
         }
 
+        const textFields = new Set();
+
         for (const target of this.vmWrapper.vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 const blocks = target.blocks._blocks;
                 for (const blockId of Object.keys(blocks)) {
-                    this._detectRandomInput(target, blocks[blockId], props);
+                    this._detectRandomInput(target, blocks[blockId], textFields, props);
                 }
             }
+        }
+
+        const weight = (textFields.size > 2) ? 1 / Math.log2(textFields.size) : 1;
+        for (const text of textFields) {
+            this.registerRandomInputs([{
+                device: 'text',
+                answer: text,
+                weight
+            }]);
         }
     }
 
     /**
      * @param {RenderedTarget} target .
      * @param {object} block .
+     * @param {Set<string>} textFields .
      * @param {{
      *      duration:(number[]|number),
      *      xOffset: (number[]|number),
@@ -205,7 +217,7 @@ class RandomInputs {
      * }} props .
      * @private
      */
-    _detectRandomInput (target, block, props) {
+    _detectRandomInput (target, block, textFields, props) {
         if (typeof block.opcode === 'undefined') {
             return;
         }
@@ -213,7 +225,7 @@ class RandomInputs {
         const fields = target.blocks.getFields(block);
         const stageSize = this.vmWrapper.getStageSize();
 
-        switch (block.opcode) {
+        switch (target.blocks.getOpcode(block)) {
         case 'event_whenkeypressed':
         case 'sensing_keyoptions':
             this.registerRandomInputs([{
@@ -277,7 +289,7 @@ class RandomInputs {
                 duration: props.duration
             }]);
             break;
-        case 'sensing_touchingobjectmenu': {
+        case 'sensing_touchingobjectmenu':
             if (fields.hasOwnProperty('DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
                 const sprite = this.vmWrapper.sprites.wrapTarget(target);
                 if (sprite === this.vmWrapper.sprites.getStage()) {
@@ -298,12 +310,28 @@ class RandomInputs {
                 }
             }
             break;
-        }
         case 'sensing_askandwait':
             this.registerRandomInputs([{
                 device: 'text',
                 length: [1, 3]
             }]);
+            break;
+        case 'operator_equals': {
+            const inputs = target.blocks.getInputs(block);
+            const op1 = target.blocks.getBlock(inputs.OPERAND1.block);
+            const op2 = target.blocks.getBlock(inputs.OPERAND2.block);
+            if (target.blocks.getOpcode(op1) === 'sensing_answer') {
+                if (target.blocks.getOpcode(op2) === 'text') {
+                    textFields.add(target.blocks.getFields(op2).TEXT.value);
+                }
+            }
+            if (target.blocks.getOpcode(op2) === 'sensing_answer') {
+                if (target.blocks.getOpcode(op1) === 'text') {
+                    textFields.add(target.blocks.getFields(op1).TEXT.value);
+                }
+            }
+            break;
+        }
         }
     }
 }
