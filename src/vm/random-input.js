@@ -296,16 +296,14 @@ class RandomInputs {
                     this.registerRandomInputs([{
                         device: 'mouse',
                         x: [-(stageSize.width / 2), stageSize.width / 2],
-                        y: [-(stageSize.height / 2), stageSize.height / 2],
-                        duration: props.duration
+                        y: [-(stageSize.height / 2), stageSize.height / 2]
                     }]);
                 } else {
                     this.registerRandomInputs([{
                         device: 'mouse',
                         sprite: this.vmWrapper.sprites.wrapTarget(target),
                         xOffset: props.xOffset,
-                        yOffset: props.yOffset,
-                        duration: props.duration
+                        yOffset: props.yOffset
                     }]);
                 }
             }

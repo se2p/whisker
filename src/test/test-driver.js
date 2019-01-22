@@ -5,6 +5,7 @@ class TestDriver {
      * @param {VMWrapper} vmWrapper .
      * @param {object} props .
      */
+    // TODO: get rid of clear... methods
     constructor (vmWrapper, props) {
         this.vmWrapper = vmWrapper;
         this.vm = vmWrapper.vm;
