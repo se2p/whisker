@@ -141,6 +141,7 @@ class Sprites {
 
     reset () {
         this.sprites = {};
+        this.spritesBefore = {};
     }
 
     /**

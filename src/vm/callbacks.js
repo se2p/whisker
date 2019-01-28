@@ -91,6 +91,7 @@ class Callbacks {
      * @returns {Callback} .
      */
     reAddCallback (callback) {
+        this.removeCallback(callback);
         callback._active = true;
         this.callbacks.push(callback);
         return callback;
