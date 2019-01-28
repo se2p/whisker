@@ -179,37 +179,25 @@ class RandomInputs {
             props.duration = [0, 2 * this.frequency];
         }
         if (!props.hasOwnProperty('xOffset')) {
-            props.xOffset = [0, 50];
+            props.xOffset = [-50, 50];
         }
         if (!props.hasOwnProperty('yOffset')) {
-            props.yOffset = [0, 50];
+            props.yOffset = [-50, 50];
         }
-
-        const textFields = new Set();
 
         for (const target of this.vmWrapper.vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 const blocks = target.blocks._blocks;
                 for (const blockId of Object.keys(blocks)) {
-                    this._detectRandomInput(target, blocks[blockId], textFields, props);
+                    this._detectRandomInput(target, blocks[blockId], props);
                 }
             }
-        }
-
-        const weight = (textFields.size > 2) ? 1 / Math.log2(textFields.size) : 1;
-        for (const text of textFields) {
-            this.registerRandomInputs([{
-                device: 'text',
-                answer: text,
-                weight
-            }]);
         }
     }
 
     /**
      * @param {RenderedTarget} target .
      * @param {object} block .
-     * @param {Set<string>} textFields .
      * @param {{
      *      duration:(number[]|number),
      *      xOffset: (number[]|number),
@@ -217,7 +205,7 @@ class RandomInputs {
      * }} props .
      * @private
      */
-    _detectRandomInput (target, block, textFields, props) {
+    _detectRandomInput (target, block, props) {
         if (typeof block.opcode === 'undefined') {
             return;
         }
@@ -320,12 +308,18 @@ class RandomInputs {
             const op2 = target.blocks.getBlock(inputs.OPERAND2.block);
             if (target.blocks.getOpcode(op1) === 'sensing_answer') {
                 if (target.blocks.getOpcode(op2) === 'text') {
-                    textFields.add(target.blocks.getFields(op2).TEXT.value);
+                    this.registerRandomInputs([{
+                        device: 'text',
+                        answer: target.blocks.getFields(op2).TEXT.value
+                    }]);
                 }
             }
             if (target.blocks.getOpcode(op2) === 'sensing_answer') {
                 if (target.blocks.getOpcode(op1) === 'text') {
-                    textFields.add(target.blocks.getFields(op1).TEXT.value);
+                    this.registerRandomInputs([{
+                        device: 'text',
+                        answer: target.blocks.getFields(op1).TEXT.value
+                    }]);
                 }
             }
             break;
