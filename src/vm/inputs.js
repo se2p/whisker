@@ -86,6 +86,7 @@ class Input {
         return false;
     }
 
+    // TODO: split this method for every possible input device
     _performSingle (data) {
         switch (data.device) {
         case 'mouse':

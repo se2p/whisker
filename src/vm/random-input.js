@@ -54,7 +54,7 @@ class RandomInput {
 
         if (randomData.device === 'text') {
             let answer = (typeof randomData.answer === 'undefined') ? '' : randomData.answer;
-            const length = (typeof randomData.length === 'undefined') ? 2 : randomData.length;
+            const length = (typeof randomData.length === 'undefined') ? 0 : randomData.length;
             const chars = (typeof randomData.answer === 'undefined') ?
                 '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
 
@@ -179,10 +179,10 @@ class RandomInputs {
             props.duration = [0, 2 * this.frequency];
         }
         if (!props.hasOwnProperty('xOffset')) {
-            props.xOffset = [0, 50];
+            props.xOffset = [-50, 50];
         }
         if (!props.hasOwnProperty('yOffset')) {
-            props.yOffset = [0, 50];
+            props.yOffset = [-50, 50];
         }
 
         for (const target of this.vmWrapper.vm.runtime.targets) {
@@ -213,7 +213,7 @@ class RandomInputs {
         const fields = target.blocks.getFields(block);
         const stageSize = this.vmWrapper.getStageSize();
 
-        switch (block.opcode) {
+        switch (target.blocks.getOpcode(block)) {
         case 'event_whenkeypressed':
         case 'sensing_keyoptions':
             this.registerRandomInputs([{
@@ -277,33 +277,53 @@ class RandomInputs {
                 duration: props.duration
             }]);
             break;
-        case 'sensing_touchingobjectmenu': {
+        case 'sensing_touchingobjectmenu':
             if (fields.hasOwnProperty('DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
                 const sprite = this.vmWrapper.sprites.wrapTarget(target);
                 if (sprite === this.vmWrapper.sprites.getStage()) {
                     this.registerRandomInputs([{
                         device: 'mouse',
                         x: [-(stageSize.width / 2), stageSize.width / 2],
-                        y: [-(stageSize.height / 2), stageSize.height / 2],
-                        duration: props.duration
+                        y: [-(stageSize.height / 2), stageSize.height / 2]
                     }]);
                 } else {
                     this.registerRandomInputs([{
                         device: 'mouse',
                         sprite: this.vmWrapper.sprites.wrapTarget(target),
                         xOffset: props.xOffset,
-                        yOffset: props.yOffset,
-                        duration: props.duration
+                        yOffset: props.yOffset
                     }]);
                 }
             }
             break;
-        }
         case 'sensing_askandwait':
             this.registerRandomInputs([{
                 device: 'text',
                 length: [1, 3]
             }]);
+            break;
+        case 'operator_equals': {
+            const inputs = target.blocks.getInputs(block);
+            const op1 = target.blocks.getBlock(inputs.OPERAND1.block);
+            const op2 = target.blocks.getBlock(inputs.OPERAND2.block);
+            if (target.blocks.getOpcode(op1) === 'sensing_answer') {
+                if (target.blocks.getOpcode(op2) === 'text') {
+                    this.registerRandomInputs([{
+                        device: 'text',
+                        answer: target.blocks.getFields(op2).TEXT.value
+                    }]);
+                }
+            }
+            if (target.blocks.getOpcode(op2) === 'sensing_answer') {
+                if (target.blocks.getOpcode(op1) === 'text') {
+                    this.registerRandomInputs([{
+                        device: 'text',
+                        answer: target.blocks.getFields(op1).TEXT.value
+                    }]);
+                }
+            }
+            break;
+        }
         }
     }
 }

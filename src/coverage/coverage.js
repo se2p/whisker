@@ -48,6 +48,7 @@ class Coverage {
     /**
      * @return {{covered: number, total: number}} .
      */
+    // TODO: rename to getCoverageTotal
     getCoverage () {
         let numCovered = 0;
         let numTotal = 0;
