@@ -221,10 +221,7 @@ class VMWrapper {
      * @return {number} .
      */
     getRunTimeElapsed () {
-        if (this.running) {
-            return Date.now() - this.runStartTime;
-        }
-        return 0;
+        return Date.now() - this.runStartTime;
     }
 
     /**
@@ -238,10 +235,7 @@ class VMWrapper {
      * @return {number} .
      */
     getRunStepsExecuted () {
-        if (this.running) {
-            return this.stepsExecuted - this.runStartStepsExecuted;
-        }
-        return 0;
+        return this.stepsExecuted - this.runStartStepsExecuted;
     }
 
     /**
