@@ -187,9 +187,8 @@ class RandomInputs {
 
         for (const target of this.vmWrapper.vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
-                const blocks = target.blocks._blocks;
-                for (const blockId of Object.keys(blocks)) {
-                    this._detectRandomInput(target, blocks[blockId], props);
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    this._detectRandomInput(target, target.blocks.getBlock(blockId), props);
                 }
             }
         }
