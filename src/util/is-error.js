@@ -4,7 +4,10 @@
  * @returns {boolean} If the given {@link Error} is an assertion error.
  */
 const isAssertionError = function (error) {
-    return error.constructor.name.toLowerCase().includes('assert');
+    return error.name.toLowerCase().includes('assert') ||
+        error.constructor.name.toLowerCase().includes('assert') ||
+        error.hasOwnProperty('actual') ||
+        error.hasOwnProperty('expected');
 };
 
 /**
@@ -13,7 +16,10 @@ const isAssertionError = function (error) {
  * @returns {boolean} If the given {@link Error} is an assumption error.
  */
 const isAssumptionError = function (error) {
-    return error.constructor.name.toLowerCase().includes('assum');
+    return error.name.toLowerCase().includes('assum') ||
+        error.constructor.name.toLowerCase().includes('assum') ||
+        error.hasOwnProperty('actual') ||
+        error.hasOwnProperty('expected');
 };
 
 module.exports = {
