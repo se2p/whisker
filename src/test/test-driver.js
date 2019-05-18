@@ -1,4 +1,5 @@
 const defaults = require('lodash.defaults');
+const random = require('../util/random');
 
 class TestDriver {
     /**
@@ -62,6 +63,9 @@ class TestDriver {
         this.greenFlag = vmWrapper.greenFlag.bind(vmWrapper);
         this.getStageSize = vmWrapper.getStageSize.bind(vmWrapper);
         this.end = vmWrapper.end.bind(vmWrapper);
+
+        this.seedWhisker = random.seedWhisker;
+        this.seedScratch = random.seedScratch;
 
         if (props.extend) {
             defaults(this, props.extend);

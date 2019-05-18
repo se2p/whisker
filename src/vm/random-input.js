@@ -1,4 +1,4 @@
-const MathUtil = require('../util/math-util');
+const Random = require('../util/random');
 
 /**
  * {
@@ -43,7 +43,7 @@ class RandomInput {
         const randomData = {...this.data};
 
         if (randomData.isDown === 'random') {
-            randomData.isDown = MathUtil.randomBoolean();
+            randomData.isDown = Random.randomBoolean();
         }
 
         for (const prop of ['duration', 'x', 'y', 'xOffset', 'yOffset', 'length']) {
@@ -59,7 +59,7 @@ class RandomInput {
                 '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
 
             for (let i = 0; i < length; i++) {
-                answer += chars.charAt(Math.floor(Math.random() * chars.length));
+                answer += chars.charAt(Random.randomInt(0, chars.length - 1));
             }
 
             randomData.answer = answer;
@@ -87,7 +87,7 @@ class RandomInput {
                 return prop[0];
             } else if (prop.length >= 2) {
                 const [min, max] = prop;
-                return MathUtil.randomInt(min, max);
+                return Random.randomInt(min, max);
             }
         }
     }
@@ -142,7 +142,7 @@ class RandomInputs {
             return;
         }
 
-        let randomWeight = MathUtil.randomFloat(0, sumOfWeights);
+        let randomWeight = Random.randomFloat(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
                 this.lastInputTime = timeElapsed;
