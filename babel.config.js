@@ -8,7 +8,8 @@ module.exports = function (api) {
                 {
                     targets: {
                         node: 'current',
-                        browsers: ['last 2 Chrome versions',
+                        browsers: [
+                            'last 2 Chrome versions',
                             'last 2 Firefox versions',
                             'last 2 Opera versions',
                             'last 2 Safari versions'
@@ -19,7 +20,7 @@ module.exports = function (api) {
         ],
         env: {
             production: {
-                presets: ['minify']
+                presets: [['minify', {builtIns: false}]]
             }
         }
     };
