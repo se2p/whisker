@@ -313,7 +313,7 @@ class Sprite {
      * @returns {Variable} .
      */
     getVariable (name, skipStage = true) {
-        for (const variable of this.getVariables(skipStage)) {
+        for (const variable of this.getVariables(() => true, skipStage)) {
             if (variable.name === name) {
                 return variable;
             }
