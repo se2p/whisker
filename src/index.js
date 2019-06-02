@@ -1,7 +1,9 @@
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {TestRunner, TAP13Listener, CoverageGenerator} = require('../../whisker-main');
+const {CoverageGenerator} = require('../../whisker-main');
+const {TestRunner, TAP13Listener} = require('../../whisker-test');
+
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
 
@@ -16,7 +18,13 @@ window.$ = $;
 
 const loadTestsFromString = function (string) {
     /* eslint-disable-next-line no-eval */
-    let tests = eval(`${string}; module.exports;`);
+    try {
+        let tests = eval(`${string}; module.exports;`);
+    } catch (err) {
+        console.error(err);
+        alert(`An error occurred while parsing the test code:\n${err}`);
+        throw err;
+    }
     tests = TestRunner.convertTests(tests);
     Whisker.tests = tests;
     Whisker.testEditor.setValue(string);
