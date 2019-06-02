@@ -6,8 +6,8 @@ const ScratchSVGRenderer = require('scratch-svg-renderer');
 const AudioEngine = require('scratch-audio');
 const VirtualMachine = require('scratch-vm');
 
-const ASSET_SERVER = 'https://cdn.assets.scratch.mit.edu/';
-const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu/';
+const ASSET_SERVER = 'https://cdn.assets.scratch.mit.edu';
+const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
 
 /**
  * <canvas></canvas>
@@ -96,7 +96,7 @@ class Scratch extends EventEmitter {
 
     static getProjectUrl (asset) {
         const assetIdParts = asset.assetId.split('.');
-        const assetUrlParts = [PROJECT_SERVER, 'internalapi/project/', assetIdParts[0], '/get/'];
+        const assetUrlParts = [PROJECT_SERVER, '/internalapi/project/', assetIdParts[0], '/get/'];
         if (assetIdParts[1]) {
             assetUrlParts.push(assetIdParts[1]);
         }
@@ -106,7 +106,7 @@ class Scratch extends EventEmitter {
     static getAssetUrl (asset) {
         const assetUrlParts = [
             ASSET_SERVER,
-            'internalapi/asset/',
+            '/internalapi/asset/',
             asset.assetId,
             '.',
             asset.dataFormat,

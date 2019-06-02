@@ -1,6 +1,7 @@
 const {$} = require('./web-libs');
 
-const {TestRunner, TAP13Listener, CoverageGenerator} = require('../../whisker-test');
+/* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
+const {TestRunner, TAP13Listener, CoverageGenerator} = require('../../whisker-main');
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
 
@@ -22,7 +23,6 @@ const loadTestsFromString = function (string) {
     Whisker.testTable.setTests(tests);
     return tests;
 };
-
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
     await Whisker.scratch.vm.loadProject(project);
