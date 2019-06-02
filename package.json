@@ -15,13 +15,9 @@
         "build:prod": "NODE_ENV=production webpack --progress --colors --bail",
         "docs": "jsdoc -c .jsdoc.json",
         "lint": "eslint . && format-message lint src/**/*.js",
-        "lint:fix": "eslint . --fix",
-        "tap": "tap ./test/{unit,integration}/*.js",
-        "tap:unit": "tap ./test/unit/*.js",
-        "tap:integration": "tap ./test/integration/*.js"
+        "lint:fix": "eslint . --fix"
     },
     "dependencies": {
-        "@nx-js/compiler-util": "^2.0.0",
         "clean-yaml-object": "^0.1.0",
         "js-yaml": "^3.12.0",
         "lodash.defaults": "^4.2.0",
