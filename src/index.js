@@ -1,8 +1,7 @@
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator} = require('../../whisker-main');
-const {TestRunner, TAP13Listener} = require('../../whisker-test');
+const {CoverageGenerator, TestRunner, TAP13Listener} = require('../../whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
