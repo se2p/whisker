@@ -17,8 +17,9 @@ window.$ = $;
 
 const loadTestsFromString = function (string) {
     /* eslint-disable-next-line no-eval */
+    let tests;
     try {
-        let tests = eval(`${string}; module.exports;`);
+        tests = eval(`${string}; module.exports;`);
     } catch (err) {
         console.error(err);
         alert(`An error occurred while parsing the test code:\n${err}`);
