@@ -48,18 +48,6 @@ const seedScratch = function (s) {
     }
 };
 
-/**
- * @param {string} s .
- * @return {function} .
- */
-const getRandom = function (s) {
-    if (arguments.length === 0) {
-        return seed('', {entropy: true});
-    } else {
-        return seed(s);
-    }
-};
-
 seedWhisker();
 seedScratch();
 
@@ -68,6 +56,5 @@ module.exports = {
     randomFloat,
     randomBoolean,
     seedWhisker,
-    seedScratch,
-    getRandom
+    seedScratch
 };
