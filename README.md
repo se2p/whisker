@@ -1,16 +1,11 @@
-## TODO
-
-- API changes / refactoring
-- Extract the testing framework
-- Documentation
-- Tests
-
 ## Description
 
 Whisker automates Scratch's IO for testing purposes.
-While Whisker is already usable, it is still in development and will undergo changes in the future.
 
-I developed this project for my bachelor thesis, which currently provides more documentation about Whisker than this page (see https://github.com/marvinkreis/bachelor-thesis chapters 3-5).
+## Contributors
+
+This project is developed at the Chair of Software Engineering II in Passau, Germany.
+The main developer is Marvin Kreis.
 
 ## How to use
 
