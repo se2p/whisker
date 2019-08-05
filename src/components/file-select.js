@@ -7,35 +7,40 @@ const {$} = require('../web-libs');
 class FileSelect {
     constructor (fileselect, onLoad) {
         this.fileselect = $(fileselect)[0];
+        this.files = [];
 
         $(fileselect).on('change', () => {
-            const files = this.fileselect.files;
-            if (files.length > 0) {
-                const filenames = [];
-                for (let i = 0; i < files.length; i++) {
-                    filenames[i] = files[i].name;
-                }
-                const label = filenames.join(', ');
-                $(this.fileselect)
-                    .siblings('label')
-                    .html(label);
+            this.files = [... this.fileselect.files];
 
-                onLoad(this);
+            /* Reset the files so Chrome will load a new version of the same file if
+             * a file, that was already selected, is selected again. */
+            $(this.fileselect).val(null);
+
+            /* Set the label. */
+            const filenames = [];
+            for (let i = 0; i < this.files.length; i++) {
+                filenames[i] = this.files[i].name;
             }
+            const label = filenames.join(', ');
+            $(this.fileselect)
+                .siblings('label')
+                .html(label);
+
+            onLoad(this);
         });
     }
 
     length () {
-        return this.fileselect.files.length;
+        return this.files.length;
     }
 
     getName (index = 0) {
-        return this.fileselect.files[index].name;
+        return this.files[index].name;
     }
 
     async loadAsArrayBuffer (index = 0) {
         return await new Promise((resolve, reject) => {
-            const file = this.fileselect.files[index];
+            const file = this.files[index];
             const reader = new FileReader();
             reader.onload = event => resolve(event.target.result);
             reader.onerror = event => reject(event);
