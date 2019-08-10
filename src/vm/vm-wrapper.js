@@ -84,8 +84,10 @@ class VMWrapper {
 
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
+        this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
         this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
         this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
     }
 
     /**
@@ -277,6 +279,7 @@ class VMWrapper {
 
         this.vm.removeListener(Runtime.PROJECT_RUN_START, this._onRunStart);
         this.vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this.vm.runtime.removeListener('targetWasCreated', this._onTargetCreated);
     }
 
     // TODO: reset sprites on green flag?

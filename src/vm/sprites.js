@@ -139,6 +139,12 @@ class Sprites {
         }
     }
 
+    onTargetCreated (newTarget, sourceTarget) {
+        if (typeof newTarget.sprite !== 'undefined') {
+            this.wrapTarget(newTarget);
+        }
+    }
+
     reset () {
         this.sprites = {};
         this.spritesBefore = {};
