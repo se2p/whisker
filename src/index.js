@@ -16,12 +16,13 @@ const Whisker = window.Whisker = {};
 window.$ = $;
 
 const loadTestsFromString = function (string) {
-    /* eslint-disable-next-line no-eval */
     let tests;
     try {
+        /* eslint-disable-next-line no-eval */
         tests = eval(`${string}; module.exports;`);
     } catch (err) {
         console.error(err);
+        /* eslint-disable-next-line no-alert */
         alert(`An error occurred while parsing the test code:\n${err}`);
         throw err;
     }
@@ -43,7 +44,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     CoverageGenerator.restoreThread(Thread);
 
     const formattedSummary = TAP13Listener.formatSummary(summary);
-    const formattedCoverage = TAP13Listener.formatCoverage(coverage);
+    const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
 
     const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
