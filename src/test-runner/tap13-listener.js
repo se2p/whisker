@@ -147,21 +147,27 @@ class TAP13Listener {
     }
 
     /**
-     * @param {object} coverage .
+     * @param {object} coveragePerSprite .
      * @return {object} .
      */
-    static formatCoverage (coverage) {
-        const individualCoverage = coverage.getCoveragePerSprite();
-        const combinedCoverage = coverage.getCoverage();
+    static formatCoverage (coveragePerSprite) {
+        // const individualCoverage = coverage.getCoveragePerSprite();
+        // const combinedCoverage = coverage.getCoverage();
 
-        const individualCoverageObj = {};
-        for (const [spriteName, coverageRecord] of individualCoverage) {
-            individualCoverageObj[spriteName] = TAP13Listener.formatCoverageRecord(coverageRecord);
+        let covered = 0;
+        let total = 0;
+
+        const formattedCoverage = {};
+        for (const spriteName of Object.keys(coveragePerSprite)) {
+            const coverageRecord = coveragePerSprite[spriteName];
+            covered += coverageRecord.covered;
+            total += coverageRecord.total;
+            formattedCoverage[spriteName] = TAP13Listener.formatCoverageRecord(coverageRecord);
         }
 
         return {
-            combined: TAP13Listener.formatCoverageRecord(combinedCoverage),
-            individual: individualCoverageObj
+            combined: TAP13Listener.formatCoverageRecord({covered, total}),
+            individual: formattedCoverage
         };
     }
 

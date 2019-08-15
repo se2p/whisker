@@ -34,12 +34,12 @@ class Coverage {
      * @return {Map<string,{covered: number, total: number}>} .
      */
     getCoveragePerSprite () {
-        const coverage = new Map();
+        const coverage = {};
 
         for (const [spriteName, coveredBlockIds] of this.coveredBlockIdsPerSprite) {
             const numCovered = coveredBlockIds.size;
             const numTotal = this.blockIdsPerSprite.get(spriteName).size;
-            coverage.set(spriteName, {covered: numCovered, total: numTotal});
+            coverage[spriteName] = {covered: numCovered, total: numTotal};
         }
 
         return coverage;
