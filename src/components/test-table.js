@@ -7,7 +7,7 @@ const {$} = require('../web-libs');
  */
 class TestTable {
     constructor (div, runTests) {
-        this.div = $(div)[0];
+        this.div = div;
         this.table = $(div).find('table');
         this.dataTable = null;
 

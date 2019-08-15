@@ -8,7 +8,7 @@ const {$, CodeMirror, FileSaver} = require('../web-libs');
  */
 class TestEditor {
     constructor (div, loadTests) {
-        this.div = $(div)[0];
+        this.div = div;
 
         this.codemirror = CodeMirror(cm => $(div).prepend(cm), {
             lineNumbers: true,

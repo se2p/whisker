@@ -77,7 +77,7 @@ const runAllTests = async function () {
 };
 
 const initScratch = function () {
-    Whisker.scratch = new Scratch($('#scratch-stage'));
+    Whisker.scratch = new Scratch($('#scratch-stage')[0]);
 
     $('#green-flag')
         .removeClass('btn-success')
@@ -99,18 +99,18 @@ const initScratch = function () {
 };
 
 const initComponents = function () {
-    Whisker.testTable = new TestTable($('#test-table'), runTests);
+    Whisker.testTable = new TestTable($('#test-table')[0], runTests);
     Whisker.testTable.setTests([]);
 
-    Whisker.outputRun = new Output($('#output-run'));
-    Whisker.outputLog = new Output($('#output-log'));
+    Whisker.outputRun = new Output($('#output-run')[0]);
+    Whisker.outputLog = new Output($('#output-log')[0]);
 
-    Whisker.testEditor = new TestEditor($('#test-editor'), loadTestsFromString);
+    Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
 
-    Whisker.projectFileSelect = new FileSelect($('#fileselect-project'),
+    Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0],
         fileSelect => fileSelect.loadAsArrayBuffer().then(project => Whisker.scratch.loadProject(project)));
-    Whisker.testFileSelect = new FileSelect($('#fileselect-tests'),
+    Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
         fileSelect => fileSelect.loadAsString().then(string => loadTestsFromString(string)));
 
     Whisker.testRunner = new TestRunner();

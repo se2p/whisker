@@ -9,7 +9,7 @@ const {$, FileSaver} = require('../web-libs');
  */
 class Output {
     constructor (div) {
-        this.div = $(div)[0];
+        this.div = div;
         this.output = $(div).find('.output-content');
 
         $(div)

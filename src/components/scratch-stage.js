@@ -15,7 +15,7 @@ const PROJECT_SERVER = 'https://cdn.projects.scratch.mit.edu';
 class Scratch extends EventEmitter {
     constructor (canvas) {
         super();
-        this.canvas = canvas[0];
+        this.canvas = canvas;
         this.vm = Scratch.prepareVM(this.canvas);
         this.project = null;
 

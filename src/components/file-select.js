@@ -6,11 +6,11 @@ const {$} = require('../web-libs');
  */
 class FileSelect {
     constructor (fileselect, onLoad) {
-        this.fileselect = $(fileselect)[0];
+        this.fileselect = fileselect;
         this.files = [];
 
         $(fileselect).on('change', () => {
-            this.files = [... this.fileselect.files];
+            this.files = [...this.fileselect.files];
 
             /* Reset the files so Chrome will load a new version of the same file if
              * a file, that was already selected, is selected again. */
