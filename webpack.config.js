@@ -29,6 +29,31 @@ module.exports = [
             ]
         },
         devtool: 'source-map'
+    },
+
+    /* Node */
+    {
+        mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+        target: 'node',
+        entry: {
+            whisker: path.resolve('src', 'index.js')
+        },
+        output: {
+            library: 'Whisker',
+            filename: '[name].js',
+            libraryTarget: 'commonjs2',
+            path: path.resolve('dist', 'node')
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.js$/,
+                    loader: 'babel-loader',
+                    include: path.resolve(__dirname, 'src')
+                }
+            ]
+        },
+        devtool: 'source-map'
     }
 
 ];
