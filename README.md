@@ -2,10 +2,7 @@
 
 Whisker automates Scratch's IO for testing purposes.
 
-## Contributors
-
-This project is developed at the Chair of Software Engineering II in Passau, Germany.
-The main developer is Marvin Kreis.
+![Whisker](https://raw.githubusercontent.com/se2p/whisker-main/master/logos/whisker-text-logo.png)
 
 ## How to use
 
@@ -110,4 +107,12 @@ t.greenFlag();
 t.getStageSize();
 t.end();
 ```
+## Contributors
+
+This project is developed at the Chair of Software Engineering II in Passau, Germany.
+
+List of contributors:
+- Gordon Fraser
+- Marvin Kreis
+- Andreas Stahlbauer
 
