@@ -1,6 +1,6 @@
 ## Description
 
-Block-based programming environments like Scratch foster engagement
+Block-based programming environments like *Scratch* foster engagement
 with computer programming and are used by millions of young learners.
 Scratch allows learners to quickly create entertaining programs and
 games, while eliminating syntactical program errors that could
@@ -10,10 +10,10 @@ However, functional programming errors may still lead to incorrect
 programs, and learners and their teachers need to identify and
 understand these errors. This is currently an entirely manual process.
 
-In our paper on 'Testing Scratch Programs Automatically' , we 
+In our paper on **Testing Scratch Programs Automatically** , we 
 introduced a formal testing framework that describes
 the problem of Scratch testing in detail. We instantiate this formal
-framework with the Whisker tool, which provides automated and
+framework with the *Whisker* tool, which provides automated and
 property-based testing functionality for Scratch programs.
 
 The implementation of Whisker can be found in this repository. 
