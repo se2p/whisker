@@ -25,7 +25,7 @@ Details on writing Whisker tests in JavaScript can be found
 
 ## Contributors
 
-This project is developed at the Chair of Software Engineering II in Passau, Germany.
+This project is developed at the **Chair of Software Engineering II** in **Passau**, Germany.
 
 List of contributors:
 - Gordon Fraser
