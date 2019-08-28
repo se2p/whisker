@@ -107,6 +107,7 @@ t.greenFlag();
 t.getStageSize();
 t.end();
 ```
+
 ## Contributors
 
 This project is developed at the Chair of Software Engineering II in Passau, Germany.
@@ -116,3 +117,17 @@ List of contributors:
 - Marvin Kreis
 - Andreas Stahlbauer
 
+## Citing
+
+```
+@inproceedings{DBLP:conf/sigsoft/StahlbauerKF19,
+  author    = {Andreas Stahlbauer and
+               Marvin Kreis and
+               Gordon Fraser},
+  title     = {Testing scratch programs automatically},
+  booktitle = {{ESEC/SIGSOFT} {FSE}},
+  pages     = {165--175},
+  publisher = {{ACM}},
+  year      = {2019}
+}
+```
