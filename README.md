@@ -10,7 +10,7 @@ However, functional programming errors may still lead to incorrect
 programs, and learners and their teachers need to identify and
 understand these errors. This is currently an entirely manual process.
 
-In our paper on **Testing Scratch Programs Automatically** , we 
+In our paper on **Testing Scratch Programs Automatically**, we 
 introduced a formal testing framework that describes
 the problem of Scratch testing in detail. We instantiate this formal
 framework with the *Whisker* tool, which provides automated and
