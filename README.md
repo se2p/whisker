@@ -2,7 +2,7 @@
 
 Whisker automates Scratch's IO for testing purposes.
 
-![Whisker](https://raw.githubusercontent.com/se2p/whisker-main/master/logos/whisker-text-logo.png)
+![Whisker](https://raw.githubusercontent.com/se2p/whisker-main/master/logos/whisker-text-logo.jpg)
 
 ## How to use
 
