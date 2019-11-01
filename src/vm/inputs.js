@@ -219,9 +219,9 @@ class Inputs {
     }
 
     /**
-     * @param {[{time: number, input: {}}]} inputs .
+     * @param {[{time: number, input: object}]} inputs .
      */
-    addInputs(inputs) {
+    addInputs (inputs) {
         for (const data of inputs) {
             this.addInput(data.time, data.input);
         }

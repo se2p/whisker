@@ -33,6 +33,7 @@ class Util {
     }
 
     /**
+     * @param {VirtualMachine} vm .
      * @param {string} keyString .
      * @return {string} .
      */
