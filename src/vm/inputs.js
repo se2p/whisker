@@ -219,6 +219,15 @@ class Inputs {
     }
 
     /**
+     * @param {[{time: number, input: {}}]} inputs .
+     */
+    addInputs(inputs) {
+        for (const data of inputs) {
+            this.addInput(data.time, data.input);
+        }
+    }
+
+    /**
      * @param {number} time .
      * @param {Input} input .
      * @returns {Input} .

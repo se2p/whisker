@@ -39,6 +39,7 @@ class TestDriver {
         this.clearCallbacks = vmWrapper.callbacks.clearCallbacks.bind(vmWrapper.callbacks);
 
         this.addInput = vmWrapper.inputs.addInput.bind(vmWrapper.inputs);
+        this.addInputs = vmWrapper.inputs.addInputs.bind(vmWrapper.inputs);
         this.reAddInput = vmWrapper.inputs.reAddInput.bind(vmWrapper.inputs);
         this.inputImmediate = vmWrapper.inputs.inputImmediate.bind(vmWrapper.inputs);
         this.removeInput = vmWrapper.inputs.removeInput.bind(vmWrapper.inputs);
