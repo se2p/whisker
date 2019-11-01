@@ -55,19 +55,19 @@ class Scratch extends EventEmitter {
     }
 
     enableInput () {
-        document.addEventListener('mousemove', this._onMouseMove);
+        this.canvas.addEventListener('mousemove', this._onMouseMove);
         this.canvas.addEventListener('mousedown', this._onMouseDown);
         this.canvas.addEventListener('mouseup', this._onMouseUp);
-        document.addEventListener('keydown', this._onKeyDown);
-        document.addEventListener('keyup', this._onKeyUp);
+        this.canvas.addEventListener('keydown', this._onKeyDown);
+        this.canvas.addEventListener('keyup', this._onKeyUp);
     }
 
     disableInput () {
-        document.removeEventListener('mousemove', this._onMouseMove);
+        this.canvas.removeEventListener('mousemove', this._onMouseMove);
         this.canvas.removeEventListener('mousedown', this._onMouseDown);
         this.canvas.removeEventListener('mouseup', this._onMouseUp);
-        document.removeEventListener('keydown', this._onKeyDown);
-        document.removeEventListener('keyup', this._onKeyUp);
+        this.canvas.removeEventListener('keydown', this._onKeyDown);
+        this.canvas.removeEventListener('keyup', this._onKeyUp);
     }
 
     static prepareVM (canvas) {
@@ -116,17 +116,22 @@ class Scratch extends EventEmitter {
     }
 
     onMouseMove (e) {
+        e.preventDefault();
+        this.canvas.focus();
         const rect = this.canvas.getBoundingClientRect();
-        const coordinates = {
+        const data = {
             x: e.clientX - rect.left,
             y: e.clientY - rect.top,
             canvasWidth: rect.width,
             canvasHeight: rect.height
         };
-        this.vm.postIOData('mouse', coordinates);
+        this.vm.postIOData('mouse', data);
+        this.emit('input', {device: 'mouse', ...data});
     }
 
     onMouseDown (e) {
+        e.preventDefault();
+        this.canvas.focus();
         const rect = this.canvas.getBoundingClientRect();
         const data = {
             isDown: true,
@@ -136,10 +141,12 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        e.preventDefault();
+        this.emit('input', {device: 'mouse', ...data});
     }
 
     onMouseUp (e) {
+        e.preventDefault();
+        this.canvas.focus();
         const rect = this.canvas.getBoundingClientRect();
         const data = {
             isDown: false,
@@ -149,28 +156,28 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        e.preventDefault();
+        this.emit('input', {device: 'mouse', ...data});
     }
 
     onKeyDown (e) {
-        if (e.target.localName !== 'input' && e.target.localName !== 'textarea') {
-            this.vm.postIOData('keyboard', {
-                keyCode: e.keyCode,
-                key: e.key,
-                isDown: true
-            });
-        }
+        e.preventDefault();
+        const data = {
+            keyCode: e.keyCode,
+            key: e.key,
+            isDown: true
+        };
+        this.vm.postIOData('keyboard', data);
+        this.emit('input', {device: 'keyboard', ...data});
     }
 
     onKeyUp (e) {
-        this.vm.postIOData('keyboard', {
+        e.preventDefault();
+        const data = {
             key: e.key,
             isDown: false
-        });
-
-        if (e.target !== document && e.target !== document.body) {
-            e.preventDefault();
-        }
+        };
+        this.vm.postIOData('keyboard', data);
+        this.emit('input', {device: 'keyboard', ...data});
     }
 }
 
