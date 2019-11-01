@@ -11,6 +11,7 @@ const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
+const InputRecorder = require('./components/input-recorder');
 
 const Whisker = window.Whisker = {};
 window.$ = $;
@@ -120,6 +121,8 @@ const initComponents = function () {
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.log(result.error));
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
+
+    Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 };
 
 const initEvents = function () {
@@ -127,6 +130,27 @@ const initEvents = function () {
     $('#stop').on('click', () => Whisker.scratch.stop());
     $('#reset').on('click', () => Whisker.scratch.reset());
     $('#run-all-tests').on('click', runAllTests);
+
+    Whisker.inputRecorder.on('startRecording', () => {
+        $('#record')
+            .removeClass('btn-outline-danger')
+            .addClass('btn-danger')
+            .text('Stop Recording');
+    });
+    Whisker.inputRecorder.on('stopRecording', () => {
+        $('#record')
+            .removeClass('btn-danger')
+            .addClass('btn-outline-danger')
+            .text('Record Inputs');
+    });
+
+    $('#record').on('click', event => {
+        if (Whisker.inputRecorder.isRecording()) {
+            Whisker.inputRecorder.stopRecording();
+        } else {
+            Whisker.inputRecorder.startRecording();
+        }
+    });
 
     $('#toggle-input') .on('change', event => {
         if ($(event.target).is(':checked')) {

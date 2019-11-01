@@ -3,7 +3,7 @@ const $ = require('jquery');
 require('datatables.net')(window, $);
 
 /* Bootstrap */
-// require('bootstrap/js/src/button');
+require('bootstrap/js/src/modal');
 
 /* CodeMirror */
 const CodeMirror = require('codemirror');
