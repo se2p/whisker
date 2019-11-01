@@ -19,7 +19,7 @@
     },
     "dependencies": {
         "clean-yaml-object": "^0.1.0",
-        "js-yaml": "^3.12.0",
+        "js-yaml": "^3.13.1",
         "lodash.defaults": "^4.2.0",
         "minilog": "^3.1.0",
         "scratch-vm": "^0.2.0-prerelease.20181108204010",
