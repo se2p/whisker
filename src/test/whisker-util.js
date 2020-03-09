@@ -2,7 +2,7 @@ const VMWrapper = require('../vm/vm-wrapper');
 const TestDriver = require('./test-driver');
 
 class WhiskerUtil {
-    constructor (vm, project) {
+    constructor (vm, project, wrapperOptions) {
 
         /**
          * @type {VirtualMachine} .
@@ -12,7 +12,7 @@ class WhiskerUtil {
         /**
          * @type {VMWrapper}
          */
-        this.vmWrapper = new VMWrapper(vm);
+        this.vmWrapper = new VMWrapper(vm, wrapperOptions);
 
         /**
          * @type {string}

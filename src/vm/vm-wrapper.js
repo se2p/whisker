@@ -9,9 +9,15 @@ const {Constraints} = require('./constraints');
 
 class VMWrapper {
     /**
-     * @param {VirtualMachine} vm .
+     * @param {VirtualMachine} vm
+     * @param {object} wrapperOptions
      */
-    constructor (vm) {
+    constructor (vm, wrapperOptions) {
+        this.userDefinedInterval = 1000 / wrapperOptions.frequency;
+        this.DEFAULT_THREAD_STEP_INTERVAL = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
+        delete Runtime.THREAD_STEP_INTERVAL;
+        Runtime.THREAD_STEP_INTERVAL = this.userDefinedInterval;
+
         /**
          * @type {VirtualMachine}
          */
@@ -129,7 +135,6 @@ class VMWrapper {
      */
     async run (condition, timeout, steps) {
         if (this.running) {
-            /* eslint-disable-next-line no-console */
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
                           'missing any await-statements in your test.');
         }
@@ -161,7 +166,7 @@ class VMWrapper {
         }
 
         this.running = false;
-        const timeElapsed = Date.now() - this.runStartTime;
+        const timeElapsed = this.getRunTimeElapsed();
 
         this.inputs.updateInputs(timeElapsed);
 
@@ -216,14 +221,14 @@ class VMWrapper {
      * @return {number} .
      */
     getTotalTimeElapsed () {
-        return Date.now() - this.startTime;
+        return (Date.now() - this.startTime) * this.speedupFactor;
     }
 
     /**
      * @return {number} .
      */
     getRunTimeElapsed () {
-        return Date.now() - this.runStartTime;
+        return (Date.now() - this.runStartTime) * this.speedupFactor;
     }
 
     /**
@@ -245,15 +250,36 @@ class VMWrapper {
      * @returns {Promise<void>} .
      */
     async setup (project) {
-        if (this.vm.runtime.compatibilityMode) {
-            this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
-            this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY);
-        } else {
+        const setStepTime = interval => {
+            Runtime.THREAD_STEP_INTERVAL = interval;
             this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
             this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
-        }
-        clearInterval(this.vm.runtime._steppingInterval);
+            clearInterval(this.vm.runtime._steppingInterval);
+            this.speedupFactor = this.DEFAULT_THREAD_STEP_INTERVAL / Runtime.THREAD_STEP_INTERVAL;
+        };
+        setStepTime(this.userDefinedInterval);
+
+        this.instrumentPrimitive('control_wait', 'DURATION');
+        this.instrumentPrimitive('looks_sayforsecs', 'SECS');
+        this.instrumentPrimitive('looks_thinkforsecs', 'SECS');
+
         return await this.vm.loadProject(project);
+    }
+
+    instrumentPrimitive (primitive, argument) {
+        const original = this.vm.runtime._primitives[primitive];
+
+        if (original.isInstrumented) {
+            return;
+        }
+
+        const instrumented = (args, util) => {
+            const clone = {...args};
+            clone[argument] = args[argument] / this.speedupFactor;
+            return original(clone, util);
+        };
+        instrumented.isInstrumented = true;
+        this.vm.runtime._primitives[primitive] = instrumented;
     }
 
     start () {
