@@ -1,0 +1,14 @@
+{
+  "name": "whisker-headless",
+  "version": "1.0.0",
+  "description": "Approaches:",
+  "main": "run.js",
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "commander": "^4.1.1",
+    "puppeteer": "2.0.0"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}
