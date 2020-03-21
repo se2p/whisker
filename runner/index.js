@@ -9,9 +9,11 @@ const {basename} = require('path');
 const puppeteer = require('puppeteer');
 const {logger, cli} = require('./util');
 
-const tmpDir = './tmpWorkingDir';
+const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
-const {whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded} = cli.start();
+const {
+    whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeLogEnabled
+} = cli.start();
 
 init();
 
@@ -22,7 +24,11 @@ async function init () {
     const paths = prepateTestFiles(testPath);
 
     // args: ['--use-gl=desktop'] could be used next to headless, but pages tend to quit unexpectedly
-    const browser = await puppeteer.launch({headless: !!isHeadless});
+    const browser = await puppeteer.launch(
+        {
+            headless: !!isHeadless,
+            args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
+        });
 
     Promise.all(paths.map((path, index) => runTests(path, browser, index)))
         .then(logs => {
@@ -43,7 +49,10 @@ async function init () {
  */
 async function runTests (path, browser, index) {
     const page = await browser.newPage({context: Date.now()});
-    await page._client.send('Page.setDownloadBehavior', {behavior: 'allow', downloadPath: '/home/nik/Downloads/'});
+    page.on('error', error => {
+        logger.error(error);
+        process.exit(1);
+    });
 
     function optionallyEnableConsoleForward () {
         if (isConsoleForwarded) {
@@ -76,8 +85,10 @@ async function runTests (path, browser, index) {
             const currentLog = await (await outputContent.getProperty('innerHTML')).jsonValue();
 
             const newInfoFromLog = currentLog.replace(log, '').trim();
-            if (newInfoFromLog.length) {
-                logger.info(`Page ${index}: `, newInfoFromLog);
+            if (newInfoFromLog.length && isLifeLogEnabled) {
+                logger.log(`Page ${index}: `, newInfoFromLog);
+            } else if (newInfoFromLog.includes('not ok ')) {
+                logger.warn(`Page ${index}: `, newInfoFromLog);
             }
             log = currentLog;
 
@@ -97,7 +108,7 @@ async function runTests (path, browser, index) {
         await executeTests();
         const output = await readTestOutput();
         await page.close();
-        return Promise.resolve(output.substring(output.indexOf('# summary:'), output.length));
+        return Promise.resolve(output);
     } catch (e) {
         return Promise.reject(e);
     }
@@ -198,9 +209,12 @@ function prepateTestFiles (whiskerTestPath) {
  * @param {string} logs  The logs from the whisker-web instance
  */
 function printTestresultsFromCivergaeGenerator (logs) {
+    logger.info('Run Finished\n');
+
     if (logs.length > 1) {
         logger.warn('Warning, the tests have been parallely executed in multiple chrome tabs. The test results for' +
-      ' each property (tests, pass, fail, etc.) list the result of each page. Coverage results can not be displayed');
+      ' each property (tests, pass, fail, etc.) list the result of each page. Coverage results can not be displayed' +
+      '.\n');
     }
 
     const {results, coverages} = logs.reduce(
@@ -213,8 +227,12 @@ function printTestresultsFromCivergaeGenerator (logs) {
         {results: [], coverages: []}
     );
 
-    logger.info('Results:\n', results.join().replace(/\n/g, ' ')
-        .replace(/# {3}/g, '')
-        .replace(/,/g, '\n'));
+    logger.info(
+        'Results:\n',
+        results.join()
+            .replace(' ', '')
+            .replace(/# {3}/g, '')
+            .replace(/,/g, '\n')
+            .replace('#  ', ''));
     logger.info('Coverages:\n', coverages.join());
 }

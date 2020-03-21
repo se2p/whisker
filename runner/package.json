@@ -8,7 +8,9 @@
     "commander": "^4.1.1",
     "puppeteer": "2.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "objects-to-csv": "^1.3.6"
+  },
   "author": "",
   "license": "ISC"
 }

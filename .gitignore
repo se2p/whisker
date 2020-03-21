@@ -12,5 +12,6 @@
 # Runner specific
 /runner/node_modules
 /runner/tests
-/runner/tmpDir
-
+/runner/.tmpWorkingDir
+/runner/*.csv
+/runner/evaluation.js

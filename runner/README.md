@@ -6,6 +6,11 @@ The Runner is a wrapper around the whisker web client, allowing to run tests aut
 
 Checkout the whisker-web repo and cd into whisker-web folder. Then use `npm i && npm run build` to install the whisker web repo's dependencies. Next execute `cd runner && npm i` to cd into the runner's directory and install it's dependencies.
 
+Ready to rumble copy pasta script:
+```
+mkdir whisker && cd whisker && git clone https://github.com/se2p/whisker-main.git && cd whisker-main && npm i && && npm run build cd .. && git clone https://github.com/nobol/whisker-web.git && cd whisker-web && npm i && npm run build && cd runner && npm i
+```
+
 # Usage
 
 From the whisker web repo's runner's folder you can execute `node index.js -h` to start the runner and whos the help screen:
