@@ -7,7 +7,7 @@ class TestDriver {
      * @param {object} props .
      */
     // TODO: get rid of clear... methods
-    constructor (vmWrapper, props) {
+    constructor (vmWrapper, props, CoverageGenerator, log) {
         this.vmWrapper = vmWrapper;
         this.vm = vmWrapper.vm;
 
@@ -67,6 +67,12 @@ class TestDriver {
 
         this.seedWhisker = random.seedWhisker;
         this.seedScratch = random.seedScratch;
+
+        this.getCoverage = () => {
+            const coverage = CoverageGenerator.getCoverage();
+            return coverage.getCoverage();
+        };
+        this.log = log;
 
         if (props.extend) {
             defaults(this, props.extend);

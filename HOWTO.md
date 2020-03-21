@@ -54,6 +54,7 @@ t.getRunTimeElapsed();
 t.getTotalStepsExecuted();
 t.getRunStepsExecuted();
 t.isProjectRunning();
+t.getCoverage(); // returns { covered, total } representing covered and total blocks
 
 /* Sprite information. */
 t.getSprites(condition, skipStage);
@@ -100,4 +101,5 @@ t.onConstraintFailure(action);
 t.greenFlag();
 t.getStageSize();
 t.end();
+t.log(message); // takes a string which gets logged into the log and output field 
 ```

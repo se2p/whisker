@@ -16,7 +16,7 @@ class VMWrapper {
         this.userDefinedInterval = 1000 / wrapperOptions.frequency;
         this.DEFAULT_THREAD_STEP_INTERVAL = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
         delete Runtime.THREAD_STEP_INTERVAL;
-        Runtime.THREAD_STEP_INTERVAL = this.userDefinedInterval;
+        this.userDefinedInterval = 1000 / wrapperOptions.frequency;
 
         /**
          * @type {VirtualMachine}
@@ -262,6 +262,8 @@ class VMWrapper {
         this.instrumentPrimitive('control_wait', 'DURATION');
         this.instrumentPrimitive('looks_sayforsecs', 'SECS');
         this.instrumentPrimitive('looks_thinkforsecs', 'SECS');
+        this.instrumentPrimitive('motion_glidesecstoxy', 'SECS');
+        this.instrumentPrimitive('motion_glideto', 'SECS');
 
         return await this.vm.loadProject(project);
     }

@@ -13,9 +13,10 @@ class TestRunner extends EventEmitter {
      * @param {Test[]} tests .
      * @param {{extend: object}=} props .
      * @param {object} wrapperOptions
+     * @param {CoverageGenerator} CoverageGenerator
      * @returns {Promise<Array>} .
      */
-    async runTests (vm, project, tests, props, wrapperOptions) {
+    async runTests (vm, project, tests, props, wrapperOptions, CoverageGenerator) {
         if (typeof props === 'undefined' || props === null) {
             props = {extend: {}};
         } else if (!props.hasOwnProperty('extend')) {
@@ -39,7 +40,7 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
-                result = await this._executeTest(vm, project, test, props, wrapperOptions);
+                result = await this._executeTest(vm, project, test, props, wrapperOptions, CoverageGenerator);
                 switch (result.status) {
                 case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
@@ -59,7 +60,7 @@ class TestRunner extends EventEmitter {
         }
 
         // generate and download the CSV with a test name to duration mapping
-        this.downloadBenchmarkRecorderContentAsCSV(benchmarkRecorder);
+        // this.downloadBenchmarkRecorderContentAsCSV(benchmarkRecorder);
 
         this.emit(TestRunner.RUN_END, results);
         return results;
@@ -93,27 +94,32 @@ class TestRunner extends EventEmitter {
      * @param {Test} test .
      * @param {{extend: object}} props .
      * @param {object} wrapperOptions
+     * @param {CoverageGenerator} CoverageGenerator
      *
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest (vm, project, test, props, wrapperOptions) {
+    async _executeTest (vm, project, test, props, wrapperOptions, CoverageGenerator) {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project, wrapperOptions);
         await util.prepare();
 
-        const testDriver = util.getTestDriver({
-            extend: {
-                assert: assert,
-                assume: assume,
-                log: message => {
-                    this._log(test, message);
-                    result.log.push(message);
-                },
-                ...props.extend
-            }
-        });
+        const testDriver = util.getTestDriver(
+            {
+                extend: {
+                    assert: assert,
+                    assume: assume,
+                    log: message => {
+                        this._log(test, message);
+                        result.log.push(message);
+                    },
+                    ...props.extend
+                }
+            },
+            CoverageGenerator,
+            message => this._log(test, message),
+        );
 
         this.emit(TestRunner.TEST_START, test);
 
