@@ -12,7 +12,8 @@ const {logger, cli} = require('./util');
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeLogEnabled
+    whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
+    isLifeLogEnabled
 } = cli.start();
 
 init();
@@ -77,29 +78,42 @@ async function runTests (path, browser, index) {
     }
 
     async function readTestOutput () {
-        const outputContent = await page.$('#output-run .output-content');
+        const coverageOutput = await page.$('#output-run .output-content');
+        const logOutput = await page.$('#output-log .output-content');
 
+        let coverageLog = '';
         let log = '';
+
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            const currentLog = await (await outputContent.getProperty('innerHTML')).jsonValue();
+            if (isLifeLogEnabled) {
+                const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+                const newInfoFromLog = currentLog.replace(log, '').trim();
 
-            const newInfoFromLog = currentLog.replace(log, '').trim();
-            if (newInfoFromLog.length && isLifeLogEnabled) {
-                logger.log(`Page ${index}: `, newInfoFromLog);
-            } else if (newInfoFromLog.includes('not ok ')) {
-                logger.warn(`Page ${index}: `, newInfoFromLog);
+                if (newInfoFromLog.length) {
+                    logger.log(newInfoFromLog);
+                }
+
+                log = currentLog;
             }
-            log = currentLog;
 
-            if (currentLog.includes('summary')) {
+            const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
+            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '').trim();
+            if (newInfoFromCoverage.length && isLifeOutputCoverage) {
+                logger.log(`Page ${index} | Coverage: `, newInfoFromCoverage);
+            } else if (newInfoFromCoverage.includes('not ok ')) {
+                logger.warn(`Page ${index} | Coverage: `, newInfoFromCoverage);
+            }
+            coverageLog = currentCoverageLog;
+
+            if (currentCoverageLog.includes('summary')) {
                 break;
             }
 
             await page.waitFor(1000);
         }
 
-        return log;
+        return coverageLog;
     }
 
     try {
