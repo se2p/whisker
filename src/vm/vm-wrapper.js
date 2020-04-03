@@ -265,7 +265,22 @@ class VMWrapper {
         this.instrumentPrimitive('motion_glidesecstoxy', 'SECS');
         this.instrumentPrimitive('motion_glideto', 'SECS');
 
+        this.instrumentDevice('clock', 'projectTimer');
+
         return await this.vm.loadProject(project);
+    }
+
+    instrumentDevice (deviceName, method) {
+        const device = this.vm.runtime.ioDevices[deviceName];
+        const original = device[method];
+
+        if (original.isInstrumented) {
+            return;
+        }
+
+        const instrumented = () => original.call(device) * this.speedupFactor;
+        instrumented.isInstrumented = true;
+        device[method] = instrumented;
     }
 
     instrumentPrimitive (primitive, argument) {
