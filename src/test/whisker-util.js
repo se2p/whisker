@@ -28,8 +28,8 @@ class WhiskerUtil {
      * @param {object=} props .
      * @returns {object} .
      */
-    getTestDriver (props, CoverageGenerator) {
-        return new TestDriver(this.vmWrapper, props, CoverageGenerator);
+    getTestDriver (props) {
+        return new TestDriver(this.vmWrapper, props);
     }
 
     start () {

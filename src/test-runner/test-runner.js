@@ -114,11 +114,13 @@ class TestRunner extends EventEmitter {
                         this._log(test, message);
                         result.log.push(message);
                     },
+                    getCoverage: () => {
+                        const coverage = CoverageGenerator.getCoverage();
+                        return coverage.getCoverage();
+                    },
                     ...props.extend
                 }
             },
-            CoverageGenerator,
-            message => this._log(test, message),
         );
 
         this.emit(TestRunner.TEST_START, test);
