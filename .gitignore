@@ -9,9 +9,9 @@
 /dist
 /playground
 
-# Runner specific
-/runner/node_modules
-/runner/tests
-/runner/.tmpWorkingDir
-/runner/*.csv
-/runner/evaluation.js
+# Servant specific
+/servant/node_modules
+/servant/tests
+/servant/.tmpWorkingDir
+/servant/*.csv
+/servant/evaluation.js
