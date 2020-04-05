@@ -73,8 +73,9 @@ class TestDriver {
             return coverage.getCoverage();
         };
         this.log = log;
-        this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.speedupFactor;
-        this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.speedupFactor;
+        this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
+        this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;
+        this.getAccelerationFactor = () => vmWrapper.accelerationFactor;
 
         if (props.extend) {
             defaults(this, props.extend);

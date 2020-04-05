@@ -221,14 +221,14 @@ class VMWrapper {
      * @return {number} .
      */
     getTotalTimeElapsed () {
-        return (Date.now() - this.startTime) * this.speedupFactor;
+        return (Date.now() - this.startTime) * this.accelerationFactor;
     }
 
     /**
      * @return {number} .
      */
     getRunTimeElapsed () {
-        return (Date.now() - this.runStartTime) * this.speedupFactor;
+        return (Date.now() - this.runStartTime) * this.accelerationFactor;
     }
 
     /**
@@ -255,7 +255,7 @@ class VMWrapper {
             this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
             this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
             clearInterval(this.vm.runtime._steppingInterval);
-            this.speedupFactor = this.DEFAULT_THREAD_STEP_INTERVAL / Runtime.THREAD_STEP_INTERVAL;
+            this.accelerationFactor = this.DEFAULT_THREAD_STEP_INTERVAL / Runtime.THREAD_STEP_INTERVAL;
         };
         setStepTime(this.userDefinedInterval);
 
@@ -278,7 +278,7 @@ class VMWrapper {
             return;
         }
 
-        const instrumented = () => original.call(device) * this.speedupFactor;
+        const instrumented = () => original.call(device) * this.accelerationFactor;
         instrumented.isInstrumented = true;
         device[method] = instrumented;
     }
@@ -292,7 +292,7 @@ class VMWrapper {
 
         const instrumented = (args, util) => {
             const clone = {...args};
-            clone[argument] = args[argument] / this.speedupFactor;
+            clone[argument] = args[argument] / this.accelerationFactor;
             return original(clone, util);
         };
         instrumented.isInstrumented = true;

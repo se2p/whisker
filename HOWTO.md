@@ -54,7 +54,13 @@ t.getRunTimeElapsed();
 t.getTotalStepsExecuted();
 t.getRunStepsExecuted();
 t.isProjectRunning();
-t.getCoverage(); // returns { covered, total } representing covered and total blocks
+
+// returns { covered, total } representing covered and total blocks
+t.getCoverage();
+// returns the amount of time passed since the start of the test-suite, independent of the test acceleration
+t.getTotalRealTimeElapsed();
+// returns the amount of time passed since the start of last run, independent of the test acceleration
+t.getRealRunTimeElapsed();
 
 /* Sprite information. */
 t.getSprites(condition, skipStage);
@@ -101,5 +107,12 @@ t.onConstraintFailure(action);
 t.greenFlag();
 t.getStageSize();
 t.end();
-t.log(message); // takes a string which gets logged into the log and output field 
+
+
+// Takes a string which gets logged into the log and output field
+t.log(message);
+ 
+// Returns the the acceleration factor, for example \texttt{10} at 300 Hz as the execution is accelerated by a
+// factor of 10 compared to the default 30 Hz frequency
+t.getAccelerationFactor(); // returns the accel
 ```
