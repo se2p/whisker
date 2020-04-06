@@ -68,6 +68,10 @@ class TestDriver {
         this.seedWhisker = random.seedWhisker;
         this.seedScratch = random.seedScratch;
 
+        this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
+        this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;
+        this.getAccelerationFactor = () => vmWrapper.accelerationFactor;
+
         if (props.extend) {
             defaults(this, props.extend);
         }

@@ -15,7 +15,7 @@ class TestRunner extends EventEmitter {
      * @returns {Promise<Array>} .
      */
     async runTests (vm, project, tests, props) {
-        if (typeof props === 'undefined') {
+        if (typeof props === 'undefined' || props === null) {
             props = {extend: {}};
         } else if (!props.hasOwnProperty('extend')) {
             props.extend = {};
@@ -63,6 +63,7 @@ class TestRunner extends EventEmitter {
      * @param {string} project .
      * @param {Test} test .
      * @param {{extend: object}} props .
+     *
      * @returns {Promise<TestResult>} .
      * @private
      */
@@ -70,19 +71,25 @@ class TestRunner extends EventEmitter {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project);
-        await util.prepare();
+        await util.prepare(props.frequency);
 
-        const testDriver = util.getTestDriver({
-            extend: {
-                assert: assert,
-                assume: assume,
-                log: message => {
-                    this._log(test, message);
-                    result.log.push(message);
-                },
-                ...props.extend
-            }
-        });
+        const testDriver = util.getTestDriver(
+            {
+                extend: {
+                    assert: assert,
+                    assume: assume,
+                    log: message => {
+                        this._log(test, message);
+                        result.log.push(message);
+                    },
+                    getCoverage: () => {
+                        const coverage = props.CoverageGenerator.getCoverage();
+                        return coverage.getCoverage();
+                    },
+                    ...props.extend
+                }
+            },
+        );
 
         this.emit(TestRunner.TEST_START, test);
 

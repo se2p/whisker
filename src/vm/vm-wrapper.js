@@ -129,7 +129,6 @@ class VMWrapper {
      */
     async run (condition, timeout, steps) {
         if (this.running) {
-            /* eslint-disable-next-line no-console */
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
                           'missing any await-statements in your test.');
         }
@@ -161,7 +160,7 @@ class VMWrapper {
         }
 
         this.running = false;
-        const timeElapsed = Date.now() - this.runStartTime;
+        const timeElapsed = this.getRunTimeElapsed();
 
         this.inputs.updateInputs(timeElapsed);
 
@@ -216,14 +215,14 @@ class VMWrapper {
      * @return {number} .
      */
     getTotalTimeElapsed () {
-        return Date.now() - this.startTime;
+        return (Date.now() - this.startTime) * this.accelerationFactor;
     }
 
     /**
      * @return {number} .
      */
     getRunTimeElapsed () {
-        return Date.now() - this.runStartTime;
+        return (Date.now() - this.runStartTime) * this.accelerationFactor;
     }
 
     /**
@@ -242,18 +241,59 @@ class VMWrapper {
 
     /**
      * @param {string} project .
+     * @param {number} frequency .
+     *
      * @returns {Promise<void>} .
      */
-    async setup (project) {
-        if (this.vm.runtime.compatibilityMode) {
-            this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
-            this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY);
-        } else {
+    async setup (project, frequency) {
+        const setStepTime = freq => {
+            delete Runtime.THREAD_STEP_INTERVAL;
+            Runtime.THREAD_STEP_INTERVAL = 1000 / freq;
             this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
             this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
-        }
-        clearInterval(this.vm.runtime._steppingInterval);
+            clearInterval(this.vm.runtime._steppingInterval);
+            this.accelerationFactor = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY / Runtime.THREAD_STEP_INTERVAL;
+        };
+        setStepTime(frequency);
+
+        this.instrumentPrimitive('control_wait', 'DURATION');
+        this.instrumentPrimitive('looks_sayforsecs', 'SECS');
+        this.instrumentPrimitive('looks_thinkforsecs', 'SECS');
+        this.instrumentPrimitive('motion_glidesecstoxy', 'SECS');
+        this.instrumentPrimitive('motion_glideto', 'SECS');
+
+        this.instrumentDevice('clock', 'projectTimer');
+
         return await this.vm.loadProject(project);
+    }
+
+    instrumentDevice (deviceName, method) {
+        const device = this.vm.runtime.ioDevices[deviceName];
+        const original = device[method];
+
+        if (original.isInstrumented) {
+            return;
+        }
+
+        const instrumented = () => original.call(device) * this.accelerationFactor;
+        instrumented.isInstrumented = true;
+        device[method] = instrumented;
+    }
+
+    instrumentPrimitive (primitive, argument) {
+        const original = this.vm.runtime._primitives[primitive];
+
+        if (original.isInstrumented) {
+            return;
+        }
+
+        const instrumented = (args, util) => {
+            const clone = {...args};
+            clone[argument] = args[argument] / this.accelerationFactor;
+            return original(clone, util);
+        };
+        instrumented.isInstrumented = true;
+        this.vm.runtime._primitives[primitive] = instrumented;
     }
 
     start () {
