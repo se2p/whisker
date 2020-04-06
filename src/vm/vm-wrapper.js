@@ -9,15 +9,9 @@ const {Constraints} = require('./constraints');
 
 class VMWrapper {
     /**
-     * @param {VirtualMachine} vm
-     * @param {object} wrapperOptions
+     * @param {VirtualMachine} vm .
      */
-    constructor (vm, wrapperOptions) {
-        this.userDefinedInterval = 1000 / wrapperOptions.frequency;
-        this.DEFAULT_THREAD_STEP_INTERVAL = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY;
-        delete Runtime.THREAD_STEP_INTERVAL;
-        this.userDefinedInterval = 1000 / wrapperOptions.frequency;
-
+    constructor (vm) {
         /**
          * @type {VirtualMachine}
          */
@@ -247,17 +241,20 @@ class VMWrapper {
 
     /**
      * @param {string} project .
+     * @param {number} frequency .
+     *
      * @returns {Promise<void>} .
      */
-    async setup (project) {
-        const setStepTime = interval => {
-            Runtime.THREAD_STEP_INTERVAL = interval;
+    async setup (project, frequency) {
+        const setStepTime = freq => {
+            delete Runtime.THREAD_STEP_INTERVAL;
+            Runtime.THREAD_STEP_INTERVAL = 1000 / freq;
             this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
             this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
             clearInterval(this.vm.runtime._steppingInterval);
-            this.accelerationFactor = this.DEFAULT_THREAD_STEP_INTERVAL / Runtime.THREAD_STEP_INTERVAL;
+            this.accelerationFactor = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY / Runtime.THREAD_STEP_INTERVAL;
         };
-        setStepTime(this.userDefinedInterval);
+        setStepTime(frequency);
 
         this.instrumentPrimitive('control_wait', 'DURATION');
         this.instrumentPrimitive('looks_sayforsecs', 'SECS');

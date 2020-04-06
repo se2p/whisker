@@ -12,11 +12,9 @@ class TestRunner extends EventEmitter {
      * @param {string} project .
      * @param {Test[]} tests .
      * @param {{extend: object}=} props .
-     * @param {object} wrapperOptions
-     * @param {CoverageGenerator} CoverageGenerator
      * @returns {Promise<Array>} .
      */
-    async runTests (vm, project, tests, props, wrapperOptions, CoverageGenerator) {
+    async runTests (vm, project, tests, props) {
         if (typeof props === 'undefined' || props === null) {
             props = {extend: {}};
         } else if (!props.hasOwnProperty('extend')) {
@@ -36,7 +34,7 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
-                result = await this._executeTest(vm, project, test, props, wrapperOptions, CoverageGenerator);
+                result = await this._executeTest(vm, project, test, props);
                 switch (result.status) {
                 case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
@@ -65,17 +63,15 @@ class TestRunner extends EventEmitter {
      * @param {string} project .
      * @param {Test} test .
      * @param {{extend: object}} props .
-     * @param {object} wrapperOptions
-     * @param {CoverageGenerator} CoverageGenerator
      *
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest (vm, project, test, props, wrapperOptions, CoverageGenerator) {
+    async _executeTest (vm, project, test, props) {
         const result = new TestResult(test);
 
-        const util = new WhiskerUtil(vm, project, wrapperOptions);
-        await util.prepare();
+        const util = new WhiskerUtil(vm, project);
+        await util.prepare(props.frequency);
 
         const testDriver = util.getTestDriver(
             {
@@ -87,7 +83,7 @@ class TestRunner extends EventEmitter {
                         result.log.push(message);
                     },
                     getCoverage: () => {
-                        const coverage = CoverageGenerator.getCoverage();
+                        const coverage = props.CoverageGenerator.getCoverage();
                         return coverage.getCoverage();
                     },
                     ...props.extend
