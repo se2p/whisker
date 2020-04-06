@@ -89,7 +89,6 @@ class Scratch extends EventEmitter {
         vm.attachStorage(storage);
         vm.attachV2SVGAdapter(SVGAdapter);
         vm.attachV2BitmapAdapter(bitmapAdapter);
-        vm.runtime.setCompatibilityMode(true);
 
         return vm;
     }

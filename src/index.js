@@ -16,6 +16,8 @@ const InputRecorder = require('./components/input-recorder');
 const Whisker = window.Whisker = {};
 window.$ = $;
 
+const SCRATCH_VM_FREQUENCY = 30;
+
 const loadTestsFromString = function (string) {
     let tests;
     try {
@@ -31,6 +33,7 @@ const loadTestsFromString = function (string) {
     Whisker.tests = tests;
     Whisker.testEditor.setValue(string);
     Whisker.testTable.setTests(tests);
+
     return tests;
 };
 
@@ -39,7 +42,8 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     CoverageGenerator.prepareThread(Thread);
     CoverageGenerator.prepare(vm);
 
-    const summary = await Whisker.testRunner.runTests(vm, project, tests);
+    const frequency = Number(document.querySelector('#scratch-vm-frequency').value);
+    const summary = await Whisker.testRunner.runTests(vm, project, tests, {frequency, CoverageGenerator});
     const coverage = CoverageGenerator.getCoverage();
 
     CoverageGenerator.restoreThread(Thread);
@@ -79,7 +83,7 @@ const runAllTests = async function () {
 };
 
 const initScratch = function () {
-    Whisker.scratch = new Scratch($('#scratch-stage')[0]);
+    Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
 
     $('#green-flag')
         .removeClass('btn-success')
@@ -118,11 +122,13 @@ const initComponents = function () {
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
-    Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.log(result.error));
+    Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
+
+    document.querySelector('#scratch-vm-frequency').value = SCRATCH_VM_FREQUENCY;
 };
 
 const initEvents = function () {
@@ -149,14 +155,6 @@ const initEvents = function () {
             Whisker.inputRecorder.stopRecording();
         } else {
             Whisker.inputRecorder.startRecording();
-        }
-    });
-
-    $('#toggle-input') .on('change', event => {
-        if ($(event.target).is(':checked')) {
-            Whisker.scratch.enableInput();
-        } else {
-            Whisker.scratch.disableInput();
         }
     });
 
@@ -207,14 +205,14 @@ const initEvents = function () {
 
 const toggleComponents = function () {
     if (window.localStorage) {
-        console.log('Restoring which components are displayed.');
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
-            const [input, tests, editor, output] = JSON.parse(componentStates);
+            const [input, tests, editor, output, scratchVMFrequency] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
             if (tests) $('#toggle-tests').click();
             if (editor) $('#toggle-editor').click();
             if (output) $('#toggle-output').click();
+            if (scratchVMFrequency) document.querySelector('#scratch-vm-frequency').value = scratchVMFrequency;
         }
     }
 };
@@ -228,12 +226,12 @@ $(document).ready(() => {
 
 window.onbeforeunload = function () {
     if (window.localStorage) {
-        console.log('Saving which components are displayed.');
         const componentStates = [
             $('#toggle-input').is(':checked'),
             $('#toggle-tests').is(':checked'),
             $('#toggle-editor').is(':checked'),
-            $('#toggle-output').is(':checked')
+            $('#toggle-output').is(':checked'),
+            document.querySelector('#scratch-vm-frequency').value
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
