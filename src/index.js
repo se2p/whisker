@@ -42,8 +42,8 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     CoverageGenerator.prepareThread(Thread);
     CoverageGenerator.prepare(vm);
 
-    const wrapperOptions = {frequency: Number(document.querySelector('#scratch-vm-frequency').value)};
-    const summary = await Whisker.testRunner.runTests(vm, project, tests, null, wrapperOptions, CoverageGenerator);
+    const frequency = Number(document.querySelector('#scratch-vm-frequency').value);
+    const summary = await Whisker.testRunner.runTests(vm, project, tests, {frequency, CoverageGenerator});
     const coverage = CoverageGenerator.getCoverage();
 
     CoverageGenerator.restoreThread(Thread);

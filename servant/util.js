@@ -44,8 +44,8 @@ const cli = {
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
             .option('-c, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
-            .option('-o, --isLifeOutputCoverage', 'If the new output of the coverage should be printed regulary', false)
-            .option('-l, --isLifeLogEnabled', 'If the new output of the log should be printed regulary', false);
+            .option('-o, --isLifeOutputCoverage', 'If the new output of the coverage should be printed regularly', false)
+            .option('-l, --isLifeLogEnabled', 'If the new output of the log should be printed regularly', false);
 
         commander.parse(process.argv);
 

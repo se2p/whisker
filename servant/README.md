@@ -1,6 +1,6 @@
 # The Servant
 
-The Servant is a wrapper around the whisker web client, allowing to run tests automatically in a headless environment (via chrome-headless / (puppeteer)[https://github.com/puppeteer/puppeteer]).
+The Servant is a wrapper around the whisker web client, allowing to run tests automatically in a headless environment (via chrome-headless / (puppeteer)[https://github.com/puppeteer/puppeteer]). It is called the Servant as in "Cats don't have owners they have servants".
 
 # Installation
 
