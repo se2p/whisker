@@ -1,4 +1,4 @@
-import { Chromosome } from "../chromosomes/Chromosome";
+import { Chromosome } from "./Chromosome";
 
 /**
  * Mutation introduces new genetic material to create a offspring by modifying the parent chromosome.

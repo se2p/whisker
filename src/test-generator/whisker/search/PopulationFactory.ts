@@ -1,6 +1,6 @@
 import { ChromosomeGenerator } from "./ChromosomeGenerator"
 import { Chromosome } from "./Chromosome"
-import { List } from "../util/List"
+import { List } from "../utils/List"
 import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 
 /**

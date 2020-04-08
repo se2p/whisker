@@ -1,5 +1,5 @@
 import { SearchAlgorithm } from "./SearchAlgorithm";
-import { Chromosome } from "../chromosomes/Chromosome";
+import { Chromosome } from "./Chromosome";
 import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
 import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 

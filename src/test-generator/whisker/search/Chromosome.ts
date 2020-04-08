@@ -1,7 +1,7 @@
-import { FitnessFunction } from "../fitness/FitnessFunction"
-import { Pair } from "../util/Pair"
-import { Mutation } from "../operators/Mutation"
-import { Crossover } from "../operators/Crossover"
+import { FitnessFunction } from "./FitnessFunction"
+import { Pair } from "../utils/Pair"
+import { Mutation } from "./Mutation"
+import { Crossover } from "./Crossover"
 import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 
 /**

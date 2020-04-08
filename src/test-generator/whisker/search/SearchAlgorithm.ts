@@ -1,5 +1,5 @@
-import { List } from "../util/List";
-import { Chromosome } from "../chromosomes/Chromosome";
+import { List } from "../utils/List";
+import { Chromosome } from "./Chromosome";
 import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
 
 /**

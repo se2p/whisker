@@ -1,5 +1,5 @@
 import { List } from "./List";
-import { Chromosome } from "../chromosomes/Chromosome";
+import { Chromosome } from "../search/Chromosome";
 import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 
 /**

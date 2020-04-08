@@ -1,5 +1,5 @@
-import { Chromosome } from "../chromosomes/Chromosome";
-import { List } from "../util/List";
+import { Chromosome } from "./Chromosome";
+import { List } from "../utils/List";
 
 /**
  * The selection operator is responsible for determining which chromosomes should be subjected to
