@@ -1,6 +1,6 @@
-import { SearchAlgorithm } from "./searchAlgorithm";
-import { Chromosome } from "../chromosomes/chromosome";
-import { SearchAlgorithmProperties } from "./searchAlgorithmProperties";
+import { SearchAlgorithm } from "./SearchAlgorithm";
+import { Chromosome } from "../chromosomes/Chromosome";
+import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
 
 /**
  * This factory is used to instantiate and configure the search algorithm.
@@ -15,7 +15,7 @@ export class SearchAlgorithmFactory<C extends Chromosome<C>> {
     /**
      * The search algorithm to be configured.
      */
-    private searchAlgorithm: SearchAlgorithm<C>;
+    private _searchAlgorithm: SearchAlgorithm<C>;
 
     /**
      * Instantiates the search algorithm.

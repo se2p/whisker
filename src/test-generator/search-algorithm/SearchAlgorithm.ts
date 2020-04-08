@@ -1,6 +1,6 @@
-import { List } from "../util/list";
-import { Chromosome } from "../chromosomes/chromosome";
-import { SearchAlgorithmProperties } from "./searchAlgorithmProperties";
+import { List } from "../util/List";
+import { Chromosome } from "../chromosomes/Chromosome";
+import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.

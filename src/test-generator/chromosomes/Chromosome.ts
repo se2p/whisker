@@ -1,7 +1,7 @@
-import { FitnessFunction } from "../fitness/fitnessFunction"
-import { Pair } from "../util/pair"
-import { Mutation } from "../operators/mutation"
-import { Crossover } from "../operators/crossover"
+import { FitnessFunction } from "../fitness/FitnessFunction"
+import { Pair } from "../util/Pair"
+import { Mutation } from "../operators/Mutation"
+import { Crossover } from "../operators/Crossover"
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -14,12 +14,12 @@ export abstract class Chromosome<C extends Chromosome<C>> {
     /**
      * The crossover operation that defines how to manipulate the gene of two chromosomes. 
      */
-    private crossoverOp: Crossover<C>;
+    private _crossoverOp: Crossover<C>;
 
     /**
      * The mutation operator that defines how to mutate the chromosome.
      */
-    private mutationOp: Mutation<C>;
+    private _mutationOp: Mutation<C>;
 
     /**
      * Constructs a new chromosome using the specified crossover and mutation.
@@ -27,8 +27,8 @@ export abstract class Chromosome<C extends Chromosome<C>> {
      * @param mutation the strategy to perform mutation
      */
     constructor(crossover: Crossover<C>, mutation: Mutation<C>) {
-        this.crossoverOp = crossover;
-        this.mutationOp = mutation;
+        this._crossoverOp = crossover;
+        this._mutationOp = mutation;
     }
 
     /**

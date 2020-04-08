@@ -9,12 +9,12 @@ export class Pair<T> {
     /**
      * The first element of the pair.
      */
-    private first: T;
+    private _first: T;
 
     /**
      * The second element of the pair.
      */
-    private second: T;
+    private _second: T;
 
     /**
      * Creates a new pair from the specified elements.
@@ -22,8 +22,8 @@ export class Pair<T> {
      * @param second element two
      */
     constructor(first: T, second: T) {
-        this.first = first;
-        this.second = second;
+        this._first = first;
+        this._second = second;
     }
 
     /**
@@ -31,7 +31,7 @@ export class Pair<T> {
      * @returns the first element
      */
     getFirst(): T {
-        return this.first;
+        return this._first;
     }
 
     /**
@@ -39,7 +39,7 @@ export class Pair<T> {
      * @returns the second element
      */
     getSecond(): T {
-        return this.second;
+        return this._second;
     }
 
     /**

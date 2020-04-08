@@ -10,17 +10,17 @@ export class SearchAlgorithmProperties {
     /**
      * The size of the population that will be initially generated.
      */
-    private populationSize: number;
+    private _populationSize: number;
 
     /**
      * The propability for applying crossover to chromosomes.
      */
-    private crossoverProbability: number;
+    private _crossoverProbability: number;
 
     /**
      * The probability to apply mutation to a chromosome.
      */
-    private mutationProbablity: number;
+    private _mutationProbablity: number;
 
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
@@ -29,9 +29,9 @@ export class SearchAlgorithmProperties {
      * @param mutationProbability the probability for mutation
      */
     constructor(populationSize: number, crossoverProbability: number, mutationProbability: number) {
-        this.populationSize = populationSize;
-        this.crossoverProbability = crossoverProbability;
-        this.mutationProbablity = mutationProbability;
+        this._populationSize = populationSize;
+        this._crossoverProbability = crossoverProbability;
+        this._mutationProbablity = mutationProbability;
     }
 
     /**
@@ -39,7 +39,7 @@ export class SearchAlgorithmProperties {
      * @returns population size
      */
     getPopulationSize(): number {
-        return this.populationSize;
+        return this._populationSize;
     }
 
     /**
@@ -47,7 +47,7 @@ export class SearchAlgorithmProperties {
      * @returns probability to apply crossover
      */
     getCrossoverProbability(): number {
-        return this.crossoverProbability;
+        return this._crossoverProbability;
     }
 
     /**
@@ -55,7 +55,7 @@ export class SearchAlgorithmProperties {
      * @returns probability to apply mutation
      */
     getMutationProbablity(): number {
-        return this.mutationProbablity;
+        return this._mutationProbablity;
     }
 
     /**
@@ -63,7 +63,7 @@ export class SearchAlgorithmProperties {
      * @param populationSize the new population size
      */
     setPopulationSize(populationSize: number): void {
-        this.populationSize = populationSize;
+        this._populationSize = populationSize;
     }
 
     /**
@@ -71,7 +71,7 @@ export class SearchAlgorithmProperties {
      * @param crossoverProbability the new crossover probability
      */
     setCrossoverProbability(crossoverProbability: number): void {
-        this.crossoverProbability = crossoverProbability;
+        this._crossoverProbability = crossoverProbability;
     }
 
     /**
@@ -79,7 +79,7 @@ export class SearchAlgorithmProperties {
      * @param mutationProbablity the new mutation probability
      */
     setMutationProbablity(mutationProbablity: number): void {
-        this.mutationProbablity = mutationProbablity;
+        this._mutationProbablity = mutationProbablity;
     }
 
 }

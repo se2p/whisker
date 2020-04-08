@@ -9,13 +9,13 @@ export class List<T> {
     /**
      * The list of the elements.
      */
-    private items: T[];
+    private _items: T[];
 
     /**
      * Creates an empty list.
      */
     constructor() {
-        this.items = [];
+        this._items = [];
     }
 
     /**
@@ -23,7 +23,7 @@ export class List<T> {
      * @returns the number of elements in this list
      */
     size(): number {
-        return this.items.length;
+        return this._items.length;
     }
 
     /**
@@ -39,7 +39,7 @@ export class List<T> {
      * @param element element to be added to the list
      */
     add(element: T): void {
-        this.items.push(element);
+        this._items.push(element);
     }
 
     /**
@@ -48,6 +48,6 @@ export class List<T> {
      * @returns the element at the specified position in the list
      */
     get(index: number): T {
-        return this.items[index];
+        return this._items[index];
     }
 }

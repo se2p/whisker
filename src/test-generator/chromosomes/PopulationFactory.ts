@@ -1,6 +1,6 @@
-import { ChromosomeGenerator } from "./chromosomeGenerator"
-import { Chromosome } from "./chromosome"
-import { List } from "../util/list"
+import { ChromosomeGenerator } from "./ChromosomeGenerator"
+import { Chromosome } from "./Chromosome"
+import { List } from "../util/List"
 
 /**
  * A factory for populations of genetic algorithms.

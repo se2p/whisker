@@ -1,5 +1,5 @@
-import { List } from "./list";
-import { Chromosome } from "../chromosomes/chromosome";
+import { List } from "./List";
+import { Chromosome } from "../chromosomes/Chromosome";
 
 /**
  * A printer to retrieve the data about each run of the search algorithm.

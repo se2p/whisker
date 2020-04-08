@@ -1,4 +1,4 @@
-import { Chromosome } from "./chromosome"
+import { Chromosome } from "./Chromosome"
 
 /**
  * A generator for random chromosomes.

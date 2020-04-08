@@ -1,4 +1,4 @@
-import { Chromosome } from "../chromosomes/chromosome";
+import { Chromosome } from "../chromosomes/Chromosome";
 
 /**
  * Mutation introduces new genetic material to create a offspring by modifying the parent chromosome.
@@ -14,5 +14,5 @@ export interface Mutation<C extends Chromosome<C>> {
      * @returns the offspring fromed by mutating the parent
      */
     apply(chromosome: C): C;
-    
+
 }

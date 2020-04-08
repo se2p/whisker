@@ -1,4 +1,4 @@
-import { Chromosome } from "../chromosomes/chromosome"
+import { Chromosome } from "../chromosomes/Chromosome"
 
 /**
  * A fitness function maps a given chromosome onto a numeric value that represents the goodness of

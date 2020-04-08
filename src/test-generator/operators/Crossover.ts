@@ -1,5 +1,5 @@
-import { Chromosome } from "../chromosomes/chromosome";
-import { Pair } from "../util/pair";
+import { Chromosome } from "../chromosomes/Chromosome";
+import { Pair } from "../util/Pair";
 
 /**
  * The crossover operator recombines the genetic material of two given chromosomes.
