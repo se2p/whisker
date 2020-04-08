@@ -1,6 +1,7 @@
 import { SearchAlgorithm } from "./SearchAlgorithm";
 import { Chromosome } from "../chromosomes/Chromosome";
 import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
+import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 
 /**
  * This factory is used to instantiate and configure the search algorithm.
@@ -21,13 +22,13 @@ export class SearchAlgorithmFactory<C extends Chromosome<C>> {
      * Instantiates the search algorithm.
      */
     instantiateSearchAlgorithm(): void {
-        console.log('SearchAlgorithmFactory#instantiateSearchAlgorithm not implemented.');
+        throw new NotYetImplemented();
     }
 
     /**
      * Sets the properties for the search algorithm.
      */
     configureSearchAlgorithm(properties: SearchAlgorithmProperties): void {
-        console.log('SearchAlgorithmFactory#configureSearchAlgorithm not implemented.');
+        throw new NotYetImplemented();
     }
 }

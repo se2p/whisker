@@ -1,5 +1,6 @@
 import { List } from "./List";
 import { Chromosome } from "../chromosomes/Chromosome";
+import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 
 /**
  * A printer to retrieve the data about each run of the search algorithm.
@@ -15,8 +16,7 @@ export class DataPrinter<C extends Chromosome<C>> {
      * @returns the achieved coverage of the population
      */
     achievedCoverage(population: List<C>): number {
-        console.log('DataPrinter#achievedCoverage not implemented');
-        return null;
+        throw new NotYetImplemented();
     }
 
     /**
@@ -25,14 +25,13 @@ export class DataPrinter<C extends Chromosome<C>> {
      * @returns the number of results
      */
     resultSize(population: List<C>): number {
-        console.log('DataPrinter#resultSize not implemented');
-        return null;
+        throw new NotYetImplemented();
     }
 
     /**
      * Prints out the retrieved data.
      */
     print(): void {
-        console.log('DataPrinter#print not implemented');
+        throw new NotYetImplemented();
     }
 }

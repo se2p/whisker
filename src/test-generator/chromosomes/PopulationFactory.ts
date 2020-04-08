@@ -1,6 +1,7 @@
 import { ChromosomeGenerator } from "./ChromosomeGenerator"
 import { Chromosome } from "./Chromosome"
 import { List } from "../util/List"
+import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 
 /**
  * A factory for populations of genetic algorithms.
@@ -20,7 +21,6 @@ export class PopulationFactory  {
      * @returns the resultion population of chromosomes
     */
     static generate<C extends Chromosome<C>>(generator: ChromosomeGenerator<C>, size: number): List<C> {
-        console.log('PopulationFactory#generate not implemented');
-        return null;
+        throw new NotYetImplemented();
     }
 }

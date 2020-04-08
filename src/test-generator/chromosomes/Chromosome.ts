@@ -2,6 +2,7 @@ import { FitnessFunction } from "../fitness/FitnessFunction"
 import { Pair } from "../util/Pair"
 import { Mutation } from "../operators/Mutation"
 import { Crossover } from "../operators/Crossover"
+import { NotYetImplemented } from "../core/exception/NotYetImplemented";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -39,8 +40,7 @@ export abstract class Chromosome<C extends Chromosome<C>> {
         // TODO: I am not sure if this will work (Would be only syntactic sugar)
         // because 'this' cannot be given to mutation as parameter.
         // There is a problem with the generic types.
-        console.log('Chromosome#mutation not implemented');
-        return null;
+        throw new NotYetImplemented();
     }
 
     /**
@@ -50,8 +50,7 @@ export abstract class Chromosome<C extends Chromosome<C>> {
      */
     crossover(other: C): Pair<C> {
         // TODO: Same issue as in 'mutate'
-        console.log('Chromosome#crossover not implemented');
-        return null;
+        throw new NotYetImplemented();
     }
 
     /**
@@ -62,7 +61,6 @@ export abstract class Chromosome<C extends Chromosome<C>> {
      */
     getFitness(fitnessFunction: FitnessFunction<C>): number {
         // TODO: Same issue as in 'mutate'
-        console.log('Chromosome#getFitness not implemented');
-        return null;
+        throw new NotYetImplemented();
     }
 }
