@@ -1,8 +1,29 @@
+/*
+ * Copyright (C) 2020 Whisker contributors
+ *
+ * This file is part of the Whisker test generator for Scratch.
+ * 
+ * Whisker is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Whisker is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Whisker.
+ * If not, see http://www.gnu.org/licenses/.
+ * 
+ */
+
 import { FitnessFunction } from "./FitnessFunction"
 import { Pair } from "../utils/Pair"
 import { Mutation } from "./Mutation"
 import { Crossover } from "./Crossover"
-import { NotYetImplemented } from "../core/exception/NotYetImplemented";
+import { NotYetImplementedException } from "../core/exceptions/NotYetImplementedException";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -40,7 +61,7 @@ export abstract class Chromosome<C extends Chromosome<C>> {
         // TODO: I am not sure if this will work (Would be only syntactic sugar)
         // because 'this' cannot be given to mutation as parameter.
         // There is a problem with the generic types.
-        throw new NotYetImplemented();
+        throw new NotYetImplementedException();
     }
 
     /**
@@ -50,7 +71,7 @@ export abstract class Chromosome<C extends Chromosome<C>> {
      */
     crossover(other: C): Pair<C> {
         // TODO: Same issue as in 'mutate'
-        throw new NotYetImplemented();
+        throw new NotYetImplementedException();
     }
 
     /**
@@ -61,6 +82,6 @@ export abstract class Chromosome<C extends Chromosome<C>> {
      */
     getFitness(fitnessFunction: FitnessFunction<C>): number {
         // TODO: Same issue as in 'mutate'
-        throw new NotYetImplemented();
+        throw new NotYetImplementedException();
     }
 }
