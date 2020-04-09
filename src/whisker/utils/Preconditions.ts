@@ -19,13 +19,23 @@
  * 
  */
 
-/**
- * Exception class for functions that are not yet implemented.
- */
-export class NotYetImplementedException extends Error {
+import { IllegalArgumentException } from "../core/exceptions/IllegalArgumentException";
 
-    constructor() {
-        super("TODO: Not yet implemented!");
+/**
+ * TODO
+ */
+export class Preconditions {
+
+    public static checkArgument(condition: boolean, message?: string): void {
+        if (!condition) {
+            if (message) {
+                throw new IllegalArgumentException(message);
+            } else {
+                throw new IllegalArgumentException("Illegal argument!");
+            }
+        }
     }
+
+    // TODO add needed preconditions
 
 }

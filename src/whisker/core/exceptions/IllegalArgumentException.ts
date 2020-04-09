@@ -20,12 +20,8 @@
  */
 
 /**
- * Exception class for functions that are not yet implemented.
+ * Exception class for incorrect input arguments.
  */
-export class NotYetImplementedException extends Error {
-
-    constructor() {
-        super("TODO: Not yet implemented!");
-    }
+export class IllegalArgumentException extends Error {
 
 }
