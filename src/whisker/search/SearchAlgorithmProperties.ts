@@ -19,6 +19,8 @@
  * 
  */
 
+import { StoppingCondition } from "./StoppingCondition";
+
 /**
  * This class stores all relevant properties from a search algorithm.
  * 
@@ -34,6 +36,11 @@ export class SearchAlgorithmProperties {
     private _populationSize: number;
 
     /**
+     * The length of a chromosome.
+     */
+    private _chromosomeLength: number;
+
+    /**
      * The propability for applying crossover to chromosomes.
      */
     private _crossoverProbability: number;
@@ -42,6 +49,11 @@ export class SearchAlgorithmProperties {
      * The probability to apply mutation to a chromosome.
      */
     private _mutationProbablity: number;
+
+    /**
+     * The stopping condition for the corresponding search algorithm.
+     */
+    private _stoppingCondition: StoppingCondition;
 
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
@@ -64,6 +76,14 @@ export class SearchAlgorithmProperties {
     }
 
     /**
+     * Returns the size of a chromosome.
+     * @returns the length of a chromosome
+     */
+    getChromosomeLength(): number {
+        return this._chromosomeLength;
+    }
+
+    /**
      * Returns the crossover probability.
      * @returns probability to apply crossover
      */
@@ -80,11 +100,27 @@ export class SearchAlgorithmProperties {
     }
 
     /**
+     * Returns the stopping condition that is specified for the search algorithm.
+     * @returns the specified stopping condition
+     */
+    getStoppingCondition(): StoppingCondition {
+        return this._stoppingCondition;
+    }
+
+    /**
      * Sets the size of the population to the specified number.
      * @param populationSize the new population size
      */
     setPopulationSize(populationSize: number): void {
         this._populationSize = populationSize;
+    }
+    
+    /**
+     * Sets the length of the chromosomes to the specified size.
+     * @param chromosomeLength the length of the chromosomes
+     */
+    setChromosomeLength(chromosomeLength: number): void {
+        this._chromosomeLength = chromosomeLength;
     }
 
     /**
@@ -101,6 +137,14 @@ export class SearchAlgorithmProperties {
      */
     setMutationProbablity(mutationProbablity: number): void {
         this._mutationProbablity = mutationProbablity;
+    }
+
+    /**
+     * Sets the stopping condition to the given condition.
+     * @param stoppingCondition the stopping condition
+     */
+    setStoppingCondition(stoppingCondition: StoppingCondition): void {
+        this._stoppingCondition = stoppingCondition;
     }
 
 }

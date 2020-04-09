@@ -22,6 +22,7 @@
 import { List } from "../utils/List";
 import { Chromosome } from "./Chromosome";
 import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
+import { ChromosomeGenerator } from "./ChromosomeGenerator";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -31,7 +32,9 @@ import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
  */
 export interface SearchAlgorithm<C extends Chromosome<C>> {
 
-    properties: SearchAlgorithmProperties;
+    _properties: SearchAlgorithmProperties;
+
+    _chromosomeGenerator: ChromosomeGenerator<C>;
 
     /**
      * Returns a list of possible admissible solutions for the given problem.
@@ -44,4 +47,11 @@ export interface SearchAlgorithm<C extends Chromosome<C>> {
      * @param properties the properties for the search algorithm
      */
     setProperties(properties: SearchAlgorithmProperties): void;
+
+    /**
+     * Sets the chromosome generator for this search algorithm.
+     * @param generator the generator to create a chromosome
+     */
+    setChromosomeGenerator(generator: ChromosomeGenerator<C>): void;
+
 }

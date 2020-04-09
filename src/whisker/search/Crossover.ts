@@ -45,6 +45,6 @@ export interface Crossover<C extends Chromosome<C>> {
      * @param parents the pair of parent chromosomes
      * @returns the offspirng formed by applying crossover to the given parents
      */
-    applyToPair(parents: Pair<C>): Pair<C>;
+    applyFromPair(parents: Pair<C>): Pair<C>;
 
 }
