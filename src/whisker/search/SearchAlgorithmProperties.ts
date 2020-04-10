@@ -2,33 +2,34 @@
  * Copyright (C) 2020 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
- * 
+ *
  * Whisker is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Whisker is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Whisker.
  * If not, see http://www.gnu.org/licenses/.
- * 
+ *
  */
 
 import { StoppingCondition } from "./StoppingCondition";
+import {Chromosome} from "./Chromosome";
 
 /**
  * This class stores all relevant properties from a search algorithm.
- * 
+ *
  * TODO: not complete yet
- * 
+ *
  * @author Sophia Geserer
  */
-export class SearchAlgorithmProperties {
+export class SearchAlgorithmProperties<C extends Chromosome> {
 
     /**
      * The size of the population that will be initially generated.
@@ -53,7 +54,7 @@ export class SearchAlgorithmProperties {
     /**
      * The stopping condition for the corresponding search algorithm.
      */
-    private _stoppingCondition: StoppingCondition;
+    private _stoppingCondition: StoppingCondition<C>;
 
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
@@ -103,7 +104,7 @@ export class SearchAlgorithmProperties {
      * Returns the stopping condition that is specified for the search algorithm.
      * @returns the specified stopping condition
      */
-    getStoppingCondition(): StoppingCondition {
+    getStoppingCondition(): StoppingCondition<C> {
         return this._stoppingCondition;
     }
 
@@ -114,7 +115,7 @@ export class SearchAlgorithmProperties {
     setPopulationSize(populationSize: number): void {
         this._populationSize = populationSize;
     }
-    
+
     /**
      * Sets the length of the chromosomes to the specified size.
      * @param chromosomeLength the length of the chromosomes
@@ -143,7 +144,7 @@ export class SearchAlgorithmProperties {
      * Sets the stopping condition to the given condition.
      * @param stoppingCondition the stopping condition
      */
-    setStoppingCondition(stoppingCondition: StoppingCondition): void {
+    setStoppingCondition(stoppingCondition: StoppingCondition<C>): void {
         this._stoppingCondition = stoppingCondition;
     }
 
