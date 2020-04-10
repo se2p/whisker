@@ -18,37 +18,27 @@
  *
  */
 
-import { SearchAlgorithm } from "./SearchAlgorithm";
-import { Chromosome } from "./Chromosome";
-import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
-import { NotYetImplementedException } from "../core/exceptions/NotYetImplementedException";
+import {TestChromosome} from '../testcase/TestChromosome';
+import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 
 /**
- * This factory is used to instantiate and configure the search algorithm.
- *
- * // TODO: not sure about this class
- *
- * @param <C> the type of chromosomes the factory handles
- * @author Sophia Geserer
+ * Internal representation of a test case such that we
+ * can write them to a file. Main functionality is thus
+ * retrieving a JavaScript representation in Whisker
+ * format.
  */
-export class SearchAlgorithmFactory<C extends Chromosome> {
+export class WhiskerTest {
 
-    /**
-     * The search algorithm to be configured.
-     */
-    private _searchAlgorithm: SearchAlgorithm<C>;
-
-    /**
-     * Instantiates the search algorithm.
-     */
-    instantiateSearchAlgorithm(): SearchAlgorithm<C> {
+    // TODO: Could also use a static factory to convert from TestChromosome?
+    // eslint-disable-next-line no-unused-vars
+    constructor (test: TestChromosome) {
         throw new NotYetImplementedException();
     }
 
     /**
-     * Sets the properties for the search algorithm.
+     * JavaScript code that can be executed with the regular Whisker UI
      */
-    configureSearchAlgorithm(properties: SearchAlgorithmProperties<C>): void {
+    toJavaScriptCode (): string {
         throw new NotYetImplementedException();
     }
 }

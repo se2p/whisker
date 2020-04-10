@@ -20,8 +20,8 @@
 
 
 import {List} from "../../../../src/whisker/utils/List";
-import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstrings/OneMaxFitnessFunction";
-import {BitstringChromosome} from "../../../../src/whisker/bitstrings/BitstringChromosome";
+import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
+import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";

@@ -47,6 +47,11 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return fitnessValue === 0.0;
     }
 
+    isCovered(chromosome: TestChromosome): boolean {
+        return this.isOptimal(this.getFitness(chromosome));
+    }
+
+
     private _getApproachLevel(trace: ExecutionTrace) {
         // TODO: Store target node as field
         // TODO: Measure distance between target node and execution trace in CDG
