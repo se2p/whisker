@@ -24,16 +24,30 @@ import {List} from '../utils/List';
 
 export class TestSuiteWriter {
 
+    /**
+     * Create a Whisker test suite file from a list of tests
+     *
+     * @param fileName to write the contents to
+     * @param tests to write to fileName
+     */
     writeTests(fileName: string, tests: List<WhiskerTest>): void {
+        // eslint-disable-next-line no-unused-vars
         const fileContents = this._getFileContents(tests);
         // TODO: Write fileContents to file with name fileName
         throw new NotYetImplementedException();
     }
 
-    _getFileContents(tests: List<WhiskerTest>): string {
+    /**
+     * Convert a list of WhiskerTests into an executable Whisker test file
+     *
+     * @param tests the tests
+     * @returns the entire file contents of the Whisker test suite
+     * @private
+     */
+    _getFileContents (tests: List<WhiskerTest>): string {
         let fileContents = this._getHeader();
 
-        for(const test of tests) {
+        for (const test of tests) {
             fileContents += test.toJavaScriptCode();
         }
 
@@ -42,11 +56,19 @@ export class TestSuiteWriter {
         return fileContents;
     }
 
-    _getHeader(): string {
+    /**
+     * Handle imports, any boiler plate text, etc.
+     * @private
+     */
+    _getHeader (): string {
         throw new NotYetImplementedException();
     }
 
-    _getFooter(): string {
+    /**
+     * Anything necessary to complete the Whisker test file
+     * @private
+     */
+    _getFooter (): string {
         throw new NotYetImplementedException();
     }
 }

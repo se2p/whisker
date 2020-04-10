@@ -20,6 +20,13 @@
 
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 
+/**
+ * This class provides an entrypoint for analysing Scratch projects.
+ * We need this to:
+ * - Extract coverage goals (fitness functions)
+ * - Extract constants for seeding numbers and text
+ * - Probably for instantiating the VM runtime
+ */
 export class ScratchProject {
 
     // eslint-disable-next-line no-unused-vars

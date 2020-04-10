@@ -51,7 +51,7 @@ export abstract class Chromosome {
 
     /**
      * Pairs this chromosome with the other given chromosome and returns the resulting offspring.
-     * @param other the chomosome to pair with
+     * @param other the chromosome to pair with
      * @returns the offspring
      */
     crossover(other: this): Pair<this> {

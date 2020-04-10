@@ -25,8 +25,14 @@ import {WhiskerTest} from './WhiskerTest';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {TestChromosomeGenerator} from '../testcases/TestChromosomeGenerator';
 
+/**
+ * A naive approach to generating tests is to simply
+ * use the chromosome factory and generate completely
+ * random tests.
+ */
 export class RandomTestGenerator implements TestGenerator {
 
+    // eslint-disable-next-line no-unused-vars
     generateTests(project: ScratchProject) : List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
 

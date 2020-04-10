@@ -19,15 +19,26 @@
  */
 
 import {TestChromosome} from '../testcases/TestChromosome';
-import {NotYetImplementedException} from "../core/exceptions/NotYetImplementedException";
+import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 
+/**
+ * Internal representation of a test case such that we
+ * can write them to a file. Main functionality is thus
+ * retrieving a JavaScript representation in Whisker
+ * format.
+ */
 export class WhiskerTest {
 
+    // TODO: Could also use a static factory to convert from TestChromosome?
+    // eslint-disable-next-line no-unused-vars
     constructor (test: TestChromosome) {
         throw new NotYetImplementedException();
     }
 
-    toJavaScriptCode(): string {
+    /**
+     * JavaScript code that can be executed with the regular Whisker UI
+     */
+    toJavaScriptCode (): string {
         throw new NotYetImplementedException();
     }
 }

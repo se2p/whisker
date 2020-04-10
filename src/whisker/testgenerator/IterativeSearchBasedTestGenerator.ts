@@ -28,6 +28,11 @@ import {TestChromosome} from '../testcases/TestChromosome';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {WhiskerTest} from './WhiskerTest';
 
+/**
+ * To generate a test suite using single-objective search,
+ * this class iterates over the list of coverage goals in
+ * a project and instantiates a new search for each goal.
+ */
 export class IterativeSearchBasedTestGenerator implements TestGenerator {
 
     generateTests(project: ScratchProject) : List<WhiskerTest> {

@@ -25,12 +25,17 @@ import {WhiskerTest} from './WhiskerTest';
 import {TestChromosome} from '../testcases/TestChromosome';
 import {SearchAlgorithmFactory} from '../search/SearchAlgorithmFactory';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {StatementCoverageFitness} from "../testcases/StatementFitnessFunction";
-import {NotYetImplementedException} from "../core/exceptions/NotYetImplementedException";
+import {StatementCoverageFitness} from '../testcases/StatementFitnessFunction';
+import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 
+/**
+ * A many-objective search algorithm can generate tests
+ * for all coverage objectives at the same time.
+ */
 export class ManyObjectiveTestGenerator implements TestGenerator {
 
     generateTests(project: ScratchProject) : List<WhiskerTest> {
+        // eslint-disable-next-line no-unused-vars
         const fitnessFunctions = this._extractCoverageGoals(project);
         const searchFactory = new SearchAlgorithmFactory<TestChromosome>();
         // TODO: Where do the properties come from?
