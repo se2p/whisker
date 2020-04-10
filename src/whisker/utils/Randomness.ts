@@ -25,11 +25,11 @@
  */
 export class Randomness {
 
-    private static instance: Randomness;
+    private static _instance: Randomness;
 
-    private static initialSeed: number;
+    private static _initialSeed: number;
 
-    private seed: number;
+    private _seed: number;
 
     /**
      * Private constructor to prevent construction with new
@@ -37,23 +37,23 @@ export class Randomness {
      * @param seed -- seed to initialize with
      */
     private constructor() {
-        if(Randomness.initialSeed) {
-            this.seed = Randomness.initialSeed;
+        if(Randomness._initialSeed) {
+            this._seed = Randomness._initialSeed;
         } else {
-            this.seed = Date.now();
+            this._seed = Date.now();
         }
-        console.log("Using random seed ",this.seed)
+        console.log("Using random seed ",this._seed)
     }
 
     /**
      * Instance accessor
      */
     public static getInstance(): Randomness {
-        if (!Randomness.instance) {
-            Randomness.instance = new Randomness();
+        if (!Randomness._instance) {
+            Randomness._instance = new Randomness();
         }
 
-        return Randomness.instance;
+        return Randomness._instance;
     }
 
     /**
@@ -63,15 +63,15 @@ export class Randomness {
      * @param seed the initial seed
      */
     public static setInitialSeed(seed:number) {
-        Randomness.initialSeed = seed;
+        Randomness._initialSeed = seed;
     }
 
     private next(min:number, max:number):number {
         max = max || 0;
         min = min || 0;
 
-        this.seed = (this.seed * 9301 + 49297) % 233280;
-        const rnd = this.seed / 233280;
+        this._seed = (this._seed * 9301 + 49297) % 233280;
+        const rnd = this._seed / 233280;
 
         return min + rnd * (max - min);
     }
