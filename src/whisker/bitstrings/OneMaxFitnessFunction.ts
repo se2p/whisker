@@ -39,9 +39,7 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
 
         // This whole loop could probably be summarised in a single line
         // if we used an Array and some map/apply construct
-        for (let i = 0; i < bits.size(); i++) {
-            const bit = bits.get(i); // TODO: Implement iterator in List
-
+        for (const bit of bits) { // TODO: could be done using map/apply?
             if (bit) {
                 numOnes++;
             }

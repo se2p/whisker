@@ -24,7 +24,7 @@
  * @param <T> The type of the list elements
  * @author Sophia Geserer
  */
-export class List<T> {
+export class List<T> implements Iterable<T> {
 
     /**
      * The list of the elements.
@@ -100,5 +100,9 @@ export class List<T> {
     clone() {
         const copiedItems = [...this._items];
         return new List<T>(copiedItems);
+    }
+
+    [Symbol.iterator](): IterableIterator<T> {
+        return this._items[Symbol.iterator]();
     }
 }

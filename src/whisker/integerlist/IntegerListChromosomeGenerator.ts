@@ -44,7 +44,7 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
      */
     get(): IntegerListChromosome {
         let codons = new List<number>();
-        for(let i = 0; i < this._length; i++) {
+        for (let i = 0; i < this._length; i++) {
             codons.add(Randomness.getInstance().nextInt(this._min, this._max));
         }
         return new IntegerListChromosome(codons);

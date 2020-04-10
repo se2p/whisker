@@ -33,8 +33,7 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
         // TODO: This could be written in a single line by extending the List class?
-        for (let i = 0; i < this._conditions.size(); i++) {
-            const stoppingCondition = this._conditions.get(i);
+        for(const stoppingCondition of this._conditions) {
             if(stoppingCondition.isFinished(algorithm)) {
                 return true;
             }
