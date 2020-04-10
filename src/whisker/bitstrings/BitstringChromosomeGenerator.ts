@@ -22,6 +22,7 @@ import {ChromosomeGenerator} from '../search/ChromosomeGenerator';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {List} from '../utils/List';
 import {BitstringChromosome} from './BitstringChromosome';
+import {Randomness} from "../utils/Randomness";
 
 export class BitstringChromosomeGenerator implements ChromosomeGenerator<BitstringChromosome> {
 
@@ -38,11 +39,7 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
     get(): BitstringChromosome {
         let bits = new List<Boolean>();
         for(let i = 0; i < this._length; i++) {
-            if(Math.random() > 0.5) { // TODO: Use seeded random number generator
-                bits.add(true);
-            } else {
-                bits.add(false);
-            }
+            bits.add(Randomness.getInstance().nextDouble() > 0.5);
         }
         return new BitstringChromosome(bits);
     }
