@@ -21,7 +21,7 @@
 import {BitstringChromosome} from './BitstringChromosome';
 import {Mutation} from '../search/Mutation';
 import {List} from '../utils/List';
-import {Randomness} from "../utils/Randomness";
+import {Randomness} from '../utils/Randomness';
 
 
 export class BitflipMutation implements Mutation<BitstringChromosome> {
