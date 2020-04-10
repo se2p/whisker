@@ -18,14 +18,37 @@
  *
  */
 
-import { Chromosome } from "../search/Chromosome";
 import { ChromosomeGenerator } from "../search/ChromosomeGenerator";
-import { NotYetImplementedException } from "../core/exceptions/NotYetImplementedException";
+import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {List} from "../utils/List";
+import {Randomness} from "../utils/Randomness";
+import {TestChromosome} from "./TestChromosome";
 
-export class TestChromosomeGenerator<C extends Chromosome> implements ChromosomeGenerator<C> {
+// TODO: This is a clone of IntegerListGenerator, maybe we should use "has a" rather than "is a" in TestChromosome?
 
-    get(): C {
-        throw new NotYetImplementedException();
+export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromosome> {
+
+    private readonly _length : number;
+
+    private readonly _min : number;
+
+    private readonly _max : number;
+
+    // TODO: Set min and max
+
+    constructor(properties: SearchAlgorithmProperties<TestChromosome>) {
+        this._length = properties.getChromosomeLength();
     }
 
+    /**
+     * Creates and returns a random chromosome.
+     * @returns a random chromosome
+     */
+    get(): TestChromosome {
+        let codons = new List<number>();
+        for(let i = 0; i < this._length; i++) {
+            codons.add(Randomness.getInstance().nextInt(this._min, this._max));
+        }
+        return new TestChromosome(codons);
+    }
 }

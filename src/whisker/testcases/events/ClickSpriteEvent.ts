@@ -18,23 +18,16 @@
  *
  */
 
-import { ExecutionTrace } from "./ExecutionTrace";
-import {FitnessFunction} from "../search/FitnessFunction";
-import {IntegerListChromosome} from "../integerlist/IntegerListChromosome";
+import VirtualMachine = require('scratch-vm');
+import {ScratchEvent} from "../ScratchEvent";
 
-// TODO: Is-a IntegerListChromosome or has-a IntegerListChromosome?
+export class ClickSpriteEvent implements ScratchEvent {
 
-export class TestChromosome extends IntegerListChromosome {
+    apply(vm: VirtualMachine) {
 
-    // TODO: We should probably store the last execution trace
-    // -> When fitness is calculated without any mutation we
-    //    don't need to re-execute the test but use the trace
-    private _trace: ExecutionTrace;
-
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
-        const fitness = fitnessFunction.getFitness(this);
-        // TODO: cache execution traces?
-        return fitness;
     }
 
+    arity(): number {
+        return 0;
+    }
 }

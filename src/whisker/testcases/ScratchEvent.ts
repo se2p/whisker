@@ -22,5 +22,7 @@ import VirtualMachine = require('scratch-vm');
 
 export interface ScratchEvent {
 
-    apply(vm: VirtualMachine);
+    apply(vm: VirtualMachine, args: number[]);
+
+    arity(): number;
 }
