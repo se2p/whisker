@@ -18,7 +18,7 @@
  *
  */
 
-import {BitstringChromosome} from '../../../src/whisker/bitstrings/BitstringChromosome';
+import {BitstringChromosome} from '../../../src/whisker/bitstring/BitstringChromosome';
 import {List} from '../../../src/whisker/utils/List';
 import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
 

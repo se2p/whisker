@@ -18,7 +18,7 @@
  *
  */
 
-import {TestChromosome} from '../testcases/TestChromosome';
+import {TestChromosome} from '../testcase/TestChromosome';
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 
 /**

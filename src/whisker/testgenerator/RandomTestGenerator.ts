@@ -23,7 +23,7 @@ import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {TestChromosomeGenerator} from '../testcases/TestChromosomeGenerator';
+import {TestChromosomeGenerator} from '../testcase/TestChromosomeGenerator';
 
 /**
  * A naive approach to generating tests is to simply

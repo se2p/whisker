@@ -22,10 +22,10 @@ import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
-import {TestChromosome} from '../testcases/TestChromosome';
+import {TestChromosome} from '../testcase/TestChromosome';
 import {SearchAlgorithmFactory} from '../search/SearchAlgorithmFactory';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {StatementCoverageFitness} from '../testcases/StatementFitnessFunction';
+import {StatementCoverageFitness} from '../testcase/StatementFitnessFunction';
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 
 /**

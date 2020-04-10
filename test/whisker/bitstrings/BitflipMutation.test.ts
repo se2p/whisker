@@ -18,9 +18,9 @@
  *
  */
 
-import {BitstringChromosome} from '../../../src/whisker/bitstrings/BitstringChromosome';
+import {BitstringChromosome} from '../../../src/whisker/bitstring/BitstringChromosome';
 import {List} from '../../../src/whisker/utils/List';
-import {BitflipMutation} from "../../../src/whisker/bitstrings/BitflipMutation";
+import {BitflipMutation} from "../../../src/whisker/bitstring/BitflipMutation";
 
 describe('BitflipMutation', () => {
 

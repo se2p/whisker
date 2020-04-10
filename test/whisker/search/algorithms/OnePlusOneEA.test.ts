@@ -18,10 +18,10 @@
  *
  */
 
-import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstrings/BitstringChromosomeGenerator";
+import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstrings/OneMaxFitnessFunction";
+import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";

@@ -20,11 +20,11 @@
 
 import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
-import {StatementCoverageFitness} from '../testcases/StatementFitnessFunction';
+import {StatementCoverageFitness} from '../testcase/StatementFitnessFunction';
 import {List} from '../utils/List';
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 import {SearchAlgorithmFactory} from '../search/SearchAlgorithmFactory';
-import {TestChromosome} from '../testcases/TestChromosome';
+import {TestChromosome} from '../testcase/TestChromosome';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {WhiskerTest} from './WhiskerTest';
 
