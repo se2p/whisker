@@ -18,6 +18,9 @@
  *
  */
 
+import VirtualMachine = require('scratch-vm');
+
 export interface Event {
 
+    apply(vm: VirtualMachine);
 }
