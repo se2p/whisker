@@ -36,12 +36,11 @@ export class IntegerListMutation implements Mutation<IntegerListChromosome> {
     }
 
     apply (chromosome: IntegerListChromosome): IntegerListChromosome {
-        const oldCodons = chromosome.getGenes(); // TODO: Immutable list
+        const oldCodons = chromosome.getGenes(); // TODO: Immutable list?
         const newCodons = new List<number>();
         const mutationProbability = 1.0 / oldCodons.size();
 
-        for (let i = 0; i < oldCodons.size(); i++) {
-            const codon = oldCodons.get(i); // TODO: Implement iterator in List
+        for (const codon of oldCodons) {
             if (Randomness.getInstance().nextDouble() < mutationProbability) {
                 newCodons.add(Randomness.getInstance().nextInt(this._min, this._max));
                 // TODO: Gaussian noise might be a better solution

@@ -27,12 +27,11 @@ import {Randomness} from '../utils/Randomness';
 export class BitflipMutation implements Mutation<BitstringChromosome> {
 
     apply (chromosome: BitstringChromosome): BitstringChromosome {
-        const oldBits = chromosome.getGenes(); // TODO: Immutable list
+        const oldBits = chromosome.getGenes(); // TODO: Immutable list?
         const newBits = new List<Boolean>();
         const mutationProbability = 1.0 / oldBits.size();
 
-        for (let i = 0; i < oldBits.size(); i++) {
-            const bit = oldBits.get(i); // TODO: Implement iterator in List
+        for (const bit of oldBits) {
             if (Randomness.getInstance().nextDouble() < mutationProbability) {
                 newBits.add(!bit);
             } else {
