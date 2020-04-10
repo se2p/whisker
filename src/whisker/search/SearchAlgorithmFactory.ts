@@ -41,7 +41,7 @@ export class SearchAlgorithmFactory<C extends Chromosome> {
     /**
      * Instantiates the search algorithm.
      */
-    instantiateSearchAlgorithm(): void {
+    instantiateSearchAlgorithm(): SearchAlgorithm<C> {
         throw new NotYetImplementedException();
     }
 
