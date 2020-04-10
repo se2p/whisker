@@ -1,0 +1,55 @@
+/*
+ * Copyright (C) 2020 Whisker contributors
+ *
+ * This file is part of the Whisker test generator for Scratch.
+ *
+ * Whisker is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Whisker is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Whisker. If not, see http://www.gnu.org/licenses/.
+ *
+ */
+
+import {Mutation} from '../search/Mutation';
+import {List} from '../utils/List';
+import {Randomness} from '../utils/Randomness';
+import {IntegerListChromosome} from './IntegerListChromosome';
+
+
+export class IntegerListMutation implements Mutation<IntegerListChromosome> {
+
+    private _min: number;
+
+    private _max: number;
+
+    constructor(min: number, max: number) {
+        this._min = min;
+        this._max = max;
+    }
+
+    apply (chromosome: IntegerListChromosome): IntegerListChromosome {
+        const oldCodons = chromosome.getGenes(); // TODO: Immutable list
+        const newCodons = new List<number>();
+        const mutationProbability = 1.0 / oldCodons.size();
+
+        for (let i = 0; i < oldCodons.size(); i++) {
+            const codon = oldCodons.get(i); // TODO: Implement iterator in List
+            if (Randomness.getInstance().nextDouble() < mutationProbability) {
+                newCodons.add(Randomness.getInstance().nextInt(this._min, this._max));
+                // TODO: Gaussian noise might be a better solution
+            } else {
+                newCodons.add(codon);
+            }
+        }
+
+        return new IntegerListChromosome(newCodons);
+    }
+}
