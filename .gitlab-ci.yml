@@ -23,5 +23,5 @@ testing_testing:
   script:
     - npm install -D typescript
     - npm install
-    - npm test
+    - npm test --coverage
     - mkdir -p output/static

@@ -16,6 +16,7 @@
         "test": "npm run build && jest --forceExit --coverage --verbose",
         "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
         "watch-test": "npm run test -- --watchAll",
+        "test:coverage": "npm test -- --coverage",
         "build-ts": "tsc --incremental",
         "watch-ts": "tsc -w",
         "docs": "jsdoc -c .jsdoc.json",
