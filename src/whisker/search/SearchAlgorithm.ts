@@ -2,21 +2,21 @@
  * Copyright (C) 2020 Whisker contributors
  *
  * This file is part of the Whisker test generator for Scratch.
- * 
+ *
  * Whisker is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Whisker is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with Whisker.
  * If not, see http://www.gnu.org/licenses/.
- * 
+ *
  */
 
 import { List } from "../utils/List";
@@ -26,13 +26,13 @@ import { ChromosomeGenerator } from "./ChromosomeGenerator";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
- * 
+ *
  * @param <C> the solution encoding of the problem
  * @author Sophia Geserer
  */
-export interface SearchAlgorithm<C extends Chromosome<C>> {
+export interface SearchAlgorithm<C extends Chromosome> {
 
-    _properties: SearchAlgorithmProperties;
+    _properties: SearchAlgorithmProperties<C>;
 
     _chromosomeGenerator: ChromosomeGenerator<C>;
 
@@ -46,7 +46,7 @@ export interface SearchAlgorithm<C extends Chromosome<C>> {
      * Sets the properties for this search algorithm.
      * @param properties the properties for the search algorithm
      */
-    setProperties(properties: SearchAlgorithmProperties): void;
+    setProperties(properties: SearchAlgorithmProperties<C>): void;
 
     /**
      * Sets the chromosome generator for this search algorithm.
@@ -54,4 +54,14 @@ export interface SearchAlgorithm<C extends Chromosome<C>> {
      */
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void;
 
+    /**
+     * Return the number of iterations currently performed
+     */
+    getNumberOfIterations(): number;
+
+    /**
+     * Returns the list of best individuals at the current time during the search
+     * @returns Solution for the given problem
+     */
+    getCurrentSolution(): List<C>;
 }
