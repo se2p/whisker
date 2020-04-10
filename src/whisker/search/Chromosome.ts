@@ -67,4 +67,9 @@ export abstract class Chromosome {
     getFitness(fitnessFunction: FitnessFunction<this>): number {
         return fitnessFunction.getFitness(this);
     }
+
+    /**
+     * A chromosome consists of a sequence of genes. This method returns the number of genes.
+     */
+    abstract getLength(): number;
 }

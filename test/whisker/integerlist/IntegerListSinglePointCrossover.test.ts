@@ -18,32 +18,32 @@
  *
  */
 
-import {BitstringChromosome} from '../../../src/whisker/bitstrings/BitstringChromosome';
 import {List} from '../../../src/whisker/utils/List';
 import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
+import {IntegerListChromosome} from "../../../src/whisker/integerlist/IntegerListChromosome";
 
-describe('BitstringSinglePointCrossover', () => {
+describe('IntegerListSinglePointCrossover', () => {
 
     test('False to true', () => {
-        const parent1Bits = new List<Boolean>();
-        parent1Bits.add(false);
-        parent1Bits.add(false);
-        const parent1 = new BitstringChromosome(parent1Bits);
+        const parent1Ints = new List<number>();
+        parent1Ints.add(1);
+        parent1Ints.add(2);
+        const parent1 = new IntegerListChromosome(parent1Ints);
 
-        const parent2Bits = new List<Boolean>();
-        parent2Bits.add(true);
-        parent2Bits.add(true);
-        const parent2 = new BitstringChromosome(parent2Bits);
+        const parent2Ints = new List<number>();
+        parent2Ints.add(3);
+        parent2Ints.add(4);
+        const parent2 = new IntegerListChromosome(parent2Ints);
 
-        const crossover = new SinglePointCrossover<BitstringChromosome>();
+        const crossover = new SinglePointCrossover<IntegerListChromosome>();
         const offspring = crossover.applyAtPosition(parent1, parent2, 1);
-        const child1Bits = offspring.getFirst().getGenes();
-        const child2Bits = offspring.getSecond().getGenes();
+        const child1Ints = offspring.getFirst().getGenes();
+        const child2Ints = offspring.getSecond().getGenes();
 
-        expect(child1Bits.size()).toBe(parent1Bits.size());
-        expect(child2Bits.size()).toBe(parent1Bits.size());
-        expect(child1Bits.get(0)).toBe(!child1Bits.get(1));
-        expect(child2Bits.get(0)).toBe(!child2Bits.get(1));
+        expect(child1Ints.size()).toBe(parent1Ints.size());
+        expect(child2Ints.size()).toBe(parent1Ints.size());
+        expect(child1Ints.get(0) + child1Ints.get(1)).toBe(5); // 1+4 or 2+3
+        expect(child2Ints.get(0) + child2Ints.get(1)).toBe(5); // 1+4 or 2+3
     });
 
 });

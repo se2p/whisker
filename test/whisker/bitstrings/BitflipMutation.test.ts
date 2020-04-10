@@ -31,7 +31,7 @@ describe('BitflipMutation', () => {
 
         const mutation = new BitflipMutation();
         const offspring = mutation.apply(chromosome);
-        const mutatedBits = offspring.getBits();
+        const mutatedBits = offspring.getGenes();
 
         expect(mutatedBits.size()).toBe(originalBits.size());
         expect(mutatedBits.get(0)).toBe(true);
@@ -44,7 +44,7 @@ describe('BitflipMutation', () => {
 
         const mutation = new BitflipMutation();
         const offspring = mutation.apply(chromosome);
-        const mutatedBits = offspring.getBits();
+        const mutatedBits = offspring.getGenes();
 
         expect(mutatedBits.size()).toBe(originalBits.size());
         expect(mutatedBits.get(0)).toBe(false);

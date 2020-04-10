@@ -32,7 +32,7 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
     }
 
     getFitness (chromosome: BitstringChromosome): number {
-        const bits = chromosome.getBits();
+        const bits = chromosome.getGenes();
         Preconditions.checkListSize(bits, this._size);
 
         let numOnes = 0;

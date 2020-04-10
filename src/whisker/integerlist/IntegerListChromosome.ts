@@ -19,29 +19,29 @@
  */
 
 import {List} from '../utils/List';
-import {BitflipMutation} from "./BitflipMutation";
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
+import {IntegerListMutation} from "./IntegerListMutation";
 import {ListChromosome} from "../search/ListChromosome";
 import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
 
-export class BitstringChromosome extends ListChromosome<Boolean> {
+export class IntegerListChromosome extends ListChromosome<number> {
 
     /**
      * The crossover operation that defines how to manipulate the gene of two chromosomes.
      */
-    private readonly _crossoverOp: Crossover<BitstringChromosome>;
+    private readonly _crossoverOp: Crossover<IntegerListChromosome>;
 
     /**
      * The mutation operator that defines how to mutate the chromosome.
      */
-    private readonly _mutationOp: Mutation<BitstringChromosome>;
+    private readonly _mutationOp: Mutation<IntegerListChromosome>;
 
-    constructor(bits : List<Boolean>) {
-        super(bits);
+    constructor(codons : List<number>) {
+        super(codons);
         // TODO: Should the operators be passed into this constructor?
-        this._crossoverOp = new SinglePointCrossover<BitstringChromosome>() as unknown as Crossover<this>;
-        this._mutationOp = new BitflipMutation();
+        this._crossoverOp = new SinglePointCrossover<IntegerListChromosome>() as unknown as Crossover<this>;
+        this._mutationOp = new IntegerListMutation(0, 10); // TODO min/max
     }
 
     protected getCrossoverOperator(): Crossover<this> {
@@ -52,7 +52,7 @@ export class BitstringChromosome extends ListChromosome<Boolean> {
         return this._mutationOp as Mutation<this>;
     }
 
-    cloneWith(newGenes: List<Boolean>) {
-        return new BitstringChromosome(newGenes);
+    cloneWith(newGenes: List<number>) {
+        return new IntegerListChromosome(newGenes);
     }
 }

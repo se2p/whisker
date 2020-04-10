@@ -20,7 +20,7 @@
 
 import VirtualMachine = require('scratch-vm');
 
-export interface Event {
+export interface ScratchEvent {
 
     apply(vm: VirtualMachine);
 }

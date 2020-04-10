@@ -18,28 +18,38 @@
  *
  */
 
-import {BitstringChromosome} from './BitstringChromosome';
 import {Mutation} from '../search/Mutation';
 import {List} from '../utils/List';
 import {Randomness} from '../utils/Randomness';
+import {IntegerListChromosome} from './IntegerListChromosome';
 
 
-export class BitflipMutation implements Mutation<BitstringChromosome> {
+export class IntegerListMutation implements Mutation<IntegerListChromosome> {
 
-    apply (chromosome: BitstringChromosome): BitstringChromosome {
-        const oldBits = chromosome.getGenes(); // TODO: Immutable list
-        const newBits = new List<Boolean>();
-        const mutationProbability = 1.0 / oldBits.size();
+    private _min: number;
 
-        for (let i = 0; i < oldBits.size(); i++) {
-            const bit = oldBits.get(i); // TODO: Implement iterator in List
+    private _max: number;
+
+    constructor(min: number, max: number) {
+        this._min = min;
+        this._max = max;
+    }
+
+    apply (chromosome: IntegerListChromosome): IntegerListChromosome {
+        const oldCodons = chromosome.getGenes(); // TODO: Immutable list
+        const newCodons = new List<number>();
+        const mutationProbability = 1.0 / oldCodons.size();
+
+        for (let i = 0; i < oldCodons.size(); i++) {
+            const codon = oldCodons.get(i); // TODO: Implement iterator in List
             if (Randomness.getInstance().nextDouble() < mutationProbability) {
-                newBits.add(!bit);
+                newCodons.add(Randomness.getInstance().nextInt(this._min, this._max));
+                // TODO: Gaussian noise might be a better solution
             } else {
-                newBits.add(bit);
+                newCodons.add(codon);
             }
         }
 
-        return new BitstringChromosome(newBits);
+        return new IntegerListChromosome(newCodons);
     }
 }

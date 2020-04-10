@@ -24,20 +24,16 @@ import {NotYetImplementedException} from "../core/exceptions/NotYetImplementedEx
 import {Mutation} from "../search/Mutation";
 import {Crossover} from "../search/Crossover";
 import {FitnessFunction} from "../search/FitnessFunction";
+import {ScratchEvent} from "./ScratchEvent";
+import {List} from "../utils/List";
+import {IntegerListChromosome} from "../integerlist/IntegerListChromosome";
 
-export class TestChromosome extends Chromosome {
+export class TestChromosome extends IntegerListChromosome {
 
     private _trace: ExecutionTrace;
 
-    protected getMutationOperator(): Mutation<this> {
-        throw new NotYetImplementedException();
-    }
-
-    protected getCrossoverOperator(): Crossover<this> {
-        throw new NotYetImplementedException();
-    }
-
     getFitness(fitnessFunction: FitnessFunction<this>): number {
+        // TODO: cache execution traces
         throw new NotYetImplementedException();
     }
 

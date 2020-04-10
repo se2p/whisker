@@ -34,8 +34,8 @@ export class List<T> {
     /**
      * Creates an empty list.
      */
-    constructor() {
-        this._items = [];
+    constructor(items = []) {
+        this._items = items;
     }
 
     /**
@@ -71,6 +71,14 @@ export class List<T> {
     }
 
     /**
+     * Appends the specified element to the end of this list.
+     * @param element element to be added to the list
+     */
+    addList(other: List<T>): void {
+        this._items = this._items.concat(other._items) // TODO: Nicer way to do this?
+    }
+
+    /**
      * Returns the element at the specified position in this list.
      * @param index index of the element to return
      * @returns the element at the specified position in the list
@@ -84,5 +92,13 @@ export class List<T> {
      */
     clear() {
         this._items = [];
+    }
+
+    /**
+     * Create a (shallow) copy
+     */
+    clone() {
+        const copiedItems = [...this._items];
+        return new List<T>(copiedItems);
     }
 }
