@@ -18,23 +18,48 @@
  *
  */
 
-import { FitnessFunction } from "../search/FitnessFunction";
-import { Chromosome } from "../search/Chromosome";
-import { NotYetImplementedException } from "../core/exceptions/NotYetImplementedException";
-import { ExecutionTrace } from "./ExecutionTrace";
+import {FitnessFunction} from '../search/FitnessFunction';
+import {TestChromosome} from './TestChromosome';
+import {TestExecutor} from './TestExecutor';
+import {ExecutionTrace} from "./ExecutionTrace";
 
-export class StatementCoverageFitness<C extends Chromosome> implements FitnessFunction<C> {
+export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
-    getFitness(chromsome: C): number {
-        throw new NotYetImplementedException();
+    // TODO: Constructor needs CDG and target node
+
+    getFitness (chromosome: TestChromosome): number {
+        const executor = new TestExecutor(null); // TODO: where do we get the vm?
+        const executionTrace = executor.execute(chromosome);
+
+        const approachLevel = this._getApproachLevel(executionTrace);
+        const branchDistance = this._getBranchDistance(executionTrace);
+
+        return approachLevel + this._normalize(branchDistance)
     }
 
-    compare(value1: number, value2: number): number {
+    compare (value1: number, value2: number): number {
         // Smaller fitness values are better
         return value1 - value2;
     }
 
-    isOptimal(fitnessValue: number): boolean {
-        return fitnessValue == 0.0;
+    isOptimal (fitnessValue: number): boolean {
+        // Covered if distance is 0
+        return fitnessValue === 0.0;
+    }
+
+    private _getApproachLevel(trace: ExecutionTrace) {
+        // TODO: Store target node as field
+        // TODO: Measure distance between target node and execution trace in CDG
+        return 0;
+    }
+
+    private _getBranchDistance(trace: ExecutionTrace) {
+        // TODO: Determine control dependency where execution branched erroneously
+        // TODO: Calculate branch distance for node where diverged
+        return 0.0;
+    }
+
+    private _normalize(x: number): number {
+        return x/(x+1.0);
     }
 }
