@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-return-assign */
-/* eslint-disable require-jsdoc */
 /* eslint-disable func-style */
 /* eslint-disable no-use-before-define */
 
@@ -300,7 +299,8 @@ function printTestresultsFromCivergaeGenerator (logs, coverage) {
         .replace('#  ', '')
         .split('\n')
         .filter(str => str.length)
-        .forEach(str => result[str.substring(0, str.indexOf(':'))] += Number(str.substring(str.indexOf(':') + 1, str.length)));
+        .forEach(str =>
+            result[str.substring(0, str.indexOf(':'))] += Number(str.substring(str.indexOf(':') + 1, str.length)));
 
     logger.info('Result:', result);
 
