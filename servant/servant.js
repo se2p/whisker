@@ -38,6 +38,7 @@ async function init () {
             browser.close();
             const logs = results.map(({log}) => log);
             const coverages = results.map(({coverage}) => coverage);
+
             printTestresultsFromCivergaeGenerator(logs, CoverageGenerator.mergeCoverage(coverages));
             logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         })
@@ -262,11 +263,6 @@ function prepateTestFiles (whiskerTestPath) {
 function printTestresultsFromCivergaeGenerator (logs, coverage) {
     logger.info('Run Finished\n');
 
-    if (logs.length > 1) {
-        logger.warn('Warning, the tests have been parallely executed in multiple chrome tabs. The test results for' +
-      ' each property (tests, pass, fail, etc.) list the result of each page.\n');
-    }
-
     const result = {tests: 0, pass: 0, fail: 0, error: 0, skip: 0};
     logs.map(log => log.substring(log.indexOf('# summary:') + '# summary:\n'.length, log.indexOf('# coverage:')))
         .join()
@@ -278,7 +274,7 @@ function printTestresultsFromCivergaeGenerator (logs, coverage) {
         .filter(str => str.length)
         .forEach(str => result[str.substring(0, str.indexOf(':'))] += Number(str.substring(str.indexOf(':') + 1, str.length)));
 
-    logger.info('Result\n', result);
+    logger.info('Result:', result);
 
     logger.info('Coverage:');
     logger.log(coverage.getCoverage());
