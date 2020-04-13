@@ -11,7 +11,6 @@ const {logger, cli} = require('./util');
 const {CoverageGenerator} = require('../../whisker-main');
 
 const tmpDir = './.tmpWorkingDir';
-const coverageReports = [];
 const start = Date.now();
 const {
     whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
