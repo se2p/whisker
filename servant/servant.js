@@ -8,8 +8,10 @@ const fs = require('fs');
 const {basename} = require('path');
 const puppeteer = require('puppeteer');
 const {logger, cli} = require('./util');
+const {CoverageGenerator} = require('../../whisker-main');
 
 const tmpDir = './.tmpWorkingDir';
+const coverageReports = [];
 const start = Date.now();
 const {
     whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
@@ -32,9 +34,11 @@ async function init () {
         });
 
     Promise.all(paths.map((path, index) => runTests(path, browser, index)))
-        .then(logs => {
+        .then(results => {
             browser.close();
-            printTestresultsFromCivergaeGenerator(logs);
+            const logs = results.map(({log}) => log);
+            const coverages = results.map(({coverage}) => coverage);
+            printTestresultsFromCivergaeGenerator(logs, CoverageGenerator.mergeCoverage(coverages));
             logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         })
         .catch(errors => logger.error('Error on executing tests: ', errors))
@@ -116,13 +120,45 @@ async function runTests (path, browser, index) {
         return coverageLog;
     }
 
+    function convertSerializedCoverageToCoverage (serializedCoverage) {
+        const coveredBlockIdsPerSprite = new Map();
+        serializedCoverage.coveredBlockIdsPerSprite.forEach(({key, values}) => coveredBlockIdsPerSprite.set(key, new Set(values)));
+        const blockIdsPerSprite = new Map();
+        serializedCoverage.blockIdsPerSprite.forEach(({key, values}) => blockIdsPerSprite.set(key, new Set(values)));
+        return {coveredBlockIdsPerSprite, blockIdsPerSprite};
+    }
+
+    async function serializeAndReturnCoverageObject () {
+        return page.evaluate(() => new Promise(resolve => {
+            const generator = document.defaultView.CoverageGenerator;
+
+            const org = generator.getCoverage;
+            generator.getCoverage = () => {
+                const coverage = org.call(generator);
+
+                const coveredBlockIdsPerSprite =
+                    [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+                const blockIdsPerSprite =
+                    [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+                resolve({coveredBlockIdsPerSprite, blockIdsPerSprite});
+
+                return coverage;
+            };
+        }));
+    }
+
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
+        const promise = serializeAndReturnCoverageObject();
+
         await executeTests();
+
         const output = await readTestOutput();
+        const serializedCoverage = await promise;
         await page.close();
-        return Promise.resolve(output);
+
+        return Promise.resolve({log: output, coverage: convertSerializedCoverageToCoverage(serializedCoverage)});
     } catch (e) {
         return Promise.reject(e);
     }
@@ -220,33 +256,31 @@ function prepateTestFiles (whiskerTestPath) {
 /**
  * Logs the coverage and results (number of fails, pass or skip) to the console in a more readable way.
  *
- * @param {string} logs  The logs from the whisker-web instance
+ * @param {string} logs      The logs from the whisker-web instance
+ * @param {string} coverage  Combined coverage of from all pages
  */
-function printTestresultsFromCivergaeGenerator (logs) {
+function printTestresultsFromCivergaeGenerator (logs, coverage) {
     logger.info('Run Finished\n');
 
     if (logs.length > 1) {
         logger.warn('Warning, the tests have been parallely executed in multiple chrome tabs. The test results for' +
-      ' each property (tests, pass, fail, etc.) list the result of each page. Coverage results can not be displayed' +
-      '.\n');
+      ' each property (tests, pass, fail, etc.) list the result of each page.\n');
     }
 
-    const {results, coverages} = logs.reduce(
-        (acc, log) => {
-            acc.results.push(
-                log.substring(log.indexOf('# summary:') + '# summary:\n'.length, log.indexOf('# coverage:')));
-            acc.coverages.push(log.substring(log.indexOf('# coverage:'), log.length));
-            return acc;
-        },
-        {results: [], coverages: []}
-    );
+    const result = {tests: 0, pass: 0, fail: 0, error: 0, skip: 0};
+    logs.map(log => log.substring(log.indexOf('# summary:') + '# summary:\n'.length, log.indexOf('# coverage:')))
+        .join()
+        .replace(' ', '')
+        .replace(/# {3}/g, '')
+        .replace(/,/g, '\n')
+        .replace('#  ', '')
+        .split('\n')
+        .filter(str => str.length)
+        .forEach(str => result[str.substring(0, str.indexOf(':'))] += Number(str.substring(str.indexOf(':') + 1, str.length)));
 
-    logger.info(
-        'Results:\n',
-        results.join()
-            .replace(' ', '')
-            .replace(/# {3}/g, '')
-            .replace(/,/g, '\n')
-            .replace('#  ', ''));
-    logger.info('Coverages:\n', coverages.join());
+    logger.info('Result\n', result);
+
+    logger.info('Coverage:');
+    logger.log(coverage.getCoverage());
+    logger.log(coverage.getCoveragePerSprite());
 }
