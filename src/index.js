@@ -3,6 +3,8 @@ const {$} = require('./web-libs');
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener} = require('../../whisker-main');
 
+// The CoverageGenerator is a attached to the Window object, to allow the servant to read the coverage of a run.
+// See the convertSerializedCoverageToCoverage in the servant.js
 window.CoverageGenerator = CoverageGenerator;
 
 const Runtime = require('scratch-vm/src/engine/runtime');

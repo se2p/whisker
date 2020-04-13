@@ -60,6 +60,9 @@ async function runTests (path, browser, index) {
         process.exit(1);
     });
 
+    /**
+     * Enables that console logs in the chrome instance are forwarded to the bash instance this script is started with.
+     */
     function optionallyEnableConsoleForward () {
         if (isConsoleForwarded) {
             page.on('console', msg => {
@@ -70,6 +73,10 @@ async function runTests (path, browser, index) {
         }
     }
 
+    /**
+     * Configure the Whisker instance, by setting the application file, test file and frequency, after the page was
+     * loaded.
+     */
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(frequ => document.querySelector('#scratch-vm-frequency').value = frequ, frequency);
@@ -78,10 +85,17 @@ async function runTests (path, browser, index) {
         await (await page.$('#toggle-output')).click();
     }
 
+    /**
+     * Executes the tests, by clicking the button.
+     */
     async function executeTests () {
         await (await page.$('#run-all-tests')).click();
     }
 
+    /**
+     * Reads the coverage and log field until the summary is printed into the coverage field, indicatin that the test
+     * run is over.
+     */
     async function readTestOutput () {
         const coverageOutput = await page.$('#output-run .output-content');
         const logOutput = await page.$('#output-log .output-content');
@@ -121,14 +135,29 @@ async function runTests (path, browser, index) {
         return coverageLog;
     }
 
+    /**
+     * Generates a coverage object based on the coveredBlockIdsPerSprite and blockIdsPerSprite from the
+     * CoverageGenerator used in serializeAndReturnCoverageObject.
+     *
+     * @param {*} serializedCoverage  The coverage object, using array and objects instead of maps and sets, as it was
+     *                                serialized by puppeter
+     * @returns {coverage}            The coverage object
+     */
     function convertSerializedCoverageToCoverage (serializedCoverage) {
         const coveredBlockIdsPerSprite = new Map();
-        serializedCoverage.coveredBlockIdsPerSprite.forEach(({key, values}) => coveredBlockIdsPerSprite.set(key, new Set(values)));
+        serializedCoverage.coveredBlockIdsPerSprite
+            .forEach(({key, values}) => coveredBlockIdsPerSprite.set(key, new Set(values)));
         const blockIdsPerSprite = new Map();
         serializedCoverage.blockIdsPerSprite.forEach(({key, values}) => blockIdsPerSprite.set(key, new Set(values)));
         return {coveredBlockIdsPerSprite, blockIdsPerSprite};
     }
 
+    /**
+     * Uses the GoverageGererator, which is attached to the winow object in the whisker-web/index.js to get the coverage
+     * of the test run and transfer it from the Whisker instance in the browser to this script.
+     * The original Maps and Sets have to be reworkd to be a collection of ojects and arrays, otherwise the coverage raw
+     * data cannot be transfered from the Chrome instance to the nodejs instance.
+     */
     async function serializeAndReturnCoverageObject () {
         return page.evaluate(() => new Promise(resolve => {
             const generator = document.defaultView.CoverageGenerator;
