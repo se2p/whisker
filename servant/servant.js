@@ -7,7 +7,7 @@ const fs = require('fs');
 const {basename} = require('path');
 const puppeteer = require('puppeteer');
 const {logger, cli} = require('./util');
-const {CoverageGenerator} = require('../../whisker-main');
+const {CoverageGenerator, TAP13Listener} = require('../../whisker-main');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
@@ -34,10 +34,10 @@ async function init () {
     Promise.all(paths.map((path, index) => runTests(path, browser, index)))
         .then(results => {
             browser.close();
-            const logs = results.map(({log}) => log);
+            const summaries = results.map(({summary}) => summary);
             const coverages = results.map(({coverage}) => coverage);
 
-            printTestresultsFromCivergaeGenerator(logs, CoverageGenerator.mergeCoverage(coverages));
+            printTestresultsFromCivergaeGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
             logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         })
         .catch(errors => logger.error('Error on executing tests: ', errors))
@@ -156,37 +156,24 @@ async function runTests (path, browser, index) {
      * The original Maps and Sets have to be reworkd to be a collection of ojects and arrays, otherwise the coverage raw
      * data cannot be transfered from the Chrome instance to the nodejs instance.
      */
-    async function serializeAndReturnCoverageObject () {
+    async function onFinishedCallback () {
         return page.evaluate(() => new Promise(resolve => {
-            const generator = document.defaultView.CoverageGenerator;
-
-            const org = generator.getCoverage;
-            generator.getCoverage = () => {
-                const coverage = org.call(generator);
-
-                const coveredBlockIdsPerSprite =
-                    [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-                const blockIdsPerSprite =
-                    [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-                resolve({coveredBlockIdsPerSprite, blockIdsPerSprite});
-
-                return coverage;
-            };
+            document.defaultView.messageServantCallback = message => resolve(message);
         }));
     }
 
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
-        const promise = serializeAndReturnCoverageObject();
+        const promise = onFinishedCallback();
 
         await executeTests();
 
-        const output = await readTestOutput();
-        const serializedCoverage = await promise;
+        await readTestOutput();
+        const {serializeableCoverageObject, summary} = await promise;
         await page.close();
 
-        return Promise.resolve({log: output, coverage: convertSerializedCoverageToCoverage(serializedCoverage)});
+        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializeableCoverageObject)});
     } catch (e) {
         return Promise.reject(e);
     }
@@ -284,27 +271,18 @@ function prepateTestFiles (whiskerTestPath) {
 /**
  * Logs the coverage and results (number of fails, pass or skip) to the console in a more readable way.
  *
- * @param {string} logs      The logs from the whisker-web instance
+ * @param {string} summaries The summaries from the whisker-web instance test run
  * @param {string} coverage  Combined coverage of from all pages
  */
-function printTestresultsFromCivergaeGenerator (logs, coverage) {
-    logger.info('Run Finished\n');
+function printTestresultsFromCivergaeGenerator (summaries, coverage) {
+    logger.info('Run Finished');
 
-    const result = {tests: 0, pass: 0, fail: 0, error: 0, skip: 0};
-    logs.map(log => log.substring(log.indexOf('# summary:') + '# summary:\n'.length, log.indexOf('# coverage:')))
-        .join()
-        .replace(' ', '')
-        .replace(/# {3}/g, '')
-        .replace(/,/g, '\n')
-        .replace('#  ', '')
-        .split('\n')
-        .filter(str => str.length)
-        .forEach(str =>
-            result[str.substring(0, str.indexOf(':'))] += Number(str.substring(str.indexOf(':') + 1, str.length)));
+    const formattedSummary = TAP13Listener.mergeFormattedSummaries(summaries.map(TAP13Listener.formatSummary));
+    const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
 
-    logger.info('Result:', result);
+    const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
 
-    logger.info('Coverage:');
-    logger.log(coverage.getCoverage());
-    logger.log(coverage.getCoveragePerSprite());
+    logger.info('\nSummary:\n', summaryString);
+    logger.info('\nCoverage:\n', coverageString);
 }
