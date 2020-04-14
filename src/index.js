@@ -46,6 +46,8 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     const summary = await Whisker.testRunner.runTests(vm, project, tests, {frequency, CoverageGenerator});
     const coverage = CoverageGenerator.getCoverage();
 
+    // The messageServantCallback might be attached to the window object, in case the Whisker instance is controlled by
+    // the Servant.
     if (typeof window.messageServantCallback === 'function') {
         const coveredBlockIdsPerSprite =
             [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
