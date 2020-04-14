@@ -20,7 +20,7 @@
         "build-ts": "tsc --incremental",
         "watch-ts": "tsc -w",
         "docs": "jsdoc -c .jsdoc.json",
-        "lint": "eslint . && format-message lint src/**/*.js",
+        "lint": "eslint . && format-message lint src/**/*.{ts,js}",
         "lint:fix": "eslint . --fix"
     },
     "dependencies": {
@@ -42,7 +42,6 @@
         "babel-loader": "^8.0.2",
         "babel-preset-minify": "^0.5.0",
         "eslint": "^5.6.0",
-        "eslint-config-scratch": "^5.0.0",
         "expose-loader": "^0.7.5",
         "jest": "^25.1.0",
         "jsdoc": "^3.5.5",
