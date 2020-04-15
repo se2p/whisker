@@ -105,4 +105,73 @@ export class List<T> implements Iterable<T> {
     [Symbol.iterator](): IterableIterator<T> {
         return this._items[Symbol.iterator]();
     }
+
+    /**
+     * Removes the specified element from the list.
+     *
+     * @param element The element to be removed from the list.
+     */
+    remove(element: T): void {
+        const index = this._items.indexOf(element, 0);
+        if (index > -1) {
+            this._items.splice(index, 1);
+        }
+    }
+
+    /**
+     * Determines if the list contains the specified element.
+     *
+     * @param element The element to search for.
+     * @returns {@code true} if the list contains the element.
+     */
+    contains(element: T): boolean {
+        return this._items.includes(element);
+    }
+
+    /**
+     * Creates a subList of the specified range.
+     *
+     * @param from The low endpoint (inclusive) of the subList.
+     * @param to The high endpoint (exclusive) of the subList.
+     * @returns a subList of the specified range within this list.
+     */
+    subList(from: number, to: number): List<T> {
+        return new List<T>(this._items.slice(from, to));
+    }
+
+    /**
+     * Returns a list consisting of the distinct elements of this list.
+     *
+     * @returns a list consisting of the distinct elements.
+     */
+    distinct(): List<T> {
+        let distinctItems = this._items.filter((o, i, arr) =>
+            arr.findIndex(t => t === o) === i);
+        return new List<T>(distinctItems);
+    }
+
+    /**
+     * Randomly permutes this list using a default source of randomness.
+     */
+    shuffle(): void {
+        let currentIndex = this._items.length;
+        let temporaryValue;
+        let randomIndex;
+        while (0 !== currentIndex) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+            temporaryValue = this._items[currentIndex];
+            this._items[currentIndex] = this._items[randomIndex];
+            this._items[randomIndex] = temporaryValue;
+        }
+    }
+
+    /**
+     * Sorts this list according to the order induced by the specified comparator.
+     *
+     * @param comparator The comparator used to compare list elements.
+     */
+    sort(comparator): void {
+        this._items.sort(comparator)
+    }
 }
