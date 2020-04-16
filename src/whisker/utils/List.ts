@@ -18,6 +18,8 @@
  *
  */
 
+import {Randomness} from "./Randomness";
+
 /**
  * A class to store a list of elements of the same type.
  *
@@ -158,7 +160,7 @@ export class List<T> implements Iterable<T> {
         let temporaryValue;
         let randomIndex;
         while (0 !== currentIndex) {
-            randomIndex = Math.floor(Math.random() * currentIndex);
+            randomIndex = Randomness.getInstance().nextInt(0, currentIndex);
             currentIndex -= 1;
             temporaryValue = this._items[currentIndex];
             this._items[currentIndex] = this._items[randomIndex];
@@ -173,5 +175,12 @@ export class List<T> implements Iterable<T> {
      */
     sort(comparator): void {
         this._items.sort(comparator)
+    }
+
+    /**
+     * Reverses the order of the list.
+     */
+    reverse() {
+        this._items.reverse();
     }
 }

@@ -112,17 +112,16 @@ describe("List", () => {
 
     test("Sort list", () => {
         let list = new List([4, 3, 2, 1]);
-        let comparator = (a, b) => {
-            if (a > b) {
-                return 1;
-            } else if (b > a) {
-                return -1;
-            } else {
-                return 0;
-            }
-        };
-        list.sort(comparator);
+        list.sort((a, b) => a - b);
         expect(list.get(0)).toBe(1);
+    });
+
+    test("Reverse list", () => {
+        let list = new List([1, 2, 3]);
+        list.reverse();
+        expect(list.get(0)).toBe(3);
+        expect(list.get(1)).toBe(2);
+        expect(list.get(2)).toBe(1);
     });
 
 });
