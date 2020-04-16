@@ -21,6 +21,7 @@
 import {Chromosome} from "../Chromosome";
 import {Selection} from "../Selection";
 import {List} from "../../utils/List";
+import {Randomness} from "../../utils/Randomness";
 
 /**
  * The rank selection operator.
@@ -48,7 +49,7 @@ export class RankSelection<C extends Chromosome> implements Selection<C> {
             upperSelectionBorders.set(chromosome, probabilitySum);
         }
         let selected = sortedPopulation.get(N - 1);
-        let random = Math.random();
+        let random = Randomness.getInstance().nextDouble();
         for (let chromosome of sortedPopulation) {
             let upperBorder = upperSelectionBorders.get(chromosome);
             if (random < upperBorder) {

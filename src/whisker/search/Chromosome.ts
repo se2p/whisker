@@ -55,7 +55,7 @@ export abstract class Chromosome {
      * @returns the offspring
      */
     crossover(other: this): Pair<this> {
-        return this.getCrossoverOperator.apply(this, other);
+        return this.getCrossoverOperator().apply(this, other);
     }
 
     /**

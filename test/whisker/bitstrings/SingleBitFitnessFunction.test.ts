@@ -73,8 +73,8 @@ describe('SingleBitFitnessFunction', () => {
     test('Check comparison', () => {
         const fitnessFunction = new SingleBitFitnessFunction(2, 0);
 
-        expect(fitnessFunction.compare(0, 1)).toBeGreaterThan(0);
-        expect(fitnessFunction.compare(1, 0)).toBeLessThan(0);
+        expect(fitnessFunction.compare(0, 1)).toBeLessThan(0);
+        expect(fitnessFunction.compare(1, 0)).toBeGreaterThan(0);
         expect(fitnessFunction.compare(1, 1)).toBe(0);
     });
 });
