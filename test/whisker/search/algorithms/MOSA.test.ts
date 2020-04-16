@@ -27,10 +27,30 @@ import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 import {List} from "../../../../src/whisker/utils/List";
+import {MOSABuilder} from "../../../../src/whisker/search/algorithms/MOSABuilder";
 
 describe('MOSA', () => {
 
     test('BitstringChromosome with SingleBitFitnessFunction', () => {
+        const searchAlgorithm = new MOSABuilder().buildSearchAlgorithm();
+
+        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
+
+        const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
+        for (const fitnessFunction of fitnessFunctions.values()) {
+            let optimal = false;
+            for (const solution of solutions) {
+                if (fitnessFunction.isOptimal(fitnessFunction.getFitness(solution))) {
+                    optimal = true;
+                    break;
+                }
+            }
+            expect(optimal).toBeTruthy();
+        }
+    });
+
+    test('Setter', () => {
         const chromosomeLength = 10;
         const populationSize = 50;
         const iterations = 100;
@@ -47,22 +67,15 @@ describe('MOSA', () => {
 
         const searchAlgorithm = new MOSA();
         searchAlgorithm.setProperties(properties);
+        expect(searchAlgorithm["_properties"]).toBe(properties);
+
         searchAlgorithm.setChromosomeGenerator(chromosomeGenerator);
+        expect(searchAlgorithm["_chromosomeGenerator"]).toBe(chromosomeGenerator);
+
         searchAlgorithm.setStoppingCondition(stoppingCondition);
+        expect(searchAlgorithm["_stoppingCondition"]).toBe(stoppingCondition);
+
         searchAlgorithm.setFitnessFunctions(fitnessFunctions);
-
-        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
-        expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
-
-        for (let fitnessFunction of fitnessFunctions.values()) {
-            let optimal = false;
-            for (let solution of solutions) {
-                if (fitnessFunction.isOptimal(fitnessFunction.getFitness(solution))) {
-                    optimal = true;
-                    break;
-                }
-            }
-            expect(optimal).toBeTruthy();
-        }
+        expect(searchAlgorithm["_fitnessFunctions"]).toBe(fitnessFunctions);
     });
 });
