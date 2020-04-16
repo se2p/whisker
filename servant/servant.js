@@ -12,8 +12,8 @@ const {CoverageGenerator, TAP13Listener} = require('../../whisker-main');
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
-    isLifeLogEnabled
+    whiskerURL, testPath, scratchPath, accelerationFactor, isHeadless, numberOfTabs, isConsoleForwarded,
+    isLifeOutputCoverage, isLifeLogEnabled
 } = cli.start();
 
 init();
@@ -72,12 +72,13 @@ async function runTests (path, browser, index) {
     }
 
     /**
-     * Configure the Whisker instance, by setting the application file, test file and frequency, after the page was
-     * loaded.
+     * Configure the Whisker instance, by setting the application file, test file and accelerationFactor, after the page
+     * was loaded.
      */
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
-        await page.evaluate(frequ => document.querySelector('#scratch-vm-frequency').value = frequ, frequency);
+        await page.evaluate(
+            factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-tests')).uploadFile(path);
         await (await page.$('#toggle-output')).click();
