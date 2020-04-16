@@ -36,7 +36,7 @@ export interface SearchAlgorithmBuilder<C extends Chromosome>{
     /**
      * Builds a new search algorithm with the corresponding properties (e.g. fitness function).
      */
-    buildAlgorithm(): SearchAlgorithm<C>;
+    buildSearchAlgorithm(): SearchAlgorithm<C>;
 
     /**
      * Adds the generator used to generate chromosomes.

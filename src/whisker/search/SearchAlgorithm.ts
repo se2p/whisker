@@ -22,6 +22,8 @@ import { List } from "../utils/List";
 import { Chromosome } from "./Chromosome";
 import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
 import { ChromosomeGenerator } from "./ChromosomeGenerator";
+import {StoppingCondition} from "./StoppingCondition";
+import {FitnessFunction} from "./FitnessFunction";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -30,10 +32,6 @@ import { ChromosomeGenerator } from "./ChromosomeGenerator";
  * @author Sophia Geserer
  */
 export interface SearchAlgorithm<C extends Chromosome> {
-
-    _properties: SearchAlgorithmProperties<C>;
-
-    _chromosomeGenerator: ChromosomeGenerator<C>;
 
     /**
      * Returns a list of possible admissible solutions for the given problem.
@@ -52,6 +50,18 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * @param generator the generator to create a chromosome
      */
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void;
+
+    /**
+     * Sets the stopping condition for the search algorithm.
+     * @param stoppingCondition
+     */
+    setStoppingCondition(stoppingCondition: StoppingCondition<C>): void;
+
+    /**
+     * Sets the fitness function used by the search algorithm.
+     * @param fitnessFunction
+     */
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void;
 
     /**
      * Return the number of iterations currently performed

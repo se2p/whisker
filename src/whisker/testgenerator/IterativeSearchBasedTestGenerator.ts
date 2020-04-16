@@ -41,7 +41,7 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
         const fitnessFunctions = this._extractCoverageGoals(project);
         const searchFactory = new SearchAlgorithmFactory<TestChromosome>();
         // TODO: Where do the properties come from?
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0);
+        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
         searchFactory.configureSearchAlgorithm(searchAlgorithmProperties);
 
         for (const fitnessFunction of fitnessFunctions) {

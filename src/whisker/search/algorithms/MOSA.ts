@@ -28,6 +28,7 @@ import {StoppingCondition} from "../StoppingCondition";
 import {PopulationFactory} from '../PopulationFactory';
 import {RankSelection} from '../operators/RankSelection';
 import {Randomness} from "../../utils/Randomness";
+import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -37,9 +38,9 @@ import {Randomness} from "../../utils/Randomness";
  */
 export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    _chromosomeGenerator: ChromosomeGenerator<C>;
+    private _chromosomeGenerator: ChromosomeGenerator<C>;
 
-    _properties: SearchAlgorithmProperties<C>;
+    private _properties: SearchAlgorithmProperties<C>;
 
     private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
@@ -63,6 +64,10 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
         this._fitnessFunctions = fitnessFunctions;
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new NotSupportedFunctionException();
     }
 
     setStoppingCondition(stoppingCondition: StoppingCondition<C>) {

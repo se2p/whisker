@@ -37,8 +37,7 @@ describe('MOSA', () => {
         const crossoverProbability = 1;
         const mutationProbability = 1;
 
-        const properties = new SearchAlgorithmProperties(populationSize, crossoverProbability, mutationProbability);
-        properties.setChromosomeLength(chromosomeLength);
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();

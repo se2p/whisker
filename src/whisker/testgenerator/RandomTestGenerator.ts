@@ -37,7 +37,7 @@ export class RandomTestGenerator implements TestGenerator {
         const testSuite = new List<WhiskerTest>();
 
         // TODO: Need properties for how many tests, and how long
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0);
+        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
         const testGenerator = new TestChromosomeGenerator(searchAlgorithmProperties);
 
         // TODO: Repeat X times, as configured

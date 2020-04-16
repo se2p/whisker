@@ -31,8 +31,7 @@ describe('RandomSearch', () => {
     test('Trivial bitstring with OneMax', () => {
 
         const n = 2;
-        const properties = new SearchAlgorithmProperties(1, 0, 0);
-        properties.setChromosomeLength(n);
+        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
 
         const fitnessFunction = new OneMaxFitnessFunction(n);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
