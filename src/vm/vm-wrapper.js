@@ -241,20 +241,20 @@ class VMWrapper {
 
     /**
      * @param {string} project .
-     * @param {number} frequency .
+     * @param {number} accelerationFactor .
      *
      * @returns {Promise<void>} .
      */
-    async setup (project, frequency) {
-        const setStepTime = freq => {
+    async setup (project, accelerationFactor) {
+        const setStepTime = factor => {
             delete Runtime.THREAD_STEP_INTERVAL;
-            Runtime.THREAD_STEP_INTERVAL = 1000 / freq;
+            Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / factor;
             this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
             this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
             clearInterval(this.vm.runtime._steppingInterval);
-            this.accelerationFactor = Runtime.THREAD_STEP_INTERVAL_COMPATIBILITY / Runtime.THREAD_STEP_INTERVAL;
+            this.accelerationFactor = accelerationFactor;
         };
-        setStepTime(frequency);
+        setStepTime(accelerationFactor);
 
         this.instrumentPrimitive('control_wait', 'DURATION');
         this.instrumentPrimitive('looks_sayforsecs', 'SECS');
