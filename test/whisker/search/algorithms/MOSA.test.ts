@@ -18,41 +18,52 @@
  *
  */
 
-import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
-import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
-import { MOSA } from "src/whisker/search/algorithms/MOSA";
-import { FitnessFunction } from "src/whisker/search/FitnessFunction";
-import { BitstringChromosome } from "src/whisker/bitstring/BitstringChromosome";
-import { PositionFitnessFunction } from "src/whisker/bitstring/PositionFitnessFunction";
+import {MOSA} from "../../../../src/whisker/search/algorithms/MOSA";
+import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
+import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
+import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
+import {List} from "../../../../src/whisker/utils/List";
 
 describe('MOSA', () => {
 
-    test('Trivial bitstring with OneMax', () => {
+    test('BitstringChromosome with SingleBitFitnessFunction', () => {
+        const chromosomeLength = 10;
+        const populationSize = 50;
+        const iterations = 100;
+        const crossoverProbability = 1;
+        const mutationProbability = 1;
 
-        const n = 2;
-        const properties = new SearchAlgorithmProperties(1, 0, 0);
-        properties.setChromosomeLength(n);
-
-        const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
-        fitnessFunctions.set(0, new PositionFitnessFunction(n, 0)); 
-        fitnessFunctions.set(1, new PositionFitnessFunction(n, 1)); 
+        const properties = new SearchAlgorithmProperties(populationSize, crossoverProbability, mutationProbability);
+        properties.setChromosomeLength(chromosomeLength);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
-        const stoppingCondition = new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(100)
-        );
-        const mosa = new MOSA();
-        mosa.setFitnessFunctions(fitnessFunctions);
-        mosa.setChromosomeGenerator(chromosomeGenerator);
-        mosa.setStoppingCondition(stoppingCondition);
+        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
+        for (let i = 0; i < chromosomeLength; i++) {
+            fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
+        }
 
-        const solutions = mosa.findSolution();
+        const searchAlgorithm = new MOSA();
+        searchAlgorithm.setProperties(properties);
+        searchAlgorithm.setChromosomeGenerator(chromosomeGenerator);
+        searchAlgorithm.setStoppingCondition(stoppingCondition);
+        searchAlgorithm.setFitnessFunctions(fitnessFunctions);
 
-        //expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
+
+        for (let fitnessFunction of fitnessFunctions.values()) {
+            let optimal = false;
+            for (let solution of solutions) {
+                if (fitnessFunction.isOptimal(fitnessFunction.getFitness(solution))) {
+                    optimal = true;
+                    break;
+                }
+            }
+            expect(optimal).toBeTruthy();
+        }
     });
-
 });
