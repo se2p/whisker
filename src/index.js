@@ -1,7 +1,7 @@
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener} = require('../../whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search} = require('../../whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
@@ -35,6 +35,17 @@ const loadTestsFromString = function (string) {
     Whisker.testTable.setTests(tests);
 
     return tests;
+};
+
+const runSearch = async function() {
+    Whisker.scratch.stop();
+    console.log("loading project")
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    Whisker.outputRun.clear();
+    Whisker.outputLog.clear();
+    await Whisker.scratch.vm.loadProject(project);
+    Whisker.search.run();
+    Whisker.search.printVm(Whisker.scratch.vm);
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
@@ -88,19 +99,22 @@ const initScratch = function () {
     $('#green-flag')
         .removeClass('btn-success')
         .addClass('btn-outline-success');
-    $('#stop').prop('disabled', true);
+    $('#stop')
+        .prop('disabled', true);
 
     Whisker.scratch.vm.on(Runtime.PROJECT_RUN_START, () => {
         $('#green-flag')
             .removeClass('btn-outline-success')
             .addClass('btn-success');
-        $('#stop').prop('disabled', false);
+        $('#stop')
+            .prop('disabled', false);
     });
     Whisker.scratch.vm.on(Runtime.PROJECT_RUN_STOP, () => {
         $('#green-flag')
             .removeClass('btn-success')
             .addClass('btn-outline-success');
-        $('#stop').prop('disabled', true);
+        $('#stop')
+            .prop('disabled', true);
     });
 };
 
@@ -115,9 +129,11 @@ const initComponents = function () {
     Whisker.testEditor.setDefaultValue();
 
     Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0],
-        fileSelect => fileSelect.loadAsArrayBuffer().then(project => Whisker.scratch.loadProject(project)));
+        fileSelect => fileSelect.loadAsArrayBuffer()
+            .then(project => Whisker.scratch.loadProject(project)));
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
-        fileSelect => fileSelect.loadAsString().then(string => loadTestsFromString(string)));
+        fileSelect => fileSelect.loadAsString()
+            .then(string => loadTestsFromString(string)));
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
@@ -128,14 +144,20 @@ const initComponents = function () {
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
+    Whisker.search = new Search.Search()
+
     document.querySelector('#scratch-vm-frequency').value = SCRATCH_VM_FREQUENCY;
 };
 
 const initEvents = function () {
-    $('#green-flag').on('click', () => Whisker.scratch.greenFlag());
-    $('#stop').on('click', () => Whisker.scratch.stop());
-    $('#reset').on('click', () => Whisker.scratch.reset());
-    $('#run-all-tests').on('click', runAllTests);
+    $('#green-flag')
+        .on('click', () => Whisker.scratch.greenFlag());
+    $('#stop')
+        .on('click', () => Whisker.scratch.stop());
+    $('#reset')
+        .on('click', () => Whisker.scratch.reset());
+    $('#run-all-tests')
+        .on('click', runAllTests);
 
     Whisker.inputRecorder.on('startRecording', () => {
         $('#record')
@@ -150,57 +172,69 @@ const initEvents = function () {
             .text('Record Inputs');
     });
 
-    $('#record').on('click', event => {
-        if (Whisker.inputRecorder.isRecording()) {
-            Whisker.inputRecorder.stopRecording();
-        } else {
-            Whisker.inputRecorder.startRecording();
-        }
-    });
+    $('#record')
+        .on('click', event => {
+            if (Whisker.inputRecorder.isRecording()) {
+                Whisker.inputRecorder.stopRecording();
+            } else {
+                Whisker.inputRecorder.startRecording();
+            }
+        });
 
-    $('#toggle-tests').on('change', event => {
-        if ($(event.target).is(':checked')) {
-            $(event.target)
-                .parent()
-                .addClass('active');
-            Whisker.testTable.show();
-        } else {
-            $(event.target)
-                .parent()
-                .removeClass('active');
-            Whisker.testTable.hide();
-        }
-    });
+    $('#toggle-tests')
+        .on('change', event => {
+            if ($(event.target)
+                .is(':checked')) {
+                $(event.target)
+                    .parent()
+                    .addClass('active');
+                Whisker.testTable.show();
+            } else {
+                $(event.target)
+                    .parent()
+                    .removeClass('active');
+                Whisker.testTable.hide();
+            }
+        });
 
-    $('#toggle-editor').on('change', event => {
-        if ($(event.target).is(':checked')) {
-            $(event.target)
-                .parent()
-                .addClass('active');
-            Whisker.testEditor.show();
-        } else {
-            $(event.target)
-                .parent()
-                .removeClass('active');
-            Whisker.testEditor.hide();
-        }
-    });
+    $('#toggle-editor')
+        .on('change', event => {
+            if ($(event.target)
+                .is(':checked')) {
+                $(event.target)
+                    .parent()
+                    .addClass('active');
+                Whisker.testEditor.show();
+            } else {
+                $(event.target)
+                    .parent()
+                    .removeClass('active');
+                Whisker.testEditor.hide();
+            }
+        });
 
-    $('#toggle-output').on('change', event => {
-        if ($(event.target).is(':checked')) {
-            $(event.target)
-                .parent()
-                .addClass('active');
-            Whisker.outputRun.show();
-            Whisker.outputLog.show();
-        } else {
-            $(event.target)
-                .parent()
-                .removeClass('active');
-            Whisker.outputRun.hide();
-            Whisker.outputLog.hide();
-        }
-    });
+    $('#toggle-output')
+        .on('change', event => {
+            if ($(event.target)
+                .is(':checked')) {
+                $(event.target)
+                    .parent()
+                    .addClass('active');
+                Whisker.outputRun.show();
+                Whisker.outputLog.show();
+            } else {
+                $(event.target)
+                    .parent()
+                    .removeClass('active');
+                Whisker.outputRun.hide();
+                Whisker.outputLog.hide();
+            }
+        });
+
+    $('#run-search')
+        .click('click', event => {
+            runSearch()
+        });
 };
 
 const toggleComponents = function () {
@@ -208,29 +242,46 @@ const toggleComponents = function () {
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
             const [input, tests, editor, output, scratchVMFrequency] = JSON.parse(componentStates);
-            if (input) $('#toggle-input').click();
-            if (tests) $('#toggle-tests').click();
-            if (editor) $('#toggle-editor').click();
-            if (output) $('#toggle-output').click();
+            if (input) {
+                $('#toggle-input')
+                    .click();
+            }
+            if (tests) {
+                $('#toggle-tests')
+                    .click();
+            }
+            if (editor) {
+                $('#toggle-editor')
+                    .click();
+            }
+            if (output) {
+                $('#toggle-output')
+                    .click();
+            }
             if (scratchVMFrequency) document.querySelector('#scratch-vm-frequency').value = scratchVMFrequency;
         }
     }
 };
 
-$(document).ready(() => {
-    initScratch();
-    initComponents();
-    initEvents();
-    toggleComponents();
-});
+$(document)
+    .ready(() => {
+        initScratch();
+        initComponents();
+        initEvents();
+        toggleComponents();
+    });
 
 window.onbeforeunload = function () {
     if (window.localStorage) {
         const componentStates = [
-            $('#toggle-input').is(':checked'),
-            $('#toggle-tests').is(':checked'),
-            $('#toggle-editor').is(':checked'),
-            $('#toggle-output').is(':checked'),
+            $('#toggle-input')
+                .is(':checked'),
+            $('#toggle-tests')
+                .is(':checked'),
+            $('#toggle-editor')
+                .is(':checked'),
+            $('#toggle-output')
+                .is(':checked'),
             document.querySelector('#scratch-vm-frequency').value
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
