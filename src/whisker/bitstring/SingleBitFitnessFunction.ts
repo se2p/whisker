@@ -23,15 +23,16 @@ import {BitstringChromosome} from './BitstringChromosome';
 import {Preconditions} from '../utils/Preconditions';
 
 /**
- * A fitness function using only one bit at a defined position of a BitstringChromosome
- * for the calculation of the fitness value.
+ * A fitness function for achieving a bitstring consisting of exactly one set bit at a
+ * defined position. Every correct bit value adds 1 to the fitness value, so the optimal fitness
+ * is the length of the bitstring.
  *
  * @author Adina Deiner
  */
 export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromosome> {
 
-    private _size: number;
-    private _bitPosition: number;
+    private readonly _size: number;
+    private readonly _bitPosition: number;
 
     constructor(size: number, bitPosition: number) {
         Preconditions.checkArgument(bitPosition < size);
@@ -42,7 +43,14 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
     getFitness(chromosome: BitstringChromosome): number {
         const bits = chromosome.getGenes();
         Preconditions.checkListSize(bits, this._size);
-        return bits.get(this._bitPosition) ? 1 : 0;
+        let fitness = 0;
+        for (let i = 0; i < bits.size(); i++) {
+            if ((i === this._bitPosition && bits.get(i))
+                || (i !== this._bitPosition && !bits.get(i))) {
+                fitness++;
+            }
+        }
+        return fitness;
     }
 
     compare(value1: number, value2: number): number {
@@ -51,6 +59,6 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
     }
 
     isOptimal(fitnessValue: number): boolean {
-        return fitnessValue === 1;
+        return fitnessValue === this._size;
     }
 }
