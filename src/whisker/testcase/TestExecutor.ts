@@ -19,7 +19,7 @@
  */
 
 
-import VirtualMachine = require('scratch-vm');
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {ExecutionTrace} from "./ExecutionTrace";

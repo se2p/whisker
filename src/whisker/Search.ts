@@ -18,10 +18,15 @@
  *
  */
 
+/* eslint-disable no-console */
+
 import {ScratchProject} from './scratch/ScratchProject';
 import {TestSuiteWriter} from './testgenerator/TestSuiteWriter';
 import {TestGenerator} from "./testgenerator/TestGenerator";
 import {NotYetImplementedException} from "./core/exceptions/NotYetImplementedException";
+import WhiskerUtil from "../test/whisker-util.js";
+import TestDriver from "../test/test-driver.js";
+import { assert } from '../test-runner/assert';
 
 export class Search {
 
@@ -42,14 +47,24 @@ export class Search {
         throw new NotYetImplementedException();
     }
 
+    public run(vm, project, config): void {
+        console.log("Whisker-Main: Starting Search based algorithm");
 
-    public printVm(vm) {
-        console.log(vm)
-    }
+        const util = new WhiskerUtil(vm, project);
 
-    public run(): void {
-        // eslint-disable-next-line no-console
-        console.log("Hello");
+        async function init() {
+            await util.prepare(30);
+            util.start();
+            const t: TestDriver = util.getTestDriver({});
+            await t.runForSteps(5);
+            const boat = t.getSprites(sprite => sprite.name.includes('Boot'))[0];
+            assert.ok(boat.visible, 'boat must be visible');
+            assert.ok(boat.currentCostume === 0, 'boat must have the right costume');
+            t.end();
+
+        }
+
+        init();
     }
 }
 
