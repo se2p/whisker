@@ -13,7 +13,7 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
-    isLifeLogEnabled
+    isLifeLogEnabled, isGeneticSearch
 } = cli.start();
 
 init();
@@ -22,7 +22,6 @@ init();
  * The entry point of the runners functionallity, handling the test file preperation and the browser instance.
  */
 async function init () {
-    const paths = prepateTestFiles(testPath);
 
     // args: ['--use-gl=desktop'] could be used next to headless, but pages tend to quit unexpectedly
     const browser = await puppeteer.launch(
@@ -31,24 +30,27 @@ async function init () {
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
         });
 
-    Promise.all(paths.map((path, index) => runTests(path, browser, index)))
-        .then(logs => {
-            browser.close();
-            printTestresultsFromCivergaeGenerator(logs);
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-        })
-        .catch(errors => logger.error('Error on executing tests: ', errors))
-        .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
+    if (isGeneticSearch) {
+        runGeneticSearch(browser)
+            .then(() => {
+                browser.close();
+                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+            })
+            .catch(errors => logger.error('Error on generating tests: ', errors))
+            .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
+    } else {
+        const paths = prepateTestFiles(testPath);
+        Promise.all(paths.map((path, index) => runSearch(path, browser, index)))
+            .then(() => {
+                browser.close();
+                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+            })
+            .catch(errors => logger.error('Error on executing tests: ', errors))
+            .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
+    }
 }
 
-/**
- * Runs the tests at the given path in its own page after opening that page.
- *
- * @param {*} path      The path to the test file for the page
- * @param {*} browser   The browser instance the page should be opened in
- * @param {*} index     The index of the page
- */
-async function runTests (path, browser, index) {
+async function runGeneticSearch (browser) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
@@ -59,7 +61,8 @@ async function runTests (path, browser, index) {
         if (isConsoleForwarded) {
             page.on('console', msg => {
                 if (msg._args.length) {
-                    logger.info(`Page ${index} | Forwarded: `, msg._args.map(arg => arg._remoteObject.value).join(' '));
+                    logger.info(`Forwarded: `, msg._args.map(arg => arg._remoteObject.value)
+                        .join(' '));
                 }
             });
         }
@@ -67,14 +70,8 @@ async function runTests (path, browser, index) {
 
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
-        await page.evaluate(frequ => document.querySelector('#scratch-vm-frequency').value = frequ, frequency);
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-        await (await page.$('#fileselect-tests')).uploadFile(path);
         await (await page.$('#toggle-output')).click();
-    }
-
-    async function executeTests () {
-        await (await page.$('#run-all-tests')).click();
     }
 
     async function readTestOutput () {
@@ -88,7 +85,8 @@ async function runTests (path, browser, index) {
         while (true) {
             if (isLifeLogEnabled) {
                 const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '').trim();
+                const newInfoFromLog = currentLog.replace(log, '')
+                    .trim();
 
                 if (newInfoFromLog.length) {
                     logger.log(newInfoFromLog);
@@ -98,7 +96,89 @@ async function runTests (path, browser, index) {
             }
 
             const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '').trim();
+            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
+                .trim();
+            if (newInfoFromCoverage.length && isLifeOutputCoverage) {
+                logger.log(`Coverage: `, newInfoFromCoverage);
+            } else if (newInfoFromCoverage.includes('not ok ')) {
+                logger.warn(`Coverage: `, newInfoFromCoverage);
+            }
+            coverageLog = currentCoverageLog;
+
+            if (currentCoverageLog.includes('summary')) {
+                break;
+            }
+
+            await page.waitFor(1000);
+        }
+
+        return coverageLog;
+    }
+
+    async function executeSearch () {
+        await (await page.$('#run-search')).click();
+    }
+
+    try {
+        optionallyEnableConsoleForward();
+        await configureWhiskerWebInstance();
+        await executeSearch();
+        const output = await readTestOutput();
+        await page.close();
+        return Promise.resolve(output);
+    } catch (e) {
+        return Promise.reject(e);
+    }
+}
+
+async function runSearch (path, browser, index) {
+    const page = await browser.newPage({context: Date.now()});
+    page.on('error', error => {
+        logger.error(error);
+        process.exit(1);
+    });
+
+    function optionallyEnableConsoleForward () {
+        if (isConsoleForwarded) {
+            page.on('console', msg => {
+                if (msg._args.length) {
+                    logger.info(`Page ${index} | Forwarded: `, msg._args.map(arg => arg._remoteObject.value)
+                        .join(' '));
+                }
+            });
+        }
+    }
+
+    async function configureWhiskerWebInstance () {
+        await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
+        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        await (await page.$('#toggle-output')).click();
+    }
+
+    async function readTestOutput () {
+        const coverageOutput = await page.$('#output-run .output-content');
+        const logOutput = await page.$('#output-log .output-content');
+
+        let coverageLog = '';
+        let log = '';
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            if (isLifeLogEnabled) {
+                const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+                const newInfoFromLog = currentLog.replace(log, '')
+                    .trim();
+
+                if (newInfoFromLog.length) {
+                    logger.log(newInfoFromLog);
+                }
+
+                log = currentLog;
+            }
+
+            const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
+            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
+                .trim();
             if (newInfoFromCoverage.length && isLifeOutputCoverage) {
                 logger.log(`Page ${index} | Coverage: `, newInfoFromCoverage);
             } else if (newInfoFromCoverage.includes('not ok ')) {
@@ -119,7 +199,6 @@ async function runTests (path, browser, index) {
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
-        await executeTests();
         const output = await readTestOutput();
         await page.close();
         return Promise.resolve(output);

@@ -29,6 +29,7 @@ Options:
   -c, --isConsoleForwarded      If the browser's console output should be forwarded (default: false)
   -o, --isLifeOutputCoverage    If the new output of the coverage should be printed regulary (default: false)
   -l, --isLifeLogEnabled        If the new output of the log should be printed regulary (default: false)
+  -g  --isGeneticSearch
   -h, --help                    output usage information
 ```
 

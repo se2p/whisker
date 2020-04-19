@@ -20,15 +20,15 @@ const validateCommandLineArguments = args => {
         process.exit(1);
     }
 
-    if (!args.testPath) {
+    if (!args.testPath && !args.isGeneticSearch) {
         logger.error('No path to a test file was given, please use the -t option');
         process.exit(1);
     }
 
     if (args.numberOfTabs > os.cpus().length) {
         logger.error(`You selcted to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
-          `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
-          `otherwise tests might fail and will need longer to initialize.`);
+            `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
+            `otherwise tests might fail and will need longer to initialize.`);
         process.exit(1);
     }
 };
@@ -45,7 +45,8 @@ const cli = {
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
             .option('-c, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
             .option('-o, --isLifeOutputCoverage', 'If the new output of the coverage should be printed regularly', false)
-            .option('-l, --isLifeLogEnabled', 'If the new output of the log should be printed regularly', false);
+            .option('-l, --isLifeLogEnabled', 'If the new output of the log should be printed regularly', false)
+            .option('-g, --isGeneticSearch', 'If new tests should be generated via genetic serach', false);
 
         commander.parse(process.argv);
 
@@ -58,7 +59,8 @@ const cli = {
             numberOfTabs,
             isConsoleForwarded,
             isLifeOutputCoverage,
-            isLifeLogEnabled
+            isLifeLogEnabled,
+            isGeneticSearch
         } = commander;
 
         validateCommandLineArguments(commander);
@@ -72,7 +74,8 @@ const cli = {
             numberOfTabs,
             isConsoleForwarded,
             isLifeOutputCoverage,
-            isLifeLogEnabled
+            isLifeLogEnabled,
+            isGeneticSearch
         };
     }
 };
