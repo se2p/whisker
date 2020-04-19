@@ -31,6 +31,7 @@ async function init () {
         });
 
     if (isGeneticSearch) {
+        // Todo use correct config
         runGeneticSearch(browser)
             .then(() => {
                 browser.close();
