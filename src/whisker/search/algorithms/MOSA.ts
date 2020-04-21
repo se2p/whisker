@@ -29,6 +29,7 @@ import {PopulationFactory} from '../PopulationFactory';
 import {RankSelection} from '../operators/RankSelection';
 import {Randomness} from "../../utils/Randomness";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {Selection} from "../Selection";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -52,7 +53,7 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
 
     private _archive = new Map<number, C>();
 
-    private _rankSelection = new RankSelection<C>();
+    private _selectionOperator: Selection<C>;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
@@ -72,6 +73,10 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
 
     setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
         this._stoppingCondition = stoppingCondition;
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>) {
+        this._selectionOperator = selectionOperator;
     }
 
     getNumberOfIterations(): number {
@@ -161,7 +166,7 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
      */
     private selectChromosome(population: List<C>, useRankSelection: boolean): C {
         if (useRankSelection) {
-            return this._rankSelection.apply(population);
+            return this._selectionOperator.apply(population);
         } else {
             const randomIndex = Randomness.getInstance().nextInt(0, population.size());
             return population.get(randomIndex);

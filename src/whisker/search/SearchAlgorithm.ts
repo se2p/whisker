@@ -24,6 +24,7 @@ import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
 import { ChromosomeGenerator } from "./ChromosomeGenerator";
 import {StoppingCondition} from "./StoppingCondition";
 import {FitnessFunction} from "./FitnessFunction";
+import {Selection} from "./Selection";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -53,18 +54,25 @@ export interface SearchAlgorithm<C extends Chromosome> {
 
     /**
      * Sets the stopping condition for the search algorithm.
-     * @param stoppingCondition
+     * @param stoppingCondition the stopping contiditon for the search algorithm
      */
     setStoppingCondition(stoppingCondition: StoppingCondition<C>): void;
 
     /**
      * Sets the fitness function used by the search algorithm.
-     * @param fitnessFunction
+     * @param fitnessFunction fitness function for chromosome evaluation
      */
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void;
 
     /**
+     * Sets the selection operator used by the search algorithm.
+     * @param selectionOperator the selction operator used by the algorithm
+     */
+    setSelectionOperator(selectionOperator: Selection<C>): void;
+
+    /**
      * Return the number of iterations currently performed
+     * @returns the number of performed iterations
      */
     getNumberOfIterations(): number;
 

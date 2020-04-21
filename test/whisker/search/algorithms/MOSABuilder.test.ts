@@ -29,6 +29,8 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {StoppingCondition} from "../../../../src/whisker/search/StoppingCondition";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
+import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
+import {Selection} from "../../../../src/whisker/search/Selection";
 
 describe('MOSABuilder', () => {
 
@@ -46,6 +48,7 @@ describe('MOSABuilder', () => {
         expect(mosa["_chromosomeGenerator"]).not.toBeNull();
         expect(mosa["_stoppingCondition"]).not.toBeNull();
         expect(mosa["_fitnessFunctions"].size).toBe(10);
+        expect(mosa["_selectionOperator"]).not.toBeNull();
     });
 
     test("Add generator", () => {
@@ -98,5 +101,12 @@ describe('MOSABuilder', () => {
         builder.addStoppingCondition(stoppingCondition);
         expect(builder["_stoppingCondition"]).toBe(stoppingCondition);
     });
+
+    test("Add selection operator", () => {
+        const builder: MOSABuilder = new MOSABuilder();
+        const selectionOp: Selection<BitstringChromosome> = new RankSelection<BitstringChromosome>();
+        builder.addSelectionOperator(selectionOp);
+        expect(builder["_selectionOperator"]).toBe(selectionOp);
+    })
 
 });

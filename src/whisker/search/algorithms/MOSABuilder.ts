@@ -1,7 +1,5 @@
 import {SearchAlgorithmBuilder} from "../SearchAlgorithmBuilder";
-import {Chromosome} from "../Chromosome";
 import {MOSA} from "./MOSA";
-import {ChromosomeGenerator} from "../ChromosomeGenerator";
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
 import {StoppingCondition} from "../StoppingCondition";
@@ -12,6 +10,8 @@ import {BitstringChromosome} from "../../bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../bitstring/SingleBitFitnessFunction";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {Selection} from "../Selection";
+import {RankSelection} from "../operators/RankSelection";
 
 export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
 
@@ -23,6 +23,8 @@ export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> 
 
     private _stoppingCondition: StoppingCondition<BitstringChromosome>;
 
+    private _selectionOperator: Selection<BitstringChromosome>;
+
     constructor() {
         const populationSize = 50;
         const chromosomeLength = 10;
@@ -33,6 +35,7 @@ export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> 
         this._properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
         this._chromosomeGenerator = new BitstringChromosomeGenerator(this._properties);
         this._stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
+        this._selectionOperator = new RankSelection();
         this.initializeFitnessFunction(chromosomeLength);
     }
 
@@ -67,12 +70,18 @@ export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> 
         return this;
     }
 
+    addSelectionOperator(selectionOp: Selection<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
+        this._selectionOperator = selectionOp;
+        return this;
+    }
+
     buildSearchAlgorithm(): SearchAlgorithm<BitstringChromosome> {
         const mosa: MOSA<BitstringChromosome> = new MOSA();
         mosa.setProperties(this._properties);
         mosa.setChromosomeGenerator(this._chromosomeGenerator);
         mosa.setStoppingCondition(this._stoppingCondition);
         mosa.setFitnessFunctions(this._fitnessFunctions);
+        mosa.setSelectionOperator(this._selectionOperator);
         return mosa;
     }
 

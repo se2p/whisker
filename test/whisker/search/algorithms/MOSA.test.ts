@@ -28,6 +28,7 @@ import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringCh
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 import {List} from "../../../../src/whisker/utils/List";
 import {MOSABuilder} from "../../../../src/whisker/search/algorithms/MOSABuilder";
+import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 
 describe('MOSA', () => {
 
@@ -64,6 +65,7 @@ describe('MOSA', () => {
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
         }
+        const selectionOp = new RankSelection();
 
         const searchAlgorithm = new MOSA();
         searchAlgorithm.setProperties(properties);
@@ -77,5 +79,8 @@ describe('MOSA', () => {
 
         searchAlgorithm.setFitnessFunctions(fitnessFunctions);
         expect(searchAlgorithm["_fitnessFunctions"]).toBe(fitnessFunctions);
+
+        searchAlgorithm.setSelectionOperator(selectionOp);
+        expect(searchAlgorithm["_selectionOperator"]).toBe(selectionOp);
     });
 });
