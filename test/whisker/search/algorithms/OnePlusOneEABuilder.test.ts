@@ -19,79 +19,74 @@
  */
 
 import {MOSABuilder} from "../../../../src/whisker/search/algorithms/MOSABuilder";
-import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
+import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
-import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
-import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {StoppingCondition} from "../../../../src/whisker/search/StoppingCondition";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
-import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
+import {StoppingCondition} from "../../../../src/whisker/search/StoppingCondition";
+import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
+import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {Selection} from "../../../../src/whisker/search/Selection";
+import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
+import {OnePlusOneEABuilder} from "../../../../src/whisker/search/algorithms/OnePlusOneEABuilder";
+import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 
-describe('MOSABuilder', () => {
+describe('OnePlusOneEABuilder', () => {
 
     test('Constructor and build', () => {
-        const builder: MOSABuilder = new MOSABuilder();
-        const mosa: SearchAlgorithm<Chromosome> = builder.buildSearchAlgorithm();
-        expect(mosa).not.toBeNull();
+        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+        const onePlusOneEA: SearchAlgorithm<Chromosome> = builder.buildSearchAlgorithm();
+        expect(onePlusOneEA).not.toBeNull();
 
         const populationSize = 50;
         const chromosomeLength = 10;
         const crossoverProbability = 1;
         const mutationProbability = 1;
 
-        const properties = mosa["_properties"];
+        const properties = onePlusOneEA["_properties"];
         expect(properties.getPopulationSize()).toBe(populationSize);
         expect(properties.getChromosomeLength()).toBe(chromosomeLength);
         expect(properties.getCrossoverProbability()).toBe(crossoverProbability);
         expect(properties.getMutationProbablity()).toBe(mutationProbability);
 
-        expect(mosa["_chromosomeGenerator"]).not.toBeNull();
-        expect(mosa["_stoppingCondition"]).not.toBeNull();
-        expect(mosa["_fitnessFunctions"].size).toBe(chromosomeLength);
-        expect(mosa["_selectionOperator"]).not.toBeNull();
+        expect(onePlusOneEA["_chromosomeGenerator"]).not.toBeNull();
+        expect(onePlusOneEA["_stoppingCondition"]).not.toBeNull();
+        expect(onePlusOneEA["_fitnessFunction"].size).not.toBeNull();
     });
 
     test("Add generator", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
         const newGenerator: BitstringChromosomeGenerator = new BitstringChromosomeGenerator(
             new SearchAlgorithmProperties<BitstringChromosome>(0, 5, 0, 0));
+
         builder.addChromosomeGenerator(newGenerator);
+
         expect(builder["_chromosomeGenerator"]).toBe(newGenerator);
     });
 
     test("Add fitness function", () => {
-        const builder: MOSABuilder = new MOSABuilder();
-        expect(function() {
-            builder.addFitnessFunction(null);
-        }).toThrow();
-    });
+        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+        const fitnessFunction: FitnessFunction<BitstringChromosome> = new OneMaxFitnessFunction(10);
 
-    test("Add fitness functions", () => {
-        const builder: MOSABuilder = new MOSABuilder();
-        const chromosomeLength = 27;
-        const fitnessFunctions: Map<number, FitnessFunction<BitstringChromosome>> = new Map<number, FitnessFunction<BitstringChromosome>>();
-        for (let i = 0; i < chromosomeLength; i++) {
-            fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
-        }
+        builder.addFitnessFunction(fitnessFunction);
 
-        builder.addFitnessFunctions(fitnessFunctions);
-        expect(builder["_fitnessFunctions"].size).toBe(27);
+        expect(builder["_fitnessFunction"]).toBe(fitnessFunction);
     });
 
     test("Add properties", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
         const populationSize = 14;
         const chromosomeLength = 27;
         const crossoverProbability = 0.42;
         const mutationProbability = 1.13;
         const properties = new SearchAlgorithmProperties<BitstringChromosome>(populationSize, chromosomeLength,
-                                                                                crossoverProbability, mutationProbability);
+            crossoverProbability, mutationProbability);
+
         builder.addProperties(properties);
+
         expect(builder["_properties"].getPopulationSize()).toBe(populationSize);
         expect(builder["_properties"].getChromosomeLength()).toBe(chromosomeLength);
         expect(builder["_properties"].getCrossoverProbability()).toBe(crossoverProbability);
@@ -99,19 +94,21 @@ describe('MOSABuilder', () => {
     });
 
     test("Add stopping condition", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
         const maxIterations = 50;
         const stoppingCondition: StoppingCondition<BitstringChromosome> = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
 
         builder.addStoppingCondition(stoppingCondition);
+
         expect(builder["_stoppingCondition"]).toBe(stoppingCondition);
     });
 
     test("Add selection operator", () => {
-        const builder: MOSABuilder = new MOSABuilder();
-        const selectionOp: Selection<BitstringChromosome> = new RankSelection<BitstringChromosome>();
-        builder.addSelectionOperator(selectionOp);
-        expect(builder["_selectionOperator"]).toBe(selectionOp);
+        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+
+        expect(function() {
+            builder.addSelectionOperator(null);
+        }).toThrow();
     })
 
 });

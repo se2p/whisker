@@ -30,24 +30,16 @@ import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringCh
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {MOSA} from "../../../../src/whisker/search/algorithms/MOSA";
+import {OnePlusOneEABuilder} from "../../../../src/whisker/search/algorithms/OnePlusOneEABuilder";
 
 describe('OnePlusOneEa', () => {
 
     test('Trivial bitstring with OneMax', () => {
 
-        const n = 10;
-        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const search = new OnePlusOneEABuilder().buildSearchAlgorithm();
 
+        const n = 10;
         const fitnessFunction = new OneMaxFitnessFunction(n);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
-        const stoppingCondition = new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000), // Plenty time...
-            new OptimalSolutionStoppingCondition(fitnessFunction)
-        );
-        const search = new OnePlusOneEA();
-        search.setFitnessFunction(fitnessFunction);
-        search.setChromosomeGenerator(chromosomeGenerator);
-        search.setStoppingCondition(stoppingCondition);
 
         const solutions = search.findSolution();
         const firstSolution = solutions.get(0);
