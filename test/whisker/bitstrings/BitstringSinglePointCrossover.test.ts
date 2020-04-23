@@ -21,6 +21,7 @@
 import {BitstringChromosome} from '../../../src/whisker/bitstring/BitstringChromosome';
 import {List} from '../../../src/whisker/utils/List';
 import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
+import {BitflipMutation} from "../../../src/whisker/bitstring/BitflipMutation";
 
 describe('BitstringSinglePointCrossover', () => {
 
@@ -28,12 +29,14 @@ describe('BitstringSinglePointCrossover', () => {
         const parent1Bits = new List<Boolean>();
         parent1Bits.add(false);
         parent1Bits.add(false);
-        const parent1 = new BitstringChromosome(parent1Bits);
+        const parent1 = new BitstringChromosome(parent1Bits,
+            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const parent2Bits = new List<Boolean>();
         parent2Bits.add(true);
         parent2Bits.add(true);
-        const parent2 = new BitstringChromosome(parent2Bits);
+        const parent2 = new BitstringChromosome(parent2Bits,
+            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const crossover = new SinglePointCrossover<BitstringChromosome>();
         const offspring = crossover.applyAtPosition(parent1, parent2, 1);

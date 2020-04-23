@@ -21,6 +21,8 @@
 import {BitstringChromosome} from '../../../src/whisker/bitstring/BitstringChromosome';
 import {List} from '../../../src/whisker/utils/List';
 import {SingleBitFitnessFunction} from "../../../src/whisker/bitstring/SingleBitFitnessFunction";
+import {BitflipMutation} from "../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
 
 describe('SingleBitFitnessFunction', () => {
 
@@ -28,7 +30,8 @@ describe('SingleBitFitnessFunction', () => {
         const bits = new List<Boolean>();
         bits.add(false);
         bits.add(false);
-        const chromosome = new BitstringChromosome(bits);
+        const chromosome = new BitstringChromosome(bits,
+            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
@@ -41,7 +44,8 @@ describe('SingleBitFitnessFunction', () => {
         const bits = new List<Boolean>();
         bits.add(true);
         bits.add(true);
-        const chromosome = new BitstringChromosome(bits);
+        const chromosome = new BitstringChromosome(bits,
+            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
@@ -54,7 +58,8 @@ describe('SingleBitFitnessFunction', () => {
         const bits = new List<Boolean>();
         bits.add(true);
         bits.add(false);
-        const chromosome = new BitstringChromosome(bits);
+        const chromosome = new BitstringChromosome(bits,
+            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);

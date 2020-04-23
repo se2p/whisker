@@ -19,6 +19,8 @@
  */
 
 import { Chromosome } from "./Chromosome"
+import {Mutation} from "./Mutation";
+import {Crossover} from "./Crossover";
 
 /**
  * A generator for random chromosomes.
@@ -27,9 +29,21 @@ import { Chromosome } from "./Chromosome"
  * @author Sophia Geserer
  */
 export interface ChromosomeGenerator<C extends Chromosome> {
+
     /**
      * Creates and returns a random chromosome.
      * @returns a random chromosome
      */
     get(): C;
+
+    /**
+     * Helper method to ensure a mutation operator is configured in the generator.
+     */
+    setMutationOperator(mutationOp: Mutation<C>): void;
+
+    /**
+     * Helper method to ensure a crossover operator is configured in the generator.
+     */
+    setCrossoverOperator(crossoverOp: Crossover<C>): void;
+
 }

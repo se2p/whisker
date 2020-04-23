@@ -23,24 +23,38 @@ import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {List} from '../utils/List';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Randomness} from "../utils/Randomness";
+import {Crossover} from "../search/Crossover";
+import {Mutation} from "../search/Mutation";
+import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
+import {BitflipMutation} from "./BitflipMutation";
 
 export class BitstringChromosomeGenerator implements ChromosomeGenerator<BitstringChromosome> {
 
-    private readonly _length : number;
+    private readonly _length: number;
+
+    private _mutationOperator: Mutation<BitstringChromosome>;
+
+    private _crossoverOperator: Crossover<BitstringChromosome>;
 
     constructor(properties: SearchAlgorithmProperties<BitstringChromosome>) {
         this._length = properties.getChromosomeLength();
+        this._mutationOperator = new BitflipMutation();
+        this._crossoverOperator = new SinglePointCrossover<BitstringChromosome>();
     }
 
-    /**
-     * Creates and returns a random chromosome.
-     * @returns a random chromosome
-     */
     get(): BitstringChromosome {
         let bits = new List<Boolean>();
         for(let i = 0; i < this._length; i++) {
             bits.add(Randomness.getInstance().nextDouble() > 0.5);
         }
-        return new BitstringChromosome(bits);
+        return new BitstringChromosome(bits, this._mutationOperator, this._crossoverOperator);
+    }
+
+    setMutationOperator(mutationOp: Mutation<BitstringChromosome>): void {
+        this._mutationOperator = mutationOp;
+    }
+
+    setCrossoverOperator(crossoverOp: Crossover<BitstringChromosome>): void {
+        this._crossoverOperator = crossoverOp;
     }
 }

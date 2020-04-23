@@ -19,11 +19,9 @@
  */
 
 import {List} from '../utils/List';
-import {BitflipMutation} from "./BitflipMutation";
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 import {ListChromosome} from "../search/ListChromosome";
-import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
 
 export class BitstringChromosome extends ListChromosome<Boolean> {
 
@@ -37,11 +35,10 @@ export class BitstringChromosome extends ListChromosome<Boolean> {
      */
     private readonly _mutationOp: Mutation<BitstringChromosome>;
 
-    constructor(bits : List<Boolean>) {
+    constructor(bits: List<Boolean>, mutationOp: Mutation<BitstringChromosome>, crossoverOp: Crossover<BitstringChromosome>) {
         super(bits);
-        // TODO: Should the operators be passed into this constructor?
-        this._crossoverOp = new SinglePointCrossover<BitstringChromosome>() as unknown as Crossover<this>;
-        this._mutationOp = new BitflipMutation();
+        this._crossoverOp = crossoverOp;
+        this._mutationOp = mutationOp;
     }
 
     protected getCrossoverOperator(): Crossover<this> {
