@@ -37,22 +37,21 @@ export class IntegerListChromosome extends ListChromosome<number> {
      */
     private readonly _mutationOp: Mutation<IntegerListChromosome>;
 
-    constructor(codons : List<number>) {
+    constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons);
-        // TODO: Should the operators be passed into this constructor?
-        this._crossoverOp = new SinglePointCrossover<IntegerListChromosome>() as unknown as Crossover<this>;
-        this._mutationOp = new IntegerListMutation(0, 10); // TODO min/max
+        this._crossoverOp = crossoverOp;
+        this._mutationOp = mutationOp;
     }
 
-    protected getCrossoverOperator(): Crossover<this> {
+    getCrossoverOperator(): Crossover<this> {
         return this._crossoverOp as Crossover<this>;
     }
 
-    protected getMutationOperator(): Mutation<this> {
+    getMutationOperator(): Mutation<this> {
         return this._mutationOp as Mutation<this>;
     }
 
     cloneWith(newGenes: List<number>) {
-        return new IntegerListChromosome(newGenes);
+        return new IntegerListChromosome(newGenes, this._mutationOp, this._crossoverOp);
     }
 }

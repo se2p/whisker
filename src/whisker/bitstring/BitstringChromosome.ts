@@ -41,15 +41,15 @@ export class BitstringChromosome extends ListChromosome<Boolean> {
         this._mutationOp = mutationOp;
     }
 
-    protected getCrossoverOperator(): Crossover<this> {
+    getCrossoverOperator(): Crossover<this> {
         return this._crossoverOp as Crossover<this>;
     }
 
-    protected getMutationOperator(): Mutation<this> {
+    getMutationOperator(): Mutation<this> {
         return this._mutationOp as Mutation<this>;
     }
 
     cloneWith(newGenes: List<Boolean>) {
-        return new BitstringChromosome(newGenes);
+        return new BitstringChromosome(newGenes, this._mutationOp, this._crossoverOp);
     }
 }

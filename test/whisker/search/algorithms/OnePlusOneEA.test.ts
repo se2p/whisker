@@ -31,11 +31,20 @@ describe('OnePlusOneEa', () => {
 
     test('Trivial bitstring with OneMax', () => {
 
-        const search = new OnePlusOneEABuilder().buildSearchAlgorithm();
-
         const n = 10;
+        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
         const fitnessFunction = new OneMaxFitnessFunction(n);
 
+        const builder = new OnePlusOneEABuilder()
+            .addProperties(properties)
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties))
+            .addFitnessFunction(fitnessFunction)
+            .addStoppingCondition(
+                new OneOfStoppingCondition(
+                    new FixedIterationsStoppingCondition(1000),
+                    new OptimalSolutionStoppingCondition(fitnessFunction)));
+
+        const search = builder.buildSearchAlgorithm();
         const solutions = search.findSolution();
         const firstSolution = solutions.get(0);
 

@@ -32,14 +32,14 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
 
     private readonly _length: number;
 
-    private _mutationOperator: Mutation<BitstringChromosome>;
+    private _mutationOp: Mutation<BitstringChromosome>;
 
-    private _crossoverOperator: Crossover<BitstringChromosome>;
+    private _crossoverOp: Crossover<BitstringChromosome>;
 
     constructor(properties: SearchAlgorithmProperties<BitstringChromosome>) {
         this._length = properties.getChromosomeLength();
-        this._mutationOperator = new BitflipMutation();
-        this._crossoverOperator = new SinglePointCrossover<BitstringChromosome>();
+        this._mutationOp = new BitflipMutation();
+        this._crossoverOp = new SinglePointCrossover<BitstringChromosome>();
     }
 
     get(): BitstringChromosome {
@@ -47,14 +47,14 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
         for(let i = 0; i < this._length; i++) {
             bits.add(Randomness.getInstance().nextDouble() > 0.5);
         }
-        return new BitstringChromosome(bits, this._mutationOperator, this._crossoverOperator);
+        return new BitstringChromosome(bits, this._mutationOp, this._crossoverOp);
     }
 
     setMutationOperator(mutationOp: Mutation<BitstringChromosome>): void {
-        this._mutationOperator = mutationOp;
+        this._mutationOp = mutationOp;
     }
 
     setCrossoverOperator(crossoverOp: Crossover<BitstringChromosome>): void {
-        this._crossoverOperator = crossoverOp;
+        this._crossoverOp = crossoverOp;
     }
 }
