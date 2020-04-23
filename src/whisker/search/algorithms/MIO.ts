@@ -47,15 +47,27 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
     private _iterations: number;
 
+    private _maxIterations: number;
+
     private _bestIndividuals = new List<C>();
 
     private _archiveCovered = new Map<number, C>();
 
     private _archiveUncovered = new Map<number, List<C>>();
 
+    private _startOfFocusedPhase;
+
     private _randomSelectionProbability: number;
 
+    private _randomSelectionProbabilityStart: number;
+
+    private _randomSelectionProbabilityFocusedPhase: number;
+
     private _maxArchiveSize: number;
+
+    private _maxArchiveSizeStart: number;
+
+    private _maxArchiveSizeFocusedPhase: number;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
@@ -77,12 +89,28 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
         this._stoppingCondition = stoppingCondition;
     }
 
-    setRandomSelectionProbability(randomSelectionProbability: number) {
-        this._randomSelectionProbability = randomSelectionProbability;
+    setRandomSelectionProbabilityStart(randomSelectionProbabilityStart: number) {
+        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
     }
 
-    setMaximumArchiveSize(maxArchiveSize: number) {
-        this._maxArchiveSize = maxArchiveSize;
+    setRandomSelectionProbabilityFocusedPhase(randomSelectionProbabilityFocusedPhase: number) {
+        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
+    }
+
+    setMaximumArchiveSizeStart(maxArchiveSizeStart: number) {
+        this._maxArchiveSizeStart = maxArchiveSizeStart;
+    }
+
+    setMaximumArchiveSizeFocusedPhase(maxArchiveSizeFocusedPhase: number) {
+        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
+    }
+
+    setStartOfFocusedPhase(startOfFocusedPhase: number) {
+        this._startOfFocusedPhase = startOfFocusedPhase;
+    }
+
+    setMaximumNumberOfIterations(maxIterations: number) {
+        this._maxIterations = maxIterations;
     }
 
     getNumberOfIterations(): number {
@@ -103,11 +131,15 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
         this._archiveCovered.clear();
         this._archiveUncovered.clear();
         this._iterations = 0;
+        this.updateParameters();
         let chromosome: C;
         while (!this._stoppingCondition.isFinished(this)) {
             chromosome = this.getNextChromosome();
             this.updateArchive(chromosome);
             this._iterations++;
+            if (!this.isFocusedPhaseReached()) {
+                this.updateParameters();
+            }
         }
         return this._bestIndividuals;
     }
@@ -156,6 +188,7 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
                     }
                 } else {
                     this.updateBestChromosome(null, chromosome, fitnessFunctionKey);
+                    this._archiveUncovered.delete(fitnessFunctionKey);
                 }
             } else if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
                 let archiveChromosomes: List<C>;
@@ -252,7 +285,45 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
         return heuristicValue;
     }
 
-    // TODO: Parameter values for start and for focused phase
+    /**
+     * Determines if the focused phase is reached.
+     *
+     * @returns True if the focused phase is reached, false otherwise.
+     */
+    private isFocusedPhaseReached(): boolean {
+        return this._randomSelectionProbability == this._randomSelectionProbabilityFocusedPhase
+            && this._maxArchiveSize == this._maxArchiveSizeFocusedPhase;
+    }
+
+    /**
+     * Updates the probability for the random selection and the maximum size of the archive population
+     * according to the overall progress of the search and the start of the focused phase.
+     */
+    private updateParameters(): void {
+        const overallProgress = this._iterations / this._maxIterations;
+        const progressUntilFocusedPhaseReached = overallProgress / this._startOfFocusedPhase;
+        const previousArchiveSize = this._maxArchiveSize;
+        if (progressUntilFocusedPhaseReached >= 1) {
+            this._randomSelectionProbability = this._randomSelectionProbabilityFocusedPhase;
+            this._maxArchiveSize = this._maxArchiveSizeFocusedPhase;
+        } else {
+            this._randomSelectionProbability = this._randomSelectionProbabilityStart
+                + (this._randomSelectionProbabilityFocusedPhase - this._randomSelectionProbabilityStart)
+                * progressUntilFocusedPhaseReached;
+            this._maxArchiveSize = Math.round(this._maxArchiveSizeStart
+                + (this._maxArchiveSizeFocusedPhase - this._maxArchiveSizeStart)
+                * progressUntilFocusedPhaseReached);
+        }
+        if (previousArchiveSize > this._maxArchiveSize) {
+            for (const fitnessFunctionKey of this._archiveUncovered.keys()) {
+                const population = this._archiveUncovered.get(fitnessFunctionKey);
+                while (population.size() > this._maxArchiveSize) {
+                    population.remove(this.getWorstChromosome(population, fitnessFunctionKey));
+                }
+                this._archiveUncovered.set(fitnessFunctionKey, population);
+            }
+        }
+    }
 
     // TODO: parameter M -> mutate multiple times
 

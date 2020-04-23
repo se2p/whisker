@@ -22,7 +22,6 @@ import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/Bi
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
-import {MOSA} from "../../../../src/whisker/search/algorithms/MOSA";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
@@ -34,9 +33,14 @@ describe('MIO', () => {
     test('BitstringChromosome with SingleBitFitnessFunction', () => {
         const chromosomeLength = 10;
         const populationSize = 1;
-        const iterations = 5000;
+        const iterations = 1000;
         const crossoverProbability = 0;
         const mutationProbability = 1;
+        const maxArchiveSizeStart = 10;
+        const maxArchiveSizeFocusedPhase = 1;
+        const randomSelectionProbabilityStart = 0.5;
+        const randomSelectionProbabilityFocusedPhase = 0;
+        const startFocusedPhase = 0.5;
 
         const properties = new SearchAlgorithmProperties(populationSize, crossoverProbability, mutationProbability);
         properties.setChromosomeLength(chromosomeLength);
@@ -55,8 +59,12 @@ describe('MIO', () => {
         searchAlgorithm.setStoppingCondition(stoppingCondition);
         searchAlgorithm.setFitnessFunctions(fitnessFunctions);
         searchAlgorithm.setHeuristics(heuristics);
-        searchAlgorithm.setMaximumArchiveSize(10);
-        searchAlgorithm.setRandomSelectionProbability(0.5);
+        searchAlgorithm.setMaximumArchiveSizeStart(maxArchiveSizeStart);
+        searchAlgorithm.setMaximumArchiveSizeFocusedPhase(maxArchiveSizeFocusedPhase);
+        searchAlgorithm.setRandomSelectionProbabilityStart(randomSelectionProbabilityStart);
+        searchAlgorithm.setRandomSelectionProbabilityFocusedPhase(randomSelectionProbabilityFocusedPhase);
+        searchAlgorithm.setMaximumNumberOfIterations(iterations);
+        searchAlgorithm.setStartOfFocusedPhase(startFocusedPhase);
 
         const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
         expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
