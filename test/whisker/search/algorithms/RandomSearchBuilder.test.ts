@@ -24,37 +24,38 @@ import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/Bi
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
+import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {StoppingCondition} from "../../../../src/whisker/search/StoppingCondition";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {OnePlusOneEABuilder} from "../../../../src/whisker/search/algorithms/OnePlusOneEABuilder";
-import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
+import {RandomSearchBuilder} from "../../../../src/whisker/search/algorithms/RandomSearchBuilder";
 
-describe('OnePlusOneEABuilder', () => {
+describe('RandomSearchBuilder', () => {
 
     test('Constructor and build', () => {
-        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
-        const onePlusOneEA: SearchAlgorithm<Chromosome> = builder.buildSearchAlgorithm();
-        expect(onePlusOneEA).not.toBeNull();
+        const builder: RandomSearchBuilder = new RandomSearchBuilder();
+        const randomSearch: SearchAlgorithm<Chromosome> = builder.buildSearchAlgorithm();
+
+        expect(randomSearch).not.toBeNull();
 
         const populationSize = 50;
         const chromosomeLength = 10;
         const crossoverProbability = 1;
         const mutationProbability = 1;
 
-        const properties = onePlusOneEA["_properties"];
+        const properties = randomSearch["_properties"];
         expect(properties.getPopulationSize()).toBe(populationSize);
         expect(properties.getChromosomeLength()).toBe(chromosomeLength);
         expect(properties.getCrossoverProbability()).toBe(crossoverProbability);
         expect(properties.getMutationProbablity()).toBe(mutationProbability);
 
-        expect(onePlusOneEA["_chromosomeGenerator"]).not.toBeNull();
-        expect(onePlusOneEA["_stoppingCondition"]).not.toBeNull();
-        expect(onePlusOneEA["_fitnessFunction"].size).not.toBeNull();
+        expect(randomSearch["_chromosomeGenerator"]).not.toBeNull();
+        expect(randomSearch["_stoppingCondition"]).not.toBeNull();
+        expect(randomSearch["_fitnessFunction"].size).not.toBeNull();
     });
 
     test("Add generator", () => {
-        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+        const builder: RandomSearchBuilder = new RandomSearchBuilder();
         const newGenerator: BitstringChromosomeGenerator = new BitstringChromosomeGenerator(
             new SearchAlgorithmProperties<BitstringChromosome>(0, 5, 0, 0));
 
@@ -64,7 +65,7 @@ describe('OnePlusOneEABuilder', () => {
     });
 
     test("Add fitness function", () => {
-        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+        const builder: RandomSearchBuilder = new RandomSearchBuilder();
         const fitnessFunction: FitnessFunction<BitstringChromosome> = new OneMaxFitnessFunction(10);
 
         builder.addFitnessFunction(fitnessFunction);
@@ -73,7 +74,7 @@ describe('OnePlusOneEABuilder', () => {
     });
 
     test("Add properties", () => {
-        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+        const builder: RandomSearchBuilder = new RandomSearchBuilder();
         const populationSize = 14;
         const chromosomeLength = 27;
         const crossoverProbability = 0.42;
@@ -90,7 +91,7 @@ describe('OnePlusOneEABuilder', () => {
     });
 
     test("Add stopping condition", () => {
-        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+        const builder: RandomSearchBuilder = new RandomSearchBuilder();
         const maxIterations = 50;
         const stoppingCondition: StoppingCondition<BitstringChromosome> = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
 
@@ -100,7 +101,7 @@ describe('OnePlusOneEABuilder', () => {
     });
 
     test("Add selection operator", () => {
-        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
+        const builder: RandomSearchBuilder = new RandomSearchBuilder();
 
         expect(function() {
             builder.addSelectionOperator(null);

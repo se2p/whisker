@@ -25,7 +25,7 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
+import {RandomSearchBuilder} from "../../../../src/whisker/search/algorithms/RandomSearchBuilder";
 
 describe('RandomSearch', () => {
 
@@ -33,18 +33,18 @@ describe('RandomSearch', () => {
 
         const n = 2;
         const properties = new SearchAlgorithmProperties(1, n, 0, 0);
-
         const fitnessFunction = new OneMaxFitnessFunction(n);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
-        const stoppingCondition = new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition(fitnessFunction)
-        );
-        const randomSearch = new RandomSearch();
-        randomSearch.setFitnessFunction(fitnessFunction);
-        randomSearch.setChromosomeGenerator(chromosomeGenerator);
-        randomSearch.setStoppingCondition(stoppingCondition);
 
+        const builder = new RandomSearchBuilder()
+            .addProperties(properties)
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties))
+            .addFitnessFunction(fitnessFunction)
+            .addStoppingCondition(
+                new OneOfStoppingCondition(
+                    new FixedIterationsStoppingCondition(1000),
+                    new OptimalSolutionStoppingCondition(fitnessFunction)));
+
+        const randomSearch = builder.buildSearchAlgorithm();
         const solutions = randomSearch.findSolution();
         const firstSolution = solutions.get(0);
 
@@ -74,7 +74,7 @@ describe('RandomSearch', () => {
         randomSearch.setFitnessFunction(fitnessFunction);
         expect(randomSearch["_fitnessFunction"]).toBe(fitnessFunction);
 
-        expect(function() {
+        expect(function () {
             randomSearch.setSelectionOperator(null);
         }).toThrow();
     });

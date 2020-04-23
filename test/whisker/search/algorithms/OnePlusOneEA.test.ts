@@ -25,11 +25,6 @@ import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFit
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
-import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
-import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
-import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
-import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
-import {MOSA} from "../../../../src/whisker/search/algorithms/MOSA";
 import {OnePlusOneEABuilder} from "../../../../src/whisker/search/algorithms/OnePlusOneEABuilder";
 
 describe('OnePlusOneEa', () => {

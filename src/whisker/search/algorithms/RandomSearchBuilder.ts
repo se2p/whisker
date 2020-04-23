@@ -24,21 +24,21 @@ import {BitstringChromosomeGenerator} from "../../bitstring/BitstringChromosomeG
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
 import {StoppingCondition} from "../StoppingCondition";
+import {OneMaxFitnessFunction} from "../../bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../stoppingconditions/OneOfStoppingCondition";
 import {FixedIterationsStoppingCondition} from "../stoppingconditions/FixedIterationsStoppingCondition";
-import {OneMaxFitnessFunction} from "../../bitstring/OneMaxFitnessFunction";
 import {OptimalSolutionStoppingCondition} from "../stoppingconditions/OptimalSolutionStoppingCondition";
-import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 import {Selection} from "../Selection";
+import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {OnePlusOneEA} from "./OnePlusOneEA";
+import {RandomSearch} from "./RandomSearch";
 
 /**
- * Builder for the 1+1 algorithm.
+ * Builder for the random search algorithm.
  *
  * @author Sophia Geserer
  */
-export class OnePlusOneEABuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
+export class RandomSearchBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
 
     private _chromosomeGenerator: BitstringChromosomeGenerator;
 
@@ -89,13 +89,12 @@ export class OnePlusOneEABuilder implements SearchAlgorithmBuilder<BitstringChro
     }
 
     buildSearchAlgorithm(): SearchAlgorithm<BitstringChromosome> {
-        const onePlusOneEA: OnePlusOneEA<BitstringChromosome> = new OnePlusOneEA();
-        onePlusOneEA.setProperties(this._properties);
-        onePlusOneEA.setChromosomeGenerator(this._chromosomeGenerator);
-        onePlusOneEA.setStoppingCondition(this._stoppingCondition);
-        onePlusOneEA.setFitnessFunction(this._fitnessFunction);
-        return onePlusOneEA;
+        const randomSearch: RandomSearch<BitstringChromosome> = new RandomSearch();
+        randomSearch.setProperties(this._properties);
+        randomSearch.setChromosomeGenerator(this._chromosomeGenerator);
+        randomSearch.setStoppingCondition(this._stoppingCondition);
+        randomSearch.setFitnessFunction(this._fitnessFunction);
+        return randomSearch;
     }
 
 }
-
