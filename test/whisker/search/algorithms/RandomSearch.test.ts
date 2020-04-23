@@ -25,6 +25,7 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
 
 describe('RandomSearch', () => {
 
@@ -48,6 +49,34 @@ describe('RandomSearch', () => {
         const firstSolution = solutions.get(0);
 
         expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+    });
+
+    test('Setter', () => {
+        const n = 2;
+        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const fitnessFunction = new OneMaxFitnessFunction(n);
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
+        const stoppingCondition = new OneOfStoppingCondition(
+            new FixedIterationsStoppingCondition(1000),
+            new OptimalSolutionStoppingCondition(fitnessFunction)
+        );
+        const randomSearch = new RandomSearch();
+
+        randomSearch.setProperties(properties);
+        expect(randomSearch["_properties"]).toBe(properties);
+
+        randomSearch.setChromosomeGenerator(chromosomeGenerator);
+        expect(randomSearch["_chromosomeGenerator"]).toBe(chromosomeGenerator);
+
+        randomSearch.setStoppingCondition(stoppingCondition);
+        expect(randomSearch["_stoppingCondition"]).toBe(stoppingCondition);
+
+        randomSearch.setFitnessFunction(fitnessFunction);
+        expect(randomSearch["_fitnessFunction"]).toBe(fitnessFunction);
+
+        expect(function() {
+            randomSearch.setSelectionOperator(null);
+        }).toThrow();
     });
 
 });

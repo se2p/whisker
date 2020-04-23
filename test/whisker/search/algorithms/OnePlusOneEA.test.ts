@@ -25,6 +25,11 @@ import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFit
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
+import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
+import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
+import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
+import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
+import {MOSA} from "../../../../src/whisker/search/algorithms/MOSA";
 
 describe('OnePlusOneEa', () => {
 
@@ -48,6 +53,34 @@ describe('OnePlusOneEa', () => {
         const firstSolution = solutions.get(0);
 
         expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+    });
+
+    test('Setter', () => {
+        const n = 10;
+        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const fitnessFunction = new OneMaxFitnessFunction(n);
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
+        const stoppingCondition = new OneOfStoppingCondition(
+            new FixedIterationsStoppingCondition(1000), // Plenty time...
+            new OptimalSolutionStoppingCondition(fitnessFunction)
+        );
+        const search = new OnePlusOneEA();
+
+        search.setProperties(properties);
+        expect(search["_properties"]).toBe(properties);
+
+        search.setChromosomeGenerator(chromosomeGenerator);
+        expect(search["_chromosomeGenerator"]).toBe(chromosomeGenerator);
+
+        search.setStoppingCondition(stoppingCondition);
+        expect(search["_stoppingCondition"]).toBe(stoppingCondition);
+
+        search.setFitnessFunction(fitnessFunction);
+        expect(search["_fitnessFunction"]).toBe(fitnessFunction);
+
+        expect(function() {
+            search.setSelectionOperator(null);
+        }).toThrow();
     });
 
 });
