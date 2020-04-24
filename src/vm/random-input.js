@@ -277,7 +277,7 @@ class RandomInputs {
             }]);
             break;
         case 'sensing_touchingobjectmenu':
-            if (fields.hasOwnProperty('DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
+            if (fields.hasOwnProperty('TOUCHINGOBJECTMENU') && fields.TOUCHINGOBJECTMENU.value === '_mouse_') {
                 const sprite = this.vmWrapper.sprites.wrapTarget(target);
                 if (sprite === this.vmWrapper.sprites.getStage()) {
                     this.registerRandomInputs([{
