@@ -299,10 +299,14 @@ class Inputs {
 
     resetMouse () {
         const clientPos = this.vmWrapper.getClientCoords(0, 0);
+        const canvasRect = this.vmWrapper.getCanvasRect();
+
         this.vmWrapper.vm.postIOData('mouse', {
             x: clientPos.x,
             y: clientPos.y,
-            isDown: false
+            isDown: false,
+            canvasWidth: canvasRect.width,
+            canvasHeight: canvasRect.height
         });
     }
 
