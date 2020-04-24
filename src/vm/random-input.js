@@ -323,6 +323,15 @@ class RandomInputs {
             }
             break;
         }
+        case 'motion_pointtowards_menu':
+            if (fields.hasOwnProperty('TOWARDS') && fields.TOWARDS.value === '_mouse_') {
+                this.registerRandomInputs([{
+                    device: 'mouse',
+                    x: [-(stageSize.width / 2), stageSize.width / 2],
+                    y: [-(stageSize.height / 2), stageSize.height / 2]
+                }]);
+            }
+            break;
         }
     }
 }
