@@ -1,0 +1,18 @@
+{
+    "population-size": 100,
+    "chromosome-length": 10,
+    "crossover": {
+        "operator": "single-point",
+        "probability": 50
+    },
+    "mutation": {
+        "operator": "integerlist",
+        "probability": 50
+    },
+    "selection": {
+        "operator": "dummy"
+    },
+    "fitness-function": "statement",
+    "stopping-condition": "fixed-iteration",
+    "algorithm": "random"
+}
