@@ -26,42 +26,74 @@ import {TestGenerator} from "./testgenerator/TestGenerator";
 import {NotYetImplementedException} from "./core/exceptions/NotYetImplementedException";
 import WhiskerUtil from "../test/whisker-util.js";
 import TestDriver from "../test/test-driver.js";
-import { assert } from '../test-runner/assert';
+import {assert} from '../test-runner/assert';
+import {RandomTestGenerator} from "./testgenerator/RandomTestGenerator";
+import {WhiskerTest} from "./testgenerator/WhiskerTest";
+import {List} from "./utils/List";
+import VirtualMachine from "scratch-vm/src/virtual-machine"
+import {TestExecutor} from "./testcase/TestExecutor";
+import {SearchAlgorithmProperties} from "./search/SearchAlgorithmProperties";
+import {TestChromosomeGenerator} from "./testcase/TestChromosomeGenerator";
 
 export class Search {
 
-    createTestSuite(projectFile: string, testSuiteFile: string): void {
-        const scratchProject = new ScratchProject(projectFile);
+    public vm: VirtualMachine;
+    constructor(vm: VirtualMachine) {
+        this.vm = vm;
+    }
+
+    createTestSuite(projectFile: string, testSuiteFile: string): List<WhiskerTest> {
+//        const scratchProject = new ScratchProject(projectFile);
 
         // TODO: Probably need to instantiate ScratchVM as well here?
 
         const testGenerator = this._selectTestGenerator();
-        const testSuite = testGenerator.generateTests(scratchProject);
+        const testSuite = testGenerator.generateTests(null);
 
         const testSuiteWriter = new TestSuiteWriter();
         testSuiteWriter.writeTests(testSuiteFile, testSuite);
+
+        return testSuite;
     }
 
     _selectTestGenerator(): TestGenerator {
         // TODO: Select RandomTestGenerator, IterativeSearchBasedTestGenerator, or MOGenerator
-        throw new NotYetImplementedException();
+//        throw new NotYetImplementedException();
+        return new RandomTestGenerator();
+    }
+
+    execDummyTest() {
+        console.log("Whisker-Main: Exec Dummy")
+        // TODO: Need properties for how many tests, and how long
+        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0);
+        searchAlgorithmProperties.setChromosomeLength(10);
+        const testGenerator = new TestChromosomeGenerator(searchAlgorithmProperties);
+
+        // TODO: Repeat X times, as configured
+        const testChromosome = testGenerator.get();
+
+        console.log("Chromosome: " + testChromosome)
+        const executor = new TestExecutor(this.getVirtualMachine())
+        executor.execute(testChromosome);
+    }
+
+    public getVirtualMachine() {
+        if (this.vm == null) {
+            throw new Error("Not Initialized");
+        }
+        return this.vm;
     }
 
     public run(vm, project, config): void {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
+        const search: Search = new Search(vm);
 
         async function init() {
             await util.prepare(30);
             util.start();
-            const t: TestDriver = util.getTestDriver({});
-            await t.runForSteps(5);
-            const boat = t.getSprites(sprite => sprite.name.includes('Boot'))[0];
-            assert.ok(boat.visible, 'boat must be visible');
-            assert.ok(boat.currentCostume === 0, 'boat must have the right costume');
-            t.end();
-
+            search.execDummyTest();
         }
 
         init();
