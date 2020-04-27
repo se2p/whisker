@@ -24,7 +24,6 @@ import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
-import {StoppingCondition} from "../StoppingCondition";
 import {Randomness} from "../../utils/Randomness";
 
 /**
@@ -41,33 +40,80 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
     private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
-    private _heuristics: Map<number, Function>;
-
-    private _stoppingCondition: StoppingCondition<C>;
+    private _heuristicFunctions: Map<number, Function>;
 
     private _iterations: number;
 
-    private _maxIterations: number;
+    private readonly _maxIterations: number;
 
-    private _bestIndividuals = new List<C>();
+    private _bestIndividuals: List<C>;
 
-    private _archiveCovered = new Map<number, C>();
+    private _archiveCovered: Map<number, C>;
 
-    private _archiveUncovered = new Map<number, List<C>>();
+    private _archiveUncovered: Map<number, List<ChromosomeHeuristicTuple<C>>>;
 
-    private _startOfFocusedPhase;
+    private readonly _startOfFocusedPhase: number;
 
     private _randomSelectionProbability: number;
 
-    private _randomSelectionProbabilityStart: number;
+    private readonly _randomSelectionProbabilityStart: number;
 
-    private _randomSelectionProbabilityFocusedPhase: number;
+    private readonly _randomSelectionProbabilityFocusedPhase: number;
 
     private _maxArchiveSize: number;
 
-    private _maxArchiveSizeStart: number;
+    private readonly _maxArchiveSizeStart: number;
 
-    private _maxArchiveSizeFocusedPhase: number;
+    private readonly _maxArchiveSizeFocusedPhase: number;
+
+    private _maxMutationCount: number;
+
+    private readonly _maxMutationCountStart: number;
+
+    private readonly _maxMutationCountFocusedPhase: number;
+
+    private _mutationCounter: number;
+
+    private _samplingCounter: Map<number, number>;
+
+    /**
+     * Creates a new MIO search algorithm.
+     *
+     * @param fitnessFunctions The fitness functions.
+     * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
+     *          from the fitness values, where 0 is the worst value and 1 is the best value.
+     * @param maxIterations The maximum number of iterations.
+     * @param startOfFocusedPhase The percentage of iterations as decimal value after which the
+     *          focused search starts.
+     * @param randomSelectionProbabilityStart The probability that a random chromosome is sampled
+     *          at the start of the search.
+     * @param randomSelectionProbabilityFocusedPhase The probability that a random chromosome is
+     *          sampled in the focused phase.
+     * @param maxArchiveSizeStart The maximum number of chromosomes stored for a fitness function
+     *          at the start of the search.
+     * @param maxArchiveSizeFocusedPhase The maximum number of chromosomes stored for a fitness
+     *          function in the focused phase.
+     * @param maxMutationCountStart The number of mutations on the same chromosome at the start
+     *          of the search.
+     * @param maxMutationCountFocusedPhase The number of mutations on the same chromosome in the
+     *          focused phase.
+     */
+    constructor(fitnessFunctions: Map<number, FitnessFunction<C>>, heuristicFunctions: Map<number, Function>,
+                maxIterations: number, startOfFocusedPhase: number,
+                randomSelectionProbabilityStart: number, randomSelectionProbabilityFocusedPhase: number,
+                maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number,
+                maxMutationCountStart: number, maxMutationCountFocusedPhase: number) {
+        this._fitnessFunctions = fitnessFunctions;
+        this._heuristicFunctions = heuristicFunctions;
+        this._maxIterations = maxIterations;
+        this._startOfFocusedPhase = startOfFocusedPhase;
+        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
+        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
+        this._maxArchiveSizeStart = maxArchiveSizeStart;
+        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
+        this._maxMutationCountStart = maxMutationCountStart;
+        this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
+    }
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
@@ -75,42 +121,6 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
-    }
-
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
-        this._fitnessFunctions = fitnessFunctions;
-    }
-
-    setHeuristics(heuristics: Map<number, Function>) {
-        this._heuristics = heuristics;
-    }
-
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
-        this._stoppingCondition = stoppingCondition;
-    }
-
-    setRandomSelectionProbabilityStart(randomSelectionProbabilityStart: number) {
-        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
-    }
-
-    setRandomSelectionProbabilityFocusedPhase(randomSelectionProbabilityFocusedPhase: number) {
-        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
-    }
-
-    setMaximumArchiveSizeStart(maxArchiveSizeStart: number) {
-        this._maxArchiveSizeStart = maxArchiveSizeStart;
-    }
-
-    setMaximumArchiveSizeFocusedPhase(maxArchiveSizeFocusedPhase: number) {
-        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
-    }
-
-    setStartOfFocusedPhase(startOfFocusedPhase: number) {
-        this._startOfFocusedPhase = startOfFocusedPhase;
-    }
-
-    setMaximumNumberOfIterations(maxIterations: number) {
-        this._maxIterations = maxIterations;
     }
 
     getNumberOfIterations(): number {
@@ -127,14 +137,16 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
      * @returns Solution for the given problem
      */
     findSolution(): List<C> {
-        this._bestIndividuals.clear();
-        this._archiveCovered.clear();
-        this._archiveUncovered.clear();
-        this._iterations = 0;
-        this.updateParameters();
+        this.setStartValues();
         let chromosome: C;
-        while (!this._stoppingCondition.isFinished(this)) {
-            chromosome = this.getNextChromosome();
+        while (this._iterations < this._maxIterations) {
+            if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
+                chromosome = chromosome.mutate();
+                this._mutationCounter++;
+            } else {
+                chromosome = this.getNewChromosome();
+                this._mutationCounter = 0;
+            }
             this.updateArchive(chromosome);
             this._iterations++;
             if (!this.isFocusedPhaseReached()) {
@@ -145,30 +157,41 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
     }
 
     /**
+     * Sets the appropriate starting values for the search.
+     */
+    private setStartValues() {
+        this._iterations = 0;
+        this._mutationCounter = 0;
+        this._bestIndividuals = new List<C>();
+        this._archiveCovered = new Map<number, C>();
+        this._archiveUncovered = new Map<number, List<ChromosomeHeuristicTuple<C>>>();
+        this._samplingCounter = new Map<number, number>();
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            this._samplingCounter.set(fitnessFunctionKey, 0);
+        }
+        this.updateParameters();
+    }
+
+    /**
      * Creates a new chromosome by random or by mutating a chromosome from the archive.
      *
      * @returns A new chromosome.
      */
-    private getNextChromosome(): C {
+    private getNewChromosome(): C {
         if ((this._archiveUncovered.size == 0 && this._archiveCovered.size == 0)
             || Randomness.getInstance().nextDouble() < this._randomSelectionProbability) {
             return this._chromosomeGenerator.get();
         } else {
-            let chromosome: C;
-            if (this._archiveUncovered.size > 0) {
-                const fitnessFunctions = Array.from(this._archiveUncovered.keys());
-                const randomIndex = Randomness.getInstance().nextInt(0, fitnessFunctions.length);
-                const selectedFitnessFunction = fitnessFunctions[randomIndex];
-                const chromosomes = this._archiveUncovered.get(selectedFitnessFunction);
-                const randomChromosomeIndex = Randomness.getInstance().nextInt(0, chromosomes.size());
-                chromosome = chromosomes.get(randomChromosomeIndex).mutate();
+            const anyUncovered: boolean = this._archiveUncovered.size > 0;
+            const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
+            this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
+            if (anyUncovered) {
+                const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
+                const randomIndex = Randomness.getInstance().nextInt(0, archiveTuples.size());
+                return archiveTuples.get(randomIndex).getChromosome().mutate();
             } else {
-                const fitnessFunctions = Array.from(this._archiveCovered.keys());
-                const randomIndex = Randomness.getInstance().nextInt(0, fitnessFunctions.length);
-                const selectedFitnessFunction = fitnessFunctions[randomIndex];
-                chromosome = this._archiveCovered.get(selectedFitnessFunction).mutate();
+                return this._archiveCovered.get(fitnessFunctionKey).mutate();
             }
-            return chromosome;
         }
     }
 
@@ -184,70 +207,75 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
                 if (this._archiveCovered.has(fitnessFunctionKey)) {
                     const oldBestChromosome = this._archiveCovered.get(fitnessFunctionKey);
                     if (this.compareChromosomesWithEqualHeuristic(chromosome, oldBestChromosome) > 0) {
-                        this.updateBestChromosome(oldBestChromosome, chromosome, fitnessFunctionKey);
+                        this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
-                    this.updateBestChromosome(null, chromosome, fitnessFunctionKey);
                     this._archiveUncovered.delete(fitnessFunctionKey);
+                    this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                 }
             } else if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
-                let archiveChromosomes: List<C>;
+                let archiveTuples: List<ChromosomeHeuristicTuple<C>>;
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {
-                    archiveChromosomes = this._archiveUncovered.get(fitnessFunctionKey);
+                    archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
                 } else {
-                    archiveChromosomes = new List<C>();
+                    archiveTuples = new List<ChromosomeHeuristicTuple<C>>();
                 }
-                if (archiveChromosomes.size() < this._maxArchiveSize) {
-                    archiveChromosomes.add(chromosome);
+                const newTuple = new ChromosomeHeuristicTuple<C>(chromosome, heuristicValue);
+                if (archiveTuples.size() < this._maxArchiveSize) {
+                    archiveTuples.add(newTuple);
+                    this._samplingCounter.set(fitnessFunctionKey, 0);
                 } else {
-                    const worstChromosome = this.getWorstChromosome(archiveChromosomes, fitnessFunctionKey);
-                    const worstHeuristicValue = this.getHeuristicValue(worstChromosome, fitnessFunctionKey);
+                    const worstArchiveTuple = this.getWorstChromosomeHeuristicTuple(archiveTuples);
+                    const worstHeuristicValue = worstArchiveTuple.getHeuristicValue();
+                    const worstChromosome = worstArchiveTuple.getChromosome();
                     if (worstHeuristicValue < heuristicValue || (worstHeuristicValue == heuristicValue
                         && this.compareChromosomesWithEqualHeuristic(chromosome, worstChromosome) >= 0)) {
-                        archiveChromosomes.remove(worstChromosome);
-                        archiveChromosomes.add(chromosome);
+                        archiveTuples.remove(worstArchiveTuple);
+                        archiveTuples.add(newTuple);
+                        this._samplingCounter.set(fitnessFunctionKey, 0);
                     }
                 }
-                this._archiveUncovered.set(fitnessFunctionKey, archiveChromosomes);
+                this._archiveUncovered.set(fitnessFunctionKey, archiveTuples);
             }
         }
     }
 
     /**
-     * Updates the best chromosome for a covered fitness function.
+     * Sets the best chromosome for a covered fitness function.
      *
-     * @param oldBest The old best chromosome.
-     * @param newBest The new best chromosome.
+     * @param chromosome The best chromosome for the fitness function.
      * @param fitnessFunctionKey The key of the fitness function.
      */
-    private updateBestChromosome(oldBest, newBest, fitnessFunctionKey) {
-        if (oldBest != null) {
-            this._bestIndividuals.remove(oldBest);
+    private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
+        this._archiveCovered.set(fitnessFunctionKey, chromosome);
+        this._bestIndividuals.clear();
+        for (const chromosome of this._archiveCovered.values()) {
+            this._bestIndividuals.add(chromosome);
         }
-        this._bestIndividuals.add(newBest);
-        this._archiveCovered.set(fitnessFunctionKey, newBest);
+        this._samplingCounter.set(fitnessFunctionKey, 0);
     }
 
     /**
-     * Determines the worst chromosome from a list of chromosomes.
+     * Determines the worst tuple from a list of tuples, each consisting of a chromosome and a
+     * corresponding heuristic value of the chromosome.
      *
-     * @param chromosomes The chromosomes to compare
-     * @param fitnessFunctionKey The key of the fitness function to use for the comparison.
-     * @returns The worst chromosome of the list.
+     * @param chromosomeHeuristicTuples The list of tuples to compare.
+     * @returns The worst tuple of the list.
      */
-    private getWorstChromosome(chromosomes: List<C>, fitnessFunctionKey: number): C {
-        let worstChromosome: C;
+    private getWorstChromosomeHeuristicTuple(chromosomeHeuristicTuples: List<ChromosomeHeuristicTuple<C>>): ChromosomeHeuristicTuple<C> {
+        let worstTuple: ChromosomeHeuristicTuple<C>;
         let worstHeuristicValue = 1;
-        for (const chromosome of chromosomes) {
-            const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
-            if (worstChromosome == undefined || heuristicValue < worstHeuristicValue
+        for (const tuple of chromosomeHeuristicTuples) {
+            const heuristicValue = tuple.getHeuristicValue();
+            const chromosome = tuple.getChromosome();
+            if (worstTuple == undefined || heuristicValue < worstHeuristicValue
                 || (heuristicValue == worstHeuristicValue
-                    && chromosome.getLength() > worstChromosome.getLength())) {
+                    && chromosome.getLength() > worstTuple.getChromosome().getLength())) {
                 worstHeuristicValue = heuristicValue;
-                worstChromosome = chromosome;
+                worstTuple = tuple;
             }
         }
-        return worstChromosome;
+        return worstTuple;
     }
 
     /**
@@ -281,8 +309,7 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
      */
     private getHeuristicValue(chromosome: C, fitnessFunctionKey: number): number {
         const fitnessValue = this._fitnessFunctions.get(fitnessFunctionKey).getFitness(chromosome);
-        const heuristicValue = this._heuristics.get(fitnessFunctionKey)(fitnessValue);
-        return heuristicValue;
+        return this._heuristicFunctions.get(fitnessFunctionKey)(fitnessValue);
     }
 
     /**
@@ -292,20 +319,23 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
      */
     private isFocusedPhaseReached(): boolean {
         return this._randomSelectionProbability == this._randomSelectionProbabilityFocusedPhase
-            && this._maxArchiveSize == this._maxArchiveSizeFocusedPhase;
+            && this._maxArchiveSize == this._maxArchiveSizeFocusedPhase
+            && this._maxMutationCount == this._maxMutationCountFocusedPhase;
     }
 
     /**
-     * Updates the probability for the random selection and the maximum size of the archive population
-     * according to the overall progress of the search and the start of the focused phase.
+     * Updates the probability for the random selection, the maximum size of the archive population
+     * and the maximum number of mutations of the same chromosome according to the overall progress
+     * of the search and the start of the focused phase.
      */
     private updateParameters(): void {
         const overallProgress = this._iterations / this._maxIterations;
         const progressUntilFocusedPhaseReached = overallProgress / this._startOfFocusedPhase;
-        const previousArchiveSize = this._maxArchiveSize;
+        const previousMaxArchiveSize = this._maxArchiveSize;
         if (progressUntilFocusedPhaseReached >= 1) {
             this._randomSelectionProbability = this._randomSelectionProbabilityFocusedPhase;
             this._maxArchiveSize = this._maxArchiveSizeFocusedPhase;
+            this._maxMutationCount = this._maxMutationCountFocusedPhase;
         } else {
             this._randomSelectionProbability = this._randomSelectionProbabilityStart
                 + (this._randomSelectionProbabilityFocusedPhase - this._randomSelectionProbabilityStart)
@@ -313,19 +343,77 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
             this._maxArchiveSize = Math.round(this._maxArchiveSizeStart
                 + (this._maxArchiveSizeFocusedPhase - this._maxArchiveSizeStart)
                 * progressUntilFocusedPhaseReached);
+            this._maxMutationCount = Math.round(this._maxMutationCountStart
+                + (this._maxMutationCountFocusedPhase - this._maxMutationCountStart)
+                * progressUntilFocusedPhaseReached);
         }
-        if (previousArchiveSize > this._maxArchiveSize) {
+        if (previousMaxArchiveSize > this._maxArchiveSize) {
             for (const fitnessFunctionKey of this._archiveUncovered.keys()) {
-                const population = this._archiveUncovered.get(fitnessFunctionKey);
-                while (population.size() > this._maxArchiveSize) {
-                    population.remove(this.getWorstChromosome(population, fitnessFunctionKey));
+                const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
+                while (archiveTuples.size() > this._maxArchiveSize) {
+                    archiveTuples.remove(this.getWorstChromosomeHeuristicTuple(archiveTuples));
                 }
-                this._archiveUncovered.set(fitnessFunctionKey, population);
+                this._archiveUncovered.set(fitnessFunctionKey, archiveTuples);
             }
         }
     }
 
-    // TODO: parameter M -> mutate multiple times
+    /**
+     * Determines the fitness function with the highest chance to get covered in the next iteration.
+     *
+     * @param useUncoveredFitnessFunctions Whether to get the optimal uncovered or covered fitness function.
+     * @returns The key of the fitness function with the minimal sampling count.
+     */
+    private getOptimalFitnessFunctionKey(useUncoveredFitnessFunctions: boolean): number {
+        let minimumSamplingCount = Number.MAX_VALUE;
+        let optimalFitnessFunctionKey;
+        const fitnessFunctionKeys = useUncoveredFitnessFunctions
+            ? this._archiveUncovered.keys() : this._archiveCovered.keys();
+        for (const fitnessFunctionKey of fitnessFunctionKeys) {
+            const samplingCount = this._samplingCounter.get(fitnessFunctionKey);
+            if (samplingCount < minimumSamplingCount) {
+                minimumSamplingCount = samplingCount;
+                optimalFitnessFunctionKey = fitnessFunctionKey;
+            }
+        }
+        return optimalFitnessFunctionKey;
+    }
+}
 
-    // TODO: FDS
+/**
+ * A tuple storing a chromosome and a corresponding heuristic value of the chromosome.
+ */
+class ChromosomeHeuristicTuple<C> {
+
+    private readonly _chromosome: C;
+    private readonly _heuristicValue: number;
+
+    /**
+     * Creates a new tuple of a chromosome and a corresponding heuristic value.
+     *
+     * @param chromosome The chromosome.
+     * @param heuristicValue The corresponding heuristic value.
+     */
+    constructor(chromosome: C, heuristicValue: number) {
+        this._chromosome = chromosome;
+        this._heuristicValue = heuristicValue;
+    }
+
+    /**
+     * Gets the chromosome of the tuple.
+     *
+     * @returns The chromosome of the tuple.
+     */
+    getChromosome(): C {
+        return this._chromosome;
+    }
+
+    /**
+     * Gets the heuristic value of the tuple.
+     *
+     * @returns The heuristic value of the tuple.
+     */
+    getHeuristicValue(): number {
+        return this._heuristicValue;
+    }
 }

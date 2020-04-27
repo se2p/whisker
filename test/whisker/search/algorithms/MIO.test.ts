@@ -20,8 +20,6 @@
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
-import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
@@ -30,45 +28,43 @@ import {MIO} from "../../../../src/whisker/search/algorithms/MIO";
 
 describe('MIO', () => {
 
-    test('BitstringChromosome with SingleBitFitnessFunction', () => {
-        const chromosomeLength = 10;
-        const populationSize = 1;
-        const iterations = 1000;
-        const crossoverProbability = 0;
-        const mutationProbability = 1;
-        const maxArchiveSizeStart = 10;
-        const maxArchiveSizeFocusedPhase = 1;
-        const randomSelectionProbabilityStart = 0.5;
-        const randomSelectionProbabilityFocusedPhase = 0;
-        const startFocusedPhase = 0.5;
+    let searchAlgorithm;
+    let fitnessFunctions;
+    const chromosomeLength = 10;
+    const iterations = 1000;
+    const populationSize = null;
+    const crossoverProbability = null;
+    const mutationProbability = null;
+    const startFocusedPhase = 0.5;
+    const randomSelectionProbabilityStart = 0.5;
+    const randomSelectionProbabilityFocusedPhase = 0;
+    const maxArchiveSizeStart = 10;
+    const maxArchiveSizeFocusedPhase = 1;
+    const maxMutationCountStart = 0;
+    const maxMutationCountFocusedPhase = 10;
 
+    beforeEach(() => {
         const properties = new SearchAlgorithmProperties(populationSize, crossoverProbability, mutationProbability);
         properties.setChromosomeLength(chromosomeLength);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
-        const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
-        const heuristics = new Map<number, Function>();
+
+        fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
+        const heuristicFunctions = new Map<number, Function>();
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
-            heuristics.set(i, v => (v / chromosomeLength));
+            heuristicFunctions.set(i, v => v / chromosomeLength);
         }
 
-        const searchAlgorithm = new MIO();
+        searchAlgorithm = new MIO(fitnessFunctions, heuristicFunctions, iterations, startFocusedPhase,
+            randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase,
+            maxArchiveSizeStart, maxArchiveSizeFocusedPhase,
+            maxMutationCountStart, maxMutationCountFocusedPhase);
         searchAlgorithm.setProperties(properties);
         searchAlgorithm.setChromosomeGenerator(chromosomeGenerator);
-        searchAlgorithm.setStoppingCondition(stoppingCondition);
-        searchAlgorithm.setFitnessFunctions(fitnessFunctions);
-        searchAlgorithm.setHeuristics(heuristics);
-        searchAlgorithm.setMaximumArchiveSizeStart(maxArchiveSizeStart);
-        searchAlgorithm.setMaximumArchiveSizeFocusedPhase(maxArchiveSizeFocusedPhase);
-        searchAlgorithm.setRandomSelectionProbabilityStart(randomSelectionProbabilityStart);
-        searchAlgorithm.setRandomSelectionProbabilityFocusedPhase(randomSelectionProbabilityFocusedPhase);
-        searchAlgorithm.setMaximumNumberOfIterations(iterations);
-        searchAlgorithm.setStartOfFocusedPhase(startFocusedPhase);
+    });
 
+    test('Find optimal solution', () => {
         const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
-        expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
-
         for (const fitnessFunction of fitnessFunctions.values()) {
             let optimal = false;
             for (const solution of solutions) {
@@ -79,5 +75,17 @@ describe('MIO', () => {
             }
             expect(optimal).toBeTruthy();
         }
+    });
+
+    test('Get current solution', () => {
+        expect(searchAlgorithm.getCurrentSolution()).toBeUndefined();
+        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
+    });
+
+    test('Get number of iterations', () => {
+        expect(searchAlgorithm.getNumberOfIterations()).toBeUndefined();
+        searchAlgorithm.findSolution();
+        expect(searchAlgorithm.getNumberOfIterations()).toBe(iterations);
     });
 });
