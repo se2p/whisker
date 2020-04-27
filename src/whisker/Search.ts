@@ -20,13 +20,9 @@
 
 /* eslint-disable no-console */
 
-import {ScratchProject} from './scratch/ScratchProject';
 import {TestSuiteWriter} from './testgenerator/TestSuiteWriter';
 import {TestGenerator} from "./testgenerator/TestGenerator";
-import {NotYetImplementedException} from "./core/exceptions/NotYetImplementedException";
 import WhiskerUtil from "../test/whisker-util.js";
-import TestDriver from "../test/test-driver.js";
-import {assert} from '../test-runner/assert';
 import {RandomTestGenerator} from "./testgenerator/RandomTestGenerator";
 import {WhiskerTest} from "./testgenerator/WhiskerTest";
 import {List} from "./utils/List";
@@ -34,20 +30,22 @@ import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {TestExecutor} from "./testcase/TestExecutor";
 import {SearchAlgorithmProperties} from "./search/SearchAlgorithmProperties";
 import {TestChromosomeGenerator} from "./testcase/TestChromosomeGenerator";
+import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 
 export class Search {
 
     public vm: VirtualMachine;
+
     constructor(vm: VirtualMachine) {
         this.vm = vm;
     }
 
-    createTestSuite(projectFile: string, testSuiteFile: string): List<WhiskerTest> {
+    createTestSuite(projectFile: string, testSuiteFile: string, config: WhiskerSearchConfiguration): List<WhiskerTest> {
 //        const scratchProject = new ScratchProject(projectFile);
 
         // TODO: Probably need to instantiate ScratchVM as well here?
 
-        const testGenerator = this._selectTestGenerator();
+        const testGenerator = this._selectTestGenerator(config);
         const testSuite = testGenerator.generateTests(null);
 
         const testSuiteWriter = new TestSuiteWriter();
@@ -56,25 +54,18 @@ export class Search {
         return testSuite;
     }
 
-    _selectTestGenerator(): TestGenerator {
+    _selectTestGenerator(config: WhiskerSearchConfiguration): TestGenerator {
+
         // TODO: Select RandomTestGenerator, IterativeSearchBasedTestGenerator, or MOGenerator
-//        throw new NotYetImplementedException();
-        return new RandomTestGenerator();
+        return config.getTestGenerator()
     }
 
-    execDummyTest() {
+    execute(project, config: WhiskerSearchConfiguration) {
         console.log("Whisker-Main: Exec Dummy")
-        // TODO: Need properties for how many tests, and how long
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0);
-        searchAlgorithmProperties.setChromosomeLength(10);
-        const testGenerator = new TestChromosomeGenerator(searchAlgorithmProperties);
 
-        // TODO: Repeat X times, as configured
-        const testChromosome = testGenerator.get();
-
-        console.log("Chromosome: " + testChromosome)
-        const executor = new TestExecutor(this.getVirtualMachine())
-        executor.execute(testChromosome);
+        const testGenerator: TestGenerator = config.getTestGenerator();
+        testGenerator.setSearchAlgorithmProperties(config.getSearchAlgorithmProperties());
+        testGenerator.generateTests(project)
     }
 
     public getVirtualMachine() {
@@ -84,19 +75,21 @@ export class Search {
         return this.vm;
     }
 
-    public run(vm, project, config): void {
+    public run(vm, project, configRaw: string): void {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
-        const search: Search = new Search(vm);
+ //       const search: Search = new Search(vm);
+        const configJson = JSON.parse(configRaw)
+        const config = new WhiskerSearchConfiguration(configJson);
 
-        async function init() {
+        async function init(search: Search) {
             await util.prepare(30);
             util.start();
-            search.execDummyTest();
+            search.execute(project, config);
         }
 
-        init();
+        init(this);
     }
 }
 

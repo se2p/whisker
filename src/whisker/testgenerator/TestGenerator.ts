@@ -21,8 +21,11 @@
 import {WhiskerTest} from './WhiskerTest';
 import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
+import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 
 export interface TestGenerator {
 
     generateTests(project: ScratchProject) : List<WhiskerTest>;
+
+    setSearchAlgorithmProperties(properties: SearchAlgorithmProperties<any>) ;
 }
