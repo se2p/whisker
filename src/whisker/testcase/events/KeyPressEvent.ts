@@ -18,7 +18,7 @@
  *
  */
 
-import VirtualMachine = require('scratch-vm');
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 
 export class KeyPressEvent implements ScratchEvent {

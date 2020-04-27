@@ -23,7 +23,7 @@ import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedEx
 
 /**
  * Internal representation of a test case such that we
- * can write them to a file. Main functionality is thus
+ * can write them to a file. Search functionality is thus
  * retrieving a JavaScript representation in Whisker
  * format.
  */
