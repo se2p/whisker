@@ -37,7 +37,7 @@ const loadTestsFromString = function (string) {
     return tests;
 };
 
-const runSearch = async function() {
+const runSearch = async function () {
     Whisker.scratch.stop();
     console.log('Whisker-Web: loading project')
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
@@ -45,7 +45,8 @@ const runSearch = async function() {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     // TODO load config
-    Whisker.search.run(Whisker.scratch.vm, project, {});
+    const config = await Whisker.configFileSelect.loadAsString();
+    Whisker.search.run(Whisker.scratch.vm, project, config);
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
@@ -144,7 +145,9 @@ const initComponents = function () {
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
-    Whisker.search = new Search.Search()
+    Whisker.search = new Search.Search(Whisker.scratch.vm);
+    Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
+        fileSelect => fileSelect.loadAsArrayBuffer());
 
     document.querySelector('#scratch-vm-frequency').value = SCRATCH_VM_FREQUENCY;
 };
