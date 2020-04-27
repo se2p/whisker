@@ -68,8 +68,16 @@ module.exports = [
                 {
                     test: require.resolve('datatables.net'),
                     loader: 'imports-loader?define=>false'
+                },
+                {
+                    test: /\.ts$/,
+                    use: 'ts-loader',
                 }
             ]
+
+        },
+        resolve: {
+            extensions: ['.ts', '.js']
         },
         devtool: 'source-map'
     }
