@@ -27,9 +27,6 @@ import {RandomTestGenerator} from "./testgenerator/RandomTestGenerator";
 import {WhiskerTest} from "./testgenerator/WhiskerTest";
 import {List} from "./utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine"
-import {TestExecutor} from "./testcase/TestExecutor";
-import {SearchAlgorithmProperties} from "./search/SearchAlgorithmProperties";
-import {TestChromosomeGenerator} from "./testcase/TestChromosomeGenerator";
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 
 export class Search {
@@ -61,7 +58,7 @@ export class Search {
     }
 
     execute(project, config: WhiskerSearchConfiguration) {
-        console.log("Whisker-Main: Exec Dummy")
+        console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         testGenerator.setSearchAlgorithmProperties(config.getSearchAlgorithmProperties());
@@ -79,7 +76,6 @@ export class Search {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
- //       const search: Search = new Search(vm);
         const configJson = JSON.parse(configRaw)
         const config = new WhiskerSearchConfiguration(configJson);
 

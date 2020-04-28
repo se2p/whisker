@@ -24,6 +24,21 @@ import {ScratchEvent} from "../ScratchEvent";
 export class MouseDownEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine) {
+        const stageSize = {
+            width: 600,
+            height: 480
+        };
+
+        const data = {
+            device: 'mouse',
+            // TODO: I think this should be random
+            x: [-(stageSize.width / 2), stageSize.width / 2],
+            y: [-(stageSize.height / 2), stageSize.height / 2]
+        };
+
+        vm.postIOData(data.device, data)
+
+        vm.runtime._step();
 
     }
 
