@@ -13,6 +13,9 @@
         "operator": "dummy"
     },
     "fitness-function": "statement",
-    "stopping-condition": "fixed-iteration",
+    "stopping-condition": {
+        "type" : "fixed-iteration",
+        "iterations": 50
+    },
     "algorithm": "random"
 }

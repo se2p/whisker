@@ -18,17 +18,16 @@
  *
  */
 
-import { ChromosomeGenerator } from "./ChromosomeGenerator"
-import { Chromosome } from "./Chromosome"
-import { List } from "../utils/List"
-import { NotYetImplementedException } from "../core/exceptions/NotYetImplementedException";
+import {ChromosomeGenerator} from "./ChromosomeGenerator"
+import {Chromosome} from "./Chromosome"
+import {List} from "../utils/List"
 
 /**
  * A factory for populations of genetic algorithms.
  *
  * @author Sophia Geserer
  */
-export class PopulationFactory  {
+export class PopulationFactory {
 
     private constructor() {
     }
@@ -39,8 +38,12 @@ export class PopulationFactory  {
      * @param generator the generator used to create random chromosomes
      * @param size the number of chromosomes in the population
      * @returns the resultion population of chromosomes
-    */
+     */
     static generate<C extends Chromosome>(generator: ChromosomeGenerator<C>, size: number): List<C> {
-        throw new NotYetImplementedException();
+        let population = new List<C>();
+        for (let i = 0; i < size; i++) {
+            population.add(generator.get());
+        }
+        return population;
     }
 }
