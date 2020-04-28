@@ -27,7 +27,7 @@ import {SinglePointCrossover} from "../../../src/whisker/search/operators/Single
 describe('SingleBitFitnessFunction', () => {
 
     test('All false', () => {
-        const bits = new List<Boolean>();
+        const bits = new List<boolean>();
         bits.add(false);
         bits.add(false);
         const chromosome = new BitstringChromosome(bits,
@@ -36,12 +36,12 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(fitnessFunctionPosition0.getFitness(chromosome)).toBe(0);
-        expect(fitnessFunctionPosition1.getFitness(chromosome)).toBe(0);
+        expect(fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
+        expect(fitnessFunctionPosition1.getFitness(chromosome)).toBe(1);
     });
 
     test('All true', () => {
-        const bits = new List<Boolean>();
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(true);
         const chromosome = new BitstringChromosome(bits,
@@ -55,7 +55,7 @@ describe('SingleBitFitnessFunction', () => {
     });
 
     test('Mixed', () => {
-        const bits = new List<Boolean>();
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(false);
         const chromosome = new BitstringChromosome(bits,
@@ -64,7 +64,7 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
+        expect(fitnessFunctionPosition0.getFitness(chromosome)).toBe(2);
         expect(fitnessFunctionPosition1.getFitness(chromosome)).toBe(0);
     });
 
@@ -72,14 +72,14 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunction = new SingleBitFitnessFunction(2, 0);
 
         expect(fitnessFunction.isOptimal(0)).toBeFalsy();
-        expect(fitnessFunction.isOptimal(1)).toBeTruthy();
+        expect(fitnessFunction.isOptimal(2)).toBeTruthy();
     });
 
     test('Check comparison', () => {
         const fitnessFunction = new SingleBitFitnessFunction(2, 0);
 
-        expect(fitnessFunction.compare(0, 1)).toBeLessThan(0);
-        expect(fitnessFunction.compare(1, 0)).toBeGreaterThan(0);
+        expect(fitnessFunction.compare(0, 2)).toBeLessThan(0);
+        expect(fitnessFunction.compare(2, 0)).toBeGreaterThan(0);
         expect(fitnessFunction.compare(1, 1)).toBe(0);
     });
 });

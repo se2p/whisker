@@ -9,6 +9,11 @@ module.exports = [
         entry: {
             whisker: path.resolve('src', 'index.js')
         },
+
+        resolve: {
+            extensions: ['.tsx', '.ts', '.js']
+        },
+
         output: {
             library: 'Whisker',
             filename: '[name].js',
@@ -23,8 +28,14 @@ module.exports = [
                     include: path.resolve(__dirname, 'src')
                 },
                 {
-                    test: path.resolve('src', 'index.js'),
+                    test: path.resolve('dist/src', 'index.js'),
                     loader: 'expose-loader?Whisker'
+                },
+                {
+                    test: /\.ts|\.tsx$/,
+                    use: 'ts-loader',
+                    exclude: path.resolve(__dirname, '/node_modules/'),
+                    include: path.resolve(__dirname, 'src')
                 }
             ]
         },
@@ -44,12 +55,21 @@ module.exports = [
             libraryTarget: 'commonjs2',
             path: path.resolve('dist', 'node')
         },
+        resolve: {
+            extensions: ['.tsx', '.ts', '.js']
+        },
+
         module: {
             rules: [
                 {
                     test: /\.js$/,
                     loader: 'babel-loader',
                     include: path.resolve(__dirname, 'src')
+                },
+                {
+                    test: /\.tsx?$/,
+                    use: 'ts-loader',
+                    exclude: /node_modules/
                 }
             ]
         },

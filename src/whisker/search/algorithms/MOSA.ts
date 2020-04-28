@@ -96,10 +96,10 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
         this._bestIndividuals.clear();
         this._archive.clear();
         let parentPopulation = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
-        //this.updateArchive(parentPopulation);
+        this.updateArchive(parentPopulation);
         while (!this._stoppingCondition.isFinished(this)) {
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
-            //this.updateArchive(offspringPopulation);
+            this.updateArchive(offspringPopulation);
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);

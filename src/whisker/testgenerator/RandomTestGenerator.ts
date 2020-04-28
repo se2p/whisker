@@ -32,13 +32,18 @@ import {TestChromosomeGenerator} from '../testcase/TestChromosomeGenerator';
  */
 export class RandomTestGenerator implements TestGenerator {
 
+    private searchAlgorithmProperties: SearchAlgorithmProperties<any>;
+
+    setSearchAlgorithmProperties(properties: SearchAlgorithmProperties<any>) {
+        this.searchAlgorithmProperties = properties;
+    }
+
     // eslint-disable-next-line no-unused-vars
     generateTests(project: ScratchProject) : List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
 
         // TODO: Need properties for how many tests, and how long
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
-        const testGenerator = new TestChromosomeGenerator(searchAlgorithmProperties);
+        const testGenerator = new TestChromosomeGenerator(this.searchAlgorithmProperties);
 
         // TODO: Repeat X times, as configured
         const testChromosome = testGenerator.get();
