@@ -51,6 +51,11 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     private _mutationProbablity: number;
 
     /**
+     * The stopping condition for the corresponding search algorithm.
+     */
+    private _stoppingCondition: StoppingCondition<C>;
+
+    /**
      * Constructs an object that stores all relevant properties of a search algorithm.
      * @param populationSize the size of the population
      * @param crossoverProbability the probability for crossover
@@ -96,6 +101,14 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     }
 
     /**
+     * Returns the stopping condition that is specified for the search algorithm.
+     * @returns the specified stopping condition
+     */
+    getStoppingCondition(): StoppingCondition<C> {
+        return this._stoppingCondition;
+    }
+
+    /**
      * Sets the size of the population to the specified number.
      * @param populationSize the new population size
      */
@@ -125,6 +138,14 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
      */
     setMutationProbablity(mutationProbablity: number): void {
         this._mutationProbablity = mutationProbablity;
+    }
+
+    /**
+     * Sets the stopping condition to the given condition.
+     * @param stoppingCondition the stopping condition
+     */
+    setStoppingCondition(stoppingCondition: StoppingCondition<C>): void {
+        this._stoppingCondition = stoppingCondition;
     }
 
 }
