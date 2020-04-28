@@ -1,4 +1,4 @@
-const Random = require('../util/random');
+const Random = require('../../dist/src/whisker/utils/Randomness').Randomness.getInstance();
 
 /**
  * {
@@ -142,7 +142,7 @@ class RandomInputs {
             return;
         }
 
-        let randomWeight = Random.randomFloat(0, sumOfWeights);
+        let randomWeight = Random.nextDoubleMinMax(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
                 this.lastInputTime = timeElapsed;
