@@ -26,6 +26,8 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
+import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {Selection} from "../Selection";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -35,11 +37,13 @@ import {StoppingCondition} from "../StoppingCondition";
  */
 export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    _chromosomeGenerator: ChromosomeGenerator<C>;
+    private _chromosomeGenerator: ChromosomeGenerator<C>;
 
-    _properties: SearchAlgorithmProperties<C>;
+    private _properties: SearchAlgorithmProperties<C>;
 
     private _fitnessFunctions: Map<number, FitnessFunction<C>>;
+
+    private _selectionOperator: Selection<C>;
 
     private _heuristicFunctions: Map<number, Function>;
 
@@ -122,6 +126,22 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
+    }
+
+    setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
+        this._stoppingCondition = stoppingCondition;
+    }
+
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
+        this._fitnessFunctions = fitnessFunctions;
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new NotSupportedFunctionException();
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>) {
+        this._selectionOperator = selectionOperator;
     }
 
     getNumberOfIterations(): number {

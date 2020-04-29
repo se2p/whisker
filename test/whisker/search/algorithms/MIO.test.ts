@@ -45,8 +45,7 @@ describe('MIO', () => {
     const maxMutationCountFocusedPhase = 10;
 
     beforeEach(() => {
-        const properties = new SearchAlgorithmProperties(populationSize, crossoverProbability, mutationProbability);
-        properties.setChromosomeLength(chromosomeLength);
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
         const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
 
