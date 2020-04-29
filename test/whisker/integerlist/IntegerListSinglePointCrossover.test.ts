@@ -21,6 +21,7 @@
 import {List} from '../../../src/whisker/utils/List';
 import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
 import {IntegerListChromosome} from "../../../src/whisker/integerlist/IntegerListChromosome";
+import {IntegerListMutation} from "../../../src/whisker/integerlist/IntegerListMutation";
 
 describe('IntegerListSinglePointCrossover', () => {
 
@@ -28,12 +29,14 @@ describe('IntegerListSinglePointCrossover', () => {
         const parent1Ints = new List<number>();
         parent1Ints.add(1);
         parent1Ints.add(2);
-        const parent1 = new IntegerListChromosome(parent1Ints);
+        const parent1 = new IntegerListChromosome(parent1Ints,
+            new IntegerListMutation(0, 10), new SinglePointCrossover<IntegerListChromosome>());
 
         const parent2Ints = new List<number>();
         parent2Ints.add(3);
         parent2Ints.add(4);
-        const parent2 = new IntegerListChromosome(parent2Ints);
+        const parent2 = new IntegerListChromosome(parent2Ints,
+            new IntegerListMutation(0, 10), new SinglePointCrossover<IntegerListChromosome>());
 
         const crossover = new SinglePointCrossover<IntegerListChromosome>();
         const offspring = crossover.applyAtPosition(parent1, parent2, 1);

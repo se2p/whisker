@@ -18,32 +18,13 @@
  *
  */
 
-import { Chromosome } from "./Chromosome"
-import {Mutation} from "./Mutation";
-import {Crossover} from "./Crossover";
-
 /**
- * A generator for random chromosomes.
- *
- * @param <C> the type of the chromosomes this generator is able to produce
- * @author Sophia Geserer
+ * Exception class for functions that are not yet implemented.
  */
-export interface ChromosomeGenerator<C extends Chromosome> {
+export class NotSupportedFunctionException extends Error {
 
-    /**
-     * Creates and returns a random chromosome.
-     * @returns a random chromosome
-     */
-    get(): C;
-
-    /**
-     * Helper method to ensure a mutation operator is configured in the generator.
-     */
-    setMutationOperator(mutationOp: Mutation<C>): void;
-
-    /**
-     * Helper method to ensure a crossover operator is configured in the generator.
-     */
-    setCrossoverOperator(crossoverOp: Crossover<C>): void;
+    constructor() {
+        super("This class does not support the function.");
+    }
 
 }

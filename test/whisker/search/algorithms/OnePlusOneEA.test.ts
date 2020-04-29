@@ -25,15 +25,35 @@ import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFit
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
+import {OnePlusOneEABuilder} from "../../../../src/whisker/search/algorithms/OnePlusOneEABuilder";
 
 describe('OnePlusOneEa', () => {
 
     test('Trivial bitstring with OneMax', () => {
 
         const n = 10;
-        const properties = new SearchAlgorithmProperties(1, 0, 0);
-        properties.setChromosomeLength(n);
+        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const fitnessFunction = new OneMaxFitnessFunction(n);
 
+        const builder = new OnePlusOneEABuilder()
+            .addProperties(properties)
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties))
+            .addFitnessFunction(fitnessFunction)
+            .addStoppingCondition(
+                new OneOfStoppingCondition(
+                    new FixedIterationsStoppingCondition(1000),
+                    new OptimalSolutionStoppingCondition(fitnessFunction)));
+
+        const search = builder.buildSearchAlgorithm();
+        const solutions = search.findSolution();
+        const firstSolution = solutions.get(0);
+
+        expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+    });
+
+    test('Setter', () => {
+        const n = 10;
+        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
         const fitnessFunction = new OneMaxFitnessFunction(n);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
         const stoppingCondition = new OneOfStoppingCondition(
@@ -41,14 +61,22 @@ describe('OnePlusOneEa', () => {
             new OptimalSolutionStoppingCondition(fitnessFunction)
         );
         const search = new OnePlusOneEA();
-        search.setFitnessFunction(fitnessFunction);
+
+        search.setProperties(properties);
+        expect(search["_properties"]).toBe(properties);
+
         search.setChromosomeGenerator(chromosomeGenerator);
+        expect(search["_chromosomeGenerator"]).toBe(chromosomeGenerator);
+
         search.setStoppingCondition(stoppingCondition);
+        expect(search["_stoppingCondition"]).toBe(stoppingCondition);
 
-        const solutions = search.findSolution();
-        const firstSolution = solutions.get(0);
+        search.setFitnessFunction(fitnessFunction);
+        expect(search["_fitnessFunction"]).toBe(fitnessFunction);
 
-        expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(function() {
+            search.setSelectionOperator(null);
+        }).toThrow();
     });
 
 });

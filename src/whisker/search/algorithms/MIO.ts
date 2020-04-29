@@ -26,6 +26,8 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
+import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {Selection} from "../Selection";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -35,9 +37,9 @@ import {StoppingCondition} from "../StoppingCondition";
  */
 export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    _chromosomeGenerator: ChromosomeGenerator<C>;
+    private _chromosomeGenerator: ChromosomeGenerator<C>;
 
-    _properties: SearchAlgorithmProperties<C>;
+    private _properties: SearchAlgorithmProperties<C>;
 
     private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
@@ -53,68 +55,29 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
     private _archiveUncovered: Map<number, List<ChromosomeHeuristicTuple<C>>>;
 
-    private readonly _startOfFocusedPhase: number;
+    private _startOfFocusedPhase: number;
 
     private _randomSelectionProbability: number;
 
-    private readonly _randomSelectionProbabilityStart: number;
+    private _randomSelectionProbabilityStart: number;
 
-    private readonly _randomSelectionProbabilityFocusedPhase: number;
+    private _randomSelectionProbabilityFocusedPhase: number;
 
     private _maxArchiveSize: number;
 
-    private readonly _maxArchiveSizeStart: number;
+    private _maxArchiveSizeStart: number;
 
-    private readonly _maxArchiveSizeFocusedPhase: number;
+    private _maxArchiveSizeFocusedPhase: number;
 
     private _maxMutationCount: number;
 
-    private readonly _maxMutationCountStart: number;
+    private _maxMutationCountStart: number;
 
-    private readonly _maxMutationCountFocusedPhase: number;
+    private _maxMutationCountFocusedPhase: number;
 
     private _mutationCounter: number;
 
     private _samplingCounter: Map<number, number>;
-
-    /**
-     * Creates a new MIO search algorithm.
-     *
-     * @param fitnessFunctions The fitness functions.
-     * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
-     *          from the fitness values, where 0 is the worst value and 1 is the best value.
-     * @param stoppingCondition The stopping condition for the search.
-     * @param startOfFocusedPhase The percentage of iterations as decimal value after which the
-     *          focused search starts.
-     * @param randomSelectionProbabilityStart The probability that a random chromosome is sampled
-     *          at the start of the search.
-     * @param randomSelectionProbabilityFocusedPhase The probability that a random chromosome is
-     *          sampled in the focused phase.
-     * @param maxArchiveSizeStart The maximum number of chromosomes stored for a fitness function
-     *          at the start of the search.
-     * @param maxArchiveSizeFocusedPhase The maximum number of chromosomes stored for a fitness
-     *          function in the focused phase.
-     * @param maxMutationCountStart The number of mutations on the same chromosome at the start
-     *          of the search.
-     * @param maxMutationCountFocusedPhase The number of mutations on the same chromosome in the
-     *          focused phase.
-     */
-    constructor(fitnessFunctions: Map<number, FitnessFunction<C>>, heuristicFunctions: Map<number, Function>,
-                stoppingCondition: StoppingCondition<C>, startOfFocusedPhase: number,
-                randomSelectionProbabilityStart: number, randomSelectionProbabilityFocusedPhase: number,
-                maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number,
-                maxMutationCountStart: number, maxMutationCountFocusedPhase: number) {
-        this._fitnessFunctions = fitnessFunctions;
-        this._heuristicFunctions = heuristicFunctions;
-        this._stoppingCondition = stoppingCondition;
-        this._startOfFocusedPhase = startOfFocusedPhase;
-        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
-        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
-        this._maxArchiveSizeStart = maxArchiveSizeStart;
-        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
-        this._maxMutationCountStart = maxMutationCountStart;
-        this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
-    }
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
@@ -122,6 +85,76 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
+    }
+
+    setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
+        this._stoppingCondition = stoppingCondition;
+    }
+
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
+        this._fitnessFunctions = fitnessFunctions;
+    }
+
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new NotSupportedFunctionException();
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>) {
+        throw new NotSupportedFunctionException();
+    }
+
+    /**
+     * Sets the percentage of iterations.
+     * @param startOfFocusedPhase The percentage of iterations as decimal value after which the
+     *          focused search starts.
+     */
+    setStartOfFocusedPhase(startOfFocusedPhase: number): void {
+        this._startOfFocusedPhase = startOfFocusedPhase;
+    }
+
+    /**
+     * Sets the functions for calculating the heuristic values.
+     * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
+     *          from the fitness values, where 0 is the worst value and 1 is the best value.
+     */
+    setHeuristicFunctions(heuristicFunctions: Map<number, Function>) {
+        this._heuristicFunctions = heuristicFunctions;
+    }
+
+    /**
+     * Sets the probability for sampling a random chromosome.
+     * @param randomSelectionProbabilityStart The probability that a random chromosome is sampled
+     *          at the start of the search.
+     * @param randomSelectionProbabilityFocusedPhase The probability that a random chromosome is
+     *          sampled in the focused phase.
+     */
+    setSelectionProbabilities(randomSelectionProbabilityStart: number, randomSelectionProbabilityFocusedPhase: number): void {
+        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
+        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
+    }
+
+    /**
+     * Sets the maximum number of chromosomes stored for a fitness function.
+     * @param maxArchiveSizeStart The maximum number of chromosomes stored for a fitness function
+     *          at the start of the search.
+     * @param maxArchiveSizeFocusedPhase The maximum number of chromosomes stored for a fitness
+     *          function in the focused phase.
+     */
+    setArchiveSizes(maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number): void {
+        this._maxArchiveSizeStart = maxArchiveSizeStart;
+        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
+    }
+
+    /**
+     * Sets the number of mutations on the same chromosome.
+     * @param maxMutationCountStart The number of mutations on the same chromosome at the start
+     *          of the search.
+     * @param maxMutationCountFocusedPhase The number of mutations on the same chromosome in the
+     *          focused phase.
+     */
+    setMutationCounter(maxMutationCountStart: number, maxMutationCountFocusedPhase: number): void {
+        this._maxMutationCountStart = maxMutationCountStart;
+        this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
     }
 
     getNumberOfIterations(): number {

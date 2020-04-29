@@ -49,6 +49,6 @@ export class IntegerListMutation implements Mutation<IntegerListChromosome> {
             }
         }
 
-        return new IntegerListChromosome(newCodons);
+        return chromosome.cloneWith(newCodons);
     }
 }
