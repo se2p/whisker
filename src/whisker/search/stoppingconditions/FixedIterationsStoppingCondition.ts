@@ -24,13 +24,17 @@ import {SearchAlgorithm} from "../SearchAlgorithm";
 
 export class FixedIterationsStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _maxIterations : number;
+    private readonly _maxIterations: number;
 
-    constructor(iterationLimit : number) {
+    constructor(iterationLimit: number) {
         this._maxIterations = iterationLimit;
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
         return algorithm.getNumberOfIterations() >= this._maxIterations;
+    }
+
+    getProgress(algorithm: SearchAlgorithm<T>): number {
+        return algorithm.getNumberOfIterations() / this._maxIterations;
     }
 }

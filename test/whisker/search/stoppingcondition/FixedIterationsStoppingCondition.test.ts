@@ -52,4 +52,13 @@ describe('FixedIterationsStoppingCondition', () => {
         expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 
+    test('Progress of 0.5', () => {
+        const algorithm = new DummySearchAlgorithm();
+        const maxIterations = 10;
+        algorithm.setIterations(5);
+        const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
+
+        expect(stoppingCondition.getProgress(algorithm)).toBe(0.5);
+    });
+
 });

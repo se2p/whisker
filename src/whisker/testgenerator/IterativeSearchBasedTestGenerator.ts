@@ -35,13 +35,19 @@ import {WhiskerTest} from './WhiskerTest';
  */
 export class IterativeSearchBasedTestGenerator implements TestGenerator {
 
-    generateTests(project: ScratchProject) : List<WhiskerTest> {
+    private searchAlgorithmProperties: SearchAlgorithmProperties<any>;
+
+    setSearchAlgorithmProperties(properties: SearchAlgorithmProperties<any>) {
+        this.searchAlgorithmProperties = properties;
+    }
+
+    generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
         const testChromosomes = new List<TestChromosome>();
         const fitnessFunctions = this._extractCoverageGoals(project);
         const searchFactory = new SearchAlgorithmFactory<TestChromosome>();
         // TODO: Where do the properties come from?
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0);
+        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
         searchFactory.configureSearchAlgorithm(searchAlgorithmProperties);
 
         for (const fitnessFunction of fitnessFunctions) {
@@ -76,7 +82,7 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
     }
 
     // eslint-disable-next-line no-unused-vars
-    _extractCoverageGoals(project: ScratchProject) : List<StatementCoverageFitness> {
+    _extractCoverageGoals(project: ScratchProject): List<StatementCoverageFitness> {
         throw new NotYetImplementedException();
     }
 }

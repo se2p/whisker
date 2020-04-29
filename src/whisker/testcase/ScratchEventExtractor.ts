@@ -20,7 +20,7 @@
 
 import {List} from '../utils/List';
 
-import VirtualMachine = require('scratch-vm');
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {ScratchEvent} from "./ScratchEvent";
 import {KeyDownEvent} from "./events/KeyDownEvent";

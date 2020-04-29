@@ -22,25 +22,30 @@ import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithm} from "../SearchAlgorithm";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class OptimalSolutionStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
     private readonly _fitnessFunction: FitnessFunction<T>;
 
-    constructor(fitnessFunction : FitnessFunction<T>) {
+    constructor(fitnessFunction: FitnessFunction<T>) {
         this._fitnessFunction = fitnessFunction;
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        let solutions = algorithm.getCurrentSolution();
+        const solutions = algorithm.getCurrentSolution();
 
         // TODO: This could be written in a single line by extending the List class?
         for (const solution of solutions) {
             const fitness = solution.getFitness(this._fitnessFunction);
-            if(this._fitnessFunction.isOptimal(fitness)) {
+            if (this._fitnessFunction.isOptimal(fitness)) {
                 return true;
             }
         }
         return false;
+    }
+
+    getProgress(): number {
+        throw new NotYetImplementedException();
     }
 }

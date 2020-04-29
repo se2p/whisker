@@ -18,16 +18,13 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+/**
+ * Exception class for functions that are not yet implemented.
+ */
+export class NotSupportedFunctionException extends Error {
 
-export class KeyDownEvent implements ScratchEvent {
-
-    apply(vm: VirtualMachine) {
-
+    constructor() {
+        super("This class does not support the function.");
     }
 
-    arity(): number {
-        return 1; // Duration?
-    }
 }

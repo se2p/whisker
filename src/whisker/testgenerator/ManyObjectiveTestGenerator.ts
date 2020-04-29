@@ -34,12 +34,18 @@ import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedEx
  */
 export class ManyObjectiveTestGenerator implements TestGenerator {
 
-    generateTests(project: ScratchProject) : List<WhiskerTest> {
+    private searchAlgorithmProperties: SearchAlgorithmProperties<any>;
+
+    setSearchAlgorithmProperties(properties: SearchAlgorithmProperties<any>) {
+        this.searchAlgorithmProperties = properties;
+    }
+
+    generateTests(project: ScratchProject): List<WhiskerTest> {
         // eslint-disable-next-line no-unused-vars
         const fitnessFunctions = this._extractCoverageGoals(project);
         const searchFactory = new SearchAlgorithmFactory<TestChromosome>();
         // TODO: Where do the properties come from?
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0);
+        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
         searchFactory.configureSearchAlgorithm(searchAlgorithmProperties);
 
         // TODO: Ensure this is a many-objective algorithm taking all goals
@@ -58,7 +64,7 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
     }
 
     // eslint-disable-next-line no-unused-vars
-    _extractCoverageGoals(project: ScratchProject) : List<StatementCoverageFitness> {
+    _extractCoverageGoals(project: ScratchProject): List<StatementCoverageFitness> {
         // TODO: Shared with IterativeSearchBasedTestGenerator, probably best to extract
         throw new NotYetImplementedException();
     }
