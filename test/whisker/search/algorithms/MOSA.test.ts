@@ -51,6 +51,20 @@ describe('MOSA', () => {
         }
     });
 
+    test('Getter', () => {
+        let searchAlgorithm = new MOSABuilder().buildSearchAlgorithm();
+        const maxIterations = 100;
+
+        expect(searchAlgorithm.getCurrentSolution()).toEqual(new List<BitstringChromosome>());
+        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
+
+        searchAlgorithm = new MOSABuilder().buildSearchAlgorithm();
+        expect(searchAlgorithm.getNumberOfIterations()).toEqual(0);
+        searchAlgorithm.findSolution();
+        expect(searchAlgorithm.getNumberOfIterations()).toBe(maxIterations);
+    });
+
     test('Setter', () => {
         const chromosomeLength = 10;
         const populationSize = 50;
@@ -82,5 +96,12 @@ describe('MOSA', () => {
 
         searchAlgorithm.setSelectionOperator(selectionOp);
         expect(searchAlgorithm["_selectionOperator"]).toBe(selectionOp);
+    });
+
+    test("Not supported setter", () => {
+        const searchAlgorithm: MOSA<BitstringChromosome> = new MOSA();
+        expect(function() {
+            searchAlgorithm.setFitnessFunction(null);
+        }).toThrow();
     });
 });

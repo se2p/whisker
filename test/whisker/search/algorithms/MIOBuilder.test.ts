@@ -18,46 +18,45 @@
  *
  */
 
-import {MOSABuilder} from "../../../../src/whisker/search/algorithms/MOSABuilder";
-import {Chromosome} from "../../../../src/whisker/search/Chromosome";
+import {MIOBuilder} from "../../../../src/whisker/search/algorithms/MIOBuilder";
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
+import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
-import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
-import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {StoppingCondition} from "../../../../src/whisker/search/StoppingCondition";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
-import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
-import {Selection} from "../../../../src/whisker/search/Selection";
+import {StoppingCondition} from "../../../../src/whisker/search/StoppingCondition";
+import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
+import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 
-describe('MOSABuilder', () => {
+describe('MIOBuilder', () => {
 
     test('Constructor and build', () => {
-        const builder: MOSABuilder = new MOSABuilder();
-        const mosa: SearchAlgorithm<Chromosome> = builder.buildSearchAlgorithm();
-        expect(mosa).not.toBeNull();
+       const builder: MIOBuilder = new MIOBuilder();
+       const mio: SearchAlgorithm<Chromosome> = builder.buildSearchAlgorithm();
+       expect(mio).not.toBeNull();
 
-        const populationSize = 50;
+        const populationSize = null;
         const chromosomeLength = 10;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
+        const crossoverProbability = null;
+        const mutationProbability = null;
 
-        const properties = mosa["_properties"];
+        const properties = mio["_properties"];
         expect(properties.getPopulationSize()).toBe(populationSize);
         expect(properties.getChromosomeLength()).toBe(chromosomeLength);
         expect(properties.getCrossoverProbability()).toBe(crossoverProbability);
         expect(properties.getMutationProbablity()).toBe(mutationProbability);
 
-        expect(mosa["_chromosomeGenerator"]).not.toBeNull();
-        expect(mosa["_stoppingCondition"]).not.toBeNull();
-        expect(mosa["_fitnessFunctions"].size).toBe(chromosomeLength);
-        expect(mosa["_selectionOperator"]).not.toBeNull();
+        expect(mio["_chromosomeGenerator"]).not.toBeNull();
+        expect(mio["_stoppingCondition"]).not.toBeNull();
+        expect(mio["_fitnessFunctions"].size).toBe(chromosomeLength);
+        expect(mio["_heuristicFunctions"].size).toBe(chromosomeLength);
+
     });
 
     test("Add generator", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: MIOBuilder = new MIOBuilder();
         const newGenerator: BitstringChromosomeGenerator = new BitstringChromosomeGenerator(
             new SearchAlgorithmProperties<BitstringChromosome>(0, 5, 0, 0));
 
@@ -67,14 +66,14 @@ describe('MOSABuilder', () => {
     });
 
     test("Add fitness function", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: MIOBuilder = new MIOBuilder();
         expect(function() {
             builder.addFitnessFunction(null);
         }).toThrow();
     });
 
     test("Add fitness functions", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: MIOBuilder = new MIOBuilder();
         const chromosomeLength = 27;
         const fitnessFunctions: Map<number, FitnessFunction<BitstringChromosome>> = new Map<number, FitnessFunction<BitstringChromosome>>();
         for (let i = 0; i < chromosomeLength; i++) {
@@ -86,14 +85,28 @@ describe('MOSABuilder', () => {
         expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
     });
 
+    test("Add heuristic functions", () => {
+        const builder: MIOBuilder = new MIOBuilder();
+        const chromosomeLength = 27;
+        const heuristicFunctions: Map<number, Function> = new Map<number, Function>();
+        for (let i = 0; i < chromosomeLength; i++) {
+            heuristicFunctions.set(i, v => v / chromosomeLength);
+        }
+
+        const resultBuilder = builder.addHeuristicFunctions(heuristicFunctions);
+        expect(resultBuilder).toBe(builder);
+        expect(builder["_heuristicFunctions"].size).toBe(chromosomeLength);
+    });
+
     test("Add properties", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: MIOBuilder = new MIOBuilder();
         const populationSize = 14;
         const chromosomeLength = 27;
         const crossoverProbability = 0.42;
         const mutationProbability = 1.13;
         const properties = new SearchAlgorithmProperties<BitstringChromosome>(populationSize, chromosomeLength,
-                                                                                crossoverProbability, mutationProbability);
+            crossoverProbability, mutationProbability);
+
         const resultBuilder = builder.addProperties(properties);
         expect(resultBuilder).toBe(builder);
         expect(builder["_properties"].getPopulationSize()).toBe(populationSize);
@@ -103,7 +116,7 @@ describe('MOSABuilder', () => {
     });
 
     test("Add stopping condition", () => {
-        const builder: MOSABuilder = new MOSABuilder();
+        const builder: MIOBuilder = new MIOBuilder();
         const maxIterations = 50;
         const stoppingCondition: StoppingCondition<BitstringChromosome> = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
 
@@ -113,12 +126,42 @@ describe('MOSABuilder', () => {
     });
 
     test("Add selection operator", () => {
-        const builder: MOSABuilder = new MOSABuilder();
-        const selectionOp: Selection<BitstringChromosome> = new RankSelection<BitstringChromosome>();
-
-        const resultBuilder = builder.addSelectionOperator(selectionOp);
-        expect(resultBuilder).toBe(builder);
-        expect(builder["_selectionOperator"]).toBe(selectionOp);
+        const builder: MIOBuilder = new MIOBuilder();
+        expect(function() {
+            builder.addSelectionOperator(null);
+        }).toThrow();
     });
 
+    test("Add selection probabilities", () => {
+        const builder: MIOBuilder = new MIOBuilder();
+        const start = 0.7
+        const focusPhase = 0.1;
+
+        const resultBuilder = builder.addSelectionProbabilities(start, focusPhase);
+        expect(resultBuilder).toBe(builder);
+        expect(builder["_randomSelectionProbabilityStart"]).toBe(start);
+        expect(builder["_randomSelectionProbabilityFocusedPhase"]).toBe(focusPhase);
+    });
+
+    test("Add archive size", () => {
+        const builder: MIOBuilder = new MIOBuilder();
+        const start = 0.7
+        const focusPhase = 0.1;
+
+        const resultBuilder = builder.addArchiveSizes(start, focusPhase);
+        expect(resultBuilder).toBe(builder);
+        expect(builder["_maxArchiveSizeStart"]).toBe(start);
+        expect(builder["_maxArchiveSizeFocusedPhase"]).toBe(focusPhase);
+    });
+
+    test("Add mutation counter", () => {
+        const builder: MIOBuilder = new MIOBuilder();
+        const start = 0.7
+        const focusPhase = 0.1;
+
+        const resultBuilder = builder.addMutationCounter(start, focusPhase);
+        expect(resultBuilder).toBe(builder);
+        expect(builder["_maxMutationCountStart"]).toBe(start);
+        expect(builder["_maxMutationCountFocusedPhase"]).toBe(focusPhase);
+    });
 });
