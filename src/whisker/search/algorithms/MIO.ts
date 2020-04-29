@@ -25,6 +25,7 @@ import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
+import {StoppingCondition} from "../StoppingCondition";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -44,7 +45,7 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
 
     private _iterations: number;
 
-    private readonly _maxIterations: number;
+    private _stoppingCondition: StoppingCondition<C>;
 
     private _bestIndividuals: List<C>;
 
@@ -82,7 +83,7 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
      * @param fitnessFunctions The fitness functions.
      * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
      *          from the fitness values, where 0 is the worst value and 1 is the best value.
-     * @param maxIterations The maximum number of iterations.
+     * @param stoppingCondition The stopping condition for the search.
      * @param startOfFocusedPhase The percentage of iterations as decimal value after which the
      *          focused search starts.
      * @param randomSelectionProbabilityStart The probability that a random chromosome is sampled
@@ -99,13 +100,13 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
      *          focused phase.
      */
     constructor(fitnessFunctions: Map<number, FitnessFunction<C>>, heuristicFunctions: Map<number, Function>,
-                maxIterations: number, startOfFocusedPhase: number,
+                stoppingCondition: StoppingCondition<C>, startOfFocusedPhase: number,
                 randomSelectionProbabilityStart: number, randomSelectionProbabilityFocusedPhase: number,
                 maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number,
                 maxMutationCountStart: number, maxMutationCountFocusedPhase: number) {
         this._fitnessFunctions = fitnessFunctions;
         this._heuristicFunctions = heuristicFunctions;
-        this._maxIterations = maxIterations;
+        this._stoppingCondition = stoppingCondition;
         this._startOfFocusedPhase = startOfFocusedPhase;
         this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
         this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
@@ -139,7 +140,7 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
     findSolution(): List<C> {
         this.setStartValues();
         let chromosome: C;
-        while (this._iterations < this._maxIterations) {
+        while (!this._stoppingCondition.isFinished(this)) {
             if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
                 chromosome = chromosome.mutate();
                 this._mutationCounter++;
@@ -159,7 +160,7 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
     /**
      * Sets the appropriate starting values for the search.
      */
-    private setStartValues() {
+    private setStartValues(): void {
         this._iterations = 0;
         this._mutationCounter = 0;
         this._bestIndividuals = new List<C>();
@@ -329,7 +330,7 @@ export class MIO<C extends Chromosome> implements SearchAlgorithm<C> {
      * of the search and the start of the focused phase.
      */
     private updateParameters(): void {
-        const overallProgress = this._iterations / this._maxIterations;
+        const overallProgress = this._stoppingCondition.getProgress(this);
         const progressUntilFocusedPhaseReached = overallProgress / this._startOfFocusedPhase;
         const previousMaxArchiveSize = this._maxArchiveSize;
         if (progressUntilFocusedPhaseReached >= 1) {

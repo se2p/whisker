@@ -25,6 +25,7 @@ import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringCh
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 import {List} from "../../../../src/whisker/utils/List";
 import {MIO} from "../../../../src/whisker/search/algorithms/MIO";
+import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 
 describe('MIO', () => {
 
@@ -47,6 +48,7 @@ describe('MIO', () => {
         const properties = new SearchAlgorithmProperties(populationSize, crossoverProbability, mutationProbability);
         properties.setChromosomeLength(chromosomeLength);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
+        const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
 
         fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         const heuristicFunctions = new Map<number, Function>();
@@ -55,7 +57,7 @@ describe('MIO', () => {
             heuristicFunctions.set(i, v => v / chromosomeLength);
         }
 
-        searchAlgorithm = new MIO(fitnessFunctions, heuristicFunctions, iterations, startFocusedPhase,
+        searchAlgorithm = new MIO(fitnessFunctions, heuristicFunctions, stoppingCondition, startFocusedPhase,
             randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase,
             maxArchiveSizeStart, maxArchiveSizeFocusedPhase,
             maxMutationCountStart, maxMutationCountFocusedPhase);
