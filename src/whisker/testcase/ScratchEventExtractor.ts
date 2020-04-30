@@ -34,7 +34,8 @@ import {WaitEvent} from "./events/WaitEvent";
 
 export class ScratchEventExtractor {
 
-    static extractEvents(vm: VirtualMachine) : List<ScratchEvent> {
+    static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
+        console.log(vm.runtime.targets)
         const eventList = new List<ScratchEvent>();
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
@@ -50,7 +51,7 @@ export class ScratchEventExtractor {
     }
 
     // TODO: How to handle event parameters?
-    static _extractEventsFromBlock (target, block) : List<ScratchEvent> {
+    static _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
 
         if (typeof block.opcode === 'undefined') {
@@ -85,8 +86,10 @@ export class ScratchEventExtractor {
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                eventList.add(new ClickSpriteEvent()); // TODO: Store which sprite
-                // TODO: Add one event for each clone of this sprite
+                console.log(target)
+                let clickEvent: ClickSpriteEvent = new ClickSpriteEvent(target);
+                eventList.add(clickEvent); // TODO: Store which sprite
+                // TODO: Add one event for each clone of this sprite --- each target is a clone
                 break;
             case 'event_whenstageclicked':
                 // Click stage
@@ -96,7 +99,7 @@ export class ScratchEventExtractor {
                 // Sound
                 eventList.add(new SoundEvent()); // TODO: Volume as parameter
                 break;
-            case 'event_whengreaterthan':
+            case 'event_whenlessthan':
                 // Wait duration
                 eventList.add(new WaitEvent()); // TODO: Duration as parameter
                 break;

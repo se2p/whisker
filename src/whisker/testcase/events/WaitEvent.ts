@@ -24,7 +24,7 @@ import {ScratchEvent} from "../ScratchEvent";
 export class WaitEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine) {
-
+        // Wait x milliseconds
     }
 
     arity(): number {

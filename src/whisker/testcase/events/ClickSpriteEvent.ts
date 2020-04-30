@@ -23,11 +23,18 @@ import {ScratchEvent} from "../ScratchEvent";
 
 export class ClickSpriteEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    private target: string
 
+    constructor(target: string) {
+        this.target = target
+    }
+
+    apply(vm: VirtualMachine) {
+        vm.runtime.startHats('event_whenthisspriteclicked',
+            null, this.target);
     }
 
     arity(): number {
-        return 0;
+        return 1;
     }
 }
