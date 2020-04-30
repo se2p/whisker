@@ -29,8 +29,7 @@ export class WhiskerSearchConfiguration {
         const crossoverProbability = this.dict['crossover']['probability'] as number;
         const mutationProbability = this.dict['mutation']['probability'] as number;
 
-        const properties = new SearchAlgorithmProperties(populationSize,crossoverProbability,mutationProbability);
-        properties.setChromosomeLength(chromosomeLength)
+        const properties = new SearchAlgorithmProperties(populationSize,chromosomeLength,mutationProbability,crossoverProbability);
 
         const stoppingCond =  this.dict['stopping-condition'];
         if (stoppingCond["type"] == "fixed-iteration") {

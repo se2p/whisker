@@ -27,4 +27,6 @@ import {SearchAlgorithm} from "./SearchAlgorithm";
 export interface StoppingCondition<T extends Chromosome> {
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean;
+
+    getProgress(algorithm: SearchAlgorithm<T>): number;
 }

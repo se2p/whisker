@@ -24,6 +24,8 @@ import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFit
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     setCurrentSolution(chromosome: BitstringChromosome) {
@@ -38,7 +40,8 @@ describe('OptimalSolutionStoppingCondition', () => {
         const bits = new List<Boolean>();
         bits.add(true);
         bits.add(true);
-        const chromosome = new BitstringChromosome(bits);
+        const chromosome = new BitstringChromosome(bits,
+            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         algorithm.setCurrentSolution(chromosome)
@@ -52,7 +55,8 @@ describe('OptimalSolutionStoppingCondition', () => {
         const bits = new List<Boolean>();
         bits.add(false);
         bits.add(true);
-        const chromosome = new BitstringChromosome(bits);
+        const chromosome = new BitstringChromosome(bits,
+            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         algorithm.setCurrentSolution(chromosome)

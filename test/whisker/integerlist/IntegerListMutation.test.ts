@@ -21,13 +21,15 @@
 import {List} from '../../../src/whisker/utils/List';
 import {IntegerListChromosome} from "../../../src/whisker/integerlist/IntegerListChromosome";
 import {IntegerListMutation} from "../../../src/whisker/integerlist/IntegerListMutation";
+import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
 
 describe('IntegerListMutation', () => {
 
     test('Check number is replaced', () => {
         const originalNumbers = new List<number>();
         originalNumbers.add(0); // This is smaller than the range specified for the mutation
-        const chromosome = new IntegerListChromosome(originalNumbers);
+        const chromosome = new IntegerListChromosome(originalNumbers,
+            new IntegerListMutation(0, 10), new SinglePointCrossover<IntegerListChromosome>());
 
         const mutation = new IntegerListMutation(10, 20);
         const offspring = mutation.apply(chromosome);

@@ -23,21 +23,30 @@ import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {List} from "../utils/List";
 import {Randomness} from "../utils/Randomness";
 import {TestChromosome} from "./TestChromosome";
+import {Mutation} from "../search/Mutation";
+import {BitstringChromosome} from "../bitstring/BitstringChromosome";
+import {Crossover} from "../search/Crossover";
 
 // TODO: This is a clone of IntegerListGenerator, maybe we should use "has a" rather than "is a" in TestChromosome?
 
 export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromosome> {
 
-    private readonly _length : number;
+    private readonly _length: number;
 
-    private readonly _min : number;
+    private readonly _min: number;
 
-    private readonly _max : number;
+    private readonly _max: number;
+
+    private _mutationOp: Mutation<TestChromosome>;
+
+    private _crossoverOp: Crossover<TestChromosome>;
 
     // TODO: Set min and max
 
     constructor(properties: SearchAlgorithmProperties<TestChromosome>) {
         this._length = properties.getChromosomeLength();
+        this._mutationOp = null; // TODO set mutation
+        this._crossoverOp = null; // TODO set crossover
     }
 
     /**
@@ -49,6 +58,15 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
         for(let i = 0; i < this._length; i++) {
             codons.add(Randomness.getInstance().nextInt(this._min, this._max));
         }
-        return new TestChromosome(codons);
+        return new TestChromosome(codons, this._mutationOp, this._crossoverOp); // TODO
     }
+
+    setMutationOperator(mutationOp: Mutation<TestChromosome>): void {
+        this._mutationOp = mutationOp;
+    }
+
+    setCrossoverOperator(crossoverOp: Crossover<TestChromosome>): void {
+        this._crossoverOp = crossoverOp;
+    }
+
 }

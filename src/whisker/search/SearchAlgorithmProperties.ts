@@ -58,11 +58,13 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
      * @param populationSize the size of the population
+     * @param chromosomeLength the length of each chromosome
      * @param crossoverProbability the probability for crossover
      * @param mutationProbability the probability for mutation
      */
-    constructor(populationSize: number, crossoverProbability: number, mutationProbability: number) {
+    constructor(populationSize: number, chromosomeLength: number, crossoverProbability: number, mutationProbability: number) {
         this._populationSize = populationSize;
+        this._chromosomeLength = chromosomeLength;
         this._crossoverProbability = crossoverProbability;
         this._mutationProbablity = mutationProbability;
     }

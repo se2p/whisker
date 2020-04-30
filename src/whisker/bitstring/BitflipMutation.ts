@@ -39,6 +39,6 @@ export class BitflipMutation implements Mutation<BitstringChromosome> {
             }
         }
 
-        return new BitstringChromosome(newBits);
+        return chromosome.cloneWith(newBits);
     }
 }

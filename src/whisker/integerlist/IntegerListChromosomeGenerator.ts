@@ -23,19 +23,32 @@ import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {List} from '../utils/List';
 import {IntegerListChromosome} from "./IntegerListChromosome";
 import {Randomness} from "../utils/Randomness";
+import {Mutation} from "../search/Mutation";
+import {BitstringChromosome} from "../bitstring/BitstringChromosome";
+import {Crossover} from "../search/Crossover";
+import {IntegerListMutation} from "./IntegerListMutation";
+import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
 
 export class IntegerListChromosomeGenerator implements ChromosomeGenerator<IntegerListChromosome> {
 
-    private readonly _length : number;
+    private readonly _length: number;
 
-    private readonly _min : number;
+    private readonly _min: number;
 
-    private readonly _max : number;
+    private readonly _max: number;
+
+    private _mutationOp: Mutation<IntegerListChromosome>;
+
+    private _crossoverOp: Crossover<IntegerListChromosome>;
 
     // TODO: Set min and max
 
     constructor(properties: SearchAlgorithmProperties<IntegerListChromosome>) {
+        this._min = 0;  // TODO get from properties -> Add to properties
+        this._max = 10;  // TODO see _min
         this._length = properties.getChromosomeLength();
+        this._mutationOp = new IntegerListMutation(this._min, this._max);
+        this._crossoverOp = new SinglePointCrossover<IntegerListChromosome>();
     }
 
     /**
@@ -47,6 +60,14 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
         for (let i = 0; i < this._length; i++) {
             codons.add(Randomness.getInstance().nextInt(this._min, this._max));
         }
-        return new IntegerListChromosome(codons);
+        return new IntegerListChromosome(codons, this._mutationOp, this._crossoverOp);
+    }
+
+    setMutationOperator(mutationOp: Mutation<IntegerListChromosome>): void {
+        this._mutationOp = mutationOp;
+    }
+
+    setCrossoverOperator(crossoverOp: Crossover<IntegerListChromosome>): void {
+        this._crossoverOp = crossoverOp;
     }
 }

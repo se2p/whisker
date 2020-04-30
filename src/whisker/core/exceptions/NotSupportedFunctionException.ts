@@ -18,23 +18,13 @@
  *
  */
 
-import {StoppingCondition} from '../StoppingCondition';
-import {Chromosome} from "../Chromosome";
-import {SearchAlgorithm} from "../SearchAlgorithm";
+/**
+ * Exception class for functions that are not yet implemented.
+ */
+export class NotSupportedFunctionException extends Error {
 
-export class FixedIterationsStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
-
-    private readonly _maxIterations: number;
-
-    constructor(iterationLimit: number) {
-        this._maxIterations = iterationLimit;
+    constructor() {
+        super("This class does not support the function.");
     }
 
-    isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        return algorithm.getNumberOfIterations() >= this._maxIterations;
-    }
-
-    getProgress(algorithm: SearchAlgorithm<T>): number {
-        return algorithm.getNumberOfIterations() / this._maxIterations;
-    }
 }

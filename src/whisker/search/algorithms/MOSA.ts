@@ -28,6 +28,8 @@ import {StoppingCondition} from "../StoppingCondition";
 import {PopulationFactory} from '../PopulationFactory';
 import {RankSelection} from '../operators/RankSelection';
 import {Randomness} from "../../utils/Randomness";
+import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {Selection} from "../Selection";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -37,9 +39,9 @@ import {Randomness} from "../../utils/Randomness";
  */
 export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    _chromosomeGenerator: ChromosomeGenerator<C>;
+    private _chromosomeGenerator: ChromosomeGenerator<C>;
 
-    _properties: SearchAlgorithmProperties<C>;
+    private _properties: SearchAlgorithmProperties<C>;
 
     private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
@@ -51,7 +53,7 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
 
     private _archive = new Map<number, C>();
 
-    private _rankSelection = new RankSelection<C>();
+    private _selectionOperator: Selection<C>;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
@@ -65,8 +67,16 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
         this._fitnessFunctions = fitnessFunctions;
     }
 
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
+        throw new NotSupportedFunctionException();
+    }
+
     setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
         this._stoppingCondition = stoppingCondition;
+    }
+
+    setSelectionOperator(selectionOperator: Selection<C>) {
+        this._selectionOperator = selectionOperator;
     }
 
     getNumberOfIterations(): number {
@@ -86,10 +96,10 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
         this._bestIndividuals.clear();
         this._archive.clear();
         let parentPopulation = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
-        //this.updateArchive(parentPopulation);
+        this.updateArchive(parentPopulation);
         while (!this._stoppingCondition.isFinished(this)) {
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
-            //this.updateArchive(offspringPopulation);
+            this.updateArchive(offspringPopulation);
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);
@@ -156,7 +166,7 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
      */
     private selectChromosome(population: List<C>, useRankSelection: boolean): C {
         if (useRankSelection) {
-            return this._rankSelection.apply(population);
+            return this._selectionOperator.apply(population);
         } else {
             const randomIndex = Randomness.getInstance().nextInt(0, population.size());
             return population.get(randomIndex);
