@@ -26,8 +26,8 @@ export class WhiskerSearchConfiguration {
     public getSearchAlgorithmProperties(): SearchAlgorithmProperties<any> {
         const populationSize = this.dict['population-size'] as number;
         const chromosomeLength = this.dict['chromosome-length'] as number;
+        const crossoverProbability = this.dict['crossover']['probability'] as number;
         const mutationProbability = this.dict['mutation']['probability'] as number;
-        const crossoverProbability = 0; // TODO missing crossover probability
 
         const properties = new SearchAlgorithmProperties(populationSize,chromosomeLength,mutationProbability,crossoverProbability);
 
