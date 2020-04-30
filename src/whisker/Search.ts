@@ -28,6 +28,8 @@ import {WhiskerTest} from "./testgenerator/WhiskerTest";
 import {List} from "./utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
+import {TestExecutor} from "./testcase/TestExecutor";
+import {TestChromosome} from "./testcase/TestChromosome";
 
 export class Search {
 
@@ -62,7 +64,13 @@ export class Search {
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         testGenerator.setSearchAlgorithmProperties(config.getSearchAlgorithmProperties());
-        testGenerator.generateTests(project)
+        const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
+        const executor = new TestExecutor(this.vm);
+        for (const test of whiskerTests) {
+            const chromosome: TestChromosome = (test as WhiskerTest).chromosome;
+            console.log(chromosome)
+            executor.execute(chromosome)
+        }
     }
 
     public getVirtualMachine() {
