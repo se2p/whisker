@@ -22,6 +22,8 @@ import {List} from "../../../../src/whisker/utils/List";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
+import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 
 describe('RankSelection', () => {
 
@@ -31,7 +33,7 @@ describe('RankSelection', () => {
         let populationSize = 5;
         let selectionCount = new Map<Chromosome, number>();
         for (let i = 0; i < populationSize; i++) {
-            let chromosome = new BitstringChromosome(new List<boolean>([]))
+            let chromosome = new BitstringChromosome(new List<boolean>([]), new BitflipMutation(), new SinglePointCrossover())
             population.add(chromosome);
             selectionCount.set(chromosome, 0)
         }

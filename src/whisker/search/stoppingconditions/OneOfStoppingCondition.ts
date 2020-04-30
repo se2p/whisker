@@ -22,22 +22,27 @@ import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 import {List} from "../../utils/List";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
     private readonly _conditions = new List<StoppingCondition<T>>();
 
-    constructor(...stoppingCondition : StoppingCondition<T>[]) {
+    constructor(...stoppingCondition: StoppingCondition<T>[]) {
         this._conditions.addAll(stoppingCondition);
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
         // TODO: This could be written in a single line by extending the List class?
-        for(const stoppingCondition of this._conditions) {
-            if(stoppingCondition.isFinished(algorithm)) {
+        for (const stoppingCondition of this._conditions) {
+            if (stoppingCondition.isFinished(algorithm)) {
                 return true;
             }
         }
         return false;
+    }
+
+    getProgress(): number {
+        throw new NotYetImplementedException();
     }
 }

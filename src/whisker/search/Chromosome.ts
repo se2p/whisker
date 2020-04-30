@@ -22,6 +22,7 @@ import { FitnessFunction } from "./FitnessFunction"
 import { Pair } from "../utils/Pair"
 import { Mutation } from "./Mutation"
 import { Crossover } from "./Crossover"
+import {List} from "../utils/List";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -34,12 +35,12 @@ export abstract class Chromosome {
     /**
      * Retrieve the crossover operator to apply
      */
-    protected abstract getCrossoverOperator(): Crossover<this>;
+    abstract getCrossoverOperator(): Crossover<this>;
 
     /**
      * Retrieve the mutation operator to apply
      */
-    protected abstract getMutationOperator(): Mutation<this>;
+    abstract getMutationOperator(): Mutation<this>;
 
     /**
      * Mutates this chromosome and returns the resulting chromosome.
@@ -72,4 +73,10 @@ export abstract class Chromosome {
      * A chromosome consists of a sequence of genes. This method returns the number of genes.
      */
     abstract getLength(): number;
+
+    /**
+     * Creates a clone of the current chromosome with new genes.
+     * @param newGenes
+     */
+    abstract cloneWith(newGenes: List<any>): Chromosome;
 }

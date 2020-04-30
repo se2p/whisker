@@ -45,7 +45,7 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
         const fitnessFunctions = this._extractCoverageGoals(project);
         const searchFactory = new SearchAlgorithmFactory<TestChromosome>();
         // TODO: Where do the properties come from?
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0);
+        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
         searchFactory.configureSearchAlgorithm(searchAlgorithmProperties);
 
         // TODO: Ensure this is a many-objective algorithm taking all goals
