@@ -36,7 +36,7 @@ describe('IntegerListMutation', () => {
         const mutatedNumbers = offspring.getGenes();
 
         expect(mutatedNumbers.size()).toBe(originalNumbers.size());
-        expect(mutatedNumbers.get(0)).toBeGreaterThan(10);
+        expect(mutatedNumbers.get(0)).toBeGreaterThanOrEqual(10);
     });
 
 });
