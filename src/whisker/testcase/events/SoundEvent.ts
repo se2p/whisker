@@ -27,7 +27,7 @@ export class SoundEvent implements ScratchEvent {
 
     }
 
-    arity(): number {
+    getNumParameters(): number {
         return 0; // volume passed in as parameter?
     }
 }

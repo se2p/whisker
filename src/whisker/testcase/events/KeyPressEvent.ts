@@ -27,7 +27,7 @@ export class KeyPressEvent implements ScratchEvent {
 
     }
 
-    arity(): number {
+    getNumParameters(): number {
         return 0;
     }
 }

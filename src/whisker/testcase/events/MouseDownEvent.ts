@@ -39,7 +39,7 @@ export class MouseDownEvent implements ScratchEvent {
         vm.postIOData(data.device, data)
     }
 
-    arity(): number {
-        return 3; // Duration?
+    getNumParameters(): number {
+        return 2;
     }
 }

@@ -27,7 +27,7 @@ export class ClickStageEvent implements ScratchEvent {
 
     }
 
-    arity(): number {
+    getNumParameters(): number {
         return 0;
     }
 }

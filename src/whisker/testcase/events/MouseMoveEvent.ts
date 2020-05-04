@@ -27,7 +27,7 @@ export class MouseMoveEvent implements ScratchEvent {
 
     }
 
-    arity(): number {
+    getNumParameters(): number {
         return 2; // x and y?
     }
 }

@@ -23,11 +23,25 @@ import {ScratchEvent} from "../ScratchEvent";
 
 export class WaitEvent implements ScratchEvent {
 
+    static timeout: number = 3000;
+    static accelerationFactor: number = 1; // TODO where to get global values?
+
+    runStartTime: number
+
     apply(vm: VirtualMachine) {
+        this.runStartTime = Date.now();
+
         // Wait x milliseconds
+        while (this.getRunTimeElapsed() < WaitEvent.timeout) {
+            vm.runtime._step();
+        }
     }
 
-    arity(): number {
-        return 1; // duration? Probably stored in constructor, and not via codon
+    getRunTimeElapsed (): number {
+        return (Date.now() - this.runStartTime) * WaitEvent.accelerationFactor;
+    }
+
+    getNumParameters(): number {
+        return 0;
     }
 }

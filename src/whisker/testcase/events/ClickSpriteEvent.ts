@@ -34,7 +34,7 @@ export class ClickSpriteEvent implements ScratchEvent {
             null, this.target);
     }
 
-    arity(): number {
-        return 1;
+    getNumParameters(): number {
+        return 0;
     }
 }
