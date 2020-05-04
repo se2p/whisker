@@ -109,10 +109,7 @@ describe('MIOBuilder', () => {
 
         const resultBuilder = builder.addProperties(properties);
         expect(resultBuilder).toBe(builder);
-        expect(builder["_properties"].getPopulationSize()).toBe(populationSize);
-        expect(builder["_properties"].getChromosomeLength()).toBe(chromosomeLength);
-        expect(builder["_properties"].getCrossoverProbability()).toBe(crossoverProbability);
-        expect(builder["_properties"].getMutationProbablity()).toBe(mutationProbability);
+        expect(builder["_properties"]).toBe(properties);
     });
 
     test("Add stopping condition", () => {
@@ -132,36 +129,4 @@ describe('MIOBuilder', () => {
         }).toThrow();
     });
 
-    test("Add selection probabilities", () => {
-        const builder: MIOBuilder = new MIOBuilder();
-        const start = 0.7
-        const focusPhase = 0.1;
-
-        const resultBuilder = builder.addSelectionProbabilities(start, focusPhase);
-        expect(resultBuilder).toBe(builder);
-        expect(builder["_randomSelectionProbabilityStart"]).toBe(start);
-        expect(builder["_randomSelectionProbabilityFocusedPhase"]).toBe(focusPhase);
-    });
-
-    test("Add archive size", () => {
-        const builder: MIOBuilder = new MIOBuilder();
-        const start = 0.7
-        const focusPhase = 0.1;
-
-        const resultBuilder = builder.addArchiveSizes(start, focusPhase);
-        expect(resultBuilder).toBe(builder);
-        expect(builder["_maxArchiveSizeStart"]).toBe(start);
-        expect(builder["_maxArchiveSizeFocusedPhase"]).toBe(focusPhase);
-    });
-
-    test("Add mutation counter", () => {
-        const builder: MIOBuilder = new MIOBuilder();
-        const start = 0.7
-        const focusPhase = 0.1;
-
-        const resultBuilder = builder.addMutationCounter(start, focusPhase);
-        expect(resultBuilder).toBe(builder);
-        expect(builder["_maxMutationCountStart"]).toBe(start);
-        expect(builder["_maxMutationCountFocusedPhase"]).toBe(focusPhase);
-    });
 });

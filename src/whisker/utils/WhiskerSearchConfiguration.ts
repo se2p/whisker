@@ -29,16 +29,15 @@ export class WhiskerSearchConfiguration {
         const crossoverProbability = this.dict['crossover']['probability'] as number;
         const mutationProbability = this.dict['mutation']['probability'] as number;
 
-        // TODO: new: handle
-        const maxMutationCountStart = this.dict['mutation']['maxMutationCountStart'] as number;
-        const maxMutationCountFocusedPhase = this.dict['mutation']['maxMutationCountStart'] as number;
-        const randomSelectionProbabilityStart = this.dict['selection']['randomSelectionProbabilityStart'] as number;
-        const randomSelectionProbabilityFocusedPhase = this.dict['selection']['randomSelectionProbabilityFocusedPhase'] as number;
-        const maxArchiveSizeStart = this.dict['archive']['maxArchiveSizeStart'] as number;
-        const maxArchiveSizeFocusedPhase = this.dict['archive']['maxArchiveSizeFocusedPhase'] as number;
-        const startFocusedPhase = this.dict['startFocusedPhase'] as number;
-
         const properties = new SearchAlgorithmProperties(populationSize,chromosomeLength,mutationProbability,crossoverProbability);
+
+        properties.setMaxMutationCounter(this.dict['mutation']['maxMutationCountStart'] as number,
+            this.dict['mutation']['maxMutationCountStart'] as number);
+        properties.setSelectionProbabilities(this.dict['selection']['randomSelectionProbabilityStart'] as number,
+            this.dict['selection']['randomSelectionProbabilityFocusedPhase'] as number);
+        properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
+            this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
+        properties.setStartOfFocusedPhase(this.dict['startOfFocusedPhase'] as number);
 
         const stoppingCond =  this.dict['stopping-condition'];
         if (stoppingCond["type"] == "fixed-iteration") {

@@ -48,30 +48,26 @@ export class MIOBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
 
     private _stoppingCondition: StoppingCondition<BitstringChromosome>;
 
-    private _startFocusedPhase: number;
-    private _randomSelectionProbabilityStart: number;
-    private _randomSelectionProbabilityFocusedPhase: number;
-    private _maxArchiveSizeStart: number;
-    private _maxArchiveSizeFocusedPhase: number;
-    private _maxMutationCountStart: number;
-    private _maxMutationCountFocusedPhase: number;
-
     constructor() {
         const chromosomeLength = 10;
         const iterations = 1000;
         const populationSize = null;
         const crossoverProbability = null;
         const mutationProbability = null;
-
-        this._startFocusedPhase = 0.5;
-        this._randomSelectionProbabilityStart = 0.5;
-        this._randomSelectionProbabilityFocusedPhase = 0;
-        this._maxArchiveSizeStart = 10;
-        this._maxArchiveSizeFocusedPhase = 1;
-        this._maxMutationCountStart = 0;
-        this._maxMutationCountFocusedPhase = 10;
+        const startOfFocusedPhase = 0.5;
+        const randomSelectionProbabilityStart = 0.5;
+        const randomSelectionProbabilityFocusedPhase = 0;
+        const maxArchiveSizeStart = 10;
+        const maxArchiveSizeFocusedPhase = 1;
+        const maxMutationCountStart = 0;
+        const maxMutationCountFocusedPhase = 10;
 
         this._properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
+        this._properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
+        this._properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
+        this._properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
+        this._properties.setStartOfFocusedPhase(startOfFocusedPhase);
+
         this._chromosomeGenerator = new BitstringChromosomeGenerator(this._properties);
         this._stoppingCondition = new FixedIterationsStoppingCondition(iterations);
         this.initializeFitnessAndHeuristicFunction(chromosomeLength);
@@ -121,27 +117,6 @@ export class MIOBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
         throw new NotSupportedFunctionException();
     }
 
-    addSelectionProbabilities(randomSelectionProbabilityStart: number, randomSelectionProbabilityFocusedPhase: number):
-        SearchAlgorithmBuilder<BitstringChromosome> {
-        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
-        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
-        return this;
-    }
-
-    addArchiveSizes(maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number):
-        SearchAlgorithmBuilder<BitstringChromosome> {
-        this._maxArchiveSizeStart = maxArchiveSizeStart;
-        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
-        return this;
-    }
-
-    addMutationCounter(maxMutationCountStart: number, maxMutationCountFocusedPhase: number):
-        SearchAlgorithmBuilder<BitstringChromosome> {
-        this._maxMutationCountStart = maxMutationCountStart;
-        this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
-        return this;
-    }
-
     buildSearchAlgorithm(): SearchAlgorithm<BitstringChromosome> {
         const mio: MIO<BitstringChromosome> = new MIO();
         mio.setProperties(this._properties);
@@ -149,10 +124,6 @@ export class MIOBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
         mio.setStoppingCondition(this._stoppingCondition);
         mio.setFitnessFunctions(this._fitnessFunctions);
         mio.setHeuristicFunctions(this._heuristicFunctions);
-        mio.setSelectionProbabilities(this._randomSelectionProbabilityStart, this._randomSelectionProbabilityFocusedPhase);
-        mio.setArchiveSizes(this._maxArchiveSizeStart, this._maxArchiveSizeFocusedPhase);
-        mio.setMutationCounter(this._maxMutationCountStart, this._maxMutationCountFocusedPhase);
-        mio.setStartOfFocusedPhase(this._startFocusedPhase);
         return mio;
     }
 

@@ -68,12 +68,12 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * TODO
      */
-    private _randomSelectionProbabilityStart: number;
+    private _selectionProbabilityStart: number;
 
     /**
      * TODO
      */
-    private _randomSelectionProbabilityFocusedPhase: number;
+    private _selectionProbabilityFocusedPhase: number;
 
     /**
      * TODO
@@ -88,7 +88,7 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * TODO
      */
-    private _startFocusedPhase: number;
+    private _startOfFocusedPhase: number;
 
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
@@ -162,14 +162,14 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
      * TODO
      */
     getRandomSelectionProbabilityStart(): number {
-        return this._randomSelectionProbabilityStart;
+        return this._selectionProbabilityStart;
     }
 
     /**
      * TODO
      */
     getRandomSelectionProbabilityFocusedPhase(): number {
-        return this._randomSelectionProbabilityFocusedPhase;
+        return this._selectionProbabilityFocusedPhase;
     }
 
     /**
@@ -189,8 +189,8 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * TODO
      */
-    getStartFocusedPhase(): number {
-        return this._startFocusedPhase;
+    getStartOfFocusedPhase(): number {
+        return this._startOfFocusedPhase;
     }
 
     /**
@@ -228,14 +228,8 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * TODO
      */
-    setMaxMutationCountStart(maxMutationCountStart: number): void {
+    setMaxMutationCounter(maxMutationCountStart: number, maxMutationCountFocusedPhase: number): void {
         this._maxMutationCountStart = maxMutationCountStart;
-    }
-
-    /**
-     * TODO
-     */
-    setMaxMutationCountFocusedPhase(maxMutationCountFocusedPhase: number): void {
         this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
     }
 
@@ -250,36 +244,26 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * TODO
      */
-    setRandomSelectionProbabilityStart(randomSelectionProbabilityStart: number): void {
-        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
+    setSelectionProbabilities(selectionProbabilityStart: number, selectionProbabilityFocusedPhase: number): void {
+        this._selectionProbabilityStart = selectionProbabilityStart;
+        this._selectionProbabilityFocusedPhase = selectionProbabilityFocusedPhase;
     }
 
     /**
      * TODO
      */
-    setRandomSelectionProbabilityFocusedPhase(randomSelectionProbabilityFocusedPhase: number): void {
-        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
-    }
-
-    /**
-     * TODO
-     */
-    setMaxArchiveSizeStart(maxArchiveSizeStart: number): void {
+    setMaxArchiveSizes(maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number): void {
         this._maxArchiveSizeStart = maxArchiveSizeStart;
-    }
-
-    /**
-     * TODO
-     */
-    setMaxArchiveSizeFocusedPhase(maxArchiveSizeFocusedPhase: number): void {
         this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
     }
 
     /**
-     * TODO
+     * Sets the percentage of iterations.
+     * @param startOfFocusedPhase The percentage of iterations as decimal value after which the
+     *          focused search starts.
      */
-    setStartFocusedPhase(startFocusedPhase: number): void {
-        this._startFocusedPhase = startFocusedPhase;
+    setStartOfFocusedPhase(startOfFocusedPhase: number): void {
+        this._startOfFocusedPhase = startOfFocusedPhase;
     }
 
 }
