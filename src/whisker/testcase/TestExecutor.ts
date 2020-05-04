@@ -29,29 +29,33 @@ import {ScratchEvent} from "./ScratchEvent";
 export class TestExecutor {
 
     private _vm: VirtualMachine;
+    private availableEvents: List<ScratchEvent>;
 
     constructor(vm: VirtualMachine) {
         this._vm = vm;
     }
 
     execute(testChromosome: TestChromosome): ExecutionTrace {
+        this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
+        this._vm.greenFlag();
+
         let numCodon = 0;
         const codons = testChromosome.getGenes();
         console.log("Codons: " + codons);
         while(numCodon < codons.size()) {
-            const availableEvents = ScratchEventExtractor.extractEvents(this._vm);
 
-            if (availableEvents.isEmpty()) {
+            if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.")
                 continue;
             }
 
-            const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon) % availableEvents.size())
+            const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
 
             const args = this._getArgs(nextEvent, codons, numCodon);
             numCodon += nextEvent.arity();
 
             nextEvent.apply(this._vm, args);
+            this._vm.runtime._step();
             console.log("Applying " + nextEvent)
         }
 

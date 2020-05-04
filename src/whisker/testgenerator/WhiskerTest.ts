@@ -29,16 +29,23 @@ import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedEx
  */
 export class WhiskerTest {
 
+    private _chromosome: TestChromosome
+
+
     // TODO: Could also use a static factory to convert from TestChromosome?
     // eslint-disable-next-line no-unused-vars
-    constructor (test: TestChromosome) {
-        throw new NotYetImplementedException();
+    constructor(test: TestChromosome) {
+        this._chromosome = test;
+    }
+
+    get chromosome(): TestChromosome {
+        return this._chromosome;
     }
 
     /**
      * JavaScript code that can be executed with the regular Whisker UI
      */
-    toJavaScriptCode (): string {
+    toJavaScriptCode(): string {
         throw new NotYetImplementedException();
     }
 }
