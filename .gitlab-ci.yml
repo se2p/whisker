@@ -23,6 +23,6 @@ testing_testing:
   script:
     - npm install -D typescript
     - npm install
-    - npm run build-ts
+    - npm run build-ts-config
     - npm test --coverage
     - mkdir -p output/static

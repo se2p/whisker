@@ -18,6 +18,7 @@
         "watch-test": "npm run test -- --watchAll",
         "test:coverage": "npm test -- --coverage",
         "build-ts": "tsc --incremental",
+        "build-ts-config": "tsc --project tsconfig.json",
         "watch-ts": "tsc -w",
         "docs": "jsdoc -c .jsdoc.json",
         "lint": "eslint . && format-message lint src/**/*.{ts,js}",
