@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {SearchAlgorithm} from '../SearchAlgorithm';
 import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
@@ -27,8 +26,9 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {Selection} from "../Selection";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 
-export class OnePlusOneEA<C extends Chromosome> implements SearchAlgorithm<C> {
+export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     _chromosomeGenerator: ChromosomeGenerator<C>;
 
@@ -42,15 +42,15 @@ export class OnePlusOneEA<C extends Chromosome> implements SearchAlgorithm<C> {
 
     _bestIndividuals = new List<C>();
 
-    setChromosomeGenerator(generator : ChromosomeGenerator<C>) {
+    setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
     }
 
-    setFitnessFunction(fitnessFunction : FitnessFunction<C>) {
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>) {
         this._fitnessFunction = fitnessFunction;
     }
 
-    setStoppingCondition(stoppingCondition : StoppingCondition<C>) {
+    setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
         this._stoppingCondition = stoppingCondition;
     }
 

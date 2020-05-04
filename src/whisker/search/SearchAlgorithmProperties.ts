@@ -18,7 +18,7 @@
  *
  */
 
-import { StoppingCondition } from "./StoppingCondition";
+import {StoppingCondition} from "./StoppingCondition";
 import {Chromosome} from "./Chromosome";
 
 /**
@@ -51,9 +51,44 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     private _mutationProbablity: number;
 
     /**
+     * TODO
+     */
+    private _maxMutationCountStart: number;
+
+    /**
+     * TODO
+     */
+    private _maxMutationCountFocusedPhase: number;
+
+    /**
      * The stopping condition for the corresponding search algorithm.
      */
     private _stoppingCondition: StoppingCondition<C>;
+
+    /**
+     * TODO
+     */
+    private _randomSelectionProbabilityStart: number;
+
+    /**
+     * TODO
+     */
+    private _randomSelectionProbabilityFocusedPhase: number;
+
+    /**
+     * TODO
+     */
+    private _maxArchiveSizeStart: number;
+
+    /**
+     * TODO
+     */
+    private _maxArchiveSizeFocusedPhase: number;
+
+    /**
+     * TODO
+     */
+    private _startFocusedPhase: number;
 
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
@@ -102,11 +137,60 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     }
 
     /**
+     * TODO
+     */
+    getMaxMutationCountStart(): number {
+        return this._maxMutationCountStart;
+    }
+
+    /**
+     * TODO
+     */
+    getMaxMutationCountFocusedPhase(): number {
+        return this._maxMutationCountFocusedPhase;
+    }
+
+    /**
      * Returns the stopping condition that is specified for the search algorithm.
      * @returns the specified stopping condition
      */
     getStoppingCondition(): StoppingCondition<C> {
         return this._stoppingCondition;
+    }
+
+    /**
+     * TODO
+     */
+    getRandomSelectionProbabilityStart(): number {
+        return this._randomSelectionProbabilityStart;
+    }
+
+    /**
+     * TODO
+     */
+    getRandomSelectionProbabilityFocusedPhase(): number {
+        return this._randomSelectionProbabilityFocusedPhase;
+    }
+
+    /**
+     * TODO
+     */
+    getMaxArchiveSizeStart(): number {
+        return this._maxArchiveSizeStart;
+    }
+
+    /**
+     * TODO
+     */
+    getMaxArchiveSizeFocusedPhase(): number {
+        return this._maxArchiveSizeFocusedPhase;
+    }
+
+    /**
+     * TODO
+     */
+    getStartFocusedPhase(): number {
+        return this._startFocusedPhase;
     }
 
     /**
@@ -142,11 +226,60 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     }
 
     /**
+     * TODO
+     */
+    setMaxMutationCountStart(maxMutationCountStart: number): void {
+        this._maxMutationCountStart = maxMutationCountStart;
+    }
+
+    /**
+     * TODO
+     */
+    setMaxMutationCountFocusedPhase(maxMutationCountFocusedPhase: number): void {
+        this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
+    }
+
+    /**
      * Sets the stopping condition to the given condition.
      * @param stoppingCondition the stopping condition
      */
     setStoppingCondition(stoppingCondition: StoppingCondition<C>): void {
         this._stoppingCondition = stoppingCondition;
+    }
+
+    /**
+     * TODO
+     */
+    setRandomSelectionProbabilityStart(randomSelectionProbabilityStart: number): void {
+        this._randomSelectionProbabilityStart = randomSelectionProbabilityStart;
+    }
+
+    /**
+     * TODO
+     */
+    setRandomSelectionProbabilityFocusedPhase(randomSelectionProbabilityFocusedPhase: number): void {
+        this._randomSelectionProbabilityFocusedPhase = randomSelectionProbabilityFocusedPhase;
+    }
+
+    /**
+     * TODO
+     */
+    setMaxArchiveSizeStart(maxArchiveSizeStart: number): void {
+        this._maxArchiveSizeStart = maxArchiveSizeStart;
+    }
+
+    /**
+     * TODO
+     */
+    setMaxArchiveSizeFocusedPhase(maxArchiveSizeFocusedPhase: number): void {
+        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
+    }
+
+    /**
+     * TODO
+     */
+    setStartFocusedPhase(startFocusedPhase: number): void {
+        this._startFocusedPhase = startFocusedPhase;
     }
 
 }
