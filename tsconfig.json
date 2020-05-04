@@ -10,7 +10,7 @@
         "noUnusedLocals": false,                /* Report errors on unused locals. */
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
-        "esModuleInterop": true                     /* Do not emit outputs. */
+        "esModuleInterop": true
     },
 
     "types": ["node", "jest"],                           /* Type declaration files to be included in compilation. */
