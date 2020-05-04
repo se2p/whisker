@@ -1,5 +1,5 @@
 const defaults = require('lodash.defaults');
-const random = require('../util/random');
+// const random = require('../../dist/src/whisker/utils/Randomness').Randomness; // TODO: If necessary import
 
 class TestDriver {
     /**
@@ -65,8 +65,9 @@ class TestDriver {
         this.getStageSize = vmWrapper.getStageSize.bind(vmWrapper);
         this.end = vmWrapper.end.bind(vmWrapper);
 
-        this.seedWhisker = random.seedWhisker;
-        this.seedScratch = random.seedScratch;
+        // TODO: Following two methods were implemented in "../util/random.js"
+        // this.seedWhisker = random.seedWhisker; // TODO: 'seedWhisker' not implemented in in "../whisker/utils/Randomness.ts"
+        // this.seedScratch = random.seedScratch; // TODO: 'seedScratch' like above
 
         this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
         this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;
