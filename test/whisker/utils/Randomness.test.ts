@@ -39,6 +39,27 @@ describe("Randomness", () => {
         expect(num).toBeLessThanOrEqual(1.0);
     });
 
+    test("Create a float from a range", () => {
+        const random = Randomness.getInstance();
+        const min = 2.3;
+        const max = 10.1;
+        const num = random.nextDoubleMinMax(min, max);
+
+        expect(num).toBeGreaterThanOrEqual(min);
+        expect(num).toBeLessThanOrEqual(max);
+    });
+
+    test("Create a random boolean", () => {
+        const random = Randomness.getInstance();
+        const bool = random.randomBoolean();
+
+        if (bool) {
+            expect(bool).toBeTruthy();
+        } else {
+            expect(bool).toBeFalsy();
+        }
+    });
+
     test("Pick a random element from a collection", () => {
         const random = Randomness.getInstance();
         const list: number[] = [1, 2, 3];
@@ -47,4 +68,3 @@ describe("Randomness", () => {
         expect(list).toContain(num);
     });
 });
-

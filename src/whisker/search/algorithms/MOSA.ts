@@ -26,7 +26,6 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {PopulationFactory} from '../PopulationFactory';
-import {RankSelection} from '../operators/RankSelection';
 import {Randomness} from "../../utils/Randomness";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 import {Selection} from "../Selection";
