@@ -90,8 +90,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * Extracts the probability for sampling a random chromosome out of the set properties.
      */
     private extractRandomSelectionProbabilities() {
-        this._randomSelectionProbabilityStart = this._properties.getRandomSelectionProbabilityStart();
-        this._randomSelectionProbabilityFocusedPhase = this._properties.getRandomSelectionProbabilityFocusedPhase();
+        this._randomSelectionProbabilityStart = this._properties.getSelectionProbabilityStart();
+        this._randomSelectionProbabilityFocusedPhase = this._properties.getSelectionProbabilityFocusedPhase();
     }
 
     /**
