@@ -89,16 +89,6 @@ describe('OnePlusOneEABuilder', () => {
         expect(builder["_properties"].getMutationProbablity()).toBe(mutationProbability);
     });
 
-    test("Add stopping condition", () => {
-        const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
-        const maxIterations = 50;
-        const stoppingCondition: StoppingCondition<BitstringChromosome> = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
-
-        builder.addStoppingCondition(stoppingCondition);
-
-        expect(builder["_stoppingCondition"]).toBe(stoppingCondition);
-    });
-
     test("Add selection operator", () => {
         const builder: OnePlusOneEABuilder = new OnePlusOneEABuilder();
 

@@ -75,6 +75,7 @@ describe('MOSA', () => {
         const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        properties.setStoppingCondition(stoppingCondition);
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
@@ -84,12 +85,10 @@ describe('MOSA', () => {
         const searchAlgorithm = new MOSA();
         searchAlgorithm.setProperties(properties);
         expect(searchAlgorithm["_properties"]).toBe(properties);
+        expect(searchAlgorithm["_stoppingCondition"]).toBe(stoppingCondition);
 
         searchAlgorithm.setChromosomeGenerator(chromosomeGenerator);
         expect(searchAlgorithm["_chromosomeGenerator"]).toBe(chromosomeGenerator);
-
-        searchAlgorithm.setStoppingCondition(stoppingCondition);
-        expect(searchAlgorithm["_stoppingCondition"]).toBe(stoppingCondition);
 
         searchAlgorithm.setFitnessFunctions(fitnessFunctions);
         expect(searchAlgorithm["_fitnessFunctions"]).toBe(fitnessFunctions);

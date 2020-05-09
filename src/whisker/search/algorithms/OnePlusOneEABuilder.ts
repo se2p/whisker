@@ -74,13 +74,13 @@ export class OnePlusOneEABuilder implements SearchAlgorithmBuilder<BitstringChro
         return this;
     }
 
-    addProperties(properties: SearchAlgorithmProperties<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
-        this._properties = properties;
-        return this;
+    addFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<BitstringChromosome>>):
+        SearchAlgorithmBuilder<BitstringChromosome> {
+        throw new NotSupportedFunctionException();
     }
 
-    addStoppingCondition(stoppingCondition: StoppingCondition<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
-        this._stoppingCondition = stoppingCondition;
+    addProperties(properties: SearchAlgorithmProperties<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
+        this._properties = properties;
         return this;
     }
 
@@ -92,7 +92,6 @@ export class OnePlusOneEABuilder implements SearchAlgorithmBuilder<BitstringChro
         const onePlusOneEA: OnePlusOneEA<BitstringChromosome> = new OnePlusOneEA();
         onePlusOneEA.setProperties(this._properties);
         onePlusOneEA.setChromosomeGenerator(this._chromosomeGenerator);
-        onePlusOneEA.setStoppingCondition(this._stoppingCondition);
         onePlusOneEA.setFitnessFunction(this._fitnessFunction);
         return onePlusOneEA;
     }

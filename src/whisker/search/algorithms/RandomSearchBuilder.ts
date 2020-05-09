@@ -46,8 +46,6 @@ export class RandomSearchBuilder implements SearchAlgorithmBuilder<BitstringChro
 
     private _properties: SearchAlgorithmProperties<BitstringChromosome>;
 
-    private _stoppingCondition: StoppingCondition<BitstringChromosome>;
-
     constructor() {
         const populationSize = 50;
         const chromosomeLength = 10;
@@ -56,12 +54,12 @@ export class RandomSearchBuilder implements SearchAlgorithmBuilder<BitstringChro
         const maxIterations = 100;
 
         this._properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
-        this._chromosomeGenerator = new BitstringChromosomeGenerator(this._properties);
-        this._fitnessFunction = new OneMaxFitnessFunction(chromosomeLength);
-        this._stoppingCondition = new OneOfStoppingCondition(
+        this._properties.setStoppingCondition(new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(maxIterations),
             new OptimalSolutionStoppingCondition(this._fitnessFunction)
-        );
+        ));
+        this._chromosomeGenerator = new BitstringChromosomeGenerator(this._properties);
+        this._fitnessFunction = new OneMaxFitnessFunction(chromosomeLength);
     }
 
     addChromosomeGenerator(generator: BitstringChromosomeGenerator): SearchAlgorithmBuilder<BitstringChromosome> {
@@ -74,13 +72,13 @@ export class RandomSearchBuilder implements SearchAlgorithmBuilder<BitstringChro
         return this;
     }
 
-    addProperties(properties: SearchAlgorithmProperties<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
-        this._properties = properties;
-        return this;
+    addFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<BitstringChromosome>>):
+        SearchAlgorithmBuilder<BitstringChromosome> {
+        throw new NotSupportedFunctionException();
     }
 
-    addStoppingCondition(stoppingCondition: StoppingCondition<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
-        this._stoppingCondition = stoppingCondition;
+    addProperties(properties: SearchAlgorithmProperties<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
+        this._properties = properties;
         return this;
     }
 
@@ -92,7 +90,6 @@ export class RandomSearchBuilder implements SearchAlgorithmBuilder<BitstringChro
         const randomSearch: RandomSearch<BitstringChromosome> = new RandomSearch();
         randomSearch.setProperties(this._properties);
         randomSearch.setChromosomeGenerator(this._chromosomeGenerator);
-        randomSearch.setStoppingCondition(this._stoppingCondition);
         randomSearch.setFitnessFunction(this._fitnessFunction);
         return randomSearch;
     }

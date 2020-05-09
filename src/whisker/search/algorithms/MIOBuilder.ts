@@ -46,8 +46,6 @@ export class MIOBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
 
     private _properties: SearchAlgorithmProperties<BitstringChromosome>;
 
-    private _stoppingCondition: StoppingCondition<BitstringChromosome>;
-
     constructor() {
         const chromosomeLength = 10;
         const iterations = 1000;
@@ -61,15 +59,17 @@ export class MIOBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
         const maxArchiveSizeFocusedPhase = 1;
         const maxMutationCountStart = 0;
         const maxMutationCountFocusedPhase = 10;
+        const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
 
         this._properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
         this._properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
         this._properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
         this._properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
         this._properties.setStartOfFocusedPhase(startOfFocusedPhase);
+        this._properties.setStoppingCondition(stoppingCondition);
 
         this._chromosomeGenerator = new BitstringChromosomeGenerator(this._properties);
-        this._stoppingCondition = new FixedIterationsStoppingCondition(iterations);
+
         this.initializeFitnessAndHeuristicFunction(chromosomeLength);
     }
 
@@ -107,12 +107,6 @@ export class MIOBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
         return this;
     }
 
-    addStoppingCondition(stoppingCondition: StoppingCondition<BitstringChromosome>):
-        SearchAlgorithmBuilder<BitstringChromosome> {
-        this._stoppingCondition = stoppingCondition;
-        return this;
-    }
-
     addSelectionOperator(selectionOp: Selection<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
         throw new NotSupportedFunctionException();
     }
@@ -121,7 +115,6 @@ export class MIOBuilder implements SearchAlgorithmBuilder<BitstringChromosome> {
         const mio: MIO<BitstringChromosome> = new MIO();
         mio.setProperties(this._properties);
         mio.setChromosomeGenerator(this._chromosomeGenerator);
-        mio.setStoppingCondition(this._stoppingCondition);
         mio.setFitnessFunctions(this._fitnessFunctions);
         mio.setHeuristicFunctions(this._heuristicFunctions);
         return mio;

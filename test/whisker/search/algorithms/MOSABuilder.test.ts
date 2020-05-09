@@ -102,16 +102,6 @@ describe('MOSABuilder', () => {
         expect(builder["_properties"].getMutationProbablity()).toBe(mutationProbability);
     });
 
-    test("Add stopping condition", () => {
-        const builder: MOSABuilder = new MOSABuilder();
-        const maxIterations = 50;
-        const stoppingCondition: StoppingCondition<BitstringChromosome> = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
-
-        const resultBuilder = builder.addStoppingCondition(stoppingCondition);
-        expect(resultBuilder).toBe(builder);
-        expect(builder["_stoppingCondition"]).toBe(stoppingCondition);
-    });
-
     test("Add selection operator", () => {
         const builder: MOSABuilder = new MOSABuilder();
         const selectionOp: Selection<BitstringChromosome> = new RankSelection<BitstringChromosome>();

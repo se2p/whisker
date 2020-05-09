@@ -112,16 +112,6 @@ describe('MIOBuilder', () => {
         expect(builder["_properties"]).toBe(properties);
     });
 
-    test("Add stopping condition", () => {
-        const builder: MIOBuilder = new MIOBuilder();
-        const maxIterations = 50;
-        const stoppingCondition: StoppingCondition<BitstringChromosome> = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
-
-        const resultBuilder = builder.addStoppingCondition(stoppingCondition);
-        expect(resultBuilder).toBe(builder);
-        expect(builder["_stoppingCondition"]).toBe(stoppingCondition);
-    });
-
     test("Add selection operator", () => {
         const builder: MIOBuilder = new MIOBuilder();
         expect(function() {

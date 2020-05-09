@@ -25,9 +25,6 @@ import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAl
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
-import {StoppingCondition} from "../../../../src/whisker/search/StoppingCondition";
-import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
-import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {RandomSearchBuilder} from "../../../../src/whisker/search/algorithms/RandomSearchBuilder";
 
 describe('RandomSearchBuilder', () => {
@@ -88,16 +85,6 @@ describe('RandomSearchBuilder', () => {
         expect(builder["_properties"].getChromosomeLength()).toBe(chromosomeLength);
         expect(builder["_properties"].getCrossoverProbability()).toBe(crossoverProbability);
         expect(builder["_properties"].getMutationProbablity()).toBe(mutationProbability);
-    });
-
-    test("Add stopping condition", () => {
-        const builder: RandomSearchBuilder = new RandomSearchBuilder();
-        const maxIterations = 50;
-        const stoppingCondition: StoppingCondition<BitstringChromosome> = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
-
-        builder.addStoppingCondition(stoppingCondition);
-
-        expect(builder["_stoppingCondition"]).toBe(stoppingCondition);
     });
 
     test("Add selection operator", () => {

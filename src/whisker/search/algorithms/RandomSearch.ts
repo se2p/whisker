@@ -50,16 +50,9 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         this._fitnessFunction = fitnessFunction;
     }
 
-    setStoppingCondition(stoppingCondition : StoppingCondition<C>) {
-        this._stoppingCondition = stoppingCondition;
-    }
-
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
-    }
-
-    setSelectionOperator(selectionOperator: Selection<C>) {
-        throw new NotSupportedFunctionException();
+        this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
     /**

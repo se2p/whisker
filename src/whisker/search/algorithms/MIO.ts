@@ -81,6 +81,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
+        this._stoppingCondition = this._properties.getStoppingCondition();
         this.extractRandomSelectionProbabilities();
         this.extractArchiveSizes();
         this.extractMutationCounter();
@@ -108,10 +109,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private extractMutationCounter() {
         this._maxMutationCountStart = this._properties.getMaxMutationCountStart();
         this._maxMutationCountFocusedPhase = this._properties.getMaxMutationCountFocusedPhase();
-    }
-
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
-        this._stoppingCondition = stoppingCondition;
     }
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {

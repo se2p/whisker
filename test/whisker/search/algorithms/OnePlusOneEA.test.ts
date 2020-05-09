@@ -34,15 +34,15 @@ describe('OnePlusOneEa', () => {
         const n = 10;
         const properties = new SearchAlgorithmProperties(1, n, 0, 0);
         const fitnessFunction = new OneMaxFitnessFunction(n);
+        properties.setStoppingCondition(new OneOfStoppingCondition(
+            new FixedIterationsStoppingCondition(1000),
+            new OptimalSolutionStoppingCondition(fitnessFunction)));
 
         const builder = new OnePlusOneEABuilder()
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties))
-            .addFitnessFunction(fitnessFunction)
-            .addStoppingCondition(
-                new OneOfStoppingCondition(
-                    new FixedIterationsStoppingCondition(1000),
-                    new OptimalSolutionStoppingCondition(fitnessFunction)));
+            .addFitnessFunction(fitnessFunction);
+
 
         const search = builder.buildSearchAlgorithm();
         const solutions = search.findSolution();
@@ -60,16 +60,15 @@ describe('OnePlusOneEa', () => {
             new FixedIterationsStoppingCondition(1000), // Plenty time...
             new OptimalSolutionStoppingCondition(fitnessFunction)
         );
+        properties.setStoppingCondition(stoppingCondition);
         const search = new OnePlusOneEA();
 
         search.setProperties(properties);
         expect(search["_properties"]).toBe(properties);
+        expect(search["_stoppingCondition"]).toBe(stoppingCondition);
 
         search.setChromosomeGenerator(chromosomeGenerator);
         expect(search["_chromosomeGenerator"]).toBe(chromosomeGenerator);
-
-        search.setStoppingCondition(stoppingCondition);
-        expect(search["_stoppingCondition"]).toBe(stoppingCondition);
 
         search.setFitnessFunction(fitnessFunction);
         expect(search["_fitnessFunction"]).toBe(fitnessFunction);

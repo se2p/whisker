@@ -46,8 +46,6 @@ export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> 
 
     private _properties: SearchAlgorithmProperties<BitstringChromosome>;
 
-    private _stoppingCondition: StoppingCondition<BitstringChromosome>;
-
     private _selectionOperator: Selection<BitstringChromosome>;
 
     constructor() {
@@ -58,8 +56,8 @@ export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> 
         const maxIterations = 100;
 
         this._properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
+        this._properties.setStoppingCondition(new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations)));
         this._chromosomeGenerator = new BitstringChromosomeGenerator(this._properties);
-        this._stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
         this._selectionOperator = new RankSelection();
         this.initializeFitnessFunction(chromosomeLength);
     }
@@ -90,11 +88,6 @@ export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> 
         return this;
     }
 
-    addStoppingCondition(stoppingCondition: StoppingCondition<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
-        this._stoppingCondition = stoppingCondition;
-        return this;
-    }
-
     addSelectionOperator(selectionOp: Selection<BitstringChromosome>): SearchAlgorithmBuilder<BitstringChromosome> {
         this._selectionOperator = selectionOp;
         return this;
@@ -104,7 +97,6 @@ export class MOSABuilder implements SearchAlgorithmBuilder<BitstringChromosome> 
         const mosa: MOSA<BitstringChromosome> = new MOSA();
         mosa.setProperties(this._properties);
         mosa.setChromosomeGenerator(this._chromosomeGenerator);
-        mosa.setStoppingCondition(this._stoppingCondition);
         mosa.setFitnessFunctions(this._fitnessFunctions);
         mosa.setSelectionOperator(this._selectionOperator);
         return mosa;

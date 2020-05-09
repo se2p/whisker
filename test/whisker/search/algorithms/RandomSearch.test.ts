@@ -34,15 +34,14 @@ describe('RandomSearch', () => {
         const n = 2;
         const properties = new SearchAlgorithmProperties(1, n, 0, 0);
         const fitnessFunction = new OneMaxFitnessFunction(n);
+        properties.setStoppingCondition(new OneOfStoppingCondition(
+            new FixedIterationsStoppingCondition(1000),
+            new OptimalSolutionStoppingCondition(fitnessFunction)));
 
         const builder = new RandomSearchBuilder()
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties))
-            .addFitnessFunction(fitnessFunction)
-            .addStoppingCondition(
-                new OneOfStoppingCondition(
-                    new FixedIterationsStoppingCondition(1000),
-                    new OptimalSolutionStoppingCondition(fitnessFunction)));
+            .addFitnessFunction(fitnessFunction);
 
         const randomSearch = builder.buildSearchAlgorithm();
         const solutions = randomSearch.findSolution();
@@ -62,14 +61,13 @@ describe('RandomSearch', () => {
         );
         const randomSearch = new RandomSearch();
 
+        properties.setStoppingCondition(stoppingCondition);
         randomSearch.setProperties(properties);
         expect(randomSearch["_properties"]).toBe(properties);
+        expect(randomSearch["_stoppingCondition"]).toBe(stoppingCondition);
 
         randomSearch.setChromosomeGenerator(chromosomeGenerator);
         expect(randomSearch["_chromosomeGenerator"]).toBe(chromosomeGenerator);
-
-        randomSearch.setStoppingCondition(stoppingCondition);
-        expect(randomSearch["_stoppingCondition"]).toBe(stoppingCondition);
 
         randomSearch.setFitnessFunction(fitnessFunction);
         expect(randomSearch["_fitnessFunction"]).toBe(fitnessFunction);

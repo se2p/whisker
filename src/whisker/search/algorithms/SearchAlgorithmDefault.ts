@@ -18,11 +18,10 @@
  *
  */
 
-import { List } from "../../utils/List";
-import { Chromosome } from "./../Chromosome";
-import { SearchAlgorithmProperties } from "./../SearchAlgorithmProperties";
-import { ChromosomeGenerator } from "./../ChromosomeGenerator";
-import {StoppingCondition} from "./../StoppingCondition";
+import {List} from "../../utils/List";
+import {Chromosome} from "./../Chromosome";
+import {SearchAlgorithmProperties} from "./../SearchAlgorithmProperties";
+import {ChromosomeGenerator} from "./../ChromosomeGenerator";
 import {FitnessFunction} from "./../FitnessFunction";
 import {Selection} from "./../Selection";
 import {SearchAlgorithm} from "../SearchAlgorithm";
@@ -45,10 +44,6 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     }
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
-        throw new NotSupportedFunctionException();
-    }
-
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>): void {
         throw new NotSupportedFunctionException();
     }
 

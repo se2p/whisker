@@ -55,12 +55,6 @@ export interface SearchAlgorithm<C extends Chromosome> {
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void;
 
     /**
-     * Sets the stopping condition for the search algorithm.
-     * @param stoppingCondition the stopping contiditon for the search algorithm
-     */
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>): void;
-
-    /**
      * Sets the fitness function used by the search algorithm.
      * @param fitnessFunction fitness function for chromosome evaluation
      */

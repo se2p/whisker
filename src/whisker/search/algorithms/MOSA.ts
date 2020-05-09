@@ -60,14 +60,11 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
+        this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
         this._fitnessFunctions = fitnessFunctions;
-    }
-
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
-        this._stoppingCondition = stoppingCondition;
     }
 
     setSelectionOperator(selectionOperator: Selection<C>) {

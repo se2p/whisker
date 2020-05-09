@@ -25,6 +25,7 @@ import {StoppingCondition} from "./StoppingCondition";
 import {SearchAlgorithm} from "./SearchAlgorithm";
 import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
 import {Selection} from "./Selection";
+import {BitstringChromosome} from "../bitstring/BitstringChromosome";
 
 /**
  * Interface for a builder to set necessary properties of a search algorithm.
@@ -55,11 +56,11 @@ export interface SearchAlgorithmBuilder<C extends Chromosome>{
     addFitnessFunction(fitnessFunction: FitnessFunction<C>): SearchAlgorithmBuilder<C>;
 
     /**
-     * Adds the stopping condition used by the search algorithm.
-     * @param stoppingCondition the stopping condition to use
-     * @returns the search builder with the applied stopping condition
+     * Adds a map of the fitness functions per chromosome.
+     * @param fitnessFunctions map of fitness functions
+     * @returns the search builder with the applied fitness functions
      */
-    addStoppingCondition(stoppingCondition: StoppingCondition<C>): SearchAlgorithmBuilder<C>;
+    addFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): SearchAlgorithmBuilder<C>;
 
     /**
      * Adds the properties needed by the search algorithm.

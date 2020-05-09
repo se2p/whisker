@@ -80,9 +80,10 @@ describe('MIO', () => {
         properties.setSelectionProbabilities(start, focusedPhase);
         properties.setMaxArchiveSizes(start, focusedPhase);
         properties.setMaxMutationCounter(start, focusedPhase);
+        const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
+        properties.setStoppingCondition(stoppingCondition);
 
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
-        const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         const heuristicFunctions = new Map<number, Function>();
         for (let i = 0; i < chromosomeLength; i++) {
@@ -99,12 +100,10 @@ describe('MIO', () => {
         expect(searchAlgo["_maxArchiveSizeFocusedPhase"]).toBe(focusedPhase);
         expect(searchAlgo["_maxMutationCountStart"]).toBe(start);
         expect(searchAlgo["_maxMutationCountFocusedPhase"]).toBe(focusedPhase);
+        expect(searchAlgo["_stoppingCondition"]).toBe(stoppingCondition);
 
         searchAlgo.setChromosomeGenerator(chromosomeGenerator);
         expect(searchAlgo["_chromosomeGenerator"]).toBe(chromosomeGenerator);
-
-        searchAlgo.setStoppingCondition(stoppingCondition);
-        expect(searchAlgo["_stoppingCondition"]).toBe(stoppingCondition);
 
         searchAlgo.setFitnessFunctions(fitnessFunctions);
         expect(searchAlgo["_fitnessFunctions"]).toBe(fitnessFunctions);
