@@ -29,7 +29,7 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {FitnessFunctionType, SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 
 describe('MIO', () => {
 
@@ -37,7 +37,32 @@ describe('MIO', () => {
     const iterations = 1000;
 
     beforeEach(() => {
-        searchAlgorithm = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MIO);
+        const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MIO);
+
+        const chromosomeLength = 10;
+        const populationSize = null;
+
+        const startFocusedPhase = 0.5;
+        const randomSelectionProbabilityStart = 0.5;
+        const randomSelectionProbabilityFocusedPhase = 0;
+        const maxArchiveSizeStart = 10;
+        const maxArchiveSizeFocusedPhase = 1;
+        const maxMutationCountStart = 0;
+        const maxMutationCountFocusedPhase = 10;
+
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
+        properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
+        properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
+        properties.setStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        properties.setStartOfFocusedPhase(startFocusedPhase);
+
+        searchAlgorithm = builder
+            .addProperties(properties)
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
+                new BitflipMutation(), new SinglePointCrossover()))
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength)
+            .buildSearchAlgorithm();
     });
 
     test('Find optimal solution', () => {

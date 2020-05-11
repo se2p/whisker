@@ -38,155 +38,22 @@ describe('BuillderBitstringChromosome', () => {
 
     test('Build MOSA', () => {
         const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MOSA);
-
-        const populationSize = 50;
-        const chromosomeLength = 10;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
-        const maxIterations = 100;
-
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
-        properties.setMutationProbablity(mutationProbability);
-        properties.setCrossoverProbability(crossoverProbability);
-        properties.setStoppingCondition(new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations)));
-
-        builder
-            .addProperties(properties)
-            .addChromosomeGenerator(new BitstringChromosomeGenerator(this._properties,
-                new BitflipMutation(), new SinglePointCrossover()))
-            .addSelectionOperator(new RankSelection())
-            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength);
-
-        const searchAlgorithm = builder.buildSearchAlgorithm();
-
-        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
-        expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
-
-        const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
-        for (const fitnessFunction of fitnessFunctions.values()) {
-            let optimal = false;
-            for (const solution of solutions) {
-                if (fitnessFunction.isOptimal(fitnessFunction.getFitness(solution))) {
-                    optimal = true;
-                    break;
-                }
-            }
-            expect(optimal).toBeTruthy();
-        }
+        expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build MIO', () => {
         const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MIO);
-
-        const chromosomeLength = 10;
-        const iterations = 1000;
-        const populationSize = null;
-
-        const startFocusedPhase = 0.5;
-        const randomSelectionProbabilityStart = 0.5;
-        const randomSelectionProbabilityFocusedPhase = 0;
-        const maxArchiveSizeStart = 10;
-        const maxArchiveSizeFocusedPhase = 1;
-        const maxMutationCountStart = 0;
-        const maxMutationCountFocusedPhase = 10;
-
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
-        properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
-        properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
-        properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
-        properties.setStoppingCondition(new FixedIterationsStoppingCondition(iterations));
-        properties.setStartOfFocusedPhase(startFocusedPhase);
-
-        builder
-            .addChromosomeGenerator(new BitstringChromosomeGenerator(this._properties,
-                new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength);
-
-        const searchAlgorithm = builder.buildSearchAlgorithm();
-
-        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
-        expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
-
-        const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
-        for (const fitnessFunction of fitnessFunctions.values()) {
-            let optimal = false;
-            for (const solution of solutions) {
-                if (fitnessFunction.isOptimal(fitnessFunction.getFitness(solution))) {
-                    optimal = true;
-                    break;
-                }
-            }
-            expect(optimal).toBeTruthy();
-        }
+        expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build Random', () => {
         const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.RANDOM);
-
-        const populationSize = 1;
-        const chromosomeLength = 2;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
-        const maxIterations = 100;
-        const fitnessFunction = new OneMaxFitnessFunction(chromosomeLength);
-
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
-        properties.setCrossoverProbability(crossoverProbability);
-        properties.setMutationProbablity(mutationProbability);
-        properties.setStoppingCondition(new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(maxIterations),
-            new OptimalSolutionStoppingCondition(fitnessFunction)
-        ));
-
-        builder
-            .addChromosomeGenerator(new BitstringChromosomeGenerator(this._properties,
-                new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, chromosomeLength);
-
-        const randomSearch = builder.buildSearchAlgorithm();
-        const solutions = randomSearch.findSolution();
-        const firstSolution = solutions.get(0);
-
-        expect(firstSolution.getFitness(fitnessFunction)).toBe(chromosomeLength);
+        expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build OnePlusOne', () => {
         const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.ONE_PLUS_ONE);
-
-        const populationSize = 1;
-        const chromosomeLength = 10;
-        const maxIterations = 100;
-
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
-        const fitnessFunction = new OneMaxFitnessFunction(chromosomeLength);
-        properties.setStoppingCondition(new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(maxIterations),
-            new OptimalSolutionStoppingCondition(fitnessFunction)));
-
-        builder
-            .addProperties(properties)
-            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, chromosomeLength);
-
-        const search = builder.buildSearchAlgorithm();
-        const solutions = search.findSolution();
-        const firstSolution = solutions.get(0);
-
-        expect(firstSolution.getFitness(fitnessFunction)).toBe(chromosomeLength);
-    });
-
-    test('Getter', () => {
-        let searchAlgorithm = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MOSA).buildSearchAlgorithm();
-        const maxIterations = 100;
-
-        expect(searchAlgorithm.getCurrentSolution()).toEqual(new List<BitstringChromosome>());
-        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
-        expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
-
-        searchAlgorithm = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MOSA).buildSearchAlgorithm();
-        expect(searchAlgorithm.getNumberOfIterations()).toEqual(0);
-        searchAlgorithm.findSolution();
-        expect(searchAlgorithm.getNumberOfIterations()).toBe(maxIterations);
+        expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Setter', () => {
@@ -215,6 +82,14 @@ describe('BuillderBitstringChromosome', () => {
         expect(builder["_chromosomeGenerator"]).toBe(chromosomeGenerator);
 
         builder.initializeFitnessFunction(FitnessFunctionType.ONE_MAX, chromosomeLength);
+        expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
+        expect(builder["_fitnessFunction"]).not.toBeNull();
+
+        builder.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength);
+        expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
+        expect(builder["_fitnessFunction"]).not.toBeNull();
+
+        builder.initializeFitnessFunction(FitnessFunctionType.STATEMENT, chromosomeLength);
         expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
         expect(builder["_fitnessFunction"]).not.toBeNull();
 

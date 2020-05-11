@@ -100,17 +100,6 @@ export class SearchAlgorithmBuilderDev<C extends Chromosome> implements SearchAl
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
 
-    // addFitnessFunction(fitnessFunction: FitnessFunction<C>): SearchAlgorithmBuilder<C> {
-    //     this._fitnessFunction = fitnessFunction;
-    //     return this as unknown as SearchAlgorithmBuilder<C>;
-    // }
-    //
-    // addFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>):
-    //     SearchAlgorithmBuilder<C> {
-    //     this._fitnessFunctions = fitnessFunctions;
-    //     return this as unknown as SearchAlgorithmBuilder<C>;
-    // }
-
     initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number): SearchAlgorithmBuilder<C> {
         this._fitnessFunction = new OneMaxFitnessFunction(length) as unknown as FitnessFunction<C>;
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
@@ -143,18 +132,16 @@ export class SearchAlgorithmBuilderDev<C extends Chromosome> implements SearchAl
     buildSearchAlgorithm(): SearchAlgorithm<C> {
         let searchAlgorithm: SearchAlgorithm<C>;
         switch (this._algorithm) {
-            case SearchAlgorithmType.MIO:
+            case SearchAlgorithmType.MOSA:
                 searchAlgorithm = this._buildMOSA();
                 break;
-            case SearchAlgorithmType.MOSA:
+            case SearchAlgorithmType.MIO:
                 searchAlgorithm = this._buildMIO();
-                break;
-            case SearchAlgorithmType.RANDOM:
-                searchAlgorithm = this._buildRandom();
                 break;
             case SearchAlgorithmType.ONE_PLUS_ONE:
                 searchAlgorithm = this._buildOnePlusOne();
                 break;
+            case SearchAlgorithmType.RANDOM:
             default:
                 searchAlgorithm = this._buildRandom();
         }
@@ -197,7 +184,7 @@ export class SearchAlgorithmBuilderDev<C extends Chromosome> implements SearchAl
 
     private _initializeOneMaxFitness(length: number) {
         for (let i = 0; i < length; i++) {
-            this._fitnessFunctions.set(i, new StatementCoverageFitness() as unknown as FitnessFunction<C>);
+            this._fitnessFunctions.set(i, new OneMaxFitnessFunction(length) as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => v / length);
         }
     }
