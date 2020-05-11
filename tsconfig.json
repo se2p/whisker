@@ -10,8 +10,7 @@
         "noUnusedLocals": false,                /* Report errors on unused locals. */
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
-        "esModuleInterop": true,
-        "allowJs": true
+        "esModuleInterop": true
     },
 
     "types": ["node", "jest"],                           /* Type declaration files to be included in compilation. */
@@ -21,6 +20,7 @@
     ],
     "exclude": [
         "node_modules",
-        "**/*.spec.ts"
+        "**/*.spec.ts",
+        "dist"
     ]
 }

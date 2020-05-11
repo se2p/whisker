@@ -42,7 +42,7 @@ export class Randomness {
         } else {
             this._seed = Date.now();
         }
-        console.log("Using random seed ",this._seed)
+        console.log("Using random seed ",this._seed);
     }
 
     /**
@@ -62,11 +62,11 @@ export class Randomness {
      *
      * @param seed the initial seed
      */
-    public static setInitialSeed(seed:number) {
+    public static setInitialSeed(seed: number) {
         Randomness._initialSeed = seed;
     }
 
-    private next(min:number, max:number):number {
+    private next(min: number, max: number): number {
         max = max || 0;
         min = min || 0;
 
@@ -81,7 +81,7 @@ export class Randomness {
      * @param min Lower bound of range
      * @param max Upper bound of range
      */
-    public nextInt(min:number, max:number): number {
+    public nextInt(min: number, max: number): number {
         return Math.floor(this.next(min, max));
     }
 
@@ -93,11 +93,28 @@ export class Randomness {
     }
 
     /**
+     * Pick a random floating point number from a range.
+     * @param min Lower bound of range
+     * @param max Upper bound of range
+     */
+    public nextDoubleMinMax(min: number, max: number): number {
+        return this.next(min, max);
+    }
+
+    /**
+     * Pick a random boolean.
+     */
+    public randomBoolean(): boolean {
+        return this.next(0, 1) >= 0.5;
+    }
+
+    /**
      * Pick a random item from a collection
      *
      * @param collection from which to pick an item
      */
-    public pick(collection:any[]): any {
+    public pick(collection: any[]): any {
         return collection[this.nextInt(0, collection.length)];
     }
+
 }
