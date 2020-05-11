@@ -1,5 +1,7 @@
 {
+    "test-generator": "random",
     "algorithm": "random",
+    "chromosome": "integerlist",
     "population-size": 100,
     "chromosome-length": 10,
     "crossover": {
@@ -26,5 +28,9 @@
         "maxArchiveSizeStart": null,
         "maxArchiveSizeFocusedPhase": null
     },
-    "startOfFocusedPhase": null
+    "startOfFocusedPhase": null,
+    "integerRange": {
+        "min": 0,
+        "max": 640
+    }
 }

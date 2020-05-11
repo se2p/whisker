@@ -26,7 +26,10 @@ import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/Single
 import {List} from "../../../../src/whisker/utils/List";
 import {MIO} from "../../../../src/whisker/search/algorithms/MIO";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {MIOBuilder} from "../../../../src/whisker/search/algorithms/MIOBuilder";
+import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 
 describe('MIO', () => {
 
@@ -34,7 +37,7 @@ describe('MIO', () => {
     const iterations = 1000;
 
     beforeEach(() => {
-        searchAlgorithm = new MIOBuilder().buildSearchAlgorithm();
+        searchAlgorithm = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MIO);
     });
 
     test('Find optimal solution', () => {
@@ -75,7 +78,9 @@ describe('MIO', () => {
         const start = 0.4;
         const focusedPhase = 0.1;
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        properties.setCrossoverProbability(crossoverProbability);
+        properties.setMutationProbablity(mutationProbability);
         properties.setStartOfFocusedPhase(startOfFocusPhase);
         properties.setSelectionProbabilities(start, focusedPhase);
         properties.setMaxArchiveSizes(start, focusedPhase);
@@ -83,7 +88,7 @@ describe('MIO', () => {
         const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
         properties.setStoppingCondition(stoppingCondition);
 
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         const heuristicFunctions = new Map<number, Function>();
         for (let i = 0; i < chromosomeLength; i++) {

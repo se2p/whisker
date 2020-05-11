@@ -27,6 +27,12 @@ import {SearchAlgorithmFactory} from '../search/SearchAlgorithmFactory';
 import {TestChromosome} from '../testcase/TestChromosome';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {WhiskerTest} from './WhiskerTest';
+import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
+import {SearchAlgorithmBuilderDev} from "../search/SearchAlgorithmBuilderDev";
+import {BitstringChromosomeGenerator} from "../bitstring/BitstringChromosomeGenerator";
+import {TestChromosomeGenerator} from "../testcase/TestChromosomeGenerator";
+import {SearchAlgorithm} from "../search/SearchAlgorithm";
 
 /**
  * To generate a test suite using single-objective search,
@@ -35,20 +41,16 @@ import {WhiskerTest} from './WhiskerTest';
  */
 export class IterativeSearchBasedTestGenerator implements TestGenerator {
 
-    private searchAlgorithmProperties: SearchAlgorithmProperties<any>;
+    private _config: WhiskerSearchConfiguration;
 
-    setSearchAlgorithmProperties(properties: SearchAlgorithmProperties<any>) {
-        this.searchAlgorithmProperties = properties;
+    constructor(configuration: WhiskerSearchConfiguration) {
+        this._config = configuration;
     }
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
         const testChromosomes = new List<TestChromosome>();
         const fitnessFunctions = this._extractCoverageGoals(project);
-        const searchFactory = new SearchAlgorithmFactory<TestChromosome>();
-        // TODO: Where do the properties come from?
-        const searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
-        searchFactory.configureSearchAlgorithm(searchAlgorithmProperties);
 
         for (const fitnessFunction of fitnessFunctions) {
             if (this._isCovered(fitnessFunction, testChromosomes)) {
@@ -56,7 +58,7 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
                 continue;
             }
             // TODO: Somehow set the fitness function as objective
-            const searchAlgorithm = searchFactory.instantiateSearchAlgorithm();
+            const searchAlgorithm = this._buildSearchAlgorithm();
             // TODO: Assuming there is at least one solution?
             const testChromosome = searchAlgorithm.findSolution().get(0);
 
@@ -84,5 +86,17 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
     // eslint-disable-next-line no-unused-vars
     _extractCoverageGoals(project: ScratchProject): List<StatementCoverageFitness> {
         throw new NotYetImplementedException();
+    }
+
+    private _buildSearchAlgorithm(): SearchAlgorithm<any> {
+        return new SearchAlgorithmBuilderDev(this._config.getAlgorithm())
+
+            .addSelectionOperator(this._config.getSelectionOperator())
+            .addProperties(this._config.getSearchAlgorithmProperties())
+            .initializeFitnessFunction(this._config.getFitnessFunctionType(),
+                this._config.getSearchAlgorithmProperties().getChromosomeLength())
+            .addChromosomeGenerator(this._config.getChromosomeGenerator())
+
+            .buildSearchAlgorithm();
     }
 }

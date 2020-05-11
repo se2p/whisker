@@ -26,6 +26,7 @@ import {SearchAlgorithm} from "./SearchAlgorithm";
 import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
 import {Selection} from "./Selection";
 import {BitstringChromosome} from "../bitstring/BitstringChromosome";
+import {FitnessFunctionType} from "./algorithms/SearchAlgorithmType";
 
 /**
  * Interface for a builder to set necessary properties of a search algorithm.
@@ -49,18 +50,11 @@ export interface SearchAlgorithmBuilder<C extends Chromosome>{
     addChromosomeGenerator(generator: ChromosomeGenerator<C>): SearchAlgorithmBuilder<C>;
 
     /**
-     * Adds the fitness function used by the search algorithm.
-     * @param fitnessFunction the fitness function to use
-     * @returns the search builder with the applied fitness function
+     * Initializes the necessary fitness functions.
+     * @param fitnessFunctionType the type of the fitness function to initialize
+     * @param length the length of the chromosome
      */
-    addFitnessFunction(fitnessFunction: FitnessFunction<C>): SearchAlgorithmBuilder<C>;
-
-    /**
-     * Adds a map of the fitness functions per chromosome.
-     * @param fitnessFunctions map of fitness functions
-     * @returns the search builder with the applied fitness functions
-     */
-    addFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): SearchAlgorithmBuilder<C>;
+    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number): SearchAlgorithmBuilder<C>;
 
     /**
      * Adds the properties needed by the search algorithm.

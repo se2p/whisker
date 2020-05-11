@@ -25,23 +25,28 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {RandomSearchBuilder} from "../../../../src/whisker/search/algorithms/RandomSearchBuilder";
+import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {FitnessFunctionType, SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
 
 describe('RandomSearch', () => {
 
     test('Trivial bitstring with OneMax', () => {
 
         const n = 2;
-        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const properties = new SearchAlgorithmProperties(1, n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
         properties.setStoppingCondition(new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition(fitnessFunction)));
 
-        const builder = new RandomSearchBuilder()
+        const builder = new SearchAlgorithmBuilderDev(SearchAlgorithmType.RANDOM)
             .addProperties(properties)
-            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties))
-            .addFitnessFunction(fitnessFunction);
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
+                new BitflipMutation(),
+                new SinglePointCrossover()))
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n);
 
         const randomSearch = builder.buildSearchAlgorithm();
         const solutions = randomSearch.findSolution();
@@ -52,9 +57,9 @@ describe('RandomSearch', () => {
 
     test('Setter', () => {
         const n = 2;
-        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const properties = new SearchAlgorithmProperties(1, n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition(fitnessFunction)

@@ -36,10 +36,12 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
 
     private _crossoverOp: Crossover<BitstringChromosome>;
 
-    constructor(properties: SearchAlgorithmProperties<BitstringChromosome>) {
+    constructor(properties: SearchAlgorithmProperties<BitstringChromosome>,
+                mutationOp: Mutation<BitstringChromosome>,
+                crossoverOp: Crossover<BitstringChromosome>) {
         this._length = properties.getChromosomeLength();
-        this._mutationOp = new BitflipMutation();
-        this._crossoverOp = new SinglePointCrossover<BitstringChromosome>();
+        this._mutationOp = mutationOp;
+        this._crossoverOp = crossoverOp;
     }
 
     get(): BitstringChromosome {

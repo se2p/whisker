@@ -27,7 +27,7 @@ describe('Search algorithm properties', () => {
     let searchAlgorithmProperties;
 
     beforeEach(() => {
-       searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0, 0, 0);
+       searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0);
     });
 
     test('Getter/Setter: Chromosome length and population size', () => {
@@ -86,4 +86,11 @@ describe('Search algorithm properties', () => {
         expect(searchAlgorithmProperties.getStartOfFocusedPhase()).toBe(startFocus);
     });
 
+    test('Getter/Setter: Min/Max range', () => {
+        const min = 0;
+        const max = 160;
+        searchAlgorithmProperties.setIntRange(min, max);
+        expect(searchAlgorithmProperties.getMinIntRange()).toBe(min);
+        expect(searchAlgorithmProperties.getMaxIntRange()).toBe(max);
+    });
 });

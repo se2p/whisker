@@ -89,17 +89,25 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     private _startOfFocusedPhase: number;
 
     /**
+     * The minimum of the range.
+     */
+    private _minRange: number;
+
+    /**
+     * The maximum of the range.
+     */
+    private _maxRange: number;
+
+    /**
      * Constructs an object that stores all relevant properties of a search algorithm.
      * @param populationSize the size of the population
      * @param chromosomeLength the length of each chromosome
      * @param crossoverProbability the probability for crossover
      * @param mutationProbability the probability for mutation
      */
-    constructor(populationSize: number, chromosomeLength: number, crossoverProbability: number, mutationProbability: number) {
+    constructor(populationSize: number, chromosomeLength: number) {
         this._populationSize = populationSize;
         this._chromosomeLength = chromosomeLength;
-        this._crossoverProbability = crossoverProbability; // TODO: remove mutation and crossover probabiltiy here
-        this._mutationProbablity = mutationProbability; // TODO: replace it elsewhere with the setter
     }
 
     /**
@@ -199,6 +207,22 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     }
 
     /**
+     * Returns the minimum of range.
+     * @returns the minimum of the range
+     */
+    getMinIntRange(): number {
+        return this._minRange;
+    }
+
+    /**
+     * Returns the maximum of range.
+     * @returns the maximum of the range
+     */
+    getMaxIntRange(): number {
+        return this._maxRange;
+    }
+
+    /**
      * Sets the size of the population to the specified number.
      * @param populationSize the new population size
      */
@@ -275,6 +299,16 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
      */
     setStartOfFocusedPhase(startOfFocusedPhase: number): void {
         this._startOfFocusedPhase = startOfFocusedPhase;
+    }
+
+    /**
+     * Sets the minimum and maximum number of the integer range.
+     * @param min the minimum of the range
+     * @param max the maximum of the range
+     */
+    setIntRange(min: number, max: number): void {
+        this._minRange = min;
+        this._maxRange = max;
     }
 
 }

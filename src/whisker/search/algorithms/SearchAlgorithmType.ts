@@ -18,13 +18,44 @@
  *
  */
 
-import {WhiskerTest} from './WhiskerTest';
-import {ScratchProject} from '../scratch/ScratchProject';
-import {List} from '../utils/List';
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+/**
+ * TODO
+ */
+export enum SearchAlgorithmType {
+    /**
+     * TODO
+     */
+    RANDOM,
 
-export interface TestGenerator {
+    /**
+     * TODO
+     */
+    MOSA,
 
-    generateTests(project: ScratchProject): List<WhiskerTest>;
+    /**
+     * TODO
+     */
+    MIO,
 
+    /**
+     * TODO
+     */
+    ONE_PLUS_ONE
+}
+
+export enum FitnessFunctionType {
+    /**
+     * TODO
+     */
+    ONE_MAX,
+
+    /**
+     * TODO
+     */
+    SINGLE_BIT,
+
+    /**
+     * TODO
+     */
+    STATEMENT
 }
