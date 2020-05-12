@@ -25,24 +25,29 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {RandomSearchBuilder} from "../../../../src/whisker/search/algorithms/RandomSearchBuilder";
+import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('RandomSearch', () => {
 
     test('Trivial bitstring with OneMax', () => {
 
         const n = 2;
-        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const properties = new SearchAlgorithmProperties(1, n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
+        properties.setStoppingCondition(new OneOfStoppingCondition(
+            new FixedIterationsStoppingCondition(1000),
+            new OptimalSolutionStoppingCondition(fitnessFunction)));
 
-        const builder = new RandomSearchBuilder()
+        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM)
             .addProperties(properties)
-            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties))
-            .addFitnessFunction(fitnessFunction)
-            .addStoppingCondition(
-                new OneOfStoppingCondition(
-                    new FixedIterationsStoppingCondition(1000),
-                    new OptimalSolutionStoppingCondition(fitnessFunction)));
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
+                new BitflipMutation(),
+                new SinglePointCrossover()))
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n);
 
         const randomSearch = builder.buildSearchAlgorithm();
         const solutions = randomSearch.findSolution();
@@ -53,23 +58,22 @@ describe('RandomSearch', () => {
 
     test('Setter', () => {
         const n = 2;
-        const properties = new SearchAlgorithmProperties(1, n, 0, 0);
+        const properties = new SearchAlgorithmProperties(1, n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition(fitnessFunction)
         );
         const randomSearch = new RandomSearch();
 
+        properties.setStoppingCondition(stoppingCondition);
         randomSearch.setProperties(properties);
         expect(randomSearch["_properties"]).toBe(properties);
+        expect(randomSearch["_stoppingCondition"]).toBe(stoppingCondition);
 
         randomSearch.setChromosomeGenerator(chromosomeGenerator);
         expect(randomSearch["_chromosomeGenerator"]).toBe(chromosomeGenerator);
-
-        randomSearch.setStoppingCondition(stoppingCondition);
-        expect(randomSearch["_stoppingCondition"]).toBe(stoppingCondition);
 
         randomSearch.setFitnessFunction(fitnessFunction);
         expect(randomSearch["_fitnessFunction"]).toBe(fitnessFunction);

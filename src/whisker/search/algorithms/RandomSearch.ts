@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {SearchAlgorithm} from '../SearchAlgorithm';
 import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
@@ -27,8 +26,9 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {Selection} from "../Selection";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 
-export class RandomSearch<C extends Chromosome> implements SearchAlgorithm<C> {
+export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     _chromosomeGenerator: ChromosomeGenerator<C>;
 
@@ -50,16 +50,9 @@ export class RandomSearch<C extends Chromosome> implements SearchAlgorithm<C> {
         this._fitnessFunction = fitnessFunction;
     }
 
-    setStoppingCondition(stoppingCondition : StoppingCondition<C>) {
-        this._stoppingCondition = stoppingCondition;
-    }
-
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
-    }
-
-    setSelectionOperator(selectionOperator: Selection<C>) {
-        throw new NotSupportedFunctionException();
+        this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
     /**

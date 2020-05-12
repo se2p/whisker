@@ -18,13 +18,22 @@
  *
  */
 
-import {WhiskerTest} from './WhiskerTest';
-import {ScratchProject} from '../scratch/ScratchProject';
-import {List} from '../utils/List';
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+/**
+ * A enum that shows all available types of fitness functions that can be used.
+ */
+export enum FitnessFunctionType {
+    /**
+     * Value for 'One Max' fitness.
+     */
+    ONE_MAX,
 
-export interface TestGenerator {
+    /**
+     * Value for 'Single bit' fitness.
+     */
+    SINGLE_BIT,
 
-    generateTests(project: ScratchProject): List<WhiskerTest>;
-
+    /**
+     * Value for 'Statement' fitness.
+     */
+    STATEMENT
 }

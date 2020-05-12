@@ -27,14 +27,42 @@ import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
 import {List} from "../../../../src/whisker/utils/List";
-import {MOSABuilder} from "../../../../src/whisker/search/algorithms/MOSABuilder";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
+import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('MOSA', () => {
 
-    test('BitstringChromosome with SingleBitFitnessFunction', () => {
-        const searchAlgorithm = new MOSABuilder().buildSearchAlgorithm();
+    let searchAlgorithm;
 
+    const populationSize = 50;
+    const chromosomeLength = 10;
+    const crossoverProbability = 1;
+    const mutationProbability = 1;
+    const maxIterations = 100;
+
+    beforeEach(() => {
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
+
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        properties.setMutationProbablity(mutationProbability);
+        properties.setCrossoverProbability(crossoverProbability);
+        properties.setStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
+
+        builder
+            .addProperties(properties)
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
+                new BitflipMutation(), new SinglePointCrossover()))
+            .addSelectionOperator(new RankSelection())
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength);
+
+        searchAlgorithm = builder.buildSearchAlgorithm();
+    });
+
+    test('BitstringChromosome with SingleBitFitnessFunction', () => {
         const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
         expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
 
@@ -51,45 +79,40 @@ describe('MOSA', () => {
         }
     });
 
-    test('Getter', () => {
-        let searchAlgorithm = new MOSABuilder().buildSearchAlgorithm();
-        const maxIterations = 100;
-
+    test('Get current solution', () => {
         expect(searchAlgorithm.getCurrentSolution()).toEqual(new List<BitstringChromosome>());
         const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
+    });
 
-        searchAlgorithm = new MOSABuilder().buildSearchAlgorithm();
+    test('Get number of iterations', () => {
         expect(searchAlgorithm.getNumberOfIterations()).toEqual(0);
         searchAlgorithm.findSolution();
         expect(searchAlgorithm.getNumberOfIterations()).toBe(maxIterations);
     });
 
     test('Setter', () => {
-        const chromosomeLength = 10;
-        const populationSize = 50;
-        const iterations = 100;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        properties.setCrossoverProbability(crossoverProbability);
+        properties.setMutationProbablity(mutationProbability);
+        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
+        properties.setStoppingCondition(stoppingCondition);
+
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
         }
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const selectionOp = new RankSelection();
 
         const searchAlgorithm = new MOSA();
         searchAlgorithm.setProperties(properties);
         expect(searchAlgorithm["_properties"]).toBe(properties);
+        expect(searchAlgorithm["_stoppingCondition"]).toBe(stoppingCondition);
 
         searchAlgorithm.setChromosomeGenerator(chromosomeGenerator);
         expect(searchAlgorithm["_chromosomeGenerator"]).toBe(chromosomeGenerator);
-
-        searchAlgorithm.setStoppingCondition(stoppingCondition);
-        expect(searchAlgorithm["_stoppingCondition"]).toBe(stoppingCondition);
 
         searchAlgorithm.setFitnessFunctions(fitnessFunctions);
         expect(searchAlgorithm["_fitnessFunctions"]).toBe(fitnessFunctions);

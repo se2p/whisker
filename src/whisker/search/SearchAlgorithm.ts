@@ -18,11 +18,10 @@
  *
  */
 
-import { List } from "../utils/List";
-import { Chromosome } from "./Chromosome";
-import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
-import { ChromosomeGenerator } from "./ChromosomeGenerator";
-import {StoppingCondition} from "./StoppingCondition";
+import {List} from "../utils/List";
+import {Chromosome} from "./Chromosome";
+import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
+import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {FitnessFunction} from "./FitnessFunction";
 import {Selection} from "./Selection";
 
@@ -53,16 +52,23 @@ export interface SearchAlgorithm<C extends Chromosome> {
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void;
 
     /**
-     * Sets the stopping condition for the search algorithm.
-     * @param stoppingCondition the stopping contiditon for the search algorithm
-     */
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>): void;
-
-    /**
      * Sets the fitness function used by the search algorithm.
      * @param fitnessFunction fitness function for chromosome evaluation
      */
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void;
+
+    /**
+     * Sets the map of fitness functions used by the search algorithm.
+     * @param fitnessFunction map of fitness functions used for the chromosome evaluation
+     */
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
+
+    /**
+     * Sets the functions for calculating the heuristic values.
+     * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
+     *          from the fitness values, where 0 is the worst value and 1 is the best value.
+     */
+    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void;
 
     /**
      * Sets the selection operator used by the search algorithm.

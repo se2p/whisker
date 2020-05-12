@@ -18,13 +18,27 @@
  *
  */
 
-import {WhiskerTest} from './WhiskerTest';
-import {ScratchProject} from '../scratch/ScratchProject';
-import {List} from '../utils/List';
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+/**
+ * A enum that shows all available types of search algorithms that can be used.
+ */
+export enum SearchAlgorithmType {
+    /**
+     * Value for 'Random' search algorithm.
+     */
+    RANDOM,
 
-export interface TestGenerator {
+    /**
+     * Value for 'MOSA' search algorithm.
+     */
+    MOSA,
 
-    generateTests(project: ScratchProject): List<WhiskerTest>;
+    /**
+     * Value for 'MIO' search algorithm.
+     */
+    MIO,
 
+    /**
+     * Value for 'One + One' search algorithm.
+     */
+    ONE_PLUS_ONE
 }

@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {SearchAlgorithm} from '../SearchAlgorithm';
 import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
@@ -27,8 +26,8 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {PopulationFactory} from '../PopulationFactory';
 import {Randomness} from "../../utils/Randomness";
-import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 import {Selection} from "../Selection";
+import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -36,7 +35,7 @@ import {Selection} from "../Selection";
  * @param <C> The chromosome type.
  * @author Adina Deiner
  */
-export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
+export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _chromosomeGenerator: ChromosomeGenerator<C>;
 
@@ -60,18 +59,11 @@ export class MOSA<C extends Chromosome> implements SearchAlgorithm<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>) {
         this._properties = properties;
+        this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
         this._fitnessFunctions = fitnessFunctions;
-    }
-
-    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
-        throw new NotSupportedFunctionException();
-    }
-
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>) {
-        this._stoppingCondition = stoppingCondition;
     }
 
     setSelectionOperator(selectionOperator: Selection<C>) {
