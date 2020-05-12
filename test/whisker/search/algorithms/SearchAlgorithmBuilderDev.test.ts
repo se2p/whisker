@@ -87,9 +87,9 @@ describe('BuillderBitstringChromosome', () => {
         expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
         expect(builder["_fitnessFunction"]).not.toBeNull();
 
-        builder.initializeFitnessFunction(FitnessFunctionType.STATEMENT, chromosomeLength);
-        expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
-        expect(builder["_fitnessFunction"]).not.toBeNull();
+//        builder.initializeFitnessFunction(FitnessFunctionType.STATEMENT, chromosomeLength);
+//        expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
+//        expect(builder["_fitnessFunction"]).not.toBeNull();
 
         builder.addSelectionOperator(selectionOp);
         expect(builder["_selectionOperator"]).toBe(selectionOp);
