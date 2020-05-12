@@ -26,7 +26,7 @@ import {StatementCoverageFitness} from '../testcase/StatementFitnessFunction';
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
-import {SearchAlgorithmBuilderDev} from "../search/SearchAlgorithmBuilderDev";
+import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 
 /**
  * A many-objective search algorithm can generate tests
@@ -68,7 +68,7 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
 
     private _buildSearchAlgorithm(): SearchAlgorithm<any> {
         // TODO: Shared with IterativeSearchBasedTestGenerator, probably best to extract
-        return new SearchAlgorithmBuilderDev(this._config.getAlgorithm())
+        return new SearchAlgorithmBuilder(this._config.getAlgorithm())
 
             .addSelectionOperator(this._config.getSelectionOperator())
             .addProperties(this._config.getSearchAlgorithmProperties())

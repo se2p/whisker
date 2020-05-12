@@ -30,8 +30,9 @@ import {List} from "../../../../src/whisker/utils/List";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
-import {FitnessFunctionType, SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('MOSA', () => {
 
@@ -44,7 +45,7 @@ describe('MOSA', () => {
     const maxIterations = 100;
 
     beforeEach(() => {
-        const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MOSA);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
 
         const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
         properties.setMutationProbablity(mutationProbability);

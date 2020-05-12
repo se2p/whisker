@@ -26,7 +26,7 @@ import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedEx
 import {TestChromosome} from '../testcase/TestChromosome';
 import {WhiskerTest} from './WhiskerTest';
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
-import {SearchAlgorithmBuilderDev} from "../search/SearchAlgorithmBuilderDev";
+import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 
 /**
@@ -84,7 +84,7 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
     }
 
     private _buildSearchAlgorithm(): SearchAlgorithm<any> {
-        return new SearchAlgorithmBuilderDev(this._config.getAlgorithm())
+        return new SearchAlgorithmBuilder(this._config.getAlgorithm())
 
             .addSelectionOperator(this._config.getSelectionOperator())
             .addProperties(this._config.getSearchAlgorithmProperties())

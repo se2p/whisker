@@ -25,34 +25,32 @@ import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingcon
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
-import {List} from "../../../../src/whisker/utils/List";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
-import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
-import {FitnessFunctionType, SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
-import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
-import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('BuillderBitstringChromosome', () => {
 
     test('Build MOSA', () => {
-        const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MOSA);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build MIO', () => {
-        const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MIO);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build Random', () => {
-        const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.RANDOM);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM);
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
     test('Build OnePlusOne', () => {
-        const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.ONE_PLUS_ONE);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.ONE_PLUS_ONE);
         expect(builder.buildSearchAlgorithm()).not.toBeNull();
     });
 
@@ -74,7 +72,7 @@ describe('BuillderBitstringChromosome', () => {
         }
         const selectionOp = new RankSelection();
 
-        const builder = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MOSA);
+        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
         builder.addProperties(properties);
         expect(builder["_properties"]).toBe(properties);
 

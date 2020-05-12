@@ -18,15 +18,12 @@
  *
  */
 
-import { List } from "../utils/List";
-import { Chromosome } from "./Chromosome";
-import { SearchAlgorithmProperties } from "./SearchAlgorithmProperties";
-import { ChromosomeGenerator } from "./ChromosomeGenerator";
-import {StoppingCondition} from "./StoppingCondition";
+import {List} from "../utils/List";
+import {Chromosome} from "./Chromosome";
+import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
+import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {FitnessFunction} from "./FitnessFunction";
 import {Selection} from "./Selection";
-import {SearchAlgorithmBuilder} from "./SearchAlgorithmBuilder";
-import {BitstringChromosome} from "../bitstring/BitstringChromosome";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.

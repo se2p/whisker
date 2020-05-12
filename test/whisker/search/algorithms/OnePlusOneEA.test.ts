@@ -27,8 +27,9 @@ import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/s
 import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {FitnessFunctionType, SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
-import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('OnePlusOneEa', () => {
 
@@ -41,7 +42,7 @@ describe('OnePlusOneEa', () => {
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition(fitnessFunction)));
 
-        const builder = new SearchAlgorithmBuilderDev(SearchAlgorithmType.ONE_PLUS_ONE)
+        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.ONE_PLUS_ONE)
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))

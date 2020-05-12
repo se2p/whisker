@@ -27,8 +27,9 @@ import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingcon
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {FitnessFunctionType, SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
-import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('RandomSearch', () => {
 
@@ -41,7 +42,7 @@ describe('RandomSearch', () => {
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition(fitnessFunction)));
 
-        const builder = new SearchAlgorithmBuilderDev(SearchAlgorithmType.RANDOM)
+        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM)
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(),

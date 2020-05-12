@@ -10,13 +10,14 @@ import {Crossover} from "../search/Crossover";
 import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
 import {RankSelection} from "../search/operators/RankSelection";
 import {Selection} from "../search/Selection";
-import {FitnessFunctionType, SearchAlgorithmType} from "../search/algorithms/SearchAlgorithmType";
+import {SearchAlgorithmType} from "../search/algorithms/SearchAlgorithmType";
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {BitstringChromosomeGenerator} from "../bitstring/BitstringChromosomeGenerator";
 import {IntegerListChromosomeGenerator} from "../integerlist/IntegerListChromosomeGenerator";
 import {TestChromosomeGenerator} from "../testcase/TestChromosomeGenerator";
 import {IterativeSearchBasedTestGenerator} from "../testgenerator/IterativeSearchBasedTestGenerator";
 import {ManyObjectiveTestGenerator} from "../testgenerator/ManyObjectiveTestGenerator";
+import {FitnessFunctionType} from "../search/FitnessFunctionType";
 
 class ConfigException implements Error {
     message: string;

@@ -28,8 +28,9 @@ import {MIO} from "../../../../src/whisker/search/algorithms/MIO";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {SearchAlgorithmBuilderDev} from "../../../../src/whisker/search/SearchAlgorithmBuilderDev";
-import {FitnessFunctionType, SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('MIO', () => {
 
@@ -37,7 +38,7 @@ describe('MIO', () => {
     const iterations = 1000;
 
     beforeEach(() => {
-        const builder: SearchAlgorithmBuilderDev<BitstringChromosome> = new SearchAlgorithmBuilderDev(SearchAlgorithmType.MIO);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
 
         const chromosomeLength = 10;
         const populationSize = null;

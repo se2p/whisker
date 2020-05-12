@@ -19,26 +19,21 @@
  */
 
 /**
- * A enum that shows all available types of search algorithms that can be used.
+ * A enum that shows all available types of fitness functions that can be used.
  */
-export enum SearchAlgorithmType {
+export enum FitnessFunctionType {
     /**
-     * Value for 'Random' search algorithm.
+     * Value for 'One Max' fitness.
      */
-    RANDOM,
+    ONE_MAX,
 
     /**
-     * Value for 'MOSA' search algorithm.
+     * Value for 'Single bit' fitness.
      */
-    MOSA,
+    SINGLE_BIT,
 
     /**
-     * Value for 'MIO' search algorithm.
+     * Value for 'Statement' fitness.
      */
-    MIO,
-
-    /**
-     * Value for 'One + One' search algorithm.
-     */
-    ONE_PLUS_ONE
+    STATEMENT
 }
