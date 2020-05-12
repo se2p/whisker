@@ -18,14 +18,20 @@
  *
  */
 
-import {FitnessFunction} from '../search/FitnessFunction';
-import {TestChromosome} from './TestChromosome';
-import {TestExecutor} from './TestExecutor';
-import {ExecutionTrace} from "./ExecutionTrace";
+import {FitnessFunction} from '../../search/FitnessFunction';
+import {TestChromosome} from '../TestChromosome';
+import {TestExecutor} from '../TestExecutor';
+import {ExecutionTrace} from "../ExecutionTrace";
+import {GraphNode} from 'scratch-analysis'
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
     // TODO: Constructor needs CDG and target node
+    private _targetNode;
+
+    constructor(targetNode: GraphNode) {
+        this._targetNode = targetNode;
+    }
 
     getFitness (chromosome: TestChromosome): number {
         const executor = new TestExecutor(null); // TODO: where do we get the vm?

@@ -25,7 +25,7 @@ import {WhiskerTest} from './WhiskerTest';
 import {TestChromosome} from '../testcase/TestChromosome';
 import {SearchAlgorithmFactory} from '../search/SearchAlgorithmFactory';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {StatementCoverageFitness} from '../testcase/StatementFitnessFunction';
+import {StatementCoverageFitness} from '../testcase/fitness/StatementFitnessFunction';
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 
 /**

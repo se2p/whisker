@@ -20,7 +20,7 @@
 
 import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
-import {StatementCoverageFitness} from '../testcase/StatementFitnessFunction';
+import {StatementCoverageFitness} from '../testcase/fitness/StatementFitnessFunction';
 import {List} from '../utils/List';
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 import {SearchAlgorithmFactory} from '../search/SearchAlgorithmFactory';
