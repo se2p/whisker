@@ -1,4 +1,4 @@
-const Random = require('../../dist/src/whisker/utils/Randomness').Randomness.getInstance();
+const Random = require('../../src/whisker/utils/Randomness.ts').Randomness.getInstance();
 
 /**
  * {
