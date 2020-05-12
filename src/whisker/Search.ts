@@ -29,6 +29,7 @@ import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {TestExecutor} from "./testcase/TestExecutor";
 import {TestChromosome} from "./testcase/TestChromosome";
+import {Container} from "./utils/Container";
 
 export class Search {
 
@@ -82,6 +83,9 @@ export class Search {
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
+
+        Container.config = config;
+        Container.vm = vm;
 
         async function init(search: Search) {
             await util.prepare(30);
