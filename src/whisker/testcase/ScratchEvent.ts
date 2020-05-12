@@ -24,5 +24,5 @@ export interface ScratchEvent {
 
     apply(vm: VirtualMachine, args: number[]);
 
-    arity(): number;
+    getNumParameters(): number;
 }

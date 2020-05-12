@@ -27,7 +27,7 @@ export class KeyDownEvent implements ScratchEvent {
 
     }
 
-    arity(): number {
-        return 1; // Duration?
+    getNumParameters(): number {
+        return 0;
     }
 }
