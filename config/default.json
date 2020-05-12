@@ -1,4 +1,7 @@
 {
+    "test-generator": "random",
+    "algorithm": "random",
+    "chromosome": "integerlist",
     "population-size": 100,
     "chromosome-length": 10,
     "crossover": {
@@ -7,15 +10,27 @@
     },
     "mutation": {
         "operator": "integerlist",
-        "probability": 50
+        "probability": 50,
+        "maxMutationCountStart": null,
+        "maxMutationCountFocusedPhase": null
     },
     "selection": {
-        "operator": "dummy"
+        "operator": "dummy",
+        "randomSelectionProbabilityStart": null,
+        "randomSelectionProbabilityFocusedPhase": null
     },
     "fitness-function": "statement",
     "stopping-condition": {
         "type" : "fixed-iteration",
         "iterations": 50
     },
-    "algorithm": "random"
+    "archive": {
+        "maxArchiveSizeStart": null,
+        "maxArchiveSizeFocusedPhase": null
+    },
+    "startOfFocusedPhase": null,
+    "integerRange": {
+        "min": 0,
+        "max": 640
+    }
 }

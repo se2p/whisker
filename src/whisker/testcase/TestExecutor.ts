@@ -25,6 +25,7 @@ import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
 import {ScratchEvent} from "./ScratchEvent";
+import {WaitEvent} from "./events/WaitEvent";
 
 export class TestExecutor {
 
@@ -42,7 +43,7 @@ export class TestExecutor {
         let numCodon = 0;
         const codons = testChromosome.getGenes();
         console.log("Codons: " + codons);
-        while(numCodon < codons.size()) {
+        while (numCodon < codons.size()) {
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -52,10 +53,10 @@ export class TestExecutor {
             const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
 
             const args = this._getArgs(nextEvent, codons, numCodon);
-            numCodon += nextEvent.arity();
+            numCodon += nextEvent.getNumParameters() + 1;
 
             nextEvent.apply(this._vm, args);
-            this._vm.runtime._step();
+            new WaitEvent().apply(this._vm)
             console.log("Applying " + nextEvent)
         }
 
@@ -64,7 +65,7 @@ export class TestExecutor {
 
     private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
         let args = [];
-        for (let i = 0; i < event.arity(); i++) {
+        for (let i = 0; i < event.getNumParameters(); i++) {
             // Get next codon, but wrap around if length exceeded
             const codon = codons.get(++codonPosition % codons.size());
 

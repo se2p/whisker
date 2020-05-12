@@ -18,13 +18,12 @@
  *
  */
 
-import { ChromosomeGenerator } from "../search/ChromosomeGenerator";
+import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {List} from "../utils/List";
 import {Randomness} from "../utils/Randomness";
 import {TestChromosome} from "./TestChromosome";
 import {Mutation} from "../search/Mutation";
-import {BitstringChromosome} from "../bitstring/BitstringChromosome";
 import {Crossover} from "../search/Crossover";
 
 // TODO: This is a clone of IntegerListGenerator, maybe we should use "has a" rather than "is a" in TestChromosome?
@@ -41,12 +40,14 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
 
     private _crossoverOp: Crossover<TestChromosome>;
 
-    // TODO: Set min and max
-
-    constructor(properties: SearchAlgorithmProperties<TestChromosome>) {
+    constructor(properties: SearchAlgorithmProperties<TestChromosome>,
+                mutationOp: Mutation<TestChromosome>,
+                crossoverOp: Crossover<TestChromosome>) {
         this._length = properties.getChromosomeLength();
-        this._mutationOp = null; // TODO set mutation
-        this._crossoverOp = null; // TODO set crossover
+        this._min = properties.getMinIntRange();
+        this._max = properties.getMaxIntRange();
+        this._mutationOp = mutationOp;
+        this._crossoverOp = crossoverOp;
     }
 
     /**
@@ -54,7 +55,7 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
      * @returns a random chromosome
      */
     get(): TestChromosome {
-        let codons = new List<number>();
+        const codons = new List<number>();
         for(let i = 0; i < this._length; i++) {
             codons.add(Randomness.getInstance().nextInt(this._min, this._max));
         }

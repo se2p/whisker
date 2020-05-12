@@ -25,7 +25,6 @@ import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 
 export interface TestGenerator {
 
-    generateTests(project: ScratchProject) : List<WhiskerTest>;
+    generateTests(project: ScratchProject): List<WhiskerTest>;
 
-    setSearchAlgorithmProperties(properties: SearchAlgorithmProperties<any>) ;
 }

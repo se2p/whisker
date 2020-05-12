@@ -18,13 +18,11 @@
  *
  */
 
-import { StoppingCondition } from "./StoppingCondition";
+import {StoppingCondition} from "./StoppingCondition";
 import {Chromosome} from "./Chromosome";
 
 /**
  * This class stores all relevant properties from a search algorithm.
- *
- * TODO: not complete yet
  *
  * @author Sophia Geserer
  */
@@ -51,9 +49,54 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     private _mutationProbablity: number;
 
     /**
+     * The number of mutations on the same chromosome at start.
+     */
+    private _maxMutationCountStart: number;
+
+    /**
+     * The number of mutations on the same chromosome in the focused phase.
+     */
+    private _maxMutationCountFocusedPhase: number;
+
+    /**
      * The stopping condition for the corresponding search algorithm.
      */
     private _stoppingCondition: StoppingCondition<C>;
+
+    /**
+     * The probability for sampling a random chromosome at start.
+     */
+    private _selectionProbabilityStart: number;
+
+    /**
+     * The probability for sampling a random chromosome in the focused phase.
+     */
+    private _selectionProbabilityFocusedPhase: number;
+
+    /**
+     * The maximum number of chromosomes stored for a fitness function at start.
+     */
+    private _maxArchiveSizeStart: number;
+
+    /**
+     * The maximum number of chromosomes stored for a fitness function in the focused phase.
+     */
+    private _maxArchiveSizeFocusedPhase: number;
+
+    /**
+     * The percentage of iterations.
+     */
+    private _startOfFocusedPhase: number;
+
+    /**
+     * The minimum of the range.
+     */
+    private _minRange: number;
+
+    /**
+     * The maximum of the range.
+     */
+    private _maxRange: number;
 
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
@@ -62,11 +105,9 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
      * @param crossoverProbability the probability for crossover
      * @param mutationProbability the probability for mutation
      */
-    constructor(populationSize: number, chromosomeLength: number, crossoverProbability: number, mutationProbability: number) {
+    constructor(populationSize: number, chromosomeLength: number) {
         this._populationSize = populationSize;
         this._chromosomeLength = chromosomeLength;
-        this._crossoverProbability = crossoverProbability;
-        this._mutationProbablity = mutationProbability;
     }
 
     /**
@@ -102,11 +143,83 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     }
 
     /**
+     * Returns the number of mutations on the same chromosome at start.
+     * @returns the number of mutations (start)
+     */
+    getMaxMutationCountStart(): number {
+        return this._maxMutationCountStart;
+    }
+
+    /**
+     * Returns the number of mutations on the same chromosome in the focused phase.
+     * @returns the number of mutations (focused phase)
+     */
+    getMaxMutationCountFocusedPhase(): number {
+        return this._maxMutationCountFocusedPhase;
+    }
+
+    /**
      * Returns the stopping condition that is specified for the search algorithm.
      * @returns the specified stopping condition
      */
     getStoppingCondition(): StoppingCondition<C> {
         return this._stoppingCondition;
+    }
+
+    /**
+     * Returns the probability for sampling a random chromosome at start.
+     * @returns the probability for sampling a random chromosome (start)
+     */
+    getSelectionProbabilityStart(): number {
+        return this._selectionProbabilityStart;
+    }
+
+    /**
+     * Returns the probability for sampling a random chromosome in the focused phase.
+     * @returns the probability for sampling a random chromosome (focused phase)
+     */
+    getSelectionProbabilityFocusedPhase(): number {
+        return this._selectionProbabilityFocusedPhase;
+    }
+
+    /**
+     * Returns the maximum number of chromosomes stored for a fitness function at start.
+     * @returns the maximum number of chromosomes for a fitness function (start)
+     */
+    getMaxArchiveSizeStart(): number {
+        return this._maxArchiveSizeStart;
+    }
+
+    /**
+     * Returns the maximum number of chromosomes stored for a fitness function in the focused phase.
+     * @returns the maximum number of chromosomes for a fitness function (focused phase)
+     */
+    getMaxArchiveSizeFocusedPhase(): number {
+        return this._maxArchiveSizeFocusedPhase;
+    }
+
+    /**
+     * Returns the percentage of iterations.
+     * @returns the percentage of iterations
+     */
+    getStartOfFocusedPhase(): number {
+        return this._startOfFocusedPhase;
+    }
+
+    /**
+     * Returns the minimum of range.
+     * @returns the minimum of the range
+     */
+    getMinIntRange(): number {
+        return this._minRange;
+    }
+
+    /**
+     * Returns the maximum of range.
+     * @returns the maximum of the range
+     */
+    getMaxIntRange(): number {
+        return this._maxRange;
     }
 
     /**
@@ -142,11 +255,60 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     }
 
     /**
+     * Sets the number of mutations on the same chromosome.
+     * @param maxMutationCountStart the number of mutations (start)
+     * @param maxMutationCountFocusedPhase the number of mutations (focused phase)
+     */
+    setMaxMutationCounter(maxMutationCountStart: number, maxMutationCountFocusedPhase: number): void {
+        this._maxMutationCountStart = maxMutationCountStart;
+        this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
+    }
+
+    /**
      * Sets the stopping condition to the given condition.
      * @param stoppingCondition the stopping condition
      */
     setStoppingCondition(stoppingCondition: StoppingCondition<C>): void {
         this._stoppingCondition = stoppingCondition;
+    }
+
+    /**
+     * Sets the probability for sampling a random chromosome.
+     * @param selectionProbabilityStart the probability for sampling (start)
+     * @param selectionProbabilityFocusedPhase the probability for sampling (focused phase)
+     */
+    setSelectionProbabilities(selectionProbabilityStart: number, selectionProbabilityFocusedPhase: number): void {
+        this._selectionProbabilityStart = selectionProbabilityStart;
+        this._selectionProbabilityFocusedPhase = selectionProbabilityFocusedPhase;
+    }
+
+    /**
+     * Sets the maximum number of chromosomes stored for a fitness function at start.
+     * @param maxArchiveSizeStart the max. number of chromosomes for a fitness function (start)
+     * @param maxArchiveSizeFocusedPhase the max. number of chromosomes for a fitness function (focused phase)
+     */
+    setMaxArchiveSizes(maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number): void {
+        this._maxArchiveSizeStart = maxArchiveSizeStart;
+        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
+    }
+
+    /**
+     * Sets the percentage of iterations.
+     * @param startOfFocusedPhase The percentage of iterations as decimal value after which the
+     *          focused search starts.
+     */
+    setStartOfFocusedPhase(startOfFocusedPhase: number): void {
+        this._startOfFocusedPhase = startOfFocusedPhase;
+    }
+
+    /**
+     * Sets the minimum and maximum number of the integer range.
+     * @param min the minimum of the range
+     * @param max the maximum of the range
+     */
+    setIntRange(min: number, max: number): void {
+        this._minRange = min;
+        this._maxRange = max;
     }
 
 }

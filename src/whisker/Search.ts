@@ -61,7 +61,6 @@ export class Search {
         console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
-        testGenerator.setSearchAlgorithmProperties(config.getSearchAlgorithmProperties());
         const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
         const executor = new TestExecutor(this.vm);
         for (const test of whiskerTests) {

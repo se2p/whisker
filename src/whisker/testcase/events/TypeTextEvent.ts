@@ -27,7 +27,7 @@ export class TypeTextEvent implements ScratchEvent {
 
     }
 
-    arity(): number {
+    getNumParameters(): number {
         return 1; // Text?
     }
 }

@@ -26,8 +26,11 @@ import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/Single
 import {List} from "../../../../src/whisker/utils/List";
 import {MIO} from "../../../../src/whisker/search/algorithms/MIO";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {MIOBuilder} from "../../../../src/whisker/search/algorithms/MIOBuilder";
-import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
+import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
+import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
+import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
+import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 
 describe('MIO', () => {
 
@@ -35,7 +38,32 @@ describe('MIO', () => {
     const iterations = 1000;
 
     beforeEach(() => {
-        searchAlgorithm = new MIOBuilder().buildSearchAlgorithm();
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
+
+        const chromosomeLength = 10;
+        const populationSize = null;
+
+        const startFocusedPhase = 0.5;
+        const randomSelectionProbabilityStart = 0.5;
+        const randomSelectionProbabilityFocusedPhase = 0;
+        const maxArchiveSizeStart = 10;
+        const maxArchiveSizeFocusedPhase = 1;
+        const maxMutationCountStart = 0;
+        const maxMutationCountFocusedPhase = 10;
+
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
+        properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
+        properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
+        properties.setStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        properties.setStartOfFocusedPhase(startFocusedPhase);
+
+        searchAlgorithm = builder
+            .addProperties(properties)
+            .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
+                new BitflipMutation(), new SinglePointCrossover()))
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength)
+            .buildSearchAlgorithm();
     });
 
     test('Find optimal solution', () => {
@@ -72,10 +100,21 @@ describe('MIO', () => {
         const iterations = 100;
         const crossoverProbability = 1;
         const mutationProbability = 1;
+        const startOfFocusPhase = 0.4;
+        const start = 0.4;
+        const focusedPhase = 0.1;
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength, crossoverProbability, mutationProbability);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties);
+        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        properties.setCrossoverProbability(crossoverProbability);
+        properties.setMutationProbablity(mutationProbability);
+        properties.setStartOfFocusedPhase(startOfFocusPhase);
+        properties.setSelectionProbabilities(start, focusedPhase);
+        properties.setMaxArchiveSizes(start, focusedPhase);
+        properties.setMaxMutationCounter(start, focusedPhase);
         const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
+        properties.setStoppingCondition(stoppingCondition);
+
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         const heuristicFunctions = new Map<number, Function>();
         for (let i = 0; i < chromosomeLength; i++) {
@@ -86,46 +125,22 @@ describe('MIO', () => {
         const searchAlgo = new MIO();
         searchAlgo.setProperties(properties);
         expect(searchAlgo["_properties"]).toBe(properties);
+        expect(searchAlgo["_randomSelectionProbabilityStart"]).toBe(start);
+        expect(searchAlgo["_randomSelectionProbabilityFocusedPhase"]).toBe(focusedPhase);
+        expect(searchAlgo["_maxArchiveSizeStart"]).toBe(start);
+        expect(searchAlgo["_maxArchiveSizeFocusedPhase"]).toBe(focusedPhase);
+        expect(searchAlgo["_maxMutationCountStart"]).toBe(start);
+        expect(searchAlgo["_maxMutationCountFocusedPhase"]).toBe(focusedPhase);
+        expect(searchAlgo["_stoppingCondition"]).toBe(stoppingCondition);
 
         searchAlgo.setChromosomeGenerator(chromosomeGenerator);
         expect(searchAlgo["_chromosomeGenerator"]).toBe(chromosomeGenerator);
 
-        searchAlgo.setStoppingCondition(stoppingCondition);
-        expect(searchAlgo["_stoppingCondition"]).toBe(stoppingCondition);
-
         searchAlgo.setFitnessFunctions(fitnessFunctions);
         expect(searchAlgo["_fitnessFunctions"]).toBe(fitnessFunctions);
 
-        const startOfFocusPhase = 0.4;
-        searchAlgo.setStartOfFocusedPhase(startOfFocusPhase);
-        expect(searchAlgo["_startOfFocusedPhase"]).toBe(startOfFocusPhase);
-
         searchAlgo.setHeuristicFunctions(heuristicFunctions);
         expect(searchAlgo["_heuristicFunctions"]).toBe(heuristicFunctions);
-
-        const start = 0.4;
-        const focusedPhase = 0.1;
-        searchAlgo.setSelectionProbabilities(start, focusedPhase);
-        expect(searchAlgo["_randomSelectionProbabilityStart"]).toBe(start);
-        expect(searchAlgo["_randomSelectionProbabilityFocusedPhase"]).toBe(focusedPhase);
-
-        searchAlgo.setArchiveSizes(start, focusedPhase);
-        expect(searchAlgo["_maxArchiveSizeStart"]).toBe(start);
-        expect(searchAlgo["_maxArchiveSizeFocusedPhase"]).toBe(focusedPhase);
-
-        searchAlgo.setMutationCounter(start, focusedPhase);
-        expect(searchAlgo["_maxMutationCountStart"]).toBe(start);
-        expect(searchAlgo["_maxMutationCountFocusedPhase"]).toBe(focusedPhase);
     });
 
-    test("Not supported setter", () => {
-        const searchAlgorithm: MIO<BitstringChromosome> = new MIO();
-        expect(function() {
-            searchAlgorithm.setFitnessFunction(null);
-        }).toThrow();
-
-        expect(function() {
-            searchAlgorithm.setSelectionOperator(null);
-        }).toThrow();
-    });
 });

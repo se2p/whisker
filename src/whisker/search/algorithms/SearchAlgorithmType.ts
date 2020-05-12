@@ -18,16 +18,27 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+/**
+ * A enum that shows all available types of search algorithms that can be used.
+ */
+export enum SearchAlgorithmType {
+    /**
+     * Value for 'Random' search algorithm.
+     */
+    RANDOM,
 
-export class KeyPressEvent implements ScratchEvent {
+    /**
+     * Value for 'MOSA' search algorithm.
+     */
+    MOSA,
 
-    apply(vm: VirtualMachine) {
+    /**
+     * Value for 'MIO' search algorithm.
+     */
+    MIO,
 
-    }
-
-    getNumParameters(): number {
-        return 0;
-    }
+    /**
+     * Value for 'One + One' search algorithm.
+     */
+    ONE_PLUS_ONE
 }

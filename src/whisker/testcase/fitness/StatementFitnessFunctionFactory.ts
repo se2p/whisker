@@ -6,7 +6,7 @@ import {StatementCoverageFitness} from "./StatementFitnessFunction";
 
 export class StatementFitnessFunctionFactory {
 
-    extractFitnessFunctions(vm: VirtualMachine) {
+    extractFitnessFunctions(vm: VirtualMachine): List<StatementCoverageFitness> {
         const cfg: ControlFlowGraph = generateCFG(vm)
         const fitnessFunctions: List<StatementCoverageFitness> = new List()
 
@@ -24,5 +24,7 @@ export class StatementFitnessFunctionFactory {
             const statementCoverageFitness = new StatementCoverageFitness(node);
             fitnessFunctions.add(statementCoverageFitness)
         }
+
+        return fitnessFunctions;
     }
 }

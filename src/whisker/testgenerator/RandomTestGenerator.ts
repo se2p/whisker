@@ -24,6 +24,8 @@ import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {TestChromosomeGenerator} from '../testcase/TestChromosomeGenerator';
+import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 
 /**
  * A naive approach to generating tests is to simply
@@ -32,21 +34,21 @@ import {TestChromosomeGenerator} from '../testcase/TestChromosomeGenerator';
  */
 export class RandomTestGenerator implements TestGenerator {
 
-    private searchAlgorithmProperties: SearchAlgorithmProperties<any>;
+    private _config: WhiskerSearchConfiguration;
 
-    setSearchAlgorithmProperties(properties: SearchAlgorithmProperties<any>) {
-        this.searchAlgorithmProperties = properties;
+    constructor(configuration: WhiskerSearchConfiguration) {
+        this._config = configuration;
     }
 
     // eslint-disable-next-line no-unused-vars
-    generateTests(project: ScratchProject) : List<WhiskerTest> {
+    generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
 
         // TODO: Need properties for how many tests, and how long
-        const testGenerator = new TestChromosomeGenerator(this.searchAlgorithmProperties);
+        const chromosomeGenerator: ChromosomeGenerator<any> = this._config.getChromosomeGenerator();
 
         // TODO: Repeat X times, as configured
-        const testChromosome = testGenerator.get();
+        const testChromosome = chromosomeGenerator.get();
         testSuite.add(new WhiskerTest(testChromosome));
 
         // TODO: Handle statistics

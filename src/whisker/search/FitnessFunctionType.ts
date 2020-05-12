@@ -18,16 +18,22 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+/**
+ * A enum that shows all available types of fitness functions that can be used.
+ */
+export enum FitnessFunctionType {
+    /**
+     * Value for 'One Max' fitness.
+     */
+    ONE_MAX,
 
-export class KeyPressEvent implements ScratchEvent {
+    /**
+     * Value for 'Single bit' fitness.
+     */
+    SINGLE_BIT,
 
-    apply(vm: VirtualMachine) {
-
-    }
-
-    getNumParameters(): number {
-        return 0;
-    }
+    /**
+     * Value for 'Statement' fitness.
+     */
+    STATEMENT
 }
