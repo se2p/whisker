@@ -23,7 +23,7 @@ import {ScratchEvent} from "../ScratchEvent";
 
 export class WaitEvent implements ScratchEvent {
 
-    static timeout: number = 3000;
+    static timeout: number = 500;
     static accelerationFactor: number = 1; // TODO where to get global values?
 
     runStartTime: number
