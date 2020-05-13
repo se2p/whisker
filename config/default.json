@@ -1,8 +1,8 @@
 {
-    "test-generator": "random",
-    "algorithm": "random",
+    "test-generator": "many-objective",
+    "algorithm": "mosa",
     "chromosome": "integerlist",
-    "population-size": 100,
+    "population-size": 10,
     "chromosome-length": 10,
     "crossover": {
         "operator": "single-point",

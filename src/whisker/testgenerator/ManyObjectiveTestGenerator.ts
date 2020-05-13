@@ -22,7 +22,7 @@ import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
-import {StatementCoverageFitness} from '../testcase/StatementFitnessFunction';
+import {StatementCoverageFitness} from '../testcase/fitness/StatementFitnessFunction';
 import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
@@ -41,9 +41,6 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
     }
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
-        // eslint-disable-next-line no-unused-vars
-        const fitnessFunctions = this._extractCoverageGoals(project);
-
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this._buildSearchAlgorithm();
 
@@ -58,12 +55,6 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
         // TODO: Handle statistics
 
         return testSuite;
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    _extractCoverageGoals(project: ScratchProject): List<StatementCoverageFitness> {
-        // TODO: Shared with IterativeSearchBasedTestGenerator, probably best to extract
-        throw new NotYetImplementedException();
     }
 
     private _buildSearchAlgorithm(): SearchAlgorithm<any> {

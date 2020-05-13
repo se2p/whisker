@@ -32,13 +32,16 @@ import {SearchAlgorithmType} from "./algorithms/SearchAlgorithmType";
 import {OnePlusOneEA} from "./algorithms/OnePlusOneEA";
 import {RandomSearch} from "./algorithms/RandomSearch";
 import {Chromosome} from "./Chromosome";
-import {StatementCoverageFitness} from "../testcase/StatementFitnessFunction";
+import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunction";
 import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {BitstringChromosomeGenerator} from "../bitstring/BitstringChromosomeGenerator";
 import {BitstringChromosome} from "../bitstring/BitstringChromosome";
 import {BitflipMutation} from "../bitstring/BitflipMutation";
 import {SinglePointCrossover} from "./operators/SinglePointCrossover";
 import {FitnessFunctionType} from "./FitnessFunctionType";
+import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
+import {Container} from "../utils/Container";
+import {List} from "../utils/List";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -143,7 +146,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
         this._heuristicFunctions = new Map<number, Function>();
 
-        switch(fitnessFunctionType) {
+        switch (fitnessFunctionType) {
             case FitnessFunctionType.ONE_MAX:
                 this._initializeOneMaxFitness(length);
                 break;
@@ -270,8 +273,13 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that initializes the 'Statement' fitness function(s).
      */
     private _initializeStatementFitness(chromosomeLength: number) {
-        for (let i = 0; i < chromosomeLength; i++) {
-            this._fitnessFunctions.set(i, new StatementCoverageFitness() as unknown as FitnessFunction<C>);
+        // TODO: Check if this is done correctly
+        const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
+        const fitnesses: List<StatementCoverageFitness> = factory.extractFitnessFunctions(Container.vm);
+
+        for (let i = 0; i < fitnesses.size(); i++) {
+            const fitness = fitnesses.get(i);
+            this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => v / chromosomeLength);
         }
     }

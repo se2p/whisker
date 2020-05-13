@@ -18,31 +18,44 @@
  *
  */
 
-import {FitnessFunction} from '../search/FitnessFunction';
-import {TestChromosome} from './TestChromosome';
-import {TestExecutor} from './TestExecutor';
-import {ExecutionTrace} from "./ExecutionTrace";
+import {FitnessFunction} from '../../search/FitnessFunction';
+import {TestChromosome} from '../TestChromosome';
+import {TestExecutor} from '../TestExecutor';
+import {ExecutionTrace} from "../ExecutionTrace";
+import {GraphNode} from 'scratch-analysis'
+import {Container} from "../../utils/Container";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
     // TODO: Constructor needs CDG and target node
+    private _targetNode;
 
-    getFitness (chromosome: TestChromosome): number {
-        const executor = new TestExecutor(null); // TODO: where do we get the vm?
-        const executionTrace = executor.execute(chromosome);
+    constructor(targetNode: GraphNode) {
+        this._targetNode = targetNode;
+    }
+
+    getFitness(chromosome: TestChromosome): number {
+        let executionTrace;
+
+        if (chromosome.trace == null) {
+            const executor = new TestExecutor(Container.vm);
+            executionTrace = executor.execute(chromosome);
+            chromosome.trace = executionTrace
+        } else {
+            executionTrace = chromosome.trace;
+        }
 
         const approachLevel = this._getApproachLevel(executionTrace);
         const branchDistance = this._getBranchDistance(executionTrace);
-
         return approachLevel + this._normalize(branchDistance)
     }
 
-    compare (value1: number, value2: number): number {
+    compare(value1: number, value2: number): number {
         // Smaller fitness values are better
         return value1 - value2;
     }
 
-    isOptimal (fitnessValue: number): boolean {
+    isOptimal(fitnessValue: number): boolean {
         // Covered if distance is 0
         return fitnessValue === 0.0;
     }
@@ -65,6 +78,6 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     }
 
     private _normalize(x: number): number {
-        return x/(x+1.0);
+        return x / (x + 1.0);
     }
 }

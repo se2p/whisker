@@ -23,13 +23,13 @@
 import {TestSuiteWriter} from './testgenerator/TestSuiteWriter';
 import {TestGenerator} from "./testgenerator/TestGenerator";
 import WhiskerUtil from "../test/whisker-util.js";
-import {RandomTestGenerator} from "./testgenerator/RandomTestGenerator";
 import {WhiskerTest} from "./testgenerator/WhiskerTest";
 import {List} from "./utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {TestExecutor} from "./testcase/TestExecutor";
 import {TestChromosome} from "./testcase/TestChromosome";
+import {Container} from "./utils/Container";
 
 export class Search {
 
@@ -41,8 +41,6 @@ export class Search {
 
     createTestSuite(projectFile: string, testSuiteFile: string, config: WhiskerSearchConfiguration): List<WhiskerTest> {
 //        const scratchProject = new ScratchProject(projectFile);
-
-        // TODO: Probably need to instantiate ScratchVM as well here?
 
         const testGenerator = this._selectTestGenerator(config);
         const testSuite = testGenerator.generateTests(null);
@@ -67,7 +65,6 @@ export class Search {
         const executor = new TestExecutor(this.vm);
         for (const test of whiskerTests) {
             const chromosome: TestChromosome = (test as WhiskerTest).chromosome;
-            console.log(chromosome)
             executor.execute(chromosome)
         }
     }
@@ -83,8 +80,11 @@ export class Search {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
-        const configJson = JSON.parse(configRaw)
+        const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
+
+        Container.config = config;
+        Container.vm = vm;
 
         async function init(search: Search) {
             await util.prepare(30);

@@ -55,7 +55,7 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
      * @returns a random chromosome
      */
     get(): TestChromosome {
-        let codons = new List<number>();
+        const codons = new List<number>();
         for(let i = 0; i < this._length; i++) {
             codons.add(Randomness.getInstance().nextInt(this._min, this._max));
         }

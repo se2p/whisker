@@ -18,9 +18,12 @@
  *
  */
 
-import { ExecutionTrace } from "./ExecutionTrace";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {IntegerListChromosome} from "../integerlist/IntegerListChromosome";
+import {Trace} from 'scratch-vm/src/engine/tracing'
+import {List} from "../utils/List";
+import {Mutation} from "../search/Mutation";
+import {Crossover} from "../search/Crossover";
 
 // TODO: Is-a IntegerListChromosome or has-a IntegerListChromosome?
 
@@ -29,7 +32,12 @@ export class TestChromosome extends IntegerListChromosome {
     // TODO: We should probably store the last execution trace
     // -> When fitness is calculated without any mutation we
     //    don't need to re-execute the test but use the trace
-    private _trace: ExecutionTrace;
+    private _trace: Trace;
+
+    constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
+        super(codons, mutationOp, crossoverOp);
+        this._trace = null;
+    }
 
     getFitness(fitnessFunction: FitnessFunction<this>): number {
         const fitness = fitnessFunction.getFitness(this);
@@ -37,4 +45,11 @@ export class TestChromosome extends IntegerListChromosome {
         return fitness;
     }
 
+    get trace(): Trace {
+        return this._trace;
+    }
+
+    set trace(value: Trace) {
+        this._trace = value;
+    }
 }

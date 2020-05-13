@@ -46,7 +46,7 @@ export class TestExecutor {
         while (numCodon < codons.size()) {
 
             if (this.availableEvents.isEmpty()) {
-                console.log("Whisker-Main: No events available for project.")
+                console.log("Whisker-Main: No events available for project.");
                 continue;
             }
 
@@ -64,7 +64,7 @@ export class TestExecutor {
     }
 
     private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
-        let args = []
+        let args = [];
         for (let i = 0; i < event.getNumParameters(); i++) {
             // Get next codon, but wrap around if length exceeded
             const codon = codons.get(++codonPosition % codons.size());
