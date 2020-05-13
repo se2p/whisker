@@ -41,9 +41,6 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
     }
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
-        // eslint-disable-next-line no-unused-vars
-        const fitnessFunctions = this._extractCoverageGoals(project);
-
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this._buildSearchAlgorithm();
 
@@ -58,12 +55,6 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
         // TODO: Handle statistics
 
         return testSuite;
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    _extractCoverageGoals(project: ScratchProject): List<StatementCoverageFitness> {
-        // TODO: Shared with IterativeSearchBasedTestGenerator, probably best to extract
-        throw new NotYetImplementedException();
     }
 
     private _buildSearchAlgorithm(): SearchAlgorithm<any> {
