@@ -61,6 +61,12 @@ export class WhiskerSearchConfiguration {
             properties.setStoppingCondition(new FixedIterationsStoppingCondition(stoppingCond["iterations"]))
         }
 
+        //TODO maybe we need to throw an error if we expect his and it is not here?
+        if ("integerRange" in this.dict) {
+            const integerRange = this.dict["integerRange"];
+            properties.setIntRange(integerRange["min"], integerRange["max"]);
+        }
+
         return properties;
     }
 
@@ -143,6 +149,6 @@ export class WhiskerSearchConfiguration {
             return new ManyObjectiveTestGenerator(this);
         }
 
-        throw new ConfigException("Unknown Algorithm");
+        throw new ConfigException("Unknown Algorithm " + this.dict["test-generator"]);
     }
 }
