@@ -41,10 +41,11 @@ const cli = {
             .option('-s, --scratchPath <Path>', 'Scratch project to run', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-f, --frequency <Integer>', 'Refreshrate of scratch in hz', 30)
+            .option('-c, --configPath <Path>', 'Path to a configuration file', '../../whisker-main/config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
-            .option('-c, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
-            .option('-o, --isLifeOutputCoverage', 'If the new output of the coverage should be printed regularly', false)
+            .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
+            .option('-o, --isLifeOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLifeLogEnabled', 'If the new output of the log should be printed regularly', false)
             .option('-g, --isGeneticSearch', 'If new tests should be generated via genetic serach', false);
 
@@ -55,6 +56,7 @@ const cli = {
             testPath,
             scratchPath,
             frequency,
+            configPath,
             isHeadless,
             numberOfTabs,
             isConsoleForwarded,
@@ -70,6 +72,7 @@ const cli = {
             testPath,
             scratchPath,
             frequency,
+            configPath,
             isHeadless,
             numberOfTabs,
             isConsoleForwarded,

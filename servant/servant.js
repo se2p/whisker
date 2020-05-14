@@ -12,7 +12,7 @@ const {logger, cli} = require('./util');
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
+    whiskerURL, testPath, scratchPath, frequency, configPath, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
     isLifeLogEnabled, isGeneticSearch
 } = cli.start();
 
@@ -72,6 +72,7 @@ async function runGeneticSearch (browser) {
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#toggle-output')).click();
     }
 
