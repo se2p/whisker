@@ -22,7 +22,7 @@
     "fitness-function": "statement",
     "stopping-condition": {
         "type" : "fixed-iteration",
-        "iterations": 50
+        "iterations": 1
     },
     "archive": {
         "maxArchiveSizeStart": null,
@@ -32,5 +32,6 @@
     "integerRange": {
         "min": 0,
         "max": 640
-    }
+    },
+    "wait-duration": 5
 }

@@ -35,7 +35,6 @@ import {WaitEvent} from "./events/WaitEvent";
 export class ScratchEventExtractor {
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        console.log(vm.runtime.targets)
         const eventList = new List<ScratchEvent>();
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
@@ -86,7 +85,6 @@ export class ScratchEventExtractor {
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                console.log(target)
                 let clickEvent: ClickSpriteEvent = new ClickSpriteEvent(target);
                 eventList.add(clickEvent); // TODO: Store which sprite
                 // TODO: Add one event for each clone of this sprite --- each target is a clone

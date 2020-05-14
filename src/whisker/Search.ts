@@ -62,11 +62,7 @@ export class Search {
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
-        const executor = new TestExecutor(this.vm);
-        for (const test of whiskerTests) {
-            const chromosome: TestChromosome = (test as WhiskerTest).chromosome;
-            executor.execute(chromosome)
-        }
+        //todo export whisker tests
     }
 
     public getVirtualMachine() {
