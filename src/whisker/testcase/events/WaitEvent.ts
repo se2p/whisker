@@ -20,13 +20,25 @@
 
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
+import {Container} from "../../utils/Container";
 
 export class WaitEvent implements ScratchEvent {
 
-    static timeout: number = 500;
-    static accelerationFactor: number = 1; // TODO where to get global values?
+    static timeout: number = -1; // timeout in ms
+   // static accelerationFactor: number = -1;
 
-    runStartTime: number
+    runStartTime: number;
+
+    constructor() {
+        if (WaitEvent.timeout == -1) {
+            if ("wait-duration" in Container.config) {
+                WaitEvent.timeout = Container.config["wait-duration"]
+            } else {
+                WaitEvent.timeout = 10;
+            }
+        }
+    }
+
 
     apply(vm: VirtualMachine) {
         this.runStartTime = Date.now();
@@ -38,7 +50,7 @@ export class WaitEvent implements ScratchEvent {
     }
 
     getRunTimeElapsed (): number {
-        return (Date.now() - this.runStartTime) * WaitEvent.accelerationFactor;
+        return (Date.now() - this.runStartTime);//* WaitEvent.accelerationFactor;
     }
 
     getNumParameters(): number {
