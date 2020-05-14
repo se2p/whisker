@@ -39,14 +39,15 @@ const loadTestsFromString = function (string) {
 
 const runSearch = async function () {
     Whisker.scratch.stop();
-    console.log('Whisker-Web: loading project')
+    console.log('Whisker-Web: loading project');
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
-    // TODO load config
     const config = await Whisker.configFileSelect.loadAsString();
-    Whisker.search.run(Whisker.scratch.vm, project, config);
+
+    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config);
+    Whisker.outputRun.println('summary');
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
@@ -137,7 +138,7 @@ const initComponents = function () {
             .then(string => loadTestsFromString(string)));
 
     Whisker.testRunner = new TestRunner();
-    Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
+    Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
