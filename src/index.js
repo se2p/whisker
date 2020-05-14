@@ -45,7 +45,9 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
+
     Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config);
+    Whisker.outputRun.println('summary');
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
