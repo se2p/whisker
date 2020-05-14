@@ -12,8 +12,8 @@ const {logger, cli} = require('./util');
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, frequency, configPath, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
-    isLifeLogEnabled, isGeneticSearch
+    whiskerURL, testPath, scratchPath, frequency, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
+    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch
 } = cli.start();
 
 init();
@@ -74,6 +74,7 @@ async function runGeneticSearch (browser) {
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#toggle-output')).click();
+        console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
     async function readTestOutput () {
@@ -153,8 +154,14 @@ async function runSearch (path, browser, index) {
 
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
+        await page.evaluate(frequ => document.querySelector('#scratch-vm-frequency').value = frequ, frequency);
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        await (await page.$('#fileselect-tests')).uploadFile(path);
         await (await page.$('#toggle-output')).click();
+    }
+
+    async function executeTests () {
+        await (await page.$('#run-all-tests')).click();
     }
 
     async function readTestOutput () {
@@ -201,6 +208,7 @@ async function runSearch (path, browser, index) {
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
+        await executeTests();
         const output = await readTestOutput();
         await page.close();
         return Promise.resolve(output);
@@ -234,17 +242,18 @@ function prepareTestSource (path) {
  * @returns {Array}     The test declerations as parseable ajavscript
  */
 function splitTestsSourceCodeIntoSingleTestSources (tests) {
-    return tests.reverse().map(test => {
-        const testDescription = JSON.parse(JSON.stringify(test));
-        testDescription.test = test.test.name;
+    return tests.reverse()
+        .map(test => {
+            const testDescription = JSON.parse(JSON.stringify(test));
+            testDescription.test = test.test.name;
 
-        return JSON.stringify(testDescription, null, 2)
-            .replace('"name"', 'name')
-            .replace('"description"', 'description')
-            .replace('"categories"', 'categories')
-            .replace('"test"', 'test')
-            .replace(`"${test.test.name}"`, `${test.test.name}`);
-    });
+            return JSON.stringify(testDescription, null, 2)
+                .replace('"name"', 'name')
+                .replace('"description"', 'description')
+                .replace('"categories"', 'categories')
+                .replace('"test"', 'test')
+                .replace(`"${test.test.name}"`, `${test.test.name}`);
+        });
 }
 
 /**
@@ -261,7 +270,8 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
 
     while (singleTestSources.length) {
         testSourcesPerTab[index] = testSourcesPerTab[index] ?
-            testSourcesPerTab[index].concat(', ').concat(singleTestSources.pop()) :
+            testSourcesPerTab[index].concat(', ')
+                .concat(singleTestSources.pop()) :
             singleTestSources.pop();
 
         index++;
@@ -308,8 +318,8 @@ function printTestresultsFromCivergaeGenerator (logs) {
 
     if (logs.length > 1) {
         logger.warn('Warning, the tests have been parallely executed in multiple chrome tabs. The test results for' +
-      ' each property (tests, pass, fail, etc.) list the result of each page. Coverage results can not be displayed' +
-      '.\n');
+            ' each property (tests, pass, fail, etc.) list the result of each page. Coverage results can not be displayed' +
+            '.\n');
     }
 
     const {results, coverages} = logs.reduce(
