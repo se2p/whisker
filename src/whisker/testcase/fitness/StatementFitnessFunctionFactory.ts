@@ -13,12 +13,11 @@ export class StatementFitnessFunctionFactory {
             const cdg: ControlDependenceGraph = generateCDG(cfg);
             for (const node of cdg.getAllNodes()) {
                 // TODO: Do we need fitness functions for entry and exit
-                if (node == cdg.entry()) {
+                if (node.id == "Entry" || node.id == "Exit" || node.id == "start") {
                     continue;
                 }
 
-                // TODO: Do we need fitness functions for entry and exit
-                if (node == cdg.exit()) {
+                if (node.block == undefined) {
                     continue;
                 }
 
