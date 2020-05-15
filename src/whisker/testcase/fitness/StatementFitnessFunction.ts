@@ -22,16 +22,18 @@ import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
 import {TestExecutor} from '../TestExecutor';
 import {ExecutionTrace} from "../ExecutionTrace";
-import {GraphNode} from 'scratch-analysis'
+import {GraphNode, ControlDependenceGraph} from 'scratch-analysis'
 import {Container} from "../../utils/Container";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
     // TODO: Constructor needs CDG and target node
-    private _targetNode;
+    private _targetNode: GraphNode;
+    private _cdg: ControlDependenceGraph;
 
-    constructor(targetNode: GraphNode) {
+    constructor(targetNode: GraphNode, cdg: ControlDependenceGraph ) {
         this._targetNode = targetNode;
+        this._cdg = cdg;
     }
 
     getFitness(chromosome: TestChromosome): number {
