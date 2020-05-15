@@ -19,6 +19,7 @@
  */
 
 
+import {Trace} from 'scratch-vm/src/engine/tracing.js'
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
@@ -36,13 +37,13 @@ export class TestExecutor {
         this._vm = vm;
     }
 
-    execute(testChromosome: TestChromosome): ExecutionTrace {
+    execute(testChromosome: TestChromosome): Trace {
         this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
-        this._vm.greenFlag();
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
         while (numCodon < codons.size()) {
+            this._vm.greenFlag();
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -59,7 +60,7 @@ export class TestExecutor {
             console.log("Applying " + nextEvent.constructor.name + "; " + numCodon + "/" + codons.size())
         }
 
-        return new ExecutionTrace(); // TODO implement
+        return new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces)
     }
 
     private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
