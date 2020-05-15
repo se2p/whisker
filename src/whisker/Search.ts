@@ -27,8 +27,6 @@ import {WhiskerTest} from "./testgenerator/WhiskerTest";
 import {List} from "./utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
-import {TestExecutor} from "./testcase/TestExecutor";
-import {TestChromosome} from "./testcase/TestChromosome";
 import {Container} from "./utils/Container";
 
 export class Search {
@@ -91,5 +89,3 @@ export class Search {
         init(this);
     }
 }
-
-

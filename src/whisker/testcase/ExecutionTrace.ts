@@ -18,9 +18,20 @@
  *
  */
 
+import {Trace} from 'scratch-vm/src/engine/tracing.js'
+
 /**
  * TODO
  */
 export class ExecutionTrace {
 
+    private _blockTraces: [Trace];
+
+    constructor(traces: [Trace]) {
+        this._blockTraces = traces
+    }
+
+    get blockTraces(): [Trace] {
+        return this._blockTraces;
+    }
 }

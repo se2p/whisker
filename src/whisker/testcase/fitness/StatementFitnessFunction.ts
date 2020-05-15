@@ -22,16 +22,63 @@ import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
 import {TestExecutor} from '../TestExecutor';
 import {ExecutionTrace} from "../ExecutionTrace";
-import {GraphNode} from 'scratch-analysis'
+import {GraphNode, UserEventNode, ControlDependenceGraph} from 'scratch-analysis'
 import {Container} from "../../utils/Container";
+import {List} from "../../utils/List";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
     // TODO: Constructor needs CDG and target node
-    private _targetNode;
+    private _targetNode: GraphNode;
+    private _cdg: ControlDependenceGraph;
+    private _approachLevels: Record<string, number>
+    private _userEventMapping: Record<string, string>
 
-    constructor(targetNode: GraphNode) {
+    constructor(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         this._targetNode = targetNode;
+        this._cdg = cdg;
+        this._userEventMapping = {};
+        this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
+
+    }
+
+    private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
+        const approachLevels: Record<string, number> = {};
+        const workList: List<[GraphNode, number]> = new List();
+        const visited: List<GraphNode> = new List();
+
+        workList.add([targetNode, -1]); // the target node starts with approach level -1
+        for (const elem of workList) {
+            workList.remove(elem);
+            const node = elem[0];
+            const level = elem[1];
+
+            if (visited.contains(node)) {
+                continue;
+            }
+
+            visited.add(node);
+            const pred: [GraphNode] = cdg.predecessors(node.id);
+            const currenLevel = level + 1
+            for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
+
+                if (n.hasOwnProperty("userEvent")) {
+                    this._userEventMapping[node.id] = n.id
+                }
+
+                if (n.id in approachLevels) {
+                    if (approachLevels[n.id] > currenLevel) {
+                        approachLevels[n.id] = currenLevel
+                    }
+                } else {
+                    approachLevels[n.id] = currenLevel
+                }
+
+                workList.add([n, currenLevel])
+            }
+        }
+
+        return approachLevels;
     }
 
     getFitness(chromosome: TestChromosome): number {
@@ -47,6 +94,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         const approachLevel = this._getApproachLevel(executionTrace);
         const branchDistance = this._getBranchDistance(executionTrace);
+        console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel)
         return approachLevel + this._normalize(branchDistance)
     }
 
@@ -66,9 +114,25 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
 
     private _getApproachLevel(trace: ExecutionTrace) {
+        let min: number = Number.MAX_VALUE
+
+        for (const blockTrace of trace.blockTraces) {
+
+            if (this._approachLevels[blockTrace.id] < min) {
+                min = this._approachLevels[blockTrace.id]
+            }
+
+            if (blockTrace.id in this._userEventMapping) {
+                const userEventNode = this._userEventMapping[blockTrace.id]
+                if (this._approachLevels[userEventNode] < min) {
+                    min = this._approachLevels[userEventNode]
+                }
+            }
+        }
+
         // TODO: Store target node as field
         // TODO: Measure distance between target node and execution trace in CDG
-        return 0;
+        return min;
     }
 
     private _getBranchDistance(trace: ExecutionTrace) {
