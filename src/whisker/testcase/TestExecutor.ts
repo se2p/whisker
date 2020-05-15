@@ -42,7 +42,6 @@ export class TestExecutor {
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
-        console.log("Codons: " + codons);
         while (numCodon < codons.size()) {
 
             if (this.availableEvents.isEmpty()) {
@@ -57,7 +56,7 @@ export class TestExecutor {
 
             nextEvent.apply(this._vm, args);
             new WaitEvent().apply(this._vm)
-            console.log("Applying " + nextEvent)
+            console.log("Applying " + nextEvent.constructor.name + "; " + numCodon + "/" + codons.size())
         }
 
         return new ExecutionTrace(); // TODO implement
