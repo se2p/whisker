@@ -1,5 +1,5 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {generateCDG, ControlDependenceGraph} from 'scratch-analysis'
+import {generateCFG, generateCDG, ControlFlowGraph, ControlDependenceGraph} from 'scratch-analysis'
 import {List} from "../../utils/List";
 import {StatementCoverageFitness} from "./StatementFitnessFunction";
 
@@ -9,7 +9,8 @@ export class StatementFitnessFunctionFactory {
         const fitnessFunctions: List<StatementCoverageFitness> = new List()
 
         if (!(vm === undefined || vm === null)) {
-            const cdg: ControlDependenceGraph = generateCDG(vm)
+            const cfg: ControlFlowGraph = generateCFG(vm);
+            const cdg: ControlDependenceGraph = generateCDG(cfg);
             for (const node of cdg.getAllNodes()) {
                 // TODO: Do we need fitness functions for entry and exit
                 if (node == cdg.entry()) {

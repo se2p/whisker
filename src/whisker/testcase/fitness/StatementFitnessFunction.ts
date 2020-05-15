@@ -24,16 +24,49 @@ import {TestExecutor} from '../TestExecutor';
 import {ExecutionTrace} from "../ExecutionTrace";
 import {GraphNode, ControlDependenceGraph} from 'scratch-analysis'
 import {Container} from "../../utils/Container";
+import {List} from "../../utils/List";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
     // TODO: Constructor needs CDG and target node
     private _targetNode: GraphNode;
     private _cdg: ControlDependenceGraph;
+    private _approachLevels: List<[GraphNode, number]>
 
-    constructor(targetNode: GraphNode, cdg: ControlDependenceGraph ) {
+    constructor(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         this._targetNode = targetNode;
         this._cdg = cdg;
+        this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
+    }
+
+    private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
+        let approachLevels: List<[GraphNode, number]> = new List();
+
+        let workList: List<[GraphNode, number]> = new List();
+        let visited : List<GraphNode> = new List();
+
+        let pred: [GraphNode] = cdg.predecessors(targetNode.id);
+        pred.forEach(p => workList.add([p, -1])); // the target node starts with approach level -1
+
+        for (let elem of workList) {
+            workList.remove(elem);
+            const node = elem[0];
+            const level = elem[1];
+
+            if (visited.contains(node)) {
+                continue;
+            }
+
+            visited.add(node);
+            let pred: [GraphNode] = cdg.predecessors(node.id);
+            const currenLevel = level + 1
+            for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
+                approachLevels.add([n, currenLevel])
+                workList.add([n, currenLevel])
+            }
+        }
+
+        return approachLevels;
     }
 
     getFitness(chromosome: TestChromosome): number {
