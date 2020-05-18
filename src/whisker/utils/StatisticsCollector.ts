@@ -22,7 +22,7 @@
  * Singleton class to collect statistics from search runs
  *
  */
-class StatisticsCollector {
+export class StatisticsCollector {
 
     private static _instance: StatisticsCollector;
 
@@ -37,7 +37,8 @@ class StatisticsCollector {
      * Private constructor to avoid instantiation
      */
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
+    private constructor() {
+    }
 
     public static getInstance() {
         if (!StatisticsCollector._instance) {
@@ -45,15 +46,6 @@ class StatisticsCollector {
         }
 
         return StatisticsCollector._instance;
-    }
-
-
-    static get instance(): StatisticsCollector {
-        return this._instance;
-    }
-
-    static set instance(value: StatisticsCollector) {
-        this._instance = value;
     }
 
     get fitnessFunctionCount(): number {
@@ -75,7 +67,7 @@ class StatisticsCollector {
     /**
      * Increments the number of iterations by one
      */
-    public incrementIterationCount() {
+    public incrementIterationCount(): void {
         this._iterationCount++;
     }
 
@@ -90,7 +82,7 @@ class StatisticsCollector {
     /**
      * Increments the number of covered fitness functions by one
      */
-    public incrementCoveredFitnessFunctionCount() {
+    public incrementCoveredFitnessFunctionCount(): void {
         this._coveredFitnessFunctionsCount++;
     }
 
@@ -113,7 +105,7 @@ class StatisticsCollector {
     /**
      * Increments the number executed events by one
      */
-    public incrementEventsCount() {
+    public incrementEventsCount(): void {
         this._eventsCount++;
     }
 
@@ -123,5 +115,13 @@ class StatisticsCollector {
 
     set bestTestSuiteSize(value: number) {
         this._bestTestSuiteSize = value;
+    }
+
+    public asCsv(): string {
+        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount", "bestCoverage", "eventsCount", "bestTestSuiteSize"]
+        const headerRow = headers.join(",");
+        const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount, this._bestCoverage, this._eventsCount, this._bestTestSuiteSize]
+        const dataRow = data.join(",");
+        return [headerRow, dataRow].join("\n");
     }
 }
