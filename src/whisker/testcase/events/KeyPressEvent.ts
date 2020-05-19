@@ -23,8 +23,14 @@ import {ScratchEvent} from "../ScratchEvent";
 
 export class KeyPressEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    private readonly _keyOption: string;
 
+    constructor(keyOption: string) {
+        this._keyOption = keyOption;
+    }
+
+    apply(vm: VirtualMachine) {
+        vm.runtime.startHats('event_whenkeypressed', {KEY_OPTION: this._keyOption}, null);
     }
 
     getNumParameters(): number {
