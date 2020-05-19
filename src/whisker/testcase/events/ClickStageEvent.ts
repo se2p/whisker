@@ -23,8 +23,15 @@ import {ScratchEvent} from "../ScratchEvent";
 
 export class ClickStageEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    private readonly _target: string;
 
+    constructor(target: string) {
+        this._target = target;
+    }
+
+    apply(vm: VirtualMachine) {
+        vm.runtime.startHats('event_whenstageclicked',
+            null, this._target);
     }
 
     getNumParameters(): number {

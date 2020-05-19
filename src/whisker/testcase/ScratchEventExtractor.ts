@@ -91,7 +91,7 @@ export class ScratchEventExtractor {
                 break;
             case 'event_whenstageclicked':
                 // Click stage
-                eventList.add(new ClickStageEvent()); // TODO: Do we need a position for this?
+                eventList.add(new ClickStageEvent(target)); // TODO: Do we need a position for this?
                 break;
             case 'event_whengreaterthan':
                 // Sound
