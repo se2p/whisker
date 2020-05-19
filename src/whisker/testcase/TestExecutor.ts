@@ -27,6 +27,7 @@ import {ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
 import {ScratchEvent} from "./ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 export class TestExecutor {
 
@@ -56,7 +57,9 @@ export class TestExecutor {
             numCodon += nextEvent.getNumParameters() + 1;
 
             nextEvent.apply(this._vm, args);
-            new WaitEvent().apply(this._vm)
+            StatisticsCollector.getInstance().incrementEventsCount()
+
+            new WaitEvent().apply(this._vm);
             console.log("Applying " + nextEvent.constructor.name + "; " + numCodon + "/" + codons.size())
         }
 

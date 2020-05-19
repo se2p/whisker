@@ -75,16 +75,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
-
-                if (this._fitnessFunction.isOptimal(candidateFitness)) {
-                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
-                    StatisticsCollector.getInstance().bestCoverage = 1;
-                }
             }
         }
-
-
-        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
 
         return this._bestIndividuals;
     }
