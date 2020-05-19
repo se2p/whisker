@@ -86,6 +86,7 @@ export class Search {
             util.start();
             search.execute(project, config);
             const csvString: string = StatisticsCollector.getInstance().asCsv()
+            console.log(csvString)
             return csvString;
         }
 
