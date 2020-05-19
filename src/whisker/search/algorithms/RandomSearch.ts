@@ -24,9 +24,8 @@ import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
-import {Selection} from "../Selection";
-import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -42,11 +41,12 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _bestIndividuals = new List<C>();
 
-    setChromosomeGenerator(generator : ChromosomeGenerator<C>) {
+    setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
     }
 
-    setFitnessFunction(fitnessFunction : FitnessFunction<C>) {
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>) {
+        StatisticsCollector.getInstance().fitnessFunctionCount = 1;
         this._fitnessFunction = fitnessFunction;
     }
 
@@ -64,18 +64,28 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         let bestIndividual = null;
         let bestFitness = 0;
 
-        while(!this._stoppingCondition.isFinished(this)) {
+        while (!this._stoppingCondition.isFinished(this)) {
+            StatisticsCollector.getInstance().incrementIterationCount();
             this._iterations++;
             let candidateChromosome = this._chromosomeGenerator.get();
             let candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
 
-            if(this._fitnessFunction.compare(candidateFitness, bestFitness) < 0) {
+            if (this._fitnessFunction.compare(candidateFitness, bestFitness) < 0) {
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
+
+                if (this._fitnessFunction.isOptimal(candidateFitness)) {
+                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
+                    StatisticsCollector.getInstance().bestCoverage = 1;
+                }
             }
         }
+
+
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+
         return this._bestIndividuals;
     }
 
@@ -86,4 +96,6 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
     getCurrentSolution(): List<C> {
         return this._bestIndividuals;
     }
+
+
 }

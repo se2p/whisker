@@ -85,7 +85,8 @@ export class Search {
             await util.prepare(30);
             util.start();
             search.execute(project, config);
-            console.log(StatisticsCollector.getInstance().asCsv());
+            const csvString: string = StatisticsCollector.getInstance().asCsv()
+            return csvString;
         }
 
         init(this);
