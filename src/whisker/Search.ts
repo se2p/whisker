@@ -28,6 +28,7 @@ import {List} from "./utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
+import {StatisticsCollector} from "./utils/StatisticsCollector";
 
 export class Search {
 
@@ -84,6 +85,9 @@ export class Search {
             await util.prepare(30);
             util.start();
             search.execute(project, config);
+            const csvString: string = StatisticsCollector.getInstance().asCsv()
+            console.log(csvString)
+            return csvString;
         }
 
         init(this);

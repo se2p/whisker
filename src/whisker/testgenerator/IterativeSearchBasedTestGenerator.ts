@@ -28,6 +28,7 @@ import {WhiskerTest} from './WhiskerTest';
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 /**
  * To generate a test suite using single-objective search,
@@ -60,10 +61,13 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
             if (fitnessFunction.isCovered(testChromosome)) {
                 testChromosomes.add(testChromosome);
                 testSuite.add(new WhiskerTest(testChromosome));
+                StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
             }
         }
 
         // TODO: Handle statistics
+        StatisticsCollector.getInstance().bestCoverage = (fitnessFunctions.size() / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
+        StatisticsCollector.getInstance().bestTestSuiteSize = testSuite.size();
 
         return testSuite;
     }
