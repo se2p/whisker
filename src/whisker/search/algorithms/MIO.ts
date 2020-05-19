@@ -75,11 +75,11 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _samplingCounter: Map<number, number>;
 
-    setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
+    setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>) {
+    setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
         this._stoppingCondition = this._properties.getStoppingCondition();
         this.extractRandomSelectionProbabilities();
@@ -90,7 +90,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Extracts the probability for sampling a random chromosome out of the set properties.
      */
-    private extractRandomSelectionProbabilities() {
+    private extractRandomSelectionProbabilities(): void {
         this._randomSelectionProbabilityStart = this._properties.getSelectionProbabilityStart();
         this._randomSelectionProbabilityFocusedPhase = this._properties.getSelectionProbabilityFocusedPhase();
     }
@@ -98,7 +98,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Extracts the maximum number of chromosomes stored for a fitness function out of the set properties.
      */
-    private extractArchiveSizes() {
+    private extractArchiveSizes(): void {
         this._maxArchiveSizeStart = this._properties.getMaxArchiveSizeStart();
         this._maxArchiveSizeFocusedPhase = this._properties.getMaxArchiveSizeFocusedPhase();
     }
@@ -106,16 +106,16 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Extracts the number of mutations on the same chromosome out of the set properties.
      */
-    private extractMutationCounter() {
+    private extractMutationCounter(): void {
         this._maxMutationCountStart = this._properties.getMaxMutationCountStart();
         this._maxMutationCountFocusedPhase = this._properties.getMaxMutationCountFocusedPhase();
     }
 
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
         this._fitnessFunctions = fitnessFunctions;
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, Function>) {
+    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void {
         this._heuristicFunctions = heuristicFunctions;
     }
 
