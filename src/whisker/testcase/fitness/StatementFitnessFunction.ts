@@ -59,7 +59,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
             visited.add(node);
             const pred: [GraphNode] = cdg.predecessors(node.id);
-            const currenLevel = level + 1
+            const currentLevel = level + 1
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
 
                 if (n.hasOwnProperty("userEvent")) {
@@ -67,14 +67,14 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 }
 
                 if (n.id in approachLevels) {
-                    if (approachLevels[n.id] > currenLevel) {
-                        approachLevels[n.id] = currenLevel
+                    if (approachLevels[n.id] > currentLevel) {
+                        approachLevels[n.id] = currentLevel
                     }
                 } else {
-                    approachLevels[n.id] = currenLevel
+                    approachLevels[n.id] = currentLevel
                 }
 
-                workList.add([n, currenLevel])
+                workList.add([n, currentLevel])
             }
         }
 
@@ -138,7 +138,19 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     private _getBranchDistance(trace: ExecutionTrace) {
         // TODO: Determine control dependency where execution branched erroneously
         // TODO: Calculate branch distance for node where diverged
-        return 0.0;
+
+        let minBranchApproachLevel: number = Number.MAX_VALUE
+        let branchDistance = 0;
+        for (const blockTrace of trace.blockTraces) {
+            if (this._approachLevels[blockTrace.id] <= minBranchApproachLevel) {
+                if (blockTrace.opcode.startsWith("control") && blockTrace.distances.length > 0) {
+                    minBranchApproachLevel = this._approachLevels[blockTrace.id]
+                    branchDistance = blockTrace.distances[0]
+                }
+            }
+        }
+
+        return branchDistance;
     }
 
     private _normalize(x: number): number {
