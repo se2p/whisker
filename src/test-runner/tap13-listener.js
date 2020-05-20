@@ -127,6 +127,24 @@ class TAP13Listener {
     }
 
     /**
+     * @param {object} summaries .
+     * @return {object} .
+     */
+    static mergeFormattedSummaries (summaries) {
+        return summaries.reduce((mergedSummary, summary) => {
+            Object.keys(summary).forEach(key => {
+                if (mergedSummary[key]) {
+                    mergedSummary[key] += summary[key];
+                } else {
+                    mergedSummary[key] = summary[key];
+                }
+            });
+
+            return mergedSummary;
+        }, {});
+    }
+
+    /**
      * @param {TestResult[]} summary .
      * @return {object} .
      */
