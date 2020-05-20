@@ -95,6 +95,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         const approachLevel = this._getApproachLevel(executionTrace);
         const branchDistance = this._getBranchDistance(executionTrace);
         console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel)
+        console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance)
         return approachLevel + this._normalize(branchDistance)
     }
 
@@ -143,9 +144,19 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         let branchDistance = 0;
         for (const blockTrace of trace.blockTraces) {
             if (this._approachLevels[blockTrace.id] <= minBranchApproachLevel) {
-                if (blockTrace.opcode.startsWith("control") && blockTrace.distances.length > 0) {
+                if (blockTrace.opcode.startsWith("control")) {
+                    const controlNode = this._cdg.getNode(blockTrace.id);
+                    const requiredCondition =  this._checkControlBlock(this._targetNode, controlNode);
                     minBranchApproachLevel = this._approachLevels[blockTrace.id]
-                    branchDistance = blockTrace.distances[0]
+
+                    // blockTrace distances contains a list of all measured distances in a condition
+                    // (unless it is "and" or "or" there should only be one element.
+                    // The first is the true distance, the second the false distance
+                    if (requiredCondition) {
+                        branchDistance = blockTrace.distances[0][0]
+                    } else {
+                        branchDistance = blockTrace.distances[0][1]
+                    }
                 }
             }
         }
@@ -156,4 +167,61 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     private _normalize(x: number): number {
         return x / (x + 1.0);
     }
+
+    _checkControlBlock(statement, controlNode) {
+        let requiredCondition;
+        switch (controlNode.block.opcode) {
+            case 'control_repeat':
+            case 'control_forever': { // Todo not sure about forever
+                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
+                    requiredCondition = true;
+                }
+                break;
+            }
+            case 'control_repeat_until': {
+                requiredCondition = false;
+                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
+                    requiredCondition = true;
+                }
+                break;
+            }
+            case 'control_if': {
+                requiredCondition = true;
+                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
+                    requiredCondition = true;
+                }
+                break;
+            }
+            case 'control_if_else': {
+                requiredCondition = false;
+                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
+                    requiredCondition = true;
+                    break;
+                }
+                const elseBlock = controlNode.block.inputs.SUBSTACK2.block;
+                if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
+                    requiredCondition = false;
+                }
+            }
+        }
+        return requiredCondition;
+    }
+
+    _matchesBranchStart(statement, controlNode, branchStartId) {
+        let cur = statement;
+        while (cur.id !== controlNode.id) {
+            if (cur.id === branchStartId) {
+                return true;
+            }
+            cur = this._cdg.predecessors(cur.id)
+                .values()
+                .next()
+                .value;
+        }
+        return false;
+    };
 }
