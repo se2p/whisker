@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-return-assign */
-/* eslint-disable require-jsdoc */
 /* eslint-disable func-style */
 /* eslint-disable no-use-before-define */
 
@@ -8,12 +7,13 @@ const fs = require('fs');
 const {basename} = require('path');
 const puppeteer = require('puppeteer');
 const {logger, cli} = require('./util');
+const {CoverageGenerator, TAP13Listener} = require('../../whisker-main');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, frequency, isHeadless, numberOfTabs, isConsoleForwarded, isLifeOutputCoverage,
-    isLifeLogEnabled
+    whiskerURL, testPath, scratchPath, accelerationFactor, isHeadless, numberOfTabs, isConsoleForwarded,
+    isLifeOutputCoverage, isLifeLogEnabled
 } = cli.start();
 
 init();
@@ -32,9 +32,12 @@ async function init () {
         });
 
     Promise.all(paths.map((path, index) => runTests(path, browser, index)))
-        .then(logs => {
+        .then(results => {
             browser.close();
-            printTestresultsFromCivergaeGenerator(logs);
+            const summaries = results.map(({summary}) => summary);
+            const coverages = results.map(({coverage}) => coverage);
+
+            printTestresultsFromCivergaeGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
             logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         })
         .catch(errors => logger.error('Error on executing tests: ', errors))
@@ -55,6 +58,9 @@ async function runTests (path, browser, index) {
         process.exit(1);
     });
 
+    /**
+     * Enables that console logs in the chrome instance are forwarded to the bash instance this script is started with.
+     */
     function optionallyEnableConsoleForward () {
         if (isConsoleForwarded) {
             page.on('console', msg => {
@@ -65,18 +71,30 @@ async function runTests (path, browser, index) {
         }
     }
 
+    /**
+     * Configure the Whisker instance, by setting the application file, test file and accelerationFactor, after the page
+     * was loaded.
+     */
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
-        await page.evaluate(frequ => document.querySelector('#scratch-vm-frequency').value = frequ, frequency);
+        await page.evaluate(
+            factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-tests')).uploadFile(path);
         await (await page.$('#toggle-output')).click();
     }
 
+    /**
+     * Executes the tests, by clicking the button.
+     */
     async function executeTests () {
         await (await page.$('#run-all-tests')).click();
     }
 
+    /**
+     * Reads the coverage and log field until the summary is printed into the coverage field, indicatin that the test
+     * run is over.
+     */
     async function readTestOutput () {
         const coverageOutput = await page.$('#output-run .output-content');
         const logOutput = await page.$('#output-log .output-content');
@@ -116,13 +134,47 @@ async function runTests (path, browser, index) {
         return coverageLog;
     }
 
+    /**
+     * Generates a coverage object based on the coveredBlockIdsPerSprite and blockIdsPerSprite from the
+     * CoverageGenerator used in serializeAndReturnCoverageObject.
+     *
+     * @param {*} serializedCoverage  The coverage object, using array and objects instead of maps and sets, as it was
+     *                                serialized by puppeter
+     * @returns {coverage}            The coverage object
+     */
+    function convertSerializedCoverageToCoverage (serializedCoverage) {
+        const coveredBlockIdsPerSprite = new Map();
+        serializedCoverage.coveredBlockIdsPerSprite
+            .forEach(({key, values}) => coveredBlockIdsPerSprite.set(key, new Set(values)));
+        const blockIdsPerSprite = new Map();
+        serializedCoverage.blockIdsPerSprite.forEach(({key, values}) => blockIdsPerSprite.set(key, new Set(values)));
+        return {coveredBlockIdsPerSprite, blockIdsPerSprite};
+    }
+
+    /**
+     * Uses the GoverageGererator, which is attached to the winow object in the whisker-web/index.js to get the coverage
+     * of the test run and transfer it from the Whisker instance in the browser to this script.
+     * The original Maps and Sets have to be reworkd to be a collection of ojects and arrays, otherwise the coverage raw
+     * data cannot be transfered from the Chrome instance to the nodejs instance.
+     */
+    async function onFinishedCallback () {
+        return page.evaluate(() => new Promise(resolve => {
+            document.defaultView.messageServantCallback = message => resolve(message);
+        }));
+    }
+
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
+        const promise = onFinishedCallback();
+
         await executeTests();
-        const output = await readTestOutput();
+
+        await readTestOutput();
+        const {serializeableCoverageObject, summary} = await promise;
         await page.close();
-        return Promise.resolve(output);
+
+        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializeableCoverageObject)});
     } catch (e) {
         return Promise.reject(e);
     }
@@ -220,33 +272,18 @@ function prepateTestFiles (whiskerTestPath) {
 /**
  * Logs the coverage and results (number of fails, pass or skip) to the console in a more readable way.
  *
- * @param {string} logs  The logs from the whisker-web instance
+ * @param {string} summaries The summaries from the whisker-web instance test run
+ * @param {string} coverage  Combined coverage of from all pages
  */
-function printTestresultsFromCivergaeGenerator (logs) {
-    logger.info('Run Finished\n');
+function printTestresultsFromCivergaeGenerator (summaries, coverage) {
+    logger.info('Run Finished');
 
-    if (logs.length > 1) {
-        logger.warn('Warning, the tests have been parallely executed in multiple chrome tabs. The test results for' +
-      ' each property (tests, pass, fail, etc.) list the result of each page. Coverage results can not be displayed' +
-      '.\n');
-    }
+    const formattedSummary = TAP13Listener.mergeFormattedSummaries(summaries.map(TAP13Listener.formatSummary));
+    const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
 
-    const {results, coverages} = logs.reduce(
-        (acc, log) => {
-            acc.results.push(
-                log.substring(log.indexOf('# summary:') + '# summary:\n'.length, log.indexOf('# coverage:')));
-            acc.coverages.push(log.substring(log.indexOf('# coverage:'), log.length));
-            return acc;
-        },
-        {results: [], coverages: []}
-    );
+    const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
 
-    logger.info(
-        'Results:\n',
-        results.join()
-            .replace(' ', '')
-            .replace(/# {3}/g, '')
-            .replace(/,/g, '\n')
-            .replace('#  ', ''));
-    logger.info('Coverages:\n', coverages.join());
+    logger.info('\nSummary:\n', summaryString);
+    logger.info('\nCoverage:\n', coverageString);
 }
