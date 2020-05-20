@@ -35,7 +35,7 @@ import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctio
 describe('MIO', () => {
 
     let searchAlgorithm;
-    const iterations = 1000;
+    const iterations = 10000;
 
     beforeEach(() => {
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
