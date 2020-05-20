@@ -20,7 +20,7 @@ class WhiskerUtil {
         this.project = project;
     }
 
-    async prepare (accelerationFactor) {
+    async prepare (accelerationFactor = 1) {
         await this.vmWrapper.setup(this.project, accelerationFactor);
     }
 
