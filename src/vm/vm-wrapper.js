@@ -245,7 +245,7 @@ class VMWrapper {
      *
      * @returns {Promise<void>} .
      */
-    async setup (project, accelerationFactor) {
+    async setup (project, accelerationFactor = 1) {
         const setStepTime = factor => {
             delete Runtime.THREAD_STEP_INTERVAL;
             Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / factor;
