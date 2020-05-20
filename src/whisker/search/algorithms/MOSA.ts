@@ -28,6 +28,7 @@ import {PopulationFactory} from '../PopulationFactory';
 import {Randomness} from "../../utils/Randomness";
 import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -64,6 +65,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
         this._fitnessFunctions = fitnessFunctions;
+        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
     setSelectionOperator(selectionOperator: Selection<C>): void {
@@ -86,6 +88,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     findSolution(): List<C> {
         this._bestIndividuals.clear();
         this._archive.clear();
+        this._iterations = 0;
+        StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         const parentPopulation = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
         this.updateArchive(parentPopulation);
         while (!this._stoppingCondition.isFinished(this)) {
@@ -109,6 +114,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             parentPopulation.reverse(); // reverse order from descending to ascending by quality for rank selection
             this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
             this._iterations++;
+            StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+            StatisticsCollector.getInstance().incrementIterationCount();
         }
         return this._bestIndividuals;
     }
@@ -180,6 +187,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 const candidateLength = candidateChromosome.getLength();
                 if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                     bestLength = candidateLength;
+                    if (!this._archive.has(fitnessFunctionKey)) {
+                        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    }
                     this._archive.set(fitnessFunctionKey, candidateChromosome);
                 }
             }
