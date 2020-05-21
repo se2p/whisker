@@ -39,12 +39,12 @@ export class TestExecutor {
     }
 
     execute(testChromosome: TestChromosome): Trace {
-        this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
+        this._vm.greenFlag();
 
+        this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
         let numCodon = 0;
         const codons = testChromosome.getGenes();
         while (numCodon < codons.size()) {
-            this._vm.greenFlag();
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
