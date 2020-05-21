@@ -25,7 +25,7 @@ import {Preconditions} from "../utils/Preconditions";
 
 export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosome> {
 
-    private _size: number;
+    protected _size: number;
 
     constructor(size: number) {
         this._size = size;
