@@ -142,6 +142,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         let minBranchApproachLevel: number = Number.MAX_VALUE
         let branchDistance = 0;
+        let first = true;
         for (const blockTrace of trace.blockTraces) {
             if (this._approachLevels[blockTrace.id] <= minBranchApproachLevel) {
                 if (blockTrace.opcode.startsWith("control")) {
@@ -152,10 +153,15 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                     // blockTrace distances contains a list of all measured distances in a condition
                     // (unless it is "and" or "or" there should only be one element.
                     // The first is the true distance, the second the false distance
+                    let newDistance;
                     if (requiredCondition) {
-                        branchDistance = blockTrace.distances[0][0]
+                        newDistance = blockTrace.distances[0][0]
                     } else {
-                        branchDistance = blockTrace.distances[0][1]
+                        newDistance = blockTrace.distances[0][1]
+                    }
+                    if (newDistance < branchDistance || first) {
+                        branchDistance = newDistance;
+                        first = false; // not sure if this is elegant
                     }
                 }
             }
