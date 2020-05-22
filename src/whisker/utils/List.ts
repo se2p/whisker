@@ -65,6 +65,15 @@ export class List<T> implements Iterable<T> {
     }
 
     /**
+     * Inserts the specified element at the specified position/
+     * @param element element to be added to the list
+     * @param position position where to insert the element
+     */
+    insert(element: T, position: number): void {
+        this._items.splice(position, 0, element);
+    }
+
+    /**
      * Appends the specified element to the end of this list.
      * @param element element to be added to the list
      */
