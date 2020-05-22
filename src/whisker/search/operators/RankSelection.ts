@@ -22,6 +22,7 @@ import {Chromosome} from "../Chromosome";
 import {Selection} from "../Selection";
 import {List} from "../../utils/List";
 import {Randomness} from "../../utils/Randomness";
+import {FitnessFunction} from "../FitnessFunction";
 
 /**
  * The rank selection operator.
@@ -37,21 +38,21 @@ export class RankSelection<C extends Chromosome> implements Selection<C> {
      * @param sortedPopulation The population of chromosomes from which to select, sorted in ascending order.
      * @returns the selected chromosome.
      */
-    apply(sortedPopulation: List<C>): C {
-        let upperSelectionBorders = new Map<C, number>();
-        let N = sortedPopulation.size();
-        let c = (2 * N) / (N + 1);
+    apply(sortedPopulation: List<C>, fitnessFunction?: FitnessFunction<C>): C {
+        const upperSelectionBorders = new Map<C, number>();
+        const N = sortedPopulation.size();
+        const c = (2 * N) / (N + 1);
         let probabilitySum = 0;
         for (let i = 1; i <= N; i++) {
-            let probability = (1 / N) * (2 - c + 2 * (c - 1) * (i - 1) / (N - 1));
+            const probability = (1 / N) * (2 - c + 2 * (c - 1) * (i - 1) / (N - 1));
             probabilitySum += probability;
-            let chromosome = sortedPopulation.get(i - 1);
+            const chromosome = sortedPopulation.get(i - 1);
             upperSelectionBorders.set(chromosome, probabilitySum);
         }
         let selected = sortedPopulation.get(N - 1);
-        let random = Randomness.getInstance().nextDouble();
-        for (let chromosome of sortedPopulation) {
-            let upperBorder = upperSelectionBorders.get(chromosome);
+        const random = Randomness.getInstance().nextDouble();
+        for (const chromosome of sortedPopulation) {
+            const upperBorder = upperSelectionBorders.get(chromosome);
             if (random < upperBorder) {
                 selected = chromosome;
                 break;

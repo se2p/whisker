@@ -20,6 +20,7 @@
 
 import { Chromosome } from "./Chromosome";
 import { List } from "../utils/List";
+import {FitnessFunction} from "./FitnessFunction";
 
 /**
  * The selection operator is responsible for determining which chromosomes should be subjected to
@@ -35,6 +36,6 @@ export interface Selection<C extends Chromosome> {
      * @param population the population of chromosomes from which to select
      * @returns the selected chromosome
      */
-    apply(population: List<C>): C;
+    apply(population: List<C>, fitnessFunction?: FitnessFunction<C>): C;
 
 }
