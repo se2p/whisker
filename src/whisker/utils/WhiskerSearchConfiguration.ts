@@ -19,6 +19,8 @@ import {IterativeSearchBasedTestGenerator} from "../testgenerator/IterativeSearc
 import {ManyObjectiveTestGenerator} from "../testgenerator/ManyObjectiveTestGenerator";
 import {FitnessFunctionType} from "../search/FitnessFunctionType";
 import {List} from "./List";
+import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
+import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
 
 class ConfigException implements Error {
     message: string;
@@ -75,6 +77,8 @@ export class WhiskerSearchConfiguration {
         switch (this.dict['mutation']['operator']) {
             case 'bitflip':
                 return new BitflipMutation();
+            case 'variablelength':
+                return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
@@ -83,6 +87,8 @@ export class WhiskerSearchConfiguration {
 
     private _getCrossoverOperator(): Crossover<any> {
         switch (this.dict['crossover']['operator']) {
+            case 'singlepointrelative':
+                return new SinglePointRelativeCrossover();
             case 'singlepoint':
             default:
                 return new SinglePointCrossover();
