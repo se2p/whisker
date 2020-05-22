@@ -18,6 +18,12 @@ import {TestChromosomeGenerator} from "../testcase/TestChromosomeGenerator";
 import {IterativeSearchBasedTestGenerator} from "../testgenerator/IterativeSearchBasedTestGenerator";
 import {ManyObjectiveTestGenerator} from "../testgenerator/ManyObjectiveTestGenerator";
 import {FitnessFunctionType} from "../search/FitnessFunctionType";
+import {TournamentSelection} from "../search/operators/TournamentSelection";
+import {FitnessFunction} from "../search/FitnessFunction";
+import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
+import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunction";
+import {OneMaxFitnessFunction} from "../bitstring/OneMaxFitnessFunction";
+import {SingleBitFitnessFunction} from "../bitstring/SingleBitFitnessFunction";
 
 class ConfigException implements Error {
     message: string;
@@ -90,6 +96,9 @@ export class WhiskerSearchConfiguration {
 
     public getSelectionOperator(): Selection<any> {
         switch (this.dict['selection']['operator']) {
+            case 'tournament':
+                // TODO: TournamentSelection needs a fitness function -> for problem see _getFitnessFunctionObject()
+                return new TournamentSelection(this.dict['selection']['tournamentSize'], this._getFitnessFunctionObject());
             case 'rank':
             default:
                 return new RankSelection();
@@ -124,6 +133,24 @@ export class WhiskerSearchConfiguration {
             default:
                 return FitnessFunctionType.SINGLE_BIT;
         }
+    }
+
+    private _getFitnessFunctionObject(): FitnessFunction<any> {
+        switch (this.getFitnessFunctionType()) {
+            case FitnessFunctionType.STATEMENT:
+                // TODO: StatementCoverageFitness/StatementFitnessFunctionFactory need parameter
+                //  one does not know at this point
+                // return new StatementCoverageFitness();
+                return null;
+            case FitnessFunctionType.ONE_MAX:
+                return new OneMaxFitnessFunction(this.dict['chromosome-length']);
+            case FitnessFunctionType.SINGLE_BIT:
+            default:
+            // TODO: SingleBitFitnessFunction need parameter
+            //  one does not know at this point
+            // return new SingleBitFitnessFunction(this.dict['chromosome-length']);
+        }
+        return null; // TODO: remove
     }
 
     public getAlgorithm(): SearchAlgorithmType {

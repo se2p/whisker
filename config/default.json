@@ -17,7 +17,8 @@
     "selection": {
         "operator": "dummy",
         "randomSelectionProbabilityStart": null,
-        "randomSelectionProbabilityFocusedPhase": null
+        "randomSelectionProbabilityFocusedPhase": null,
+        "tournamentSize": null
     },
     "fitness-function": "statement",
     "stopping-condition": {
