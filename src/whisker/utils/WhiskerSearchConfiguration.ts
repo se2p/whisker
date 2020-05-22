@@ -78,7 +78,7 @@ export class WhiskerSearchConfiguration {
             case 'bitflip':
                 return new BitflipMutation();
             case 'variablelength':
-                return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
+                return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'], this.dict['chromosome-length']);
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
