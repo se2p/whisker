@@ -93,7 +93,8 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
             .addSelectionOperator(this._config.getSelectionOperator())
             .addProperties(this._config.getSearchAlgorithmProperties())
             .initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.getSearchAlgorithmProperties().getChromosomeLength())
+                this._config.getSearchAlgorithmProperties().getChromosomeLength(),
+                this._config.getFitnessFunctionTargets())
             .addChromosomeGenerator(this._config.getChromosomeGenerator())
 
             .buildSearchAlgorithm();

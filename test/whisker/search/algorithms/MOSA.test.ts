@@ -57,7 +57,7 @@ describe('MOSA', () => {
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
             .addSelectionOperator(new RankSelection())
-            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength);
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
 
         searchAlgorithm = builder.buildSearchAlgorithm();
     });

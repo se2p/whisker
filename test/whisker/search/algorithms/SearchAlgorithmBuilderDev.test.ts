@@ -31,6 +31,7 @@ import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/Sea
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
+import {List} from "../../../../src/whisker/utils/List";
 
 describe('BuillderBitstringChromosome', () => {
 
@@ -79,11 +80,11 @@ describe('BuillderBitstringChromosome', () => {
         builder.addChromosomeGenerator(chromosomeGenerator);
         expect(builder["_chromosomeGenerator"]).toBe(chromosomeGenerator);
 
-        builder.initializeFitnessFunction(FitnessFunctionType.ONE_MAX, chromosomeLength);
+        builder.initializeFitnessFunction(FitnessFunctionType.ONE_MAX, chromosomeLength, new List());
         expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
         expect(builder["_fitnessFunction"]).not.toBeNull();
 
-        builder.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength);
+        builder.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
         expect(builder["_fitnessFunctions"].size).toBe(chromosomeLength);
         expect(builder["_fitnessFunction"]).not.toBeNull();
 

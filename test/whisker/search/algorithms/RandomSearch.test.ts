@@ -30,6 +30,7 @@ import {SinglePointCrossover} from "../../../../src/whisker/search/operators/Sin
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
+import {List} from "../../../../src/whisker/utils/List";
 
 describe('RandomSearch', () => {
 
@@ -47,7 +48,7 @@ describe('RandomSearch', () => {
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(),
                 new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n);
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, new List());
 
         const randomSearch = builder.buildSearchAlgorithm();
         const solutions = randomSearch.findSolution();

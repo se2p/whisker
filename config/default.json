@@ -19,7 +19,10 @@
         "randomSelectionProbabilityStart": null,
         "randomSelectionProbabilityFocusedPhase": null
     },
-    "fitness-function": "statement",
+    "fitness-function": {
+        "type": "statement",
+        "targets": []
+    },
     "stopping-condition": {
         "type" : "fixed-iteration",
         "iterations": 1

@@ -122,7 +122,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             new BitflipMutation(),
             new SinglePointCrossover()) as unknown as ChromosomeGenerator<C>;
 
-        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength);
+        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
 
         this._selectionOperator = new RankSelection();
     }
@@ -142,20 +142,20 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param fitnessFunctionType the type of the fitness function to initialize
      * @param length the length of the chromosome
      */
-    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number): SearchAlgorithmBuilder<C> {
-        this._fitnessFunction = new OneMaxFitnessFunction(length) as unknown as FitnessFunction<C>;
+    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: List<string>): SearchAlgorithmBuilder<C> {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
         this._heuristicFunctions = new Map<number, Function>();
 
         switch (fitnessFunctionType) {
             case FitnessFunctionType.ONE_MAX:
+                this._fitnessFunction = new OneMaxFitnessFunction(length) as unknown as FitnessFunction<C>;
                 this._initializeOneMaxFitness(length);
                 break;
             case FitnessFunctionType.SINGLE_BIT:
                 this._initializeSingleBitFitness(length);
                 break;
             case FitnessFunctionType.STATEMENT:
-                this._initializeStatementFitness(length);
+                this._initializeStatementFitness(length, targets);
                 break;
         }
         return this as unknown as SearchAlgorithmBuilder<C>;
@@ -178,6 +178,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      */
     addSelectionOperator(selectionOp: Selection<C>): SearchAlgorithmBuilder<C> {
         this._selectionOperator = selectionOp;
+
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
 
@@ -287,10 +288,14 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * A helper method that initializes the 'Statement' fitness function(s).
      */
-    private _initializeStatementFitness(chromosomeLength: number) {
+    private _initializeStatementFitness(chromosomeLength: number, targets: List<string>) {
         // TODO: Check if this is done correctly
         const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
-        const fitnesses: List<StatementCoverageFitness> = factory.extractFitnessFunctions(Container.vm);
+        const fitnesses: List<StatementCoverageFitness> = factory.extractFitnessFunctions(Container.vm, targets);
+
+        if (fitnesses.size() == 1) {
+            this._fitnessFunction = fitnesses.get(0) as unknown as FitnessFunction<C>;
+        }
 
         for (let i = 0; i < fitnesses.size(); i++) {
             const fitness = fitnesses.get(i);
