@@ -38,6 +38,12 @@ export class StatisticsCollector {
      */
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {
+        this._fitnessFunctionCount = 0;
+        this._iterationCount = 0;
+        this._coveredFitnessFunctionsCount = 0;
+        this._eventsCount = 0;
+        this._bestTestSuiteSize = 0;
+        this._bestCoverage = 0;
     }
 
     public static getInstance() {
@@ -123,5 +129,14 @@ export class StatisticsCollector {
         const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount, this._bestCoverage, this._eventsCount, this._bestTestSuiteSize]
         const dataRow = data.join(",");
         return [headerRow, dataRow].join("\n");
+    }
+
+    reset() {
+        this._fitnessFunctionCount = 0;
+        this._iterationCount = 0;
+        this._coveredFitnessFunctionsCount = 0;
+        this._eventsCount = 0;
+        this._bestTestSuiteSize = 0;
+        this._bestCoverage = 0;
     }
 }

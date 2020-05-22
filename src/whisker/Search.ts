@@ -84,6 +84,7 @@ export class Search {
         async function init(search: Search) {
             await util.prepare(30);
             util.start();
+            StatisticsCollector.getInstance().reset()
             search.execute(project, config);
             const csvString: string = StatisticsCollector.getInstance().asCsv()
             console.log(csvString)
