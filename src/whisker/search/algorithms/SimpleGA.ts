@@ -95,8 +95,16 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param population The population to evaluate
      */
     private evaluateAndSortPopulation(population: List<C>) : void {
-        population.sort((c1: C, c2: C) => this._fitnessFunction.compare(
-            this._fitnessFunction.getFitness(c1), this._fitnessFunction.getFitness(c2)));
+        population.sort((c1: C, c2: C) => {
+            const fitness1 = this._fitnessFunction.getFitness(c1);
+            const fitness2 = this._fitnessFunction.getFitness(c2);
+
+            if (fitness1 == fitness2) {
+                return c1.getLength() - c2.getLength();
+            } else {
+                return this._fitnessFunction.compare(fitness1, fitness2);
+            }
+        });
 
         const bestIndividual = population.get(population.size() - 1);
         const candidateFitness = this._fitnessFunction.getFitness(bestIndividual);
