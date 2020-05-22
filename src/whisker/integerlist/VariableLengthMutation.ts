@@ -95,8 +95,7 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
         const alpha = 0.5; // TODO: Should be a parameter
         let count = 0;
 
-        // TODO: Check if maximum length is reached before inserting
-        while(Randomness.getInstance().nextDouble() <= Math.pow(alpha, count)) {
+        while(Randomness.getInstance().nextDouble() <= Math.pow(alpha, count) && newCodons.size() < this._max) {
             count++;
             const position = Randomness.getInstance().nextInt(0, newCodons.size());
             newCodons.insert(this.getRandomCodon(), position);
