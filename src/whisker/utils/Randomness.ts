@@ -18,6 +18,8 @@
  *
  */
 
+import {List} from "./List";
+
 /**
  * Seeded singleton random number generator
  *
@@ -115,6 +117,15 @@ export class Randomness {
      */
     public pick(collection: any[]): any {
         return collection[this.nextInt(0, collection.length)];
+    }
+
+    /**
+     * Pick a random item from a List
+     *
+     * @param list from which to pick an item
+     */
+    public pickRandomElementFromList<C>(list: List<C>): C {
+        return list.get(this.nextInt(0, list.size()));
     }
 
 }

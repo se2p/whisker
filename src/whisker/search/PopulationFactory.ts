@@ -40,7 +40,7 @@ export class PopulationFactory {
      * @returns the resultion population of chromosomes
      */
     static generate<C extends Chromosome>(generator: ChromosomeGenerator<C>, size: number): List<C> {
-        let population = new List<C>();
+        const population = new List<C>();
         for (let i = 0; i < size; i++) {
             population.add(generator.get());
         }

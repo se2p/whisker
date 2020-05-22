@@ -42,6 +42,7 @@ import {FitnessFunctionType} from "./FitnessFunctionType";
 import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../utils/Container";
 import {List} from "../utils/List";
+import {SimpleGA} from "./algorithms/SimpleGA";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -196,6 +197,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case SearchAlgorithmType.ONE_PLUS_ONE:
                 searchAlgorithm = this._buildOnePlusOne();
                 break;
+            case SearchAlgorithmType.SIMPLEGA:
+                searchAlgorithm = this._buildSimpleGA();
+                break;
             case SearchAlgorithmType.RANDOM:
             default:
                 searchAlgorithm = this._buildRandom();
@@ -245,6 +249,17 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildOnePlusOne() {
         const searchAlgorithm: SearchAlgorithm<C> = new OnePlusOneEA();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
+
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the 'Simple GA' search algorithm with all necessary properties.
+     */
+    private _buildSimpleGA() {
+        const searchAlgorithm: SearchAlgorithm<C> = new SimpleGA();
+        searchAlgorithm.setFitnessFunction(this._fitnessFunction);
+        searchAlgorithm.setSelectionOperator(this._selectionOperator);
 
         return searchAlgorithm;
     }

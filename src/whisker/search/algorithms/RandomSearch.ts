@@ -72,13 +72,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             let candidateChromosome = this._chromosomeGenerator.get();
             let candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
 
-            if (this._fitnessFunction.compare(candidateFitness, bestFitness) < 0) {
-                if (bestIndividual == null) {
-                    StatisticsCollector.getInstance().bestTestSuiteSize = 1;
-                }
-                if (this._fitnessFunction.isOptimal(candidateFitness)) {
-                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
-                }
+            if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
