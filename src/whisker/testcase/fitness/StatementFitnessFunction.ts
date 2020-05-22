@@ -44,12 +44,12 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         const approachLevels: Record<string, number> = {};
-        const workList: List<[GraphNode, number]> = new List();
+        const workList = [];
         const visited: List<GraphNode> = new List();
 
-        workList.add([targetNode, -1]); // the target node starts with approach level -1
-        for (const elem of workList) {
-            workList.remove(elem);
+        workList.push([targetNode, -1]); // the target node starts with approach level -1
+        while (workList.length > 0) {
+            const elem = workList.shift();
             const node = elem[0];
             const level = elem[1];
 
@@ -74,7 +74,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                     approachLevels[n.id] = currentLevel
                 }
 
-                workList.add([n, currentLevel])
+                workList.push([n, currentLevel])
             }
         }
 
@@ -114,7 +114,6 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return this.isOptimal(this.getFitness(chromosome));
     }
 
-
     private _getApproachLevel(trace: ExecutionTrace) {
         let min: number = Number.MAX_VALUE
 
@@ -132,24 +131,17 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             }
         }
 
-        // TODO: Store target node as field
-        // TODO: Measure distance between target node and execution trace in CDG
         return min;
     }
 
     private _getBranchDistance(trace: ExecutionTrace) {
-        // TODO: Determine control dependency where execution branched erroneously
-        // TODO: Calculate branch distance for node where diverged
-
         let minBranchApproachLevel: number = Number.MAX_VALUE
-        let branchDistance = 0;
-        let first = true;
+        let branchDistance = Number.MAX_VALUE;
         for (const blockTrace of trace.blockTraces) {
             if (this._approachLevels[blockTrace.id] <= minBranchApproachLevel) {
                 if (blockTrace.opcode.startsWith("control")) {
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     const requiredCondition =  this._checkControlBlock(this._targetNode, controlNode);
-                    minBranchApproachLevel = this._approachLevels[blockTrace.id]
 
                     // blockTrace distances contains a list of all measured distances in a condition
                     // (unless it is "and" or "or" there should only be one element.
@@ -160,9 +152,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                     } else {
                         newDistance = blockTrace.distances[0][1]
                     }
-                    if (newDistance < branchDistance || first) {
+                    if (this._approachLevels[blockTrace.id] < minBranchApproachLevel ||
+                        (this._approachLevels[blockTrace.id] == minBranchApproachLevel && newDistance < branchDistance)) {
+                        minBranchApproachLevel = this._approachLevels[blockTrace.id]
                         branchDistance = newDistance;
-                        first = false; // not sure if this is elegant
                     }
                 }
             }
