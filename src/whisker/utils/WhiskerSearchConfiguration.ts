@@ -21,6 +21,7 @@ import {FitnessFunctionType} from "../search/FitnessFunctionType";
 import {List} from "./List";
 import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
+import {VariableLengthTestChromosomeGenerator} from "../testcase/VariableLengthTestChromosomeGenerator";
 
 class ConfigException implements Error {
     message: string;
@@ -113,6 +114,11 @@ export class WhiskerSearchConfiguration {
                 return new IntegerListChromosomeGenerator(this.getSearchAlgorithmProperties(),
                     this._getMutationOperator(),
                     this._getCrossoverOperator());
+            case 'variablelengthtest':
+                return new VariableLengthTestChromosomeGenerator(this.getSearchAlgorithmProperties(),
+                    this._getMutationOperator(),
+                    this._getCrossoverOperator());
+
             case 'test':
             default:
                 return new TestChromosomeGenerator(this.getSearchAlgorithmProperties(),
