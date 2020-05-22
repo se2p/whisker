@@ -127,7 +127,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
         // Very basic elitism
         // TODO: This should be configurable
-        offspringPopulation.add(parentPopulation.get(0));
+        offspringPopulation.add(parentPopulation.get(parentPopulation.size() - 1));
 
         while (offspringPopulation.size() < parentPopulation.size()) {
             const parent1 = this._selectionOperator.apply(parentPopulation);
