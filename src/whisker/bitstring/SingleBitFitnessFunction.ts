@@ -55,6 +55,7 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
 
     compare(value1: number, value2: number): number {
         // Larger fitness values are better
+        // -> Sort by increasing fitness value
         return value1 - value2;
     }
 

@@ -39,9 +39,12 @@ export interface FitnessFunction<C extends Chromosome> {
 
     /**
      * Comparator for two fitness values:
-     * Return greater than 0 if value1 is better than value2
+     *
+     * We are sorting ascending, from bad fitness to better fitness
+     *
+     * Return greater than 0 if value2 is better than value1
      * Return 0 if value1 equals value2
-     * Return less than 0 if value1 is worse than value2
+     * Return less than 0 if value2 is worse than value1
      *
      * @param value1 first fitness value
      * @param value2 second fitness value

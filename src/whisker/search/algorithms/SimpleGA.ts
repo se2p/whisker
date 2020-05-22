@@ -56,13 +56,10 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setFitnessFunction(fitnessFunction: FitnessFunction<C>) {
         this._fitnessFunction = fitnessFunction;
-        // TODO: Temporary to demonstrate problem with selection
-        this._selectionOperator = new TournamentSelection(5, fitnessFunction);
     }
 
     setSelectionOperator(selectionOperator: Selection<C>) {
-        // TODO: Integrate into builder
-        // this._selectionOperator = selectionOperator;
+        this._selectionOperator = selectionOperator;
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>) {
@@ -101,11 +98,11 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         population.sort((c1: C, c2: C) => this._fitnessFunction.compare(
             this._fitnessFunction.getFitness(c1), this._fitnessFunction.getFitness(c2)));
 
-        const bestIndividual = population.get(0);
+        const bestIndividual = population.get(population.size() - 1);
         const candidateFitness = this._fitnessFunction.getFitness(bestIndividual);
         const candidateLength = bestIndividual.getLength();
         if (this._bestIndividuals.isEmpty() ||
-                this._fitnessFunction.compare(candidateFitness, this._bestFitness) < 0 ||
+                this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||
                 (this._fitnessFunction.compare(candidateFitness, this._bestFitness) == 0 && candidateLength < this._bestLength)) {
                 this._bestLength = candidateLength;
                 this._bestFitness = candidateFitness;

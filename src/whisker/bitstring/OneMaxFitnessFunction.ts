@@ -50,7 +50,8 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
 
     compare (value1: number, value2: number): number {
         // Larger fitness values are better
-        return value2 - value1;
+        // -> Sort by increasing fitness value
+        return value1 - value2;
     }
 
     isOptimal(fitnessValue: number): boolean {

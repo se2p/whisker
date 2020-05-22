@@ -69,7 +69,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             this._iterations++;
             let candidateChromosome = bestIndividual.mutate();
             let candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
-            if(this._fitnessFunction.compare(candidateFitness, bestFitness) <= 0) {
+            if(this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();

@@ -101,7 +101,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
     compare(value1: number, value2: number): number {
         // Smaller fitness values are better
-        return value1 - value2;
+        // -> Sort by decreasing fitness value
+        return value2 - value1;
     }
 
     isOptimal(fitnessValue: number): boolean {
