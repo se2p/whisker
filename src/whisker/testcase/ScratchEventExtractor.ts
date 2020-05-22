@@ -52,7 +52,7 @@ export class ScratchEventExtractor {
     // TODO: How to handle event parameters?
     static _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
-
+        const fields = target.blocks.getFields(block);
         if (typeof block.opcode === 'undefined') {
             return eventList;
         }
@@ -60,7 +60,7 @@ export class ScratchEventExtractor {
         switch (target.blocks.getOpcode(block)) {
             case 'event_whenkeypressed':
                 // Key press
-                eventList.add(new KeyPressEvent()); // TODO: Pass actual key as parameter
+                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value)); // TODO: Pass actual key as parameter
                 // one event per concrete key for which there is a hat block
                 break;
 
