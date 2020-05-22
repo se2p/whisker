@@ -100,7 +100,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const fitness2 = this._fitnessFunction.getFitness(c2);
 
             if (fitness1 == fitness2) {
-                return c1.getLength() - c2.getLength();
+                return c2.getLength() - c1.getLength();
             } else {
                 return this._fitnessFunction.compare(fitness1, fitness2);
             }
