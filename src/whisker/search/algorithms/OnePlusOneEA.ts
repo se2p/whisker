@@ -73,15 +73,20 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             StatisticsCollector.getInstance().incrementIterationCount();
             let candidateChromosome = bestIndividual.mutate();
             let candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
-            if(this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
+            if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
+                console.log(bestFitness)
                 if (this._fitnessFunction.isOptimal(bestFitness)) {
                     StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 }
             }
+        }
+
+        if (StatisticsCollector.getInstance().coveredFitnessFunctionsCount > 0) {
+            StatisticsCollector.getInstance().bestCoverage = (1 / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
         }
         return this._bestIndividuals;
     }

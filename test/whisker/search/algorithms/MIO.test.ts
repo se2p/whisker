@@ -62,7 +62,7 @@ describe('MIO', () => {
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength)
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List())
             .buildSearchAlgorithm();
     });
 

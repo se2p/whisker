@@ -5,7 +5,7 @@ import {StatementCoverageFitness} from "./StatementFitnessFunction";
 
 export class StatementFitnessFunctionFactory {
 
-    extractFitnessFunctions(vm: VirtualMachine): List<StatementCoverageFitness> {
+    extractFitnessFunctions(vm: VirtualMachine, targets: List<string>): List<StatementCoverageFitness> {
         const fitnessFunctions: List<StatementCoverageFitness> = new List()
 
         if (!(vm === undefined || vm === null)) {
@@ -19,6 +19,14 @@ export class StatementFitnessFunctionFactory {
 
                 if (node.block == undefined) {
                     continue;
+                }
+
+                // Check if explicit targets are specified
+                if (targets && !targets.isEmpty()) {
+                    if (!targets.contains(node.id)) {
+                        // A target list is specified and the node is not in that target list
+                        continue;
+                    }
                 }
 
                 const statementCoverageFitness = new StatementCoverageFitness(node, cdg);

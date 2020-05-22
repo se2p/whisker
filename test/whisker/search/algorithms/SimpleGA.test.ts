@@ -33,6 +33,7 @@ import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctio
 import {SimpleGA} from "../../../../src/whisker/search/algorithms/SimpleGA";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {TournamentSelection} from "../../../../src/whisker/search/operators/TournamentSelection";
+import {List} from "../../../../src/whisker/utils/List";
 
 describe('SimpleGA', () => {
 
@@ -52,7 +53,7 @@ describe('SimpleGA', () => {
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
             .addSelectionOperator(new RankSelection())
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n);
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, new List());
 
 
         const search = builder.buildSearchAlgorithm();

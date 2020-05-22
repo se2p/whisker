@@ -115,7 +115,8 @@ export class WhiskerSearchConfiguration {
     }
 
     public getFitnessFunctionType(): FitnessFunctionType {
-        switch (this.dict['fitness-function']) {
+        const fitnessFunctionDef = this.dict['fitness-function']
+        switch (fitnessFunctionDef["type"]) {
             case 'statement':
                 return FitnessFunctionType.STATEMENT;
             case 'one-max':
@@ -123,6 +124,19 @@ export class WhiskerSearchConfiguration {
             case 'single-bit':
             default:
                 return FitnessFunctionType.SINGLE_BIT;
+        }
+    }
+
+    public getFitnessFunctionTargets(): List<string> {
+        const fitnessFunctionDef = this.dict['fitness-function']
+        if (fitnessFunctionDef['targets']) {
+            const targets = new List<string>();
+            for (const target of fitnessFunctionDef['targets']) {
+                targets.add(target)
+            }
+            return targets;
+        } else {
+            return new List();
         }
     }
 
