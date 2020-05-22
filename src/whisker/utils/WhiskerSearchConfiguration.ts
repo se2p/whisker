@@ -24,6 +24,7 @@ import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitn
 import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunction";
 import {OneMaxFitnessFunction} from "../bitstring/OneMaxFitnessFunction";
 import {SingleBitFitnessFunction} from "../bitstring/SingleBitFitnessFunction";
+import {List} from "./List";
 
 class ConfigException implements Error {
     message: string;
@@ -97,8 +98,7 @@ export class WhiskerSearchConfiguration {
     public getSelectionOperator(): Selection<any> {
         switch (this.dict['selection']['operator']) {
             case 'tournament':
-                // TODO: TournamentSelection needs a fitness function -> for problem see _getFitnessFunctionObject()
-                return new TournamentSelection(this.dict['selection']['tournamentSize'], this._getFitnessFunctionObject());
+                return new TournamentSelection(this.dict['selection']['tournamentSize']);
             case 'rank':
             default:
                 return new RankSelection();
@@ -124,7 +124,8 @@ export class WhiskerSearchConfiguration {
     }
 
     public getFitnessFunctionType(): FitnessFunctionType {
-        switch (this.dict['fitness-function']) {
+        const fitnessFunctionDef = this.dict['fitness-function']
+        switch (fitnessFunctionDef["type"]) {
             case 'statement':
                 return FitnessFunctionType.STATEMENT;
             case 'one-max':
@@ -135,22 +136,17 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    private _getFitnessFunctionObject(): FitnessFunction<any> {
-        switch (this.getFitnessFunctionType()) {
-            case FitnessFunctionType.STATEMENT:
-                // TODO: StatementCoverageFitness/StatementFitnessFunctionFactory need parameter
-                //  one does not know at this point
-                // return new StatementCoverageFitness();
-                return null;
-            case FitnessFunctionType.ONE_MAX:
-                return new OneMaxFitnessFunction(this.dict['chromosome-length']);
-            case FitnessFunctionType.SINGLE_BIT:
-            default:
-            // TODO: SingleBitFitnessFunction need parameter
-            //  one does not know at this point
-            // return new SingleBitFitnessFunction(this.dict['chromosome-length']);
+    public getFitnessFunctionTargets(): List<string> {
+        const fitnessFunctionDef = this.dict['fitness-function']
+        if (fitnessFunctionDef['targets']) {
+            const targets = new List<string>();
+            for (const target of fitnessFunctionDef['targets']) {
+                targets.add(target)
+            }
+            return targets;
+        } else {
+            return new List();
         }
-        return null; // TODO: remove
     }
 
     public getAlgorithm(): SearchAlgorithmType {

@@ -20,7 +20,10 @@
         "randomSelectionProbabilityFocusedPhase": null,
         "tournamentSize": null
     },
-    "fitness-function": "statement",
+    "fitness-function": {
+        "type": "statement",
+        "targets": []
+    },
     "stopping-condition": {
         "type" : "fixed-iteration",
         "iterations": 1
