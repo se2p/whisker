@@ -148,8 +148,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         for (const blockTrace of trace.blockTraces) {
             let traceMin;
             if (blockTrace.id === this._targetNode.block.id) {
-                // if we hit the block in the trace, it must have approach level zero
-                traceMin = 0
+                // if we hit the block in the trace, it must have approach level zero and branch distance 0
+                traceMin = 0;
+                branchDistance = 0;
+                return branchDistance;
             } else {
                 traceMin = this._approachLevelByTrace(blockTrace, minBranchApproachLevel);
             }
