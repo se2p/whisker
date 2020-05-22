@@ -26,6 +26,7 @@ import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -75,11 +76,11 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _samplingCounter: Map<number, number>;
 
-    setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
+    setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>) {
+    setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
         this._stoppingCondition = this._properties.getStoppingCondition();
         this.extractRandomSelectionProbabilities();
@@ -90,7 +91,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Extracts the probability for sampling a random chromosome out of the set properties.
      */
-    private extractRandomSelectionProbabilities() {
+    private extractRandomSelectionProbabilities(): void {
         this._randomSelectionProbabilityStart = this._properties.getSelectionProbabilityStart();
         this._randomSelectionProbabilityFocusedPhase = this._properties.getSelectionProbabilityFocusedPhase();
     }
@@ -98,7 +99,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Extracts the maximum number of chromosomes stored for a fitness function out of the set properties.
      */
-    private extractArchiveSizes() {
+    private extractArchiveSizes(): void {
         this._maxArchiveSizeStart = this._properties.getMaxArchiveSizeStart();
         this._maxArchiveSizeFocusedPhase = this._properties.getMaxArchiveSizeFocusedPhase();
     }
@@ -106,16 +107,17 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Extracts the number of mutations on the same chromosome out of the set properties.
      */
-    private extractMutationCounter() {
+    private extractMutationCounter(): void {
         this._maxMutationCountStart = this._properties.getMaxMutationCountStart();
         this._maxMutationCountFocusedPhase = this._properties.getMaxMutationCountFocusedPhase();
     }
 
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>) {
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
         this._fitnessFunctions = fitnessFunctions;
+        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, Function>) {
+    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void {
         this._heuristicFunctions = heuristicFunctions;
     }
 
@@ -145,6 +147,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
             this.updateArchive(chromosome);
             this._iterations++;
+            StatisticsCollector.getInstance().incrementIterationCount();
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
@@ -166,6 +169,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this._samplingCounter.set(fitnessFunctionKey, 0);
         }
         this.updateParameters();
+        StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
     }
 
     /**
@@ -206,6 +211,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     this._archiveUncovered.delete(fitnessFunctionKey);
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                 }
@@ -248,6 +254,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         for (const chromosome of this._archiveCovered.values()) {
             this._bestIndividuals.add(chromosome);
         }
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         this._samplingCounter.set(fitnessFunctionKey, 0);
     }
 

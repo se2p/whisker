@@ -41,16 +41,16 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _bestIndividuals = new List<C>();
 
-    setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
+    setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
 
-    setFitnessFunction(fitnessFunction: FitnessFunction<C>) {
+    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
         StatisticsCollector.getInstance().fitnessFunctionCount = 1;
         this._fitnessFunction = fitnessFunction;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>) {
+    setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
         this._stoppingCondition = this._properties.getStoppingCondition();
     }
@@ -63,6 +63,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         let bestIndividual = null;
         let bestFitness = 0;
+        StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
 
         while (!this._stoppingCondition.isFinished(this)) {
             StatisticsCollector.getInstance().incrementIterationCount();
