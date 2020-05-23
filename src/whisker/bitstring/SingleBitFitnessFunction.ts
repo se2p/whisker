@@ -21,6 +21,7 @@
 import {FitnessFunction} from '../search/FitnessFunction';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Preconditions} from '../utils/Preconditions';
+import {TestChromosome} from "../testcase/TestChromosome";
 
 /**
  * A fitness function for achieving a bitstring consisting of exactly one set bit at a
@@ -61,5 +62,9 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
 
     isOptimal(fitnessValue: number): boolean {
         return fitnessValue === this._size;
+    }
+
+    isCovered(chromosome: BitstringChromosome): boolean {
+        return this.isOptimal(this.getFitness(chromosome));
     }
 }
