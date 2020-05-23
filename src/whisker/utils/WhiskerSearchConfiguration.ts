@@ -25,6 +25,9 @@ import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunc
 import {OneMaxFitnessFunction} from "../bitstring/OneMaxFitnessFunction";
 import {SingleBitFitnessFunction} from "../bitstring/SingleBitFitnessFunction";
 import {List} from "./List";
+import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
+import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
+import {VariableLengthTestChromosomeGenerator} from "../testcase/VariableLengthTestChromosomeGenerator";
 
 class ConfigException implements Error {
     message: string;
@@ -81,6 +84,8 @@ export class WhiskerSearchConfiguration {
         switch (this.dict['mutation']['operator']) {
             case 'bitflip':
                 return new BitflipMutation();
+            case 'variablelength':
+                return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'], this.dict['chromosome-length']);
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
@@ -89,6 +94,8 @@ export class WhiskerSearchConfiguration {
 
     private _getCrossoverOperator(): Crossover<any> {
         switch (this.dict['crossover']['operator']) {
+            case 'singlepointrelative':
+                return new SinglePointRelativeCrossover();
             case 'singlepoint':
             default:
                 return new SinglePointCrossover();
@@ -115,6 +122,11 @@ export class WhiskerSearchConfiguration {
                 return new IntegerListChromosomeGenerator(this.getSearchAlgorithmProperties(),
                     this._getMutationOperator(),
                     this._getCrossoverOperator());
+            case 'variablelengthtest':
+                return new VariableLengthTestChromosomeGenerator(this.getSearchAlgorithmProperties(),
+                    this._getMutationOperator(),
+                    this._getCrossoverOperator());
+
             case 'test':
             default:
                 return new TestChromosomeGenerator(this.getSearchAlgorithmProperties(),

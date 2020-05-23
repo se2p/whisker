@@ -93,9 +93,17 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @param population The population to evaluate
      */
-    private evaluateAndSortPopulation(population: List<C>): void {
-        population.sort((c1: C, c2: C) => this._fitnessFunction.compare(
-            this._fitnessFunction.getFitness(c1), this._fitnessFunction.getFitness(c2)));
+    private evaluateAndSortPopulation(population: List<C>) : void {
+        population.sort((c1: C, c2: C) => {
+            const fitness1 = this._fitnessFunction.getFitness(c1);
+            const fitness2 = this._fitnessFunction.getFitness(c2);
+
+            if (fitness1 == fitness2) {
+                return c2.getLength() - c1.getLength();
+            } else {
+                return this._fitnessFunction.compare(fitness1, fitness2);
+            }
+        });
 
         const bestIndividual = population.get(population.size() - 1);
         const candidateFitness = this._fitnessFunction.getFitness(bestIndividual);
@@ -126,7 +134,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
         // Very basic elitism
         // TODO: This should be configurable
-        offspringPopulation.add(parentPopulation.get(0));
+        offspringPopulation.add(parentPopulation.get(parentPopulation.size() - 1));
 
         while (offspringPopulation.size() < parentPopulation.size()) {
             const parent1 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);

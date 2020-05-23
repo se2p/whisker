@@ -30,7 +30,7 @@ import {Crossover} from "../search/Crossover";
 
 export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromosome> {
 
-    private readonly _length: number;
+    protected readonly _length: number;
 
     private readonly _min: number;
 
@@ -56,10 +56,15 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
      */
     get(): TestChromosome {
         const codons = new List<number>();
-        for(let i = 0; i < this._length; i++) {
+        const length = this.getLength();
+        for(let i = 0; i < length; i++) {
             codons.add(Randomness.getInstance().nextInt(this._min, this._max));
         }
         return new TestChromosome(codons, this._mutationOp, this._crossoverOp); // TODO
+    }
+
+    protected getLength(): number {
+        return this._length;
     }
 
     setMutationOperator(mutationOp: Mutation<TestChromosome>): void {
