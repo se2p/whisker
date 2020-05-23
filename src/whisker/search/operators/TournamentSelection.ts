@@ -23,10 +23,7 @@ import {Selection} from "../Selection";
 import {List} from "../../utils/List";
 import {Randomness} from "../../utils/Randomness";
 import {FitnessFunction} from "../FitnessFunction";
-import {Mutation} from "../Mutation";
-import {Crossover} from "../Crossover";
-import {OneMaxFitnessFunction} from "../../bitstring/OneMaxFitnessFunction";
-import {BitstringChromosome} from "../../bitstring/BitstringChromosome";
+import {Preconditions} from "../../utils/Preconditions";
 
 /**
  * The tournament selection operator.
@@ -35,13 +32,10 @@ import {BitstringChromosome} from "../../bitstring/BitstringChromosome";
  */
 export class TournamentSelection<C extends Chromosome> implements Selection<C> {
 
-    private _tournamentSize = 2;
+    private readonly _tournamentSize = 2;
 
-    private _fitnessFunction: FitnessFunction<C>;
-
-    constructor(tournamentSize, fitnessFunction: FitnessFunction<C>) {
+    constructor(tournamentSize) {
         this._tournamentSize = tournamentSize;
-        this._fitnessFunction = fitnessFunction;
     }
 
         /**
@@ -50,15 +44,16 @@ export class TournamentSelection<C extends Chromosome> implements Selection<C> {
      * @param population The population of chromosomes from which to select, sorted in ascending order.
      * @returns the selected chromosome.
      */
-    apply(population: List<C>): C {
+    apply(population: List<C>, fitnessFunction: FitnessFunction<C>): C {
+        Preconditions.checkNotUndefined(fitnessFunction);
         let iteration = 0;
         let winner = Randomness.getInstance().pickRandomElementFromList(population);
-        let bestFitness = this._fitnessFunction.getFitness(winner);
+        let bestFitness = fitnessFunction.getFitness(winner);
         while(iteration < this._tournamentSize) {
             const candidate = Randomness.getInstance().pickRandomElementFromList(population);
-            const candidateFitness = this._fitnessFunction.getFitness(candidate);
+            const candidateFitness = fitnessFunction.getFitness(candidate);
 
-            if(this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
+            if(fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                 bestFitness = candidateFitness;
                 winner = candidate;
             }

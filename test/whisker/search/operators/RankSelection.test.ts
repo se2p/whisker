@@ -28,17 +28,17 @@ import {SinglePointCrossover} from "../../../../src/whisker/search/operators/Sin
 describe('RankSelection', () => {
 
     test('Distribution of the selection', () => {
-        let selection = new RankSelection();
-        let population = new List<BitstringChromosome>();
-        let populationSize = 5;
-        let selectionCount = new Map<Chromosome, number>();
+        const selection = new RankSelection();
+        const population = new List<BitstringChromosome>();
+        const populationSize = 5;
+        const selectionCount = new Map<Chromosome, number>();
         for (let i = 0; i < populationSize; i++) {
-            let chromosome = new BitstringChromosome(new List<boolean>([]), new BitflipMutation(), new SinglePointCrossover())
+            const chromosome = new BitstringChromosome(new List<boolean>([]), new BitflipMutation(), new SinglePointCrossover())
             population.add(chromosome);
             selectionCount.set(chromosome, 0)
         }
         for (let i = 0; i < 1000; i++) {
-            let selected = selection.apply(population);
+            const selected = selection.apply(population);
             selectionCount.set(selected, selectionCount.get(selected) + 1);
         }
         for (let i = 0; i < populationSize - 1; i++) {
