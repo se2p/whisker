@@ -303,4 +303,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             this._heuristicFunctions.set(i, v => v / chromosomeLength);
         }
     }
+
+
+    get fitnessFunctions(): Map<number, FitnessFunction<C>> {
+        return this._fitnessFunctions;
+    }
 }

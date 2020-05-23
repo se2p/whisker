@@ -21,6 +21,8 @@
 import {FitnessFunction} from '../search/FitnessFunction';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Preconditions} from "../utils/Preconditions";
+import {TestChromosome} from "../testcase/TestChromosome";
+import {Chromosome} from "../search/Chromosome";
 
 
 export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosome> {
@@ -56,5 +58,9 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
 
     isOptimal(fitnessValue: number): boolean {
         return fitnessValue == this._size;
+    }
+
+    isCovered(chromosome: BitstringChromosome): boolean {
+        return this.isOptimal(this.getFitness(chromosome));
     }
 }

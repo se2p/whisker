@@ -29,6 +29,9 @@ import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {Container} from "../utils/Container";
+import {Chromosome} from "../search/Chromosome";
+import {FitnessFunction} from "../search/FitnessFunction";
 
 /**
  * To generate a test suite using single-objective search,
@@ -46,15 +49,16 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
     generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
         const testChromosomes = new List<TestChromosome>();
-        const fitnessFunctions = this._extractCoverageGoals(project);
+        const fitnessFunctions = this._extractCoverageGoals();
 
-        for (const fitnessFunction of fitnessFunctions) {
+        for (const fitnessFunction of fitnessFunctions.values()) {
             if (this._isCovered(fitnessFunction, testChromosomes)) {
                 // If already covered, we don't need to search again
                 continue;
             }
             // TODO: Somehow set the fitness function as objective
             const searchAlgorithm = this._buildSearchAlgorithm();
+            searchAlgorithm.setFitnessFunction(fitnessFunction);
             // TODO: Assuming there is at least one solution?
             const testChromosome = searchAlgorithm.findSolution().get(0);
 
@@ -66,13 +70,13 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
         }
 
         // TODO: Handle statistics
-        StatisticsCollector.getInstance().bestCoverage = (fitnessFunctions.size() / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
+        StatisticsCollector.getInstance().bestCoverage = (fitnessFunctions.size / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
         StatisticsCollector.getInstance().bestTestSuiteSize = testSuite.size();
 
         return testSuite;
     }
 
-    _isCovered(coverageGoal: StatementCoverageFitness, testSuite: List<TestChromosome>): boolean {
+    _isCovered(coverageGoal: FitnessFunction<any>, testSuite: List<TestChromosome>): boolean {
         // TODO: Could be written in a single line
         for (const testChromosome of testSuite) {
             if (coverageGoal.isCovered(testChromosome)) {
@@ -83,20 +87,20 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
     }
 
     // eslint-disable-next-line no-unused-vars
-    _extractCoverageGoals(project: ScratchProject): List<StatementCoverageFitness> {
-        throw new NotYetImplementedException();
+    _extractCoverageGoals(): Map<number, FitnessFunction<Chromosome>> {
+        const builder = new SearchAlgorithmBuilder(
+            this._config.getAlgorithm()
+        ).initializeFitnessFunction(this._config.getFitnessFunctionType(),
+            this._config.getSearchAlgorithmProperties().getChromosomeLength(),
+            this._config.getFitnessFunctionTargets());
+        return builder.fitnessFunctions;
     }
 
     private _buildSearchAlgorithm(): SearchAlgorithm<any> {
         return new SearchAlgorithmBuilder(this._config.getAlgorithm())
-
             .addSelectionOperator(this._config.getSelectionOperator())
             .addProperties(this._config.getSearchAlgorithmProperties())
-            .initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.getSearchAlgorithmProperties().getChromosomeLength(),
-                this._config.getFitnessFunctionTargets())
             .addChromosomeGenerator(this._config.getChromosomeGenerator())
-
             .buildSearchAlgorithm();
     }
 }

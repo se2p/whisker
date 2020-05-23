@@ -57,4 +57,11 @@ export interface FitnessFunction<C extends Chromosome> {
      * @param fitnessValue to check
      */
     isOptimal(fitnessValue: number): boolean;
+
+    /**
+     * Confirm whether the fitness function achieves an optimal value for the given chromosome
+     *
+     * @param chromosome to check the fitness function with
+     */
+    isCovered(chromosome: Chromosome): boolean;
 }
