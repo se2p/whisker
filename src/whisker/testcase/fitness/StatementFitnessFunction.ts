@@ -44,12 +44,12 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         const approachLevels: Record<string, number> = {};
-        const workList: List<[GraphNode, number]> = new List();
+        const workList = [];
         const visited: List<GraphNode> = new List();
 
-        workList.add([targetNode, -1]); // the target node starts with approach level -1
-        for (const elem of workList) {
-            workList.remove(elem);
+        workList.push([targetNode, -1]); // the target node starts with approach level -1
+        while (workList.length > 0) {
+            const elem = workList.shift();
             const node = elem[0];
             const level = elem[1];
 
@@ -74,7 +74,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                     approachLevels[n.id] = currentLevel
                 }
 
-                workList.add([n, currentLevel])
+                workList.push([n, currentLevel])
             }
         }
 
@@ -114,42 +114,53 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return this.isOptimal(this.getFitness(chromosome));
     }
 
-
     private _getApproachLevel(trace: ExecutionTrace) {
         let min: number = Number.MAX_VALUE
 
         for (const blockTrace of trace.blockTraces) {
-
-            if (this._approachLevels[blockTrace.id] < min) {
-                min = this._approachLevels[blockTrace.id]
-            }
-
-            if (blockTrace.id in this._userEventMapping) {
-                const userEventNode = this._userEventMapping[blockTrace.id]
-                if (this._approachLevels[userEventNode] < min) {
-                    min = this._approachLevels[userEventNode]
-                }
+            let newMin = this._approachLevelByTrace(blockTrace, min);
+            if (newMin <= min) {
+                min = newMin;
             }
         }
 
-        // TODO: Store target node as field
-        // TODO: Measure distance between target node and execution trace in CDG
         return min;
     }
 
-    private _getBranchDistance(trace: ExecutionTrace) {
-        // TODO: Determine control dependency where execution branched erroneously
-        // TODO: Calculate branch distance for node where diverged
+    private _approachLevelByTrace(blockTrace, currentMin: number) {
+        let min = Number.MAX_VALUE;
+        if (this._approachLevels[blockTrace.id] <= currentMin) {
+            min = this._approachLevels[blockTrace.id]
+        }
 
+        if (blockTrace.id === this._targetNode.block.id && blockTrace.id in this._userEventMapping) {
+            const userEventNode = this._userEventMapping[blockTrace.id]
+            if (this._approachLevels[userEventNode] <= currentMin) {
+                min = this._approachLevels[userEventNode]
+            }
+        }
+        return min
+    }
+
+    private _getBranchDistance(trace: ExecutionTrace) {
         let minBranchApproachLevel: number = Number.MAX_VALUE
-        let branchDistance = 0;
-        let first = true;
+        let branchDistance = Number.MAX_VALUE;
         for (const blockTrace of trace.blockTraces) {
-            if (this._approachLevels[blockTrace.id] <= minBranchApproachLevel) {
-                if (blockTrace.opcode.startsWith("control")) {
+            let traceMin;
+            if (blockTrace.id === this._targetNode.block.id) {
+                // if we hit the block in the trace, it must have approach level zero and branch distance 0
+                traceMin = 0;
+                branchDistance = 0;
+                return branchDistance;
+            } else {
+                traceMin = this._approachLevelByTrace(blockTrace, minBranchApproachLevel);
+            }
+
+            if (traceMin <= minBranchApproachLevel) {
+                if (!this._targetNode.block.opcode.startsWith("event_") && blockTrace.opcode.startsWith("control") && !(blockTrace.opcode === "control_wait")) {
+
                     const controlNode = this._cdg.getNode(blockTrace.id);
-                    const requiredCondition =  this._checkControlBlock(this._targetNode, controlNode);
-                    minBranchApproachLevel = this._approachLevels[blockTrace.id]
+                    const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
 
                     // blockTrace distances contains a list of all measured distances in a condition
                     // (unless it is "and" or "or" there should only be one element.
@@ -160,9 +171,21 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                     } else {
                         newDistance = blockTrace.distances[0][1]
                     }
-                    if (newDistance < branchDistance || first) {
+
+                    if (traceMin < minBranchApproachLevel ||
+                        (traceMin == minBranchApproachLevel && newDistance < branchDistance)) {
+                        minBranchApproachLevel = traceMin
                         branchDistance = newDistance;
-                        first = false; // not sure if this is elegant
+                    }
+                } else if (blockTrace.opcode.startsWith("event_")) {
+
+                    // In event blocks we always have the true distance, otherwise we would not be here
+                    // An event block in the trace means it was executed
+                    const newDistance = blockTrace.distances[0][0];
+                    if (traceMin < minBranchApproachLevel ||
+                        (traceMin == minBranchApproachLevel && newDistance < branchDistance)) {
+                        minBranchApproachLevel = traceMin
+                        branchDistance = newDistance;
                     }
                 }
             }
@@ -182,6 +205,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             case 'control_forever': { // Todo not sure about forever
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
                 if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
+                    requiredCondition = true;
+                } else if (statement === controlNode) {
                     requiredCondition = true;
                 }
                 break;
@@ -224,10 +249,17 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             if (cur.id === branchStartId) {
                 return true;
             }
-            cur = this._cdg.predecessors(cur.id)
-                .values()
-                .next()
-                .value;
+            const preds = this._cdg.predecessors(cur.id).values()
+            let cur2 = preds.next().value;
+            if (cur2 === cur) {
+                cur2 = preds.next().value;
+            }
+
+            if (!cur2) {
+                return false;
+            } else {
+                cur = cur2
+            }
         }
         return false;
     };

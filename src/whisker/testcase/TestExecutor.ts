@@ -63,6 +63,11 @@ export class TestExecutor {
             console.log("Applying " + nextEvent.constructor.name + "; " + numCodon + "/" + codons.size())
         }
 
+        new WaitEvent().apply(this._vm)
+        new WaitEvent().apply(this._vm)
+        new WaitEvent().apply(this._vm)
+        new WaitEvent().apply(this._vm)
+        new WaitEvent().apply(this._vm)
         return new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces)
     }
 
