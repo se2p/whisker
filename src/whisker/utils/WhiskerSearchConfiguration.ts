@@ -18,6 +18,12 @@ import {TestChromosomeGenerator} from "../testcase/TestChromosomeGenerator";
 import {IterativeSearchBasedTestGenerator} from "../testgenerator/IterativeSearchBasedTestGenerator";
 import {ManyObjectiveTestGenerator} from "../testgenerator/ManyObjectiveTestGenerator";
 import {FitnessFunctionType} from "../search/FitnessFunctionType";
+import {TournamentSelection} from "../search/operators/TournamentSelection";
+import {FitnessFunction} from "../search/FitnessFunction";
+import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
+import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunction";
+import {OneMaxFitnessFunction} from "../bitstring/OneMaxFitnessFunction";
+import {SingleBitFitnessFunction} from "../bitstring/SingleBitFitnessFunction";
 import {List} from "./List";
 import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
@@ -98,6 +104,8 @@ export class WhiskerSearchConfiguration {
 
     public getSelectionOperator(): Selection<any> {
         switch (this.dict['selection']['operator']) {
+            case 'tournament':
+                return new TournamentSelection(this.dict['selection']['tournamentSize']);
             case 'rank':
             default:
                 return new RankSelection();

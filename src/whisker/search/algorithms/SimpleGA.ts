@@ -28,7 +28,6 @@ import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {PopulationFactory} from "../PopulationFactory";
 import {Randomness} from "../../utils/Randomness";
-import {TournamentSelection} from "../operators/TournamentSelection";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -138,8 +137,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         offspringPopulation.add(parentPopulation.get(parentPopulation.size() - 1));
 
         while (offspringPopulation.size() < parentPopulation.size()) {
-            const parent1 = this._selectionOperator.apply(parentPopulation);
-            const parent2 = this._selectionOperator.apply(parentPopulation);
+            const parent1 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
+            const parent2 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
 
             let child1 = parent1;
             let child2 = parent2;

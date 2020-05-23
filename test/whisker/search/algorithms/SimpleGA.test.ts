@@ -73,7 +73,7 @@ describe('SimpleGA', () => {
             new FixedIterationsStoppingCondition(1000), // Plenty time...
             new OptimalSolutionStoppingCondition(fitnessFunction)
         );
-        const selectionFunction = new TournamentSelection(5, fitnessFunction);
+        const selectionFunction = new TournamentSelection(5);
         properties.setStoppingCondition(stoppingCondition);
         const search = new SimpleGA();
 
@@ -87,9 +87,8 @@ describe('SimpleGA', () => {
         search.setFitnessFunction(fitnessFunction);
         expect(search["_fitnessFunction"]).toBe(fitnessFunction);
 
-        // TODO: Doesn't currently work, selection not integrated in builder yet
-        // search.setSelectionOperator(selectionFunction);
-        // expect(search["_selectionFunction"]).toBe(selectionFunction);
+        search.setSelectionOperator(selectionFunction);
+        expect(search["_selectionOperator"]).toBe(selectionFunction);
     });
 
 });
