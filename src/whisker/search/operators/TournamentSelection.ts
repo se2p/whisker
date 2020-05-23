@@ -53,8 +53,8 @@ export class TournamentSelection<C extends Chromosome> implements Selection<C> {
             const candidate = Randomness.getInstance().pickRandomElementFromList(population);
             const candidateFitness = fitnessFunction.getFitness(candidate);
 
-            if(this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
-                (this._fitnessFunction.compare(candidateFitness, bestFitness) == 0 && candidate.getLength() < winner.getLength())) {
+            if(fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
+                (fitnessFunction.compare(candidateFitness, bestFitness) == 0 && candidate.getLength() < winner.getLength())) {
                 bestFitness = candidateFitness;
                 winner = candidate;
             }
