@@ -38,7 +38,7 @@ export class TournamentSelection<C extends Chromosome> implements Selection<C> {
         this._tournamentSize = tournamentSize;
     }
 
-        /**
+    /**
      * Selects a chromosome from the given population and returns the result.
      *
      * @param population The population of chromosomes from which to select, sorted in ascending order.

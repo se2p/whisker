@@ -26,6 +26,7 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {ListChromosome} from "../ListChromosome";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -71,14 +72,14 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         while (!this._stoppingCondition.isFinished(this)) {
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
-            let candidateChromosome = bestIndividual.mutate();
-            let candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            const candidateChromosome = bestIndividual.mutate();
+            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
-                console.log(bestFitness)
+                console.log("Best Fitness: ", bestFitness)
                 if (this._fitnessFunction.isOptimal(bestFitness)) {
                     StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 }
