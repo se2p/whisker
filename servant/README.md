@@ -23,6 +23,7 @@ Options:
                                 "../dist/index.html")
   -s, --scratchPath <Path>      Scratch project to run
   -t, --testPath <Path>         Tests to run
+  -w, --errorWitnessPath <Path> A JSON error witness to replay
   -f, --frequency <Integer>     Refreshrate of scratch in hz (default: 30)
   -d, --isHeadless              If should run headless (d like in decapitated)
   -p, --numberOfTabs <Integer>  The number of tabs to execute the tests in (default: 1)

@@ -13,7 +13,7 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, testPath, scratchPath, frequency, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch
+    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch, errorWitnessPath
 } = cli.start();
 
 init();
@@ -40,7 +40,9 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
     } else {
-        const paths = prepateTestFiles(testPath);
+        const testFilePath = errorWitnessPath ? translateErrorWitnessToTest(errorWitnessPath) : testPath;
+
+        const paths = prepateTestFiles(testFilePath);
         Promise.all(paths.map((path, index) => runSearch(path, browser, index)))
             .then(() => {
                 browser.close();
@@ -282,6 +284,33 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
     }
 
     return testSourcesPerTab;
+}
+
+function translateErrorWitnessToTest(errorWitnessPath) {
+    const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
+    let test = "const errorWitness = async function(t) {\n"
+
+    for (const step of errorWitness.steps) {
+        const action = step.action;
+
+        switch (action) {
+            case 'INITIAL_STATE': break;
+            case 'WAIT': test += `  await t.runForTime(${step.waitMicros / 1000});\n`; break;
+            case 'MOUSE_INPUT': test += `  t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
+            default: logger.error(`Unknown error witness step action '${action}'`);
+        }
+    }
+
+    test += "t.end();\n}\nmodule.exports = [{test:errorWitness, name: 'Error witness', description: '', categories: []}];"
+
+    if (fs.existsSync(tmpDir)) {
+        fs.rmdirSync(tmpDir, {recursive: true});
+    }
+    fs.mkdirSync(tmpDir);
+
+    const path = `${tmpDir}/${basename(errorWitnessPath)}_generated_test.js`;
+    fs.writeFileSync(path, test, {encoding: 'utf8'});
+    return path;
 }
 
 /**
