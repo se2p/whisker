@@ -71,4 +71,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
         throw new NotSupportedFunctionException();
     }
 
+    getStartTime(): number {
+        throw new NotSupportedFunctionException();
+    }
 }

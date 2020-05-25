@@ -87,4 +87,6 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * @returns Solution for the given problem
      */
     getCurrentSolution(): List<C>;
+
+    getStartTime(): number;
 }

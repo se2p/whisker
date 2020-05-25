@@ -41,6 +41,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _bestIndividuals = new List<C>();
 
+    private _startTime: number;
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -63,6 +65,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         let bestIndividual = null;
         let bestFitness = 0;
+        this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
 
@@ -91,5 +94,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._bestIndividuals;
     }
 
-
+    getStartTime(): number {
+        return this._startTime;
+    }
 }
