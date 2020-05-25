@@ -78,13 +78,13 @@ export class WhiskerSearchConfiguration {
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
         const stoppingCond = stoppingCondition["type"];
-        if (stoppingCond["type"] == "fixed-iteration") {
+        if (stoppingCond == "fixed-iteration") {
             return new FixedIterationsStoppingCondition(stoppingCond["iterations"])
-        } else if (stoppingCond["type"] == "fixed-time") {
+        } else if (stoppingCond == "fixed-time") {
             return new FixedTimeStoppingCondtion();
-        }else if (stoppingCondition["type"] == "optimal") {
+        }else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
-        } else if (stoppingCond["type"] == "one-of") {
+        } else if (stoppingCond == "one-of") {
             const conditions = stoppingCondition["conditions"];
             const l: StoppingCondition<any>[] = [];
             for (const c of conditions) {
