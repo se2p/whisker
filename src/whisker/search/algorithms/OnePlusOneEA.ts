@@ -99,4 +99,8 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     getCurrentSolution(): List<C> {
         return this._bestIndividuals;
     }
+
+    getFitnessFunction(): FitnessFunction<C> {
+        return this._fitnessFunction;
+    }
 }

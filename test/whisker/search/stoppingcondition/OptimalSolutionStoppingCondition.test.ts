@@ -26,8 +26,11 @@ import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSear
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
+import Any = jasmine.Any;
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
+
     setCurrentSolution(chromosome: BitstringChromosome) {
         this._bestIndividuals.clear();
         this._bestIndividuals.add(chromosome);
@@ -44,9 +47,10 @@ describe('OptimalSolutionStoppingCondition', () => {
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
+        algorithm.setFitnessFunction(fitnessFunction)
         algorithm.setCurrentSolution(chromosome)
 
-        const stoppingCondition = new OptimalSolutionStoppingCondition(fitnessFunction);
+        const stoppingCondition = new OptimalSolutionStoppingCondition();
 
         expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
@@ -59,9 +63,10 @@ describe('OptimalSolutionStoppingCondition', () => {
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
+        algorithm.setFitnessFunction(fitnessFunction)
         algorithm.setCurrentSolution(chromosome)
 
-        const stoppingCondition = new OptimalSolutionStoppingCondition(fitnessFunction);
+        const stoppingCondition = new OptimalSolutionStoppingCondition();
 
         expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
@@ -70,10 +75,11 @@ describe('OptimalSolutionStoppingCondition', () => {
     test('Do not fail on empty list', () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
+        algorithm.setFitnessFunction(fitnessFunction)
         // No current solution is set:
         // algorithm.setCurrentSolution(chromosome)
 
-        const stoppingCondition = new OptimalSolutionStoppingCondition(fitnessFunction);
+        const stoppingCondition = new OptimalSolutionStoppingCondition();
 
         expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });

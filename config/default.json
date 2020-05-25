@@ -1,6 +1,6 @@
 {
-    "test-generator": "many-objective",
-    "algorithm": "mosa",
+    "test-generator": "iterative",
+    "algorithm": "one-plus-one",
     "chromosome": "integerlist",
     "population-size": 10,
     "chromosome-length": 10,
@@ -25,8 +25,16 @@
         "targets": []
     },
     "stopping-condition": {
-        "type" : "fixed-iteration",
-        "iterations": 1
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "fixed-iteration",
+                "iterations": 1
+            },
+            {
+                "type": "optimal"
+            }
+        ]
     },
     "archive": {
         "maxArchiveSizeStart": null,

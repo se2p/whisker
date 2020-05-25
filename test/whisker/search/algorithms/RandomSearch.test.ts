@@ -41,7 +41,7 @@ describe('RandomSearch', () => {
         const fitnessFunction = new OneMaxFitnessFunction(n);
         properties.setStoppingCondition(new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition(fitnessFunction)));
+            new OptimalSolutionStoppingCondition()));
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM)
             .addProperties(properties)
@@ -64,7 +64,7 @@ describe('RandomSearch', () => {
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition(fitnessFunction)
+            new OptimalSolutionStoppingCondition()
         );
         const randomSearch = new RandomSearch();
 
