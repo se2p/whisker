@@ -18,22 +18,24 @@
  *
  */
 
-import {StoppingCondition} from '../StoppingCondition';
+import {StoppingCondition} from "../StoppingCondition";
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class FixedTimeStoppingCondtion<T extends Chromosome> implements StoppingCondition<T> {
 
-    constructor() {
-        throw new NotYetImplementedException();
+    private _maxTime: number;
+
+    constructor(maxTime: number) {
+        this._maxTime = maxTime;
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        throw new NotYetImplementedException();
+        // FIXME use acceleration factor
+        return (Date.now() - algorithm.getStartTime()) > this._maxTime;
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        throw new NotYetImplementedException();
+        return this._maxTime - (Date.now() - algorithm.getStartTime());
     }
 }

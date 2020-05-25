@@ -42,6 +42,8 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _bestIndividuals = new List<C>();
 
+    _startTime: number;
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -62,6 +64,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
      */
     findSolution(): List<C> {
 
+        this._startTime = Date.now();
         let bestIndividual = this._chromosomeGenerator.get();
         this._bestIndividuals.add(bestIndividual);
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
@@ -100,7 +103,11 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._bestIndividuals;
     }
 
-    getFitnessFunction(): FitnessFunction<C> {
+     getFitnessFunction(): FitnessFunction<C> {
         return this._fitnessFunction;
+    }
+
+    getStartTime(): number {
+        return this._startTime;
     }
 }

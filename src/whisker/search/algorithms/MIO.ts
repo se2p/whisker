@@ -76,6 +76,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _samplingCounter: Map<number, number>;
 
+    private _startTime: number;
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -160,6 +162,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      */
     private setStartValues(): void {
         this._iterations = 0;
+        this._startTime = Date.now();
         this._mutationCounter = 0;
         this._bestIndividuals = new List<C>();
         this._archiveCovered = new Map<number, C>();
@@ -380,6 +383,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
         }
         return optimalFitnessFunctionKey;
+    }
+
+    getStartTime(): number {
+        return this._startTime;
     }
 }
 

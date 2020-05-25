@@ -54,6 +54,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _selectionOperator: Selection<C>;
 
+    private _startTime: number;
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -89,6 +91,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._bestIndividuals.clear();
         this._archive.clear();
         this._iterations = 0;
+        this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         const parentPopulation = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
@@ -349,5 +352,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
         }
         return svd;
+    }
+
+    getStartTime(): number {
+        return this._startTime;
     }
 }

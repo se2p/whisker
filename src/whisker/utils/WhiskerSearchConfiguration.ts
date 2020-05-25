@@ -81,7 +81,7 @@ export class WhiskerSearchConfiguration {
         if (stoppingCond == "fixed-iteration") {
             return new FixedIterationsStoppingCondition(stoppingCond["iterations"])
         } else if (stoppingCond == "fixed-time") {
-            return new FixedTimeStoppingCondtion();
+            return new FixedTimeStoppingCondtion(stoppingCond["duration"]);
         }else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
         } else if (stoppingCond == "one-of") {

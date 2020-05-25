@@ -49,6 +49,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _bestFitness = 0;
 
+    private _startTime: number;
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>) {
         this._chromosomeGenerator = generator;
     }
@@ -71,6 +73,9 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @returns Solution for the given problem
      */
     findSolution(): List<C> {
+
+        // set start time
+        this._startTime = Date.now();
 
         // Initialise population
         let population = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
@@ -171,5 +176,9 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     getFitnessFunction(): FitnessFunction<C> {
         return this._fitnessFunction;
+    }
+
+    getStartTime(): number {
+        return this._startTime;
     }
 }
