@@ -19,22 +19,21 @@ import {IterativeSearchBasedTestGenerator} from "../testgenerator/IterativeSearc
 import {ManyObjectiveTestGenerator} from "../testgenerator/ManyObjectiveTestGenerator";
 import {FitnessFunctionType} from "../search/FitnessFunctionType";
 import {TournamentSelection} from "../search/operators/TournamentSelection";
-import {FitnessFunction} from "../search/FitnessFunction";
-import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
-import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunction";
-import {OneMaxFitnessFunction} from "../bitstring/OneMaxFitnessFunction";
-import {SingleBitFitnessFunction} from "../bitstring/SingleBitFitnessFunction";
 import {List} from "./List";
 import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
 import {VariableLengthTestChromosomeGenerator} from "../testcase/VariableLengthTestChromosomeGenerator";
+import {StoppingCondition} from "../search/StoppingCondition";
+import {FixedTimeStoppingCondtion} from "../search/stoppingconditions/FixedTimeStoppingCondition";
+import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
+import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 
 class ConfigException implements Error {
     message: string;
     name: string;
 
     constructor(message: string) {
-        this.name = "ConfigException"
+        this.name = "ConfigException";
         this.message = message;
 
     }
@@ -42,9 +41,9 @@ class ConfigException implements Error {
 
 export class WhiskerSearchConfiguration {
 
-    private readonly dict: {};
+    private readonly dict: Record<string, any>;
 
-    constructor(dict: {}) {
+    constructor(dict: Record<string, any>) {
         this.dict = Preconditions.checkNotUndefined(dict)
     }
 
@@ -66,18 +65,35 @@ export class WhiskerSearchConfiguration {
             this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
         properties.setStartOfFocusedPhase(this.dict['startOfFocusedPhase'] as number);
 
-        const stoppingCond = this.dict['stopping-condition'];
-        if (stoppingCond["type"] == "fixed-iteration") {
-            properties.setStoppingCondition(new FixedIterationsStoppingCondition(stoppingCond["iterations"]))
-        }
+        properties.setStoppingCondition(this._getStoppingCondition(this.dict['stopping-condition']));
 
-        //TODO maybe we need to throw an error if we expect his and it is not here?
+        //TODO maybe we need to throw an error if we expect this and it is not here?
         if ("integerRange" in this.dict) {
             const integerRange = this.dict["integerRange"];
             properties.setIntRange(integerRange["min"], integerRange["max"]);
         }
 
         return properties;
+    }
+
+    private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
+        const stoppingCond = stoppingCondition["type"];
+        if (stoppingCond["type"] == "fixed-iteration") {
+            return new FixedIterationsStoppingCondition(stoppingCond["iterations"])
+        } else if (stoppingCond["type"] == "fixed-time") {
+            return new FixedTimeStoppingCondtion();
+        }else if (stoppingCondition["type"] == "optimal") {
+            return new OptimalSolutionStoppingCondition()
+        } else if (stoppingCond["type"] == "one-of") {
+            const conditions = stoppingCondition["conditions"];
+            const l: StoppingCondition<any>[] = [];
+            for (const c of conditions) {
+                l.push(this._getStoppingCondition(c));
+            }
+            return new OneOfStoppingCondition(...l)
+        }
+
+        throw new ConfigException("No stopping condition given");
     }
 
     private _getMutationOperator(): Mutation<any> {
@@ -105,7 +121,7 @@ export class WhiskerSearchConfiguration {
     public getSelectionOperator(): Selection<any> {
         switch (this.dict['selection']['operator']) {
             case 'tournament':
-                return new TournamentSelection(this.dict['selection']['tournamentSize']);
+                return new TournamentSelection(this.dict['selection']['tournamentSize']) as unknown as Selection<any>;
             case 'rank':
             default:
                 return new RankSelection();
@@ -136,7 +152,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getFitnessFunctionType(): FitnessFunctionType {
-        const fitnessFunctionDef = this.dict['fitness-function']
+        const fitnessFunctionDef = this.dict['fitness-function'];
         switch (fitnessFunctionDef["type"]) {
             case 'statement':
                 return FitnessFunctionType.STATEMENT;
@@ -149,7 +165,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getFitnessFunctionTargets(): List<string> {
-        const fitnessFunctionDef = this.dict['fitness-function']
+        const fitnessFunctionDef = this.dict['fitness-function'];
         if (fitnessFunctionDef['targets']) {
             const targets = new List<string>();
             for (const target of fitnessFunctionDef['targets']) {
