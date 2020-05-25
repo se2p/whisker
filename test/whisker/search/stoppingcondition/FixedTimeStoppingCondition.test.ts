@@ -38,7 +38,7 @@ describe('FixedTimeStoppingCondition', () => {
         const algorithm = new DummySearchAlgorithm();
         const maxTime = 11;
         algorithm.setTimeElapsed(maxTime);
-        const stoppingCondition = new FixedTimeStoppingCondtion(maxTime);
+        const stoppingCondition = new FixedTimeStoppingCondtion(maxTime-1);
 
         expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
