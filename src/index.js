@@ -46,7 +46,8 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
 
-    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config);
+    const frequency = Number(document.querySelector('#scratch-vm-frequency').value);
+    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, frequency);
     Whisker.outputRun.println('summary');
 };
 
