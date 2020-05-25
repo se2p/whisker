@@ -41,7 +41,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _bestIndividuals = new List<C>();
 
-    private _startTime: number;
+    _startTime: number;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
