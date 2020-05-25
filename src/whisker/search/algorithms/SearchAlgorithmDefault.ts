@@ -71,4 +71,8 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
         throw new NotSupportedFunctionException();
     }
 
+    getFitnessFunction(): FitnessFunction<C> {
+        throw new NotSupportedFunctionException();
+    }
+
 }

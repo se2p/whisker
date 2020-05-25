@@ -44,7 +44,7 @@ describe('SimpleGA', () => {
         const fitnessFunction = new OneMaxFitnessFunction(n);
         properties.setStoppingCondition(new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition(fitnessFunction)));
+            new OptimalSolutionStoppingCondition()));
         properties.setMutationProbablity(0.2);
         properties.setCrossoverProbability(0.8);
 
@@ -71,7 +71,7 @@ describe('SimpleGA', () => {
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000), // Plenty time...
-            new OptimalSolutionStoppingCondition(fitnessFunction)
+            new OptimalSolutionStoppingCondition()
         );
         const selectionFunction = new TournamentSelection(5);
         properties.setStoppingCondition(stoppingCondition);

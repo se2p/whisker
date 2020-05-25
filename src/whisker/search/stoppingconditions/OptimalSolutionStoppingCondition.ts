@@ -26,19 +26,14 @@ import {NotYetImplementedException} from "../../core/exceptions/NotYetImplemente
 
 export class OptimalSolutionStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _fitnessFunction: FitnessFunction<T>;
-
-    constructor(fitnessFunction: FitnessFunction<T>) {
-        this._fitnessFunction = fitnessFunction;
-    }
-
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
         const solutions = algorithm.getCurrentSolution();
+        const fitnessFunction = algorithm.getFitnessFunction();
 
         // TODO: This could be written in a single line by extending the List class?
         for (const solution of solutions) {
-            const fitness = solution.getFitness(this._fitnessFunction);
-            if (this._fitnessFunction.isOptimal(fitness)) {
+            const fitness = solution.getFitness(fitnessFunction);
+            if (fitnessFunction.isOptimal(fitness)) {
                 return true;
             }
         }
