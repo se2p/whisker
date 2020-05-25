@@ -41,7 +41,7 @@ describe('OnePlusOneEa', () => {
         const fitnessFunction = new OneMaxFitnessFunction(n);
         properties.setStoppingCondition(new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition(fitnessFunction)));
+            new OptimalSolutionStoppingCondition()));
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.ONE_PLUS_ONE)
             .addProperties(properties)
@@ -64,7 +64,7 @@ describe('OnePlusOneEa', () => {
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000), // Plenty time...
-            new OptimalSolutionStoppingCondition(fitnessFunction)
+            new OptimalSolutionStoppingCondition()
         );
         properties.setStoppingCondition(stoppingCondition);
         const search = new OnePlusOneEA();

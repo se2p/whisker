@@ -88,5 +88,11 @@ export interface SearchAlgorithm<C extends Chromosome> {
      */
     getCurrentSolution(): List<C>;
 
+    /**
+     * Returns all fitness functions for this search algorithm
+     * @return list with all fitness functions
+     */
+    getFitnessFunction(): FitnessFunction<C>;
+
     getStartTime(): number;
 }

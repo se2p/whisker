@@ -94,6 +94,10 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._bestIndividuals;
     }
 
+    getFitnessFunction(): FitnessFunction<C> {
+        return this._fitnessFunction;
+    }
+
     getStartTime(): number {
         return this._startTime;
     }
