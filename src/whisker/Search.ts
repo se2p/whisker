@@ -71,7 +71,7 @@ export class Search {
         return this.vm;
     }
 
-    public run(vm, project, configRaw: string): void {
+    public run(vm, project, configRaw: string, frequency: number): void {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -82,7 +82,7 @@ export class Search {
         Container.vm = vm;
 
         async function init(search: Search) {
-            await util.prepare(30);
+            await util.prepare(frequency || 30);
             util.start();
             StatisticsCollector.getInstance().reset()
             search.execute(project, config);
