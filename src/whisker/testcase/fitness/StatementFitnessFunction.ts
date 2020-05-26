@@ -117,7 +117,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     private _getApproachLevel(trace: ExecutionTrace) {
         let min: number = Number.MAX_VALUE
 
-        for (const blockTrace of trace.blockTraces) {
+        for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
             let newMin = this._approachLevelByTrace(blockTrace, min);
             if (newMin <= min) {
                 min = newMin;
@@ -145,7 +145,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     private _getBranchDistance(trace: ExecutionTrace) {
         let minBranchApproachLevel: number = Number.MAX_VALUE
         let branchDistance = Number.MAX_VALUE;
-        for (const blockTrace of trace.blockTraces) {
+        for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
             let traceMin;
             if (blockTrace.id === this._targetNode.block.id) {
                 // if we hit the block in the trace, it must have approach level zero and branch distance 0

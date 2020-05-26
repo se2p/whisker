@@ -60,14 +60,13 @@ export class TestExecutor {
             StatisticsCollector.getInstance().incrementEventsCount()
 
             new WaitEvent().apply(this._vm);
-            console.log("Applying " + nextEvent.constructor.name + "; " + numCodon + "/" + codons.size())
         }
 
-        new WaitEvent().apply(this._vm)
-        new WaitEvent().apply(this._vm)
-        new WaitEvent().apply(this._vm)
-        new WaitEvent().apply(this._vm)
-        new WaitEvent().apply(this._vm)
+        new WaitEvent().apply(this._vm);
+        new WaitEvent().apply(this._vm);
+        new WaitEvent().apply(this._vm);
+        new WaitEvent().apply(this._vm);
+        new WaitEvent().apply(this._vm);
         return new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces)
     }
 
