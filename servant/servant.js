@@ -74,6 +74,7 @@ async function runGeneticSearch (browser) {
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#toggle-output')).click();
+        await page.evaluate(frequ => document.querySelector('#scratch-vm-frequency').value = frequ, frequency);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
