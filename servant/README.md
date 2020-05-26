@@ -35,7 +35,7 @@ Options:
 
 The repository already includes some tests and a corresponding test file. You can run those via (with a 10 fold speedup and two parallel executions in a headless chrome instance):
 ```
-node index.js -s project.sb3 -t tests.js -a 10 -d -p 2
+node servant -s project.sb3 -t tests.js -a 10 -d -p 2
 ```
 Now you can check the output of the run, which reflects the content of the output inside the "output" field of a whisker-web instance.
 
