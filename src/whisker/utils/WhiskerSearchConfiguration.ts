@@ -79,7 +79,7 @@ export class WhiskerSearchConfiguration {
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
         const stoppingCond = stoppingCondition["type"];
         if (stoppingCond == "fixed-iteration") {
-            return new FixedIterationsStoppingCondition(stoppingCond["iterations"])
+            return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
         } else if (stoppingCond == "fixed-time") {
             return new FixedTimeStoppingCondtion();
         }else if (stoppingCond == "optimal") {
