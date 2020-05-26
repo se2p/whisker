@@ -1,8 +1,8 @@
 const TestRunner = require('./test-runner');
 const Test = require('./test');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
-const yaml = require('js-yaml');
 const cleanYamlObject = require('clean-yaml-object');
+const TAP13Formatter = require('./tap13-formatter');
 
 class TAP13Listener {
     constructor (testRunner, print) {
@@ -80,12 +80,12 @@ class TAP13Listener {
         }
 
         if (result.coverage) {
-            yamlOutput.coverage = TAP13Listener.formatCoverage(result.coverage);
+            yamlOutput.coverage = TAP13Formatter.formatCoverage(result.coverage);
         }
 
         const output = [`${success ? 'ok' : 'not ok'} ${testIndex}${testName}`];
         if (Object.keys(yamlOutput).length) {
-            output.push(TAP13Listener.descriptionToYAML(yamlOutput));
+            output.push(TAP13Formatter.descriptionToYAML(yamlOutput));
         }
 
         this.print(output.join('\n'));
@@ -100,108 +100,6 @@ class TAP13Listener {
         } else {
             this.print('Bail out!');
         }
-    }
-
-    /**
-     * @param {object} description .
-     * @return {string} .
-     */
-    static descriptionToYAML (description) {
-        return [
-            '  ---',
-            yaml.safeDump(description)
-                .trim()
-                .replace(/^/mg, '  '),
-            '  ...'
-        ].join('\n');
-    }
-
-    /**
-     * @param {object} extra .
-     * @return {string} .
-     */
-    static extraToYAML (extra) {
-        return yaml.safeDump(extra)
-            .trim()
-            .replace(/^/mg, '# ');
-    }
-
-    /**
-     * @param {object} summaries .
-     * @return {object} .
-     */
-    static mergeFormattedSummaries (summaries) {
-        return summaries.reduce((mergedSummary, summary) => {
-            Object.keys(summary).forEach(key => {
-                if (mergedSummary[key]) {
-                    mergedSummary[key] += summary[key];
-                } else {
-                    mergedSummary[key] = summary[key];
-                }
-            });
-
-            return mergedSummary;
-        }, {});
-    }
-
-    /**
-     * @param {TestResult[]} summary .
-     * @return {object} .
-     */
-    static formatSummary (summary) {
-        const tests = summary.length;
-        const pass = summary.filter(result => result.status === Test.PASS).length;
-        const fail = summary.filter(result => result.status === Test.FAIL).length;
-        const error = summary.filter(result => result.status === Test.ERROR).length;
-        const skip = summary.filter(result => result.status === Test.SKIP).length;
-
-        return {
-            tests,
-            pass,
-            fail,
-            error,
-            skip
-        };
-    }
-
-    /**
-     * @param {object} coveragePerSprite .
-     * @return {object} .
-     */
-    static formatCoverage (coveragePerSprite) {
-        // const individualCoverage = coverage.getCoveragePerSprite();
-        // const combinedCoverage = coverage.getCoverage();
-
-        let covered = 0;
-        let total = 0;
-
-        const formattedCoverage = {};
-        for (const spriteName of Object.keys(coveragePerSprite)) {
-            const coverageRecord = coveragePerSprite[spriteName];
-            covered += coverageRecord.covered;
-            total += coverageRecord.total;
-            formattedCoverage[spriteName] = TAP13Listener.formatCoverageRecord(coverageRecord);
-        }
-
-        return {
-            combined: TAP13Listener.formatCoverageRecord({covered, total}),
-            individual: formattedCoverage
-        };
-    }
-
-    /**
-     * @param {object} coverageRecord .
-     * @return {string} .
-     */
-    static formatCoverageRecord (coverageRecord) {
-        const {covered, total} = coverageRecord;
-        let percentage;
-        if (total === 0) {
-            percentage = NaN;
-        } else {
-            percentage = (covered / total).toFixed(2);
-        }
-        return `${percentage} (${covered}/${total})`;
     }
 }
 
