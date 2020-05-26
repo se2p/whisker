@@ -7,13 +7,14 @@ const fs = require('fs');
 const {basename} = require('path');
 const puppeteer = require('puppeteer');
 const {logger, cli} = require('./util');
-const {CoverageGenerator, TAP13Listener} = require('../../whisker-main');
+const TAP13Formatter = require('../../whisker-main/src/test-runner/tap13-formatter');
+const CoverageGenerator = require('../../whisker-main/src/coverage/coverage');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, testPath, scratchPath, accelerationFactor, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch
+    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch,
 } = cli.start();
 
 init();
@@ -139,7 +140,7 @@ async function runGeneticSearch (browser) {
     }
 }
 
-async function runSearch (path, browser, index) {
+async function runTests (path, browser, index) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
@@ -153,8 +154,7 @@ async function runSearch (path, browser, index) {
         if (isConsoleForwarded) {
             page.on('console', msg => {
                 if (msg._args.length) {
-                    logger.info(`Page ${index} | Forwarded: `, msg._args.map(arg => arg._remoteObject.value)
-                        .join(' '));
+                    logger.info(`Page ${index} | Forwarded: `, msg._args.map(arg => arg._remoteObject.value).join(' '));
                 }
             });
         }
@@ -370,11 +370,11 @@ function prepateTestFiles (whiskerTestPath) {
 function printTestresultsFromCivergaeGenerator (summaries, coverage) {
     logger.info('Run Finished');
 
-    const formattedSummary = TAP13Listener.mergeFormattedSummaries(summaries.map(TAP13Listener.formatSummary));
-    const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
+    const formattedSummary = TAP13Formatter.mergeFormattedSummaries(summaries.map(TAP13Formatter.formatSummary));
+    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
-    const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
+    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
     logger.info('\nSummary:\n', summaryString);
     logger.info('\nCoverage:\n', coverageString);

@@ -1,7 +1,7 @@
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener, Search} = require('../../whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('../../whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
@@ -46,8 +46,8 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
 
-    const frequency = Number(document.querySelector('#scratch-vm-frequency').value);
-    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, frequency);
+    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
     Whisker.outputRun.println('summary');
 };
 
@@ -74,11 +74,11 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     CoverageGenerator.restoreThread(Thread);
 
-    const formattedSummary = TAP13Listener.formatSummary(summary);
-    const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
+    const formattedSummary = TAP13Formatter.formatSummary(summary);
+    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
-    const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
+    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
     Whisker.outputRun.println([
         summaryString,
