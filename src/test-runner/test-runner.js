@@ -71,7 +71,7 @@ class TestRunner extends EventEmitter {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project);
-        await util.prepare(props.frequency);
+        await util.prepare(props.accelerationFactor);
 
         const testDriver = util.getTestDriver(
             {
