@@ -208,13 +208,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         switch (controlNode.block.opcode) {
             case 'control_repeat':
             case 'control_forever': { // Todo not sure about forever
-                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
-                    requiredCondition = true;
-                } else if (statement === controlNode) {
-                    requiredCondition = true;
-                }
-                break;
+               requiredCondition = true;
+               break;
             }
             case 'control_repeat_until': {
                 requiredCondition = false;
