@@ -32,12 +32,12 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     private _targetNode: GraphNode;
     private _cdg: ControlDependenceGraph;
     private _approachLevels: Record<string, number>
-    private _userEventMapping: Record<string, string>
+    private eventMapping: Record<string, string>
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         this._targetNode = targetNode;
         this._cdg = cdg;
-        this._userEventMapping = {};
+        this.eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
 
     }
@@ -59,11 +59,15 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
             visited.add(node);
             const pred: [GraphNode] = cdg.predecessors(node.id);
-            const currentLevel = level + 1
+            let currentLevel = level + 1;
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
 
-                if (n.hasOwnProperty("userEvent")) {
-                    this._userEventMapping[node.id] = n.id
+                if (n.hasOwnProperty("userEvent") || n.hasOwnProperty("event")) {
+                    this.eventMapping[node.id] = n.id;
+                    const succs: [GraphNode] = cdg.successors(n.id);
+                    for (const s of Array.from(succs.values())) {
+                        this.eventMapping[s.id] = n.id;
+                    }
                 }
 
                 if (n.id in approachLevels) {
