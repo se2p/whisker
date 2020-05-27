@@ -137,9 +137,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             min = this._approachLevels[blockTrace.id]
         }
 
-        if (blockTrace.id === this._targetNode.block.id && blockTrace.id in this._userEventMapping) {
-            const userEventNode = this._userEventMapping[blockTrace.id]
-            if (this._approachLevels[userEventNode] <= currentMin) {
+        if (blockTrace.id in this.eventMapping) {
+            const userEventNode = this.eventMapping[blockTrace.id]
+            const userEventMin = this._approachLevels[userEventNode];
+            if (userEventMin <= currentMin && userEventMin <= min) {
                 min = this._approachLevels[userEventNode]
             }
         }
