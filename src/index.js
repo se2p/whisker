@@ -1,7 +1,7 @@
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener, Search} = require('../../whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('../../whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
@@ -16,7 +16,7 @@ const InputRecorder = require('./components/input-recorder');
 const Whisker = window.Whisker = {};
 window.$ = $;
 
-const SCRATCH_VM_FREQUENCY = 30;
+const DEFAULT_ACCELERATION_FACTOR = 1;
 
 const loadTestsFromString = function (string) {
     let tests;
@@ -46,8 +46,8 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
 
-    const frequency = Number(document.querySelector('#scratch-vm-frequency').value);
-    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, frequency);
+    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
     Whisker.outputRun.println('summary');
 };
 
@@ -56,17 +56,29 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     CoverageGenerator.prepareThread(Thread);
     CoverageGenerator.prepare(vm);
 
-    const frequency = Number(document.querySelector('#scratch-vm-frequency').value);
-    const summary = await Whisker.testRunner.runTests(vm, project, tests, {frequency, CoverageGenerator});
+    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    const summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor, CoverageGenerator});
     const coverage = CoverageGenerator.getCoverage();
+
+    // The messageServantCallback might be attached to the window object, in case the Whisker instance is controlled by
+    // the Servant.
+    if (typeof window.messageServantCallback === 'function') {
+        const coveredBlockIdsPerSprite =
+            [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+        const blockIdsPerSprite =
+            [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+
+        const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+        window.messageServantCallback({serializeableCoverageObject, summary});
+    }
 
     CoverageGenerator.restoreThread(Thread);
 
-    const formattedSummary = TAP13Listener.formatSummary(summary);
-    const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
+    const formattedSummary = TAP13Formatter.formatSummary(summary);
+    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
-    const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
+    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
     Whisker.outputRun.println([
         summaryString,
@@ -151,7 +163,7 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
-    document.querySelector('#scratch-vm-frequency').value = SCRATCH_VM_FREQUENCY;
+    document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };
 
 const initEvents = function () {
@@ -246,24 +258,12 @@ const toggleComponents = function () {
     if (window.localStorage) {
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
-            const [input, tests, editor, output, scratchVMFrequency] = JSON.parse(componentStates);
-            if (input) {
-                $('#toggle-input')
-                    .click();
-            }
-            if (tests) {
-                $('#toggle-tests')
-                    .click();
-            }
-            if (editor) {
-                $('#toggle-editor')
-                    .click();
-            }
-            if (output) {
-                $('#toggle-output')
-                    .click();
-            }
-            if (scratchVMFrequency) document.querySelector('#scratch-vm-frequency').value = scratchVMFrequency;
+            const [input, tests, editor, output, accelerationFactor] = JSON.parse(componentStates);
+            if (input) $('#toggle-input').click();
+            if (tests) $('#toggle-tests').click();
+            if (editor) $('#toggle-editor').click();
+            if (output) $('#toggle-output').click();
+            if (accelerationFactor) document.querySelector('#acceleration-factor').value = accelerationFactor;
         }
     }
 };
@@ -279,15 +279,11 @@ $(document)
 window.onbeforeunload = function () {
     if (window.localStorage) {
         const componentStates = [
-            $('#toggle-input')
-                .is(':checked'),
-            $('#toggle-tests')
-                .is(':checked'),
-            $('#toggle-editor')
-                .is(':checked'),
-            $('#toggle-output')
-                .is(':checked'),
-            document.querySelector('#scratch-vm-frequency').value
+            $('#toggle-input').is(':checked'),
+            $('#toggle-tests').is(':checked'),
+            $('#toggle-editor').is(':checked'),
+            $('#toggle-output').is(':checked'),
+            document.querySelector('#acceleration-factor').value
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
