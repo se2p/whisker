@@ -32,12 +32,12 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     private _targetNode: GraphNode;
     private _cdg: ControlDependenceGraph;
     private _approachLevels: Record<string, number>
-    private _userEventMapping: Record<string, string>
+    private eventMapping: Record<string, string>
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         this._targetNode = targetNode;
         this._cdg = cdg;
-        this._userEventMapping = {};
+        this.eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
 
     }
@@ -59,11 +59,15 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
             visited.add(node);
             const pred: [GraphNode] = cdg.predecessors(node.id);
-            const currentLevel = level + 1
+            const currentLevel = level + 1;
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
 
-                if (n.hasOwnProperty("userEvent")) {
-                    this._userEventMapping[node.id] = n.id
+                if (n.hasOwnProperty("userEvent") || n.hasOwnProperty("event")) {
+                    this.eventMapping[node.id] = n.id;
+                    const succs: [GraphNode] = cdg.successors(n.id);
+                    for (const s of Array.from(succs.values())) {
+                        this.eventMapping[s.id] = n.id;
+                    }
                 }
 
                 if (n.id in approachLevels) {
@@ -94,8 +98,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         const approachLevel = this._getApproachLevel(executionTrace);
         const branchDistance = this._getBranchDistance(executionTrace);
-        console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel)
-        console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance)
+        console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
+        console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
         return approachLevel + this._normalize(branchDistance)
     }
 
@@ -115,10 +119,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     }
 
     private _getApproachLevel(trace: ExecutionTrace) {
-        let min: number = Number.MAX_VALUE
+        let min: number = Number.MAX_VALUE;
 
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
-            let newMin = this._approachLevelByTrace(blockTrace, min);
+            const newMin = this._approachLevelByTrace(blockTrace, min);
             if (newMin <= min) {
                 min = newMin;
             }
@@ -133,9 +137,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             min = this._approachLevels[blockTrace.id]
         }
 
-        if (blockTrace.id === this._targetNode.block.id && blockTrace.id in this._userEventMapping) {
-            const userEventNode = this._userEventMapping[blockTrace.id]
-            if (this._approachLevels[userEventNode] <= currentMin) {
+        if (blockTrace.id in this.eventMapping) {
+            const userEventNode = this.eventMapping[blockTrace.id];
+            const userEventMin = this._approachLevels[userEventNode];
+            if (userEventMin <= currentMin && userEventMin <= min) {
                 min = this._approachLevels[userEventNode]
             }
         }
@@ -143,7 +148,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     }
 
     private _getBranchDistance(trace: ExecutionTrace) {
-        let minBranchApproachLevel: number = Number.MAX_VALUE
+        let minBranchApproachLevel: number = Number.MAX_VALUE;
         let branchDistance = Number.MAX_VALUE;
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
             let traceMin;
@@ -174,7 +179,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
                     if (traceMin < minBranchApproachLevel ||
                         (traceMin == minBranchApproachLevel && newDistance < branchDistance)) {
-                        minBranchApproachLevel = traceMin
+                        minBranchApproachLevel = traceMin;
                         branchDistance = newDistance;
                     }
                 } else if (blockTrace.opcode.startsWith("event_")) {
@@ -198,18 +203,13 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return x / (x + 1.0);
     }
 
-    _checkControlBlock(statement, controlNode) {
+    _checkControlBlock(statement, controlNode): boolean {
         let requiredCondition;
         switch (controlNode.block.opcode) {
             case 'control_repeat':
             case 'control_forever': { // Todo not sure about forever
-                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
-                    requiredCondition = true;
-                } else if (statement === controlNode) {
-                    requiredCondition = true;
-                }
-                break;
+               requiredCondition = true;
+               break;
             }
             case 'control_repeat_until': {
                 requiredCondition = false;
@@ -243,7 +243,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return requiredCondition;
     }
 
-    _matchesBranchStart(statement, controlNode, branchStartId) {
+    _matchesBranchStart(statement, controlNode, branchStartId): boolean {
         let cur = statement;
         while (cur.id !== controlNode.id) {
             if (cur.id === branchStartId) {
@@ -262,5 +262,5 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             }
         }
         return false;
-    };
+    }
 }
