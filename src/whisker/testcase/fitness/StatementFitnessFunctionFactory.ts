@@ -21,6 +21,11 @@ export class StatementFitnessFunctionFactory {
                     continue;
                 }
 
+                if (node.hasOwnProperty("userEvent") || node.hasOwnProperty("event")) {
+                    // we not need to cover nodes that are not real blocks
+                    continue
+                }
+
                 // Check if explicit targets are specified
                 if (targets && !targets.isEmpty()) {
                     if (!targets.contains(node.id)) {
