@@ -51,6 +51,15 @@ export abstract class ListChromosome<T> extends Chromosome {
         return this._genes; // TODO: Immutable list?
     }
 
+    public toString = () : string => {
+        let result = "";
+        for(const gene of this.getGenes()) {
+            result += gene + ":";
+        }
+
+        return result;
+    }
+
     /**
      * Create a copy with newGenes
      * TODO: This is a bit of a hack because of polymorphism. There must be a nicer way?
