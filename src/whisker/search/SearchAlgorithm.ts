@@ -92,7 +92,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * Returns all fitness functions for this search algorithm
      * @return list with all fitness functions
      */
-    getFitnessFunction(): FitnessFunction<C>;
+    getFitnessFunctions(): Iterable<FitnessFunction<C>>;
 
     getStartTime(): number;
 }

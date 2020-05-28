@@ -82,6 +82,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._bestIndividuals;
     }
 
+    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
+        return this._fitnessFunctions.values();
+    }
+
     /**
      * Returns a list of solutions for the given problem.
      *
@@ -221,6 +225,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         && candidateChromosome.getLength() < bestChromosome.getLength())) {
                         bestChromosome = candidateChromosome;
                         bestFitness = candidateFitness;
+                        console.log("Best Fitness: ", )
                     }
                 }
                 if (!bestFront.contains(bestChromosome)) {

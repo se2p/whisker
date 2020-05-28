@@ -35,6 +35,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _fitnessFunction: FitnessFunction<C>;
 
+    private _fitnessFunctions: List<FitnessFunction<C>> = new List();
+
     private _stoppingCondition: StoppingCondition<C>;
 
     private _selectionOperator: Selection<C>;
@@ -57,6 +59,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setFitnessFunction(fitnessFunction: FitnessFunction<C>) {
         this._fitnessFunction = fitnessFunction;
+        this._fitnessFunctions.clear();
+        this._fitnessFunctions.add(fitnessFunction);
     }
 
     setSelectionOperator(selectionOperator: Selection<C>) {
@@ -174,8 +178,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._bestIndividuals;
     }
 
-    getFitnessFunction(): FitnessFunction<C> {
-        return this._fitnessFunction;
+    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
+        return this._fitnessFunctions;
     }
 
     getStartTime(): number {
