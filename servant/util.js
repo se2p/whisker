@@ -20,13 +20,8 @@ const validateCommandLineArguments = args => {
         process.exit(1);
     }
 
-    if (!args.testPath && !args.isGeneticSearch && !args.errorWitnessPath) {
-        logger.error('No path to a test file or error witness was given, please use the -t option or the -w option');
-        process.exit(1);
-    }
-
-    if (args.testPath && args.errorWitnessPath) {
-        logger.error("Cannot provide a test file and an error witness, please choose one.");
+    if (!args.testPath && !args.isGeneticSearch) {
+        logger.error('No path to a test file was given, please use the -t option');
         process.exit(1);
     }
 

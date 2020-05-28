@@ -40,7 +40,7 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
     } else {
-        const testFilePath = errorWitnessPath ? translateErrorWitnessToTest(errorWitnessPath) : testPath;
+        const testFilePath = errorWitnessPath ? translateErrorWitnessToTest(errorWitnessPath, testPath) : testPath;
 
         const paths = prepateTestFiles(testFilePath);
         Promise.all(paths.map((path, index) => runSearch(path, browser, index)))
@@ -286,30 +286,33 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
     return testSourcesPerTab;
 }
 
-function translateErrorWitnessToTest(errorWitnessPath) {
+function translateErrorWitnessToTest(errorWitnessPath, constraintsPath) {
+    const constraintsTest = fs.readFileSync(constraintsPath, {encoding: 'utf8'}).toString();
     const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
-    let test = "const errorWitness = async function(t) {\n"
+    let errorReplay = "// Error witness replay\n"
 
     for (const step of errorWitness.steps) {
         const action = step.action;
 
         switch (action) {
             case 'INITIAL_STATE': break;
-            case 'WAIT': test += `  await t.runForTime(${step.waitMicros / 1000});\n`; break;
-            case 'MOUSE_INPUT': test += `  t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
+            case 'WAIT': errorReplay += `    await t.runForTime(${step.waitMicros / 1000});\n`; break;
+            case 'MOUSE_INPUT': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
             default: logger.error(`Unknown error witness step action '${action}'`);
         }
     }
 
-    test += "t.end();\n}\nmodule.exports = [{test:errorWitness, name: 'Error witness', description: '', categories: []}];"
+    errorReplay += "    // Error witness replay finished\n"
 
     if (fs.existsSync(tmpDir)) {
         fs.rmdirSync(tmpDir, {recursive: true});
     }
     fs.mkdirSync(tmpDir);
 
-    const path = `${tmpDir}/${basename(errorWitnessPath)}_generated_test.js`;
-    fs.writeFileSync(path, test, {encoding: 'utf8'});
+    const testsWithErrorReplay = constraintsTest.replace("// REPLAY_ERROR_WITNESS", errorReplay);
+
+    const path = `${tmpDir}/${basename(constraintsPath)}_error_witness_replay.js`;
+    fs.writeFileSync(path, testsWithErrorReplay, {encoding: 'utf8'});
     return path;
 }
 
