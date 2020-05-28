@@ -33,6 +33,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _fitnessFunction: FitnessFunction<C>;
 
+    _fitnessFunctions: List<FitnessFunction<C>> = new List();
+
     _stoppingCondition: StoppingCondition<C>;
 
     _properties: SearchAlgorithmProperties<C>;
@@ -50,6 +52,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
         StatisticsCollector.getInstance().fitnessFunctionCount = 1;
         this._fitnessFunction = fitnessFunction;
+        this._fitnessFunctions.clear();
+        this._fitnessFunctions.add(fitnessFunction);
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
@@ -94,8 +98,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._bestIndividuals;
     }
 
-    getFitnessFunction(): FitnessFunction<C> {
-        return this._fitnessFunction;
+    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
+        return this._fitnessFunctions;
     }
 
     getStartTime(): number {

@@ -245,6 +245,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
     }
 
+    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
+        return this._fitnessFunctions.values();
+    }
+
     /**
      * Sets the best chromosome for a covered fitness function.
      *
