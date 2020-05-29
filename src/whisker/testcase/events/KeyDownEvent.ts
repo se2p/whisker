@@ -20,11 +20,16 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class KeyDownEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine) {
 
+    }
+
+    toJavaScript(): string {
+        throw new NotYetImplementedException();
     }
 
     getNumParameters(): number {

@@ -20,6 +20,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class MouseDownEvent implements ScratchEvent {
 
@@ -37,6 +38,10 @@ export class MouseDownEvent implements ScratchEvent {
         };
 
         vm.postIOData(data.device, data)
+    }
+
+    toJavaScript(): string {
+        throw new NotYetImplementedException();
     }
 
     getNumParameters(): number {

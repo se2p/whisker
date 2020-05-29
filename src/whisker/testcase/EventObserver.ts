@@ -18,13 +18,9 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 
-export interface ScratchEvent {
+import {ScratchEvent} from "./ScratchEvent";
 
-    apply(vm: VirtualMachine, args: number[]);
-
-    toJavaScript() : string;
-
-    getNumParameters(): number;
+export interface EventObserver {
+    update(event: ScratchEvent): void;
 }
