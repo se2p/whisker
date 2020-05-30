@@ -142,8 +142,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const parent1 = this.selectChromosome(parentPopulation, useRankSelection);
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
 
-            let child1 = parent1;
-            let child2 = parent2;
+            let child1 = parent1.clone() as C;
+            let child2 = parent2.clone() as C;
             if (Randomness.getInstance().nextDouble() < this._properties.getCrossoverProbability()) {
                 const crossover = parent1.crossover(parent2);
                 child1 = crossover.getFirst();

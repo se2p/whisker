@@ -18,10 +18,10 @@
  *
  */
 
-import { FitnessFunction } from "./FitnessFunction"
-import { Pair } from "../utils/Pair"
-import { Mutation } from "./Mutation"
-import { Crossover } from "./Crossover"
+import {FitnessFunction} from "./FitnessFunction"
+import {Pair} from "../utils/Pair"
+import {Mutation} from "./Mutation"
+import {Crossover} from "./Crossover"
 import {List} from "../utils/List";
 
 /**
@@ -79,4 +79,9 @@ export abstract class Chromosome {
      * @param newGenes
      */
     abstract cloneWith(newGenes: List<any>): Chromosome;
+
+    /**
+     * Creates a clone of the current chromosome.
+     */
+    abstract clone(): Chromosome;
 }
