@@ -98,8 +98,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         const approachLevel = this._getApproachLevel(executionTrace);
         const branchDistance = this._getBranchDistance(executionTrace);
-        console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
-        console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
+        // console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
+        // console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
         return approachLevel + this._normalize(branchDistance)
     }
 
@@ -262,5 +262,9 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             }
         }
         return false;
+    }
+
+    public toString = () : string => {
+        return ""+ this._targetNode.id;
     }
 }

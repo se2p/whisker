@@ -52,4 +52,8 @@ export class BitstringChromosome extends ListChromosome<Boolean> {
     cloneWith(newGenes: List<Boolean>) {
         return new BitstringChromosome(newGenes, this._mutationOp, this._crossoverOp);
     }
+
+    clone() {
+        return new BitstringChromosome(this.getGenes(), this._mutationOp, this._crossoverOp);
+    }
 }

@@ -52,4 +52,10 @@ export class TestChromosome extends IntegerListChromosome {
     set trace(value: Trace) {
         this._trace = value;
     }
+
+    clone() {
+        const clone = new TestChromosome(this.getGenes(), this.getMutationOperator(), this.getCrossoverOperator());
+        clone.trace = this._trace;
+        return clone;
+    }
 }

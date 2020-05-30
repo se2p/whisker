@@ -101,6 +101,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         const parentPopulation = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
         this.updateArchive(parentPopulation);
         while (!this._stoppingCondition.isFinished(this)) {
+            console.log("Iteration "+this._iterations+", covered goals: "+this._archive.size+"/"+this._fitnessFunctions.size);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             this.updateArchive(offspringPopulation);
             const chromosomes = new List<C>();
@@ -141,8 +142,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const parent1 = this.selectChromosome(parentPopulation, useRankSelection);
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
 
-            let child1 = parent1;
-            let child2 = parent2;
+            let child1 = parent1.clone() as C;
+            let child2 = parent2.clone() as C;
             if (Randomness.getInstance().nextDouble() < this._properties.getCrossoverProbability()) {
                 const crossover = parent1.crossover(parent2);
                 child1 = crossover.getFirst();
@@ -198,6 +199,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     }
                     this._archive.set(fitnessFunctionKey, candidateChromosome);
+                    console.log("Found test for goal: "+fitnessFunction);
                 }
             }
         }
@@ -225,9 +227,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         && candidateChromosome.getLength() < bestChromosome.getLength())) {
                         bestChromosome = candidateChromosome;
                         bestFitness = candidateFitness;
-                        console.log("Best Fitness: ", )
                     }
                 }
+                console.log("Best Fitness for "+fitnessFunction.toString() +": " + bestFitness);
                 if (!bestFront.contains(bestChromosome)) {
                     bestFront.add(bestChromosome);
                     chromosomesForNonDominatedSorting.remove(bestChromosome);
