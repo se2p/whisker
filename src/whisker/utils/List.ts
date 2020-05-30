@@ -192,4 +192,8 @@ export class List<T> implements Iterable<T> {
     reverse() {
         this._items.reverse();
     }
+
+    public toString = () : string => {
+        return ""+ this._items.toString();
+    }
 }
