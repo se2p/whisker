@@ -265,6 +265,6 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     }
 
     public toString = () : string => {
-        return ""+ this._targetNode.id;
+        return ""+ this._targetNode.id +" of type "+this._targetNode.block.opcode;
     }
 }
