@@ -45,7 +45,7 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
         // TODO: Should be a parameter (or even three different ones)
         const mutationProbability = 1.0 / 3.0;
 
-        if (Randomness.getInstance().nextDouble() < mutationProbability) {
+        if (Randomness.getInstance().nextDouble() < mutationProbability && newCodons.size() > 1) {
             newCodons = this.remove(newCodons);
         }
 
@@ -87,6 +87,11 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
                 newCodons.add(codon);
             }
         }
+
+        if (newCodons.isEmpty()) {
+            newCodons.addList(oldCodons);
+        }
+
         return newCodons;
     }
 
