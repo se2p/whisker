@@ -20,18 +20,29 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class ClickSpriteEvent implements ScratchEvent {
 
-    private target: string
+    private target;
 
-    constructor(target: string) {
+    constructor(target) {
         this.target = target
     }
 
     apply(vm: VirtualMachine) {
         vm.runtime.startHats('event_whenthisspriteclicked',
             null, this.target);
+    }
+
+    toJavaScript(): string {
+        throw new NotYetImplementedException();
+        // return "t.clickOnTheDamnedSprite(" + this.target.sprite.name +")";
+    }
+
+
+    public toString = () : string => {
+        return "ClickSprite " + this.target.sprite.name;
     }
 
     getNumParameters(): number {

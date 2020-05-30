@@ -20,11 +20,18 @@
 
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class TypeTextEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    private text: string;
 
+    apply(vm: VirtualMachine) {
+        throw new NotYetImplementedException();
+    }
+
+    toJavaScript(): string {
+        throw new NotYetImplementedException();
     }
 
     getNumParameters(): number {

@@ -20,6 +20,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
 export class ClickStageEvent implements ScratchEvent {
 
@@ -32,6 +33,15 @@ export class ClickStageEvent implements ScratchEvent {
     apply(vm: VirtualMachine) {
         vm.runtime.startHats('event_whenstageclicked',
             null, this._target);
+    }
+
+    toJavaScript(): string {
+        throw new NotYetImplementedException();
+        // return "t.clickOnTheDamnedStage()";
+    }
+
+    public toString = () : string => {
+        return "ClickStage"
     }
 
     getNumParameters(): number {

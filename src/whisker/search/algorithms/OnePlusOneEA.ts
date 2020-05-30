@@ -69,29 +69,37 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     findSolution(): List<C> {
 
         this._startTime = Date.now();
+        console.log("1+1 EA started at "+this._startTime);
+
         let bestIndividual = this._chromosomeGenerator.get();
         this._bestIndividuals.add(bestIndividual);
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
+        let bestLength = bestIndividual.getLength();
+        console.log("Best Fitness: ", bestFitness+" at length "+bestLength);
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
 
         while (!this._stoppingCondition.isFinished(this)) {
-            this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             const candidateChromosome = bestIndividual.mutate();
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
-            if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
+            console.log("Iteration "+this._iterations+": "+candidateChromosome.toString()+" has fitness "+candidateFitness);
+            this._iterations++;
+            if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
+                (this._fitnessFunction.compare(candidateFitness, bestFitness) === 0 && candidateChromosome.getLength() < bestLength)) {
                 bestFitness = candidateFitness;
+                bestLength = candidateChromosome.getLength();
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
-                console.log("Best Fitness: ", bestFitness)
+                console.log("Best Fitness: ", bestFitness+" at length "+bestLength);
                 if (this._fitnessFunction.isOptimal(bestFitness)) {
                     StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 }
             }
         }
+        console.log("1+1 EA completed at "+Date.now());
 
         if (StatisticsCollector.getInstance().coveredFitnessFunctionsCount > 0) {
             StatisticsCollector.getInstance().bestCoverage = (1 / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);

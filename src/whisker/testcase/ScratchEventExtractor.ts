@@ -59,9 +59,11 @@ export class ScratchEventExtractor {
 
         switch (target.blocks.getOpcode(block)) {
             case 'event_whenkeypressed': // Key press
-            case 'sensing_keyoptions': // Key down // TODO: maybe handle different
-                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value)); // TODO: Pass actual key as parameter
+                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 // one event per concrete key for which there is a hat block
+                break;
+            case 'sensing_keyoptions': // Key down
+                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value));
                 break;
             case 'sensing_mousex':
             case 'sensing_mousey':

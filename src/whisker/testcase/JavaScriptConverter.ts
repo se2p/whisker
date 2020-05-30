@@ -18,13 +18,29 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import {TestChromosome} from "./TestChromosome";
+import {TestExecutor} from "./TestExecutor";
+import {EventObserver} from "./EventObserver";
+import {ScratchEvent} from "./ScratchEvent";
 
-export interface ScratchEvent {
+export class JavaScriptConverter implements EventObserver {
 
-    apply(vm: VirtualMachine, args: number[]);
+    private text = "";
 
-    toJavaScript() : string;
+    private executor: TestExecutor;
 
-    getNumParameters(): number;
+    constructor(executor: TestExecutor) {
+        this.executor = executor;
+    }
+
+    getText(test: TestChromosome): string {
+        this.executor.attach(this);
+        this.executor.execute(test);
+        this.executor.detach(this);
+        return this.text;
+    }
+
+    update(event: ScratchEvent) {
+        this.text += event.toJavaScript() +"\n";
+    }
 }

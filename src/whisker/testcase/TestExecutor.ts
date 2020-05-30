@@ -28,11 +28,13 @@ import {List} from "../utils/List";
 import {ScratchEvent} from "./ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {EventObserver} from "./EventObserver";
 
 export class TestExecutor {
 
     private _vm: VirtualMachine;
     private availableEvents: List<ScratchEvent>;
+    private eventObservers: EventObserver[] = [];
 
     constructor(vm: VirtualMachine) {
         this._vm = vm;
@@ -55,6 +57,7 @@ export class TestExecutor {
 
             const args = this._getArgs(nextEvent, codons, numCodon);
             numCodon += nextEvent.getNumParameters() + 1;
+            this.notify(nextEvent);
 
             nextEvent.apply(this._vm, args);
             StatisticsCollector.getInstance().incrementEventsCount()
@@ -81,5 +84,25 @@ export class TestExecutor {
             args.push(codon)
         }
         return args;
+    }
+
+    public attach(observer: EventObserver): void {
+        const isExist = this.eventObservers.includes(observer);
+        if (!isExist) {
+            this.eventObservers.push(observer);
+        }
+    }
+
+    public detach(observer: EventObserver): void {
+        const observerIndex = this.eventObservers.indexOf(observer);
+        if (observerIndex !== -1) {
+            this.eventObservers.splice(observerIndex, 1);
+        }
+    }
+
+    private notify(event: ScratchEvent): void {
+        for (const observer of this.eventObservers) {
+            observer.update(event);
+        }
     }
 }

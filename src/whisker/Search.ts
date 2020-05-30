@@ -56,12 +56,13 @@ export class Search {
         return config.getTestGenerator()
     }
 
-    execute(project, config: WhiskerSearchConfiguration) {
+    execute(project, config: WhiskerSearchConfiguration): List<WhiskerTest> {
         console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
         //todo export whisker tests
+        return whiskerTests;
     }
 
     public getVirtualMachine() {
@@ -69,6 +70,14 @@ export class Search {
             throw new Error("Not Initialized");
         }
         return this.vm;
+    }
+
+    private printTests(tests: List<WhiskerTest>): void {
+        let i = 0;
+        for (const test of tests) {
+            console.log("Test "+i+": \n" + test.toString());
+            i++;
+        }
     }
 
     public run(vm, project, configRaw: string, accelerationFactor: number): void {
@@ -85,7 +94,8 @@ export class Search {
             await util.prepare(accelerationFactor || 1);
             util.start();
             StatisticsCollector.getInstance().reset()
-            search.execute(project, config);
+            const tests = search.execute(project, config);
+            search.printTests(tests);
             const csvString: string = StatisticsCollector.getInstance().asCsv()
             console.log(csvString)
             return csvString;
