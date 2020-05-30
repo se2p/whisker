@@ -50,10 +50,15 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
         const testSuite = new List<WhiskerTest>();
         const testChromosomes = new List<TestChromosome>();
         const fitnessFunctions = this._extractCoverageGoals();
+        let numGoal = 1;
+        const totalGoals = fitnessFunctions.size;
 
         for (const fitnessFunction of fitnessFunctions.values()) {
+            console.log("Current goal "+numGoal+"/"+totalGoals+": "+fitnessFunction);
+            numGoal++;
             if (this._isCovered(fitnessFunction, testChromosomes)) {
                 // If already covered, we don't need to search again
+                console.log("Goal "+fitnessFunction+" already covered, skipping.");
                 continue;
             }
             // TODO: Somehow set the fitness function as objective
@@ -63,9 +68,12 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
             const testChromosome = searchAlgorithm.findSolution().get(0);
 
             if (fitnessFunction.isCovered(testChromosome)) {
+                console.log("Goal "+fitnessFunction+" was successfully covered, keeping test.");
                 testChromosomes.add(testChromosome);
                 testSuite.add(new WhiskerTest(testChromosome));
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+            } else {
+                console.log("Goal "+fitnessFunction+" was not successfully covered.");
             }
         }
 

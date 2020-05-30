@@ -69,6 +69,8 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     findSolution(): List<C> {
 
         this._startTime = Date.now();
+        console.log("1+1 EA started at "+this._startTime);
+        
         let bestIndividual = this._chromosomeGenerator.get();
         this._bestIndividuals.add(bestIndividual);
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
@@ -80,6 +82,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             const candidateChromosome = bestIndividual.mutate();
+            console.log(candidateChromosome.toString());
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 bestFitness = candidateFitness;
@@ -92,6 +95,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
                 }
             }
         }
+        console.log("1+1 EA completed at "+Date.now());
 
         if (StatisticsCollector.getInstance().coveredFitnessFunctionsCount > 0) {
             StatisticsCollector.getInstance().bestCoverage = (1 / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
