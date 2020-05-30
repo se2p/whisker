@@ -21,15 +21,30 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {WaitEvent} from "./WaitEvent";
 
 export class KeyDownEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    private readonly _keyOption: string;
 
+    constructor(keyOption: string) {
+        this._keyOption = keyOption;
+    }
+
+    apply(vm: VirtualMachine) {
+        vm.postIOData("keyboard", {
+            device: 'keyboard',
+            key: this._keyOption,
+            duration: WaitEvent.timeout // TODO: How long?
+        });
     }
 
     toJavaScript(): string {
         throw new NotYetImplementedException();
+    }
+
+    public toString = () : string => {
+        return "KeyDown " + this._keyOption;
     }
 
     getNumParameters(): number {
