@@ -29,6 +29,8 @@ import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
 import {StatisticsCollector} from "./utils/StatisticsCollector";
+import {Randomness} from "./utils/Randomness";
+import {seedScratch} from "../util/random";
 
 export class Search {
 
@@ -93,11 +95,14 @@ export class Search {
         async function init(search: Search) {
             await util.prepare(accelerationFactor || 1);
             util.start();
-            StatisticsCollector.getInstance().reset()
+            StatisticsCollector.getInstance().reset();
+            const seed = Date.now();
+            Randomness.setInitialSeed(seed);
+            seedScratch(seed);
             const tests = search.execute(project, config);
             search.printTests(tests);
-            const csvString: string = StatisticsCollector.getInstance().asCsv()
-            console.log(csvString)
+            const csvString: string = StatisticsCollector.getInstance().asCsv();
+            console.log(csvString);
             return csvString;
         }
 
