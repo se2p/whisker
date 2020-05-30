@@ -27,6 +27,7 @@ import {StoppingCondition} from "../search/StoppingCondition";
 import {FixedTimeStoppingCondtion} from "../search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
+import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 
 class ConfigException implements Error {
     message: string;
@@ -183,11 +184,14 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.RANDOM;
             case 'one-plus-one':
                 return SearchAlgorithmType.ONE_PLUS_ONE;
+            case 'simplega':
+                return SearchAlgorithmType.SIMPLEGA;
             case 'mosa':
                 return SearchAlgorithmType.MOSA;
             case 'mio':
-            default:
                 return SearchAlgorithmType.MIO;
+            default:
+                throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: "+this.dict['algorithm']);
         }
     }
 
@@ -201,5 +205,13 @@ export class WhiskerSearchConfiguration {
         }
 
         throw new ConfigException("Unknown Algorithm " + this.dict["test-generator"]);
+    }
+
+    public getWaitDuration() : number {
+        if ("wait-duration" in this.dict) {
+            return this.dict["wait-duration"]
+        } else {
+            return null;
+        }
     }
 }

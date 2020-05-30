@@ -31,8 +31,8 @@ export class WaitEvent implements ScratchEvent {
 
     constructor() {
         if (WaitEvent.timeout == -1) {
-            if ("wait-duration" in Container.config) {
-                WaitEvent.timeout = Container.config["wait-duration"]
+            if (Container.config.getWaitDuration()) {
+                WaitEvent.timeout = Container.config.getWaitDuration()
             } else {
                 WaitEvent.timeout = 10;
             }
