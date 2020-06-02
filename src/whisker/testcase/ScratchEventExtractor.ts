@@ -31,6 +31,7 @@ import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import {WaitEvent} from "./events/WaitEvent";
+import {Randomness} from "../utils/Randomness";
 
 export class ScratchEventExtractor {
 
@@ -78,7 +79,8 @@ export class ScratchEventExtractor {
             case 'sensing_askandwait':
                 // Type text
                 // TODO: Only if actually asking
-                eventList.add(new TypeTextEvent()); // TODO: Any hints on text?
+                // TODO: Text length with random length?
+                eventList.add(new TypeTextEvent(target, this._randomText(3))); // TODO: Any hints on text?
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
@@ -101,5 +103,15 @@ export class ScratchEventExtractor {
         }
 
         return eventList;
+    }
+
+    private static _randomText(length: number): string {
+        let answer: string = '';
+        const chars: string = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
+        for (let i = 0; i < length; i++) {
+            answer += chars.charAt(Randomness.getInstance().nextInt(0, chars.length - 1));
+        }
+
+        return answer;
     }
 }

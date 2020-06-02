@@ -24,10 +24,17 @@ import {NotYetImplementedException} from "../../core/exceptions/NotYetImplemente
 
 export class TypeTextEvent implements ScratchEvent {
 
-    private text: string;
+    private _text: string;
+
+    private _target: string;
+
+    constructor(target: string, text: string) {
+        this._target = target;
+        this._text = text;
+    }
 
     apply(vm: VirtualMachine) {
-        throw new NotYetImplementedException();
+        vm.runtime.emit('SAY', this._target, 'say', this._text);
     }
 
     toJavaScript(): string {
@@ -35,6 +42,6 @@ export class TypeTextEvent implements ScratchEvent {
     }
 
     getNumParameters(): number {
-        return 1; // Text?
+        return 1; // TODO: Text?
     }
 }
