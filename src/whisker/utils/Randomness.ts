@@ -68,6 +68,10 @@ export class Randomness {
         Randomness._initialSeed = seed;
     }
 
+    public static getInitialSeed() {
+        return Randomness._initialSeed;
+    }
+
     private next(min: number, max: number): number {
         max = max || 0;
         min = min || 0;

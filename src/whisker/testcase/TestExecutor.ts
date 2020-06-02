@@ -29,6 +29,8 @@ import {ScratchEvent} from "./ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
+import {seedScratch} from "../../util/random";
+import {Randomness} from "../utils/Randomness";
 
 export class TestExecutor {
 
@@ -41,6 +43,8 @@ export class TestExecutor {
     }
 
     execute(testChromosome: TestChromosome): Trace {
+        this._vm.stopAll();
+        seedScratch(Randomness.getInitialSeed());
         this._vm.greenFlag();
 
         this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
