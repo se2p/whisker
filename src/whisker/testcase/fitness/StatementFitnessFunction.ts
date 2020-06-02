@@ -207,17 +207,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         let requiredCondition;
         switch (controlNode.block.opcode) {
             case 'control_repeat':
+            case 'control_repeat_until':
             case 'control_forever': { // Todo not sure about forever
                requiredCondition = true;
                break;
-            }
-            case 'control_repeat_until': {
-                requiredCondition = false;
-                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
-                    requiredCondition = true;
-                }
-                break;
             }
             case 'control_wait_until': {
                 requiredCondition = true;
@@ -234,7 +227,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             case 'control_if_else': {
                 requiredCondition = false;
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
+                if (this._matchesBranchStart(statement, controlNode, controlNode.id)) {
                     requiredCondition = true;
                     break;
                 }
@@ -249,7 +242,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
     _matchesBranchStart(statement, controlNode, branchStartId): boolean {
         let cur = statement;
-        while (cur.id !== controlNode.id) {
+        while (cur.id !== controlNode.id || branchStartId === controlNode.id) {
             if (cur.id === branchStartId) {
                 return true;
             }
