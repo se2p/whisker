@@ -80,7 +80,7 @@ export class ScratchEventExtractor {
                 // Type text
                 // TODO: Only if actually asking
                 // TODO: Text length with random length?
-                eventList.add(new TypeTextEvent(target, this._randomText(3))); // TODO: Any hints on text?
+                eventList.add(new TypeTextEvent(this._randomText(3))); // TODO: Any hints on text?
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
