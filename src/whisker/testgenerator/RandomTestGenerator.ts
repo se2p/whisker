@@ -60,6 +60,7 @@ export class RandomTestGenerator implements TestGenerator, SearchAlgorithm<TestC
     generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
         const uncoveredGoals = new List<FitnessFunction<TestChromosome>>();
+        StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
 
         for (const ff of this._fitnessFunctions.values()) {
             uncoveredGoals.add(ff);
@@ -77,6 +78,7 @@ export class RandomTestGenerator implements TestGenerator, SearchAlgorithm<TestC
             for (const ff of uncoveredGoals) {
                 if (ff.isCovered(testChromosome)) {
                     console.log("Goal "+ff+" was successfully covered, keeping test.");
+                    this._tests.add(testChromosome);
                     testSuite.add(new WhiskerTest(testChromosome));
                     coveredGoals.add(ff);
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
