@@ -23,11 +23,9 @@ import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {TestChromosomeGenerator} from '../testcase/TestChromosomeGenerator';
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {TestChromosome} from "../testcase/TestChromosome";
-import {StoppingCondition} from "../search/StoppingCondition";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {Selection} from "../search/Selection";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
@@ -35,10 +33,6 @@ import {FitnessFunction} from "../search/FitnessFunction";
 import {Chromosome} from "../search/Chromosome";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
-import {FixedIterationsStoppingCondition} from "../search/stoppingconditions/FixedIterationsStoppingCondition";
-import {FixedTimeStoppingCondtion} from "../search/stoppingconditions/FixedTimeStoppingCondition";
-import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 
 /**
  * A naive approach to generating tests is to simply
