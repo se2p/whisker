@@ -219,6 +219,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 }
                 break;
             }
+            case 'control_wait_until': {
+                requiredCondition = true;
+                break;
+            }
             case 'control_if': {
                 requiredCondition = true;
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
