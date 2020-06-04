@@ -18,6 +18,8 @@
  *
  */
 
+import {Container} from "./Container";
+
 /**
  * Singleton class to collect statistics from search runs
  *
@@ -32,6 +34,9 @@ export class StatisticsCollector {
     private _bestCoverage: number;
     private _eventsCount: number; //executed events
     private _bestTestSuiteSize: number;
+    private _startTime: number;
+    private _covOverTime: Record<number, number>
+
 
     /**
      * Private constructor to avoid instantiation
@@ -44,6 +49,8 @@ export class StatisticsCollector {
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
+        this._startTime = 0;
+        this._covOverTime = {};
     }
 
     public static getInstance() {
@@ -90,6 +97,8 @@ export class StatisticsCollector {
      */
     public incrementCoveredFitnessFunctionCount(): void {
         this._coveredFitnessFunctionsCount++;
+        const timeStamp = Container.vmWrapper.getTotalTimeElapsed();
+        this._covOverTime[timeStamp] = this._coveredFitnessFunctionsCount;
     }
 
     get bestCoverage(): number {

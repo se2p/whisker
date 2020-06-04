@@ -82,7 +82,7 @@ export class Search {
         }
     }
 
-    public run(vm, project, configRaw: string, accelerationFactor: number): void {
+    public run(vm, project, configRaw: string, accelerationFactor: number): Promise<string> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -91,6 +91,7 @@ export class Search {
 
         Container.config = config;
         Container.vm = vm;
+        Container.vmWrapper = util.vmWrapper;
 
         async function init(search: Search) {
             await util.prepare(accelerationFactor || 1);
@@ -106,6 +107,7 @@ export class Search {
             return csvString;
         }
 
-        init(this);
+        return init(this);
+
     }
 }
