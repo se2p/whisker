@@ -47,10 +47,10 @@ export class TestExecutor {
         seedScratch(Randomness.getInitialSeed());
         this._vm.greenFlag();
 
-        this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
         let numCodon = 0;
         const codons = testChromosome.getGenes();
         while (numCodon < codons.size()) {
+            this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
