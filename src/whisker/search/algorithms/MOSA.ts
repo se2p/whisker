@@ -124,6 +124,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this._iterations++;
             StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
             StatisticsCollector.getInstance().incrementIterationCount();
+            StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         }
         return this._bestIndividuals;
     }
