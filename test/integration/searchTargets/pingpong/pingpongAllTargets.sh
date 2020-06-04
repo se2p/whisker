@@ -1,4 +1,6 @@
-SCRATCH_FILE=PingPong.sb3
+#!/bin/bash
+
+SCRATCH_FILE=PingPong_simplified.sb3
 SCRATCH_PATH="$(cd "$(dirname "$SCRATCH_FILE")"; pwd -P)/$(basename "$SCRATCH_FILE")"
 
 CONFIG_FILE=../default.json
