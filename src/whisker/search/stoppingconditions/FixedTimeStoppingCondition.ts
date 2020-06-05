@@ -31,7 +31,6 @@ export class FixedTimeStoppingCondtion<T extends Chromosome> implements Stopping
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        // FIXME use acceleration factor
         return (Date.now() - algorithm.getStartTime()) > this._maxTime;
     }
 

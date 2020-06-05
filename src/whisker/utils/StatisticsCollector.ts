@@ -35,7 +35,7 @@ export class StatisticsCollector {
     private _eventsCount: number; //executed events
     private _bestTestSuiteSize: number;
     private _startTime: number;
-    private _covOverTime: Record<number, number>
+    private _covOverTime: Map<number, number>;
 
 
     /**
@@ -50,7 +50,7 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
         this._startTime = 0;
-        this._covOverTime = {};
+        this._covOverTime = new Map<number, number>();
     }
 
     public static getInstance() {
@@ -133,11 +133,47 @@ export class StatisticsCollector {
     }
 
     public asCsv(): string {
-        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount", "bestCoverage", "eventsCount", "bestTestSuiteSize"]
-        const headerRow = headers.join(",");
+        const coverageStatsMap = this._adjustCoverageOverTime();
+        const timestamps = []
+        for (const coverageStatsMapKey in coverageStatsMap) {
+            timestamps.push(coverageStatsMapKey)
+        }
+        timestamps.sort(function(a, b){return a-b});
+
+        const coverages = [];
+        for (const timestamp of timestamps) {
+            coverages.push(coverageStatsMap[timestamp]);
+        }
+        const coveragesHeaders = timestamps.join(",");
+        const coverageValues = coverages.join(",");
+
+        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount", "bestCoverage", "eventsCount", "bestTestSuiteSize"];
+        const headerRow = headers.join(",").concat(",",coveragesHeaders);
         const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount, this._bestCoverage, this._eventsCount, this._bestTestSuiteSize]
-        const dataRow = data.join(",");
+        const dataRow = data.join(",").concat("," , coverageValues);
         return [headerRow, dataRow].join("\n");
+    }
+
+    private _adjustCoverageOverTime() {
+        const adjusted: Map<number, number> = new Map();
+        for (const timestamp in this._covOverTime) {
+            const t: number = timestamp as unknown as number;
+            const rounded = Math.round(t / 1000) * 1000;
+            adjusted[rounded] = this._covOverTime[timestamp];
+        }
+
+        let maxCov = 0;
+        const maxTime = 250000;
+        for (let i = 0; i < maxTime; i = i+1000) {
+            if (i in adjusted) {
+                maxCov = adjusted[i];
+            } else {
+                adjusted[i] = maxCov;
+            }
+        }
+
+
+        return adjusted;
     }
 
     reset() {
