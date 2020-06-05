@@ -25,6 +25,7 @@ import {TestExecutor} from "../testcase/TestExecutor";
 import {TextConverter} from "../testcase/TextConverter";
 import {Container} from "../utils/Container";
 import {JavaScriptConverter} from "../testcase/JavaScriptConverter";
+import {TestEventCounter} from "../testcase/TestEventCounter";
 
 /**
  * Internal representation of a test case such that we
@@ -59,5 +60,11 @@ export class WhiskerTest {
         const executor = new TestExecutor(Container.vm);
         const textConverter = new TextConverter(executor);
         return textConverter.getText(this._chromosome);
+    }
+
+    getEventsCount(): number {
+        const executor = new TestExecutor(Container.vm);
+        const eventCounter = new TestEventCounter(executor);
+        return eventCounter.getEventCount(this._chromosome)
     }
 }

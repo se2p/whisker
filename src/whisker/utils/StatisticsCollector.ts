@@ -33,6 +33,7 @@ export class StatisticsCollector {
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
     private _bestCoverage: number;
     private _eventsCount: number; //executed events
+    private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
     private _startTime: number;
     private _covOverTime: Map<number, number>;
@@ -50,6 +51,7 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
         this._startTime = 0;
+        this._testEventCount = 0;
         this._covOverTime = new Map<number, number>();
     }
 
@@ -132,6 +134,15 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = value;
     }
 
+
+    get testEventCount(): number {
+        return this._testEventCount;
+    }
+
+    set testEventCount(value: number) {
+        this._testEventCount = value;
+    }
+
     public asCsv(): string {
         const coverageStatsMap = this._adjustCoverageOverTime();
         const timestamps = []
@@ -147,9 +158,9 @@ export class StatisticsCollector {
         const coveragesHeaders = timestamps.join(",");
         const coverageValues = coverages.join(",");
 
-        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount", "bestCoverage", "eventsCount", "bestTestSuiteSize"];
+        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount", "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize"];
         const headerRow = headers.join(",").concat(",",coveragesHeaders);
-        const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount, this._bestCoverage, this._eventsCount, this._bestTestSuiteSize]
+        const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount, this._bestCoverage, this.testEventCount, this._eventsCount, this._bestTestSuiteSize]
         const dataRow = data.join(",").concat("," , coverageValues);
         return [headerRow, dataRow].join("\n");
     }
