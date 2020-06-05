@@ -1,6 +1,8 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Stepper = require('./stepper');
 
+const log = require('minilog')('vm-wrapper');
+
 const Sprites = require('./sprites');
 const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
@@ -80,6 +82,11 @@ class VMWrapper {
         /**
          * @type {boolean}
          */
+        this.aborted = false;
+
+        /**
+         * @type {boolean}
+         */
         this.projectRunning = false;
 
         this._onRunStart = this.onRunStart.bind(this);
@@ -129,7 +136,6 @@ class VMWrapper {
      */
     async run (condition, timeout, steps) {
         if (this.running) {
-            /* eslint-disable-next-line no-console */
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
                           'missing any await-statements in your test.');
         }
@@ -158,6 +164,10 @@ class VMWrapper {
                 this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
                 break;
             }
+        }
+
+        if (this.aborted) {
+            throw new Error('Run was aborted!');
         }
 
         this.running = false;
@@ -210,6 +220,12 @@ class VMWrapper {
 
     cancelRun () {
         this.running = false;
+    }
+
+    abort () {
+        this.cancelRun();
+        this.aborted = true;
+        log.warn("Run aborted");
     }
 
     /**
@@ -267,6 +283,8 @@ class VMWrapper {
 
         this.vm.greenFlag();
         this.startTime = Date.now();
+
+        this.aborted = false;
     }
 
     end () {
