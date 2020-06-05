@@ -41,6 +41,7 @@ const cli = {
             .option('-s, --scratchPath <Path>', 'Scratch project to run', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
+            .option('-r, --addRandomInputs', 'If random inputs should be added to the test', false)
             .option('-f, --frequency <Integer>', 'Refreshrate of scratch in hz', 30)
             .option('-c, --configPath <Path>', 'Path to a configuration file', '../../whisker-main/config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
@@ -56,6 +57,7 @@ const cli = {
             whiskerURL,
             testPath,
             errorWitnessPath,
+            addRandomInputs,
             scratchPath,
             frequency,
             configPath,
@@ -73,6 +75,7 @@ const cli = {
             whiskerURL: `file://${path.resolve(whiskerURL)}`,
             testPath,
             errorWitnessPath,
+            addRandomInputs,
             scratchPath,
             frequency,
             configPath,

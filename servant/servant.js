@@ -13,7 +13,7 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, testPath, scratchPath, frequency, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch, errorWitnessPath
+    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch, errorWitnessPath, addRandomInputs
 } = cli.start();
 
 init();
@@ -40,7 +40,15 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
     } else {
-        const testFilePath = errorWitnessPath ? translateErrorWitnessToTest(errorWitnessPath, testPath) : testPath;
+        let testFilePath = testPath;
+
+        if (addRandomInputs) {
+            testFilePath = attachRandomInputsToTest(testFilePath);
+        }
+
+        if (errorWitnessPath) {
+            testFilePath = attachErrorWitnessReplayToTest(errorWitnessPath, testFilePath);
+        }
 
         const paths = prepateTestFiles(testFilePath);
         Promise.all(paths.map((path, index) => runSearch(path, browser, index)))
@@ -286,8 +294,7 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
     return testSourcesPerTab;
 }
 
-function translateErrorWitnessToTest(errorWitnessPath, constraintsPath) {
-    const constraintsTest = fs.readFileSync(constraintsPath, {encoding: 'utf8'}).toString();
+function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
     const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
     let errorReplay = "// Error witness replay\n"
 
@@ -304,15 +311,28 @@ function translateErrorWitnessToTest(errorWitnessPath, constraintsPath) {
 
     errorReplay += "    // Error witness replay finished\n"
 
+    return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", errorReplay, "_error_witness_replay.js");
+}
+
+function attachRandomInputsToTest(constraintsPath) {
+    const randomInputs = "    t.setRandomInputInterval(150);\n" +
+        "    t.detectRandomInputs({duration: [50, 100]});\n" +
+        "    await t.runForTime(300000);";
+
+    return replaceInFile(constraintsPath, "// RANDOM_INPUTS", randomInputs, "_random_inputs.js");
+}
+
+function replaceInFile(filePath, searchValue, replacement, outputFileSuffix) {
+    const fileWithReplacement = fs.readFileSync(filePath, {encoding: 'utf8'})
+        .toString().replace(searchValue, replacement);
+
     if (fs.existsSync(tmpDir)) {
         fs.rmdirSync(tmpDir, {recursive: true});
     }
     fs.mkdirSync(tmpDir);
 
-    const testsWithErrorReplay = constraintsTest.replace("// REPLAY_ERROR_WITNESS", errorReplay);
-
-    const path = `${tmpDir}/${basename(constraintsPath)}_error_witness_replay.js`;
-    fs.writeFileSync(path, testsWithErrorReplay, {encoding: 'utf8'});
+    const path = `${tmpDir}/${basename(filePath)}${outputFileSuffix}`;
+    fs.writeFileSync(path, fileWithReplacement, {encoding: 'utf8'});
     return path;
 }
 
