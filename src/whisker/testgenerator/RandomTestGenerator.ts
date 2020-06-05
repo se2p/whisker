@@ -61,6 +61,7 @@ export class RandomTestGenerator implements TestGenerator, SearchAlgorithm<TestC
         const testSuite = new List<WhiskerTest>();
         const uncoveredGoals = new List<FitnessFunction<TestChromosome>>();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
+        this._startTime = Date.now();
 
         for (const ff of this._fitnessFunctions.values()) {
             uncoveredGoals.add(ff);
