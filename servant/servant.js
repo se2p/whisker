@@ -309,7 +309,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
         }
     }
 
-    errorReplay += "    // Error witness replay finished\n"
+    errorReplay += "    // Run a few steps more in order to catch the violation\n    await t.runForSteps(10);\n    // Error witness replay finished\n"
 
     return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", errorReplay, "_error_witness_replay.js");
 }
