@@ -35,6 +35,11 @@ const loadTestsFromString = function (string) {
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
+    $('#green-flag').prop('disabled', true);
+    $('#reset').prop('disabled', true);
+    $('#run-all-tests').prop('disabled', true);
+    $('#record').prop('disabled', true);
+
     await Whisker.scratch.vm.loadProject(project);
     CoverageGenerator.prepareThread(Thread);
     CoverageGenerator.prepare(vm);
@@ -43,6 +48,15 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     const coverage = CoverageGenerator.getCoverage();
 
     CoverageGenerator.restoreThread(Thread);
+
+    $('#green-flag').prop('disabled', false);
+    $('#reset').prop('disabled', false);
+    $('#run-all-tests').prop('disabled', false);
+    $('#record').prop('disabled', false);
+
+    if (summary === null) {
+        return
+    }
 
     const formattedSummary = TAP13Listener.formatSummary(summary);
     const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
@@ -84,19 +98,16 @@ const initScratch = function () {
     $('#green-flag')
         .removeClass('btn-success')
         .addClass('btn-outline-success');
-    $('#stop').prop('disabled', true);
 
     Whisker.scratch.vm.on(Runtime.PROJECT_RUN_START, () => {
         $('#green-flag')
             .removeClass('btn-outline-success')
             .addClass('btn-success');
-        $('#stop').prop('disabled', false);
     });
     Whisker.scratch.vm.on(Runtime.PROJECT_RUN_STOP, () => {
         $('#green-flag')
             .removeClass('btn-success')
             .addClass('btn-outline-success');
-        $('#stop').prop('disabled', true);
     });
 };
 
@@ -127,7 +138,10 @@ const initComponents = function () {
 
 const initEvents = function () {
     $('#green-flag').on('click', () => Whisker.scratch.greenFlag());
-    $('#stop').on('click', () => Whisker.scratch.stop());
+    $('#stop').on('click', () => {
+        Whisker.testRunner.abort();
+        Whisker.scratch.stop();
+    });
     $('#reset').on('click', () => Whisker.scratch.reset());
     $('#run-all-tests').on('click', runAllTests);
 
