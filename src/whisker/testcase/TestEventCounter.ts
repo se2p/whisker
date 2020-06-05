@@ -18,23 +18,30 @@
  *
  */
 
-import {StoppingCondition} from "../StoppingCondition";
-import {Chromosome} from "../Chromosome";
-import {SearchAlgorithm} from "../SearchAlgorithm";
+import {TestChromosome} from "./TestChromosome";
+import {TestExecutor} from "./TestExecutor";
+import {EventObserver} from "./EventObserver";
+import {ScratchEvent} from "./ScratchEvent";
 
-export class FixedTimeStoppingCondtion<T extends Chromosome> implements StoppingCondition<T> {
+export class TestEventCounter implements EventObserver {
 
-    private _maxTime: number;
+    private eventCount = 0;
 
-    constructor(maxTime: number) {
-        this._maxTime = maxTime;
+    private executor: TestExecutor;
+
+    constructor(executor: TestExecutor) {
+        this.executor = executor;
     }
 
-    isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        return (Date.now() - algorithm.getStartTime()) > this._maxTime;
+    getEventCount(test: TestChromosome): number {
+        this.executor.attach(this);
+        this.executor.execute(test);
+        this.executor.detach(this);
+        return this.eventCount;
     }
 
-    getProgress(algorithm: SearchAlgorithm<T>): number {
-        return this._maxTime - (Date.now() - algorithm.getStartTime());
+    update(event: ScratchEvent) {
+        console.log("Event counted")
+        this.eventCount = this.eventCount+1;
     }
 }

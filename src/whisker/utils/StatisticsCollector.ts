@@ -18,6 +18,8 @@
  *
  */
 
+import {Container} from "./Container";
+
 /**
  * Singleton class to collect statistics from search runs
  *
@@ -31,7 +33,11 @@ export class StatisticsCollector {
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
     private _bestCoverage: number;
     private _eventsCount: number; //executed events
+    private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
+    private _startTime: number;
+    private _covOverTime: Map<number, number>;
+
 
     /**
      * Private constructor to avoid instantiation
@@ -44,6 +50,9 @@ export class StatisticsCollector {
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
+        this._startTime = 0;
+        this._testEventCount = 0;
+        this._covOverTime = new Map<number, number>();
     }
 
     public static getInstance() {
@@ -90,6 +99,8 @@ export class StatisticsCollector {
      */
     public incrementCoveredFitnessFunctionCount(): void {
         this._coveredFitnessFunctionsCount++;
+        const timeStamp = Container.vmWrapper.getTotalTimeElapsed();
+        this._covOverTime[timeStamp] = this._coveredFitnessFunctionsCount;
     }
 
     get bestCoverage(): number {
@@ -123,12 +134,57 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = value;
     }
 
+
+    get testEventCount(): number {
+        return this._testEventCount;
+    }
+
+    set testEventCount(value: number) {
+        this._testEventCount = value;
+    }
+
     public asCsv(): string {
-        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount", "bestCoverage", "eventsCount", "bestTestSuiteSize"]
-        const headerRow = headers.join(",");
-        const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount, this._bestCoverage, this._eventsCount, this._bestTestSuiteSize]
-        const dataRow = data.join(",");
+        const coverageStatsMap = this._adjustCoverageOverTime();
+        const timestamps = []
+        for (const coverageStatsMapKey in coverageStatsMap) {
+            timestamps.push(coverageStatsMapKey)
+        }
+        timestamps.sort(function(a, b){return a-b});
+
+        const coverages = [];
+        for (const timestamp of timestamps) {
+            coverages.push(coverageStatsMap[timestamp]);
+        }
+        const coveragesHeaders = timestamps.join(",");
+        const coverageValues = coverages.join(",");
+
+        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount", "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize"];
+        const headerRow = headers.join(",").concat(",",coveragesHeaders);
+        const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount, this._bestCoverage, this.testEventCount, this._eventsCount, this._bestTestSuiteSize]
+        const dataRow = data.join(",").concat("," , coverageValues);
         return [headerRow, dataRow].join("\n");
+    }
+
+    private _adjustCoverageOverTime() {
+        const adjusted: Map<number, number> = new Map();
+        for (const timestamp in this._covOverTime) {
+            const t: number = timestamp as unknown as number;
+            const rounded = Math.round(t / 1000) * 1000;
+            adjusted[rounded] = this._covOverTime[timestamp];
+        }
+
+        let maxCov = 0;
+        const maxTime = 250000;
+        for (let i = 0; i < maxTime; i = i+1000) {
+            if (i in adjusted) {
+                maxCov = adjusted[i];
+            } else {
+                adjusted[i] = maxCov;
+            }
+        }
+
+
+        return adjusted;
     }
 
     reset() {
