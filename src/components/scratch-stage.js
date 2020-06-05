@@ -18,6 +18,7 @@ class Scratch extends EventEmitter {
         this.canvas = canvas;
         this.vm = Scratch.prepareVM(this.canvas);
         this.project = null;
+        this.inputEnabled = false;
 
         this._onMouseMove = this.onMouseMove.bind(this);
         this._onMouseDown = this.onMouseDown.bind(this);
@@ -55,12 +56,20 @@ class Scratch extends EventEmitter {
         this.vm.runtime._step();
     }
 
+    /**
+     * @returns {boolean} .
+     */
+    isInputEnabled () {
+        return this.inputEnabled;
+    }
+
     enableInput () {
         this.canvas.addEventListener('mousemove', this._onMouseMove);
         this.canvas.addEventListener('mousedown', this._onMouseDown);
         this.canvas.addEventListener('mouseup', this._onMouseUp);
         this.canvas.addEventListener('keydown', this._onKeyDown);
         this.canvas.addEventListener('keyup', this._onKeyUp);
+        this.inputEnabled = true;
     }
 
     disableInput () {
@@ -69,6 +78,7 @@ class Scratch extends EventEmitter {
         this.canvas.removeEventListener('mouseup', this._onMouseUp);
         this.canvas.removeEventListener('keydown', this._onKeyDown);
         this.canvas.removeEventListener('keyup', this._onKeyUp);
+        this.inputEnabled = false;
     }
 
     static prepareVM (canvas) {

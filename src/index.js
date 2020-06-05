@@ -12,6 +12,7 @@ const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
+const {showModal, escapeHtml} = require('./utils.js');
 
 const Whisker = window.Whisker = {};
 window.$ = $;
@@ -23,8 +24,9 @@ const loadTestsFromString = function (string) {
         tests = eval(`${string}; module.exports;`);
     } catch (err) {
         console.error(err);
-        /* eslint-disable-next-line no-alert */
-        alert(`An error occurred while parsing the test code:\n${err}`);
+        const message = `${err.name}: ${err.message}`;
+        showModal('Test Loading', `An error occurred while parsing the test code:<br>
+            <div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
     }
     tests = TestRunner.convertTests(tests);
@@ -40,19 +42,24 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#run-all-tests').prop('disabled', true);
     $('#record').prop('disabled', true);
 
-    await Whisker.scratch.vm.loadProject(project);
-    CoverageGenerator.prepareThread(Thread);
-    CoverageGenerator.prepare(vm);
+    let summary;
+    let coverage;
 
-    const summary = await Whisker.testRunner.runTests(vm, project, tests);
-    const coverage = CoverageGenerator.getCoverage();
+    try {
+        await Whisker.scratch.vm.loadProject(project);
+        CoverageGenerator.prepareThread(Thread);
+        CoverageGenerator.prepare(vm);
 
-    CoverageGenerator.restoreThread(Thread);
+        summary = await Whisker.testRunner.runTests(vm, project, tests);
+        coverage = CoverageGenerator.getCoverage();
 
-    $('#green-flag').prop('disabled', false);
-    $('#reset').prop('disabled', false);
-    $('#run-all-tests').prop('disabled', false);
-    $('#record').prop('disabled', false);
+        CoverageGenerator.restoreThread(Thread);
+    } finally {
+        $('#green-flag').prop('disabled', false);
+        $('#reset').prop('disabled', false);
+        $('#run-all-tests').prop('disabled', false);
+        $('#record').prop('disabled', false);
+    }
 
     if (summary === null) {
         return
@@ -79,6 +86,11 @@ const runTests = async function (tests) {
 };
 
 const runAllTests = async function () {
+    if (Whisker.tests === undefined || Whisker.tests.length == 0) {
+        showModal('Test Execution', 'No tests loaded.');
+        return;
+    }
+
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
@@ -159,14 +171,18 @@ const initEvents = function () {
     });
 
     $('#record').on('click', event => {
-        if (Whisker.inputRecorder.isRecording()) {
-            Whisker.inputRecorder.stopRecording();
+        if (Whisker.scratch.isInputEnabled()) {
+            if (Whisker.inputRecorder.isRecording()) {
+                Whisker.inputRecorder.stopRecording();
+            } else {
+                Whisker.inputRecorder.startRecording();
+            }
         } else {
-            Whisker.inputRecorder.startRecording();
+            showModal('Input Recorder', 'In order to record inputs, inputs must be enabled.');
         }
     });
 
-    $('#toggle-input') .on('change', event => {
+    $('#toggle-input').on('change', event => {
         if ($(event.target).is(':checked')) {
             Whisker.scratch.enableInput();
         } else {
