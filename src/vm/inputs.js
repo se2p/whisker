@@ -71,7 +71,7 @@ class Input {
             const data = this._convertData(this._data);
             if (!this._state) {
                 this._performSingle(data);
-                if (this._data.duration && this.data.device !== 'drag') {
+                if (this._data.duration && this._data.device !== 'drag') {
                     this._state = true;
                 } else {
                     return true;
