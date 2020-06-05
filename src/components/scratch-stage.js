@@ -39,6 +39,7 @@ class Scratch extends EventEmitter {
 
     start () {
         clearInterval(this.vm.runtime._steppingInterval);
+        this.vm.runtime._steppingInterval = null;
         this.vm.start();
     }
 
