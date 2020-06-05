@@ -1,6 +1,8 @@
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
 
+let threadPreparedForCoverage = false;
+
 /* Only works with Scratch 3.0 (.sb3) projects. sb2 projects can be easily converted by saving them with Scratch 3.0. */
 class Coverage {
     constructor (coveredBlockIdsPerSprite, blockIdsPerSprite) {
@@ -90,6 +92,7 @@ class CoverageGenerator {
                 Thread.real_reuseStackForNextBlock.call(this, blockId);
             };
         }
+        threadPreparedForCoverage = true;
     }
 
     /**
@@ -104,6 +107,15 @@ class CoverageGenerator {
             Thread.prototype.reuseStackForNextBlock = Thread.real_reuseStackForNextBlock;
             delete Thread.real_reuseStackForNextBlock;
         }
+        threadPreparedForCoverage = false;
+    }
+
+    /**
+     * @param {VirtualMachine} vm .
+     * @returns {boolean} .
+     */
+    static isCoverageEnabled (vm) {
+        return threadPreparedForCoverage && vm.preparedForCoverage;
     }
 
     /**
@@ -123,10 +135,12 @@ class CoverageGenerator {
                 }
 
                 for (const scriptId of target.blocks.getScripts()) {
-                    this._addBlocks(target.blocks, blockIds, scriptId);
+                    CoverageGenerator._addBlocks(target.blocks, blockIds, scriptId);
                 }
             }
         }
+
+        vm.preparedForCoverage = true;
     }
 
     /**
@@ -144,14 +158,14 @@ class CoverageGenerator {
         /* Add branches of C-shaped blocks. */
         let branchId = targetBlocks.getBranch(blockId, 1);
         for (let i = 2; branchId !== null; i++) {
-            this._addBlocks(targetBlocks, blockIds, branchId);
+            CoverageGenerator._addBlocks(targetBlocks, blockIds, branchId);
             branchId = targetBlocks.getBranch(blockId, i);
         }
 
         /* Add the next block. */
         const nextId = targetBlocks.getNextBlock(blockId);
         if (nextId !== null) {
-            this._addBlocks(targetBlocks, blockIds, nextId);
+            CoverageGenerator._addBlocks(targetBlocks, blockIds, nextId);
         }
     }
 
@@ -187,7 +201,7 @@ class CoverageGenerator {
      * @return {Coverage} .
      */
     static getCoverage () {
-        return new Coverage(this.getCoveredBlockIdsPerSprite(), this.getBlockIdsPerSprite());
+        return new Coverage(CoverageGenerator.getCoveredBlockIdsPerSprite(), CoverageGenerator.getBlockIdsPerSprite());
     }
 
     /**
