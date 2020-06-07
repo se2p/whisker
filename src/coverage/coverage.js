@@ -1,11 +1,12 @@
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
+const _blockDescriptions = new Map();
 
 let threadPreparedForCoverage = false;
 
 /* Only works with Scratch 3.0 (.sb3) projects. sb2 projects can be easily converted by saving them with Scratch 3.0. */
 class Coverage {
-    constructor (coveredBlockIdsPerSprite, blockIdsPerSprite) {
+    constructor (coveredBlockIdsPerSprite, blockIdsPerSprite, blockDescriptions) {
 
         /**
          * @type {Map<string, Set<string>>}
@@ -16,6 +17,12 @@ class Coverage {
          * @type {Map<string, Set<string>>}
          */
         this.blockIdsPerSprite = blockIdsPerSprite;
+
+
+        /**
+         * @type {Map<string, {sprite: string, opcode: string: id: string}}
+         */
+        this.blockDescriptions = blockDescriptions;
     }
 
     /**
@@ -33,7 +40,14 @@ class Coverage {
     }
 
     /**
-     * @return {Map<string,{covered: number, total: number}>} .
+     * @return {Map<string, {sprite: string, opcode: string: id: string}}
+     */
+    getBlockDescriptions () {
+        return new Map(this.blockDescriptions);
+    }
+
+    /**
+     * @return {Map<string, {covered: number, total: number}>} .
      */
     getCoveragePerSprite () {
         const coverage = {};
@@ -50,8 +64,7 @@ class Coverage {
     /**
      * @return {{covered: number, total: number}} .
      */
-    // TODO: rename to getCoverageTotal
-    getCoverage () {
+    getCoverageTotal () {
         let numCovered = 0;
         let numTotal = 0;
 
@@ -73,32 +86,35 @@ class Coverage {
 class CoverageGenerator {
 
     /**
-     * @param {class} Thread .
+     * @param {Thread: class} classes .
      */
-    static prepareThread (Thread) {
+    static prepareClasses (classes) {
+        const Thread = classes.Thread;
+
         if (!Thread.hasOwnProperty('real_pushStack')) {
             Thread.real_pushStack = Thread.prototype.pushStack;
             Thread.prototype.pushStack = function (blockId) {
-                if (blockId) _coveredBlockIds.add(blockId);
-                if (this.topBlock) _coveredBlockIds.add(this.topBlock);
+                CoverageGenerator._coverBlock(blockId);
                 Thread.real_pushStack.call(this, blockId);
             };
         }
         if (!Thread.hasOwnProperty('real_reuseStackForNextBlock')) {
             Thread.real_reuseStackForNextBlock = Thread.prototype.reuseStackForNextBlock;
             Thread.prototype.reuseStackForNextBlock = function (blockId) {
-                if (blockId) _coveredBlockIds.add(blockId);
-                if (this.topBlock) _coveredBlockIds.add(this.topBlock);
+                CoverageGenerator._coverBlock(blockId);
                 Thread.real_reuseStackForNextBlock.call(this, blockId);
             };
         }
+
         threadPreparedForCoverage = true;
     }
 
     /**
-     * @param {class} Thread .
+     * @param {Thread: class} classes .
      */
-    static restoreThread (Thread) {
+    static restoreClasses (classes) {
+        const Thread = classes.Thread;
+
         if (Thread.hasOwnProperty('real_pushStack')) {
             Thread.prototype.pushStack = Thread.real_pushStack;
             delete Thread.real_pushStack;
@@ -107,23 +123,29 @@ class CoverageGenerator {
             Thread.prototype.reuseStackForNextBlock = Thread.real_reuseStackForNextBlock;
             delete Thread.real_reuseStackForNextBlock;
         }
+
         threadPreparedForCoverage = false;
     }
 
     /**
-     * @param {VirtualMachine} vm .
-     * @returns {boolean} .
+     * @param {number} blockId .
      */
-    static isCoverageEnabled (vm) {
-        return threadPreparedForCoverage && vm.preparedForCoverage;
+    static _coverBlock (blockId) {
+        if (blockId) {
+            // if (!_coveredBlockIds.has(blockId)) {
+            //     console.log(_blockDescriptions.get(blockId));
+            // }
+            _coveredBlockIds.add(blockId);
+        }
     }
 
     /**
      * @param {VirtualMachine} vm .
      */
-    static prepare (vm) {
+    static prepareVM (vm) {
         _coveredBlockIds.clear();
         _blockIdsPerSprite.clear();
+        _blockDescriptions.clear();
 
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
@@ -135,7 +157,7 @@ class CoverageGenerator {
                 }
 
                 for (const scriptId of target.blocks.getScripts()) {
-                    CoverageGenerator._addBlocks(target.blocks, blockIds, scriptId);
+                    CoverageGenerator._addBlocks(target.blocks, targetName, scriptId);
                 }
             }
         }
@@ -149,24 +171,43 @@ class CoverageGenerator {
      * @param {string} blockId .
      * @private
      */
-    static _addBlocks (targetBlocks, blockIds, blockId) {
+    static _addBlocks (targetBlocks, targetName, blockId) {
+        const blockIds = _blockIdsPerSprite.get(targetName);
         if (blockIds.has(blockId)) {
             return;
         }
+
         blockIds.add(blockId);
+        _blockDescriptions.set(blockId, {
+            sprite: targetName,
+            opcode: targetBlocks.getBlock(blockId).opcode,
+            id: blockId
+        });
 
         /* Add branches of C-shaped blocks. */
         let branchId = targetBlocks.getBranch(blockId, 1);
         for (let i = 2; branchId !== null; i++) {
-            CoverageGenerator._addBlocks(targetBlocks, blockIds, branchId);
+            CoverageGenerator._addBlocks(targetBlocks, targetName, branchId);
             branchId = targetBlocks.getBranch(blockId, i);
         }
 
         /* Add the next block. */
         const nextId = targetBlocks.getNextBlock(blockId);
         if (nextId !== null) {
-            CoverageGenerator._addBlocks(targetBlocks, blockIds, nextId);
+            CoverageGenerator._addBlocks(targetBlocks, targetName, nextId);
         }
+    }
+
+    /**
+     * @param {VirtualMachine} vm .
+     * @returns {boolean} .
+     */
+    static isCoverageEnabled (vm) {
+        return threadPreparedForCoverage && vm.preparedForCoverage;
+    }
+
+    static clearCoverage () {
+        _coveredBlockIds.clear();
     }
 
     /**
@@ -198,10 +239,21 @@ class CoverageGenerator {
     }
 
     /**
+     * @return {Map<string, {sprite: string, opcode: string: id: string}}
+     */
+    static getBlockDescriptions () {
+        return new Map(_blockDescriptions);
+    }
+
+    /**
      * @return {Coverage} .
      */
     static getCoverage () {
-        return new Coverage(CoverageGenerator.getCoveredBlockIdsPerSprite(), CoverageGenerator.getBlockIdsPerSprite());
+        return new Coverage(
+            CoverageGenerator.getCoveredBlockIdsPerSprite(),
+            CoverageGenerator.getBlockIdsPerSprite(),
+            CoverageGenerator.getBlockDescriptions()
+        );
     }
 
     /**
