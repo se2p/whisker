@@ -47,13 +47,13 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     try {
         await Whisker.scratch.vm.loadProject(project);
-        CoverageGenerator.prepareThread(Thread);
-        CoverageGenerator.prepare(vm);
+        CoverageGenerator.prepareClasses({Thread});
+        CoverageGenerator.prepareVM(vm);
 
         summary = await Whisker.testRunner.runTests(vm, project, tests);
         coverage = CoverageGenerator.getCoverage();
 
-        CoverageGenerator.restoreThread(Thread);
+        CoverageGenerator.restoreClasses({Thread});
     } finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
