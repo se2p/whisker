@@ -34,7 +34,8 @@ export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerat
     }
 
     protected getLength(): number {
-        return Randomness.getInstance().nextInt(1, this._length);
+        return 2; // TODO: This should be a parameter
+        // return Randomness.getInstance().nextInt(1, this._length);
     }
 
 }
