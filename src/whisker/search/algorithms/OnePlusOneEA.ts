@@ -26,7 +26,6 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {ListChromosome} from "../ListChromosome";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -75,25 +74,30 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         this._bestIndividuals.add(bestIndividual);
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
         let bestLength = bestIndividual.getLength();
-        console.log("Best Fitness: ", bestFitness+" at length "+bestLength);
+        console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
 
         while (!this._stoppingCondition.isFinished(this)) {
             StatisticsCollector.getInstance().incrementIterationCount();
-            const candidateChromosome = bestIndividual.mutate();
+            const oldString = bestIndividual.toString();
+            let candidateChromosome = bestIndividual.mutate();
+            while (oldString === candidateChromosome.toString()) {
+                candidateChromosome = bestIndividual.mutate();
+            }
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
-            console.log("Iteration "+this._iterations+": "+candidateChromosome.toString()+" has fitness "+candidateFitness);
+            console.log("Iteration "+this._iterations+" ["+bestFitness+"]: "+candidateChromosome.toString()+" has fitness "+candidateFitness);
             this._iterations++;
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
-                (this._fitnessFunction.compare(candidateFitness, bestFitness) === 0 && candidateChromosome.getLength() < bestLength)) {
+                (this._fitnessFunction.compare(candidateFitness, bestFitness) === 0 && candidateChromosome.getLength() <= bestLength)) {
                 bestFitness = candidateFitness;
                 bestLength = candidateChromosome.getLength();
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
-                console.log("Best Fitness: ", bestFitness+" at length "+bestLength);
+                console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
+
                 if (this._fitnessFunction.isOptimal(bestFitness)) {
                     StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 }
