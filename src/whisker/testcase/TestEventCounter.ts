@@ -41,7 +41,6 @@ export class TestEventCounter implements EventObserver {
     }
 
     update(event: ScratchEvent) {
-        console.log("Event counted")
         this.eventCount = this.eventCount+1;
     }
 }
