@@ -98,6 +98,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        console.log("Creating initial population");
         const parentPopulation = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
         this.updateArchive(parentPopulation);
         while (!this._stoppingCondition.isFinished(this)) {
@@ -126,6 +127,13 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             StatisticsCollector.getInstance().incrementIterationCount();
             StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         }
+
+        // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            if (!this._archive.has(fitnessFunctionKey)) {
+                console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
+            }
+        }
         return this._bestIndividuals;
     }
 
@@ -141,8 +149,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         const offspringPopulation = new List<C>();
         while (offspringPopulation.size() < parentPopulation.size()) {
             const parent1 = this.selectChromosome(parentPopulation, useRankSelection);
+            // TODO: Does it affect the search that we may pick the same parent twice?
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
-
             let child1 = parent1.clone() as C;
             let child2 = parent2.clone() as C;
             if (Randomness.getInstance().nextDouble() < this._properties.getCrossoverProbability()) {
@@ -186,12 +194,12 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param chromosomes The candidate chromosomes for the archive.
      */
     private updateArchive(chromosomes: List<C>): void {
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            let bestLength = this._archive.has(fitnessFunctionKey)
-                ? this._archive.get(fitnessFunctionKey).getLength()
-                : Number.MAX_SAFE_INTEGER;
-            for (const candidateChromosome of chromosomes) {
+        for (const candidateChromosome of chromosomes) {
+            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                let bestLength = this._archive.has(fitnessFunctionKey)
+                    ? this._archive.get(fitnessFunctionKey).getLength()
+                    : Number.MAX_SAFE_INTEGER;
                 const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
                 const candidateLength = candidateChromosome.getLength();
                 if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
