@@ -22,27 +22,16 @@ import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
-import {StatementCoverageFitness} from '../testcase/fitness/StatementFitnessFunction';
-import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
-import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
-import {SearchAlgorithm} from "../search/SearchAlgorithm";
-import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 
 /**
  * A many-objective search algorithm can generate tests
  * for all coverage objectives at the same time.
  */
-export class ManyObjectiveTestGenerator implements TestGenerator {
-
-    private _config: WhiskerSearchConfiguration;
-
-    constructor(configuration: WhiskerSearchConfiguration) {
-        this._config = configuration;
-    }
+export class ManyObjectiveTestGenerator extends TestGenerator {
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
         // TODO: Ensure this is a many-objective algorithm taking all goals
-        const searchAlgorithm = this._buildSearchAlgorithm();
+        const searchAlgorithm = this._buildSearchAlgorithm(true);
 
         // TODO: Assuming there is at least one solution?
         const testChromosomes = searchAlgorithm.findSolution();
@@ -52,22 +41,7 @@ export class ManyObjectiveTestGenerator implements TestGenerator {
             testSuite.add(new WhiskerTest(testChromosome));
         }
 
-        // TODO: Handle statistics
-
+        this._collectStatistics(testSuite);
         return testSuite;
-    }
-
-    private _buildSearchAlgorithm(): SearchAlgorithm<any> {
-        // TODO: Shared with IterativeSearchBasedTestGenerator, probably best to extract
-        return new SearchAlgorithmBuilder(this._config.getAlgorithm())
-
-            .addSelectionOperator(this._config.getSelectionOperator())
-            .addProperties(this._config.getSearchAlgorithmProperties())
-            .initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.getSearchAlgorithmProperties().getChromosomeLength(),
-                this._config.getFitnessFunctionTargets())
-            .addChromosomeGenerator(this._config.getChromosomeGenerator())
-
-            .buildSearchAlgorithm();
     }
 }
