@@ -153,6 +153,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
+            console.log("Iteration " + this._iterations + ", covered goals: "
+                + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
         }
         return this._bestIndividuals;
     }
@@ -256,9 +258,12 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param fitnessFunctionKey The key of the fitness function.
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
+        console.log("Found test for goal: " + this._fitnessFunctions.get(fitnessFunctionKey));
+        if (this._archiveCovered.has(fitnessFunctionKey)) {
+            this._bestIndividuals.remove(this._archiveCovered.get(fitnessFunctionKey));
+        }
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
-        this._bestIndividuals.clear();
-        for (const chromosome of this._archiveCovered.values()) {
+        if (!this._bestIndividuals.contains(chromosome)) {
             this._bestIndividuals.add(chromosome);
         }
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
