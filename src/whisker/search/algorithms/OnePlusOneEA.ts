@@ -108,6 +108,8 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         if (StatisticsCollector.getInstance().coveredFitnessFunctionsCount > 0) {
             StatisticsCollector.getInstance().bestCoverage = (1 / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
         }
+        StatisticsCollector.getInstance().createdTestsCount = this._iterations + 1;
+
         return this._bestIndividuals;
     }
 

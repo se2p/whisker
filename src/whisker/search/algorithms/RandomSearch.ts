@@ -87,6 +87,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             }
         }
 
+        StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         return this._bestIndividuals;
     }
 

@@ -28,6 +28,7 @@ import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {PopulationFactory} from "../PopulationFactory";
 import {Randomness} from "../../utils/Randomness";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -99,6 +100,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
 
         console.log("Simple GA completed at "+Date.now());
+        StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.getPopulationSize();
 
         return this._bestIndividuals;
     }

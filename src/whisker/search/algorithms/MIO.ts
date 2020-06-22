@@ -156,6 +156,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log("Iteration " + this._iterations + ", covered goals: "
                 + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
         }
+        StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         return this._bestIndividuals;
     }
 
