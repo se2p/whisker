@@ -1,6 +1,8 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Stepper = require('./stepper');
 
+const log = require('minilog')('vm-wrapper');
+
 const Sprites = require('./sprites');
 const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
@@ -76,6 +78,11 @@ class VMWrapper {
          * @type {boolean}
          */
         this.running = false;
+
+        /**
+         * @type {boolean}
+         */
+        this.aborted = false;
 
         /**
          * @type {boolean}
@@ -159,6 +166,10 @@ class VMWrapper {
             }
         }
 
+        if (this.aborted) {
+            throw new Error('Run was aborted!');
+        }
+
         this.running = false;
         const timeElapsed = this.getRunTimeElapsed();
 
@@ -209,6 +220,12 @@ class VMWrapper {
 
     cancelRun () {
         this.running = false;
+    }
+
+    abort () {
+        this.cancelRun();
+        this.aborted = true;
+        log.warn("Run aborted");
     }
 
     /**
@@ -307,6 +324,8 @@ class VMWrapper {
 
         this.vm.greenFlag();
         this.startTime = Date.now();
+
+        this.aborted = false;
     }
 
     end () {

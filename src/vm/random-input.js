@@ -277,7 +277,7 @@ class RandomInputs {
             }]);
             break;
         case 'sensing_touchingobjectmenu':
-            if (fields.hasOwnProperty('DISTANCETOMENU') && fields.DISTANCETOMENU.value === '_mouse_') {
+            if (fields.hasOwnProperty('TOUCHINGOBJECTMENU') && fields.TOUCHINGOBJECTMENU.value === '_mouse_') {
                 const sprite = this.vmWrapper.sprites.wrapTarget(target);
                 if (sprite === this.vmWrapper.sprites.getStage()) {
                     this.registerRandomInputs([{
@@ -323,6 +323,15 @@ class RandomInputs {
             }
             break;
         }
+        case 'motion_pointtowards_menu':
+            if (fields.hasOwnProperty('TOWARDS') && fields.TOWARDS.value === '_mouse_') {
+                this.registerRandomInputs([{
+                    device: 'mouse',
+                    x: [-(stageSize.width / 2), stageSize.width / 2],
+                    y: [-(stageSize.height / 2), stageSize.height / 2]
+                }]);
+            }
+            break;
         }
     }
 }

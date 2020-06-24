@@ -71,7 +71,7 @@ class Input {
             const data = this._convertData(this._data);
             if (!this._state) {
                 this._performSingle(data);
-                if (this._data.duration) {
+                if (this._data.duration && this._data.device !== 'drag') {
                     this._state = true;
                 } else {
                     return true;
@@ -96,6 +96,9 @@ class Input {
         case 'text':
             this._inputs.vmWrapper.vm.runtime.emit('ANSWER', data.answer);
             break;
+        case 'drag':
+            data.sprite.getScratchTarget().setXY(data.x, data.y);
+            break;
         default: throw new Error(`Invalid device for input ${data.device}`);
         }
     }
@@ -115,34 +118,43 @@ class Input {
             }
         }
 
-        if (data.device !== 'mouse') {
-            return data;
-        }
+        if (data.device === 'mouse') {
+            if (data.sprite) {
+                data.x = data.sprite.x;
+                data.y = data.sprite.y;
+            } else {
+                const mousePos = this._inputs.getMousePos();
+                if (!data.hasOwnProperty('x')) {
+                    data.x = mousePos.x;
+                }
+                if (!data.hasOwnProperty('y')) {
+                    data.y = mousePos.y;
+                }
+            }
 
-        if (data.sprite) {
-            data.x = data.sprite.x;
-            data.y = data.sprite.y;
-        } else {
-            const mousePos = this._inputs.getMousePos();
+            data.x += data.xOffset || 0;
+            data.y += data.yOffset || 0;
+
+            /* Convert coordinates to client coordinates. */
+            const {x, y} = this._inputs.vmWrapper.getClientCoords(data.x, data.y);
+            data.x = x;
+            data.y = y;
+
+            const canvasRect = this._inputs.vmWrapper.getCanvasRect();
+            data.canvasWidth = canvasRect.width;
+            data.canvasHeight = canvasRect.height;
+
+        } else if (data.device === 'drag') {
             if (!data.hasOwnProperty('x')) {
-                data.x = mousePos.x;
+                data.x = data.sprite.x;
             }
             if (!data.hasOwnProperty('y')) {
-                data.y = mousePos.y;
+                data.y = data.sprite.y;
             }
+
+            data.x += data.xOffset || 0;
+            data.y += data.yOffset || 0;
         }
-
-        data.x += data.xOffset || 0;
-        data.y += data.yOffset || 0;
-
-        /* Convert coordinates to client coordinates. */
-        const {x, y} = this._inputs.vmWrapper.getClientCoords(data.x, data.y);
-        data.x = x;
-        data.y = y;
-
-        const canvasRect = this._inputs.vmWrapper.getCanvasRect();
-        data.canvasWidth = canvasRect.width;
-        data.canvasHeight = canvasRect.height;
 
         return data;
     }
@@ -287,10 +299,14 @@ class Inputs {
 
     resetMouse () {
         const clientPos = this.vmWrapper.getClientCoords(0, 0);
+        const canvasRect = this.vmWrapper.getCanvasRect();
+
         this.vmWrapper.vm.postIOData('mouse', {
             x: clientPos.x,
             y: clientPos.y,
-            isDown: false
+            isDown: false,
+            canvasWidth: canvasRect.width,
+            canvasHeight: canvasRect.height
         });
     }
 
