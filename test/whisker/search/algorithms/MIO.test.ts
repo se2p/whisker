@@ -31,6 +31,8 @@ import {SinglePointCrossover} from "../../../../src/whisker/search/operators/Sin
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
+import {VMWrapperMock} from "../../utils/VMWrapperMock";
+import {Container} from "../../../../src/whisker/utils/Container";
 
 describe('MIO', () => {
 
@@ -38,6 +40,10 @@ describe('MIO', () => {
     const iterations = 10000;
 
     beforeEach(() => {
+        const mock = new VMWrapperMock();
+        mock.init()
+        Container.vmWrapper = mock;
+
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
 
         const chromosomeLength = 10;
