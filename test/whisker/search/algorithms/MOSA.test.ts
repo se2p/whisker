@@ -33,6 +33,8 @@ import {SinglePointCrossover} from "../../../../src/whisker/search/operators/Sin
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
+import {Container} from "../../../../src/whisker/utils/Container";
+import {VMWrapperMock} from "../../utils/VMWrapperMock";
 
 describe('MOSA', () => {
 
@@ -44,7 +46,13 @@ describe('MOSA', () => {
     const mutationProbability = 1;
     const maxIterations = 100;
 
+
+
     beforeEach(() => {
+        const mock = new VMWrapperMock();
+        mock.init()
+        Container.vmWrapper = mock;
+
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
 
         const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
