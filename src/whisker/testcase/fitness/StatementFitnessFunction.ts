@@ -227,7 +227,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             case 'control_if_else': {
                 requiredCondition = false;
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, controlNode.id)) {
+                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
                     break;
                 }
