@@ -29,6 +29,7 @@ import {Randomness} from "../../utils/Randomness";
 import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {Container} from "../../utils/Container";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -96,6 +97,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._archive.clear();
         this._iterations = 0;
         this._startTime = Date.now();
+        let fullCoverageReached = false;
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         console.log("Creating initial population");
@@ -126,6 +128,12 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
             StatisticsCollector.getInstance().incrementIterationCount();
             StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
+            if(this._archive.size == this._fitnessFunctions.size && !fullCoverageReached) {
+                fullCoverageReached = true;
+                StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
+                    (this._iterations + 1) * this._properties.getPopulationSize();
+                StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+            }
         }
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
