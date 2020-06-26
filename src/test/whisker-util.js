@@ -32,6 +32,13 @@ class WhiskerUtil {
         return new TestDriver(this.vmWrapper, props);
     }
 
+    /**
+     * @returns {VMWrapper} .
+     */
+    getVMWrapper () {
+        return this.vmWrapper;
+    }
+
     start () {
         this.vmWrapper.start();
     }

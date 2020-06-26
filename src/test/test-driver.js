@@ -1,5 +1,6 @@
 const defaults = require('lodash.defaults');
 // const random = require('../../dist/src/whisker/utils/Randomness').Randomness; // TODO: If necessary import
+const Coverage = require('../coverage/coverage');
 
 class TestDriver {
     /**
@@ -72,6 +73,9 @@ class TestDriver {
         this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
         this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;
         this.getAccelerationFactor = () => vmWrapper.accelerationFactor;
+
+        this.isCoverageEnabled = Coverage.isCoverageEnabled.bind(null, vmWrapper.vm);
+        this.getCoverage = Coverage.getCoverage;
 
         if (props.extend) {
             defaults(this, props.extend);
