@@ -26,6 +26,7 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {Container} from "../../utils/Container";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -91,23 +92,22 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             this._iterations++;
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
                 (this._fitnessFunction.compare(candidateFitness, bestFitness) === 0 && candidateChromosome.getLength() <= bestLength)) {
+                if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
+                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
+                    StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
+                    StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+                }
                 bestFitness = candidateFitness;
                 bestLength = candidateChromosome.getLength();
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
                 console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
-
-                if (this._fitnessFunction.isOptimal(bestFitness)) {
-                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
-                }
             }
         }
         console.log("1+1 EA completed at "+Date.now());
+        StatisticsCollector.getInstance().createdTestsCount = this._iterations + 1;
 
-        if (StatisticsCollector.getInstance().coveredFitnessFunctionsCount > 0) {
-            StatisticsCollector.getInstance().bestCoverage = (1 / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
-        }
         return this._bestIndividuals;
     }
 

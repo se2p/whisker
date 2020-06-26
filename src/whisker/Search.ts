@@ -76,9 +76,7 @@ export class Search {
 
     private printTests(tests: List<WhiskerTest>): void {
         let i = 0;
-        const stats = StatisticsCollector.getInstance()
         for (const test of tests) {
-            stats.testEventCount = stats.testEventCount + test.getEventsCount();
             console.log("Test "+i+": \n" + test.toString());
             i++;
         }

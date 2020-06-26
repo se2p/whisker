@@ -27,6 +27,7 @@ import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {Container} from "../../utils/Container";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -153,7 +154,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
+            console.log("Iteration " + this._iterations + ", covered goals: "
+                + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
         }
+        StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         return this._bestIndividuals;
     }
 
@@ -217,6 +221,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     this._archiveUncovered.delete(fitnessFunctionKey);
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
+                    if(this._archiveCovered.size == this._fitnessFunctions.size) {
+                        StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
+                        StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+                    }
                 }
             } else if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
                 let archiveTuples: List<ChromosomeHeuristicTuple<C>>;
@@ -256,11 +264,9 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param fitnessFunctionKey The key of the fitness function.
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
+        console.log("Found test for goal: " + this._fitnessFunctions.get(fitnessFunctionKey));
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
-        this._bestIndividuals.clear();
-        for (const chromosome of this._archiveCovered.values()) {
-            this._bestIndividuals.add(chromosome);
-        }
+        this._bestIndividuals = new List<C>(Array.from(this._archiveCovered.values())).distinct();
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         this._samplingCounter.set(fitnessFunctionKey, 0);
     }

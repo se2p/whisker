@@ -28,6 +28,8 @@ import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {PopulationFactory} from "../PopulationFactory";
 import {Randomness} from "../../utils/Randomness";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {Container} from "../../utils/Container";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -81,6 +83,9 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         // set start time
         this._startTime = Date.now();
 
+        StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+
         console.log("Simple GA started at "+this._startTime);
 
         // Initialise population
@@ -92,6 +97,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         while(!this._stoppingCondition.isFinished(this)) {
             console.log("Iteration "+this._iterations+", best fitness: "+this._bestFitness);
             this._iterations++;
+            StatisticsCollector.getInstance().incrementIterationCount();
 
             const nextGeneration = this.generateOffspringPopulation(population);
             this.evaluateAndSortPopulation(nextGeneration)
@@ -99,6 +105,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
 
         console.log("Simple GA completed at "+Date.now());
+        StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.getPopulationSize();
 
         return this._bestIndividuals;
     }
@@ -126,6 +133,12 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         if (this._bestIndividuals.isEmpty() ||
                 this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||
                 (this._fitnessFunction.compare(candidateFitness, this._bestFitness) == 0 && candidateLength < this._bestLength)) {
+                if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(this._bestFitness)) {
+                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
+                    StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
+                        (this._iterations + 1) * this._properties.getPopulationSize();
+                    StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+                }
                 this._bestLength = candidateLength;
                 this._bestFitness = candidateFitness;
                 this._bestIndividuals.clear();

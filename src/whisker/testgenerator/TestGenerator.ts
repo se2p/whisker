@@ -21,10 +21,55 @@
 import {WhiskerTest} from './WhiskerTest';
 import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {FitnessFunction} from "../search/FitnessFunction";
+import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
+import {SearchAlgorithm} from "../search/SearchAlgorithm";
+import {TestChromosome} from "../testcase/TestChromosome";
 
-export interface TestGenerator {
+export abstract class TestGenerator {
 
-    generateTests(project: ScratchProject): List<WhiskerTest>;
+    _config: WhiskerSearchConfiguration;
 
+    _fitnessFunctions: Map<number, FitnessFunction<TestChromosome>>;
+
+    constructor(configuration: WhiskerSearchConfiguration) {
+        this._config = configuration;
+    }
+
+    public abstract generateTests(project: ScratchProject): List<WhiskerTest>;
+
+    _buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
+        const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
+        .addSelectionOperator(this._config.getSelectionOperator())
+        .addProperties(this._config.getSearchAlgorithmProperties());
+        if (initializeFitnessFunction) {
+            builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),
+                this._config.getSearchAlgorithmProperties().getChromosomeLength(),
+                this._config.getFitnessFunctionTargets())
+        }
+        builder.addChromosomeGenerator(this._config.getChromosomeGenerator())
+        return builder.buildSearchAlgorithm();
+    }
+
+    _extractCoverageGoals(): Map<number, FitnessFunction<any>> {
+        return new SearchAlgorithmBuilder(this._config.getAlgorithm())
+        .initializeFitnessFunction(this._config.getFitnessFunctionType(),
+            this._config.getSearchAlgorithmProperties().getChromosomeLength(),
+            this._config.getFitnessFunctionTargets()).fitnessFunctions;
+    }
+
+    _collectStatistics(testSuite: List<WhiskerTest>): void {
+        const statistics = StatisticsCollector.getInstance();
+
+        StatisticsCollector.getInstance().bestCoverage =
+            statistics.coveredFitnessFunctionsCount / statistics.fitnessFunctionCount;
+
+        statistics.bestTestSuiteSize = testSuite.size();
+
+        for (const test of testSuite) {
+            statistics.testEventCount += test.getEventsCount();
+        }
+    }
 }

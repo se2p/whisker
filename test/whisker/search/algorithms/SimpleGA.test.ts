@@ -24,7 +24,6 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
@@ -34,8 +33,16 @@ import {SimpleGA} from "../../../../src/whisker/search/algorithms/SimpleGA";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {TournamentSelection} from "../../../../src/whisker/search/operators/TournamentSelection";
 import {List} from "../../../../src/whisker/utils/List";
+import {VMWrapperMock} from "../../utils/VMWrapperMock";
+import {Container} from "../../../../src/whisker/utils/Container";
 
 describe('SimpleGA', () => {
+
+    beforeEach(() => {
+        const mock = new VMWrapperMock();
+        mock.init()
+        Container.vmWrapper = mock;
+    });
 
     test('Trivial bitstring with SimpleGA', () => {
 
