@@ -300,7 +300,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         for (let i = 0; i < fitnesses.size(); i++) {
             const fitness = fitnesses.get(i);
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
-            this._heuristicFunctions.set(i, v => v / chromosomeLength);
+            this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }
     }
 

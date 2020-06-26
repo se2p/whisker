@@ -23,15 +23,12 @@ import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {TestChromosome} from "../testcase/TestChromosome";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {Selection} from "../search/Selection";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
 import {FitnessFunction} from "../search/FitnessFunction";
-import {Chromosome} from "../search/Chromosome";
-import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 /**
@@ -39,27 +36,18 @@ import {StatisticsCollector} from "../utils/StatisticsCollector";
  * use the chromosome factory and generate completely
  * random tests.
  */
-export class RandomTestGenerator implements TestGenerator, SearchAlgorithm<TestChromosome> {
-
-    private _config: WhiskerSearchConfiguration;
+export class RandomTestGenerator extends TestGenerator implements SearchAlgorithm<TestChromosome> {
 
     private _startTime: number;
 
     private _iterations = 0;
 
-    private _fitnessFunctions: Map<number, FitnessFunction<TestChromosome>>;
-
     private _tests = new List<TestChromosome>();
 
-    constructor(configuration: WhiskerSearchConfiguration) {
-        this._config = configuration;
-        this._fitnessFunctions = this._extractCoverageGoals();
-    }
-
-    // eslint-disable-next-line no-unused-vars
     generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
         const uncoveredGoals = new List<FitnessFunction<TestChromosome>>();
+        this._fitnessFunctions = this._extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
 
@@ -89,21 +77,9 @@ export class RandomTestGenerator implements TestGenerator, SearchAlgorithm<TestC
                 uncoveredGoals.remove(ff);
             }
         }
-
-        StatisticsCollector.getInstance().bestCoverage = (this._fitnessFunctions.size / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
-        StatisticsCollector.getInstance().bestTestSuiteSize = testSuite.size();
-
+        StatisticsCollector.getInstance().createdTestsCount = this._iterations + 1;
+        this._collectStatistics(testSuite);
         return testSuite;
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    _extractCoverageGoals(): Map<number, FitnessFunction<Chromosome>> {
-        const builder = new SearchAlgorithmBuilder(
-            this._config.getAlgorithm()
-        ).initializeFitnessFunction(this._config.getFitnessFunctionType(),
-            this._config.getSearchAlgorithmProperties().getChromosomeLength(),
-            this._config.getFitnessFunctionTargets());
-        return builder.fitnessFunctions;
     }
 
     getCurrentSolution(): List<TestChromosome> {
@@ -149,7 +125,4 @@ export class RandomTestGenerator implements TestGenerator, SearchAlgorithm<TestC
     setSelectionOperator(selectionOperator: Selection<TestChromosome>): void {
         throw new NotSupportedFunctionException();
     }
-
-
-
 }

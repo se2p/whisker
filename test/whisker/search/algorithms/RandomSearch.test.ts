@@ -31,8 +31,16 @@ import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/Sea
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {List} from "../../../../src/whisker/utils/List";
+import {VMWrapperMock} from "../../utils/VMWrapperMock";
+import {Container} from "../../../../src/whisker/utils/Container";
 
 describe('RandomSearch', () => {
+
+    beforeEach(() => {
+        const mock = new VMWrapperMock();
+        mock.init()
+        Container.vmWrapper = mock;
+    });
 
     test('Trivial bitstring with OneMax', () => {
 

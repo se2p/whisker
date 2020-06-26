@@ -20,17 +20,10 @@
 
 import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
-import {StatementCoverageFitness} from '../testcase/fitness/StatementFitnessFunction';
 import {List} from '../utils/List';
-import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
 import {TestChromosome} from '../testcase/TestChromosome';
 import {WhiskerTest} from './WhiskerTest';
-import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
-import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
-import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
-import {Container} from "../utils/Container";
-import {Chromosome} from "../search/Chromosome";
 import {FitnessFunction} from "../search/FitnessFunction";
 
 /**
@@ -38,22 +31,16 @@ import {FitnessFunction} from "../search/FitnessFunction";
  * this class iterates over the list of coverage goals in
  * a project and instantiates a new search for each goal.
  */
-export class IterativeSearchBasedTestGenerator implements TestGenerator {
-
-    private _config: WhiskerSearchConfiguration;
-
-    constructor(configuration: WhiskerSearchConfiguration) {
-        this._config = configuration;
-    }
+export class IterativeSearchBasedTestGenerator extends TestGenerator {
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
         const testChromosomes = new List<TestChromosome>();
-        const fitnessFunctions = this._extractCoverageGoals();
+        this._fitnessFunctions = this._extractCoverageGoals();
         let numGoal = 1;
-        const totalGoals = fitnessFunctions.size;
+        const totalGoals = this._fitnessFunctions.size;
 
-        for (const fitnessFunction of fitnessFunctions.values()) {
+        for (const fitnessFunction of this._fitnessFunctions.values()) {
             console.log("Current goal "+numGoal+"/"+totalGoals+": "+fitnessFunction);
             numGoal++;
             if (this._isCovered(fitnessFunction, testChromosomes)) {
@@ -62,7 +49,7 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
                 continue;
             }
             // TODO: Somehow set the fitness function as objective
-            const searchAlgorithm = this._buildSearchAlgorithm();
+            const searchAlgorithm = this._buildSearchAlgorithm(false);
             searchAlgorithm.setFitnessFunction(fitnessFunction);
             // TODO: Assuming there is at least one solution?
             const testChromosome = searchAlgorithm.findSolution().get(0);
@@ -76,11 +63,7 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
                 console.log("Goal "+fitnessFunction+" was not successfully covered.");
             }
         }
-
-        // TODO: Handle statistics
-        StatisticsCollector.getInstance().bestCoverage = (fitnessFunctions.size / StatisticsCollector.getInstance().coveredFitnessFunctionsCount);
-        StatisticsCollector.getInstance().bestTestSuiteSize = testSuite.size();
-
+        this._collectStatistics(testSuite);
         return testSuite;
     }
 
@@ -92,23 +75,5 @@ export class IterativeSearchBasedTestGenerator implements TestGenerator {
             }
         }
         return false;
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    _extractCoverageGoals(): Map<number, FitnessFunction<Chromosome>> {
-        const builder = new SearchAlgorithmBuilder(
-            this._config.getAlgorithm()
-        ).initializeFitnessFunction(this._config.getFitnessFunctionType(),
-            this._config.getSearchAlgorithmProperties().getChromosomeLength(),
-            this._config.getFitnessFunctionTargets());
-        return builder.fitnessFunctions;
-    }
-
-    private _buildSearchAlgorithm(): SearchAlgorithm<any> {
-        return new SearchAlgorithmBuilder(this._config.getAlgorithm())
-            .addSelectionOperator(this._config.getSelectionOperator())
-            .addProperties(this._config.getSearchAlgorithmProperties())
-            .addChromosomeGenerator(this._config.getChromosomeGenerator())
-            .buildSearchAlgorithm();
     }
 }
