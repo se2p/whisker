@@ -269,22 +269,23 @@ class VMWrapper {
 
     instrumentDevice (deviceName, method) {
         const device = this.vm.runtime.ioDevices[deviceName];
-        const original = device[method];
+        let original = device[method];
 
         if (original.isInstrumented) {
-            return;
+            original = original.primitive;
         }
 
         const instrumented = () => original.call(device) * this.accelerationFactor;
         instrumented.isInstrumented = true;
+        instrumented.primitive = original;
         device[method] = instrumented;
     }
 
     instrumentPrimitive (primitive, argument) {
-        const original = this.vm.runtime._primitives[primitive];
+        let original = this.vm.runtime._primitives[primitive];
 
         if (original.isInstrumented) {
-            return;
+            original = original.primitive
         }
 
         const instrumented = (args, util) => {
@@ -293,6 +294,7 @@ class VMWrapper {
             return original(clone, util);
         };
         instrumented.isInstrumented = true;
+        instrumented.primitive = original;
         this.vm.runtime._primitives[primitive] = instrumented;
     }
 
