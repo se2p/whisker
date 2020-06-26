@@ -18,8 +18,6 @@
  *
  */
 
-import {Container} from "./Container";
-
 /**
  * Singleton class to collect statistics from search runs
  *
@@ -99,7 +97,7 @@ export class StatisticsCollector {
      */
     public incrementCoveredFitnessFunctionCount(): void {
         this._coveredFitnessFunctionsCount++;
-        const timeStamp = Container.vmWrapper.getTotalTimeElapsed();
+        const timeStamp = Date.now() - this._startTime;
         this._covOverTime[timeStamp] = this._coveredFitnessFunctionsCount;
     }
 
@@ -133,7 +131,6 @@ export class StatisticsCollector {
     set bestTestSuiteSize(value: number) {
         this._bestTestSuiteSize = value;
     }
-
 
     get testEventCount(): number {
         return this._testEventCount;
@@ -194,5 +191,6 @@ export class StatisticsCollector {
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
+        this._startTime = Date.now();
     }
 }
