@@ -219,7 +219,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 break;
             }
             case 'control_if': {
-                requiredCondition = true;
+                requiredCondition = false;
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
                 if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
@@ -227,7 +227,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 break;
             }
             case 'control_if_else': {
-                requiredCondition = true;
+                requiredCondition = false;
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
                 if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
