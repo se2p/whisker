@@ -34,7 +34,7 @@ export class StatementFitnessFunctionFactory {
                     }
                 }
 
-                const statementCoverageFitness = new StatementCoverageFitness(node, cdg);
+                const statementCoverageFitness = new StatementCoverageFitness(node, cdg, cfg);
                 fitnessFunctions.add(statementCoverageFitness)
 
             }

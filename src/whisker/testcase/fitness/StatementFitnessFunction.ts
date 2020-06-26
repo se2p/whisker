@@ -22,7 +22,7 @@ import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
 import {TestExecutor} from '../TestExecutor';
 import {ExecutionTrace} from "../ExecutionTrace";
-import {GraphNode, UserEventNode, ControlDependenceGraph} from 'scratch-analysis'
+import {GraphNode, UserEventNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
 import {Container} from "../../utils/Container";
 import {List} from "../../utils/List";
 
@@ -31,12 +31,14 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     // TODO: Constructor needs CDG and target node
     private _targetNode: GraphNode;
     private _cdg: ControlDependenceGraph;
+    private _cfg: ControlFlowGraph;
     private _approachLevels: Record<string, number>
     private eventMapping: Record<string, string>
 
-    constructor(targetNode: GraphNode, cdg: ControlDependenceGraph) {
+    constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
         this._cdg = cdg;
+        this._cfg = cfg;
         this.eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
 
@@ -217,7 +219,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 break;
             }
             case 'control_if': {
-                requiredCondition = true;
+                requiredCondition = false;
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
                 if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
@@ -227,7 +229,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             case 'control_if_else': {
                 requiredCondition = false;
                 const ifBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, controlNode.id)) {
+                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
                     break;
                 }
@@ -242,24 +244,17 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
     _matchesBranchStart(statement, controlNode, branchStartId): boolean {
         let cur = statement;
-        while (cur.id !== controlNode.id || branchStartId === controlNode.id) {
+        while (cur && cur.id !== controlNode.id) {
             if (cur.id === branchStartId) {
                 return true;
             }
-            const preds = this._cdg.predecessors(cur.id).values()
-            let cur2 = preds.next().value;
-            if (cur2 === cur) {
-                cur2 = preds.next().value;
-            }
-
-            if (!cur2) {
-                return false;
-            } else {
-                cur = cur2
-            }
+            cur = this._cfg.predecessors(cur.id)
+                .values()
+                .next()
+                .value;
         }
         return false;
-    }
+    };
 
     public toString = () : string => {
         return ""+ this._targetNode.id +" of type "+this._targetNode.block.opcode;
