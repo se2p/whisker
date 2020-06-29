@@ -4,6 +4,7 @@
     "chromosome": "integerlist",
     "population-size": 10,
     "chromosome-length": 10,
+    "init-var-length": 2,
     "crossover": {
         "operator": "single-point",
         "probability": 50
@@ -12,7 +13,8 @@
         "operator": "integerlist",
         "probability": 50,
         "maxMutationCountStart": null,
-        "maxMutationCountFocusedPhase": null
+        "maxMutationCountFocusedPhase": null,
+        "alpha": 0.5
     },
     "selection": {
         "operator": "dummy",

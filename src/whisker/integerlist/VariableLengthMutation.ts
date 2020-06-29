@@ -26,16 +26,19 @@ import {IntegerListChromosome} from './IntegerListChromosome';
 
 export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
 
-    private _min: number;
+    private readonly _min: number;
 
-    private _max: number;
+    private readonly _max: number;
 
-    private _length: number;
+    private readonly _length: number;
 
-    constructor(min: number, max: number, length: number) {
+    private readonly _alpha: number;
+
+    constructor(min: number, max: number, length: number, alpha: number) {
         this._min = min;
         this._max = max;
         this._length = length;
+        this._alpha = alpha;
     }
 
     apply (chromosome: IntegerListChromosome): IntegerListChromosome {
@@ -100,10 +103,9 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
         const newCodons = new List<number>();
         newCodons.addList(oldCodons);
 
-        const alpha = 0.5; // TODO: Should be a parameter
         let count = 0;
 
-        while(Randomness.getInstance().nextDouble() <= Math.pow(alpha, count) && newCodons.size() < this._length) {
+        while(Randomness.getInstance().nextDouble() <= Math.pow(this._alpha, count) && newCodons.size() < this._length) {
             count++;
             const position = Randomness.getInstance().nextInt(0, newCodons.size());
             newCodons.insert(this.getRandomCodon(), position);
