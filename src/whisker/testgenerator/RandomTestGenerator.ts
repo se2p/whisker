@@ -44,42 +44,52 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
 
     private _tests = new List<TestChromosome>();
 
+    private _archive = new Map<number, TestChromosome>();
+
     generateTests(project: ScratchProject): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
-        const uncoveredGoals = new List<FitnessFunction<TestChromosome>>();
+
         this._fitnessFunctions = this._extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
 
-        for (const ff of this._fitnessFunctions.values()) {
-            uncoveredGoals.add(ff);
-        }
-
         const chromosomeGenerator = this._config.getChromosomeGenerator();
         const stoppingCondition = this._config.getSearchAlgorithmProperties().getStoppingCondition();
 
-        while(!stoppingCondition.isFinished(this)) {
-            console.log("Iteration "+this._iterations+": "+uncoveredGoals.size()+"/"+this._fitnessFunctions.size +" goals remaining");
+        while (!stoppingCondition.isFinished(this)) {
+            console.log("Iteration " + this._iterations
+                + ", covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             const testChromosome = chromosomeGenerator.get();
-            const coveredGoals = new List<FitnessFunction<TestChromosome>>();
-            for (const ff of uncoveredGoals) {
-                if (ff.isCovered(testChromosome)) {
-                    console.log("Goal "+ff+" was successfully covered, keeping test.");
-                    this._tests.add(testChromosome);
-                    testSuite.add(new WhiskerTest(testChromosome));
-                    coveredGoals.add(ff);
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
-                }
-            }
-            for(const ff of coveredGoals) {
-                uncoveredGoals.remove(ff);
-            }
+            this.updateArchive(testChromosome);
         }
-        StatisticsCollector.getInstance().createdTestsCount = this._iterations + 1;
+        this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
+        for (const chromosome of this._tests) {
+            testSuite.add(new WhiskerTest(chromosome));
+        }
+        StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         this._collectStatistics(testSuite);
         return testSuite;
+    }
+
+    private updateArchive(chromosome: TestChromosome): void {
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestLength = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).getLength()
+                : Number.MAX_SAFE_INTEGER;
+            const candidateFitness = fitnessFunction.getFitness(chromosome);
+            const candidateLength = chromosome.getLength();
+            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                bestLength = candidateLength;
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                }
+                this._archive.set(fitnessFunctionKey, chromosome);
+                console.log("Found test for goal: " + fitnessFunction);
+            }
+        }
     }
 
     getCurrentSolution(): List<TestChromosome> {
