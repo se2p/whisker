@@ -24,7 +24,7 @@ import {NotYetImplementedException} from "../../core/exceptions/NotYetImplemente
 
 export class MouseDownEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    apply(vm: VirtualMachine, args: number[]) {
         const stageSize = {
             width: 600,
             height: 480
@@ -32,9 +32,11 @@ export class MouseDownEvent implements ScratchEvent {
 
         const data = {
             device: 'mouse',
-            // TODO: I think this should be random
-            x: [-(stageSize.width / 2), stageSize.width / 2],
-            y: [-(stageSize.height / 2), stageSize.height / 2]
+            x: args[0],
+            y: args[1],
+            isDown: !this._isMouseDown(vm),
+            canvasWidth: stageSize.width,
+            canvasHeight: stageSize.height
         };
 
         vm.postIOData(data.device, data)
@@ -46,5 +48,9 @@ export class MouseDownEvent implements ScratchEvent {
 
     getNumParameters(): number {
         return 2;
+    }
+
+    _isMouseDown(vm: VirtualMachine): boolean {
+        return vm.runtime.ioDevices.mouse.getIsDown();
     }
 }
