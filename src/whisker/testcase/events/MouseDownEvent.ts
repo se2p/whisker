@@ -21,6 +21,7 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {WaitEvent} from "./WaitEvent";
 
 export class MouseDownEvent implements ScratchEvent {
 
@@ -38,8 +39,12 @@ export class MouseDownEvent implements ScratchEvent {
             canvasWidth: stageSize.width,
             canvasHeight: stageSize.height
         };
+        vm.postIOData(data.device, data);
 
-        vm.postIOData(data.device, data)
+        new WaitEvent().apply(vm); // TODO: tbd
+
+        data.isDown = !data.isDown
+        vm.postIOData(data.device, data);
     }
 
     toJavaScript(): string {
