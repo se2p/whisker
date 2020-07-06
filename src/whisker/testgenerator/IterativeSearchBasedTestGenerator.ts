@@ -34,9 +34,8 @@ import {FitnessFunction} from "../search/FitnessFunction";
 export class IterativeSearchBasedTestGenerator extends TestGenerator {
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
-        const testSuite = new List<WhiskerTest>();
         const testChromosomes = new List<TestChromosome>();
-        this._fitnessFunctions = this._extractCoverageGoals();
+        this._fitnessFunctions = this.extractCoverageGoals();
         let numGoal = 1;
         const totalGoals = this._fitnessFunctions.size;
 
@@ -49,7 +48,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
                 continue;
             }
             // TODO: Somehow set the fitness function as objective
-            const searchAlgorithm = this._buildSearchAlgorithm(false);
+            const searchAlgorithm = this.buildSearchAlgorithm(false);
             searchAlgorithm.setFitnessFunction(fitnessFunction);
             // TODO: Assuming there is at least one solution?
             const testChromosome = searchAlgorithm.findSolution().get(0);
@@ -57,13 +56,13 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             if (fitnessFunction.isCovered(testChromosome)) {
                 console.log("Goal "+fitnessFunction+" was successfully covered, keeping test.");
                 testChromosomes.add(testChromosome);
-                testSuite.add(new WhiskerTest(testChromosome));
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
             } else {
                 console.log("Goal "+fitnessFunction+" was not successfully covered.");
             }
         }
-        this._collectStatistics(testSuite);
+        const testSuite = this.getTestSuite(testChromosomes);
+        this.collectStatistics(testSuite);
         return testSuite;
     }
 

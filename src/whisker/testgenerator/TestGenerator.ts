@@ -40,27 +40,28 @@ export abstract class TestGenerator {
 
     public abstract generateTests(project: ScratchProject): List<WhiskerTest>;
 
-    _buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
+    protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .addSelectionOperator(this._config.getSelectionOperator())
             .addProperties(this._config.getSearchAlgorithmProperties());
         if (initializeFitnessFunction) {
             builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),
                 this._config.getSearchAlgorithmProperties().getChromosomeLength(),
-                this._config.getFitnessFunctionTargets())
+                this._config.getFitnessFunctionTargets());
+            this._fitnessFunctions = builder.fitnessFunctions;
         }
-        builder.addChromosomeGenerator(this._config.getChromosomeGenerator())
+        builder.addChromosomeGenerator(this._config.getChromosomeGenerator());
         return builder.buildSearchAlgorithm();
     }
 
-    _extractCoverageGoals(): Map<number, FitnessFunction<any>> {
+    protected extractCoverageGoals(): Map<number, FitnessFunction<any>> {
         return new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .initializeFitnessFunction(this._config.getFitnessFunctionType(),
                 this._config.getSearchAlgorithmProperties().getChromosomeLength(),
                 this._config.getFitnessFunctionTargets()).fitnessFunctions;
     }
 
-    _collectStatistics(testSuite: List<WhiskerTest>): void {
+    protected collectStatistics(testSuite: List<WhiskerTest>): void {
         const statistics = StatisticsCollector.getInstance();
 
         StatisticsCollector.getInstance().bestCoverage =
@@ -71,5 +72,31 @@ export abstract class TestGenerator {
         for (const test of testSuite) {
             statistics.testEventCount += test.getEventsCount();
         }
+    }
+
+    protected getTestSuite(tests: List<TestChromosome>): List<WhiskerTest> {
+        const testSuite = new List<WhiskerTest>();
+        for (const test of tests) {
+            let addTest = true;
+            for (const whiskerTest of testSuite) {
+                if (this.compareTestCoverage(test, whiskerTest.chromosome)) {
+                    addTest = false;
+                    break;
+                }
+            }
+            if (addTest) {
+                testSuite.add(new WhiskerTest(test));
+            }
+        }
+        return testSuite;
+    }
+
+    private compareTestCoverage(test1: TestChromosome, test2: TestChromosome): boolean {
+        for (const fitnessFunction of this._fitnessFunctions.values()) {
+            if (fitnessFunction.isCovered(test1) != fitnessFunction.isCovered(test2)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
