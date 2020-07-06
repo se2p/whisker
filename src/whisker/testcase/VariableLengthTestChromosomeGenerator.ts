@@ -27,10 +27,13 @@ import {TestChromosomeGenerator} from "./TestChromosomeGenerator";
 
 export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerator {
 
+    private readonly _init_length: number;
+
     constructor(properties: SearchAlgorithmProperties<TestChromosome>,
                 mutationOp: Mutation<TestChromosome>,
-                crossoverOp: Crossover<TestChromosome>) {
+                crossoverOp: Crossover<TestChromosome>, init_length: number) {
         super(properties, mutationOp, crossoverOp);
+        this._init_length = init_length;
     }
 
     protected getLength(): number {

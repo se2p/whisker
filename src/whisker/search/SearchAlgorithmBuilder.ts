@@ -94,7 +94,15 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     constructor(algorithm: SearchAlgorithmType) {
         this._algorithm = algorithm;
 
-        const chromosomeLength = 10; // TODO: default values necessary
+        this._setParameterForTesting();
+    }
+
+    /**
+     * This method sets default values for testing. Usually they are configured in `default.json`.
+     * @private
+     */
+    private _setParameterForTesting(): void {
+        const chromosomeLength = 10;
         const iterations = 1000;
         const populationSize = 50;
         const crossoverProbability = 1;
