@@ -24,8 +24,20 @@ import {NotYetImplementedException} from "../../core/exceptions/NotYetImplemente
 
 export class MouseMoveEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    apply(vm: VirtualMachine, args: number[]) {
+        const stageSize = {
+            width: 600,
+            height: 480
+        };
 
+        const data = {
+            device: 'mouse',
+            x: args[0],
+            y: args[1],
+            canvasWidth: stageSize.width,
+            canvasHeight: stageSize.height
+        };
+        vm.postIOData(data.device, data);
     }
 
     toJavaScript(): string {
