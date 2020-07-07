@@ -45,7 +45,7 @@ export class MouseDownEvent implements ScratchEvent {
     }
 
     getNumParameters(): number {
-        return 2;
+        return 0;
     }
 
     _isMouseDown(vm: VirtualMachine): boolean {
