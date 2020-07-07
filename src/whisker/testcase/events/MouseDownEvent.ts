@@ -25,7 +25,7 @@ import {WaitEvent} from "./WaitEvent";
 
 export class MouseDownEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine, args: number[]) {
+    apply(vm: VirtualMachine) {
         const stageSize = {
             width: 600,
             height: 480
@@ -33,17 +33,10 @@ export class MouseDownEvent implements ScratchEvent {
 
         const data = {
             device: 'mouse',
-            x: args[0],
-            y: args[1],
             isDown: !this._isMouseDown(vm),
             canvasWidth: stageSize.width,
             canvasHeight: stageSize.height
         };
-        vm.postIOData(data.device, data);
-
-        new WaitEvent().apply(vm); // TODO: tbd
-
-        data.isDown = !data.isDown
         vm.postIOData(data.device, data);
     }
 
