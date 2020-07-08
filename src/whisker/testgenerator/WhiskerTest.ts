@@ -52,18 +52,18 @@ export class WhiskerTest {
      * JavaScript code that can be executed with the regular Whisker UI
      */
     toJavaScriptCode(): string {
-        const executor = new TestExecutor(Container.vm);
+        const executor = new TestExecutor(Container.vmWrapper);
         const textConverter = new JavaScriptConverter(executor);
         return textConverter.getText(this._chromosome);    }
 
     toString(): string {
-        const executor = new TestExecutor(Container.vm);
+        const executor = new TestExecutor(Container.vmWrapper);
         const textConverter = new TextConverter(executor);
         return textConverter.getText(this._chromosome);
     }
 
     getEventsCount(): number {
-        const executor = new TestExecutor(Container.vm);
+        const executor = new TestExecutor(Container.vmWrapper);
         const eventCounter = new TestEventCounter(executor);
         return eventCounter.getEventCount(this._chromosome)
     }
