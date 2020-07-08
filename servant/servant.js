@@ -305,6 +305,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
             case 'INITIAL_STATE': break;
             case 'WAIT': errorReplay += `    await t.runForTime(${step.waitMicros / 1000});\n`; break;
             case 'MOUSE_INPUT': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
+            case 'ANSWER': errorReplay += `    t.inputImmediate({device: 'text', answer: '${step.answer}'});`; break;
             default: logger.error(`Unknown error witness step action '${action}'`);
         }
     }
@@ -317,7 +318,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
 function attachRandomInputsToTest(constraintsPath) {
     const randomInputs = "    t.setRandomInputInterval(150);\n" +
         "    t.detectRandomInputs({duration: [50, 100]});\n" +
-        "    await t.runForTime(300000);";
+        "    await t.runForTime(900000);";
 
     return replaceInFile(constraintsPath, "// RANDOM_INPUTS", randomInputs, "_random_inputs.js");
 }
