@@ -169,7 +169,7 @@ export class StatisticsCollector {
 
     public asCsv(): string {
         const coverageStatsMap = this._adjustCoverageOverTime();
-        const timestamps = []
+        const timestamps = [];
         for (const coverageStatsMapKey in coverageStatsMap) {
             timestamps.push(coverageStatsMapKey)
         }
@@ -195,15 +195,18 @@ export class StatisticsCollector {
 
     private _adjustCoverageOverTime() {
         const adjusted: Map<number, number> = new Map();
+        let maxTime = 0;
         for (const timestamp in this._covOverTime) {
             const t: number = timestamp as unknown as number;
             const rounded = Math.round(t / 1000) * 1000;
             adjusted[rounded] = this._covOverTime[timestamp];
-        }
+            if (rounded > maxTime) {
+                maxTime = rounded;
+            }
 
+        }
         let maxCov = 0;
-        const maxTime = 250000;
-        for (let i = 0; i < maxTime; i = i+1000) {
+        for (let i = 0; i <= maxTime; i = i+1000) {
             if (i in adjusted) {
                 maxCov = adjusted[i];
             } else {
