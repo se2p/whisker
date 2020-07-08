@@ -83,7 +83,7 @@ export class WhiskerSearchConfiguration {
             return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
         } else if (stoppingCond == "fixed-time") {
             return new FixedTimeStoppingCondtion(stoppingCondition["duration"]);
-        }else if (stoppingCond == "optimal") {
+        } else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
         } else if (stoppingCond == "one-of") {
             const conditions = stoppingCondition["conditions"];
@@ -102,7 +102,8 @@ export class WhiskerSearchConfiguration {
             case 'bitflip':
                 return new BitflipMutation();
             case 'variablelength':
-                return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'], this.dict['chromosome-length']);
+                return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
+                    this.dict['chromosome-length'], this.dict['mutation']['alpha']);
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
@@ -142,7 +143,8 @@ export class WhiskerSearchConfiguration {
             case 'variablelengthtest':
                 return new VariableLengthTestChromosomeGenerator(this.getSearchAlgorithmProperties(),
                     this._getMutationOperator(),
-                    this._getCrossoverOperator());
+                    this._getCrossoverOperator(),
+                    this.dict['init-var-length']);
 
             case 'test':
             default:
@@ -191,7 +193,7 @@ export class WhiskerSearchConfiguration {
             case 'mio':
                 return SearchAlgorithmType.MIO;
             default:
-                throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: "+this.dict['algorithm']);
+                throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this.dict['algorithm']);
         }
     }
 
@@ -207,7 +209,7 @@ export class WhiskerSearchConfiguration {
         throw new ConfigException("Unknown Algorithm " + this.dict["test-generator"]);
     }
 
-    public getWaitDuration() : number {
+    public getWaitDuration(): number {
         if ("wait-duration" in this.dict) {
             return this.dict["wait-duration"]
         } else {
