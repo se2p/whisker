@@ -26,8 +26,8 @@ export class MouseMoveEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine, args: number[]) {
         const stageSize = {
-            width: 600,
-            height: 480
+            width: 480,
+            height: 360
         };
 
         const data = {
