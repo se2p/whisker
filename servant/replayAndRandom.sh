@@ -6,6 +6,8 @@ testFile="$2"
 errorWitness="$3"
 measurements="$4"
 
+echo "Starting analysis"
+
 # Exit on STRG+C
 trap "exit" INT
 
@@ -16,15 +18,18 @@ for i in `seq 1 $measurements`
 do
     echo "Starting iteration $i"
     start=$(date +%s%N)
-    node servant.js -s "$program" -t "$testFile" -w "$errorWitness"
+    node servant.js -s "$program" -t "$testFile" -w "$errorWitness" -l -o
     end=$(date +%s%N)
-    replay=$((replay + (end - start)/1000000))
+    replayDiff=$(((end - start)/1000000))
+    replay=$((replay + replayDiff))
 
     start=$(date +%s%N)
-    node servant.js -s "$program" -t "$testFile" -r
+    node servant.js -s "$program" -t "$testFile" -r -l -o
     end=$(date +%s%N)
+    randomDiff=$(((end - start)/1000000))
+    random=$((random + randomDiff))
 
-    random=$((random + (end - start)/1000000))
+    echo "Iteration $i: Replay '$replayDiff' Random '$randomDiff'"
 done
 
 echo "Measurements: $measurements"
