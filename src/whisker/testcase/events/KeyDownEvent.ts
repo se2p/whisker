@@ -31,7 +31,7 @@ export class KeyDownEvent implements ScratchEvent {
         this._keyOption = keyOption;
     }
 
-    static scratchKeyToKeyString (scratchKey) {
+    static scratchKeyToKeyString(scratchKey) {
         switch (scratchKey) {
             case 'space':
                 return ' ';
@@ -49,19 +49,19 @@ export class KeyDownEvent implements ScratchEvent {
     }
 
     apply(vm: VirtualMachine) {
-        vm.postIOData("keyboard", {
+        const data = {
             device: 'keyboard',
             key: KeyDownEvent.scratchKeyToKeyString(this._keyOption),
-            isDown: !this.isKeyDown(this._keyOption, vm),
-            duration: WaitEvent.timeout // TODO: How long?
-        });
+            isDown: !this.isKeyDown(this._keyOption, vm)
+        }
+        vm.postIOData(data.device, data);
     }
 
     toJavaScript(): string {
         throw new NotYetImplementedException();
     }
 
-    public toString = () : string => {
+    public toString = (): string => {
         return "KeyDown " + this._keyOption;
     }
 
@@ -73,7 +73,7 @@ export class KeyDownEvent implements ScratchEvent {
      * @param {string} key .
      * @returns {boolean} .
      */
-    isKeyDown (key, vm: VirtualMachine) {
+    isKeyDown(key, vm: VirtualMachine) {
         const keyString = KeyDownEvent.scratchKeyToKeyString(key);
         const scratchKey = vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
         return vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
