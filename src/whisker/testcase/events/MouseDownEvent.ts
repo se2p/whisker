@@ -27,12 +27,14 @@ export class MouseDownEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine) {
         const stageSize = {
-            width: 600,
-            height: 480
+            width: 480,
+            height: 360
         };
 
         const data = {
             device: 'mouse',
+            x: this._getClientX(vm),
+            y: this._getClientY(vm),
             isDown: !this._isMouseDown(vm),
             canvasWidth: stageSize.width,
             canvasHeight: stageSize.height
@@ -50,5 +52,13 @@ export class MouseDownEvent implements ScratchEvent {
 
     _isMouseDown(vm: VirtualMachine): boolean {
         return vm.runtime.ioDevices.mouse.getIsDown();
+    }
+
+    _getClientX(vm: VirtualMachine): number {
+        return vm.runtime.ioDevices.mouse.getClientX();
+    }
+
+    _getClientY(vm: VirtualMachine): number {
+        return vm.runtime.ioDevices.mouse.getClientY();
     }
 }
