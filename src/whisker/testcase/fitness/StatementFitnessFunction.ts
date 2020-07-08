@@ -91,7 +91,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         let executionTrace;
 
         if (chromosome.trace == null) {
-            const executor = new TestExecutor(Container.vm);
+            const executor = new TestExecutor(Container.vmWrapper);
             executionTrace = executor.execute(chromosome);
             chromosome.trace = executionTrace
         } else {

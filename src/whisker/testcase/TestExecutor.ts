@@ -31,21 +31,25 @@ import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
+import {VMWrapper} from "../../vm/vm-wrapper.js"
 
 export class TestExecutor {
 
     private _vm: VirtualMachine;
+    private _vmWrapper: VMWrapper
     private availableEvents: List<ScratchEvent>;
     private eventObservers: EventObserver[] = [];
 
-    constructor(vm: VirtualMachine) {
-        this._vm = vm;
+    constructor(vmWrapper: VMWrapper) {
+        this._vmWrapper = vmWrapper
+        this._vm = vmWrapper.vm;
     }
 
     execute(testChromosome: TestChromosome): Trace {
-        this._vm.stopAll();
+
+        this._vmWrapper.end();
         seedScratch(Randomness.getInitialSeed());
-        this._vm.greenFlag();
+        this._vmWrapper.start();
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
