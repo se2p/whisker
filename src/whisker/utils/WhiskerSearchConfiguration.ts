@@ -213,7 +213,7 @@ export class WhiskerSearchConfiguration {
         if ("wait-duration" in this.dict) {
             return this.dict["wait-duration"]
         } else {
-            return null;
+            return 10;
         }
     }
 }
