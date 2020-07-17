@@ -92,6 +92,7 @@ export class Search {
         Container.config = config;
         Container.vm = vm;
         Container.vmWrapper = util.vmWrapper;
+        Container.acceleration = accelerationFactor;
 
         async function init(search: Search) {
             await util.prepare(accelerationFactor || 1);
