@@ -6,4 +6,5 @@ export class Container {
     static config: WhiskerSearchConfiguration;
     static vm: VirtualMachine
     static vmWrapper: VMWrapper;
+    static acceleration: number;
 }

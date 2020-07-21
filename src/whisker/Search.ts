@@ -92,14 +92,15 @@ export class Search {
         Container.config = config;
         Container.vm = vm;
         Container.vmWrapper = util.vmWrapper;
+        Container.acceleration = accelerationFactor;
 
         async function init(search: Search) {
             await util.prepare(accelerationFactor || 1);
             util.start();
-            StatisticsCollector.getInstance().reset();
             const seed = Date.now();
             Randomness.setInitialSeed(seed);
             seedScratch(seed);
+            StatisticsCollector.getInstance().reset();
             const tests = search.execute(project, config);
             search.printTests(tests);
             const csvString: string = StatisticsCollector.getInstance().asCsv();

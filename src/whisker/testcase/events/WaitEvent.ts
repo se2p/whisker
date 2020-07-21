@@ -25,17 +25,18 @@ import {Container} from "../../utils/Container";
 export class WaitEvent implements ScratchEvent {
 
     static timeout: number = -1; // timeout in ms
-   // static accelerationFactor: number = -1;
+    static accelerationFactor: number = -1;
 
     runStartTime: number;
 
     constructor() {
+        if (WaitEvent.accelerationFactor == -1 || WaitEvent.accelerationFactor !== Container.acceleration) {
+            WaitEvent.accelerationFactor = Container.acceleration;
+            WaitEvent.timeout = -1;
+        }
+
         if (WaitEvent.timeout == -1) {
-            if (Container.config.getWaitDuration()) {
-                WaitEvent.timeout = Container.config.getWaitDuration()
-            } else {
-                WaitEvent.timeout = 10;
-            }
+            WaitEvent.timeout = Container.config.getWaitDuration() / WaitEvent.accelerationFactor
         }
     }
 
@@ -53,11 +54,11 @@ export class WaitEvent implements ScratchEvent {
         return "await t.runForTime(" + WaitEvent.timeout + ");";
     }
 
-    public toString = () : string => {
+    public toString = (): string => {
         return "Wait " + WaitEvent.timeout;
     };
 
-    getRunTimeElapsed (): number {
+    getRunTimeElapsed(): number {
         return (Date.now() - this.runStartTime);//* WaitEvent.accelerationFactor;
     }
 
