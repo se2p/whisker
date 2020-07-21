@@ -42,8 +42,8 @@ export abstract class TestGenerator {
 
     protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
-            .addSelectionOperator(this._config.getSelectionOperator())
-            .addProperties(this._config.getSearchAlgorithmProperties());
+        .addSelectionOperator(this._config.getSelectionOperator())
+        .addProperties(this._config.getSearchAlgorithmProperties());
         if (initializeFitnessFunction) {
             builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),
                 this._config.getSearchAlgorithmProperties().getChromosomeLength(),
@@ -56,9 +56,9 @@ export abstract class TestGenerator {
 
     protected extractCoverageGoals(): Map<number, FitnessFunction<any>> {
         return new SearchAlgorithmBuilder(this._config.getAlgorithm())
-            .initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.getSearchAlgorithmProperties().getChromosomeLength(),
-                this._config.getFitnessFunctionTargets()).fitnessFunctions;
+        .initializeFitnessFunction(this._config.getFitnessFunctionType(),
+            this._config.getSearchAlgorithmProperties().getChromosomeLength(),
+            this._config.getFitnessFunctionTargets()).fitnessFunctions;
     }
 
     protected collectStatistics(testSuite: List<WhiskerTest>): void {
@@ -76,27 +76,57 @@ export abstract class TestGenerator {
 
     protected getTestSuite(tests: List<TestChromosome>): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
-        for (const test of tests) {
-            let addTest = true;
-            for (const whiskerTest of testSuite) {
-                if (this.compareTestCoverage(test, whiskerTest.chromosome)) {
-                    addTest = false;
-                    break;
-                }
-            }
-            if (addTest) {
+        const coveringTestsPerObjective = this.getCoveringTestsPerObjective(tests);
+        const coveredObjectives = new Set<number>();
+
+        // For each uncovered objective with a single covering test: Add the test
+        for (const objective of coveringTestsPerObjective.keys()) {
+            if (!coveredObjectives.has(objective) && coveringTestsPerObjective.get(objective).size() == 1) {
+                const test = coveringTestsPerObjective.get(objective).get(0);
                 testSuite.add(new WhiskerTest(test));
+                this.updateCoveredObjectives(coveredObjectives, test);
             }
         }
+
+        // For each yet uncovered objective: Add the shortest test
+        for (const objective of coveringTestsPerObjective.keys()) {
+            if (!coveredObjectives.has(objective)) {
+                let shortestTest = undefined;
+                for (const test of coveringTestsPerObjective.get(objective)) {
+                    if (shortestTest == undefined || shortestTest.getLength() > test.getLength()) {
+                        shortestTest = test;
+                    }
+                }
+                testSuite.add(new WhiskerTest(shortestTest));
+                this.updateCoveredObjectives(coveredObjectives, shortestTest);
+            }
+        }
+
         return testSuite;
     }
 
-    private compareTestCoverage(test1: TestChromosome, test2: TestChromosome): boolean {
-        for (const fitnessFunction of this._fitnessFunctions.values()) {
-            if (fitnessFunction.isCovered(test1) != fitnessFunction.isCovered(test2)) {
-                return false;
+    private getCoveringTestsPerObjective(tests: List<TestChromosome>): Map<number, List<TestChromosome>> {
+        const coveringTestsPerObjective = new Map<number, List<TestChromosome>>();
+        for (const objective of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(objective);
+            const coveringTests = new List<TestChromosome>();
+            for (const test of tests) {
+                if (fitnessFunction.isCovered(test)) {
+                    coveringTests.add(test)
+                }
+            }
+            if (coveringTests.size() > 0) {
+                coveringTestsPerObjective.set(objective, coveringTests);
             }
         }
-        return true;
+        return coveringTestsPerObjective;
+    }
+
+    private updateCoveredObjectives(coveredObjectives: Set<number>, test: TestChromosome): void {
+        for (const objective of this._fitnessFunctions.keys()) {
+            if (this._fitnessFunctions.get(objective).isCovered(test)) {
+                coveredObjectives.add(objective);
+            }
+        }
     }
 }
