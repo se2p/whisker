@@ -24,7 +24,9 @@ export interface ScratchEvent {
 
     apply(vm: VirtualMachine, args: number[]);
 
-    toJavaScript() : string;
+    toJavaScript(args: number[]) : string;
+
+    toString(args: number[]) : string;
 
     getNumParameters(): number;
 }

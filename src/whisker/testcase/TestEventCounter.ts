@@ -40,7 +40,7 @@ export class TestEventCounter implements EventObserver {
         return this.eventCount;
     }
 
-    update(event: ScratchEvent) {
+    update(event: ScratchEvent, args: number[]) {
         this.eventCount = this.eventCount+1;
     }
 }

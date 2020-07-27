@@ -40,7 +40,11 @@ export class MouseDownEvent implements ScratchEvent {
         vm.postIOData(data.device, data)
     }
 
-    toJavaScript(): string {
+    public toJavaScript(args: number[]): string {
+        throw new NotYetImplementedException();
+    }
+
+    public toString(args: number[]): string {
         throw new NotYetImplementedException();
     }
 

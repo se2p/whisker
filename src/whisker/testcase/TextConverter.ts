@@ -22,6 +22,7 @@ import {TestChromosome} from "./TestChromosome";
 import {TestExecutor} from "./TestExecutor";
 import {EventObserver} from "./EventObserver";
 import {ScratchEvent} from "./ScratchEvent";
+import VirtualMachine from "scratch-vm/src/virtual-machine";
 
 export class TextConverter implements EventObserver {
 
@@ -40,7 +41,7 @@ export class TextConverter implements EventObserver {
         return this.text;
     }
 
-    update(event: ScratchEvent) {
-        this.text += event.toString() + "\n";
+    update(event: ScratchEvent, args: number[]) {
+        this.text += event.toString(args) + "\n";
     }
 }

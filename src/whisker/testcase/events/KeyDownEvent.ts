@@ -20,8 +20,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
-import {WaitEvent} from "./WaitEvent";
+import {Container} from "../../utils/Container";
 
 export class KeyDownEvent implements ScratchEvent {
 
@@ -57,11 +56,15 @@ export class KeyDownEvent implements ScratchEvent {
         vm.postIOData(data.device, data);
     }
 
-    toJavaScript(): string {
-        throw new NotYetImplementedException();
+    public toJavaScript(args: number[]): string {
+        return "t.inputImmediate({\n" +
+            "        device: 'keyboard',\n" +
+            "        key: '" + this._keyOption + "',\n" +
+            "        isDown: " + !this.isKeyDown(this._keyOption, Container.vm) + "\n" +
+            "    });";
     }
 
-    public toString = (): string => {
+    public toString(args: number[]): string {
         return "KeyDown " + this._keyOption;
     }
 

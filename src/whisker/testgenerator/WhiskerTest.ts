@@ -35,7 +35,7 @@ import {TestEventCounter} from "../testcase/TestEventCounter";
  */
 export class WhiskerTest {
 
-    private _chromosome: TestChromosome
+    private readonly _chromosome: TestChromosome
 
 
     // TODO: Could also use a static factory to convert from TestChromosome?
@@ -53,8 +53,9 @@ export class WhiskerTest {
      */
     toJavaScriptCode(): string {
         const executor = new TestExecutor(Container.vmWrapper);
-        const textConverter = new JavaScriptConverter(executor);
-        return textConverter.getText(this._chromosome);    }
+        const jsConverter = new JavaScriptConverter(executor);
+        return jsConverter.getText(this._chromosome);
+    }
 
     toString(): string {
         const executor = new TestExecutor(Container.vmWrapper);

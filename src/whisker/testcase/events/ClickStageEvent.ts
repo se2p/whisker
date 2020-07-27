@@ -35,12 +35,12 @@ export class ClickStageEvent implements ScratchEvent {
             null, this._target);
     }
 
-    toJavaScript(): string {
+    public toJavaScript(args: number[]): string {
         throw new NotYetImplementedException();
         // return "t.clickOnTheDamnedStage()";
     }
 
-    public toString = () : string => {
+    public toString(args: number[]): string {
         return "ClickStage"
     }
 
