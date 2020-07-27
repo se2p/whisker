@@ -42,24 +42,23 @@
                     <div class="form-group">
                         <div class="form-row">
                             <div class="col">
-                                <button id="green-flag" class="btn btn-outline-success" type="button"><i class="fas fa-flag"></i></button>
-                                <button id="stop" class="btn btn-danger" type="button" disabled><i class="fas fa-stop"></i></button>
+                                <button id="green-flag" class="btn btn-outline-success" type="button" title="Start the program"><i class="fas fa-flag"></i></button>
+                                <button id="stop" class="btn btn-danger" type="button" title="Stop the program / test execution"><i class="fas fa-stop"></i></button>
                                 <span class="mx-2"></span>
-                                <button id="reset" class="btn btn-outline-secondary" type="button">Reset</button>
-                                <button id="run-all-tests" class="btn btn-outline-secondary" type="button">Run All Tests</button>
+                                <button id="reset" class="btn btn-outline-secondary" type="button" title="Reset program to initial state">Reset</button>
+                                <button id="run-all-tests" class="btn btn-outline-secondary" type="button" title="Run all tests on all projects">Run All Tests</button>
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="form-row">
                             <div class="col">
-                                <span class="mx-2"></span>
-                                <div class="custom-control custom-checkbox" style="display: inline-block;">
+                                <div class="custom-control custom-checkbox" style="display: inline-block;" title="Enable / disable manual inputs to the program">
                                     <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
                                     <label class="custom-control-label" for="toggle-input">Enable Input</label>
                                 </div>
                                 <span class="mx-2"></span>
-                                <button id="record" class="btn btn-sm btn-outline-danger" type="button">Record Inputs</button>
+                                <button id="record" class="btn btn-sm btn-outline-danger" type="button" title="Record inputs for use in tests">Record Inputs</button>
                             </div>
                         </div>
                     </div>
@@ -72,13 +71,13 @@
                     <div class="form-row">
                         <div class="col">
                             <div class="btn-group-toggle">
-                                <label class="btn btn-outline-primary">
+                                <label class="btn btn-outline-primary" title="Show / hide test table">
                                     <input id="toggle-tests" class="checkbox-button" type="checkbox" autocomplete="off"> Tests
                                 </label>
-                                <label class="btn btn-outline-primary">
+                                <label class="btn btn-outline-primary" title="Show / hide test editor">
                                     <input id="toggle-editor" class="checkbox-button" type="checkbox" autocomplete="off"> Editor
                                 </label>
-                                <label class="btn btn-outline-primary">
+                                <label class="btn btn-outline-primary" title="Show / hide test output">
                                     <input id="toggle-output" class="checkbox-button" type="checkbox" autocomplete="off"> Output
                                 </label>
                             </div>
