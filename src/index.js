@@ -12,6 +12,7 @@ const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
+const {showModal, escapeHtml} = require('./utils.js');
 
 const Whisker = window.Whisker = {};
 window.$ = $;
@@ -25,8 +26,9 @@ const loadTestsFromString = function (string) {
         tests = eval(`${string}; module.exports;`);
     } catch (err) {
         console.error(err);
-        /* eslint-disable-next-line no-alert */
-        alert(`An error occurred while parsing the test code:\n${err}`);
+        const message = `${err.name}: ${err.message}`;
+        showModal('Test Loading', `An error occurred while parsing the test code:<br>
+            <div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
     }
     tests = TestRunner.convertTests(tests);
@@ -52,27 +54,34 @@ const runSearch = async function () {
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
-    await Whisker.scratch.vm.loadProject(project);
-    CoverageGenerator.prepareThread(Thread);
-    CoverageGenerator.prepare(vm);
+    $('#green-flag').prop('disabled', true);
+    $('#reset').prop('disabled', true);
+    $('#run-all-tests').prop('disabled', true);
+    $('#record').prop('disabled', true);
 
+    let summary;
+    let coverage;
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
-    const summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor, CoverageGenerator});
-    const coverage = CoverageGenerator.getCoverage();
 
-    // The messageServantCallback might be attached to the window object, in case the Whisker instance is controlled by
-    // the Servant.
-    if (typeof window.messageServantCallback === 'function') {
-        const coveredBlockIdsPerSprite =
-            [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-        const blockIdsPerSprite =
-            [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+    try {
+        await Whisker.scratch.vm.loadProject(project);
+        CoverageGenerator.prepareClasses({Thread});
+        CoverageGenerator.prepareVM(vm);
 
-        const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-        window.messageServantCallback({serializeableCoverageObject, summary});
+        summary = await Whisker.testRunner.runTests(vm, project, tests);
+        coverage = CoverageGenerator.getCoverage();
+
+        CoverageGenerator.restoreClasses({Thread});
+    } finally {
+        $('#green-flag').prop('disabled', false);
+        $('#reset').prop('disabled', false);
+        $('#run-all-tests').prop('disabled', false);
+        $('#record').prop('disabled', false);
     }
 
-    CoverageGenerator.restoreThread(Thread);
+    if (summary === null) {
+        return
+    }
 
     const formattedSummary = TAP13Formatter.formatSummary(summary);
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
@@ -95,6 +104,11 @@ const runTests = async function (tests) {
 };
 
 const runAllTests = async function () {
+    if (Whisker.tests === undefined || Whisker.tests.length == 0) {
+        showModal('Test Execution', 'No tests loaded.');
+        return;
+    }
+
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
@@ -167,14 +181,13 @@ const initComponents = function () {
 };
 
 const initEvents = function () {
-    $('#green-flag')
-        .on('click', () => Whisker.scratch.greenFlag());
-    $('#stop')
-        .on('click', () => Whisker.scratch.stop());
-    $('#reset')
-        .on('click', () => Whisker.scratch.reset());
-    $('#run-all-tests')
-        .on('click', runAllTests);
+    $('#green-flag').on('click', () => Whisker.scratch.greenFlag());
+    $('#stop').on('click', () => {
+        Whisker.testRunner.abort();
+        Whisker.scratch.stop();
+    });
+    $('#reset').on('click', () => Whisker.scratch.reset());
+    $('#run-all-tests').on('click', runAllTests);
 
     Whisker.inputRecorder.on('startRecording', () => {
         $('#record')
@@ -189,64 +202,69 @@ const initEvents = function () {
             .text('Record Inputs');
     });
 
-    $('#record')
-        .on('click', event => {
+    $('#record').on('click', event => {
+        if (Whisker.scratch.isInputEnabled()) {
             if (Whisker.inputRecorder.isRecording()) {
                 Whisker.inputRecorder.stopRecording();
             } else {
                 Whisker.inputRecorder.startRecording();
             }
-        });
+        } else {
+            showModal('Input Recorder', 'In order to record inputs, inputs must be enabled.');
+        }
+    });
 
-    $('#toggle-tests')
-        .on('change', event => {
-            if ($(event.target)
-                .is(':checked')) {
-                $(event.target)
-                    .parent()
-                    .addClass('active');
-                Whisker.testTable.show();
-            } else {
-                $(event.target)
-                    .parent()
-                    .removeClass('active');
-                Whisker.testTable.hide();
-            }
-        });
+    $('#toggle-input').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            Whisker.scratch.enableInput();
+        } else {
+            Whisker.scratch.disableInput();
+        }
+    });
 
-    $('#toggle-editor')
-        .on('change', event => {
-            if ($(event.target)
-                .is(':checked')) {
-                $(event.target)
-                    .parent()
-                    .addClass('active');
-                Whisker.testEditor.show();
-            } else {
-                $(event.target)
-                    .parent()
-                    .removeClass('active');
-                Whisker.testEditor.hide();
-            }
-        });
+    $('#toggle-tests').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            Whisker.testTable.show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            Whisker.testTable.hide();
+        }
+    });
 
-    $('#toggle-output')
-        .on('change', event => {
-            if ($(event.target)
-                .is(':checked')) {
-                $(event.target)
-                    .parent()
-                    .addClass('active');
-                Whisker.outputRun.show();
-                Whisker.outputLog.show();
-            } else {
-                $(event.target)
-                    .parent()
-                    .removeClass('active');
-                Whisker.outputRun.hide();
-                Whisker.outputLog.hide();
-            }
-        });
+    $('#toggle-editor').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            Whisker.testEditor.show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            Whisker.testEditor.hide();
+        }
+    });
+
+    $('#toggle-output').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            Whisker.outputRun.show();
+            Whisker.outputLog.show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            Whisker.outputRun.hide();
+            Whisker.outputLog.hide();
+        }
+    });
 
     $('#run-search')
         .click('click', event => {
