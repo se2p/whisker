@@ -32,14 +32,14 @@ export class MouseDownEvent implements ScratchEvent {
         vm.postIOData(data.device, data);
     }
 
-    toJavaScript(): string {
+    public toJavaScript(args: number[]): string {
         return "t.inputImmediate({\n" +
             "        device: 'mouse',\n" +
             "        isDown: " + !this._isMouseDown(Container.vm) + ",\n" +
             "    });";
     }
 
-    public toString = () : string => {
+    public toString = (args: number[]) : string => {
         return "MouseDown " + !this._isMouseDown(Container.vm);
     }
 

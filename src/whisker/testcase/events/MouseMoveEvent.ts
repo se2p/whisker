@@ -40,8 +40,12 @@ export class MouseMoveEvent implements ScratchEvent {
         vm.postIOData(data.device, data);
     }
 
-    toJavaScript(): string {
+    public toJavaScript(args: number[]): string {
         throw new NotYetImplementedException();
+    }
+
+    public toString(args: number[]): string {
+        return "MouseMove " + args[0] + "/" + args[1];
     }
 
     getNumParameters(): number {

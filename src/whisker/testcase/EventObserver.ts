@@ -22,5 +22,5 @@
 import {ScratchEvent} from "./ScratchEvent";
 
 export interface EventObserver {
-    update(event: ScratchEvent): void;
+    update(event: ScratchEvent, args: number[]): void;
 }

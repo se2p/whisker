@@ -22,6 +22,9 @@ import {TestChromosome} from "./TestChromosome";
 import {TestExecutor} from "./TestExecutor";
 import {EventObserver} from "./EventObserver";
 import {ScratchEvent} from "./ScratchEvent";
+import {WaitEvent} from "./events/WaitEvent";
+import {List} from "../utils/List";
+import {WhiskerTest} from "../testgenerator/WhiskerTest";
 
 export class JavaScriptConverter implements EventObserver {
 
@@ -34,13 +37,57 @@ export class JavaScriptConverter implements EventObserver {
     }
 
     getText(test: TestChromosome): string {
+        this.text = "const test = async function (t) {\n";
         this.executor.attach(this);
         this.executor.execute(test);
         this.executor.detach(this);
+        this.text += `}
+
+        module.exports = [
+            {
+                test: test,
+                name: 'Generated Test',
+                description: '',
+                categories: []
+            }
+        ];`;
         return this.text;
     }
 
-    update(event: ScratchEvent) {
-        this.text += event.toJavaScript() +"\n";
+    getSuiteText(tests: List<WhiskerTest>): string {
+
+        let i = 0;
+        let footer = "";
+        for (const test of tests) {
+            this.text += "const test"+i+" = async function (t) {\n";
+            this.executor.attach(this);
+            this.executor.execute(test.chromosome);
+            this.executor.detach(this);
+            this.text += "}\n";
+
+            footer += "  {\n";
+            footer += "      test: test"+i+",\n";
+            footer += "      name: 'Generated Test',\n";
+            footer += "      description: '',\n";
+            footer += "      categories: []\n";
+            if (i < tests.size() - 1) {
+                footer += "  },\n";
+            } else {
+                footer += "  }\n";
+            }
+
+            i++;
+        }
+
+        this.text += "module.exports = [\n";
+        this.text += footer;
+        this.text += "]\n";
+
+        return this.text;
+    }
+
+    update(event: ScratchEvent, args: number[]) {
+        this.text += "  " + event.toJavaScript(args) + "\n";
+        this.text += "  " + new WaitEvent().toJavaScript([]) + "\n";
     }
 }

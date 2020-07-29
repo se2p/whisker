@@ -24,8 +24,8 @@ import {Container} from "../../utils/Container";
 
 export class WaitEvent implements ScratchEvent {
 
-    static timeout: number = -1; // timeout in ms
-    static accelerationFactor: number = -1;
+    static timeout = -1; // timeout in ms
+    static accelerationFactor = -1;
 
     runStartTime: number;
 
@@ -50,13 +50,13 @@ export class WaitEvent implements ScratchEvent {
         }
     }
 
-    toJavaScript(): string {
-        return "await t.runForTime(" + WaitEvent.timeout + ");";
+    public toJavaScript(args: number[]): string {
+        return "await t.runForTime(" + Container.config.getWaitDuration() + ");";
     }
 
-    public toString = (): string => {
-        return "Wait " + WaitEvent.timeout;
-    };
+    public toString(args: number[]): string {
+        return "Wait " + Container.config.getWaitDuration();
+    }
 
     getRunTimeElapsed(): number {
         return (Date.now() - this.runStartTime);//* WaitEvent.accelerationFactor;

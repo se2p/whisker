@@ -35,13 +35,12 @@ export class ClickSpriteEvent implements ScratchEvent {
             null, this.target);
     }
 
-    toJavaScript(): string {
+    public toJavaScript(args: number[]): string {
         throw new NotYetImplementedException();
         // return "t.clickOnTheDamnedSprite(" + this.target.sprite.name +")";
     }
 
-
-    public toString = () : string => {
+    public toString(args: number[]): string {
         return "ClickSprite " + this.target.sprite.name;
     }
 

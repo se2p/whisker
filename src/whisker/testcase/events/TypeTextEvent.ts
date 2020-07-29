@@ -34,8 +34,11 @@ export class TypeTextEvent implements ScratchEvent {
         vm.runtime.emit('ANSWER', this._text);
     }
 
-    toJavaScript(): string {
-        // TODO: Not implemented
+    public toJavaScript(args: number[]): string {
+        throw new NotYetImplementedException();
+    }
+
+    public toString(args: number[]): string {
         throw new NotYetImplementedException();
     }
 

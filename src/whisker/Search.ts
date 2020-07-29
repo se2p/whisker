@@ -20,7 +20,6 @@
 
 /* eslint-disable no-console */
 
-import {TestSuiteWriter} from './testgenerator/TestSuiteWriter';
 import {TestGenerator} from "./testgenerator/TestGenerator";
 import WhiskerUtil from "../test/whisker-util.js";
 import {WhiskerTest} from "./testgenerator/WhiskerTest";
@@ -31,6 +30,8 @@ import {Container} from "./utils/Container";
 import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
 import {seedScratch} from "../util/random";
+import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
+import {TestExecutor} from "./testcase/TestExecutor";
 
 export class Search {
 
@@ -40,38 +41,13 @@ export class Search {
         this.vm = vm;
     }
 
-    createTestSuite(projectFile: string, testSuiteFile: string, config: WhiskerSearchConfiguration): List<WhiskerTest> {
-//        const scratchProject = new ScratchProject(projectFile);
-
-        const testGenerator = this._selectTestGenerator(config);
-        const testSuite = testGenerator.generateTests(null);
-
-        const testSuiteWriter = new TestSuiteWriter();
-        testSuiteWriter.writeTests(testSuiteFile, testSuite);
-
-        return testSuite;
-    }
-
-    _selectTestGenerator(config: WhiskerSearchConfiguration): TestGenerator {
-
-        // TODO: Select RandomTestGenerator, IterativeSearchBasedTestGenerator, or MOGenerator
-        return config.getTestGenerator()
-    }
-
-    execute(project, config: WhiskerSearchConfiguration): List<WhiskerTest> {
+    private execute(project, config: WhiskerSearchConfiguration): List<WhiskerTest> {
         console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
         //todo export whisker tests
         return whiskerTests;
-    }
-
-    public getVirtualMachine() {
-        if (this.vm == null) {
-            throw new Error("Not Initialized");
-        }
-        return this.vm;
     }
 
     private printTests(tests: List<WhiskerTest>): void {
@@ -82,6 +58,17 @@ export class Search {
         }
     }
 
+    private writeTests(tests: List<WhiskerTest>): void {
+        console.log("Resulting tests as JavaScript code:");
+        const converter = new JavaScriptConverter(new TestExecutor(Container.vmWrapper));
+
+        // TODO: This should be written to a file, not stdout...
+        console.log(converter.getSuiteText(tests));
+    }
+
+    /*
+     * Main entry point -- called from whisker-web
+     */
     public run(vm, project, configRaw: string, accelerationFactor: number): Promise<string> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
@@ -105,6 +92,8 @@ export class Search {
             search.printTests(tests);
             const csvString: string = StatisticsCollector.getInstance().asCsv();
             console.log(csvString);
+
+            search.writeTests(tests);
             return csvString;
         }
 

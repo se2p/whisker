@@ -35,7 +35,7 @@ import {VMWrapper} from "../../vm/vm-wrapper.js"
 
 export class TestExecutor {
 
-    private _vm: VirtualMachine;
+    private readonly _vm: VirtualMachine;
     private _vmWrapper: VMWrapper
     private availableEvents: List<ScratchEvent>;
     private eventObservers: EventObserver[] = [];
@@ -67,7 +67,7 @@ export class TestExecutor {
 
             const args = this._getArgs(nextEvent, codons, numCodon);
             numCodon += nextEvent.getNumParameters() + 1;
-            this.notify(nextEvent);
+            this.notify(nextEvent, args);
 
             nextEvent.apply(this._vm, args);
             StatisticsCollector.getInstance().incrementEventsCount()
@@ -85,7 +85,7 @@ export class TestExecutor {
     }
 
     private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
-        let args = [];
+        const args = [];
         for (let i = 0; i < event.getNumParameters(); i++) {
             // Get next codon, but wrap around if length exceeded
             const codon = codons.get(++codonPosition % codons.size());
@@ -111,9 +111,9 @@ export class TestExecutor {
         }
     }
 
-    private notify(event: ScratchEvent): void {
+    private notify(event: ScratchEvent, args: number[]): void {
         for (const observer of this.eventObservers) {
-            observer.update(event);
+            observer.update(event, args);
         }
     }
 
