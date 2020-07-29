@@ -299,7 +299,7 @@ class Sprite {
      */
     getLists (skipStage = true) {
         const originalVariables = this._target.getAllVariableNamesInScopeByType(ScratchVariable.LIST_TYPE, skipStage)
-            .map(name => this._target.lookupVariableByNameAndType(name, ScratchVariable.SCALAR_TYPE, skipStage));
+            .map(name => this._target.lookupVariableByNameAndType(name, ScratchVariable.LIST_TYPE, skipStage));
         let wrappedVariables = originalVariables.map(this._wrapVariable.bind(this));
         if (!skipStage && !this.isStage) {
             wrappedVariables = wrappedVariables.concat(this._sprites.getStage().getLists(skipStage));
