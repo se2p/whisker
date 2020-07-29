@@ -20,31 +20,34 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {Container} from "../../utils/Container";
 
 export class MouseDownEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine) {
-        const stageSize = {
-            width: 600,
-            height: 480
-        };
-
         const data = {
             device: 'mouse',
-            // TODO: I think this should be random
-            x: [-(stageSize.width / 2), stageSize.width / 2],
-            y: [-(stageSize.height / 2), stageSize.height / 2]
+            isDown: !this._isMouseDown(vm),
         };
-
-        vm.postIOData(data.device, data)
+        vm.postIOData(data.device, data);
     }
 
     toJavaScript(): string {
-        throw new NotYetImplementedException();
+        return "t.inputImmediate({\n" +
+            "        device: 'mouse',\n" +
+            "        isDown: " + !this._isMouseDown(Container.vm) + ",\n" +
+            "    });";
+    }
+
+    public toString = () : string => {
+        return "MouseDown " + !this._isMouseDown(Container.vm);
     }
 
     getNumParameters(): number {
-        return 2;
+        return 0;
+    }
+
+    _isMouseDown(vm: VirtualMachine): boolean {
+        return vm.runtime.ioDevices.mouse.getIsDown();
     }
 }
