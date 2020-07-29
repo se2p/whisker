@@ -51,11 +51,11 @@ export class WaitEvent implements ScratchEvent {
     }
 
     public toJavaScript(args: number[]): string {
-        return "await t.runForTime(" + WaitEvent.timeout + ");";
+        return "await t.runForTime(" + Container.config.getWaitDuration() + ");";
     }
 
     public toString(args: number[]): string {
-        return "Wait " + WaitEvent.timeout;
+        return "Wait " + Container.config.getWaitDuration();
     }
 
     getRunTimeElapsed(): number {
