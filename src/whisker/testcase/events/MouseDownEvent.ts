@@ -20,30 +20,27 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
-import {WaitEvent} from "./WaitEvent";
+import {Container} from "../../utils/Container";
 
 export class MouseDownEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine) {
-        const stageSize = {
-            width: 480,
-            height: 360
-        };
-
         const data = {
             device: 'mouse',
-            x: this._getClientX(vm),
-            y: this._getClientY(vm),
             isDown: !this._isMouseDown(vm),
-            canvasWidth: stageSize.width,
-            canvasHeight: stageSize.height
         };
         vm.postIOData(data.device, data);
     }
 
     toJavaScript(): string {
-        throw new NotYetImplementedException();
+        return "t.inputImmediate({\n" +
+            "        device: 'mouse',\n" +
+            "        isDown: " + !this._isMouseDown(Container.vm) + ",\n" +
+            "    });";
+    }
+
+    public toString = () : string => {
+        return "MouseDown " + !this._isMouseDown(Container.vm);
     }
 
     getNumParameters(): number {
@@ -52,13 +49,5 @@ export class MouseDownEvent implements ScratchEvent {
 
     _isMouseDown(vm: VirtualMachine): boolean {
         return vm.runtime.ioDevices.mouse.getIsDown();
-    }
-
-    _getClientX(vm: VirtualMachine): number {
-        return vm.runtime.ioDevices.mouse.getClientX();
-    }
-
-    _getClientY(vm: VirtualMachine): number {
-        return vm.runtime.ioDevices.mouse.getClientY();
     }
 }
