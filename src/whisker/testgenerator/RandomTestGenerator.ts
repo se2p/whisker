@@ -47,9 +47,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
     private _archive = new Map<number, TestChromosome>();
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
-        const testSuite = new List<WhiskerTest>();
-
-        this._fitnessFunctions = this._extractCoverageGoals();
+        this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
 
@@ -65,11 +63,9 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             this.updateArchive(testChromosome);
         }
         this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
-        for (const chromosome of this._tests) {
-            testSuite.add(new WhiskerTest(chromosome));
-        }
+        const testSuite = this.getTestSuite(this._tests);
         StatisticsCollector.getInstance().createdTestsCount = this._iterations;
-        this._collectStatistics(testSuite);
+        this.collectStatistics(testSuite);
         return testSuite;
     }
 

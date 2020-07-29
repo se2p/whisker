@@ -142,13 +142,14 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         let chromosome: C;
         while (!this._stoppingCondition.isFinished(this)) {
             if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
-                chromosome = chromosome.mutate();
+                const mutatedChromosome = chromosome.mutate();
                 this._mutationCounter++;
+                this.updateArchive(mutatedChromosome);
             } else {
                 chromosome = this.getNewChromosome();
                 this._mutationCounter = 0;
+                this.updateArchive(chromosome);
             }
-            this.updateArchive(chromosome);
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             if (!this.isFocusedPhaseReached()) {

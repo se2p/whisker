@@ -31,17 +31,14 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
 
     generateTests(project: ScratchProject): List<WhiskerTest> {
         // TODO: Ensure this is a many-objective algorithm taking all goals
-        const searchAlgorithm = this._buildSearchAlgorithm(true);
+        const searchAlgorithm = this.buildSearchAlgorithm(true);
 
         // TODO: Assuming there is at least one solution?
         const testChromosomes = searchAlgorithm.findSolution();
 
-        const testSuite = new List<WhiskerTest>();
-        for (const testChromosome of testChromosomes) {
-            testSuite.add(new WhiskerTest(testChromosome));
-        }
+        const testSuite = this.getTestSuite(testChromosomes);
 
-        this._collectStatistics(testSuite);
+        this.collectStatistics(testSuite);
         return testSuite;
     }
 }

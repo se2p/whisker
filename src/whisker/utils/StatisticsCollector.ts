@@ -18,8 +18,6 @@
  *
  */
 
-import {Container} from "./Container";
-
 /**
  * Singleton class to collect statistics from search runs
  *
@@ -102,7 +100,7 @@ export class StatisticsCollector {
      */
     public incrementCoveredFitnessFunctionCount(): void {
         this._coveredFitnessFunctionsCount++;
-        const timeStamp = Container.vmWrapper.getTotalTimeElapsed();
+        const timeStamp = Date.now() - this._startTime;
         this._covOverTime[timeStamp] = this._coveredFitnessFunctionsCount;
     }
 
@@ -136,7 +134,6 @@ export class StatisticsCollector {
     set bestTestSuiteSize(value: number) {
         this._bestTestSuiteSize = value;
     }
-
 
     get testEventCount(): number {
         return this._testEventCount;
@@ -172,7 +169,7 @@ export class StatisticsCollector {
 
     public asCsv(): string {
         const coverageStatsMap = this._adjustCoverageOverTime();
-        const timestamps = []
+        const timestamps = [];
         for (const coverageStatsMapKey in coverageStatsMap) {
             timestamps.push(coverageStatsMapKey)
         }
@@ -198,15 +195,18 @@ export class StatisticsCollector {
 
     private _adjustCoverageOverTime() {
         const adjusted: Map<number, number> = new Map();
+        let maxTime = 0;
         for (const timestamp in this._covOverTime) {
             const t: number = timestamp as unknown as number;
             const rounded = Math.round(t / 1000) * 1000;
             adjusted[rounded] = this._covOverTime[timestamp];
-        }
+            if (rounded > maxTime) {
+                maxTime = rounded;
+            }
 
+        }
         let maxCov = 0;
-        const maxTime = 250000;
-        for (let i = 0; i < maxTime; i = i+1000) {
+        for (let i = 0; i <= maxTime; i = i+1000) {
             if (i in adjusted) {
                 maxCov = adjusted[i];
             } else {
@@ -225,5 +225,6 @@ export class StatisticsCollector {
         this._eventsCount = 0;
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
+        this._startTime = Date.now();
     }
 }

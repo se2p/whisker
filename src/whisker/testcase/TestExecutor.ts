@@ -31,21 +31,27 @@ import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
+import {VMWrapper} from "../../vm/vm-wrapper.js"
 
 export class TestExecutor {
 
     private _vm: VirtualMachine;
+    private _vmWrapper: VMWrapper
     private availableEvents: List<ScratchEvent>;
     private eventObservers: EventObserver[] = [];
+    private _initialState = {};
 
-    constructor(vm: VirtualMachine) {
-        this._vm = vm;
+    constructor(vmWrapper: VMWrapper) {
+        this._vmWrapper = vmWrapper;
+        this._vm = vmWrapper.vm;
+        this.recordInitialState();
     }
 
     execute(testChromosome: TestChromosome): Trace {
-        this._vm.stopAll();
+
+        this._vmWrapper.end();
         seedScratch(Randomness.getInitialSeed());
-        this._vm.greenFlag();
+        this._vmWrapper.start();
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
@@ -74,6 +80,7 @@ export class TestExecutor {
         new WaitEvent().apply(this._vm);
         new WaitEvent().apply(this._vm);
         new WaitEvent().apply(this._vm);
+        this.resetState();
         return new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces)
     }
 
@@ -107,6 +114,44 @@ export class TestExecutor {
     private notify(event: ScratchEvent): void {
         for (const observer of this.eventObservers) {
             observer.update(event);
+        }
+    }
+
+    private resetState() {
+        for (const targetsKey in this._vm.runtime.targets) {
+            if (this._initialState.hasOwnProperty(targetsKey)) {
+                this._vm.runtime.targets[targetsKey]["direction"] = this._initialState[targetsKey]["direction"];
+                this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
+                this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
+                this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
+                this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
+                this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
+                this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
+                this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
+                this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
+                this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
+                this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
+            } else {
+                this._vm.runtime.disposeTarget(this._vm.runtime.targets[targetsKey])
+            }
+        }
+    }
+
+    private recordInitialState() {
+        for (const targetsKey in this._vm.runtime.targets) {
+            this._initialState[targetsKey] = {
+                direction: this._vm.runtime.targets[targetsKey]["direction"],
+                currentCostume: this._vm.runtime.targets[targetsKey]["currentCostume"],
+                draggable: this._vm.runtime.targets[targetsKey]["draggable"],
+                dragging: this._vm.runtime.targets[targetsKey]["dragging"],
+                effects: Object.assign({}, this._vm.runtime.targets[targetsKey]["effects"]),
+                videoState: this._vm.runtime.targets[targetsKey]["videoState"],
+                videoTransparency: this._vm.runtime.targets[targetsKey]["videoTransparency"],
+                visible: this._vm.runtime.targets[targetsKey]["visible"],
+                volume: this._vm.runtime.targets[targetsKey]["volume"],
+                x: this._vm.runtime.targets[targetsKey]["x"],
+                y: this._vm.runtime.targets[targetsKey]["y"],
+            }
         }
     }
 }
