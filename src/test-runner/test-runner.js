@@ -15,6 +15,8 @@ class TestRunner extends EventEmitter {
      * @returns {Promise<Array>} .
      */
     async runTests (vm, project, tests, props) {
+        this.aborted = false;
+
         if (typeof props === 'undefined') {
             props = {extend: {}};
         } else if (!props.hasOwnProperty('extend')) {
@@ -44,6 +46,10 @@ class TestRunner extends EventEmitter {
             }
 
             results.push(result);
+
+            if (this.aborted) {
+                return null;
+            }
         }
 
         this.emit(TestRunner.RUN_END, results);
@@ -71,6 +77,7 @@ class TestRunner extends EventEmitter {
 
         const util = new WhiskerUtil(vm, project);
         await util.prepare();
+        this.vmWrapper = util.getVMWrapper();
 
         const testDriver = util.getTestDriver({
             extend: {
@@ -117,6 +124,13 @@ class TestRunner extends EventEmitter {
      */
     _log (test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
+    }
+
+    abort() {
+        this.aborted = true;
+        if (this.vmWrapper !== undefined) {
+            this.vmWrapper.abort();
+        }
     }
 
     /**

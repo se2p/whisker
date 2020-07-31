@@ -22,7 +22,7 @@
         "js-yaml": "^3.12.0",
         "lodash.defaults": "^4.2.0",
         "minilog": "^3.1.0",
-        "scratch-vm": "^0.2.0-prerelease.20181108204010",
+        "scratch-vm": "^0.2.0-prerelease.20200714185213",
         "seed-random": "^2.2.0"
     },
     "devDependencies": {
