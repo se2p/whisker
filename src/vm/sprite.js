@@ -282,10 +282,6 @@ class Sprite {
 
         let variables = originalVariables.map(this._wrapVariable.bind(this));
 
-        if (!skipStage && !this.isStage) {
-            variables = variables.concat(this._sprites.getStage().getVariables(skipStage));
-        }
-
         if (condition) {
             variables = variables.filter(variable => condition(variable));
         }
@@ -299,12 +295,9 @@ class Sprite {
      */
     getLists (skipStage = true) {
         const originalVariables = this._target.getAllVariableNamesInScopeByType(ScratchVariable.LIST_TYPE, skipStage)
-            .map(name => this._target.lookupVariableByNameAndType(name, ScratchVariable.SCALAR_TYPE, skipStage));
-        let wrappedVariables = originalVariables.map(this._wrapVariable.bind(this));
-        if (!skipStage && !this.isStage) {
-            wrappedVariables = wrappedVariables.concat(this._sprites.getStage().getLists(skipStage));
-        }
-        return wrappedVariables;
+            .map(name => this._target.lookupVariableByNameAndType(name, ScratchVariable.LIST_TYPE, skipStage));
+
+        return originalVariables.map(this._wrapVariable.bind(this));
     }
 
     /**
