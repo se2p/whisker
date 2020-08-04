@@ -59,7 +59,7 @@ export class WhiskerSearchConfiguration {
         properties.setMutationProbablity(mutationProbability);
         properties.setCrossoverProbability(crossoverProbability);
         properties.setMaxMutationCounter(this.dict['mutation']['maxMutationCountStart'] as number,
-            this.dict['mutation']['maxMutationCountStart'] as number);
+            this.dict['mutation']['maxMutationCountFocusedPhase'] as number);
         properties.setSelectionProbabilities(this.dict['selection']['randomSelectionProbabilityStart'] as number,
             this.dict['selection']['randomSelectionProbabilityFocusedPhase'] as number);
         properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
