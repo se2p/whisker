@@ -224,7 +224,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     if(this._archiveCovered.size == this._fitnessFunctions.size) {
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
-                        StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+                        StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     }
                 }
             } else if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {

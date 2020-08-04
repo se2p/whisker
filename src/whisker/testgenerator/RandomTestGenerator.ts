@@ -50,6 +50,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
+        let fullCoverageReached = false;
 
         const chromosomeGenerator = this._config.getChromosomeGenerator();
         const stoppingCondition = this._config.getSearchAlgorithmProperties().getStoppingCondition();
@@ -61,6 +62,11 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             StatisticsCollector.getInstance().incrementIterationCount();
             const testChromosome = chromosomeGenerator.get();
             this.updateArchive(testChromosome);
+            if(this._archive.size == this._fitnessFunctions.size && !fullCoverageReached) {
+                fullCoverageReached = true;
+                StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
+                StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+            }
         }
         this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
         const testSuite = this.getTestSuite(this._tests);

@@ -137,7 +137,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                     StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
                         (this._iterations + 1) * this._properties.getPopulationSize();
-                    StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+                    StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                 }
                 this._bestLength = candidateLength;
                 this._bestFitness = candidateFitness;

@@ -132,7 +132,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 fullCoverageReached = true;
                 StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
                     (this._iterations + 1) * this._properties.getPopulationSize();
-                StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+                StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
             }
         }
 
