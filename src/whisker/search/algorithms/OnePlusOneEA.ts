@@ -95,7 +95,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
                 if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
                     StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                     StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
-                    StatisticsCollector.getInstance().timeToReachFullCoverage = Container.vmWrapper.getTotalTimeElapsed();
+                    StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                 }
                 bestFitness = candidateFitness;
                 bestLength = candidateChromosome.getLength();
