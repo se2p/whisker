@@ -1,5 +1,6 @@
 const {Util} = require('../../../whisker-main');
 const EventEmitter = require('events');
+const {showModal, escapeHtml} = require('../utils.js');
 
 class InputRecorder extends EventEmitter {
     constructor (scratch) {
@@ -85,29 +86,8 @@ class InputRecorder extends EventEmitter {
 
     showInputs () {
         const inputs = this.inputs.map(input => `    ${JSON.stringify(input)}`);
-        const inputCode = `t.addInputs([\n${inputs.join(',\n')}\n]);`;
-
-        const $ = window.$;
-        const modal = $(
-            `<div class="modal" role="dialog">
-                <div class="modal-dialog role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Code For Recorded Inputs</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <pre>${inputCode}</pre>
-                        </div>
-                    </div>
-                </div>
-            </div>`
-        );
-
-        modal.appendTo(document.body);
-        modal.modal('show');
+        let inputCode = `t.addInputs([\n${inputs.join(',\n')}\n]);`;
+        showModal('Code For Recorded Inputs', `<pre>${escapeHtml(inputCode)}</pre>`);
     }
 }
 
