@@ -294,19 +294,35 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
     return testSourcesPerTab;
 }
 
+function keyCodeToKeyString(keyCode) {
+    switch (keyCode) {
+        case 13: return 'Enter';
+        case 32: return ' ';
+        case 37: return 'ArrowLeft';
+        case 38: return 'ArrowUp';
+        case 39: return 'ArrowRight';
+        case 40: return 'ArrowDown';
+        default: throw new Error(`Unknown keycode '${keyCode}'`);
+    }
+}
+
 function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
     const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
     let errorReplay = "// Error witness replay\n"
 
     for (const step of errorWitness.steps) {
-        const action = step.action;
+        const action = step.action || step.epsilonType;
 
         switch (action) {
+            case 'REACHED_VIOLATION': break;
             case 'INITIAL_STATE': break;
             case 'WAIT': errorReplay += `    await t.runForTime(${step.waitMicros / 1000});\n`; break;
-            case 'MOUSE_INPUT': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
-            case 'ANSWER': errorReplay += `    t.inputImmediate({device: 'text', answer: '${step.answer}'});`; break;
-            default: logger.error(`Unknown error witness step action '${action}'`);
+            case 'MOUSE_MOVE': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
+            case 'ANSWER': errorReplay += `    t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
+            case 'KEY_PRESSED': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', duration: 1});\n`; break;
+            case 'MOUSE_DOWN': errorReplay += `    t.inputImmediate({device: 'mouse', down: true});\n`; break;
+            case 'MOUSE_UP': errorReplay += `    t.inputImmediate({device: 'mouse', down: false});\n`; break;
+            default: logger.error(`Unknown error witness step action '${action}' for step ${step.id}`);
         }
     }
 
@@ -318,7 +334,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
 function attachRandomInputsToTest(constraintsPath) {
     const randomInputs = "    t.setRandomInputInterval(150);\n" +
         "    t.detectRandomInputs({duration: [50, 100]});\n" +
-        "    await t.runForTime(900000);";
+        "    await t.runForTime(300000);";
 
     return replaceInFile(constraintsPath, "// RANDOM_INPUTS", randomInputs, "_random_inputs.js");
 }
@@ -332,7 +348,7 @@ function replaceInFile(filePath, searchValue, replacement, outputFileSuffix) {
     }
     fs.mkdirSync(tmpDir);
 
-    const path = `${tmpDir}/${basename(filePath)}${outputFileSuffix}`;
+    const path = `${basename(filePath)}${outputFileSuffix}`;
     fs.writeFileSync(path, fileWithReplacement, {encoding: 'utf8'});
     return path;
 }
