@@ -24,7 +24,10 @@ module.exports = [
                 },
                 {
                     test: path.resolve('src', 'index.js'),
-                    loader: 'expose-loader?Whisker'
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'Whisker'
+                    }
                 }
             ]
         },
