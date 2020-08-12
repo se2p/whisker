@@ -311,7 +311,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
     let errorReplay = "// Error witness replay\n"
 
     for (const step of errorWitness.steps) {
-        const action = step.action || step.epsilonType;
+        const action = step.action;
 
         switch (action) {
             case 'REACHED_VIOLATION': break;
@@ -322,7 +322,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
             case 'KEY_PRESSED': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', duration: 1});\n`; break;
             case 'MOUSE_DOWN': errorReplay += `    t.inputImmediate({device: 'mouse', down: true});\n`; break;
             case 'MOUSE_UP': errorReplay += `    t.inputImmediate({device: 'mouse', down: false});\n`; break;
-            default: logger.error(`Unknown error witness step action '${action}' for step ${step.id}`);
+            default: logger.error(`Unknown error witness step action '${action}' for step ${errorWitness.steps.indexOf(step)}`);
         }
     }
 
