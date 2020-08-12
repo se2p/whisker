@@ -28,8 +28,11 @@ module.exports = [
                     include: path.resolve(__dirname, 'src')
                 },
                 {
-                    test: path.resolve('dist/src', 'index.js'),
-                    loader: 'expose-loader?Whisker'
+                    test: path.resolve('src', 'index.js'),
+                    loader: 'expose-loader',
+                    options: {
+                        exposes: 'Whisker'
+                    }
                 },
                 {
                     test: /\.ts|\.tsx$/,
