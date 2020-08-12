@@ -36,9 +36,11 @@ module.exports = [
             new MiniCssExtractPlugin({
                 filename: '[name].css'
             }),
-            new CopyWebpackPlugin([{
-                from: path.resolve('src', 'index.html')
-            }])
+            new CopyWebpackPlugin({
+                patterns: [
+                    { from: path.resolve('src', 'index.html') }
+                ]
+            })
         ],
         optimization: {
             minimizer: [
@@ -67,14 +69,18 @@ module.exports = [
                 },
                 {
                     test: require.resolve('datatables.net'),
-                    loader: 'imports-loader?define=>false'
+                    loader: 'imports-loader',
+                    options: {
+                        additionalCode: 'const define = false;'
+                    }
                 },
                 {
                     test: /\.ts$/,
-                    use: 'ts-loader',
+                    loader: 'ts-loader'
+                    // TODO: Include only 'src' once whisker-main isn't included through '../../whisker-main' anymore.
+                    // include: path.resolve(__dirname, 'src')
                 }
             ]
-
         },
         resolve: {
             extensions: ['.ts', '.js']
