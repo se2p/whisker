@@ -111,7 +111,7 @@ class VMWrapper {
     step () {
         this.callbacks.callCallbacks(false);
 
-        if (!this.running) return;
+        if (!this.isRunning()) return;
 
         this.randomInputs.performRandomInput();
         this.inputs.performInputs();
@@ -119,11 +119,11 @@ class VMWrapper {
         this.sprites.update();
         this.vm.runtime._step();
 
-        if (!this.running) return;
+        if (!this.isRunning()) return;
 
         this.callbacks.callCallbacks(true);
 
-        if (!this.running) return;
+        if (!this.isRunning()) return;
 
         return this.constraints.checkConstraints();
     }
@@ -135,7 +135,7 @@ class VMWrapper {
      * @returns {number} .
      */
     async run (condition, timeout, steps) {
-        if (this.running) {
+        if (this.isRunning()) {
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
                           'missing any await-statements in your test.');
         }
@@ -150,7 +150,7 @@ class VMWrapper {
 
         let constraintError = null;
 
-        while (this.running &&
+        while (this.isRunning() &&
                this.getRunTimeElapsed() < timeout &&
                this.getRunStepsExecuted() < steps &&
                !condition()) {
@@ -392,6 +392,10 @@ class VMWrapper {
      */
     getCanvasRect () {
         return this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
+    }
+
+    isRunning () {
+        return this.running;
     }
 
     isProjectRunning () {

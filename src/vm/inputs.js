@@ -258,7 +258,8 @@ class Inputs {
      */
     inputImmediate (dataOrInput, name) {
         let input;
-        const runTimeElapsed = this.vmWrapper.getRunTimeElapsed();
+        const runTimeElapsed = this.vmWrapper.isRunning()
+            ? this.vmWrapper.getRunTimeElapsed() : 0;
 
         if (dataOrInput instanceof Input) {
             input = dataOrInput;
