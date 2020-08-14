@@ -23,6 +23,7 @@ class TestDriver {
         this.getRunTimeElapsed = vmWrapper.getRunTimeElapsed.bind(vmWrapper);
         this.getTotalStepsExecuted = vmWrapper.getTotalStepsExecuted.bind(vmWrapper);
         this.getRunStepsExecuted = vmWrapper.getRunStepsExecuted.bind(vmWrapper);
+        this.isRunning = vmWrapper.isRunning.bind(vmWrapper);
         this.isProjectRunning = vmWrapper.isProjectRunning.bind(vmWrapper);
 
         this.getSprites = vmWrapper.sprites.getSprites.bind(vmWrapper.sprites);
