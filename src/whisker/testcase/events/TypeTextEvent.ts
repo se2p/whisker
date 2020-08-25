@@ -39,7 +39,7 @@ export class TypeTextEvent implements ScratchEvent {
     }
 
     public toString(args: number[]): string {
-        throw new NotYetImplementedException();
+        return "TypeText " + this._text;
     }
 
     getNumParameters(): number {

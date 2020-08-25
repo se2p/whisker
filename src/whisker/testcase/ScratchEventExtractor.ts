@@ -96,7 +96,12 @@ export class ScratchEventExtractor {
                 // Type text
                 // TODO: Only if actually asking
                 // TODO: Text length with random length?
-                return new TypeTextEvent(this._randomText(3)); // TODO: Any hints on text?
+                const probability = Randomness.getInstance().nextInt(0, 100);
+                if (probability < 30) {
+                    return new TypeTextEvent(this._randomText(3)); // TODO: Any hints on text?
+                }
+                const randTextIndex = Randomness.getInstance().nextInt(0, this.availableTextSnippets.size());
+                return new TypeTextEvent(this.availableTextSnippets.get(randTextIndex));
             case 'event_whenthisspriteclicked':
                 // Click sprite
                 return new ClickSpriteEvent(target); // TODO: Store which sprite
