@@ -35,6 +35,8 @@ import {Randomness} from "../utils/Randomness";
 
 export class ScratchEventExtractor {
 
+    private static availableWaitDurations = new List<number>();
+
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         for (const target of vm.runtime.targets) {
@@ -48,6 +50,23 @@ export class ScratchEventExtractor {
         // TODO: Default actions -- wait?
 
         return eventList;
+    }
+
+    /**
+     * Collects all available text snippets that can be used for generating answers.
+     */
+    static extractAvailableParameter(vm: VirtualMachine): void {
+        this.availableWaitDurations = new List<number>();
+
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
+                    if (duration >= 0 && !this.availableWaitDurations.contains(duration))
+                        this.availableWaitDurations.add(duration);
+                }
+            }
+        }
     }
 
     // TODO: How to handle event parameters?
@@ -106,12 +125,27 @@ export class ScratchEventExtractor {
     }
 
     private static _randomText(length: number): string {
-        let answer: string = '';
-        const chars: string = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
+        let answer = '';
+        const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
         for (let i = 0; i < length; i++) {
             answer += chars.charAt(Randomness.getInstance().nextInt(0, chars.length - 1));
         }
 
         return answer;
+    }
+
+    static _extractWaitDurations(target, block): number {
+        const inputs = target.blocks.getInputs(block);
+        if (target.blocks.getOpcode(block) == 'control_wait') {
+            const op = target.blocks.getBlock(inputs.DURATION.block);
+            return target.blocks.getFields(op).NUM.value;
+        } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
+            target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
+            target.blocks.getOpcode(block) == 'motion_glideto' ||
+            target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
+            const op = target.blocks.getBlock(inputs.SECS.block);
+            return target.blocks.getFields(op).NUM.value;
+        }
+        return -1;
     }
 }
