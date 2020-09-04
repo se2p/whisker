@@ -314,14 +314,13 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
         const action = step.action;
 
         switch (action) {
-            case 'REACHED_VIOLATION': break;
-            case 'INITIAL_STATE': break;
             case 'WAIT': errorReplay += `    await t.runForTime(${step.waitMicros / 1000});\n`; break;
             case 'MOUSE_MOVE': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
             case 'ANSWER': errorReplay += `    t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
-            case 'KEY_PRESSED': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', duration: 1});\n`; break;
-            case 'MOUSE_DOWN': errorReplay += `    t.inputImmediate({device: 'mouse', down: true});\n`; break;
-            case 'MOUSE_UP': errorReplay += `    t.inputImmediate({device: 'mouse', down: false});\n`; break;
+            case 'KEY_DOWN': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
+            case 'KEY_UP': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
+            case 'MOUSE_DOWN': errorReplay += `    t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
+            case 'MOUSE_UP': errorReplay += `    t.inputImmediate({device: 'mouse', isDown: false});\n`; break;
             default: logger.error(`Unknown error witness step action '${action}' for step ${errorWitness.steps.indexOf(step)}`);
         }
     }
