@@ -1,0 +1,49 @@
+{
+    "test-generator": "iterative",
+    "algorithm": "one-plus-one",
+    "chromosome": "integerlist",
+    "population-size": 10,
+    "chromosome-length": 10,
+    "crossover": {
+        "operator": "single-point",
+        "probability": 50
+    },
+    "mutation": {
+        "operator": "integerlist",
+        "probability": 50,
+        "maxMutationCountStart": null,
+        "maxMutationCountFocusedPhase": null
+    },
+    "selection": {
+        "operator": "rank",
+        "size": 2,
+        "randomSelectionProbabilityStart": null,
+        "randomSelectionProbabilityFocusedPhase": null
+    },
+    "fitness-function": {
+      "type": "statement",
+      "targets": ["12Hat`ihC,:8qCIYF3ev"]
+    },
+        "stopping-condition": {
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "fixed-iteration",
+                "iterations": 100
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "archive": {
+        "maxArchiveSizeStart": null,
+        "maxArchiveSizeFocusedPhase": null
+    },
+    "startOfFocusedPhase": null,
+    "integerRange": {
+        "min": 0,
+        "max": 640
+    },
+    "wait-duration": 5
+}

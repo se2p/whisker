@@ -85,6 +85,22 @@
                     </div>
                 </div>
             </form>
+
+            <div style="display: flex;justify-content: space-between; align-items: center;">
+                <label style="margin: 0;" for="acceleration-factor">Acceleration Factor:</label>
+                <input style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
+                       id="acceleration-factor" type="number" autocomplete="off" />
+            </div>
+
+            <div style="...">
+                <button id="run-search" class="btn btn-outline-primary" type="button">Run Search</button>
+            </div>
+            <div class="input-group">
+                <div class="custom-file">
+                    <label id="fileselect-config-label" class="custom-file-label" for="fileselect-config">Choose Search Config</label>
+                    <input id="fileselect-config" type="file" multiple class="custom-file-input">
+                </div>
+            </div>
         </div>
 
         <div id="right-col" class="col-md-7 col-sm-12">

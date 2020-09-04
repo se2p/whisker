@@ -38,11 +38,11 @@ const cli = {
     start: () => {
         commander
             .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../dist/index.html')
-            .option('-s, --scratchPath <Path>', 'Scratch project to run', false)
+            .option('-s, --scratchPath <Path>', 'Scratch application to run', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-r, --addRandomInputs', 'If random inputs should be added to the test', false)
-            .option('-f, --frequency <Integer>', 'Refreshrate of scratch in hz', 30)
+            .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
             .option('-c, --configPath <Path>', 'Path to a configuration file', '../../whisker-main/config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
@@ -59,7 +59,7 @@ const cli = {
             errorWitnessPath,
             addRandomInputs,
             scratchPath,
-            frequency,
+            accelerationFactor,
             configPath,
             isHeadless,
             numberOfTabs,
@@ -77,8 +77,8 @@ const cli = {
             errorWitnessPath,
             addRandomInputs,
             scratchPath,
-            frequency,
             configPath,
+            accelerationFactor,
             isHeadless,
             numberOfTabs,
             isConsoleForwarded,

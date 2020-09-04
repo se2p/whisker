@@ -13,19 +13,19 @@ mkdir whisker && cd whisker && git clone https://github.com/se2p/whisker-main.gi
 
 # Usage
 
-From the whisker web repo's servant's folder you can execute `node index.js -h` to start the servant and check the help info:
+From the whisker web repo's servant's folder you can execute `node servant -h` to start the servant and check the help info:
 ```
-$ > node index.js -h
-Usage: index [options]
+$ > node servant -h
+Usage: servant [options]
 
 Options:
   -u, --whiskerURL <URL>        File URL of the Whisker instance to run the tests (default:
                                 "../dist/index.html")
   -s, --scratchPath <Path>      Scratch project to run
   -t, --testPath <Path>         Tests to run
+  -a, --accelerationFactor <Integer>  Acceleration factor (default: 1)
   -w, --errorWitnessPath <Path> A JSON error witness to replay
   -r, --addRandomInputs         If random inputs should be added to the test
-  -f, --frequency <Integer>     Refreshrate of scratch in hz (default: 30)
   -d, --isHeadless              If should run headless (d like in decapitated)
   -p, --numberOfTabs <Integer>  The number of tabs to execute the tests in (default: 1)
   -c, --isConsoleForwarded      If the browser's console output should be forwarded (default: false)
@@ -37,7 +37,7 @@ Options:
 
 The repository already includes some tests and a corresponding test file. You can run those via (with a 10 fold speedup and two parallel executions in a headless chrome instance):
 ```
-node index.js -s project.sb3 -t tests.js -f 300 -d -p 2
+node servant -s project.sb3 -t tests.js -a 10 -d -p 2
 ```
 Now you can check the output of the run, which reflects the content of the output inside the "output" field of a whisker-web instance.
 

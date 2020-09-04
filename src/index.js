@@ -1,7 +1,7 @@
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener} = require('../../whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('../../whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
@@ -16,6 +16,8 @@ const {showModal, escapeHtml} = require('./utils.js');
 
 const Whisker = window.Whisker = {};
 window.$ = $;
+
+const DEFAULT_ACCELERATION_FACTOR = 1;
 
 const loadTestsFromString = function (string) {
     let tests;
@@ -36,6 +38,20 @@ const loadTestsFromString = function (string) {
     return tests;
 };
 
+const runSearch = async function () {
+    Whisker.scratch.stop();
+    console.log('Whisker-Web: loading project');
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    Whisker.outputRun.clear();
+    Whisker.outputLog.clear();
+    await Whisker.scratch.vm.loadProject(project);
+    const config = await Whisker.configFileSelect.loadAsString();
+
+    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
+    Whisker.outputRun.println('summary');
+};
+
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
@@ -44,6 +60,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     let summary;
     let coverage;
+    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
 
     try {
         await Whisker.scratch.vm.loadProject(project);
@@ -65,11 +82,11 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         return
     }
 
-    const formattedSummary = TAP13Listener.formatSummary(summary);
-    const formattedCoverage = TAP13Listener.formatCoverage(coverage.getCoveragePerSprite());
+    const formattedSummary = TAP13Formatter.formatSummary(summary);
+    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
-    const summaryString = TAP13Listener.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Listener.extraToYAML({coverage: formattedCoverage});
+    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
     Whisker.outputRun.println([
         summaryString,
@@ -105,21 +122,27 @@ const runAllTests = async function () {
 };
 
 const initScratch = function () {
-    Whisker.scratch = new Scratch($('#scratch-stage')[0]);
+    Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
 
     $('#green-flag')
         .removeClass('btn-success')
         .addClass('btn-outline-success');
+    $('#stop')
+        .prop('disabled', true);
 
     Whisker.scratch.vm.on(Runtime.PROJECT_RUN_START, () => {
         $('#green-flag')
             .removeClass('btn-outline-success')
             .addClass('btn-success');
+        $('#stop')
+            .prop('disabled', false);
     });
     Whisker.scratch.vm.on(Runtime.PROJECT_RUN_STOP, () => {
         $('#green-flag')
             .removeClass('btn-success')
             .addClass('btn-outline-success');
+        $('#stop')
+            .prop('disabled', true);
     });
 };
 
@@ -134,18 +157,26 @@ const initComponents = function () {
     Whisker.testEditor.setDefaultValue();
 
     Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0],
-        fileSelect => fileSelect.loadAsArrayBuffer().then(project => Whisker.scratch.loadProject(project)));
+        fileSelect => fileSelect.loadAsArrayBuffer()
+            .then(project => Whisker.scratch.loadProject(project)));
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
-        fileSelect => fileSelect.loadAsString().then(string => loadTestsFromString(string)));
+        fileSelect => fileSelect.loadAsString()
+            .then(string => loadTestsFromString(string)));
 
     Whisker.testRunner = new TestRunner();
-    Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
+    Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
-    Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.log(result.error));
+    Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
+
+    Whisker.search = new Search.Search(Whisker.scratch.vm);
+    Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
+        fileSelect => fileSelect.loadAsArrayBuffer());
+
+    document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };
 
 const initEvents = function () {
@@ -233,37 +264,43 @@ const initEvents = function () {
             Whisker.outputLog.hide();
         }
     });
+
+    $('#run-search')
+        .click('click', event => {
+            runSearch();
+        });
 };
 
 const toggleComponents = function () {
     if (window.localStorage) {
-        console.log('Restoring which components are displayed.');
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
-            const [input, tests, editor, output] = JSON.parse(componentStates);
+            const [input, tests, editor, output, accelerationFactor] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
             if (tests) $('#toggle-tests').click();
             if (editor) $('#toggle-editor').click();
             if (output) $('#toggle-output').click();
+            if (accelerationFactor) document.querySelector('#acceleration-factor').value = accelerationFactor;
         }
     }
 };
 
-$(document).ready(() => {
-    initScratch();
-    initComponents();
-    initEvents();
-    toggleComponents();
-});
+$(document)
+    .ready(() => {
+        initScratch();
+        initComponents();
+        initEvents();
+        toggleComponents();
+    });
 
 window.onbeforeunload = function () {
     if (window.localStorage) {
-        console.log('Saving which components are displayed.');
         const componentStates = [
             $('#toggle-input').is(':checked'),
             $('#toggle-tests').is(':checked'),
             $('#toggle-editor').is(':checked'),
-            $('#toggle-output').is(':checked')
+            $('#toggle-output').is(':checked'),
+            document.querySelector('#acceleration-factor').value
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
