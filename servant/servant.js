@@ -367,6 +367,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
         const action = step.action;
 
         switch (action) {
+            case 'EPSILON': break;
             case 'WAIT': errorReplay += `    await t.runForTime(${step.waitMicros / 1000});\n`; break;
             case 'MOUSE_MOVE': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
             case 'ANSWER': errorReplay += `    t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
