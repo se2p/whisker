@@ -49,8 +49,8 @@ const runSearch = async function () {
     const config = await Whisker.configFileSelect.loadAsString();
 
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
-    Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
     Whisker.outputRun.println('summary');
+    return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
@@ -267,8 +267,13 @@ const initEvents = function () {
     });
 
     $('#run-search')
-        .click('click', event => {
-            runSearch();
+        .click('click', () => {
+            const tests = runSearch();
+            tests.then(
+                result => {
+                    loadTestsFromString(result);
+                },
+            );
         });
 };
 
