@@ -57,6 +57,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _startTime: number;
 
+    private _fullCoverageReached = false;
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -97,12 +99,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._archive.clear();
         this._iterations = 0;
         this._startTime = Date.now();
-        let fullCoverageReached = false;
+        this._fullCoverageReached = false;
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         console.log("Creating initial population");
         const parentPopulation = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
         this.updateArchive(parentPopulation);
+        if (this._stoppingCondition.isFinished(this)) {
+            this.updateBestIndividualAndStatistics();
+        }
         while (!this._stoppingCondition.isFinished(this)) {
             console.log("Iteration "+this._iterations+", covered goals: "+this._archive.size+"/"+this._fitnessFunctions.size);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
@@ -123,17 +128,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
             this.updateArchive(parentPopulation);
             parentPopulation.reverse(); // reverse order from descending to ascending by quality for rank selection
-            this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
             this._iterations++;
-            StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
-            StatisticsCollector.getInstance().incrementIterationCount();
-            StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
-            if(this._archive.size == this._fitnessFunctions.size && !fullCoverageReached) {
-                fullCoverageReached = true;
-                StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                    (this._iterations + 1) * this._properties.getPopulationSize();
-                StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
-            }
+            this.updateBestIndividualAndStatistics();
         }
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
@@ -144,6 +140,19 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
         StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.getPopulationSize();
         return this._bestIndividuals;
+    }
+
+    private updateBestIndividualAndStatistics() {
+        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+        StatisticsCollector.getInstance().incrementIterationCount();
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
+        if(this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
+                (this._iterations + 1) * this._properties.getPopulationSize();
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+        }
     }
 
     /**
@@ -219,6 +228,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     this._archive.set(fitnessFunctionKey, candidateChromosome);
                     console.log("Found test for goal: "+fitnessFunction);
                 }
+            }
+            if (this._stoppingCondition.isFinished(this)) {
+                // This may miss some shorter tests, but it saves time
+                return;
             }
         }
     }
