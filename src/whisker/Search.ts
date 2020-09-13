@@ -45,25 +45,21 @@ export class Search {
         console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
-        const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
-        //todo export whisker tests
-        return whiskerTests;
+        return testGenerator.generateTests(project);
     }
 
     private printTests(tests: List<WhiskerTest>): void {
         let i = 0;
+        console.log("Total number of tests: "+tests.size());
         for (const test of tests) {
             console.log("Test "+i+": \n" + test.toString());
             i++;
         }
     }
 
-    private writeTests(tests: List<WhiskerTest>): void {
-        console.log("Resulting tests as JavaScript code:");
+    private testsToString(tests: List<WhiskerTest>): string {
         const converter = new JavaScriptConverter(new TestExecutor(Container.vmWrapper));
-
-        // TODO: This should be written to a file, not stdout...
-        console.log(converter.getSuiteText(tests));
+        return converter.getSuiteText(tests);
     }
 
     /*
@@ -81,7 +77,7 @@ export class Search {
         Container.vmWrapper = util.vmWrapper;
         Container.acceleration = accelerationFactor;
 
-        async function init(search: Search) {
+        async function generateTests(search: Search) {
             await util.prepare(accelerationFactor || 1);
             util.start();
             const seed = Date.now();
@@ -93,11 +89,10 @@ export class Search {
             const csvString: string = StatisticsCollector.getInstance().asCsv();
             console.log(csvString);
 
-            search.writeTests(tests);
-            return csvString;
+            return search.testsToString(tests);
         }
 
-        return init(this);
+        return generateTests(this);
 
     }
 }
