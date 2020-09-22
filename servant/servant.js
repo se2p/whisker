@@ -14,7 +14,7 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, testPath, scratchPath, accelerationFactor, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLifeOutputCoverage, isLifeLogEnabled, isGeneticSearch,
+    isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch,
 } = cli.start();
 
 init();
@@ -41,14 +41,14 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
     } else {
-        const paths = prepateTestFiles(testPath);
+        const paths = prepareTestFiles(testPath);
         Promise.all(paths.map((path, index) => runTests(path, browser, index)))
             .then(results => {
                 browser.close();
                 const summaries = results.map(({summary}) => summary);
                 const coverages = results.map(({coverage}) => coverage);
 
-                printTestresultsFromCivergaeGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
+                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
             })
             .catch(errors => logger.error('Error on executing tests: ', errors))
@@ -79,6 +79,7 @@ async function runGeneticSearch (browser) {
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await (await page.$('#toggle-output')).click();
+        await (await page.$('#toggle-editor')).click();
         await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
@@ -92,7 +93,7 @@ async function runGeneticSearch (browser) {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (isLifeLogEnabled) {
+            if (isLiveLogEnabled) {
                 const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
                 const newInfoFromLog = currentLog.replace(log, '')
                     .trim();
@@ -107,7 +108,7 @@ async function runGeneticSearch (browser) {
             const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
             const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
                 .trim();
-            if (newInfoFromCoverage.length && isLifeOutputCoverage) {
+            if (newInfoFromCoverage.length && isLiveOutputCoverage) {
                 logger.log(`Coverage: `, newInfoFromCoverage);
             } else if (newInfoFromCoverage.includes('not ok ')) {
                 logger.warn(`Coverage: `, newInfoFromCoverage);
@@ -128,11 +129,23 @@ async function runGeneticSearch (browser) {
         await (await page.$('#run-search')).click();
     }
 
+    async function downloadTests() {
+        await page._client.send('Page.setDownloadBehavior', {
+            behavior: 'allow',
+            downloadPath: './'
+        });
+        await (await page.$('#test-editor .editor-save')).click();
+        await page.waitFor(5000);
+    }
+
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
+        logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
+        logger.debug("Downloading tests");
+        await downloadTests();
         await page.close();
         return Promise.resolve(output);
     } catch (e) {
@@ -192,7 +205,7 @@ async function runTests (path, browser, index) {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (isLifeLogEnabled) {
+            if (isLiveLogEnabled) {
                 const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
                 const newInfoFromLog = currentLog.replace(log, '')
                     .trim();
@@ -207,7 +220,7 @@ async function runTests (path, browser, index) {
             const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
             const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
                 .trim();
-            if (newInfoFromCoverage.length && isLifeOutputCoverage) {
+            if (newInfoFromCoverage.length && isLiveOutputCoverage) {
                 logger.log(`Page ${index} | Coverage: `, newInfoFromCoverage);
             } else if (newInfoFromCoverage.includes('not ok ')) {
                 logger.warn(`Page ${index} | Coverage: `, newInfoFromCoverage);
@@ -257,7 +270,6 @@ async function runTests (path, browser, index) {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
         const promise = onFinishedCallback();
-
         await executeTests();
 
         await readTestOutput();
@@ -281,11 +293,11 @@ function prepareTestSource (path) {
     const exportStatement = 'module.exports =';
     const test = fs.readFileSync(path, {encoding: 'utf8'});
     const testArrayStartIndex = test.indexOf(exportStatement) + exportStatement.length;
-    const testSourceWithouExportArray = test.substr(0, testArrayStartIndex);
+    const testSourceWithoutExportArray = test.substr(0, testArrayStartIndex);
     // eslint-disable-next-line no-eval
     const evaledTest = eval(test);
 
-    return {evaledTest, testSourceWithouExportArray};
+    return {evaledTest, testSourceWithoutExportArray};
 }
 
 /**
@@ -344,8 +356,8 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
  * @param {*} whiskerTestPath  Path to the whisker test file
  * @returns {Array}            The paths of the temporary test files
  */
-function prepateTestFiles (whiskerTestPath) {
-    const {evaledTest, testSourceWithouExportArray} = prepareTestSource(whiskerTestPath);
+function prepareTestFiles (whiskerTestPath) {
+    const {evaledTest, testSourceWithoutExportArray} = prepareTestSource(whiskerTestPath);
     const singleTestSources = splitTestsSourceCodeIntoSingleTestSources(evaledTest);
     const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfTabs, singleTestSources);
 
@@ -356,7 +368,7 @@ function prepateTestFiles (whiskerTestPath) {
 
     return testSourcesPerTab.map((testSources, index) => {
         const path = `${tmpDir}/${basename(whiskerTestPath)}_${index + 1}.js`;
-        fs.writeFileSync(path, `${testSourceWithouExportArray} [${testSources}]`, {encoding: 'utf8'});
+        fs.writeFileSync(path, `${testSourceWithoutExportArray} [${testSources}]`, {encoding: 'utf8'});
         return path;
     });
 }
@@ -367,7 +379,7 @@ function prepateTestFiles (whiskerTestPath) {
  * @param {string} summaries The summaries from the whisker-web instance test run
  * @param {string} coverage  Combined coverage of from all pages
  */
-function printTestresultsFromCivergaeGenerator (summaries, coverage) {
+function printTestResultsFromCoverageGenerator (summaries, coverage) {
     logger.info('Run Finished');
 
     const formattedSummary = TAP13Formatter.mergeFormattedSummaries(summaries.map(TAP13Formatter.formatSummary));
