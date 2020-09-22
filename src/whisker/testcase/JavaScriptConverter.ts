@@ -79,7 +79,7 @@ export class JavaScriptConverter implements EventObserver {
             i++;
         }
 
-        this.text += "module.exports = [\n";
+        this.text += "\nmodule.exports = [\n";
         this.text += footer;
         this.text += "]\n";
 
