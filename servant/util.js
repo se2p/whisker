@@ -45,9 +45,9 @@ const cli = {
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
-            .option('-o, --isLifeOutputCoverage', 'If new output of the coverage should be printed regularly', false)
-            .option('-l, --isLifeLogEnabled', 'If the new output of the log should be printed regularly', false)
-            .option('-g, --isGeneticSearch', 'If new tests should be generated via genetic serach', false);
+            .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
+            .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
+            .option('-g, --isGeneticSearch', 'If new tests should be generated via genetic search', false);
 
         commander.parse(process.argv);
 
@@ -60,8 +60,8 @@ const cli = {
             isHeadless,
             numberOfTabs,
             isConsoleForwarded,
-            isLifeOutputCoverage,
-            isLifeLogEnabled,
+            isLiveOutputCoverage,
+            isLiveLogEnabled,
             isGeneticSearch
         } = commander;
 
@@ -76,8 +76,8 @@ const cli = {
             isHeadless,
             numberOfTabs,
             isConsoleForwarded,
-            isLifeOutputCoverage,
-            isLifeLogEnabled,
+            isLiveOutputCoverage,
+            isLiveLogEnabled,
             isGeneticSearch
         };
     }
