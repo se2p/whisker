@@ -74,7 +74,8 @@ export class Search {
 
         Container.config = config;
         Container.vm = vm;
-        Container.vmWrapper = util.vmWrapper;
+        Container.vmWrapper = util.getVMWrapper();
+        Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
 
         async function generateTests(search: Search) {
