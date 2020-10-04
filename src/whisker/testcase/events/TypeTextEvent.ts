@@ -21,6 +21,7 @@
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {Container} from "../../utils/Container";
 
 export class TypeTextEvent implements ScratchEvent {
 
@@ -31,11 +32,18 @@ export class TypeTextEvent implements ScratchEvent {
     }
 
     apply(vm: VirtualMachine) {
-        vm.runtime.emit('ANSWER', this._text);
+        Container.testDriver.inputImmediate({
+            device: 'text',
+            text: this._text
+        });
     }
 
     public toJavaScript(args: number[]): string {
-        throw new NotYetImplementedException();
+        return '' +
+`t.testDriver.inputImmediate({
+    device: 'text',
+    text: ${this._text}
+});`
     }
 
     public toString(args: number[]): string {

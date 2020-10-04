@@ -25,29 +25,28 @@ import {Container} from "../../utils/Container";
 export class MouseDownEvent implements ScratchEvent {
 
     apply(vm: VirtualMachine) {
-        const data = {
+        const isMouseDown = Container.testDriver.isMouseDown();
+        Container.testDriver.inputImmediate({
             device: 'mouse',
-            isDown: !this._isMouseDown(vm),
-        };
-        vm.postIOData(data.device, data);
+            isDown: !isMouseDown
+        });
     }
 
     public toJavaScript(args: number[]): string {
-        return "t.inputImmediate({\n" +
-            "        device: 'mouse',\n" +
-            "        isDown: " + !this._isMouseDown(Container.vm) + ",\n" +
-            "    });";
+        const isMouseDown = Container.testDriver.isMouseDown();
+        return '' +
+`t.inputImmediate({
+    device: 'mouse',
+    isDown: ${!isMouseDown}
+});`;
     }
 
     public toString = (args: number[]) : string => {
-        return "MouseDown " + !this._isMouseDown(Container.vm);
+        const isMouseDown = Container.testDriver.isMouseDown();
+        return "MouseDown " + isMouseDown;
     }
 
     getNumParameters(): number {
         return 0;
-    }
-
-    _isMouseDown(vm: VirtualMachine): boolean {
-        return vm.runtime.ioDevices.mouse.getIsDown();
     }
 }
