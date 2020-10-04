@@ -66,28 +66,28 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    findSolution(): List<C> {
+    async findSolution(): Promise<List<C>> {
 
         this._startTime = Date.now();
         console.log("1+1 EA started at "+this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
         this._bestIndividuals.add(bestIndividual);
-        let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
+        let bestFitness = await this._fitnessFunction.getFitness(bestIndividual);
         let bestLength = bestIndividual.getLength();
         console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
 
-        while (!this._stoppingCondition.isFinished(this)) {
+        while (!(await this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
             const oldString = bestIndividual.toString();
             let candidateChromosome = bestIndividual.mutate();
             while (oldString === candidateChromosome.toString()) {
                 candidateChromosome = bestIndividual.mutate();
             }
-            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            const candidateFitness = await this._fitnessFunction.getFitness(candidateChromosome);
             console.log("Iteration "+this._iterations+" ["+bestFitness+"]: "+candidateChromosome.toString()+" has fitness "+candidateFitness);
             this._iterations++;
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||

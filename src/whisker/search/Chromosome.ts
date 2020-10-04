@@ -65,8 +65,8 @@ export abstract class Chromosome {
      *                        chromosome
      * @returns the fitness of this chromosome
      */
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
-        return fitnessFunction.getFitness(this);
+    async getFitness(fitnessFunction: FitnessFunction<this>): Promise<number> {
+        return await fitnessFunction.getFitness(this);
     }
 
     /**

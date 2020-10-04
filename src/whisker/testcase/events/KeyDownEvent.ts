@@ -30,7 +30,7 @@ export class KeyDownEvent implements ScratchEvent {
         this._keyOption = keyOption;
     }
 
-    apply(vm: VirtualMachine) {
+    async apply(vm: VirtualMachine): Promise<void> {
         const isKeyDown = Container.testDriver.isKeyDown(this._keyOption);
         Container.testDriver.inputImmediate({
             device: 'keyboard',

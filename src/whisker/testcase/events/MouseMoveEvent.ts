@@ -25,7 +25,7 @@ import {Container} from "../../utils/Container";
 
 export class MouseMoveEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine, args: number[]) {
+    async apply(vm: VirtualMachine, args: number[]): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'mouse',
             x: args[0],

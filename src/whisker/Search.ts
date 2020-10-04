@@ -41,25 +41,25 @@ export class Search {
         this.vm = vm;
     }
 
-    private execute(project, config: WhiskerSearchConfiguration): List<WhiskerTest> {
+    private async execute(project, config: WhiskerSearchConfiguration): Promise<List<WhiskerTest>> {
         console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
-        return testGenerator.generateTests(project);
+        return await testGenerator.generateTests(project);
     }
 
-    private printTests(tests: List<WhiskerTest>): void {
+    private async printTests(tests: List<WhiskerTest>): Promise<void> {
         let i = 0;
         console.log("Total number of tests: "+tests.size());
         for (const test of tests) {
-            console.log("Test "+i+": \n" + test.toString());
+            console.log("Test "+i+": \n" + await test.toString());
             i++;
         }
     }
 
-    private testsToString(tests: List<WhiskerTest>): string {
+    private async testsToString(tests: List<WhiskerTest>): Promise<string> {
         const converter = new JavaScriptConverter(new TestExecutor(Container.vmWrapper));
-        return converter.getSuiteText(tests);
+        return await converter.getSuiteText(tests);
     }
 
     /*
@@ -85,12 +85,12 @@ export class Search {
             Randomness.setInitialSeed(seed);
             seedScratch(seed);
             StatisticsCollector.getInstance().reset();
-            const tests = search.execute(project, config);
-            search.printTests(tests);
+            const tests = await search.execute(project, config);
+            await search.printTests(tests);
             const csvString: string = StatisticsCollector.getInstance().asCsv();
             console.log(csvString);
 
-            return search.testsToString(tests);
+            return await search.testsToString(tests);
         }
 
         return generateTests(this);

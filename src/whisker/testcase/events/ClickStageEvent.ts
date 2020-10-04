@@ -30,7 +30,7 @@ export class ClickStageEvent implements ScratchEvent {
         this._target = target;
     }
 
-    apply(vm: VirtualMachine) {
+    async apply(vm: VirtualMachine): Promise<void> {
         vm.runtime.startHats('event_whenstageclicked',
             null, this._target);
     }

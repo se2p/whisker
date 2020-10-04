@@ -33,9 +33,9 @@ export class TestEventCounter implements EventObserver {
         this.executor = executor;
     }
 
-    getEventCount(test: TestChromosome): number {
+    async getEventCount(test: TestChromosome): Promise<number> {
         this.executor.attach(this);
-        this.executor.execute(test);
+        await this.executor.execute(test);
         this.executor.detach(this);
         return this.eventCount;
     }

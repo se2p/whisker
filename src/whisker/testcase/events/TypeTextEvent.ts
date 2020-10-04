@@ -31,7 +31,7 @@ export class TypeTextEvent implements ScratchEvent {
         this._text = text;
     }
 
-    apply(vm: VirtualMachine) {
+    async apply(vm: VirtualMachine): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'text',
             text: this._text

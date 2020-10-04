@@ -24,7 +24,7 @@ import {NotYetImplementedException} from "../../core/exceptions/NotYetImplemente
 
 export class SoundEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    async apply(vm: VirtualMachine): Promise<void> {
         throw new NotYetImplementedException();
     }
 

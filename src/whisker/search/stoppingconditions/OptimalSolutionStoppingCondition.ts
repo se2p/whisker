@@ -26,7 +26,7 @@ import {NotYetImplementedException} from "../../core/exceptions/NotYetImplemente
 
 export class OptimalSolutionStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    isFinished(algorithm: SearchAlgorithm<T>): boolean {
+    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
         const solutions = algorithm.getCurrentSolution();
         const fitnessFunctions = algorithm.getFitnessFunctions();
 
@@ -34,7 +34,7 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
         for (const f of fitnessFunctions) {
             let fitnessCovered = false;
             for (const solution of solutions) {
-                const fitness = solution.getFitness(f);
+                const fitness = await solution.getFitness(f);
                 if (f.isOptimal(fitness)) {
                     fitnessCovered = true;
                     break;
@@ -49,7 +49,7 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
         return true;
     }
 
-    getProgress(): number {
+    async getProgress(): Promise<number> {
         throw new NotYetImplementedException();
     }
 }

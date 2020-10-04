@@ -41,17 +41,12 @@ export class WaitEvent implements ScratchEvent {
     }
 
 
-    apply(vm: VirtualMachine) {
-        this.runStartTime = Date.now();
-
-        // Wait x milliseconds
-        while (this.getRunTimeElapsed() < WaitEvent.timeout) {
-            vm.runtime._step();
-        }
+    async apply(vm: VirtualMachine): Promise<void> {
+        await Container.testDriver.runForTime(WaitEvent.timeout);
     }
 
     public toJavaScript(args: number[]): string {
-        return "await t.runForTime(" + Container.config.getWaitDuration() + ");";
+        return `await t.runForTime(${Container.config.getWaitDuration()});`;
     }
 
     public toString(args: number[]): string {

@@ -30,7 +30,7 @@ export class ClickSpriteEvent implements ScratchEvent {
         this.target = target
     }
 
-    apply(vm: VirtualMachine) {
+    async apply(vm: VirtualMachine): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'mouse',
             sprite: Container.testDriver.getSprite(this.target.sprite.name),

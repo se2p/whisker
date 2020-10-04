@@ -32,7 +32,7 @@ export class KeyPressEvent implements ScratchEvent {
         this._keyOption = keyOption;
     }
 
-    apply(vm: VirtualMachine) {
+    async apply(vm: VirtualMachine): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,

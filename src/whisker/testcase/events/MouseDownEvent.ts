@@ -24,7 +24,7 @@ import {Container} from "../../utils/Container";
 
 export class MouseDownEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine) {
+    async apply(vm: VirtualMachine): Promise<void> {
         const isMouseDown = Container.testDriver.isMouseDown();
         Container.testDriver.inputImmediate({
             device: 'mouse',
