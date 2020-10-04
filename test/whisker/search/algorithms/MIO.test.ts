@@ -72,14 +72,14 @@ describe('MIO', () => {
             .buildSearchAlgorithm();
     });
 
-    test('Find optimal solution', () => {
-        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
+    test('Find optimal solution', async () => {
+        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
 
         const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
         for (const fitnessFunction of fitnessFunctions.values()) {
             let optimal = false;
             for (const solution of solutions) {
-                if (fitnessFunction.isOptimal(fitnessFunction.getFitness(solution))) {
+                if (fitnessFunction.isOptimal(await fitnessFunction.getFitness(solution))) {
                     optimal = true;
                     break;
                 }
@@ -88,15 +88,15 @@ describe('MIO', () => {
         }
     });
 
-    test('Get current solution', () => {
+    test('Get current solution', async () => {
         expect(searchAlgorithm.getCurrentSolution()).toBeUndefined();
-        const solutions = searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
     });
 
-    test('Get number of iterations', () => {
+    test('Get number of iterations', async () => {
         expect(searchAlgorithm.getNumberOfIterations()).toBeUndefined();
-        searchAlgorithm.findSolution();
+        await searchAlgorithm.findSolution();
         expect(searchAlgorithm.getNumberOfIterations()).toBe(iterations);
     });
 

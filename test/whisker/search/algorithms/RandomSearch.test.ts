@@ -42,7 +42,7 @@ describe('RandomSearch', () => {
         Container.vmWrapper = mock;
     });
 
-    test('Trivial bitstring with OneMax', () => {
+    test('Trivial bitstring with OneMax', async () => {
 
         const n = 2;
         const properties = new SearchAlgorithmProperties(1, n);
@@ -59,10 +59,10 @@ describe('RandomSearch', () => {
             .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, new List());
 
         const randomSearch = builder.buildSearchAlgorithm();
-        const solutions = randomSearch.findSolution();
+        const solutions = await randomSearch.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(await firstSolution.getFitness(fitnessFunction)).toBe(n);
     });
 
     test('Setter', () => {
