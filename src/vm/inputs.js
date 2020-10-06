@@ -350,6 +350,14 @@ class Inputs {
         const scratchKey = this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
         return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
     }
+
+    /**
+     * Activates "when stage clicked" hats.
+     */
+    clickStage () {
+        const stage = this.vmWrapper.sprites.getStage().getScratchTarget();
+        this.vmWrapper.vm.runtime.startHats('event_whenstageclicked', null, stage);
+    }
 }
 
 module.exports = {
