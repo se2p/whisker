@@ -40,14 +40,14 @@ export class TypeTextEvent implements ScratchEvent {
 
     public toJavaScript(args: number[]): string {
         return '' +
-`t.testDriver.inputImmediate({
+`t.inputImmediate({
     device: 'text',
-    text: ${this._text}
+    text: '${this._text}'
 });`
     }
 
     public toString(args: number[]): string {
-        throw new NotYetImplementedException();
+        return `TypeText '${this._text}'`
     }
 
     getNumParameters(): number {
