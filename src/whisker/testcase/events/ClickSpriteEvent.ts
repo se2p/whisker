@@ -31,11 +31,13 @@ export class ClickSpriteEvent implements ScratchEvent {
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
+        // TODO: Add key press duration to config?
+        const duration = 100 / Container.acceleration;
         Container.testDriver.inputImmediate({
             device: 'mouse',
             sprite: Container.testDriver.getSprite(this.target.sprite.name),
             isDown: true,
-            duration: 100
+            duration: duration
         });
     }
 
