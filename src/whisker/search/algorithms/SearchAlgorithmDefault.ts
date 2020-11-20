@@ -35,7 +35,7 @@ import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedF
  */
 export abstract class SearchAlgorithmDefault<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    findSolution(): List<C> {
+    async findSolution(): Promise<List<C>> {
         throw new NotSupportedFunctionException();
     }
 

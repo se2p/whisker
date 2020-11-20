@@ -26,8 +26,8 @@ import {SinglePointCrossover} from "../../../src/whisker/search/operators/Single
 
 describe('OneMaxFitnessFunction', () => {
 
-    test('All false', () => {
-        const bits = new List<Boolean>();
+    test('All false', async () => {
+        const bits = new List<boolean>();
         bits.add(false);
         bits.add(false);
         const chromosome = new BitstringChromosome(bits,
@@ -35,11 +35,11 @@ describe('OneMaxFitnessFunction', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(fitnessFunction.getFitness(chromosome)).toBe(0);
+        expect(await fitnessFunction.getFitness(chromosome)).toBe(0);
     });
 
-    test('All true', () => {
-        const bits = new List<Boolean>();
+    test('All true', async () => {
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(true);
         const chromosome = new BitstringChromosome(bits,
@@ -47,11 +47,11 @@ describe('OneMaxFitnessFunction', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(fitnessFunction.getFitness(chromosome)).toBe(2);
+        expect(await fitnessFunction.getFitness(chromosome)).toBe(2);
     });
 
-    test('Mixed', () => {
-        const bits = new List<Boolean>();
+    test('Mixed', async () => {
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(false);
         const chromosome = new BitstringChromosome(bits,
@@ -59,7 +59,7 @@ describe('OneMaxFitnessFunction', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
 
-        expect(fitnessFunction.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunction.getFitness(chromosome)).toBe(1);
     });
 
     test('Check optimality', () => {

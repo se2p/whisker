@@ -37,7 +37,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    findSolution(): List<C>;
+    findSolution(): Promise<List<C>>;
 
     /**
      * Sets the properties for this search algorithm.

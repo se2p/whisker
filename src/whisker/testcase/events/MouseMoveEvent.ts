@@ -21,27 +21,25 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {Container} from "../../utils/Container";
 
 export class MouseMoveEvent implements ScratchEvent {
 
-    apply(vm: VirtualMachine, args: number[]) {
-        const stageSize = {
-            width: 480,
-            height: 360
-        };
-
-        const data = {
+    async apply(vm: VirtualMachine, args: number[]): Promise<void> {
+        Container.testDriver.inputImmediate({
             device: 'mouse',
             x: args[0],
-            y: args[1],
-            canvasWidth: stageSize.width,
-            canvasHeight: stageSize.height
-        };
-        vm.postIOData(data.device, data);
+            y: args[1]
+        });
     }
 
     public toJavaScript(args: number[]): string {
-        throw new NotYetImplementedException();
+        return '' +
+`t.inputImmediate({
+    device: 'mouse',
+    x: ${args[0]},
+    y: ${args[1]}
+});`
     }
 
     public toString(args: number[]): string {

@@ -30,38 +30,23 @@ export class KeyDownEvent implements ScratchEvent {
         this._keyOption = keyOption;
     }
 
-    static scratchKeyToKeyString(scratchKey) {
-        switch (scratchKey) {
-            case 'space':
-                return ' ';
-            case 'left arrow':
-                return 'Left';
-            case 'up arrow':
-                return 'Up';
-            case 'right arrow':
-                return 'Right';
-            case 'down arrow':
-                return 'Down';
-            default:
-                return scratchKey;
-        }
-    }
-
-    apply(vm: VirtualMachine) {
-        const data = {
+    async apply(vm: VirtualMachine): Promise<void> {
+        const isKeyDown = Container.testDriver.isKeyDown(this._keyOption);
+        Container.testDriver.inputImmediate({
             device: 'keyboard',
-            key: KeyDownEvent.scratchKeyToKeyString(this._keyOption),
-            isDown: !this.isKeyDown(this._keyOption, vm)
-        }
-        vm.postIOData(data.device, data);
+            key: this._keyOption,
+            isDown: !isKeyDown
+        });
     }
 
     public toJavaScript(args: number[]): string {
-        return "t.inputImmediate({\n" +
-            "        device: 'keyboard',\n" +
-            "        key: '" + this._keyOption + "',\n" +
-            "        isDown: " + !this.isKeyDown(this._keyOption, Container.vm) + "\n" +
-            "    });";
+        const isKeyDown = Container.testDriver.isKeyDown(this._keyOption);
+        return '' +
+`t.inputImmediate({
+    device: 'keyboard',
+    key: '${this._keyOption}',
+    isDown: ${!isKeyDown}
+});`;
     }
 
     public toString(args: number[]): string {
@@ -70,15 +55,5 @@ export class KeyDownEvent implements ScratchEvent {
 
     getNumParameters(): number {
         return 0;
-    }
-
-    /**
-     * @param {string} key .
-     * @returns {boolean} .
-     */
-    isKeyDown(key, vm: VirtualMachine) {
-        const keyString = KeyDownEvent.scratchKeyToKeyString(key);
-        const scratchKey = vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
-        return vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
     }
 }

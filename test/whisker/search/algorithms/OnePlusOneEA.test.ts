@@ -42,7 +42,7 @@ describe('OnePlusOneEa', () => {
         Container.vmWrapper = mock;
     });
 
-    test('Trivial bitstring with OneMax', () => {
+    test('Trivial bitstring with OneMax', async () => {
 
         const n = 10;
         const properties = new SearchAlgorithmProperties(1, n);
@@ -59,10 +59,10 @@ describe('OnePlusOneEa', () => {
 
 
         const search = builder.buildSearchAlgorithm();
-        const solutions = search.findSolution();
+        const solutions = await search.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(await firstSolution.getFitness(fitnessFunction)).toBe(n);
     });
 
     test('Setter', () => {

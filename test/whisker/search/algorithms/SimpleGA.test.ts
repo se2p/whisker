@@ -44,7 +44,7 @@ describe('SimpleGA', () => {
         Container.vmWrapper = mock;
     });
 
-    test('Trivial bitstring with SimpleGA', () => {
+    test('Trivial bitstring with SimpleGA', async () => {
 
         const n = 10;
         const properties = new SearchAlgorithmProperties(50, n);
@@ -64,10 +64,10 @@ describe('SimpleGA', () => {
 
 
         const search = builder.buildSearchAlgorithm();
-        const solutions = search.findSolution();
+        const solutions = await search.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(await firstSolution.getFitness(fitnessFunction)).toBe(n);
     });
 
 

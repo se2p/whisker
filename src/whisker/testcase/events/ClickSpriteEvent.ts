@@ -20,7 +20,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {Container} from "../../utils/Container";
 
 export class ClickSpriteEvent implements ScratchEvent {
 
@@ -30,14 +30,25 @@ export class ClickSpriteEvent implements ScratchEvent {
         this.target = target
     }
 
-    apply(vm: VirtualMachine) {
-        vm.runtime.startHats('event_whenthisspriteclicked',
-            null, this.target);
+    async apply(vm: VirtualMachine): Promise<void> {
+        // TODO: Add key press duration to config?
+        const duration = 100 / Container.acceleration;
+        Container.testDriver.inputImmediate({
+            device: 'mouse',
+            sprite: Container.testDriver.getSprite(this.target.sprite.name),
+            isDown: true,
+            duration: duration
+        });
     }
 
     public toJavaScript(args: number[]): string {
-        throw new NotYetImplementedException();
-        // return "t.clickOnTheDamnedSprite(" + this.target.sprite.name +")";
+        return '' +
+`t.inputImmediate({
+    device: 'mouse',
+    sprite: t.getSprite('${this.target.sprite.name}'),
+    isDown: true,
+    duration: 100
+});`
     }
 
     public toString(args: number[]): string {

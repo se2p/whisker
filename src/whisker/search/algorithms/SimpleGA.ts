@@ -78,7 +78,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    findSolution(): List<C> {
+    async findSolution(): Promise<List<C>> {
 
         // set start time
         this._startTime = Date.now();
@@ -92,15 +92,15 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         let population = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
 
         // Evaluate population
-        this.evaluateAndSortPopulation(population);
+        await this.evaluateAndSortPopulation(population);
 
-        while(!this._stoppingCondition.isFinished(this)) {
+        while(!(await this._stoppingCondition.isFinished(this))) {
             console.log("Iteration "+this._iterations+", best fitness: "+this._bestFitness);
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
 
-            const nextGeneration = this.generateOffspringPopulation(population);
-            this.evaluateAndSortPopulation(nextGeneration)
+            const nextGeneration = await this.generateOffspringPopulation(population);
+            await this.evaluateAndSortPopulation(nextGeneration)
             population = nextGeneration;
         }
 
@@ -115,10 +115,17 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @param population The population to evaluate
      */
-    private evaluateAndSortPopulation(population: List<C>) : void {
+    private async evaluateAndSortPopulation(population: List<C>) : Promise<void> {
+        const fitnesses = new Map();
+
+        for (const c of population) {
+            const fitness = await this._fitnessFunction.getFitness(c);
+            fitnesses.set(c, fitness);
+        }
+
         population.sort((c1: C, c2: C) => {
-            const fitness1 = this._fitnessFunction.getFitness(c1);
-            const fitness2 = this._fitnessFunction.getFitness(c2);
+            const fitness1 = fitnesses.get(c1);
+            const fitness2 = fitnesses.get(c2);
 
             if (fitness1 == fitness2) {
                 return c2.getLength() - c1.getLength();
@@ -128,7 +135,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         });
 
         const bestIndividual = population.get(population.size() - 1);
-        const candidateFitness = this._fitnessFunction.getFitness(bestIndividual);
+        const candidateFitness = await this._fitnessFunction.getFitness(bestIndividual);
         const candidateLength = bestIndividual.getLength();
         if (this._bestIndividuals.isEmpty() ||
                 this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||
@@ -157,7 +164,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param useRankSelection Whether to use rank selection for selecting the parents.
      * @returns The offspring population.
      */
-    private generateOffspringPopulation(parentPopulation: List<C>): List<C> {
+    private async generateOffspringPopulation(parentPopulation: List<C>): Promise<List<C>> {
         // TODO: This is largely a clone taken from MOSA.ts. Could abstract this.
         const offspringPopulation = new List<C>();
 
@@ -166,8 +173,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         offspringPopulation.add(parentPopulation.get(parentPopulation.size() - 1));
 
         while (offspringPopulation.size() < parentPopulation.size()) {
-            const parent1 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
-            const parent2 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
+            const parent1 = await this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
+            const parent2 = await this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
 
             let child1 = parent1;
             let child2 = parent2;

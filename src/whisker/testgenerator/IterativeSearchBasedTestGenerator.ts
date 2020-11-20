@@ -33,7 +33,7 @@ import {FitnessFunction} from "../search/FitnessFunction";
  */
 export class IterativeSearchBasedTestGenerator extends TestGenerator {
 
-    generateTests(project: ScratchProject): List<WhiskerTest> {
+    async generateTests(project: ScratchProject): Promise<List<WhiskerTest>> {
         const testChromosomes = new List<TestChromosome>();
         this._fitnessFunctions = this.extractCoverageGoals();
         let numGoal = 1;
@@ -42,7 +42,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         for (const fitnessFunction of this._fitnessFunctions.values()) {
             console.log("Current goal "+numGoal+"/"+totalGoals+": "+fitnessFunction);
             numGoal++;
-            if (this._isCovered(fitnessFunction, testChromosomes)) {
+            if (await this._isCovered(fitnessFunction, testChromosomes)) {
                 // If already covered, we don't need to search again
                 console.log("Goal "+fitnessFunction+" already covered, skipping.");
                 continue;
@@ -51,9 +51,9 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             const searchAlgorithm = this.buildSearchAlgorithm(false);
             searchAlgorithm.setFitnessFunction(fitnessFunction);
             // TODO: Assuming there is at least one solution?
-            const testChromosome = searchAlgorithm.findSolution().get(0);
+            const testChromosome = (await searchAlgorithm.findSolution()).get(0);
 
-            if (fitnessFunction.isCovered(testChromosome)) {
+            if (await fitnessFunction.isCovered(testChromosome)) {
                 console.log("Goal "+fitnessFunction+" was successfully covered, keeping test.");
                 testChromosomes.add(testChromosome);
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
@@ -61,15 +61,15 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
                 console.log("Goal "+fitnessFunction+" was not successfully covered.");
             }
         }
-        const testSuite = this.getTestSuite(testChromosomes);
-        this.collectStatistics(testSuite);
+        const testSuite = await this.getTestSuite(testChromosomes);
+        await this.collectStatistics(testSuite);
         return testSuite;
     }
 
-    _isCovered(coverageGoal: FitnessFunction<any>, testSuite: List<TestChromosome>): boolean {
+    async _isCovered(coverageGoal: FitnessFunction<any>, testSuite: List<TestChromosome>): Promise<boolean> {
         // TODO: Could be written in a single line
         for (const testChromosome of testSuite) {
-            if (coverageGoal.isCovered(testChromosome)) {
+            if (await coverageGoal.isCovered(testChromosome)) {
                 return true;
             }
         }

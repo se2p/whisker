@@ -34,9 +34,9 @@ export class TextConverter implements EventObserver {
         this.executor = executor;
     }
 
-    getText(test: TestChromosome): string {
+    async getText(test: TestChromosome): Promise<string> {
         this.executor.attach(this);
-        this.executor.execute(test);
+        await this.executor.execute(test);
         this.executor.detach(this);
         return this.text;
     }
