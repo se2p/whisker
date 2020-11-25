@@ -51,21 +51,21 @@ export class WhiskerTest {
     /**
      * JavaScript code that can be executed with the regular Whisker UI
      */
-    toJavaScriptCode(): string {
+    async toJavaScriptCode(): Promise<string> {
         const executor = new TestExecutor(Container.vmWrapper);
         const jsConverter = new JavaScriptConverter(executor);
-        return jsConverter.getText(this._chromosome);
+        return await jsConverter.getText(this._chromosome);
     }
 
-    toString(): string {
+    async toString(): Promise<string> {
         const executor = new TestExecutor(Container.vmWrapper);
         const textConverter = new TextConverter(executor);
-        return textConverter.getText(this._chromosome);
+        return await textConverter.getText(this._chromosome);
     }
 
-    getEventsCount(): number {
+    async getEventsCount(): Promise<number> {
         const executor = new TestExecutor(Container.vmWrapper);
         const eventCounter = new TestEventCounter(executor);
-        return eventCounter.getEventCount(this._chromosome)
+        return await eventCounter.getEventCount(this._chromosome)
     }
 }

@@ -26,7 +26,7 @@ import {SinglePointCrossover} from "../../../src/whisker/search/operators/Single
 
 describe('SingleBitFitnessFunction', () => {
 
-    test('All false', () => {
+    test('All false', async() => {
         const bits = new List<boolean>();
         bits.add(false);
         bits.add(false);
@@ -36,11 +36,11 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
-        expect(fitnessFunctionPosition1.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition1.getFitness(chromosome)).toBe(1);
     });
 
-    test('All true', () => {
+    test('All true', async () => {
         const bits = new List<boolean>();
         bits.add(true);
         bits.add(true);
@@ -50,11 +50,11 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
-        expect(fitnessFunctionPosition1.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition0.getFitness(chromosome)).toBe(1);
+        expect(await fitnessFunctionPosition1.getFitness(chromosome)).toBe(1);
     });
 
-    test('Mixed', () => {
+    test('Mixed', async () => {
         const bits = new List<boolean>();
         bits.add(true);
         bits.add(false);
@@ -64,8 +64,8 @@ describe('SingleBitFitnessFunction', () => {
         const fitnessFunctionPosition0 = new SingleBitFitnessFunction(2, 0);
         const fitnessFunctionPosition1 = new SingleBitFitnessFunction(2, 1);
 
-        expect(fitnessFunctionPosition0.getFitness(chromosome)).toBe(2);
-        expect(fitnessFunctionPosition1.getFitness(chromosome)).toBe(0);
+        expect(await fitnessFunctionPosition0.getFitness(chromosome)).toBe(2);
+        expect(await fitnessFunctionPosition1.getFitness(chromosome)).toBe(0);
     });
 
     test('Check optimality', () => {

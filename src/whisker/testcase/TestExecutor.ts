@@ -47,7 +47,7 @@ export class TestExecutor {
         this.recordInitialState();
     }
 
-    execute(testChromosome: TestChromosome): Trace {
+    async execute(testChromosome: TestChromosome): Promise<Trace> {
 
         this._vmWrapper.end();
         seedScratch(Randomness.getInitialSeed());
@@ -73,17 +73,17 @@ export class TestExecutor {
             numCodon += nextEvent.getNumParameters() + 1;
             this.notify(nextEvent, args);
 
-            nextEvent.apply(this._vm, args);
+            await nextEvent.apply(this._vm, args);
             StatisticsCollector.getInstance().incrementEventsCount()
 
-            new WaitEvent().apply(this._vm);
+            await new WaitEvent().apply(this._vm);
         }
 
-        new WaitEvent().apply(this._vm);
-        new WaitEvent().apply(this._vm);
-        new WaitEvent().apply(this._vm);
-        new WaitEvent().apply(this._vm);
-        new WaitEvent().apply(this._vm);
+        await new WaitEvent().apply(this._vm);
+        await new WaitEvent().apply(this._vm);
+        await new WaitEvent().apply(this._vm);
+        await new WaitEvent().apply(this._vm);
+        await new WaitEvent().apply(this._vm);
         this.resetState();
         return new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces)
     }

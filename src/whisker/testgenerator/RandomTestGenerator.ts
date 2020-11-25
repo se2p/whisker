@@ -46,7 +46,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
 
     private _archive = new Map<number, TestChromosome>();
 
-    generateTests(project: ScratchProject): List<WhiskerTest> {
+    async generateTests(project: ScratchProject): Promise<List<WhiskerTest>> {
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
@@ -55,13 +55,13 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         const chromosomeGenerator = this._config.getChromosomeGenerator();
         const stoppingCondition = this._config.getSearchAlgorithmProperties().getStoppingCondition();
 
-        while (!stoppingCondition.isFinished(this)) {
+        while (!(await stoppingCondition.isFinished(this))) {
             console.log("Iteration " + this._iterations
                 + ", covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             const testChromosome = chromosomeGenerator.get();
-            this.updateArchive(testChromosome);
+            await this.updateArchive(testChromosome);
             if(this._archive.size == this._fitnessFunctions.size && !fullCoverageReached) {
                 fullCoverageReached = true;
                 StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
@@ -69,19 +69,19 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             }
         }
         this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
-        const testSuite = this.getTestSuite(this._tests);
+        const testSuite = await this.getTestSuite(this._tests);
         StatisticsCollector.getInstance().createdTestsCount = this._iterations;
-        this.collectStatistics(testSuite);
+        await this.collectStatistics(testSuite);
         return testSuite;
     }
 
-    private updateArchive(chromosome: TestChromosome): void {
+    private async updateArchive(chromosome: TestChromosome): Promise<void> {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(chromosome);
+            const candidateFitness = await fitnessFunction.getFitness(chromosome);
             const candidateLength = chromosome.getLength();
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
@@ -110,7 +110,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         return this._startTime;
     }
 
-    findSolution(): List<TestChromosome> {
+    async findSolution(): Promise<List<TestChromosome>> {
         throw new NotSupportedFunctionException();
     }
 

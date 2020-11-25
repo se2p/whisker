@@ -27,7 +27,7 @@ import {SinglePointCrossover} from "../../../../src/whisker/search/operators/Sin
 
 describe('RankSelection', () => {
 
-    test('Distribution of the selection', () => {
+    test('Distribution of the selection', async () => {
         const selection = new RankSelection();
         const population = new List<BitstringChromosome>();
         const populationSize = 5;
@@ -38,7 +38,7 @@ describe('RankSelection', () => {
             selectionCount.set(chromosome, 0)
         }
         for (let i = 0; i < 1000; i++) {
-            const selected = selection.apply(population);
+            const selected = await selection.apply(population);
             selectionCount.set(selected, selectionCount.get(selected) + 1);
         }
         for (let i = 0; i < populationSize - 1; i++) {

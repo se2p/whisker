@@ -39,8 +39,8 @@ export class TestChromosome extends IntegerListChromosome {
         this._trace = null;
     }
 
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
-        const fitness = fitnessFunction.getFitness(this);
+    async getFitness(fitnessFunction: FitnessFunction<this>): Promise<number> {
+        const fitness = await fitnessFunction.getFitness(this);
         // TODO: cache execution traces?
         return fitness;
     }

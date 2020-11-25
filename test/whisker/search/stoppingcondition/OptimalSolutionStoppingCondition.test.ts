@@ -39,8 +39,8 @@ class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
 
 describe('OptimalSolutionStoppingCondition', () => {
 
-    test('Optimal value', () => {
-        const bits = new List<Boolean>();
+    test('Optimal value', async () => {
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(true);
         const chromosome = new BitstringChromosome(bits,
@@ -52,11 +52,11 @@ describe('OptimalSolutionStoppingCondition', () => {
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
-    test('Non-Optimal value', () => {
-        const bits = new List<Boolean>();
+    test('Non-Optimal value', async () => {
+        const bits = new List<boolean>();
         bits.add(false);
         bits.add(true);
         const chromosome = new BitstringChromosome(bits,
@@ -68,11 +68,11 @@ describe('OptimalSolutionStoppingCondition', () => {
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 
 
-    test('Do not fail on empty list', () => {
+    test('Do not fail on empty list', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         algorithm.setFitnessFunction(fitnessFunction)
@@ -81,6 +81,6 @@ describe('OptimalSolutionStoppingCondition', () => {
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 });

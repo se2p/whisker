@@ -29,16 +29,16 @@ import {WhiskerTest} from './WhiskerTest';
  */
 export class ManyObjectiveTestGenerator extends TestGenerator {
 
-    generateTests(project: ScratchProject): List<WhiskerTest> {
+    async generateTests(project: ScratchProject): Promise<List<WhiskerTest>> {
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this.buildSearchAlgorithm(true);
 
         // TODO: Assuming there is at least one solution?
-        const testChromosomes = searchAlgorithm.findSolution();
+        const testChromosomes = await searchAlgorithm.findSolution();
 
-        const testSuite = this.getTestSuite(testChromosomes);
+        const testSuite = await this.getTestSuite(testChromosomes);
 
-        this.collectStatistics(testSuite);
+        await this.collectStatistics(testSuite);
         return testSuite;
     }
 }

@@ -36,10 +36,10 @@ export class JavaScriptConverter implements EventObserver {
         this.executor = executor;
     }
 
-    getText(test: TestChromosome): string {
+    async getText(test: TestChromosome): Promise<string> {
         this.text = "const test = async function (t) {\n";
         this.executor.attach(this);
-        this.executor.execute(test);
+        await this.executor.execute(test);
         this.executor.detach(this);
         this.text += `}
 
@@ -54,14 +54,14 @@ export class JavaScriptConverter implements EventObserver {
         return this.text;
     }
 
-    getSuiteText(tests: List<WhiskerTest>): string {
+    async getSuiteText(tests: List<WhiskerTest>): Promise<string> {
 
         let i = 0;
         let footer = "";
         for (const test of tests) {
             this.text += "const test"+i+" = async function (t) {\n";
             this.executor.attach(this);
-            this.executor.execute(test.chromosome);
+            await this.executor.execute(test.chromosome);
             this.executor.detach(this);
             this.text += "}\n";
 
@@ -79,7 +79,7 @@ export class JavaScriptConverter implements EventObserver {
             i++;
         }
 
-        this.text += "module.exports = [\n";
+        this.text += "\nmodule.exports = [\n";
         this.text += footer;
         this.text += "]\n";
 

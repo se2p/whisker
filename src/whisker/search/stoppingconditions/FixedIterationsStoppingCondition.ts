@@ -30,11 +30,11 @@ export class FixedIterationsStoppingCondition<T extends Chromosome> implements S
         this._maxIterations = iterationLimit;
     }
 
-    isFinished(algorithm: SearchAlgorithm<T>): boolean {
+    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
         return algorithm.getNumberOfIterations() >= this._maxIterations;
     }
 
-    getProgress(algorithm: SearchAlgorithm<T>): number {
+    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
         return algorithm.getNumberOfIterations() / this._maxIterations;
     }
 }

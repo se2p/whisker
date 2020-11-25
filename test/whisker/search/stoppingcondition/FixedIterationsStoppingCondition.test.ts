@@ -32,33 +32,33 @@ class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
 
 describe('FixedIterationsStoppingCondition', () => {
 
-    test('Max reached', () => {
+    test('Max reached', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         const maxIterations = 10;
         algorithm.setIterations(maxIterations);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
-    test('Max not reached', () => {
+    test('Max not reached', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         const maxIterations = 10;
         algorithm.setIterations(5);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 
-    test('Progress of 0.5', () => {
+    test('Progress of 0.5', async () => {
         const algorithm = new DummySearchAlgorithm();
         const maxIterations = 10;
         algorithm.setIterations(5);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(stoppingCondition.getProgress(algorithm)).toBe(0.5);
+        expect(await stoppingCondition.getProgress(algorithm)).toBe(0.5);
     });
 
 });

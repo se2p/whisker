@@ -87,12 +87,12 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return approachLevels;
     }
 
-    getFitness(chromosome: TestChromosome): number {
+    async getFitness(chromosome: TestChromosome): Promise<number> {
         let executionTrace;
 
         if (chromosome.trace == null) {
             const executor = new TestExecutor(Container.vmWrapper);
-            executionTrace = executor.execute(chromosome);
+            executionTrace = await executor.execute(chromosome);
             chromosome.trace = executionTrace
         } else {
             executionTrace = chromosome.trace;
@@ -116,8 +116,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return fitnessValue === 0.0;
     }
 
-    isCovered(chromosome: TestChromosome): boolean {
-        return this.isOptimal(this.getFitness(chromosome));
+    async isCovered(chromosome: TestChromosome): Promise<boolean> {
+        return this.isOptimal(await this.getFitness(chromosome));
     }
 
     private _getApproachLevel(trace: ExecutionTrace) {

@@ -20,8 +20,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
-import {WaitEvent} from "./WaitEvent";
+import {Container} from "../../utils/Container";
 
 export class KeyPressEvent implements ScratchEvent {
 
@@ -31,18 +30,25 @@ export class KeyPressEvent implements ScratchEvent {
         this._keyOption = keyOption;
     }
 
-    apply(vm: VirtualMachine) {
-        vm.runtime.startHats('event_whenkeypressed', {KEY_OPTION: this._keyOption}, null);
+    async apply(vm: VirtualMachine): Promise<void> {
+        const duration = 100 / Container.acceleration;
+        Container.testDriver.inputImmediate({
+            device: 'keyboard',
+            key: this._keyOption,
+            isDown: true,
+            duration: duration
+        });
     }
 
     public toJavaScript(args: number[]): string {
-        // TODO: How long?
-        return "t.inputImmediate({\n" +
-            "        device: 'keyboard',\n" +
-            "        key: '" + this._keyOption + "',\n" +
-            "        isDown: true,\n" +
-            "        duration: " + WaitEvent.timeout + "\n" +
-            "    });";
+        // TODO: add key press duration to config?
+        return '' +
+`t.inputImmediate({
+    device: 'keyboard',
+    key: '${this._keyOption}',
+    isDown: true,
+    duration: 100
+});`;
     }
 
     public toString(args: number[]): string {

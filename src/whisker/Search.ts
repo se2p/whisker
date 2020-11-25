@@ -41,29 +41,25 @@ export class Search {
         this.vm = vm;
     }
 
-    private execute(project, config: WhiskerSearchConfiguration): List<WhiskerTest> {
+    private async execute(project, config: WhiskerSearchConfiguration): Promise<List<WhiskerTest>> {
         console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
-        const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
-        //todo export whisker tests
-        return whiskerTests;
+        return await testGenerator.generateTests(project);
     }
 
-    private printTests(tests: List<WhiskerTest>): void {
+    private async printTests(tests: List<WhiskerTest>): Promise<void> {
         let i = 0;
+        console.log("Total number of tests: "+tests.size());
         for (const test of tests) {
-            console.log("Test "+i+": \n" + test.toString());
+            console.log("Test "+i+": \n" + await test.toString());
             i++;
         }
     }
 
-    private writeTests(tests: List<WhiskerTest>): void {
-        console.log("Resulting tests as JavaScript code:");
+    private async testsToString(tests: List<WhiskerTest>): Promise<string> {
         const converter = new JavaScriptConverter(new TestExecutor(Container.vmWrapper));
-
-        // TODO: This should be written to a file, not stdout...
-        console.log(converter.getSuiteText(tests));
+        return await converter.getSuiteText(tests);
     }
 
     /*
@@ -78,26 +74,26 @@ export class Search {
 
         Container.config = config;
         Container.vm = vm;
-        Container.vmWrapper = util.vmWrapper;
+        Container.vmWrapper = util.getVMWrapper();
+        Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
 
-        async function init(search: Search) {
+        async function generateTests(search: Search) {
             await util.prepare(accelerationFactor || 1);
             util.start();
             const seed = Date.now();
             Randomness.setInitialSeed(seed);
             seedScratch(seed);
             StatisticsCollector.getInstance().reset();
-            const tests = search.execute(project, config);
-            search.printTests(tests);
+            const tests = await search.execute(project, config);
+            await search.printTests(tests);
             const csvString: string = StatisticsCollector.getInstance().asCsv();
             console.log(csvString);
 
-            search.writeTests(tests);
-            return csvString;
+            return await search.testsToString(tests);
         }
 
-        return init(this);
+        return generateTests(this);
 
     }
 }
