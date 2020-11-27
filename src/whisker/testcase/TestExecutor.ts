@@ -56,9 +56,6 @@ export class TestExecutor {
         let numCodon = 0;
         const codons = testChromosome.getGenes();
 
-        // extracts all available text snippets
-        ScratchEventExtractor.extractAvailableTextSnippets(this._vm);
-
         while (numCodon < codons.size()) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
 

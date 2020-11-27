@@ -32,6 +32,7 @@ import {Randomness} from "./utils/Randomness";
 import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestExecutor} from "./testcase/TestExecutor";
+import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 
 export class Search {
 
@@ -92,7 +93,8 @@ export class Search {
 
             return await search.testsToString(tests);
         }
-
+        // extracts all available text snippets once per program start
+        ScratchEventExtractor.extractAvailableTextSnippets(this.vm);
         return generateTests(this);
 
     }
