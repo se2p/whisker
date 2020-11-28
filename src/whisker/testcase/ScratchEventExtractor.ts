@@ -42,10 +42,7 @@ export class ScratchEventExtractor {
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
-                    const event: ScratchEvent = this._extractEventsFromBlock(target, target.blocks.getBlock(blockId));
-                    if (event != null) {
-                        eventList.add(event);
-                    }
+                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
                 }
             }
         }
@@ -72,51 +69,60 @@ export class ScratchEventExtractor {
     }
 
     // TODO: How to handle event parameters?
-    static _extractEventsFromBlock(target, block): ScratchEvent {
+    static _extractEventsFromBlock(target, block): List<ScratchEvent> {
+        const eventList = new List<ScratchEvent>();
         const fields = target.blocks.getFields(block);
         if (typeof block.opcode === 'undefined') {
-            return null;
+            return eventList;
         }
 
         switch (target.blocks.getOpcode(block)) {
             case 'event_whenkeypressed': // Key press
-                return new KeyPressEvent(fields.KEY_OPTION.value);
-            // one event per concrete key for which there is a hat block
+                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
+                // one event per concrete key for which there is a hat block
+                break;
             case 'sensing_keyoptions': // Key down
-                return new KeyDownEvent(fields.KEY_OPTION.value);
+                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value));
+                break;
             case 'sensing_mousex':
             case 'sensing_mousey':
             case 'touching-mousepointer': // TODO fix block name
                 // Mouse move
-                return new MouseMoveEvent(); // TODO: Any hints on position?
+                eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
+                break;
             case 'sensing_mousedown':
                 // Mouse down
-                return new MouseDownEvent(); // TODO: Any hints on position?
+                eventList.add(new MouseDownEvent()); // TODO: Any hints on position?
+                break;
             case 'sensing_askandwait':
                 // Type text
                 // TODO: Only if actually asking
                 // TODO: Text length with random length?
                 const probability = Randomness.getInstance().nextInt(0, 100);
                 if (probability < 30) {
-                    return new TypeTextEvent(this._randomText(3)); // TODO: Any hints on text?
+                    eventList.add(new TypeTextEvent(this._randomText(3))); // TODO: Any hints on text?
                 }
-                const randTextIndex = Randomness.getInstance().nextInt(0, this.availableTextSnippets.size());
-                return new TypeTextEvent(this.availableTextSnippets.get(randTextIndex));
+                eventList.add(new TypeTextEvent(Randomness.getInstance().pickRandomElementFromList(this.availableTextSnippets)));
+                break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                return new ClickSpriteEvent(target); // TODO: Store which sprite
+                eventList.add(new ClickSpriteEvent(target)); // TODO: Store which sprite
+                break;
             // TODO: Add one event for each clone of this sprite --- each target is a clone
             case 'event_whenstageclicked':
                 // Click stage
-                return new ClickStageEvent(target); // TODO: Do we need a position for this?
+                eventList.add(new ClickStageEvent(target)); // TODO: Do we need a position for this?
+                break;
             case 'event_whengreaterthan':
                 // Sound
-                return new SoundEvent(); // TODO: Volume as parameter
+                eventList.add(new SoundEvent()); // TODO: Volume as parameter
+                break;
             case 'event_whenlessthan':
                 // Wait duration
-                return new WaitEvent(); // TODO: Duration as parameter
+                eventList.add(new WaitEvent()); // TODO: Duration as parameter
+                break;
         }
-        return null;
+        return eventList;
     }
 
     private static _randomText(length: number): string {
