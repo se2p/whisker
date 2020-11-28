@@ -49,7 +49,7 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
         return true;
     }
 
-    async getProgress(): Promise<number> {
+    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
         throw new NotYetImplementedException();
     }
 }
