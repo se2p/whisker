@@ -42,7 +42,17 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
         return false;
     }
 
-    async getProgress(): Promise<number> {
+    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
+        for (const stoppingCondition of this._conditions){
+            try {
+                return stoppingCondition.getProgress(algorithm);
+            }
+            catch(e) {
+                // It is fine if not all conditions implement this
+            }
+        }
+
+        // If none of the conditions implements getProgress, there's a problem
         throw new NotYetImplementedException();
     }
 }

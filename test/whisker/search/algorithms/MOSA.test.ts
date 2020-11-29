@@ -35,6 +35,7 @@ import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/Sea
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
+import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 
 describe('MOSA', () => {
 
@@ -58,7 +59,7 @@ describe('MOSA', () => {
         const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
         properties.setMutationProbablity(mutationProbability);
         properties.setCrossoverProbability(crossoverProbability);
-        properties.setStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
+        properties.setStoppingCondition(new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition()));
 
         builder
             .addProperties(properties)
@@ -96,7 +97,8 @@ describe('MOSA', () => {
     test('Get number of iterations', async () => {
         expect(searchAlgorithm.getNumberOfIterations()).toEqual(0);
         await searchAlgorithm.findSolution();
-        expect(searchAlgorithm.getNumberOfIterations()).toBe(maxIterations);
+        expect(searchAlgorithm.getNumberOfIterations()).toBeGreaterThan(0);
+        expect(searchAlgorithm.getNumberOfIterations()).toBeLessThanOrEqual(maxIterations);
     });
 
     test('Setter', () => {
@@ -104,7 +106,7 @@ describe('MOSA', () => {
         const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
         properties.setCrossoverProbability(crossoverProbability);
         properties.setMutationProbablity(mutationProbability);
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations));
+        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition());
         properties.setStoppingCondition(stoppingCondition);
 
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
