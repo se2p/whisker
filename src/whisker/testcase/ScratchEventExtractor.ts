@@ -57,6 +57,9 @@ export class ScratchEventExtractor {
      */
     static extractAvailableTextSnippets(vm: VirtualMachine): void {
         this.availableTextSnippets = new List<string>();
+        // TODO: Text length with random length?
+        this.availableTextSnippets.add(this._randomText(3)); // TODO: Any hints on text?
+
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
@@ -97,12 +100,7 @@ export class ScratchEventExtractor {
             case 'sensing_askandwait':
                 // Type text
                 // TODO: Only if actually asking
-                // TODO: Text length with random length?
-                const probability = Randomness.getInstance().nextInt(0, 100);
-                if (probability < 30) {
-                    eventList.add(new TypeTextEvent(this._randomText(3))); // TODO: Any hints on text?
-                }
-                eventList.add(new TypeTextEvent(Randomness.getInstance().pickRandomElementFromList(this.availableTextSnippets)));
+                eventList.addList(this._getTypeTextEvents());
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
@@ -133,6 +131,15 @@ export class ScratchEventExtractor {
         }
 
         return answer;
+    }
+
+    private static _getTypeTextEvents(): List<TypeTextEvent> {
+        const typeTextEventList = new List<TypeTextEvent>();
+        let length = this.availableTextSnippets.size();
+        for (let i = 0; i < length; i++) {
+            typeTextEventList.add(new TypeTextEvent(this.availableTextSnippets.get(i)))
+        }
+        return typeTextEventList;
     }
 
     static _extractAvailableTextSnippets(target, block): string {
