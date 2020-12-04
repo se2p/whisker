@@ -33,6 +33,8 @@ import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/Sea
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
+import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
+import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 
 describe('MIO', () => {
 
@@ -61,7 +63,7 @@ describe('MIO', () => {
         properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
         properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
         properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
-        properties.setStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        properties.setStoppingCondition(new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations), new OptimalSolutionStoppingCondition()));
         properties.setStartOfFocusedPhase(startFocusedPhase);
 
         searchAlgorithm = builder
@@ -97,7 +99,8 @@ describe('MIO', () => {
     test('Get number of iterations', async () => {
         expect(searchAlgorithm.getNumberOfIterations()).toBeUndefined();
         await searchAlgorithm.findSolution();
-        expect(searchAlgorithm.getNumberOfIterations()).toBe(iterations);
+        expect(searchAlgorithm.getNumberOfIterations()).toBeGreaterThan(0);
+        expect(searchAlgorithm.getNumberOfIterations()).toBeLessThanOrEqual(iterations);
     });
 
     test('Setter', () => {
