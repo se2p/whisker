@@ -32,17 +32,17 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
         this._conditions.addAll(stoppingCondition);
     }
 
-    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
+    isFinished(algorithm: SearchAlgorithm<T>): boolean {
         // TODO: This could be written in a single line by extending the List class?
         for (const stoppingCondition of this._conditions) {
-            if (await stoppingCondition.isFinished(algorithm)) {
+            if (stoppingCondition.isFinished(algorithm)) {
                 return true;
             }
         }
         return false;
     }
 
-    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
+    getProgress(algorithm: SearchAlgorithm<T>): number {
         for (const stoppingCondition of this._conditions){
             try {
                 return stoppingCondition.getProgress(algorithm);

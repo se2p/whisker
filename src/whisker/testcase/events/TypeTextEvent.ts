@@ -20,7 +20,6 @@
 
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {Container} from "../../utils/Container";
 
 export class TypeTextEvent implements ScratchEvent {
@@ -43,7 +42,7 @@ export class TypeTextEvent implements ScratchEvent {
 `t.inputImmediate({
     device: 'text',
     answer: '${this._text}'
-});`
+  });`
     }
 
     public toString(args: number[]): string {

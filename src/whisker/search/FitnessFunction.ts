@@ -34,7 +34,7 @@ export interface FitnessFunction<C extends Chromosome> {
      * @param chromosome the chromosome to rate
      * @returns the fitness value of the specified chromosome
      */
-    getFitness(chromosome: C): Promise<number>;
+    getFitness(chromosome: C): number;
 
 
     /**
@@ -63,5 +63,5 @@ export interface FitnessFunction<C extends Chromosome> {
      *
      * @param chromosome to check the fitness function with
      */
-    isCovered(chromosome: Chromosome): Promise<boolean>;
+    isCovered(chromosome: Chromosome): boolean;
 }

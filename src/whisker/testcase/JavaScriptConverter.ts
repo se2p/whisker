@@ -19,29 +19,17 @@
  */
 
 import {TestChromosome} from "./TestChromosome";
-import {TestExecutor} from "./TestExecutor";
-import {EventObserver} from "./EventObserver";
-import {ScratchEvent} from "./ScratchEvent";
-import {WaitEvent} from "./events/WaitEvent";
 import {List} from "../utils/List";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
 
-export class JavaScriptConverter implements EventObserver {
+export class JavaScriptConverter {
 
-    private text = "";
-
-    private executor: TestExecutor;
-
-    constructor(executor: TestExecutor) {
-        this.executor = executor;
-    }
-
-    async getText(test: TestChromosome): Promise<string> {
-        this.text = "const test = async function (t) {\n";
-        this.executor.attach(this);
-        await this.executor.execute(test);
-        this.executor.detach(this);
-        this.text += `}
+    getText(test: TestChromosome): string {
+        let text = "const test = async function (t) {\n";
+        for (const [scratchEvent, args] of test.trace.events) {
+            text += "  " + scratchEvent.toJavaScript(args) + "\n";
+        }
+        text += `}
 
         module.exports = [
             {
@@ -51,19 +39,20 @@ export class JavaScriptConverter implements EventObserver {
                 categories: []
             }
         ];`;
-        return this.text;
+        return text;
     }
 
-    async getSuiteText(tests: List<WhiskerTest>): Promise<string> {
+    getSuiteText(tests: List<WhiskerTest>): string {
 
+        let text = "";
         let i = 0;
         let footer = "";
         for (const test of tests) {
-            this.text += "const test"+i+" = async function (t) {\n";
-            this.executor.attach(this);
-            await this.executor.execute(test.chromosome);
-            this.executor.detach(this);
-            this.text += "}\n";
+            text += "const test"+i+" = async function (t) {\n";
+            for (const [scratchEvent, args] of test.chromosome.trace.events) {
+                text += "  " + scratchEvent.toJavaScript(args) + "\n";
+            }
+            text += "}\n";
 
             footer += "  {\n";
             footer += "      test: test"+i+",\n";
@@ -79,15 +68,10 @@ export class JavaScriptConverter implements EventObserver {
             i++;
         }
 
-        this.text += "\nmodule.exports = [\n";
-        this.text += footer;
-        this.text += "]\n";
+        text += "\nmodule.exports = [\n";
+        text += footer;
+        text += "]\n";
 
-        return this.text;
-    }
-
-    update(event: ScratchEvent, args: number[]) {
-        this.text += "  " + event.toJavaScript(args) + "\n";
-        this.text += "  " + new WaitEvent().toJavaScript([]) + "\n";
+        return text;
     }
 }

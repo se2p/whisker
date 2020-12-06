@@ -31,8 +31,8 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
         super(size);
     }
 
-    async getFitness(chromosome: BitstringChromosome): Promise<number> {
-        return this._size - (await super.getFitness(chromosome));
+    getFitness(chromosome: BitstringChromosome): number {
+        return this._size - (super.getFitness(chromosome));
     }
 
     compare (value1: number, value2: number): number {

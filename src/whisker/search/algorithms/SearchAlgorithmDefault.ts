@@ -78,4 +78,10 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     getStartTime(): number {
         throw new NotSupportedFunctionException();
     }
+
+    async evaluatePopulation(population: List<C>) : Promise<void> {
+        for (const chromosome of population) {
+            await chromosome.evaluate();
+        }
+    }
 }

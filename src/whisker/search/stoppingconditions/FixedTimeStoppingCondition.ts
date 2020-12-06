@@ -30,11 +30,11 @@ export class FixedTimeStoppingCondtion<T extends Chromosome> implements Stopping
         this._maxTime = maxTime;
     }
 
-    async isFinished(algorithm: SearchAlgorithm<T>): Promise<boolean> {
+    isFinished(algorithm: SearchAlgorithm<T>): boolean {
         return (Date.now() - algorithm.getStartTime()) > this._maxTime;
     }
 
-    async getProgress(algorithm: SearchAlgorithm<T>): Promise<number> {
+    getProgress(algorithm: SearchAlgorithm<T>): number {
         return this._maxTime - (Date.now() - algorithm.getStartTime());
     }
 }

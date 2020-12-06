@@ -74,11 +74,12 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
 
-        while (!(await this._stoppingCondition.isFinished(this))) {
+        while (!(this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
             this._iterations++;
             const candidateChromosome = this._chromosomeGenerator.get();
-            const candidateFitness = await this._fitnessFunction.getFitness(candidateChromosome);
+            await candidateChromosome.evaluate();
+            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
 
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                 if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
