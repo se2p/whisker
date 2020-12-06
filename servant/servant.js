@@ -7,6 +7,7 @@ const fs = require('fs');
 const {basename} = require('path');
 const puppeteer = require('puppeteer');
 const {logger, cli} = require('./util');
+const rimraf = require("rimraf");
 const TAP13Formatter = require('../../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../../whisker-main/src/coverage/coverage');
 
@@ -39,7 +40,7 @@ async function init () {
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
             })
             .catch(errors => logger.error('Error on generating tests: ', errors))
-            .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
+            .finally(() => rimraf.sync(tmpDir));
     } else {
         const paths = prepareTestFiles(testPath);
         Promise.all(paths.map((path, index) => runTests(path, browser, index)))
@@ -52,7 +53,7 @@ async function init () {
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
             })
             .catch(errors => logger.error('Error on executing tests: ', errors))
-            .finally(() => fs.rmdirSync(tmpDir, {recursive: true}));
+            .finally(() => rimraf.sync(tmpDir));
     }
 }
 
@@ -119,7 +120,7 @@ async function runGeneticSearch (browser) {
                 break;
             }
 
-            await page.waitFor(1000);
+            await page.waitForTimeout(1000);
         }
 
         return coverageLog;
@@ -135,7 +136,7 @@ async function runGeneticSearch (browser) {
             downloadPath: './'
         });
         await (await page.$('#test-editor .editor-save')).click();
-        await page.waitFor(5000);
+        await page.waitForTimeout(5000);
     }
 
     try {
@@ -193,7 +194,7 @@ async function runTests (path, browser, index) {
     }
 
     /**
-     * Reads the coverage and log field until the summary is printed into the coverage field, indicatin that the test
+     * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
      * run is over.
      */
     async function readTestOutput () {
@@ -231,7 +232,7 @@ async function runTests (path, browser, index) {
                 break;
             }
 
-            await page.waitFor(1000);
+            await page.waitForTimeout(1000);
         }
 
         return coverageLog;
