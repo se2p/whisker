@@ -49,7 +49,6 @@ const runSearch = async function () {
     const config = await Whisker.configFileSelect.loadAsString();
 
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
-    Whisker.outputRun.println('summary');
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
 
@@ -272,6 +271,9 @@ const initEvents = function () {
             tests.then(
                 result => {
                     loadTestsFromString(result);
+                    // TODO: This text is used as a marker to tell servant
+                    //       when the search is done. There must be a nicer way...
+                    Whisker.outputRun.println('summary');
                 },
             );
         });
