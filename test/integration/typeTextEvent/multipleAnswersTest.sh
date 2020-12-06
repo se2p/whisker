@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRATCH_FILE=TypeTextEventTest.sb3
+SCRATCH_FILE=TypeTextEvent_MultipleAnswersTest.sb3
 SCRATCH_PATH="$(cd "$(dirname "$SCRATCH_FILE")"; pwd -P)/$(basename "$SCRATCH_FILE")"
 
 CONFIG_FILE=../../../../whisker-main/config/default.json
