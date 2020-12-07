@@ -78,6 +78,7 @@ export class Search {
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
         ScratchEventExtractor.extractAvailableTextSnippets(this.vm);
+        ScratchEventExtractor.extractAvailableDurations(this.vm);
 
         await util.prepare(accelerationFactor || 1);
         util.start();

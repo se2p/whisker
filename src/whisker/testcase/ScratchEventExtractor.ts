@@ -35,6 +35,7 @@ import {Randomness} from "../utils/Randomness";
 
 export class ScratchEventExtractor {
 
+    private static availableWaitDurations = new List<number>();
     private static availableTextSnippets = new List<string>();
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
@@ -71,7 +72,26 @@ export class ScratchEventExtractor {
         }
     }
 
-    // TODO: How to handle event parameters?
+
+    /**
+     * Collects all available durations that can be used for wait events
+     */
+    static extractAvailableDurations(vm: VirtualMachine): void {
+        this.availableWaitDurations = new List<number>();
+
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
+                    if (duration >= 0 && !this.availableWaitDurations.contains(duration))
+                        this.availableWaitDurations.add(duration);
+                }
+            }
+        }
+    }
+
+
+        // TODO: How to handle event parameters?
     static _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         const fields = target.blocks.getFields(block);
@@ -131,6 +151,21 @@ export class ScratchEventExtractor {
         }
 
         return answer;
+    }
+
+    static _extractWaitDurations(target, block): number {
+        const inputs = target.blocks.getInputs(block);
+        if (target.blocks.getOpcode(block) == 'control_wait') {
+            const op = target.blocks.getBlock(inputs.DURATION.block);
+            return target.blocks.getFields(op).NUM.value;
+        } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
+            target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
+            target.blocks.getOpcode(block) == 'motion_glideto' ||
+            target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
+            const op = target.blocks.getBlock(inputs.SECS.block);
+            return target.blocks.getFields(op).NUM.value;
+        }
+        return -1;
     }
 
     private static _getTypeTextEvents(): List<TypeTextEvent> {
