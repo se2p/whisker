@@ -26,10 +26,8 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {PopulationFactory} from "../PopulationFactory";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -74,6 +72,14 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
+    private generateInitialPopulation(): List<C> {
+        const population = new List<C>();
+        for (let i = 0; i < this._properties.getPopulationSize(); i++) {
+            population.add(this._chromosomeGenerator.get());
+        }
+        return population;
+    }
+
     /**
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
@@ -89,18 +95,20 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         console.log("Simple GA started at "+this._startTime);
 
         // Initialise population
-        let population = PopulationFactory.generate(this._chromosomeGenerator, this._properties.getPopulationSize());
+        let population = this.generateInitialPopulation();
+        await this.evaluatePopulation(population);
 
         // Evaluate population
-        await this.evaluateAndSortPopulation(population);
+        this.evaluateAndSortPopulation(population);
 
-        while(!(await this._stoppingCondition.isFinished(this))) {
+        while(!(this._stoppingCondition.isFinished(this))) {
             console.log("Iteration "+this._iterations+", best fitness: "+this._bestFitness);
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
 
-            const nextGeneration = await this.generateOffspringPopulation(population);
-            await this.evaluateAndSortPopulation(nextGeneration)
+            const nextGeneration = this.generateOffspringPopulation(population);
+            await this.evaluatePopulation(nextGeneration);
+            this.evaluateAndSortPopulation(nextGeneration)
             population = nextGeneration;
         }
 
@@ -115,11 +123,11 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @param population The population to evaluate
      */
-    private async evaluateAndSortPopulation(population: List<C>) : Promise<void> {
+    private evaluateAndSortPopulation(population: List<C>) : void {
         const fitnesses = new Map();
 
         for (const c of population) {
-            const fitness = await this._fitnessFunction.getFitness(c);
+            const fitness = this._fitnessFunction.getFitness(c);
             fitnesses.set(c, fitness);
         }
 
@@ -135,7 +143,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         });
 
         const bestIndividual = population.get(population.size() - 1);
-        const candidateFitness = await this._fitnessFunction.getFitness(bestIndividual);
+        const candidateFitness = this._fitnessFunction.getFitness(bestIndividual);
         const candidateLength = bestIndividual.getLength();
         if (this._bestIndividuals.isEmpty() ||
                 this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||
@@ -164,7 +172,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param useRankSelection Whether to use rank selection for selecting the parents.
      * @returns The offspring population.
      */
-    private async generateOffspringPopulation(parentPopulation: List<C>): Promise<List<C>> {
+    private generateOffspringPopulation(parentPopulation: List<C>): List<C> {
         // TODO: This is largely a clone taken from MOSA.ts. Could abstract this.
         const offspringPopulation = new List<C>();
 
@@ -173,8 +181,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         offspringPopulation.add(parentPopulation.get(parentPopulation.size() - 1));
 
         while (offspringPopulation.size() < parentPopulation.size()) {
-            const parent1 = await this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
-            const parent2 = await this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
+            const parent1 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
+            const parent2 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
 
             let child1 = parent1;
             let child2 = parent2;

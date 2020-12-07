@@ -19,7 +19,6 @@
  */
 
 
-import {Trace} from 'scratch-vm/src/engine/tracing.js'
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
@@ -47,7 +46,16 @@ export class TestExecutor {
         this.recordInitialState();
     }
 
-    async execute(testChromosome: TestChromosome): Promise<Trace> {
+    async executeTests(tests: List<TestChromosome>): Promise<void> {
+        for (const testChromosome of tests) {
+            if (testChromosome.trace == null) {
+                await this.execute(testChromosome);
+            }
+        }
+    }
+
+    async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
+        const events = new List<[ScratchEvent, number[]]>();
 
         this._vmWrapper.end();
         seedScratch(Randomness.getInitialSeed());
@@ -55,6 +63,7 @@ export class TestExecutor {
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
+
         while (numCodon < codons.size()) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
 
@@ -66,13 +75,16 @@ export class TestExecutor {
             const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
 
             const args = this._getArgs(nextEvent, codons, numCodon);
+            events.add([nextEvent, args]);
             numCodon += nextEvent.getNumParameters() + 1;
             this.notify(nextEvent, args);
 
             await nextEvent.apply(this._vm, args);
             StatisticsCollector.getInstance().incrementEventsCount()
 
-            await new WaitEvent().apply(this._vm);
+            const waitEvent = new WaitEvent();
+            events.add([waitEvent, []]);
+            await waitEvent.apply(this._vm);
         }
 
         await new WaitEvent().apply(this._vm);
@@ -81,7 +93,8 @@ export class TestExecutor {
         await new WaitEvent().apply(this._vm);
         await new WaitEvent().apply(this._vm);
         this.resetState();
-        return new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces)
+        testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        return testChromosome.trace;
     }
 
     private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {

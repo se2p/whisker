@@ -21,7 +21,6 @@
 import {FitnessFunction} from '../search/FitnessFunction';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Preconditions} from '../utils/Preconditions';
-import {TestChromosome} from "../testcase/TestChromosome";
 
 /**
  * A fitness function for achieving a bitstring consisting of exactly one set bit at a
@@ -41,7 +40,7 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
         this._bitPosition = bitPosition;
     }
 
-    async getFitness(chromosome: BitstringChromosome): Promise<number> {
+    getFitness(chromosome: BitstringChromosome): number {
         const bits = chromosome.getGenes();
         Preconditions.checkListSize(bits, this._size);
         let fitness = 0;
@@ -64,7 +63,7 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
         return fitnessValue === this._size;
     }
 
-    async isCovered(chromosome: BitstringChromosome): Promise<boolean> {
-        return this.isOptimal(await this.getFitness(chromosome));
+    isCovered(chromosome: BitstringChromosome): boolean {
+        return this.isOptimal(this.getFitness(chromosome));
     }
 }

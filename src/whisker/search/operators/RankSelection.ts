@@ -38,7 +38,7 @@ export class RankSelection<C extends Chromosome> implements Selection<C> {
      * @param sortedPopulation The population of chromosomes from which to select, sorted in ascending order.
      * @returns the selected chromosome.
      */
-    async apply(sortedPopulation: List<C>, fitnessFunction?: FitnessFunction<C>): Promise<C> {
+    apply(sortedPopulation: List<C>, fitnessFunction?: FitnessFunction<C>): C {
         const upperSelectionBorders = new Map<C, number>();
         const N = sortedPopulation.size();
         const c = (2 * N) / (N + 1);

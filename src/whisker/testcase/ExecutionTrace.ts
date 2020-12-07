@@ -19,19 +19,27 @@
  */
 
 import {Trace} from 'scratch-vm/src/engine/tracing.js'
+import {ScratchEvent} from "./ScratchEvent";
+import {List} from "../utils/List";
 
 /**
  * TODO
  */
 export class ExecutionTrace {
 
-    private _blockTraces: [Trace];
+    private readonly _blockTraces: [Trace];
+    private readonly _events: List<[ScratchEvent, number[]]>;
 
-    constructor(traces: [Trace]) {
+    constructor(traces: [Trace], events: List<[ScratchEvent, number[]]>) {
         this._blockTraces = traces
+        this._events = events;
     }
 
     get blockTraces(): [Trace] {
         return this._blockTraces;
+    }
+
+    get events(): List<[ScratchEvent, number[]]> {
+        return this._events;
     }
 }

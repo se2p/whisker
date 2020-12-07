@@ -20,7 +20,6 @@
 
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {Container} from "../../utils/Container";
 
 export class TypeTextEvent implements ScratchEvent {
@@ -34,7 +33,7 @@ export class TypeTextEvent implements ScratchEvent {
     async apply(vm: VirtualMachine): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'text',
-            text: this._text
+            answer: this._text
         });
     }
 
@@ -42,8 +41,8 @@ export class TypeTextEvent implements ScratchEvent {
         return '' +
 `t.inputImmediate({
     device: 'text',
-    text: '${this._text}'
-});`
+    answer: '${this._text}'
+  });`
     }
 
     public toString(args: number[]): string {

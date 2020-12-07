@@ -27,7 +27,6 @@ import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -138,22 +137,24 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        await this.setStartValues();
+        this.setStartValues();
         let chromosome: C;
-        while (!(await this._stoppingCondition.isFinished(this))) {
+        while (!(this._stoppingCondition.isFinished(this))) {
             if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
                 const mutatedChromosome = chromosome.mutate();
+                await mutatedChromosome.evaluate();
                 this._mutationCounter++;
-                await this.updateArchive(mutatedChromosome);
+                this.updateArchive(mutatedChromosome);
             } else {
                 chromosome = this.getNewChromosome();
+                await chromosome.evaluate();
                 this._mutationCounter = 0;
-                await this.updateArchive(chromosome);
+                this.updateArchive(chromosome);
             }
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             if (!this.isFocusedPhaseReached()) {
-                await this.updateParameters();
+                this.updateParameters();
             }
             console.log("Iteration " + this._iterations + ", covered goals: "
                 + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
@@ -165,7 +166,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Sets the appropriate starting values for the search.
      */
-    private async setStartValues(): Promise<void> {
+    private setStartValues(): void {
         this._iterations = 0;
         this._startTime = Date.now();
         this._mutationCounter = 0;
@@ -176,7 +177,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             this._samplingCounter.set(fitnessFunctionKey, 0);
         }
-        await this.updateParameters();
+        this.updateParameters();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
     }
@@ -209,13 +210,13 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @param chromosome The candidate chromosome for the archive.
      */
-    private async updateArchive(chromosome: C): Promise<void> {
+    private updateArchive(chromosome: C): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const heuristicValue = await this.getHeuristicValue(chromosome, fitnessFunctionKey);
+            const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
             if (heuristicValue == 1) {
                 if (this._archiveCovered.has(fitnessFunctionKey)) {
                     const oldBestChromosome = this._archiveCovered.get(fitnessFunctionKey);
-                    if (await this.compareChromosomesWithEqualHeuristic(chromosome, oldBestChromosome) > 0) {
+                    if (this.compareChromosomesWithEqualHeuristic(chromosome, oldBestChromosome) > 0) {
                         this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
@@ -243,7 +244,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     const worstHeuristicValue = worstArchiveTuple.getHeuristicValue();
                     const worstChromosome = worstArchiveTuple.getChromosome();
                     if (worstHeuristicValue < heuristicValue || (worstHeuristicValue == heuristicValue
-                        && await this.compareChromosomesWithEqualHeuristic(chromosome, worstChromosome) >= 0)) {
+                        && this.compareChromosomesWithEqualHeuristic(chromosome, worstChromosome) >= 0)) {
                         archiveTuples.remove(worstArchiveTuple);
                         archiveTuples.add(newTuple);
                         this._samplingCounter.set(fitnessFunctionKey, 0);
@@ -303,7 +304,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @return A positive value if chromosome1 is better, a negative value if chromosome2 is better,
      *         zero if both are equal.
      */
-    private async compareChromosomesWithEqualHeuristic(chromosome1: C, chromosome2: C): Promise<number> {
+    private compareChromosomesWithEqualHeuristic(chromosome1: C, chromosome2: C): number {
         const lengthDifference = chromosome2.getLength() - chromosome1.getLength();
         if (lengthDifference != 0) {
             return lengthDifference;
@@ -311,8 +312,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         let heuristicSum1 = 0;
         let heuristicSum2 = 0;
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            heuristicSum1 += await this.getHeuristicValue(chromosome1, fitnessFunctionKey);
-            heuristicSum2 += await this.getHeuristicValue(chromosome2, fitnessFunctionKey);
+            heuristicSum1 += this.getHeuristicValue(chromosome1, fitnessFunctionKey);
+            heuristicSum2 += this.getHeuristicValue(chromosome2, fitnessFunctionKey);
         }
         return heuristicSum1 - heuristicSum2;
     }
@@ -324,8 +325,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param fitnessFunctionKey The key of the fitness function to use for the calculation.
      * @returns The heuristic value of the chromosome for the given fitness function.
      */
-    private async getHeuristicValue(chromosome: C, fitnessFunctionKey: number): Promise<number> {
-        const fitnessValue = await this._fitnessFunctions.get(fitnessFunctionKey).getFitness(chromosome);
+    private getHeuristicValue(chromosome: C, fitnessFunctionKey: number): number {
+        const fitnessValue = this._fitnessFunctions.get(fitnessFunctionKey).getFitness(chromosome);
         return this._heuristicFunctions.get(fitnessFunctionKey)(fitnessValue);
     }
 
@@ -345,8 +346,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * and the maximum number of mutations of the same chromosome according to the overall progress
      * of the search and the start of the focused phase.
      */
-    private async updateParameters(): Promise<void> {
-        const overallProgress = await this._stoppingCondition.getProgress(this);
+    private updateParameters(): void {
+        const overallProgress = this._stoppingCondition.getProgress(this);
         const progressUntilFocusedPhaseReached = overallProgress / this._properties.getStartOfFocusedPhase();
         const previousMaxArchiveSize = this._maxArchiveSize;
         if (progressUntilFocusedPhaseReached >= 1) {

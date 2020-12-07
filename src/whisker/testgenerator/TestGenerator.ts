@@ -38,7 +38,7 @@ export abstract class TestGenerator {
         this._config = configuration;
     }
 
-    public abstract async generateTests(project: ScratchProject): Promise<List<WhiskerTest>>;
+    public abstract generateTests(project: ScratchProject): Promise<List<WhiskerTest>>;
 
     protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
@@ -61,7 +61,7 @@ export abstract class TestGenerator {
             this._config.getFitnessFunctionTargets()).fitnessFunctions;
     }
 
-    protected async collectStatistics(testSuite: List<WhiskerTest>): Promise<void> {
+    protected collectStatistics(testSuite: List<WhiskerTest>): void {
         const statistics = StatisticsCollector.getInstance();
 
         StatisticsCollector.getInstance().bestCoverage =
@@ -70,13 +70,13 @@ export abstract class TestGenerator {
         statistics.bestTestSuiteSize = testSuite.size();
 
         for (const test of testSuite) {
-            statistics.testEventCount += await test.getEventsCount();
+            statistics.testEventCount += test.getEventsCount();
         }
     }
 
-    protected async getTestSuite(tests: List<TestChromosome>): Promise<List<WhiskerTest>> {
+    protected getTestSuite(tests: List<TestChromosome>): List<WhiskerTest> {
         const testSuite = new List<WhiskerTest>();
-        const coveringTestsPerObjective = await this.getCoveringTestsPerObjective(tests);
+        const coveringTestsPerObjective = this.getCoveringTestsPerObjective(tests);
         const coveredObjectives = new Set<number>();
 
         // For each uncovered objective with a single covering test: Add the test
@@ -84,7 +84,7 @@ export abstract class TestGenerator {
             if (!coveredObjectives.has(objective) && coveringTestsPerObjective.get(objective).size() == 1) {
                 const test = coveringTestsPerObjective.get(objective).get(0);
                 testSuite.add(new WhiskerTest(test));
-                await this.updateCoveredObjectives(coveredObjectives, test);
+                this.updateCoveredObjectives(coveredObjectives, test);
             }
         }
 
@@ -98,20 +98,20 @@ export abstract class TestGenerator {
                     }
                 }
                 testSuite.add(new WhiskerTest(shortestTest));
-                await this.updateCoveredObjectives(coveredObjectives, shortestTest);
+                this.updateCoveredObjectives(coveredObjectives, shortestTest);
             }
         }
 
         return testSuite;
     }
 
-    private async getCoveringTestsPerObjective(tests: List<TestChromosome>): Promise<Map<number, List<TestChromosome>>> {
+    private getCoveringTestsPerObjective(tests: List<TestChromosome>): Map<number, List<TestChromosome>> {
         const coveringTestsPerObjective = new Map<number, List<TestChromosome>>();
         for (const objective of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(objective);
             const coveringTests = new List<TestChromosome>();
             for (const test of tests) {
-                if (await fitnessFunction.isCovered(test)) {
+                if (fitnessFunction.isCovered(test)) {
                     coveringTests.add(test)
                 }
             }
@@ -122,9 +122,9 @@ export abstract class TestGenerator {
         return coveringTestsPerObjective;
     }
 
-    private async updateCoveredObjectives(coveredObjectives: Set<number>, test: TestChromosome): Promise<void> {
+    private updateCoveredObjectives(coveredObjectives: Set<number>, test: TestChromosome): void {
         for (const objective of this._fitnessFunctions.keys()) {
-            if (await this._fitnessFunctions.get(objective).isCovered(test)) {
+            if (this._fitnessFunctions.get(objective).isCovered(test)) {
                 coveredObjectives.add(objective);
             }
         }

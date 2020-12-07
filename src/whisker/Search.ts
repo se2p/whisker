@@ -31,7 +31,7 @@ import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
 import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
-import {TestExecutor} from "./testcase/TestExecutor";
+import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 
 export class Search {
 
@@ -48,24 +48,24 @@ export class Search {
         return await testGenerator.generateTests(project);
     }
 
-    private async printTests(tests: List<WhiskerTest>): Promise<void> {
+    private printTests(tests: List<WhiskerTest>): void {
         let i = 0;
         console.log("Total number of tests: "+tests.size());
         for (const test of tests) {
-            console.log("Test "+i+": \n" + await test.toString());
+            console.log("Test "+i+": \n" + test.toString());
             i++;
         }
     }
 
-    private async testsToString(tests: List<WhiskerTest>): Promise<string> {
-        const converter = new JavaScriptConverter(new TestExecutor(Container.vmWrapper));
-        return await converter.getSuiteText(tests);
+    private testsToString(tests: List<WhiskerTest>): string {
+        const converter = new JavaScriptConverter();
+        return converter.getSuiteText(tests);
     }
 
     /*
      * Main entry point -- called from whisker-web
      */
-    public run(vm, project, configRaw: string, accelerationFactor: number): Promise<string> {
+    public async run(vm, project, configRaw: string, accelerationFactor: number): Promise<string> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -77,23 +77,20 @@ export class Search {
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
+        ScratchEventExtractor.extractAvailableTextSnippets(this.vm);
 
-        async function generateTests(search: Search) {
-            await util.prepare(accelerationFactor || 1);
-            util.start();
-            const seed = Date.now();
-            Randomness.setInitialSeed(seed);
-            seedScratch(seed);
-            StatisticsCollector.getInstance().reset();
-            const tests = await search.execute(project, config);
-            await search.printTests(tests);
-            const csvString: string = StatisticsCollector.getInstance().asCsv();
-            console.log(csvString);
+        await util.prepare(accelerationFactor || 1);
+        util.start();
+        const seed = Date.now();
+        Randomness.setInitialSeed(seed);
+        seedScratch(seed);
+        StatisticsCollector.getInstance().reset();
+        const tests = await this.execute(project, config);
+        this.printTests(tests);
+        const csvString: string = StatisticsCollector.getInstance().asCsv();
+        console.log(csvString);
 
-            return await search.testsToString(tests);
-        }
-
-        return generateTests(this);
-
+        const javaScriptText = this.testsToString(tests);
+        return javaScriptText;
     }
 }

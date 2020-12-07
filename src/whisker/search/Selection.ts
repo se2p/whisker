@@ -36,6 +36,6 @@ export interface Selection<C extends Chromosome> {
      * @param population the population of chromosomes from which to select
      * @returns the selected chromosome
      */
-    apply(population: List<C>, fitnessFunction?: FitnessFunction<C>): Promise<C>;
+    apply(population: List<C>, fitnessFunction?: FitnessFunction<C>): C;
 
 }

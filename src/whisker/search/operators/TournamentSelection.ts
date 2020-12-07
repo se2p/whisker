@@ -44,14 +44,14 @@ export class TournamentSelection<C extends Chromosome> implements Selection<C> {
      * @param population The population of chromosomes from which to select, sorted in ascending order.
      * @returns the selected chromosome.
      */
-    async apply(population: List<C>, fitnessFunction: FitnessFunction<C>): Promise<C> {
+    apply(population: List<C>, fitnessFunction: FitnessFunction<C>): C {
         Preconditions.checkNotUndefined(fitnessFunction);
         let iteration = 0;
         let winner = Randomness.getInstance().pickRandomElementFromList(population);
-        let bestFitness = await fitnessFunction.getFitness(winner);
+        let bestFitness = fitnessFunction.getFitness(winner);
         while (iteration < this._tournamentSize) {
             const candidate = Randomness.getInstance().pickRandomElementFromList(population);
-            const candidateFitness = await fitnessFunction.getFitness(candidate);
+            const candidateFitness = fitnessFunction.getFitness(candidate);
 
             if (fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
                 (fitnessFunction.compare(candidateFitness, bestFitness) == 0 && candidate.getLength() < winner.getLength())) {
