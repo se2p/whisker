@@ -1,0 +1,14 @@
+{
+    "name": "servant",
+    "version": "1.0.0",
+    "description": "Servant for Whisker",
+    "main": "run.js",
+    "dependencies": {
+        "chalk": "^4.1.0",
+        "commander": "^6.2.0",
+        "puppeteer": "5.5.0",
+        "rimraf": "3.0.2"
+    },
+    "author": "",
+    "license": "ISC"
+}

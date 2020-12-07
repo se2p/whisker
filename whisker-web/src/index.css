@@ -1,0 +1,96 @@
+#main {
+    padding-top: 1vh;
+    padding-bottom: 1vh;
+    width: 100%;
+    margin: auto;
+}
+
+#right-col {
+    height: 98vh;
+    overflow-y: auto;
+}
+
+
+/* ===== Components ===== */
+
+#scratch-stage {
+    width: 100%;
+    border: 1px solid gray;
+}
+
+.dataTable {
+    border: 1px solid lightgray;
+}
+
+.output-content {
+    width: 100%;
+    min-height: 100px;
+    max-height: 500px;
+    overflow: auto;
+
+    padding: 5px;
+    border: 1px solid lightgray;
+}
+
+.CodeMirror {
+    width: 100%;
+    height: 750px;
+    font-size: 14px;
+    border: 1px solid lightgray;
+}
+
+.custom-file-label {
+    overflow: hidden;
+}
+
+
+/* ===== DataTables Style ===== */
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.table > thead > tr > td {
+    vertical-align: middle;
+}
+
+.child-table > tbody > tr {
+    border-left: none;
+    border-right: none;
+}
+
+.child-table > tbody > tr:first-child > td {
+    border-top: none;
+}
+
+.child-table > tbody > tr:last-child > td {
+    border-bottom: none;
+}
+
+.child-table > tbody > tr > td {
+    border-right: none;
+    border-left: none;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+/* Inherit row color to all child tables. */
+.table table > tbody > tr:nth-of-type(n) {
+    background-color: inherit;
+}
+
+/* Color rows by .odd/.even instead of :nth-of-type(2n+1). */
+.table-striped > tbody > .odd:nth-of-type(n) {
+    background: transparent;
+}
+.table-striped > tbody > .even:nth-of-type(n) {
+    background-color: rgba(0,0,0,.03);
+}
+
+/* Color child table rows the same color as their leading row. */
+.table-striped > tbody > .odd:nth-of-type(n) + tr:not(.odd):not(.even) {
+    background: transparent;
+}
+.table-striped > tbody > .even:nth-of-type(n) + tr:not(.odd):not(.even) {
+    background-color: rgba(0,0,0,.03);
+}

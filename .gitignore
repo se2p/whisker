@@ -14,3 +14,10 @@ coverage
 
 # Stuff
 /stuff
+
+# Servant specific
+/servant/node_modules
+/servant/tests
+/servant/.tmpWorkingDir
+/servant/*.csv
+/servant/evaluation.js
