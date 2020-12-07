@@ -20,36 +20,39 @@
 
 import {FitnessFunction} from "../search/FitnessFunction";
 import {IntegerListChromosome} from "../integerlist/IntegerListChromosome";
-import {Trace} from 'scratch-vm/src/engine/tracing'
 import {List} from "../utils/List";
 import {Mutation} from "../search/Mutation";
 import {Crossover} from "../search/Crossover";
-
-// TODO: Is-a IntegerListChromosome or has-a IntegerListChromosome?
+import {ExecutionTrace} from "./ExecutionTrace";
+import {TestExecutor} from "./TestExecutor";
+import {Container} from "../utils/Container";
+import assert from "assert";
 
 export class TestChromosome extends IntegerListChromosome {
 
-    // TODO: We should probably store the last execution trace
-    // -> When fitness is calculated without any mutation we
-    //    don't need to re-execute the test but use the trace
-    private _trace: Trace;
+    private _trace: ExecutionTrace;
 
     constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
         this._trace = null;
     }
 
+    async evaluate(): Promise<void> {
+        const executor = new TestExecutor(Container.vmWrapper);
+        await executor.execute(this);
+        assert (this.trace != null);
+    }
+
     getFitness(fitnessFunction: FitnessFunction<this>): number {
         const fitness = fitnessFunction.getFitness(this);
-        // TODO: cache execution traces?
         return fitness;
     }
 
-    get trace(): Trace {
+    get trace(): ExecutionTrace {
         return this._trace;
     }
 
-    set trace(value: Trace) {
+    set trace(value: ExecutionTrace) {
         this._trace = value;
     }
 
@@ -57,5 +60,24 @@ export class TestChromosome extends IntegerListChromosome {
         const clone = new TestChromosome(this.getGenes(), this.getMutationOperator(), this.getCrossoverOperator());
         clone.trace = this._trace;
         return clone;
+    }
+
+    cloneWith(newGenes: List<number>) {
+        return new TestChromosome(newGenes, this.getMutationOperator(), this.getCrossoverOperator());
+    }
+
+    public getNumEvents(): number {
+        assert (this._trace != null);
+        return this._trace.events.size();
+    }
+
+    public toString = () : string => {
+        assert (this._trace != null);
+        let text = "";
+        for (const [scratchEvent, args] of this._trace.events) {
+            text += scratchEvent.toString(args) + "\n";
+        }
+
+        return text;
     }
 }

@@ -31,7 +31,7 @@ import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
 import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
-import {TestExecutor} from "./testcase/TestExecutor";
+import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 
 export class Search {
 
@@ -41,35 +41,31 @@ export class Search {
         this.vm = vm;
     }
 
-    private execute(project, config: WhiskerSearchConfiguration): List<WhiskerTest> {
+    private async execute(project, config: WhiskerSearchConfiguration): Promise<List<WhiskerTest>> {
         console.log("Whisker-Main: test generation")
 
         const testGenerator: TestGenerator = config.getTestGenerator();
-        const whiskerTests: List<WhiskerTest> = testGenerator.generateTests(project);
-        //todo export whisker tests
-        return whiskerTests;
+        return await testGenerator.generateTests(project);
     }
 
     private printTests(tests: List<WhiskerTest>): void {
         let i = 0;
+        console.log("Total number of tests: "+tests.size());
         for (const test of tests) {
             console.log("Test "+i+": \n" + test.toString());
             i++;
         }
     }
 
-    private writeTests(tests: List<WhiskerTest>): void {
-        console.log("Resulting tests as JavaScript code:");
-        const converter = new JavaScriptConverter(new TestExecutor(Container.vmWrapper));
-
-        // TODO: This should be written to a file, not stdout...
-        console.log(converter.getSuiteText(tests));
+    private testsToString(tests: List<WhiskerTest>): string {
+        const converter = new JavaScriptConverter();
+        return converter.getSuiteText(tests);
     }
 
     /*
      * Main entry point -- called from whisker-web
      */
-    public run(vm, project, configRaw: string, accelerationFactor: number): Promise<string> {
+    public async run(vm, project, configRaw: string, accelerationFactor: number): Promise<string> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -78,26 +74,24 @@ export class Search {
 
         Container.config = config;
         Container.vm = vm;
-        Container.vmWrapper = util.vmWrapper;
+        Container.vmWrapper = util.getVMWrapper();
+        Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
+        ScratchEventExtractor.extractAvailableTextSnippets(this.vm);
+        ScratchEventExtractor.extractAvailableDurations(this.vm);
 
-        async function init(search: Search) {
-            await util.prepare(accelerationFactor || 1);
-            util.start();
-            const seed = Date.now();
-            Randomness.setInitialSeed(seed);
-            seedScratch(seed);
-            StatisticsCollector.getInstance().reset();
-            const tests = search.execute(project, config);
-            search.printTests(tests);
-            const csvString: string = StatisticsCollector.getInstance().asCsv();
-            console.log(csvString);
+        await util.prepare(accelerationFactor || 1);
+        util.start();
+        const seed = Date.now();
+        Randomness.setInitialSeed(seed);
+        seedScratch(seed);
+        StatisticsCollector.getInstance().reset();
+        const tests = await this.execute(project, config);
+        this.printTests(tests);
+        const csvString: string = StatisticsCollector.getInstance().asCsv();
+        console.log(csvString);
 
-            search.writeTests(tests);
-            return csvString;
-        }
-
-        return init(this);
-
+        const javaScriptText = this.testsToString(tests);
+        return javaScriptText;
     }
 }

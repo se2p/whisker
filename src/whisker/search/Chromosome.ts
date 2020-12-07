@@ -69,6 +69,10 @@ export abstract class Chromosome {
         return fitnessFunction.getFitness(this);
     }
 
+    async evaluate(): Promise<void> {
+        // No-op
+    }
+
     /**
      * A chromosome consists of a sequence of genes. This method returns the number of genes.
      */

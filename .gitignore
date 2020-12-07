@@ -1,5 +1,7 @@
 # NPM
 /node_modules
+coverage
+*~
 
 # Editor
 /.idea

@@ -21,8 +21,6 @@
 import {FitnessFunction} from '../search/FitnessFunction';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Preconditions} from "../utils/Preconditions";
-import {TestChromosome} from "../testcase/TestChromosome";
-import {Chromosome} from "../search/Chromosome";
 
 
 export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosome> {

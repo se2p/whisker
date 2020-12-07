@@ -46,7 +46,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
 
     private _archive = new Map<number, TestChromosome>();
 
-    generateTests(project: ScratchProject): List<WhiskerTest> {
+    async generateTests(project: ScratchProject): Promise<List<WhiskerTest>> {
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
@@ -55,12 +55,13 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         const chromosomeGenerator = this._config.getChromosomeGenerator();
         const stoppingCondition = this._config.getSearchAlgorithmProperties().getStoppingCondition();
 
-        while (!stoppingCondition.isFinished(this)) {
+        while (!(stoppingCondition.isFinished(this))) {
             console.log("Iteration " + this._iterations
                 + ", covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             const testChromosome = chromosomeGenerator.get();
+            await testChromosome.evaluate();
             this.updateArchive(testChromosome);
             if(this._archive.size == this._fitnessFunctions.size && !fullCoverageReached) {
                 fullCoverageReached = true;
@@ -69,7 +70,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             }
         }
         this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
-        const testSuite = this.getTestSuite(this._tests);
+        const testSuite = await this.getTestSuite(this._tests);
         StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         this.collectStatistics(testSuite);
         return testSuite;
@@ -110,7 +111,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         return this._startTime;
     }
 
-    findSolution(): List<TestChromosome> {
+    async findSolution(): Promise<List<TestChromosome>> {
         throw new NotSupportedFunctionException();
     }
 

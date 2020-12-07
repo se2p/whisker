@@ -41,8 +41,8 @@ class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
 
 describe('OptimalSolutionStoppingCondition', () => {
 
-    test('Both conditions false', () => {
-        const bits = new List<Boolean>();
+    test('Both conditions false', async () => {
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(false);
         const chromosome = new BitstringChromosome(bits,
@@ -60,11 +60,11 @@ describe('OptimalSolutionStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 
-    test('Both conditions true', () => {
-        const bits = new List<Boolean>();
+    test('Both conditions true', async () => {
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(true);
         const chromosome = new BitstringChromosome(bits,
@@ -82,11 +82,11 @@ describe('OptimalSolutionStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
-    test('First condition true only', () => {
-        const bits = new List<Boolean>();
+    test('First condition true only', async () => {
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(true);
         const chromosome = new BitstringChromosome(bits,
@@ -104,11 +104,11 @@ describe('OptimalSolutionStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
-    test('Second condition true only', () => {
-        const bits = new List<Boolean>();
+    test('Second condition true only', async () => {
+        const bits = new List<boolean>();
         bits.add(true);
         bits.add(false);
         const chromosome = new BitstringChromosome(bits,
@@ -126,7 +126,7 @@ describe('OptimalSolutionStoppingCondition', () => {
             new OptimalSolutionStoppingCondition()
         );
 
-        expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
 });

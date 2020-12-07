@@ -20,10 +20,8 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {TestExecutor} from '../TestExecutor';
 import {ExecutionTrace} from "../ExecutionTrace";
 import {GraphNode, UserEventNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
-import {Container} from "../../utils/Container";
 import {List} from "../../utils/List";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
@@ -88,18 +86,12 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     }
 
     getFitness(chromosome: TestChromosome): number {
-        let executionTrace;
-
         if (chromosome.trace == null) {
-            const executor = new TestExecutor(Container.vmWrapper);
-            executionTrace = executor.execute(chromosome);
-            chromosome.trace = executionTrace
-        } else {
-            executionTrace = chromosome.trace;
+            throw Error("Test case not executed");
         }
 
-        const approachLevel = this._getApproachLevel(executionTrace);
-        const branchDistance = this._getBranchDistance(executionTrace);
+        const approachLevel = this._getApproachLevel(chromosome.trace);
+        const branchDistance = this._getBranchDistance(chromosome.trace);
         // console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
         // console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
         return approachLevel + this._normalize(branchDistance)
@@ -254,7 +246,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 .value;
         }
         return false;
-    };
+    }
 
     public toString = () : string => {
         return ""+ this._targetNode.id +" of type "+this._targetNode.block.opcode;

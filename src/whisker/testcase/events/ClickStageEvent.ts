@@ -20,7 +20,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {Container} from "../../utils/Container";
 
 export class ClickStageEvent implements ScratchEvent {
 
@@ -30,14 +30,14 @@ export class ClickStageEvent implements ScratchEvent {
         this._target = target;
     }
 
-    apply(vm: VirtualMachine) {
-        vm.runtime.startHats('event_whenstageclicked',
-            null, this._target);
+    async apply(vm: VirtualMachine): Promise<void> {
+        // TODO: Is there a better solution than simply activating the hats?
+        // TODO: Find an empty spot to click on to click the stage?
+        Container.testDriver.clickStage();
     }
 
     public toJavaScript(args: number[]): string {
-        throw new NotYetImplementedException();
-        // return "t.clickOnTheDamnedStage()";
+        return 't.clickStage()';
     }
 
     public toString(args: number[]): string {

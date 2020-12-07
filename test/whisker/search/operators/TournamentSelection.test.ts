@@ -30,8 +30,9 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
     constructor(size: number) {
         super(size);
     }
+
     getFitness(chromosome: BitstringChromosome): number {
-        return this._size - super.getFitness(chromosome);
+        return this._size - (super.getFitness(chromosome));
     }
 
     compare (value1: number, value2: number): number {
@@ -46,7 +47,7 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
 
 describe('TournamentSelection', () => {
 
-    test('Select best for maximizing fitness function', () => {
+    test('Select best for maximizing fitness function', async () => {
         const goodBits = new List<boolean>();
         goodBits.add(true);
         goodBits.add(true);
@@ -65,12 +66,12 @@ describe('TournamentSelection', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const selection = new TournamentSelection<BitstringChromosome>(20);
-        const winner = selection.apply(population, fitnessFunction);
+        const winner = await selection.apply(population, fitnessFunction);
 
-        expect(fitnessFunction.getFitness(winner)).toBe(2);
+        expect(await fitnessFunction.getFitness(winner)).toBe(2);
     });
 
-    test('Select best for minimizing fitness function', () => {
+    test('Select best for minimizing fitness function', async () => {
         const goodBits = new List<boolean>();
         goodBits.add(true);
         goodBits.add(true);
@@ -89,8 +90,8 @@ describe('TournamentSelection', () => {
 
         const fitnessFunction = new InverseOneMaxFitnessFunction(2);
         const selection = new TournamentSelection<BitstringChromosome>(20);
-        const winner = selection.apply(population, fitnessFunction);
+        const winner = await selection.apply(population, fitnessFunction);
 
-        expect(fitnessFunction.getFitness(winner)).toBe(0);
+        expect(await fitnessFunction.getFitness(winner)).toBe(0);
     });
 });

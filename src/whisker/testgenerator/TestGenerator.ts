@@ -38,7 +38,7 @@ export abstract class TestGenerator {
         this._config = configuration;
     }
 
-    public abstract generateTests(project: ScratchProject): List<WhiskerTest>;
+    public abstract generateTests(project: ScratchProject): Promise<List<WhiskerTest>>;
 
     protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())

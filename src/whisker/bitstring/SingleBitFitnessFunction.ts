@@ -21,7 +21,6 @@
 import {FitnessFunction} from '../search/FitnessFunction';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Preconditions} from '../utils/Preconditions';
-import {TestChromosome} from "../testcase/TestChromosome";
 
 /**
  * A fitness function for achieving a bitstring consisting of exactly one set bit at a

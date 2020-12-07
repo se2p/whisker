@@ -14,9 +14,6 @@ install_dependencies:
     - npm install -D typescript
     - npm install
     - mkdir -p output/static
-  artifacts:
-    paths:
-      - node_modules/
 
 testing_testing:
   stage: test

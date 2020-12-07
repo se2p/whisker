@@ -18,10 +18,6 @@
  *
  */
 
-import { FitnessFunction } from "./FitnessFunction"
-import { Pair } from "../utils/Pair"
-import { Mutation } from "./Mutation"
-import { Crossover } from "./Crossover"
 import {Chromosome} from "./Chromosome";
 import {List} from "../utils/List";
 

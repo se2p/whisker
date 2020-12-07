@@ -27,7 +27,6 @@ import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -137,16 +136,18 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @returns Solution for the given problem
      */
-    findSolution(): List<C> {
+    async findSolution(): Promise<List<C>> {
         this.setStartValues();
         let chromosome: C;
-        while (!this._stoppingCondition.isFinished(this)) {
+        while (!(this._stoppingCondition.isFinished(this))) {
             if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
                 const mutatedChromosome = chromosome.mutate();
+                await mutatedChromosome.evaluate();
                 this._mutationCounter++;
                 this.updateArchive(mutatedChromosome);
             } else {
                 chromosome = this.getNewChromosome();
+                await chromosome.evaluate();
                 this._mutationCounter = 0;
                 this.updateArchive(chromosome);
             }

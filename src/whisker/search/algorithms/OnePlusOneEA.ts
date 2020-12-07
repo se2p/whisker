@@ -26,7 +26,6 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -66,12 +65,13 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    findSolution(): List<C> {
+    async findSolution(): Promise<List<C>> {
 
         this._startTime = Date.now();
         console.log("1+1 EA started at "+this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
+        await bestIndividual.evaluate();
         this._bestIndividuals.add(bestIndividual);
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
         let bestLength = bestIndividual.getLength();
@@ -80,13 +80,10 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
 
-        while (!this._stoppingCondition.isFinished(this)) {
+        while (!(this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
-            const oldString = bestIndividual.toString();
-            let candidateChromosome = bestIndividual.mutate();
-            while (oldString === candidateChromosome.toString()) {
-                candidateChromosome = bestIndividual.mutate();
-            }
+            const candidateChromosome = bestIndividual.mutate();
+            await candidateChromosome.evaluate();
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
             console.log("Iteration "+this._iterations+" ["+bestFitness+"]: "+candidateChromosome.toString()+" has fitness "+candidateFitness);
             this._iterations++;

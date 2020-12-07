@@ -35,7 +35,7 @@ import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedF
  */
 export abstract class SearchAlgorithmDefault<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    findSolution(): List<C> {
+    async findSolution(): Promise<List<C>> {
         throw new NotSupportedFunctionException();
     }
 
@@ -77,5 +77,11 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
 
     getStartTime(): number {
         throw new NotSupportedFunctionException();
+    }
+
+    async evaluatePopulation(population: List<C>) : Promise<void> {
+        for (const chromosome of population) {
+            await chromosome.evaluate();
+        }
     }
 }

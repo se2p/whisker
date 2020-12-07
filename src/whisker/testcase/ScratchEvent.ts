@@ -22,7 +22,7 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 
 export interface ScratchEvent {
 
-    apply(vm: VirtualMachine, args: number[]);
+    apply(vm: VirtualMachine, args: number[]) : Promise<void>;
 
     toJavaScript(args: number[]) : string;
 

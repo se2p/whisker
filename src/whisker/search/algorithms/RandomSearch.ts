@@ -66,7 +66,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    findSolution(): List<C> {
+    async findSolution(): Promise<List<C>> {
 
         let bestIndividual = null;
         let bestFitness = 0;
@@ -74,11 +74,12 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
 
-        while (!this._stoppingCondition.isFinished(this)) {
+        while (!(this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
             this._iterations++;
-            let candidateChromosome = this._chromosomeGenerator.get();
-            let candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            const candidateChromosome = this._chromosomeGenerator.get();
+            await candidateChromosome.evaluate();
+            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
 
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                 if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {

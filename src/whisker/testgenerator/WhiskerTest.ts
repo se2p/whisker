@@ -19,13 +19,7 @@
  */
 
 import {TestChromosome} from '../testcase/TestChromosome';
-import {NotYetImplementedException} from '../core/exceptions/NotYetImplementedException';
-import {List} from "../utils/List";
-import {TestExecutor} from "../testcase/TestExecutor";
-import {TextConverter} from "../testcase/TextConverter";
-import {Container} from "../utils/Container";
 import {JavaScriptConverter} from "../testcase/JavaScriptConverter";
-import {TestEventCounter} from "../testcase/TestEventCounter";
 
 /**
  * Internal representation of a test case such that we
@@ -52,20 +46,15 @@ export class WhiskerTest {
      * JavaScript code that can be executed with the regular Whisker UI
      */
     toJavaScriptCode(): string {
-        const executor = new TestExecutor(Container.vmWrapper);
-        const jsConverter = new JavaScriptConverter(executor);
+        const jsConverter = new JavaScriptConverter();
         return jsConverter.getText(this._chromosome);
     }
 
-    toString(): string {
-        const executor = new TestExecutor(Container.vmWrapper);
-        const textConverter = new TextConverter(executor);
-        return textConverter.getText(this._chromosome);
+    public toString = () : string => {
+        return this._chromosome.toString();
     }
 
     getEventsCount(): number {
-        const executor = new TestExecutor(Container.vmWrapper);
-        const eventCounter = new TestEventCounter(executor);
-        return eventCounter.getEventCount(this._chromosome)
+        return this._chromosome.getNumEvents();
     }
 }
