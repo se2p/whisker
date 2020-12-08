@@ -1,0 +1,15 @@
+{
+  "name": "whisker",
+  "version": "0.1.0",
+  "description": "A Testing Utility for Scratch 3.0",
+  "license": "GPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/se2p/whisker-main"
+  },
+  "workspaces": [
+    "whisker-main",
+    "whisker-web",
+    "servant"
+  ]
+}
