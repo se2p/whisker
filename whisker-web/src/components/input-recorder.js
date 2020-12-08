@@ -1,4 +1,4 @@
-const {Util} = require('../../../whisker-main');
+const {Util} = require('whisker-main');
 const EventEmitter = require('events');
 const {showModal, escapeHtml} = require('../utils.js');
 
