@@ -1,6 +1,7 @@
 # NPM
-/node_modules
-coverage
+*/node_modules
+node_modules
+*/coverage
 *~
 
 # Editor
@@ -8,7 +9,7 @@ coverage
 /.vscode
 
 # Build
-/dist
+*/dist
 /playground
 /docs
 
