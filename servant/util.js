@@ -37,7 +37,7 @@ const validateCommandLineArguments = args => {
 const cli = {
     start: () => {
         commander
-            .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../dist/index.html')
+            .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../whisker-web/dist/index.html')
             .option('-s, --scratchPath <Path>', 'Scratch application to run', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
