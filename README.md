@@ -10,18 +10,40 @@ However, functional programming errors may still lead to incorrect
 programs, and learners and their teachers need to identify and
 understand these errors. This is currently an entirely manual process.
 
-In our paper on **Testing Scratch Programs Automatically**, we 
+In our paper on **Testing Scratch Programs Automatically**, we
 introduced a formal testing framework that describes
 the problem of Scratch testing in detail. We instantiate this formal
 framework with the *Whisker* tool, which provides automated and
 property-based testing functionality for Scratch programs.
 
-The implementation of Whisker can be found in this repository. 
+The implementation of Whisker can be found in this repository.
 
 ![Whisker](https://raw.githubusercontent.com/se2p/whisker-main/master/logos/whisker-text-logo.jpg)
 
 Details on writing Whisker tests in JavaScript can be found
 [here](HOWTO.md).
+
+## Building Whisker Web
+
+```bash
+# Install dependencies and build both projects
+# Use 'npm run build:prod' for production build
+
+cd whisker-main
+npm install
+npm run build
+cd ..
+
+cd whisker-web
+npm install
+npm run build
+cd ..
+
+# Then just open 'whisker-web/dist/index.html' in your browser (e.g. firefox)
+
+firefox whisker-web/dist/index.html
+```
+Details on running tests automatically in a headless environment can be found [here](servant/README.md).
 
 ## Contributors
 
