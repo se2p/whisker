@@ -44,6 +44,7 @@ describe('MIO', () => {
     beforeEach(() => {
         const mock = new VMWrapperMock();
         mock.init()
+        // @ts-ignore
         Container.vmWrapper = mock;
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);

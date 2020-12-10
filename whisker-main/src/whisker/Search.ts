@@ -84,7 +84,7 @@ export class Search {
         util.start();
         const seed = Date.now();
         Randomness.setInitialSeed(seed);
-        seedScratch(seed);
+        seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();
         const tests = await this.execute(project, config);
         this.printTests(tests);

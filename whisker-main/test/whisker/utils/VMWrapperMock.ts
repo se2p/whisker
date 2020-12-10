@@ -1,3 +1,5 @@
+import VMWrapper from "../../../src/vm/vm-wrapper";
+
 export class VMWrapperMock {
 
     private startTime: number;

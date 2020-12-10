@@ -30,7 +30,7 @@ import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
-import {VMWrapper} from "../../vm/vm-wrapper.js"
+import VMWrapper = require("../../vm/vm-wrapper.js")
 
 export class TestExecutor {
 
@@ -58,7 +58,7 @@ export class TestExecutor {
         const events = new List<[ScratchEvent, number[]]>();
 
         this._vmWrapper.end();
-        seedScratch(Randomness.getInitialSeed());
+        seedScratch(String(Randomness.getInitialSeed()));
         this._vmWrapper.start();
 
         let numCodon = 0;
