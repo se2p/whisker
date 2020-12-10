@@ -16,7 +16,8 @@
     "scripts": {
         "build-main": "yarn --cwd whisker-main build",
         "build-web":  "yarn --cwd whisker-web build",
-        "servant":  "yarn --cwd servant node servant.js"
+        "servant":  "yarn --cwd servant node servant.js",
+        "test": "yarn --cwd whisker-main test"
     },
     "devDependencies": {
         "@babel/core": "^7.12.9",
