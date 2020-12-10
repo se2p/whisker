@@ -8,8 +8,8 @@ const {basename} = require('path');
 const puppeteer = require('puppeteer');
 const {logger, cli} = require('./util');
 const rimraf = require("rimraf");
-const TAP13Formatter = require('whisker-main/src/test-runner/tap13-formatter');
-const CoverageGenerator = require('whisker-main/src/coverage/coverage');
+const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
+const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
