@@ -11,14 +11,11 @@ cache:
 install_dependencies:
   stage: build
   script:
-    - npm install -D typescript
-    - npm install
+    - yarn install
     - mkdir -p output/static
 
 testing_testing:
   stage: test
   script:
-    - npm install -D typescript
-    - npm install
-    - npm test --coverage
+    - yarn test
     - mkdir -p output/static
