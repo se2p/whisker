@@ -52,8 +52,8 @@ beforeEach(async() => {
     await (await page.$('#fileselect-config')).uploadFile("../config/integrationtest.json");
 });
 
-describe('Test text typing functionality', () => {
-    test('Can type', async () => {
+describe('Basic event handling', () => {
+    test('Test text typing functionality', async () => {
         await loadProject('test/integration/typeTextEvent/TypeTextEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -62,11 +62,8 @@ describe('Test text typing functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-
-describe('Test text seeding functionality', () => {
-    test('Can use seeded strings', async () => {
+    test('Test text seeding functionality', async () => {
         await loadProject('test/integration/typeTextEvent_MultipleAnswers/TypeTextEvent_MultipleAnswersTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -75,11 +72,9 @@ describe('Test text seeding functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
 
-describe('Test Sprite clicking functionality', () => {
-    test('Can click', async () => {
+    test('Test Sprite clicking functionality', async () => {
         await loadProject('test/integration/spriteClickEvent/SpriteClickTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -88,11 +83,9 @@ describe('Test Sprite clicking functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
 
-describe('Test key down functionality', () => {
-    test('Can press key down', async () => {
+    test('Test key down functionality', async () => {
         await loadProject('test/integration/keyDownEvent/KeyDownEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -101,10 +94,8 @@ describe('Test key down functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test key press functionality', () => {
-    test('Can press key', async () => {
+    test('Test key press functionality', async () => {
         await loadProject('test/integration/keyPressEvent/KeyPressEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -113,10 +104,8 @@ describe('Test key press functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test mouse down functionality', () => {
-    test('Can do mouse down', async () => {
+    test('Test mouse down functionality', async () => {
         await loadProject('test/integration/mouseDownEvent/MouseDownEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -125,10 +114,8 @@ describe('Test mouse down functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test mouse move functionality', () => {
-    test('Can move mouse', async () => {
+    test('Test mouse move functionality', async () => {
         await loadProject('test/integration/mouseMoveEvent/MouseMoveEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -137,12 +124,18 @@ describe('Test mouse move functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test stage clicking functionality', () => {
-    test('Can click stage', async () => {
+    test('Test stage clicking functionality', async () => {
         await loadProject('test/integration/stageClickEvent/StageClickedTest.sb3')
-        debugger;
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test clicking on script multiple times', async () => {
+        await loadProject('test/integration/spriteClickEvent_Multiple/SpriteClickEvent_MultipleTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
@@ -150,4 +143,3 @@ describe('Test stage clicking functionality', () => {
         expect(coverage).toBe("1.00");
     }, timeout);
 });
-

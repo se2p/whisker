@@ -24,20 +24,21 @@ import {Container} from "../../utils/Container";
 
 export class ClickSpriteEvent implements ScratchEvent {
 
-    private target;
+    private readonly _target;
+
+    private readonly _timeout: number;
 
     constructor(target) {
-        this.target = target
+        this._target = target
+        this._timeout = Container.config.getWaitDuration() / Container.acceleration;
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
-        // TODO: Add key press duration to config?
-        const duration = 100 / Container.acceleration;
         Container.testDriver.inputImmediate({
             device: 'mouse',
-            sprite: Container.testDriver.getSprite(this.target.sprite.name),
+            sprite: Container.testDriver.getSprite(this._target.sprite.name),
             isDown: true,
-            duration: duration
+            duration: this._timeout
         });
     }
 
@@ -45,14 +46,14 @@ export class ClickSpriteEvent implements ScratchEvent {
         return '' +
 `t.inputImmediate({
     device: 'mouse',
-    sprite: t.getSprite('${this.target.sprite.name}'),
+    sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
-    duration: 100
-});`
+    duration: ${Container.config.getWaitDuration()}
+  });`;
     }
 
     public toString(args: number[]): string {
-        return "ClickSprite " + this.target.sprite.name;
+        return "ClickSprite " + this._target.sprite.name;
     }
 
     getNumParameters(): number {
