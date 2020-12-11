@@ -1,0 +1,49 @@
+{
+    "test-generator": "many-objective",
+    "algorithm": "mosa",
+    "chromosome": "variablelengthtest",
+    "population-size": 10,
+    "chromosome-length": 20,
+    "crossover": {
+        "operator": "singlepointrelative",
+        "probability": 0.8
+    },
+    "mutation": {
+        "operator": "variablelength",
+        "probability": 1,
+        "maxMutationCountStart": null,
+        "maxMutationCountFocusedPhase": null
+    },
+    "selection": {
+        "operator": "rank",
+        "size": 2,
+        "randomSelectionProbabilityStart": null,
+        "randomSelectionProbabilityFocusedPhase": null
+    },
+    "fitness-function": {
+        "type": "statement",
+        "targets": []
+    },
+    "stopping-condition": {
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "fixed-time",
+                "duration": 10000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "archive": {
+        "maxArchiveSizeStart": null,
+        "maxArchiveSizeFocusedPhase": null
+    },
+    "startOfFocusedPhase": null,
+    "integerRange": {
+        "min": 0,
+        "max": 640
+    },
+    "wait-duration": 25
+}

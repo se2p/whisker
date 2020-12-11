@@ -1,6 +1,6 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 30000 : 10000;
+const timeout = process.env.SLOWMO ? 30000 : 20000;
 
 async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
@@ -48,13 +48,9 @@ async function readCoverageOutput () {
 }
 
 beforeEach(async() => {
-    await (await page.$('#fileselect-config')).uploadFile("../config/default.json");
-});
-
-beforeAll(async () => {
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
+    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtest.json");
 });
-
 
 describe('Test text typing functionality', () => {
     test('Can type', async () => {
@@ -67,3 +63,78 @@ describe('Test text typing functionality', () => {
 
     }, timeout);
 });
+
+
+describe('Test Sprite clicking functionality', () => {
+    test('Can click', async () => {
+        await loadProject('test/integration/spriteClickEvent/SpriteClickTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+});
+
+
+describe('Test key down functionality', () => {
+    test('Can press key down', async () => {
+        await loadProject('test/integration/keyDownEvent/KeyDownEventTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+});
+
+describe('Test key press functionality', () => {
+    test('Can press key', async () => {
+        await loadProject('test/integration/keyPressEvent/KeyPressEventTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+});
+
+describe('Test mouse down functionality', () => {
+    test('Can do mouse down', async () => {
+        await loadProject('test/integration/mouseDownEvent/MouseDownEventTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+});
+
+describe('Test mouse move functionality', () => {
+    test('Can move mouse', async () => {
+        await loadProject('test/integration/mouseMoveEvent/MouseMoveEventTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+});
+
+describe('Test stage clicking functionality', () => {
+    test('Can click stage', async () => {
+        await loadProject('test/integration/stageClickEvent/StageClickedTest.sb3')
+        debugger;
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+    }, timeout);
+});
+
