@@ -1,4 +1,4 @@
-image: node:latest
+image: satantime/puppeteer-node:current
 
 stages:
   - build
@@ -23,9 +23,5 @@ testing_testing:
 
 integration_testing:
     stage: integrationtest
-    before_script:
-        - apt-get -y install wget
-        - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        - apt install -y ./google-chrome-stable_current_amd64.deb
     script:
         - yarn integrationtest
