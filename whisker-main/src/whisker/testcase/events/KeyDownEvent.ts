@@ -25,32 +25,32 @@ import {Container} from "../../utils/Container";
 export class KeyDownEvent implements ScratchEvent {
 
     private readonly _keyOption: string;
+    private readonly _value: boolean;
 
-    constructor(keyOption: string) {
+    constructor(keyOption: string, value: boolean) {
         this._keyOption = keyOption;
+        this._value = value;
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
-        const isKeyDown = Container.testDriver.isKeyDown(this._keyOption);
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,
-            isDown: !isKeyDown
+            isDown: this._value
         });
     }
 
     public toJavaScript(args: number[]): string {
-        const isKeyDown = Container.testDriver.isKeyDown(this._keyOption);
         return '' +
 `t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
-    isDown: ${!isKeyDown}
+    isDown: ${this._value}
 });`;
     }
 
     public toString(args: number[]): string {
-        return "KeyDown " + this._keyOption;
+        return "KeyDown " + this._keyOption+": "+this._value;
     }
 
     getNumParameters(): number {

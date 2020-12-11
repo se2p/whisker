@@ -106,7 +106,8 @@ export class ScratchEventExtractor {
                 // one event per concrete key for which there is a hat block
                 break;
             case 'sensing_keyoptions': // Key down
-                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value));
+                const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
+                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
                 break;
             case 'sensing_mousex':
             case 'sensing_mousey':
