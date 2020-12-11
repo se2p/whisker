@@ -24,26 +24,29 @@ import {Container} from "../../utils/Container";
 
 export class MouseDownEvent implements ScratchEvent {
 
+    private readonly _value: boolean;
+
+    constructor(value: boolean) {
+        this._value = value;
+    }
+
     async apply(vm: VirtualMachine): Promise<void> {
-        const isMouseDown = Container.testDriver.isMouseDown();
         Container.testDriver.inputImmediate({
             device: 'mouse',
-            isDown: !isMouseDown
+            isDown: this._value
         });
     }
 
     public toJavaScript(args: number[]): string {
-        const isMouseDown = Container.testDriver.isMouseDown();
         return '' +
 `t.inputImmediate({
     device: 'mouse',
-    isDown: ${!isMouseDown}
+    isDown: ${this._value}
 });`;
     }
 
     public toString = (args: number[]) : string => {
-        const isMouseDown = Container.testDriver.isMouseDown();
-        return "MouseDown " + isMouseDown;
+        return "MouseDown " + this._value;
     }
 
     getNumParameters(): number {

@@ -32,6 +32,7 @@ import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {Randomness} from "../utils/Randomness";
+import {Container} from "../utils/Container";
 
 export class ScratchEventExtractor {
 
@@ -115,7 +116,8 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_mousedown':
                 // Mouse down
-                eventList.add(new MouseDownEvent()); // TODO: Any hints on position?
+                const isMouseDown = Container.testDriver.isMouseDown();
+                eventList.add(new MouseDownEvent(!isMouseDown)); // TODO: Any hints on position?
                 break;
             case 'sensing_askandwait':
                 // Type text
