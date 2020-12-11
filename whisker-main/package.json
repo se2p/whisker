@@ -13,7 +13,7 @@
     "scripts": {
         "build": "webpack --progress --colors --bail",
         "build:prod": "NODE_ENV=production webpack --progress --colors --bail",
-        "test": "npm run build && jest --forceExit --coverage --verbose",
+        "test": "jest --forceExit --coverage --verbose",
         "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
         "watch-test": "npm run test -- --watchAll",
         "test:coverage": "npm test -- --coverage",

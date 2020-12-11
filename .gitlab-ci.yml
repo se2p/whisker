@@ -3,6 +3,7 @@ image: node:latest
 stages:
   - build
   - test
+  - integrationtest
 
 cache:
   paths:
@@ -19,3 +20,8 @@ testing_testing:
   script:
     - yarn test
     - mkdir -p output/static
+
+integration_testing:
+    stage: integrationtest
+    script:
+        - yarn integrationtest
