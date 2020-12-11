@@ -21,19 +21,19 @@
         "randomSelectionProbabilityFocusedPhase": null
     },
     "fitness-function": {
-        "type": "statement",
-        "targets": []
+      "type": "statement",
+      "targets": []
     },
     "stopping-condition": {
-        "type": "one-of",
-        "conditions": [
-            {
-                "type": "fixed-time",
-                "duration": 100000
-            },
-            {
-                "type": "optimal"
-            }
+        "type" : "one-of",
+        "conditions" : [
+          {
+            "type" : "optimal"
+          },
+          {
+            "type" : "fixed-time",
+            "duration": 100000
+          }
         ]
     },
     "archive": {
@@ -43,7 +43,7 @@
     "startOfFocusedPhase": null,
     "integerRange": {
         "min": 0,
-        "max": 480
+        "max": 640
     },
     "wait-duration": 25
 }

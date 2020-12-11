@@ -1,16 +1,16 @@
 {
-    "test-generator": "many-objective",
-    "algorithm": "mosa",
-    "chromosome": "variablelengthtest",
+    "test-generator": "iterative",
+    "algorithm": "one-plus-one",
+    "chromosome": "integerlist",
     "population-size": 10,
-    "chromosome-length": 20,
+    "chromosome-length": 10,
     "crossover": {
-        "operator": "singlepointrelative",
-        "probability": 0.8
+        "operator": "single-point",
+        "probability": 50
     },
     "mutation": {
-        "operator": "variablelength",
-        "probability": 1,
+        "operator": "integerlist",
+        "probability": 50,
         "maxMutationCountStart": null,
         "maxMutationCountFocusedPhase": null
     },
@@ -21,15 +21,15 @@
         "randomSelectionProbabilityFocusedPhase": null
     },
     "fitness-function": {
-        "type": "statement",
-        "targets": []
+      "type": "statement",
+      "targets": ["12Hat`ihC,:8qCIYF3ev"]
     },
-    "stopping-condition": {
+        "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
-                "type": "fixed-time",
-                "duration": 100000
+                "type": "fixed-iteration",
+                "iterations": 100
             },
             {
                 "type": "optimal"
@@ -43,7 +43,7 @@
     "startOfFocusedPhase": null,
     "integerRange": {
         "min": 0,
-        "max": 480
+        "max": 640
     },
-    "wait-duration": 25
+    "wait-duration": 5
 }
