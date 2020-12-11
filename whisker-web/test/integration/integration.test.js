@@ -65,6 +65,19 @@ describe('Test text typing functionality', () => {
 });
 
 
+describe('Test text seeding functionality', () => {
+    test('Can use seeded strings', async () => {
+        await loadProject('test/integration/typeTextEvent_MultipleAnswers/TypeTextEvent_MultipleAnswersTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+});
+
+
 describe('Test Sprite clicking functionality', () => {
     test('Can click', async () => {
         await loadProject('test/integration/spriteClickEvent/SpriteClickTest.sb3')
