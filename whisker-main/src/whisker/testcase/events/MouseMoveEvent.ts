@@ -26,24 +26,27 @@ import {Container} from "../../utils/Container";
 export class MouseMoveEvent implements ScratchEvent {
 
     async apply(vm: VirtualMachine, args: number[]): Promise<void> {
+        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
         Container.testDriver.inputImmediate({
             device: 'mouse',
-            x: args[0],
-            y: args[1]
+            x: Math.trunc(x),
+            y: Math.trunc(y)
         });
     }
 
     public toJavaScript(args: number[]): string {
+        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
         return '' +
 `t.inputImmediate({
     device: 'mouse',
-    x: ${args[0]},
-    y: ${args[1]}
+    x: ${Math.trunc(x)},
+    y: ${Math.trunc(y)}
 });`
     }
 
     public toString(args: number[]): string {
-        return "MouseMove " + args[0] + "/" + args[1];
+        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+        return "MouseMove " + Math.trunc(x) + "/" + Math.trunc(y);
     }
 
     getNumParameters(): number {

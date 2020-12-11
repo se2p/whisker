@@ -43,7 +43,7 @@
     "startOfFocusedPhase": null,
     "integerRange": {
         "min": 0,
-        "max": 640
+        "max": 480
     },
     "wait-duration": 25
 }
