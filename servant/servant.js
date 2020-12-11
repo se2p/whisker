@@ -256,10 +256,10 @@ async function runTests (path, browser, index) {
     }
 
     /**
-     * Uses the GoverageGererator, which is attached to the winow object in the whisker-web/index.js to get the coverage
+     * Uses the CoverageGenerator, which is attached to the window object in the whisker-web/index.js to get the coverage
      * of the test run and transfer it from the Whisker instance in the browser to this script.
-     * The original Maps and Sets have to be reworkd to be a collection of ojects and arrays, otherwise the coverage raw
-     * data cannot be transfered from the Chrome instance to the nodejs instance.
+     * The original Maps and Sets have to be reworked to be a collection of objects and arrays, otherwise the coverage raw
+     * data cannot be transferred from the Chrome instance to the nodejs instance.
      */
     async function onFinishedCallback () {
         return page.evaluate(() => new Promise(resolve => {
@@ -351,7 +351,7 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
 }
 
 /**
- * Wrapper for the test file preperation, creating the temporary workig directory and reading, distributing and writing
+ * Wrapper for the test file preparation, creating the temporary working directory and reading, distributing and writing
  * the files.
  *
  * @param {*} whiskerTestPath  Path to the whisker test file
