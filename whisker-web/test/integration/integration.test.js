@@ -142,4 +142,23 @@ describe('Basic event handling', () => {
         let coverage = await readCoverageOutput();
         expect(coverage).toBe("1.00");
     }, timeout);
+
+
+    test('Test multiple key presses', async () => {
+        await loadProject('test/integration/keyPressEvent_Multiple/KeyPressEvent_MultipleTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test multiple stage clicks', async () => {
+        await loadProject('test/integration/stageClickEvent_Multiple/StageClickEvent_MultipleTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+    }, timeout);
 });
