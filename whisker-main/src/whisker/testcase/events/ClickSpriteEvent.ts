@@ -30,7 +30,7 @@ export class ClickSpriteEvent implements ScratchEvent {
 
     constructor(target) {
         this._target = target
-        this._timeout = Container.config.getWaitDuration() / Container.acceleration;
+        this._timeout = Container.config.getClickDuration() / Container.acceleration;
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
@@ -48,7 +48,7 @@ export class ClickSpriteEvent implements ScratchEvent {
     device: 'mouse',
     sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
-    duration: ${Container.config.getWaitDuration()}
+    duration: ${Container.config.getClickDuration()}
   });`;
     }
 

@@ -30,11 +30,10 @@ export class KeyPressEvent implements ScratchEvent {
 
     constructor(keyOption: string) {
         this._keyOption = keyOption;
-        this._timeout = Container.config.getWaitDuration() / Container.acceleration;
+        this._timeout = Container.config.getPressDuration() / Container.acceleration;
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
-        const duration = 100 / Container.acceleration;
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,
@@ -49,7 +48,7 @@ export class KeyPressEvent implements ScratchEvent {
     device: 'keyboard',
     key: '${this._keyOption}',
     isDown: true,
-    duration: ${Container.config.getWaitDuration()}
+    duration: ${Container.config.getPressDuration()}
   });`;
     }
 
