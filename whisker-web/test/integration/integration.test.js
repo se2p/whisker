@@ -32,6 +32,10 @@ async function readCoverageOutput () {
         const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
         coverageLog = currentCoverageLog;
 
+        if (currentCoverageLog.includes("combined: NaN (0/0)")) {
+            return "1.00"; // TODO: How much coverage should there be if there are no blocks?
+        }
+
         if (currentCoverageLog.includes('combined:')) {
             var re = /combined: (\d+\.\d+)/i;
             var matches_array = currentCoverageLog.match(re);
@@ -50,6 +54,29 @@ async function readCoverageOutput () {
 beforeEach(async() => {
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
     await (await page.$('#fileselect-config')).uploadFile("../config/integrationtest.json");
+});
+
+
+describe('Corner cases handling', () => {
+    test('Test empty project', async () => {
+        await loadProject('test/integration/emptyProject/EmptyProject.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+
+    test('Test code without event handlers', async () => {
+        await loadProject('test/integration/onlyDeadCode/OnlyDeadCodeTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("0.00");
+
+    }, timeout);
 });
 
 describe('Basic event handling', () => {
@@ -133,7 +160,9 @@ describe('Basic event handling', () => {
         let coverage = await readCoverageOutput();
         expect(coverage).toBe("1.00");
     }, timeout);
+});
 
+describe('Multiple event handling', () => {
     test('Test clicking on script multiple times', async () => {
         await loadProject('test/integration/spriteClickEvent_Multiple/SpriteClickEvent_MultipleTest.sb3')
         await (await page.$('#run-search')).click();
