@@ -32,6 +32,10 @@ import {Randomness} from "./utils/Randomness";
 import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
+import {TestChromosome} from "./testcase/TestChromosome";
+import {ExecutionTrace} from "./testcase/ExecutionTrace";
+import {ScratchEvent} from "./testcase/ScratchEvent";
+import {WaitEvent} from "./testcase/events/WaitEvent";
 
 export class Search {
 
@@ -62,6 +66,38 @@ export class Search {
         return converter.getSuiteText(tests);
     }
 
+    private handleEmptyProject(): string {
+        console.log("Cannot find any suitable events for this project, not starting search.")
+        const stats = StatisticsCollector.getInstance();
+
+        let hasBlocks = false;
+        for (const target of this.vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                if (target.blocks._blocks) {
+                    hasBlocks = true;
+                    break;
+                }
+            }
+        }
+        if (!hasBlocks) {
+            console.log("Project contains no code")
+            stats.bestCoverage = 1.0;
+        }
+
+        const csvString: string = stats.asCsv();
+        console.log(csvString);
+
+        const tests = new List<WhiskerTest>();
+        const dummyTest = new TestChromosome(new List<number>(), null, null);
+        const events = new List<[ScratchEvent, number[]]>();
+        events.add([new WaitEvent(), [0]]);
+        dummyTest.trace = new ExecutionTrace([] as unknown as [any], events);
+
+        tests.add(new WhiskerTest(dummyTest));
+        const javaScriptText = this.testsToString(tests);
+        return javaScriptText;
+    }
+
     /*
      * Main entry point -- called from whisker-web
      */
@@ -79,6 +115,10 @@ export class Search {
         Container.acceleration = accelerationFactor;
         ScratchEventExtractor.extractAvailableTextSnippets(this.vm);
         ScratchEventExtractor.extractAvailableDurations(this.vm);
+        const events = ScratchEventExtractor.extractEvents(this.vm);
+        if (events.isEmpty()) {
+            return this.handleEmptyProject();
+        }
 
         await util.prepare(accelerationFactor || 1);
         util.start();

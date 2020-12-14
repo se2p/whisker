@@ -216,4 +216,20 @@ export class WhiskerSearchConfiguration {
             return 10;
         }
     }
+
+    public getPressDuration(): number {
+        if ("press-duration" in this.dict) {
+            return this.dict["press-duration"]
+        } else {
+            return 10;
+        }
+    }
+
+    public getClickDuration(): number {
+        if ("click-duration" in this.dict) {
+            return this.dict["click-duration"]
+        } else {
+            return 10;
+        }
+    }
 }

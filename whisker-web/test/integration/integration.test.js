@@ -32,6 +32,10 @@ async function readCoverageOutput () {
         const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
         coverageLog = currentCoverageLog;
 
+        if (currentCoverageLog.includes("combined: NaN (0/0)")) {
+            return "1.00"; // TODO: How much coverage should there be if there are no blocks?
+        }
+
         if (currentCoverageLog.includes('combined:')) {
             var re = /combined: (\d+\.\d+)/i;
             var matches_array = currentCoverageLog.match(re);
@@ -52,8 +56,31 @@ beforeEach(async() => {
     await (await page.$('#fileselect-config')).uploadFile("../config/integrationtest.json");
 });
 
-describe('Test text typing functionality', () => {
-    test('Can type', async () => {
+
+describe('Corner cases handling', () => {
+    test('Test empty project', async () => {
+        await loadProject('test/integration/emptyProject/EmptyProject.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
+
+    test('Test code without event handlers', async () => {
+        await loadProject('test/integration/onlyDeadCode/OnlyDeadCodeTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("0.00");
+
+    }, timeout);
+});
+
+describe('Basic event handling', () => {
+    test('Test text typing functionality', async () => {
         await loadProject('test/integration/typeTextEvent/TypeTextEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -62,11 +89,19 @@ describe('Test text typing functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
+
+    test('Test text seeding functionality', async () => {
+        await loadProject('test/integration/typeTextEvent_MultipleAnswers/TypeTextEvent_MultipleAnswersTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+
+    }, timeout);
 
 
-describe('Test Sprite clicking functionality', () => {
-    test('Can click', async () => {
+    test('Test Sprite clicking functionality', async () => {
         await loadProject('test/integration/spriteClickEvent/SpriteClickTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -75,11 +110,9 @@ describe('Test Sprite clicking functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
 
-describe('Test key down functionality', () => {
-    test('Can press key down', async () => {
+    test('Test key down functionality', async () => {
         await loadProject('test/integration/keyDownEvent/KeyDownEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -88,10 +121,8 @@ describe('Test key down functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test key press functionality', () => {
-    test('Can press key', async () => {
+    test('Test key press functionality', async () => {
         await loadProject('test/integration/keyPressEvent/KeyPressEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -100,10 +131,8 @@ describe('Test key press functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test mouse down functionality', () => {
-    test('Can do mouse down', async () => {
+    test('Test mouse down functionality', async () => {
         await loadProject('test/integration/mouseDownEvent/MouseDownEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -112,10 +141,8 @@ describe('Test mouse down functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test mouse move functionality', () => {
-    test('Can move mouse', async () => {
+    test('Test mouse move functionality', async () => {
         await loadProject('test/integration/mouseMoveEvent/MouseMoveEventTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
@@ -124,12 +151,9 @@ describe('Test mouse move functionality', () => {
         expect(coverage).toBe("1.00");
 
     }, timeout);
-});
 
-describe('Test stage clicking functionality', () => {
-    test('Can click stage', async () => {
+    test('Test stage clicking functionality', async () => {
         await loadProject('test/integration/stageClickEvent/StageClickedTest.sb3')
-        debugger;
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
@@ -138,3 +162,32 @@ describe('Test stage clicking functionality', () => {
     }, timeout);
 });
 
+describe('Multiple event handling', () => {
+    test('Test clicking on script multiple times', async () => {
+        await loadProject('test/integration/spriteClickEvent_Multiple/SpriteClickEvent_MultipleTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+    }, timeout);
+
+
+    test('Test multiple key presses', async () => {
+        await loadProject('test/integration/keyPressEvent_Multiple/KeyPressEvent_MultipleTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test multiple stage clicks', async () => {
+        await loadProject('test/integration/stageClickEvent_Multiple/StageClickEvent_MultipleTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        expect(coverage).toBe("1.00");
+    }, timeout);
+});

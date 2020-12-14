@@ -14,6 +14,7 @@
         "servant"
     ],
     "scripts": {
+        "build": "yarn --cwd whisker-main build && yarn --cwd whisker-web build",
         "build-main": "yarn --cwd whisker-main build",
         "build-web":  "yarn --cwd whisker-web build",
         "servant":  "yarn --cwd servant node servant.js",

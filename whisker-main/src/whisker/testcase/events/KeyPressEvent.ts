@@ -26,29 +26,30 @@ export class KeyPressEvent implements ScratchEvent {
 
     private readonly _keyOption: string;
 
+    private readonly _timeout: number;
+
     constructor(keyOption: string) {
         this._keyOption = keyOption;
+        this._timeout = Container.config.getPressDuration() / Container.acceleration;
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
-        const duration = 100 / Container.acceleration;
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,
             isDown: true,
-            duration: duration
+            duration: this._timeout
         });
     }
 
     public toJavaScript(args: number[]): string {
-        // TODO: add key press duration to config?
         return '' +
 `t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
     isDown: true,
-    duration: 100
-});`;
+    duration: ${Container.config.getPressDuration()}
+  });`;
     }
 
     public toString(args: number[]): string {

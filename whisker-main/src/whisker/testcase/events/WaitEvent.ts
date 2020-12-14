@@ -24,25 +24,15 @@ import {Container} from "../../utils/Container";
 
 export class WaitEvent implements ScratchEvent {
 
-    static timeout = -1; // timeout in ms
-    static accelerationFactor = -1;
-
-    runStartTime: number;
+    private readonly timeout: number;
 
     constructor() {
-        if (WaitEvent.accelerationFactor == -1 || WaitEvent.accelerationFactor !== Container.acceleration) {
-            WaitEvent.accelerationFactor = Container.acceleration;
-            WaitEvent.timeout = -1;
-        }
-
-        if (WaitEvent.timeout == -1) {
-            WaitEvent.timeout = Container.config.getWaitDuration() / WaitEvent.accelerationFactor
-        }
+        this.timeout = Container.config.getWaitDuration() / Container.acceleration;
     }
 
 
     async apply(vm: VirtualMachine): Promise<void> {
-        await Container.testDriver.runForTime(WaitEvent.timeout);
+        await Container.testDriver.runForTime(this.timeout);
     }
 
     public toJavaScript(args: number[]): string {
@@ -51,10 +41,6 @@ export class WaitEvent implements ScratchEvent {
 
     public toString(args: number[]): string {
         return "Wait " + Container.config.getWaitDuration();
-    }
-
-    getRunTimeElapsed(): number {
-        return (Date.now() - this.runStartTime);//* WaitEvent.accelerationFactor;
     }
 
     getNumParameters(): number {
