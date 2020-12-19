@@ -101,6 +101,7 @@ class TestRunner extends EventEmitter {
         this.emit(TestRunner.TEST_START, test);
 
         util.start();
+        testDriver.seedScratch();
 
         try {
             await test.test(testDriver);

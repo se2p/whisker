@@ -19,6 +19,7 @@
  */
 
 import {Randomness} from "../../../src/whisker/utils/Randomness";
+import {List} from "../../../src/whisker/utils/List";
 
 describe("Randomness", () => {
 
@@ -66,5 +67,21 @@ describe("Randomness", () => {
         const num = random.pick(list);
 
         expect(list).toContain(num);
+    });
+
+    test("Different seed, different sequence", () => {
+
+        const random = Randomness.getInstance();
+        Randomness.setInitialSeed(0);
+        const sequence1 = [];
+        for (let i = 0; i < 100; i++) {
+            sequence1.push(random.nextInt(0, 100));
+        }
+        Randomness.setInitialSeed(42);
+        const sequence2 = [];
+        for (let i = 0; i < 100; i++) {
+            sequence2.push(random.nextInt(0, 100));
+        }
+        expect(sequence1).not.toEqual(sequence2);
     });
 });
