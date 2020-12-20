@@ -60,7 +60,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     let summary;
     let coverage;
-    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
 
     try {
         await Whisker.scratch.vm.loadProject(project);
@@ -69,6 +68,16 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         summary = await Whisker.testRunner.runTests(vm, project, tests);
         coverage = CoverageGenerator.getCoverage();
+
+        if (typeof window.messageServantCallback === 'function') {
+            const coveredBlockIdsPerSprite =
+                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+            const blockIdsPerSprite =
+                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+
+            const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+            window.messageServantCallback({serializeableCoverageObject, summary});
+        }
 
         CoverageGenerator.restoreClasses({Thread});
     } finally {
@@ -79,7 +88,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     }
 
     if (summary === null) {
-        return
+        return;
     }
 
     const formattedSummary = TAP13Formatter.formatSummary(summary);
@@ -103,7 +112,7 @@ const runTests = async function (tests) {
 };
 
 const runAllTests = async function () {
-    if (Whisker.tests === undefined || Whisker.tests.length == 0) {
+    if (Whisker.tests === undefined || Whisker.tests.length === 0) {
         showModal('Test Execution', 'No tests loaded.');
         return;
     }
