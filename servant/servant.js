@@ -381,8 +381,6 @@ function prepareTestFiles (whiskerTestPath) {
  * @param {string} coverage  Combined coverage of from all pages
  */
 function printTestResultsFromCoverageGenerator (summaries, coverage) {
-    logger.info('Run Finished');
-
     const formattedSummary = TAP13Formatter.mergeFormattedSummaries(summaries.map(TAP13Formatter.formatSummary));
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
