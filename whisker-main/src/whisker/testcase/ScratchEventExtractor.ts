@@ -21,6 +21,7 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import Scratch3LooksBlocks from 'scratch-vm/src/blocks/scratch3_looks.js';
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {ScratchEvent} from "./ScratchEvent";
 import {KeyDownEvent} from "./events/KeyDownEvent";
@@ -38,6 +39,20 @@ export class ScratchEventExtractor {
 
     private static availableWaitDurations = new List<number>();
     private static availableTextSnippets = new List<string>();
+
+    static hasEvents(vm: VirtualMachine): boolean {
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
@@ -92,7 +107,7 @@ export class ScratchEventExtractor {
     }
 
 
-        // TODO: How to handle event parameters?
+    // TODO: How to handle event parameters?
     static _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         const fields = target.blocks.getFields(block);
@@ -122,8 +137,11 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                // TODO: Only if actually asking
-                eventList.addList(this._getTypeTextEvents());
+                const bubbleState = target.getCustomState(Scratch3LooksBlocks.STATE_KEY);
+                if (bubbleState) {
+                    eventList.addList(this._getTypeTextEvents());
+                }
+
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
@@ -145,6 +163,30 @@ export class ScratchEventExtractor {
         }
         return eventList;
     }
+
+    static _hasEvents(target, block): boolean {
+        const fields = target.blocks.getFields(block);
+        if (typeof block.opcode === 'undefined') {
+            return false;
+        }
+
+        switch (target.blocks.getOpcode(block)) {
+            case 'event_whenkeypressed':
+            case 'sensing_keyoptions':
+            case 'sensing_mousex':
+            case 'sensing_mousey':
+            case 'touching-mousepointer':
+            case 'sensing_mousedown':
+            case 'sensing_askandwait':
+            case 'event_whenthisspriteclicked':
+            case 'event_whenstageclicked':
+            case 'event_whengreaterthan':
+            case 'event_whenlessthan':
+                return true;
+        }
+        return false;
+    }
+
 
     private static _randomText(length: number): string {
         let answer = '';
