@@ -38,9 +38,10 @@ const cli = {
     start: () => {
         commander
             .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../whisker-web/dist/index.html')
-            .option('-s, --scratchPath <Path>', 'Scratch application to run', false)
+            .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
+            .option('-v, --csvFile <Path>', 'Name of CSV File to put output into', false)
             .option('-c, --configPath <Path>', 'Path to a configuration file', '../../whisker-main/config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
@@ -53,9 +54,10 @@ const cli = {
 
         const {
             whiskerURL,
-            testPath,
             scratchPath,
+            testPath,
             accelerationFactor,
+            csvFile,
             configPath,
             isHeadless,
             numberOfTabs,
@@ -72,6 +74,7 @@ const cli = {
             testPath,
             scratchPath,
             configPath,
+            csvFile,
             accelerationFactor,
             isHeadless,
             numberOfTabs,

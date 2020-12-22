@@ -10,11 +10,12 @@ const {logger, cli} = require('./util');
 const rimraf = require("rimraf");
 const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
+const CSVConverter = require('./converter.js');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, accelerationFactor, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
+    whiskerURL, testPath, scratchPath, configPath, csvFile, accelerationFactor, isHeadless, numberOfTabs, isConsoleForwarded,
     isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch,
 } = cli.start();
 
@@ -42,19 +43,50 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
     } else {
-        const paths = prepareTestFiles(testPath);
-        Promise.all(paths.map((path, index) => runTests(path, browser, index)))
-            .then(results => {
-                browser.close();
-                const summaries = results.map(({summary}) => summary);
-                const coverages = results.map(({coverage}) => coverage);
+        if (fs.lstatSync(scratchPath).isDirectory()) {
+            if (csvFile != false && fs.existsSync(csvFile)) {
+                console.error("CSV file already exists, aborting");
+                await browser.close();
+                return;
+            }
+            const csvs = [];
+            for (const file of fs.readdirSync(scratchPath)) {
+                if (!file.endsWith("sb3")) {
+                    logger.info("Not a Scratch project: "+file);
+                    next;
+                }
+                logger.info("Testing project "+file);
+                csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
+            }
 
-                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
-                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-            })
-            .catch(errors => logger.error('Error on executing tests: ', errors))
-            .finally(() => rimraf.sync(tmpDir));
+            if (csvFile != false) {
+                console.info("Creating CSV summary in "+csvFile);
+                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
+            }
+        } else {
+            await runTestsOnFile(browser, scratchPath);
+        }
+        await browser.close();
     }
+}
+
+async function runTestsOnFile (browser, targetProject) {
+    const paths = prepareTestFiles(testPath);
+    const csvs = [];
+    await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject)))
+        .then(results => {
+            // browser.close();
+            const summaries = results.map(({summary}) => summary);
+            const coverages = results.map(({coverage}) => coverage);
+            csvs.push(...results.map(({csv}) => csv));
+
+            printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
+            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+        })
+        .catch(errors => logger.error('Error on executing tests: ', errors))
+        .finally(() => rimraf.sync(tmpDir));
+
+    return csvs;
 }
 
 async function runGeneticSearch (browser) {
@@ -154,7 +186,7 @@ async function runGeneticSearch (browser) {
     }
 }
 
-async function runTests (path, browser, index) {
+async function runTests (path, browser, index, targetProject) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
@@ -181,7 +213,7 @@ async function runTests (path, browser, index) {
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
-        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        await (await page.$('#fileselect-project')).uploadFile(targetProject);
         await (await page.$('#fileselect-tests')).uploadFile(path);
         await (await page.$('#toggle-output')).click();
     }
@@ -235,7 +267,8 @@ async function runTests (path, browser, index) {
             await page.waitForTimeout(1000);
         }
 
-        return coverageLog;
+        let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
+        return {csvRow, coverageLog};
     }
 
     /**
@@ -273,11 +306,11 @@ async function runTests (path, browser, index) {
         const promise = onFinishedCallback();
         await executeTests();
 
-        await readTestOutput();
+        const {csvRow, coverageLog} = await readTestOutput();
         const {serializeableCoverageObject, summary} = await promise;
         await page.close();
 
-        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializeableCoverageObject)});
+        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializeableCoverageObject), csv: csvRow});
     } catch (e) {
         return Promise.reject(e);
     }

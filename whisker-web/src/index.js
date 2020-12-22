@@ -60,13 +60,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     let summary;
     let coverage;
+    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
 
     try {
         await Whisker.scratch.vm.loadProject(project);
         CoverageGenerator.prepareClasses({Thread});
         CoverageGenerator.prepareVM(vm);
 
-        summary = await Whisker.testRunner.runTests(vm, project, tests);
+        summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
         coverage = CoverageGenerator.getCoverage();
 
         if (typeof window.messageServantCallback === 'function') {
