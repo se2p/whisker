@@ -150,7 +150,7 @@ export class ScratchEventExtractor {
             // TODO: Add one event for each clone of this sprite --- each target is a clone
             case 'event_whenstageclicked':
                 // Click stage
-                eventList.add(new ClickStageEvent(target)); // TODO: Do we need a position for this?
+                eventList.add(new ClickStageEvent(target));
                 break;
             case 'event_whengreaterthan':
                 // Sound
