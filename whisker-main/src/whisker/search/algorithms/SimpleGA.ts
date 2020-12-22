@@ -75,6 +75,9 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private generateInitialPopulation(): List<C> {
         const population = new List<C>();
         for (let i = 0; i < this._properties.getPopulationSize(); i++) {
+            if (this._stoppingCondition.isFinished(this)) {
+                break;
+            }
             population.add(this._chromosomeGenerator.get());
         }
         return population;
