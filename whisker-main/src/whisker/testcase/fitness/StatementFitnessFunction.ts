@@ -156,7 +156,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             }
 
             if (traceMin <= minBranchApproachLevel) {
-                if (!this._targetNode.block.opcode.startsWith("event_") && blockTrace.opcode.startsWith("control") && !(blockTrace.opcode === "control_wait")) {
+                if (!this._targetNode.block.opcode.startsWith("event_") && this._targetNode.block.opcode !== 'control_start_as_clone' && blockTrace.opcode.startsWith("control") && !(blockTrace.opcode === "control_wait")) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -176,7 +176,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                         minBranchApproachLevel = traceMin;
                         branchDistance = newDistance;
                     }
-                } else if (blockTrace.opcode.startsWith("event_")) {
+                } else if (blockTrace.opcode.startsWith("event_") || blockTrace.opcode === 'control_start_as_clone') {
 
                     // In event blocks we always have the true distance, otherwise we would not be here
                     // An event block in the trace means it was executed
@@ -216,6 +216,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
                 }
+                break;
+            }
+            case 'control_start_as_clone': {
+                requiredCondition = true;
                 break;
             }
             case 'control_if_else': {

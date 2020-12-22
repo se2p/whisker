@@ -131,22 +131,32 @@ export class TestExecutor {
     }
 
     private resetState() {
+        // Delete clones
+        const clones = [];
         for (const targetsKey in this._vm.runtime.targets) {
-            if (this._initialState.hasOwnProperty(targetsKey)) {
-                this._vm.runtime.targets[targetsKey]["direction"] = this._initialState[targetsKey]["direction"];
-                this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
-                this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
-                this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
-                this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
-                this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
-                this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
-                this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
-                this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
-                this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
-                this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
-            } else {
-                this._vm.runtime.disposeTarget(this._vm.runtime.targets[targetsKey])
+            if (!this._vm.runtime.targets[targetsKey].isOriginal) {
+                clones.push(this._vm.runtime.targets[targetsKey]);
             }
+        }
+
+        for (const target of clones) {
+            this._vm.runtime.stopForTarget(target);
+            this._vm.runtime.disposeTarget(target);
+        }
+
+        // Restore state of all others
+        for (const targetsKey in this._vm.runtime.targets) {
+            this._vm.runtime.targets[targetsKey]["direction"] = this._initialState[targetsKey]["direction"];
+            this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
+            this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
+            this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
+            this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
+            this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
+            this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
+            this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
+            this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
+            this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
+            this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
         }
     }
 
