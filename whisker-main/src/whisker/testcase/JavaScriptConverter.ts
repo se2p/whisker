@@ -29,6 +29,7 @@ export class JavaScriptConverter {
         for (const [scratchEvent, args] of test.trace.events) {
             text += "  " + scratchEvent.toJavaScript(args) + "\n";
         }
+        text += "  t.end();\n";
         text += `}
 
         module.exports = [

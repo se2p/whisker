@@ -57,7 +57,6 @@ export class TestExecutor {
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
 
-        this._vmWrapper.end();
         seedScratch(String(Randomness.getInitialSeed()));
         this._vmWrapper.start();
 
@@ -92,6 +91,8 @@ export class TestExecutor {
         await new WaitEvent().apply(this._vm);
         await new WaitEvent().apply(this._vm);
         await new WaitEvent().apply(this._vm);
+        this._vmWrapper.end();
+
         this.resetState();
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         return testChromosome.trace;
