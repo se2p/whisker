@@ -42,7 +42,9 @@ After building Whisker, simply open 'whisker-web/dist/index.html' in your browse
 firefox whisker-web/dist/index.html
 ```
 
-To use Whisker on the command line, you can use the Servant node frontend:
+The Servant is a wrapper around the web client, allowing to run tests automatically in a headless environment (via chrome-headless / (puppeteer)[https://github.com/puppeteer/puppeteer]). It is called the Servant as in "Cats don't have owners they have servants".
+
+To use Whisker on the command line, you can use the Servant node frontend as follows:
 
 ```bash
 node servant/servant.js -s <Scratch project file> -t <test file>
@@ -72,7 +74,15 @@ Options:
   -h, --help                          display help for command
 ```
 
-To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend to use an acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
+To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
+
+For example, the following command runs tests with a 10 fold speedup and two parallel executions in a headless chrome instance:
+
+```
+node servant.js -s project.sb3 -t tests.js -a 10 -d -p 2
+```
+
+
 
 ## Writing Tests
 
