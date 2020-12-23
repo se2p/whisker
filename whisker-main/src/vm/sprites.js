@@ -46,13 +46,8 @@ class Sprites {
         wrapper._update();
         this.sprites[target.id] = wrapper;
 
-        if (this._onSpriteMoved) {
-            target.on(RenderedTarget.EVENT_TARGET_MOVED, this.doOnSpriteMoved.bind(this));
-        }
-
-        if (this._onSpriteVisualChange) {
-            target.on(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this.doOnSpriteVisualChange.bind(this));
-        }
+        target.on(RenderedTarget.EVENT_TARGET_MOVED, this.doOnSpriteMoved.bind(this));
+        target.on(RenderedTarget.EVENT_TARGET_VISUAL_CHANGE, this.doOnSpriteVisualChange.bind(this));
 
         return wrapper;
     }
