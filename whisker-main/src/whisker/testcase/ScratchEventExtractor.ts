@@ -51,7 +51,7 @@ export class ScratchEventExtractor {
             }
         }
 
-        return false;
+        return !this.availableWaitDurations.isEmpty();
     }
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
@@ -64,7 +64,9 @@ export class ScratchEventExtractor {
             }
         }
 
-        // TODO: Default actions -- wait?
+        for (const duration of this.availableWaitDurations) {
+            eventList.add(new WaitEvent(duration));
+        }
 
         return eventList;
     }
@@ -99,7 +101,7 @@ export class ScratchEventExtractor {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
-                    if (duration >= 0 && !this.availableWaitDurations.contains(duration))
+                    if (duration > 0 && !this.availableWaitDurations.contains(duration))
                         this.availableWaitDurations.add(duration);
                 }
             }
@@ -145,9 +147,8 @@ export class ScratchEventExtractor {
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                eventList.add(new ClickSpriteEvent(target)); // TODO: Store which sprite
+                eventList.add(new ClickSpriteEvent(target));
                 break;
-            // TODO: Add one event for each clone of this sprite --- each target is a clone
             case 'event_whenstageclicked':
                 // Click stage
                 eventList.add(new ClickStageEvent(target));
@@ -202,13 +203,21 @@ export class ScratchEventExtractor {
         const inputs = target.blocks.getInputs(block);
         if (target.blocks.getOpcode(block) == 'control_wait') {
             const op = target.blocks.getBlock(inputs.DURATION.block);
-            return target.blocks.getFields(op).NUM.value;
+            const field = target.blocks.getFields(op).NUM;
+            if (!field) {
+                return -1;
+            }
+            return 1000 * parseFloat(field.value);
         } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
             target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
             target.blocks.getOpcode(block) == 'motion_glideto' ||
             target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
             const op = target.blocks.getBlock(inputs.SECS.block);
-            return target.blocks.getFields(op).NUM.value;
+            const field = target.blocks.getFields(op).NUM;
+            if (!field) {
+                return -1;
+            }
+            return 1000 * parseFloat(field.value);
         }
         return -1;
     }

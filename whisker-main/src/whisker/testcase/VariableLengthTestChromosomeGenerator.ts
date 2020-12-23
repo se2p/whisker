@@ -34,11 +34,13 @@ export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerat
                 crossoverOp: Crossover<TestChromosome>, init_length: number) {
         super(properties, mutationOp, crossoverOp);
         this._init_length = init_length;
+        if (!init_length) {
+            this._init_length = 2;
+        }
     }
 
     protected getLength(): number {
-        return 2; // TODO: This should be a parameter
-        // return Randomness.getInstance().nextInt(1, this._length);
+        return Randomness.getInstance().nextInt(this._init_length, this._length);
     }
 
 }
