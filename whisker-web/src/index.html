@@ -6,6 +6,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <script>
+        function changeLang(){
+            document.getElementById('form_lang').submit();
+        }
+    </script>
     <title>Whisker Web GUI</title>
     <link rel="shortcut icon" href="https://beta.scratch.mit.edu/static/favicon.ico">
 
@@ -15,7 +20,24 @@
 
 <body>
     <div id="header" class="container-fluid row">
-        <h1>This is the header</h1>
+        <div class="container-fluid spacer50" style="padding-left:0px; padding-right:0px; min-width:100%;
+        position:relative; text-align:center;">
+            <div style="position:absolute; top:8px; right:16px;">
+                <ul class="nav justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./html/faq.html">FAQ</a>
+                    </li>
+                    <li style="padding-left:30px;">
+                        <form method='get' action='' id='form_lang' >
+                            <select name='lang' onchange='changeLang();' style="font-size:12px; padding:4px; margin:9px;">
+                                <option value='en'  >English</option>
+                                <option value='de' selected >Deutsch</option>
+                            </select>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
     <div id="main" class="container-fluid row">
         <div id="left-col" class="col-md-5 col-sm-12">
@@ -168,7 +190,7 @@
         </div>
     </div>
 
-    <div id="footer">
+    <div id="footer" style="background-color:var(--backgroundColor);">
         <div class="container-fluid">
             <div class="container" style="padding-top:30px;">
                 <div class="row">
@@ -181,13 +203,13 @@
                     <div class="col-lg-12">
                         <ul class="nav justify-content-center">
                             <li class="nav-item">
-                                <a class="nav-link" href="kontakt.php" >Kontakt</a>
+                                <a class="nav-link" href="kontakt.html" >Kontakt</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="impressum.php" >Impressum</a>
+                                <a class="nav-link" href="impressum.html" >Impressum</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="datenschutz.php" >Datenschutz</a>
+                                <a class="nav-link" href="datenschutz.html" >Datenschutz</a>
                             </li>
                         </ul>
                     </div>
