@@ -42,7 +42,7 @@ const cli = {
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
             .option('-v, --csvFile <Path>', 'Name of CSV File to put output into', false)
-            .option('-c, --configPath <Path>', 'Path to a configuration file', '../../whisker-main/config/default.json')
+            .option('-c, --configPath <Path>', 'Path to a configuration file', '../whisker-main/config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
