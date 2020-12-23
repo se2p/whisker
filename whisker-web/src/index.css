@@ -1,8 +1,81 @@
+/* ==== Color Scheme ==== */
+
+body {
+    --mainColor: #ffc32d;
+    --mainColorHover: #9c6f00;
+    --mainColorAlpha: rgba(248, 151, 28, 0.6);
+    --mainColorAlpha2: rgba(248, 151, 28, 0.15);
+    --textColor: #606060;
+    --textColorHover: #303030;
+    --subColor: #45bce4;
+    --headingColor: #777;
+    --subheadingColor: #313b48;
+    --backgroundColor: #313b48
+}
+
+h1, h4, h5, h6, h7 {
+    color: var(--headingColor);
+}
+
+h2 {
+    color: var(--subColor) !important;
+    text-align:center;
+}
+
+h2::before {
+    background: #e1e1e1 none repeat scroll 0 0;
+    bottom: -5px;
+    content: "";
+    height: 1px;
+    left: 50%;
+    margin-left: -50px;
+    position: absolute;
+    width: 100px;
+}
+
+h2::after {
+    content: "";
+    left: 50%;
+    position: absolute;
+    background: var(--mainColor) none repeat scroll 0 0;
+    background-color: var(--mainColor);
+    bottom: -6px;
+    height: 3px;
+    margin-left: -15px;
+    width: 30px;
+}
+
+h3 {
+    border-left: 3px solid var(--mainColor);
+    font-size:22px;
+    color: #fff;
+    margin-bottom: 30px;
+    padding-left: 20px;
+}
+
+h3::first-letter {
+    color: var(--mainColor);
+}
+
+/* ==== Basic Structure ==== */
+
 #header {
     padding-top: 1vh;
     padding-bottom: 1vh;
     width: 100%;
     margin: auto;
+}
+
+.spacer10 {
+    margin-bottom: 10px;
+}
+
+.spacer20 {
+    margin-bottom: 20px;
+}
+
+.spacer50 {
+    margin-bottom: 50px;
 }
 
 #main {
@@ -22,8 +95,8 @@
     padding-bottom: 1vh;
     width: 100%;
     margin: auto;
-    background-color: #2a293e;
 }
+
 
 /* ===== Socials ===== */
 
