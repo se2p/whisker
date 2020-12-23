@@ -91,10 +91,10 @@ export class TestExecutor {
         await new WaitEvent().apply(this._vm);
         await new WaitEvent().apply(this._vm);
         await new WaitEvent().apply(this._vm);
-        this._vmWrapper.end();
 
-        this.resetState();
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        this._vmWrapper.end();
+        this.resetState();
         return testChromosome.trace;
     }
 
