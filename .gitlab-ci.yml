@@ -1,0 +1,34 @@
+image: satantime/puppeteer-node:current
+
+stages:
+  - build
+  - test
+  - integrationtest
+
+cache:
+  paths:
+    - node_modules/
+
+build_all:
+  stage: build
+  script:
+    - yarn install
+    - mkdir -p output/static
+    - yarn build-main
+    - yarn build-web
+  artifacts:
+      paths:
+        - whisker-main/dist
+        - whisker-web/dist
+
+
+unit-tests:
+  stage: test
+  script:
+    - yarn test
+    - mkdir -p output/static
+
+integration-tests:
+    stage: integrationtest
+    script:
+        - yarn integrationtest
