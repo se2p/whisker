@@ -101,7 +101,7 @@ export class ScratchEventExtractor {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
-                    if (duration >= 0 && !this.availableWaitDurations.contains(duration))
+                    if (duration > 0 && !this.availableWaitDurations.contains(duration))
                         this.availableWaitDurations.add(duration);
                 }
             }
@@ -207,7 +207,7 @@ export class ScratchEventExtractor {
             if (!field) {
                 return -1;
             }
-            return 1000 * parseInt(field.value);
+            return 1000 * parseFloat(field.value);
         } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
             target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
             target.blocks.getOpcode(block) == 'motion_glideto' ||
@@ -217,7 +217,7 @@ export class ScratchEventExtractor {
             if (!field) {
                 return -1;
             }
-            return 1000 * parseInt(field.value);
+            return 1000 * parseFloat(field.value);
         }
         return -1;
     }
