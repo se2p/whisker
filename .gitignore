@@ -1,14 +1,24 @@
 # NPM
-/node_modules
+**/node_modules
+**/dist
+coverage
+*~
 
 # Editor
 /.idea
 /.vscode
 
 # Build
-/dist
+*/dist
 /playground
 /docs
 
 # Stuff
 /stuff
+
+# Servant specific
+/servant/node_modules
+/servant/tests
+/servant/.tmpWorkingDir
+/servant/*.csv
+/servant/evaluation.js
