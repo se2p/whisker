@@ -16,7 +16,7 @@ However, functional programming errors may still lead to incorrect
 programs, and learners and their teachers need to identify and
 understand these errors. This is currently an entirely manual process.
 
-Whisker provides automated and  property-based testing functionality for Scratch programs.
+Whisker provides automated and property-based testing functionality for Scratch programs.
 
 
 ## Building Whisker
@@ -81,9 +81,10 @@ Details on writing Whisker tests in JavaScript can be found
 
 ## Generating Tests Automatically
 
-The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate search configuration (examples can be found in the `config` directory), and click  `Run Search`. Warning: This may take a while! Once the search has completed, the generated tests are loaded into the editor window.
+The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate search configuration (examples can be found in the `config` directory), and click `Run Search`. Warning: This may take a while! Once the search has completed, the generated tests are loaded into the editor window.
 
-If you run test generation with servant (command line option `-g) then at the end of the search a file `tests.js` is created in the current directory which contains the tests. These can now be loaded into Whisker.
+If you run test generation with Servant (command line option `-g`), at the end of the search a file called `tests.js`
+is created in the current directory which contains the tests. These can now be loaded into Whisker.
 
 ## Contributors
 
