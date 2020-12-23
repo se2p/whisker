@@ -1,6 +1,6 @@
 {
     "name": "servant",
-    "version": "1.0.0",
+    "version": "0.4.0",
     "description": "Servant for Whisker",
     "main": "servant.js",
     "dependencies": {
@@ -10,7 +10,7 @@
         "js-yaml": "^3.14.1",
         "puppeteer": "5.5.0",
         "rimraf": "3.0.2",
-        "whisker-web": "0.1.0",
+        "whisker-web": "0.4.0",
         "yaml": "^1.10.0"
     },
     "scripts": {
