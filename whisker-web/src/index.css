@@ -57,6 +57,43 @@ h3::first-letter {
     color: var(--mainColor);
 }
 
+p {
+    color: var(--textColor);
+}
+
+.nav .nav-item .active {
+    color: var(--mainColor);
+}
+
+.nav .nav-item .active:hover{
+    color: var(--mainColorHover);
+}
+
+.nav .nav-item a {
+    color: var(--textColor);
+    font-size: 16px;
+}
+
+.nav .nav-item a:hover {
+    color: var(--textColorHover);
+}
+
+.btn-main {
+    color: var(--subheadingColor);
+    background-color: var(--mainColor);
+    border-color: var(--mainColor);
+}
+
+.btn-main:hover {
+    background-color: var(--mainColorHover);
+    border-color: var(--mainColorHover);
+}
+
+.custom-file-input:focus ~ .custom-file-label, .form-control:focus {
+    border-color: var(--mainColor);
+    box-shadow: 0 0 0 .2rem var(--mainColorAlpha);
+}
+
 /* ==== Basic Structure ==== */
 
 #header {
@@ -64,6 +101,11 @@ h3::first-letter {
     padding-bottom: 1vh;
     width: 100%;
     margin: auto;
+}
+
+.banner {
+    width:100%;
+    padding-top:10px;
 }
 
 .spacer10 {
@@ -95,6 +137,40 @@ h3::first-letter {
     padding-bottom: 1vh;
     width: 100%;
     margin: auto;
+}
+
+@media (max-width: 1400px) {
+    .banner {
+        padding-top:20px !important;
+    }
+    .nav .nav-item a {
+        font-size: 14px !important;
+    }
+}
+@media (max-width: 970px) {
+    .banner {
+        padding-top:30px !important;
+    }
+    .scratchBlocksHome {
+        display: none;
+    }
+    #form_lang select {
+        font-size:10px;
+        padding:2px;
+    }
+}
+@media (max-width: 800px) {
+    .banner {
+        padding-top:40px !important;
+    }
+    .nav .nav-item a {
+        font-size: 12px !important;
+    }
+}
+@media (max-width: 600px) {
+    .banner {
+        padding-top:50px !important;
+    }
 }
 
 
@@ -307,6 +383,5 @@ h3::first-letter {
 .table-striped > tbody > .even:nth-of-type(n) + tr:not(.odd):not(.even) {
     background-color: rgba(0,0,0,.03);
 }
-
 
 
