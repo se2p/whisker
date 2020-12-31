@@ -39,7 +39,7 @@
 
     <div id="main" class="container">
 
-        <div class="row">
+        <div class="row" style="padding-bottom: 15px;">
             <div class="col-lg-7">
                 <p>Herzlich willkommen auf unserer Website. Du möchtest dein Scratch-Programm gerne testen und
                     kommst nicht weiter? Verwende unsere Whisker-Tools, um Tests zu schreiben oder automatisch
@@ -49,20 +49,202 @@
                     Programms getestet wurde.
                 </p>
             </div>
-            <div class="col-lg-5 scratchBlocksHome" style="margin-bottom:-80px;">
-            <pre class="blocks">
-                Wenn ich  (Programm auswerten) empfange
-                gehe zu (Litterbox)
-                frage [Was ist falsch am Programm?] und warte
-                wechsle zu Bühnenbild [Fehlerauswertung v]
-            </pre>
+            <div class="col-lg-5">
+                <!-- Use tabindex to make the canvas focusable. -->
+                <canvas id="scratch-stage" tabindex="1"></canvas>
             </div>
         </div>
 
-        <div id="left-col" class="col-md-5 col-sm-12">
-            <!-- Use tabindex to make the canvas focusable. -->
-            <canvas id="scratch-stage" tabindex="1"></canvas>
+        <div class="container spacer50">
+            <div class="row">
+                <div class="col-lg-12">
+                    <form action="analyse.php" method="post" enctype="multipart/form-data" >
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div id="fileUpload" class="row chooseFile">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label for="programmDatei" style="padding-bottom:7px; padding-top:7px;">Deine Programmdatei</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <img src="assets/sb3.png" style="max-height:40px;" alt="sb3"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group" style="margin-bottom:9px;">
+                                                    <input name="programmDatei" class="form-control-file" type="file" id="programmDatei" accept=".sb3" onchange="fileChange()">
+                                                </div>
+                                                <div class="form-group">
+                                                    <small id="dateiHilfe" class="form-text text-muted">Wähle eine Datei von deiner Festplatte aus.</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div id="projectURL" class="row chooseFile">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label for="programmDatei" style="padding-bottom:7px; padding-top:7px;">URL deines Scratch-Programms</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <img src="assets/url.png" style="max-height:40px;" alt="url"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
+                                                    </div>
+                                                    <input name="programmURL" type="text" class="form-control" id="programmURL" aria-describedby="basic-addon3" onchange="chooseProject()">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div id="testUpload" class="row chooseFile">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label for="testDatei"
+                                                       style="padding-bottom:7px; padding-top:7px;">Deine Testdatei</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <img src="assets/js.png" style="max-height:40px;" alt="js"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group" style="margin-bottom:9px;">
+                                                    <input name="testDatei" class="form-control-file" type="file"
+                                                           id="testDatei" accept=".js" onchange="fileChange()">
+                                                </div>
+                                                <div class="form-group">
+                                                    <small id="dateiHilfe2" class="form-text text-muted">Wähle eine
+                                                        Datei von deiner Festplatte aus.</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div id="configUpload" class="row chooseFile">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label for="configDatei"
+                                                       style="padding-bottom:7px; padding-top:7px;">Deine
+                                                    Konfigurationsdatei</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <img src="assets/json.png" style="max-height:40px;" alt="json"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group" style="margin-bottom:9px;">
+                                                    <input name="configDatei" class="form-control-file" type="file"
+                                                           id="configDatei" accept=".json" onchange="fileChange()">
+                                                </div>
+                                                <div class="form-group">
+                                                    <small id="dateiHilfe3" class="form-text text-muted">Wähle eine
+                                                        Datei von deiner Festplatte aus.</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="row userData">
+                                    <div class="col-lg-12">
+                                        <div class="form-group">
+                                            <label for="teilnehmerAlter">Dein Alter</label>
+                                            <select name="teilnehmerAlter" class="form-control" id="teilnehmerAlter">
+                                                <option selected>Bitte gib dein Alter an (optional) ...</option>
+                                                <option>unter 10 Jahren</option>
+                                                <option>zwischen 10 und 14 Jahren</option>
+                                                <option>zwischen 15 und 18 Jahren</option>
+                                                <option>über 18 Jahren</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row userData">
+                                    <div class="col-lg-12">
+                                        <div class="form-group">
+                                            <label for="teilnehmerGeschlecht">Dein Geschlecht</label>
+                                            <div style="margin-top: 5px;">
+                                                <div class="custom-control custom-radio custom-control-inline">
+                                                    <input type="radio" id="geschlechtMaennlich" name="teilnehmerGeschlecht" class="custom-control-input" value="male">
+                                                    <label class="custom-control-label" for="geschlechtMaennlich">männlich</label>
+                                                </div>
+                                                <div class="custom-control custom-radio custom-control-inline">
+                                                    <input type="radio" id="geschlechtWeiblich" name="teilnehmerGeschlecht" class="custom-control-input" value="female">
+                                                    <label class="custom-control-label" for="geschlechtWeiblich">weiblich</label>
+                                                </div>
+                                                <div class="custom-control custom-radio custom-control-inline">
+                                                    <input type="radio" id="geschlechtDivers" name="teilnehmerGeschlecht" class="custom-control-input" value="other">
+                                                    <label class="custom-control-label" for="geschlechtDivers">divers</label>
+                                                </div>
+                                                <div class="custom-control custom-radio custom-control-inline">
+                                                    <input type="radio" id="geschlechtKeineAngabe" name="teilnehmerGeschlecht" class="custom-control-input" value="noInformation" checked>
+                                                    <label class="custom-control-label" for="geschlechtKeineAngabe">keine Angabe</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="row userData">
+                                    <div class="col-lg-12">
+                                        <div class="form-group">
+                                            <label for="teilnehmerBeschreibung">Was willst du gerne testen, klappt aber
+                                                nicht?</label>
+                                            <textarea class="form-control" id="teilnehmerBeschreibung" name="teilnehmerBeschreibung" rows="4"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row spacer10">
+                            <div class="col-lg-12" style="text-align:center;">
+                                <button id="btnSubmit" type="submit" class="btn btn-main" disabled>Programm
+                                    testen</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-3" style="text-align:center;">
 
+                            </div>
+                            <div class="col-lg-6" style="text-align:center; font-size:11px;" id="infoTooltip">
+
+                            </div>
+                            <div class="col-lg-3" style="text-align:center;">
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <--- TODO --->
+
+        <div id="left-col" class="col-md-5 col-sm-12">
             <form class="mt-3">
                 <div class="form-group">
                     <label for="fileselect-project">Scratch Project</label>
@@ -208,6 +390,8 @@
             </div>
         </div>
     </div>
+
+    <-- TODO -->
 
     <div id="footer" style="background-color:var(--backgroundColor);">
         <div class="container-fluid">

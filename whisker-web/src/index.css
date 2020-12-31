@@ -159,6 +159,17 @@ p {
     margin: auto;
 }
 
+.chooseFile {
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    margin: 10px;
+    min-height: 120px;
+}
+
+.userData {
+    margin:10px;
+}
+
 #right-col {
     height: 98vh;
     overflow-y: auto;
