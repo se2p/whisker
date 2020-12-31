@@ -13,6 +13,15 @@ body {
     --backgroundColor: #313b48
 }
 
+.patternLink {
+    color: var(--textColor);
+}
+
+.patternLink:hover {
+    color: var(--textColorHover);
+    text-decoration: none;
+}
+
 h1, h4, h5, h6, h7 {
     color: var(--headingColor);
 }
@@ -51,6 +60,29 @@ h3 {
     color: #fff;
     margin-bottom: 30px;
     padding-left: 20px;
+}
+
+
+.thumbs {
+    padding:5px;
+    background-color: #fff;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.thumbs a {
+    font-size:16px !important;
+}
+
+.thumbs:hover {
+    background-color: #f2f2f2;
+    border-radius: 4px;
+    padding:5px;
+}
+
+.thumbs:hover a {
+    text-decoration: none !important;
+    color: var(--mainColor);
 }
 
 h3::first-letter {
@@ -172,7 +204,6 @@ p {
         padding-top:50px !important;
     }
 }
-
 
 /* ===== Socials ===== */
 
@@ -382,6 +413,130 @@ p {
 }
 .table-striped > tbody > .even:nth-of-type(n) + tr:not(.odd):not(.even) {
     background-color: rgba(0,0,0,.03);
+}
+
+/* ==== Text Styling ==== */
+
+* {box-sizing: border-box}
+body {font-family: Verdana, sans-serif; margin:0}
+.mySlides {
+    display: none;
+    opacity: 1 !important;
+}
+img {vertical-align: middle;}
+
+/* Slideshow container */
+.slideshow-container {
+    max-width: 1000px;
+    position: relative;
+    margin: auto;
+}
+
+/* Next & previous buttons */
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    padding: 16px;
+    margin-top: -22px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    transition: 0.6s ease;
+    border-radius: 0 3px 3px 0;
+    user-select: none;
+}
+
+/* Position the "next button" to the right */
+.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+    background-color: rgba(0,0,0,0.8);
+    color:#eee !important;
+}
+
+/* Caption text */
+.text {
+    color: #f2f2f2;
+    font-size: 15px;
+    padding: 8px 45px;
+    position: absolute;
+    bottom: 12px;
+    width: 100%;
+    text-align: left;
+}
+
+.code {
+    color: #f2f2f2;
+    font-size: 12px;
+    padding: 100px 500px;
+    position: absolute;
+    bottom: 12px;
+    width: 100%;
+    text-align: left;
+}
+
+.activeDot, .dot:hover {
+    background-color: #717171 !important;
+}
+
+.textInfo {
+    color: #f2f2f2;
+    font-size: 15px;
+    padding: 8px 45px;
+    position: absolute;
+    bottom: 64px;
+    width: 100%;
+    text-align: left;
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+    color: #f2f2f2;
+    font-size: 12px;
+    padding: 8px 45px;
+    position: absolute;
+    top: 0;
+}
+
+/* The dots/bullets/indicators */
+.dot {
+    cursor: pointer;
+    height: 15px;
+    width: 15px;
+    margin: 0 2px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.6s ease;
+}
+
+/* Fading animation */
+.fade {
+    -webkit-animation-name: fade;
+    -webkit-animation-duration: 1.5s;
+    animation-name: fade;
+    animation-duration: 1.5s;
+}
+
+@-webkit-keyframes fade {
+    from {opacity: .4}
+    to {opacity: 1}
+}
+
+@keyframes fade {
+    from {opacity: .4}
+    to {opacity: 1}
+}
+
+/* On smaller screens, decrease text size */
+@media only screen and (max-width: 300px) {
+    .prev, .next,.text {font-size: 11px}
 }
 
 
