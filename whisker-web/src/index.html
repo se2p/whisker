@@ -15,7 +15,7 @@
 
 <body>
     <div id="header" >
-        <div class="container-fluid spacer50" style="padding-left:0px; padding-right:0px; min-width:100%;
+        <div class="container-fluid spacer20" style="padding-left:0px; padding-right:0px; min-width:100%;
         position:relative; text-align:center;">
             <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
                 <img src="assets/banner.jpg" class="banner" alt="Scratch Items" style="width:100%;"></a>
@@ -39,7 +39,7 @@
 
     <div id="main" class="container">
 
-        <div class="row" style="padding-bottom: 15px;">
+        <div class="row spacer10">
             <div class="col-lg-7">
                 <p>Herzlich willkommen auf unserer Website. Du möchtest dein Scratch-Programm gerne testen und
                     kommst nicht weiter? Verwende unsere Whisker-Tools, um Tests zu schreiben oder automatisch
@@ -49,23 +49,21 @@
                     Programms getestet wurde.
                 </p>
             </div>
-            <div class="col-lg-5">
-                <!-- Use tabindex to make the canvas focusable. -->
-                <canvas id="scratch-stage" tabindex="1"></canvas>
-            </div>
         </div>
 
-        <div class="container spacer50">
+        <div class="container spacer20">
             <div class="row">
                 <div class="col-lg-12">
-                    <form action="analyse.php" method="post" enctype="multipart/form-data" >
+                    <form>
                         <div class="row">
                             <div class="col-lg-6">
                                 <div id="fileUpload" class="row chooseFile">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10">
-                                                <label for="programmDatei" style="padding-bottom:7px; padding-top:7px;">Deine Programmdatei</label>
+                                                <label id="fileselect-project-label" for="fileselect-project"
+                                                       style="padding-bottom:7px;
+                                                padding-top:7px;">Deine Programmdatei</label>
                                             </div>
                                             <div class="col-lg-2">
                                                 <img src="assets/sb3.png" style="max-height:40px;" alt="sb3"/>
@@ -74,7 +72,8 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="form-group" style="margin-bottom:9px;">
-                                                    <input name="programmDatei" class="form-control-file" type="file" id="programmDatei" accept=".sb3" onchange="fileChange()">
+                                                    <input name="programmDatei" class="form-control-file" type="file"
+                                                     multiple id="fileselect-project" accept=".sb3">
                                                 </div>
                                                 <div class="form-group">
                                                     <small id="dateiHilfe" class="form-text text-muted">Wähle eine Datei von deiner Festplatte aus.</small>
@@ -89,7 +88,7 @@
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10">
-                                                <label for="programmDatei" style="padding-bottom:7px; padding-top:7px;">URL deines Scratch-Programms</label>
+                                                <label for="programmUrl" style="padding-bottom:7px; padding-top:7px;">URL deines Scratch-Programms</label>
                                             </div>
                                             <div class="col-lg-2">
                                                 <img src="assets/url.png" style="max-height:40px;" alt="url"/>
@@ -101,7 +100,7 @@
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
                                                     </div>
-                                                    <input name="programmURL" type="text" class="form-control" id="programmURL" aria-describedby="basic-addon3" onchange="chooseProject()">
+                                                    <input name="programmURL" type="text" class="form-control" id="programmURL" aria-describedby="basic-addon3">
                                                 </div>
                                             </div>
                                         </div>
@@ -115,7 +114,7 @@
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10">
-                                                <label for="testDatei"
+                                                <label id="fileselect-tests-label" for="fileselect-tests"
                                                        style="padding-bottom:7px; padding-top:7px;">Deine Testdatei</label>
                                             </div>
                                             <div class="col-lg-2">
@@ -126,7 +125,7 @@
                                             <div class="col-lg-12">
                                                 <div class="form-group" style="margin-bottom:9px;">
                                                     <input name="testDatei" class="form-control-file" type="file"
-                                                           id="testDatei" accept=".js" onchange="fileChange()">
+                                                           multiple id="fileselect-tests" accept=".js">
                                                 </div>
                                                 <div class="form-group">
                                                     <small id="dateiHilfe2" class="form-text text-muted">Wähle eine
@@ -142,7 +141,7 @@
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10">
-                                                <label for="configDatei"
+                                                <label id="fileselect-config-label" for="fileselect-config"
                                                        style="padding-bottom:7px; padding-top:7px;">Deine
                                                     Konfigurationsdatei</label>
                                             </div>
@@ -154,7 +153,7 @@
                                             <div class="col-lg-12">
                                                 <div class="form-group" style="margin-bottom:9px;">
                                                     <input name="configDatei" class="form-control-file" type="file"
-                                                           id="configDatei" accept=".json" onchange="fileChange()">
+                                                           multiple id="fileselect-config" accept=".json">
                                                 </div>
                                                 <div class="form-group">
                                                     <small id="dateiHilfe3" class="form-text text-muted">Wähle eine
@@ -166,105 +165,15 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="row userData">
-                                    <div class="col-lg-12">
-                                        <div class="form-group">
-                                            <label for="teilnehmerAlter">Dein Alter</label>
-                                            <select name="teilnehmerAlter" class="form-control" id="teilnehmerAlter">
-                                                <option selected>Bitte gib dein Alter an (optional) ...</option>
-                                                <option>unter 10 Jahren</option>
-                                                <option>zwischen 10 und 14 Jahren</option>
-                                                <option>zwischen 15 und 18 Jahren</option>
-                                                <option>über 18 Jahren</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row userData">
-                                    <div class="col-lg-12">
-                                        <div class="form-group">
-                                            <label for="teilnehmerGeschlecht">Dein Geschlecht</label>
-                                            <div style="margin-top: 5px;">
-                                                <div class="custom-control custom-radio custom-control-inline">
-                                                    <input type="radio" id="geschlechtMaennlich" name="teilnehmerGeschlecht" class="custom-control-input" value="male">
-                                                    <label class="custom-control-label" for="geschlechtMaennlich">männlich</label>
-                                                </div>
-                                                <div class="custom-control custom-radio custom-control-inline">
-                                                    <input type="radio" id="geschlechtWeiblich" name="teilnehmerGeschlecht" class="custom-control-input" value="female">
-                                                    <label class="custom-control-label" for="geschlechtWeiblich">weiblich</label>
-                                                </div>
-                                                <div class="custom-control custom-radio custom-control-inline">
-                                                    <input type="radio" id="geschlechtDivers" name="teilnehmerGeschlecht" class="custom-control-input" value="other">
-                                                    <label class="custom-control-label" for="geschlechtDivers">divers</label>
-                                                </div>
-                                                <div class="custom-control custom-radio custom-control-inline">
-                                                    <input type="radio" id="geschlechtKeineAngabe" name="teilnehmerGeschlecht" class="custom-control-input" value="noInformation" checked>
-                                                    <label class="custom-control-label" for="geschlechtKeineAngabe">keine Angabe</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="row userData">
-                                    <div class="col-lg-12">
-                                        <div class="form-group">
-                                            <label for="teilnehmerBeschreibung">Was willst du gerne testen, klappt aber
-                                                nicht?</label>
-                                            <textarea class="form-control" id="teilnehmerBeschreibung" name="teilnehmerBeschreibung" rows="4"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row spacer10">
-                            <div class="col-lg-12" style="text-align:center;">
-                                <button id="btnSubmit" type="submit" class="btn btn-main" disabled>Programm
-                                    testen</button>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-3" style="text-align:center;">
-
-                            </div>
-                            <div class="col-lg-6" style="text-align:center; font-size:11px;" id="infoTooltip">
-
-                            </div>
-                            <div class="col-lg-3" style="text-align:center;">
-
-                            </div>
-                        </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <--- TODO --->
-
-        <div id="left-col" class="col-md-5 col-sm-12">
-            <form class="mt-3">
-                <div class="form-group">
-                    <label for="fileselect-project">Scratch Project</label>
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <label id="fileselect-project-label" class="custom-file-label" for="fileselect-project">Choose Scratch Project</label>
-                            <input id="fileselect-project" type="file" multiple class="custom-file-input">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="fileselect-tests">Tests</label>
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <label id="fileselect-tests-label" class="custom-file-label" for="fileselect-tests">Choose Tests File</label>
-                            <input id="fileselect-tests" type="file" multiple class="custom-file-input">
-                        </div>
-                    </div>
-                </div>
-                <label for="scratch-controls">Scratch Controls</label>
+        <div class="row spacer50">
+            <div class="col-lg-7">
+                <!-- Use tabindex to make the canvas focusable. -->
+                <canvas id="scratch-stage" tabindex="1"></canvas>
                 <div id="scratch-controls">
                     <div class="form-group">
                         <div class="form-row">
@@ -272,8 +181,10 @@
                                 <button id="green-flag" class="btn btn-outline-success" type="button" title="Start the program"><i class="fas fa-flag"></i></button>
                                 <button id="stop" class="btn btn-danger" type="button" title="Stop the program / test execution"><i class="fas fa-stop"></i></button>
                                 <span class="mx-2"></span>
-                                <button id="reset" class="btn btn-outline-secondary" type="button" title="Reset program to initial state">Reset</button>
-                                <button id="run-all-tests" class="btn btn-outline-secondary" type="button" title="Run all tests on all projects">Run All Tests</button>
+                                <button id="reset" class="btn btn-main" type="button"
+                                        title="Reset program to initial state">Zurücksetzen</button>
+                                <button id="run-all-tests" class="btn btn-main" type="button"
+                                        title="Run all tests on all projects">Starte Tests</button>
                             </div>
                         </div>
                     </div>
@@ -282,58 +193,51 @@
                             <div class="col">
                                 <div class="custom-control custom-checkbox" style="display: inline-block;" title="Enable / disable manual inputs to the program">
                                     <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
-                                    <label class="custom-control-label" for="toggle-input">Enable Input</label>
+                                    <label class="custom-control-label" for="toggle-input">Eingaben zulassen</label>
                                 </div>
                                 <span class="mx-2"></span>
-                                <button id="record" class="btn btn-sm btn-outline-danger" type="button" title="Record inputs for use in tests">Record Inputs</button>
+                                <button id="record" class="btn btn-sm btn-outline-danger" type="button"
+                                        title="Record inputs for use in tests">Eingaben aufzeichnen</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <div style="display: flex;justify-content: space-between; align-items: center;">
+                                    <label style="margin: 0;" for="acceleration-factor">Beschleunigungsfaktor:</label>
+                                    <input style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
+                                           id="acceleration-factor" type="number" autocomplete="off" />
+                                </div>
+                                <button id="run-search" type="button" class="btn btn-main">Run Search</button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </form>
-
-            <form class="mt-3">
-                <label for="toggle-components">Toggle Components</label>
-                <div id="toggle-components" class="form-group">
-                    <div class="form-row">
-                        <div class="col">
-                            <div class="btn-group-toggle">
-                                <label class="btn btn-outline-primary" title="Show / hide test table">
-                                    <input id="toggle-tests" class="checkbox-button" type="checkbox" autocomplete="off"> Tests
-                                </label>
-                                <label class="btn btn-outline-primary" title="Show / hide test editor">
-                                    <input id="toggle-editor" class="checkbox-button" type="checkbox" autocomplete="off"> Editor
-                                </label>
-                                <label class="btn btn-outline-primary" title="Show / hide test output">
-                                    <input id="toggle-output" class="checkbox-button" type="checkbox" autocomplete="off"> Output
-                                </label>
+            </div>
+            <div class="col-md-7 col-sm-12 col-lg-6">
+                <form class="mt-3">
+                    <div id="toggle-components" class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <div class="btn-group-toggle">
+                                    <label class="btn btn-main" title="Show / hide test table">
+                                        <input id="toggle-tests" class="checkbox-button" type="checkbox" autocomplete="off"> Tests
+                                    </label>
+                                    <label class="btn btn-main" title="Show / hide test editor">
+                                        <input id="toggle-editor" class="checkbox-button" type="checkbox" autocomplete="off"> Editor
+                                    </label>
+                                    <label class="btn btn-main" title="Show / hide test output">
+                                        <input id="toggle-output" class="checkbox-button" type="checkbox" autocomplete="off"> Output
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </form>
-
-            <div style="display: flex;justify-content: space-between; align-items: center;">
-                <label style="margin: 0;" for="acceleration-factor">Acceleration Factor:</label>
-                <input style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
-                       id="acceleration-factor" type="number" autocomplete="off" />
-            </div>
-
-            <div style="...">
-                <button id="run-search" class="btn btn-outline-primary" type="button">Run Search</button>
-            </div>
-            <div class="input-group">
-                <div class="custom-file">
-                    <label id="fileselect-config-label" class="custom-file-label" for="fileselect-config">Choose Search Config</label>
-                    <input id="fileselect-config" type="file" multiple class="custom-file-input">
-                </div>
-            </div>
-        </div>
-
-        <div id="right-col" class="col-md-7 col-sm-12">
-            <div id="test-table" style="display: none;">
-                <table class="display table table-sm table-striped mt-4">
-                    <thead class="thead-light">
+                </form>
+                <div id="test-table" style="display: none;">
+                    <table class="display table table-sm table-striped mt-4">
+                        <thead class="thead-light">
                         <tr>
                             <th></th>
                             <th>#</th>
@@ -341,59 +245,56 @@
                             <th>Categories</th>
                             <th></th>
                         </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="test-editor" class="mt-4" style="display: none;">
-                <form class="form-inline mt-3">
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <button class="editor-apply btn btn-sm btn-outline-secondary" type="button">Load Tests From Editor</button>
-                                <button class="editor-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="test-editor" class="mt-4" style="display: none;">
+                    <form class="form-inline mt-3">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col">
+                                    <button class="editor-apply btn btn-sm btn-outline-secondary" type="button">Load Tests From Editor</button>
+                                    <button class="editor-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
-            </div>
-
-            <div id="output-run" class="mt-4" style="display: none;">
-                <label for="output-run">TAP13</label>
-                <pre class="output-content"></pre>
-                <form class="form-inline mt-2">
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
-                                <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                    </form>
+                </div>
+                <div id="output-run" class="mt-4" style="display: none;">
+                    <label for="output-run">TAP13</label>
+                    <pre class="output-content"></pre>
+                    <form class="form-inline mt-2">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col">
+                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
+                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
-            </div>
-            <div id="output-log" class="mt-4" style="display: none;">
-                <label for="output-log">Log</label>
-                <pre class="output-content"></pre>
-                <form class="form-inline mt-2">
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
-                                <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                    </form>
+                </div>
+                <div id="output-log" class="mt-4" style="display: none;">
+                    <label for="output-log">Log</label>
+                    <pre class="output-content"></pre>
+                    <form class="form-inline mt-2">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col">
+                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
+                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
-    <-- TODO -->
-
-    <div id="footer" style="background-color:var(--backgroundColor);">
+    <div id="footer">
         <div class="container-fluid">
             <div class="container" style="padding-top:30px;">
                 <div class="row">
