@@ -174,124 +174,136 @@
         </div>
 
         <div class="row spacer50">
-            <div class="col-lg-7">
-                <!-- Use tabindex to make the canvas focusable. -->
-                <canvas id="scratch-stage" tabindex="1"></canvas>
-                <div id="scratch-controls">
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <button id="green-flag" class="btn btn-outline-success" type="button" title="Start the program"><i class="fas fa-flag"></i></button>
-                                <button id="stop" class="btn btn-danger" type="button" title="Stop the program / test execution"><i class="fas fa-stop"></i></button>
-                                <span class="mx-2"></span>
-                                <button id="reset" class="btn btn-main" type="button"
-                                        title="Reset program to initial state">Zurücksetzen</button>
-                                <button id="run-all-tests" class="btn btn-main" type="button"
-                                        title="Run all tests on all projects">Starte Tests</button>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="row">
+                        <div class="col-lg-5">
+                            <!-- Use tabindex to make the canvas focusable. -->
+                            <canvas id="scratch-stage" tabindex="1"></canvas>
+                            <div id="scratch-controls">
+                                <div class="form-group">
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <button id="green-flag" class="btn btn-outline-success" type="button" title="Start the program"><i class="fas fa-flag"></i></button>
+                                            <button id="stop" class="btn btn-danger" type="button" title="Stop the program / test execution"><i class="fas fa-stop"></i></button>
+                                            <span class="mx-2"></span>
+                                            <button id="reset" class="btn btn-main" type="button"
+                                                    title="Reset program to initial state">Zurücksetzen</button>
+                                            <button id="run-all-tests" class="btn btn-main" type="button"
+                                                    title="Run all tests on all projects">Starte Tests</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <div class="custom-control custom-checkbox" style="display: inline-block;" title="Enable / disable manual inputs to the program">
+                                                <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
+                                                <label class="custom-control-label" for="toggle-input">Eingaben zulassen</label>
+                                            </div>
+                                            <span class="mx-2"></span>
+                                            <button id="record" class="btn btn-sm btn-outline-danger" type="button"
+                                                    title="Record inputs for use in tests">Eingaben aufzeichnen</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <div class="spacer10" style="display: flex;justify-content: space-between;
+                                                 align-items:
+                                            center;">
+                                                <label style="margin: 0;" for="acceleration-factor">Beschleunigungsfaktor:</label>
+                                                <input style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
+                                                       id="acceleration-factor" type="number" autocomplete="off" />
+                                            </div>
+                                            <button id="run-search" type="button" class="btn btn-main">Run Search</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                        <div class="col-lg-7">
+                                <form class="mt-3">
+                                <div id="toggle-components" class="form-group">
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <div class="btn-group-toggle" data-toggle="buttons">
+                                                <label class="btn btn-main" title="Show / hide test table">
+                                                    <input id="toggle-tests" class="checkbox-button" type="checkbox"
+                                                           autocomplete="off" aria-pressed="true"> Tests
+                                                </label>
+                                                <label class="btn btn-main" title="Show / hide test editor">
+                                                    <input id="toggle-editor" class="checkbox-button" type="checkbox"
+                                                           autocomplete="off" aria-pressed="true"> Editor
+                                                </label>
+                                                <label class="btn btn-main" title="Show / hide test output">
+                                                    <input id="toggle-output" class="checkbox-button" type="checkbox"
+                                                           autocomplete="off" aria-pressed="true"> Output
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </form>
+                                <div id="test-table" style="display: none;">
+                                    <table class="display table table-sm table-striped mt-4">
+                                        <thead class="thead-light">
+                                        <tr>
+                                            <th></th>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Categories</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="test-editor" class="mt-4" style="display: none;">
+                                    <form class="form-inline mt-3">
+                                        <div class="form-group">
+                                            <div class="form-row">
+                                                <div class="col">
+                                                    <button class="editor-apply btn btn-sm btn-outline-secondary" type="button">Load Tests From Editor</button>
+                                                    <button class="editor-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div id="output-run" class="mt-4" style="display: none;">
+                                    <label for="output-run">TAP13</label>
+                                    <pre class="output-content"></pre>
+                                    <form class="form-inline mt-2">
+                                        <div class="form-group">
+                                            <div class="form-row">
+                                                <div class="col">
+                                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
+                                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div id="output-log" class="mt-4" style="display: none;">
+                                    <label for="output-log">Log</label>
+                                    <pre class="output-content"></pre>
+                                    <form class="form-inline mt-2">
+                                        <div class="form-group">
+                                            <div class="form-row">
+                                                <div class="col">
+                                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
+                                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <div class="custom-control custom-checkbox" style="display: inline-block;" title="Enable / disable manual inputs to the program">
-                                    <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
-                                    <label class="custom-control-label" for="toggle-input">Eingaben zulassen</label>
-                                </div>
-                                <span class="mx-2"></span>
-                                <button id="record" class="btn btn-sm btn-outline-danger" type="button"
-                                        title="Record inputs for use in tests">Eingaben aufzeichnen</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <div style="display: flex;justify-content: space-between; align-items: center;">
-                                    <label style="margin: 0;" for="acceleration-factor">Beschleunigungsfaktor:</label>
-                                    <input style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
-                                           id="acceleration-factor" type="number" autocomplete="off" />
-                                </div>
-                                <button id="run-search" type="button" class="btn btn-main">Run Search</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-7 col-sm-12 col-lg-6">
-                <form class="mt-3">
-                    <div id="toggle-components" class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <div class="btn-group-toggle">
-                                    <label class="btn btn-main" title="Show / hide test table">
-                                        <input id="toggle-tests" class="checkbox-button" type="checkbox" autocomplete="off"> Tests
-                                    </label>
-                                    <label class="btn btn-main" title="Show / hide test editor">
-                                        <input id="toggle-editor" class="checkbox-button" type="checkbox" autocomplete="off"> Editor
-                                    </label>
-                                    <label class="btn btn-main" title="Show / hide test output">
-                                        <input id="toggle-output" class="checkbox-button" type="checkbox" autocomplete="off"> Output
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                <div id="test-table" style="display: none;">
-                    <table class="display table table-sm table-striped mt-4">
-                        <thead class="thead-light">
-                        <tr>
-                            <th></th>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Categories</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="test-editor" class="mt-4" style="display: none;">
-                    <form class="form-inline mt-3">
-                        <div class="form-group">
-                            <div class="form-row">
-                                <div class="col">
-                                    <button class="editor-apply btn btn-sm btn-outline-secondary" type="button">Load Tests From Editor</button>
-                                    <button class="editor-save btn btn-sm btn-outline-secondary" type="button">Save</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div id="output-run" class="mt-4" style="display: none;">
-                    <label for="output-run">TAP13</label>
-                    <pre class="output-content"></pre>
-                    <form class="form-inline mt-2">
-                        <div class="form-group">
-                            <div class="form-row">
-                                <div class="col">
-                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
-                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div id="output-log" class="mt-4" style="display: none;">
-                    <label for="output-log">Log</label>
-                    <pre class="output-content"></pre>
-                    <form class="form-inline mt-2">
-                        <div class="form-group">
-                            <div class="form-row">
-                                <div class="col">
-                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
-                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>

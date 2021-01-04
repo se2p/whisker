@@ -111,6 +111,12 @@ p {
 }
 
 .btn-main {
+    color: var(--mainColor);
+    background-color: var(--textColor);
+    border-color: var(--textColorHover);
+}
+
+.btn-main:not(.active) {
     color: var(--subheadingColor);
     background-color: var(--mainColor);
     border-color: var(--mainColor);
