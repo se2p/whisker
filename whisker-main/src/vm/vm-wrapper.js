@@ -263,13 +263,12 @@ class VMWrapper {
      * @returns {Promise<void>} .
      */
     async setup (project, accelerationFactor = 1) {
-        const setStepTime = factor => {
-            this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
-            this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL / factor);
-            clearInterval(this.vm.runtime._steppingInterval);
-            this.accelerationFactor = factor;
-        };
-        setStepTime(accelerationFactor);
+        delete Runtime.THREAD_STEP_INTERVAL;
+        Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / accelerationFactor;
+        this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
+        this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
+        clearInterval(this.vm.runtime._steppingInterval);
+        this.accelerationFactor = accelerationFactor;
 
         this.instrumentPrimitive('control_wait', 'DURATION');
         this.instrumentPrimitive('looks_sayforsecs', 'SECS');
