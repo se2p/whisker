@@ -34,26 +34,53 @@ export class ClickSpriteEvent implements ScratchEvent {
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            sprite: Container.testDriver.getSprite(this._target.sprite.name),
-            isDown: true,
-            duration: this._timeout
-        });
+        if (this._target.isOriginal) {
+            // Click on sprite
+            Container.testDriver.inputImmediate({
+                device: 'mouse',
+                sprite: Container.testDriver.getSprite(this._target.sprite.name),
+                isDown: true,
+                duration: this._timeout
+            });
+        } else {
+            // Click on clone
+            Container.testDriver.inputImmediate({
+                device: 'mouse',
+                x: this._target.x,
+                y: this._target.y,
+                isDown: true,
+                duration: this._timeout
+            });
+        }
     }
 
     public toJavaScript(args: number[]): string {
-        return '' +
-`t.inputImmediate({
+        if (this._target.isOriginal) {
+            return '' +
+                `t.inputImmediate({
     device: 'mouse',
     sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
     duration: ${Container.config.getClickDuration()}
   });`;
+        } else {
+            return '' +
+                `t.inputImmediate({
+    device: 'mouse',
+    x: ${this._target.x},
+    y: ${this._target.y},
+    isDown: true,
+    duration: ${Container.config.getClickDuration()}
+  });`;
+        }
     }
 
     public toString(args: number[]): string {
-        return "ClickSprite " + this._target.sprite.name;
+        if (this._target.isOriginal) {
+            return "ClickSprite " + this._target.sprite.name;
+        } else {
+            return "ClickClone " + this._target.sprite.name +" at "+this._target.x +"/" + this._target.y;
+        }
     }
 
     getNumParameters(): number {

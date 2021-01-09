@@ -1,6 +1,8 @@
 const seed = require('seed-random');
 let random;
 
+const INITIAL_SEED = 'whisker';
+
 /**
  * @param {number} min inclusive
  * @param {number} max inclusive
@@ -56,5 +58,6 @@ module.exports = {
     randomFloat,
     randomBoolean,
     seedWhisker,
-    seedScratch
+    seedScratch,
+    INITIAL_SEED
 };

@@ -1,7 +1,7 @@
 # NPM
-*/node_modules
-node_modules
-*/coverage
+**/node_modules
+**/dist
+coverage
 *~
 
 # Editor

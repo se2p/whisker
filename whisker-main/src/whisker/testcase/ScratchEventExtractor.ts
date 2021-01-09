@@ -21,6 +21,7 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import Scratch3LooksBlocks from 'scratch-vm/src/blocks/scratch3_looks.js';
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {ScratchEvent} from "./ScratchEvent";
 import {KeyDownEvent} from "./events/KeyDownEvent";
@@ -39,6 +40,20 @@ export class ScratchEventExtractor {
     private static availableWaitDurations = new List<number>();
     private static availableTextSnippets = new List<string>();
 
+    static hasEvents(vm: VirtualMachine): boolean {
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return !this.availableWaitDurations.isEmpty();
+    }
+
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         for (const target of vm.runtime.targets) {
@@ -49,7 +64,9 @@ export class ScratchEventExtractor {
             }
         }
 
-        // TODO: Default actions -- wait?
+        for (const duration of this.availableWaitDurations) {
+            eventList.add(new WaitEvent(duration));
+        }
 
         return eventList;
     }
@@ -84,7 +101,7 @@ export class ScratchEventExtractor {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
-                    if (duration >= 0 && !this.availableWaitDurations.contains(duration))
+                    if (duration > 0 && !this.availableWaitDurations.contains(duration))
                         this.availableWaitDurations.add(duration);
                 }
             }
@@ -92,7 +109,7 @@ export class ScratchEventExtractor {
     }
 
 
-        // TODO: How to handle event parameters?
+    // TODO: How to handle event parameters?
     static _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         const fields = target.blocks.getFields(block);
@@ -122,17 +139,19 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                // TODO: Only if actually asking
-                eventList.addList(this._getTypeTextEvents());
+                const bubbleState = target.getCustomState(Scratch3LooksBlocks.STATE_KEY);
+                if (bubbleState) {
+                    eventList.addList(this._getTypeTextEvents());
+                }
+
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                eventList.add(new ClickSpriteEvent(target)); // TODO: Store which sprite
+                eventList.add(new ClickSpriteEvent(target));
                 break;
-            // TODO: Add one event for each clone of this sprite --- each target is a clone
             case 'event_whenstageclicked':
                 // Click stage
-                eventList.add(new ClickStageEvent(target)); // TODO: Do we need a position for this?
+                eventList.add(new ClickStageEvent(target));
                 break;
             case 'event_whengreaterthan':
                 // Sound
@@ -145,6 +164,30 @@ export class ScratchEventExtractor {
         }
         return eventList;
     }
+
+    static _hasEvents(target, block): boolean {
+        const fields = target.blocks.getFields(block);
+        if (typeof block.opcode === 'undefined') {
+            return false;
+        }
+
+        switch (target.blocks.getOpcode(block)) {
+            case 'event_whenkeypressed':
+            case 'sensing_keyoptions':
+            case 'sensing_mousex':
+            case 'sensing_mousey':
+            case 'touching-mousepointer':
+            case 'sensing_mousedown':
+            case 'sensing_askandwait':
+            case 'event_whenthisspriteclicked':
+            case 'event_whenstageclicked':
+            case 'event_whengreaterthan':
+            case 'event_whenlessthan':
+                return true;
+        }
+        return false;
+    }
+
 
     private static _randomText(length: number): string {
         let answer = '';
@@ -160,13 +203,21 @@ export class ScratchEventExtractor {
         const inputs = target.blocks.getInputs(block);
         if (target.blocks.getOpcode(block) == 'control_wait') {
             const op = target.blocks.getBlock(inputs.DURATION.block);
-            return target.blocks.getFields(op).NUM.value;
+            const field = target.blocks.getFields(op).NUM;
+            if (!field) {
+                return -1;
+            }
+            return 1000 * parseFloat(field.value);
         } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
             target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
             target.blocks.getOpcode(block) == 'motion_glideto' ||
             target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
             const op = target.blocks.getBlock(inputs.SECS.block);
-            return target.blocks.getFields(op).NUM.value;
+            const field = target.blocks.getFields(op).NUM;
+            if (!field) {
+                return -1;
+            }
+            return 1000 * parseFloat(field.value);
         }
         return -1;
     }

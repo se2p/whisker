@@ -1,14 +1,17 @@
 {
     "name": "servant",
-    "version": "1.0.0",
+    "version": "0.4.0",
     "description": "Servant for Whisker",
     "main": "servant.js",
     "dependencies": {
         "chalk": "^4.1.0",
         "commander": "^6.2.0",
+        "csv-stringify": "^5.5.3",
+        "js-yaml": "^3.14.1",
         "puppeteer": "5.5.0",
         "rimraf": "3.0.2",
-        "whisker-web": "0.1.0"
+        "whisker-web": "0.4.0",
+        "yaml": "^1.10.0"
     },
     "scripts": {
         "build": "webpack --progress --colors --bail"

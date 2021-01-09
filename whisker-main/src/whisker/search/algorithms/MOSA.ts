@@ -90,6 +90,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private generateInitialPopulation(): List<C> {
         const population = new List<C>();
         for (let i = 0; i < this._properties.getPopulationSize(); i++) {
+            if (this._stoppingCondition.isFinished(this)) {
+                break;
+            }
             population.add(this._chromosomeGenerator.get());
         }
         return population;
@@ -236,10 +239,6 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     this._archive.set(fitnessFunctionKey, candidateChromosome);
                     console.log("Found test for goal: "+fitnessFunction);
                 }
-            }
-            if (this._stoppingCondition.isFinished(this)) {
-                // This may miss some shorter tests, but it saves time
-                return;
             }
         }
     }

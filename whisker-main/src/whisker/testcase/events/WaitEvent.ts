@@ -26,21 +26,20 @@ export class WaitEvent implements ScratchEvent {
 
     private readonly timeout: number;
 
-    constructor() {
-        this.timeout = Container.config.getWaitDuration() / Container.acceleration;
+    constructor(duration = Container.config.getWaitDuration() ) {
+        this.timeout = duration;
     }
 
-
     async apply(vm: VirtualMachine): Promise<void> {
-        await Container.testDriver.runForTime(this.timeout);
+        await Container.testDriver.runForTime(this.timeout / Container.acceleration);
     }
 
     public toJavaScript(args: number[]): string {
-        return `await t.runForTime(${Container.config.getWaitDuration()});`;
+        return `await t.runForTime(${this.timeout});`;
     }
 
     public toString(args: number[]): string {
-        return "Wait " + Container.config.getWaitDuration();
+        return "Wait " + this.timeout + " ms";
     }
 
     getNumParameters(): number {

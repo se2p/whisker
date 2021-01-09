@@ -60,7 +60,7 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
         for(let i = 0; i < length; i++) {
             codons.add(Randomness.getInstance().nextInt(this._min, this._max));
         }
-        return new TestChromosome(codons, this._mutationOp, this._crossoverOp); // TODO
+        return new TestChromosome(codons, this._mutationOp, this._crossoverOp);
     }
 
     protected getLength(): number {

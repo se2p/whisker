@@ -3,7 +3,8 @@
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
     "population-size": 10,
-    "chromosome-length": 20,
+    "init-var-length": 2,
+    "chromosome-length": 6,
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
