@@ -15,6 +15,7 @@ const convertToCsv = function (str) {
             passed: 0,
             failed: 0,
             error: 0,
+            skip: 0,
             testResults: new Map()
         };
 
@@ -39,8 +40,8 @@ const convertToCsv = function (str) {
             case 'error':
                 result.error++;
                 break;
-            case 'error':
-                // nothing
+            case 'skip':
+                result.skip++;
                 break;
             }
         });
@@ -105,6 +106,7 @@ const rowsToCsv = function (rows) {
     csvHeader.push('passed');
     csvHeader.push('failed');
     csvHeader.push('error');
+    csvHeader.push('skip');
     csvHeader.push('coverage');
 
     const csvBody = [csvHeader];
@@ -124,6 +126,7 @@ const rowsToCsv = function (rows) {
         csvLine.push(row.passed);
         csvLine.push(row.failed);
         csvLine.push(row.error);
+        csvLine.push(row.skip);
         csvLine.push(row.coverage);
 
         csvBody.push(csvLine);
