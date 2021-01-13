@@ -238,16 +238,20 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#projectURL').show();
-            $('#configUpload').show();
+            $('#advanced-upload').show();
             $('#scratch-controls').show();
+            $('#run-search').show();
+            Whisker.outputRun.show();
+            Whisker.outputLog.show();
         } else {
             $(event.target)
                 .parent()
                 .removeClass('active');
-            $('#projectUrl').hide();
-            $('#configUpload').hide();
+            $('#advanced-upload').hide();
             $('#scratch-controls').hide();
+            $('#run-search').hide();
+            Whisker.outputRun.hide();
+            Whisker.outputLog.hide();
         }
     });
 
@@ -269,13 +273,20 @@ const toggleComponents = function () {
     if (window.localStorage) {
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
-            const [input, output, advanced, accelerationFactor] = JSON.parse(componentStates);
+            const [input, accelerationFactor] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
-            if (advanced) $('#toggle-advanced').click();
             if (accelerationFactor) document.querySelector('#acceleration-factor').value = accelerationFactor;
         }
     }
 };
+
+const hideAdvanced = function () {
+    $('#advanced-upload').hide();
+    $('#scratch-controls').hide();
+    $('#run-search').hide();
+    Whisker.outputRun.hide();
+    Whisker.outputLog.hide();
+}
 
 $(document)
     .ready(() => {
@@ -283,13 +294,13 @@ $(document)
         initComponents();
         initEvents();
         toggleComponents();
+        hideAdvanced();
     });
 
 window.onbeforeunload = function () {
     if (window.localStorage) {
         const componentStates = [
             $('#toggle-input').is(':checked'),
-            $('#toggle-advanced').is(':checked'),
             document.querySelector('#acceleration-factor').value
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));

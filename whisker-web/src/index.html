@@ -56,7 +56,7 @@
             <div class="col-lg-5">
                 <!-- Use tabindex to make the canvas focusable. -->
                 <canvas id="scratch-stage" tabindex="1"></canvas>
-                <div id="startTests">
+                <div id="startTests" class="spacer20">
                     <div class="form-group">
                         <div class="form-row">
                             <div class="col">
@@ -70,6 +70,48 @@
                         </div>
                     </div>
                 </div>
+                <div id="scratch-controls">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <button id="green-flag" class="btn btn-outline-success"
+                                        type="button" title="Start the program"><i
+                                    class="fas fa-flag"></i></button>
+                                <button id="stop" class="btn btn-danger" type="button"
+                                        title="Stop the program / test execution"><i
+                                    class="fas fa-stop"></i></button>
+                                <span class="mx-4"></span>
+                                <div class="custom-control custom-checkbox"
+                                     style="display: inline-block;"
+                                     title="Enable / disable manual inputs to the program">
+                                    <input id="toggle-input" type="checkbox"
+                                           class="custom-control-input" autocomplete="off">
+                                    <label class="custom-control-label" for="toggle-input"></label>
+                                </div>
+                                <button id="record" class="btn btn-sm btn-outline-danger"
+                                        type="button"
+                                        title="Record inputs for use in tests">Eingaben aufzeichnen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <div class="spacer10" style="display: flex;justify-content: space-between;
+                                                 align-items: center;">
+                                    <label style="margin: 0;" for="acceleration-factor">Beschleunigung:</label>
+                                    <input
+                                        style="text-align: right; border: 1px solid lightgrey;"
+                                        id="acceleration-factor" type="number" autocomplete="off"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <button id="run-search" type="button" class="btn btn-main">Starte Suche</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -79,7 +121,7 @@
                     <form>
                         <div class="row">
                             <div class="col-lg-6">
-                                <div id="fileUpload" class="row chooseFile">
+                                <div id="file-upload" class="row chooseFile">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10">
@@ -107,7 +149,7 @@
                                 </div>
                             </div>
                             <div class="col-lg-6">
-                                <div id="testUpload" class="row chooseFile">
+                                <div id="test-upload" class="row chooseFile">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10">
@@ -135,9 +177,74 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="advanced-upload" class="row">
+                            <div class="col-lg-6">
+                                <div id="project-url" class="row chooseFile">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label for="programmUrl"
+                                                       style="padding-bottom:7px; padding-top:7px;">URL deines
+                                                    Scratch-Programms</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <img src="assets/url.png" style="max-height:40px;" alt="url"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
+                                                    </div>
+                                                    <input name="programmURL" type="text" class="form-control"
+                                                           id="programmURL" aria-describedby="basic-addon3">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div id="config-upload" class="row chooseFile">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label id="fileselect-config-label" for="fileselect-config"
+                                                       style="padding-bottom:7px; padding-top:7px;">Deine
+                                                    Konfigurationsdatei</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <img src="assets/json.png" style="max-height:40px;" alt="json"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group" style="margin-bottom:9px;">
+                                                    <input name="configDatei" class="form-control-file"
+                                                           type="file"
+                                                           id="fileselect-config" accept=".json">
+                                                </div>
+                                                <div class="form-group">
+                                                    <small id="dateiHilfe3" class="form-text text-muted">Wähle
+                                                        eine
+                                                        Datei von deiner Festplatte aus.</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="col-lg-12">
+                    <div class="btn-group-toggle" data-toggle="buttons" style="box-sizing: revert;">
+                        <label class="btn btn-main" title="Show / hide advanced settings">
+                            <input id="toggle-advanced" class="checkbox-button" type="checkbox"
+                                   autocomplete="off">+
+                        </label>
+                    </div>
                     <div id="test-table" style="display: none;">
                         <table class="display table table-sm table-striped mt-4">
                             <thead class="thead-light">
@@ -205,135 +312,6 @@
                                 </div>
                             </div>
                         </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div id="advanced" class="container">
-        <div class="row spacer50">
-            <div class="btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-main" title="Show / hide advanced settings">
-                    <input id="toggle-advanced" class="checkbox-button" type="checkbox"
-                           autocomplete="off" aria-pressed="true"> Erweiterte Funktionen
-                </label>
-            </div>
-        </div>
-        <div class="container spacer20">
-            <div class="row">
-                <div class="col-lg-12">
-                    <form>
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div id="projectURL" class="row chooseFile">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10">
-                                                <label for="programmUrl"
-                                                       style="padding-bottom:7px; padding-top:7px;">URL deines
-                                                    Scratch-Programms</label>
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img src="assets/url.png" style="max-height:40px;" alt="url"/>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
-                                                    </div>
-                                                    <input name="programmURL" type="text" class="form-control"
-                                                           id="programmURL" aria-describedby="basic-addon3">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div id="configUpload" class="row chooseFile">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10">
-                                                <label id="fileselect-config-label" for="fileselect-config"
-                                                       style="padding-bottom:7px; padding-top:7px;">Deine
-                                                    Konfigurationsdatei</label>
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img src="assets/json.png" style="max-height:40px;" alt="json"/>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="form-group" style="margin-bottom:9px;">
-                                                    <input name="configDatei" class="form-control-file"
-                                                           type="file"
-                                                           id="fileselect-config" accept=".json">
-                                                </div>
-                                                <div class="form-group">
-                                                    <small id="dateiHilfe3" class="form-text text-muted">Wähle
-                                                        eine
-                                                        Datei von deiner Festplatte aus.</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div id="scratch-controls">
-                <div class="form-group">
-                    <div class="form-row">
-                        <div class="col">
-                            <button id="green-flag" class="btn btn-outline-success"
-                                    type="button" title="Start the program"><i
-                                class="fas fa-flag"></i></button>
-                            <button id="stop" class="btn btn-danger" type="button"
-                                    title="Stop the program / test execution"><i
-                                class="fas fa-stop"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="form-row">
-                        <div class="col">
-                            <div class="custom-control custom-checkbox"
-                                 style="display: inline-block;"
-                                 title="Enable / disable manual inputs to the program">
-                                <input id="toggle-input" type="checkbox"
-                                       class="custom-control-input" autocomplete="off">
-                                <label class="custom-control-label" for="toggle-input">Eingaben
-                                    zulassen</label>
-                            </div>
-                            <span class="mx-2"></span>
-                            <button id="record" class="btn btn-sm btn-outline-danger"
-                                    type="button"
-                                    title="Record inputs for use in tests">Eingaben aufzeichnen
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="form-row">
-                        <div class="col">
-                            <div class="spacer10" style="display: flex;justify-content: space-between;
-                                                 align-items:
-                                            center;">
-                                <label style="margin: 0;" for="acceleration-factor">Beschleunigungsfaktor:</label>
-                                <input
-                                    style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
-                                    id="acceleration-factor" type="number" autocomplete="off"/>
-                            </div>
-                            <button id="run-search" type="button" class="btn btn-main">Starte
-                                Suche
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
