@@ -159,12 +159,14 @@ const initScratch = function () {
 const initComponents = function () {
     Whisker.testTable = new TestTable($('#test-table')[0], runTests);
     Whisker.testTable.setTests([]);
+    Whisker.testTable.show();
 
     Whisker.outputRun = new Output($('#output-run')[0]);
     Whisker.outputLog = new Output($('#output-log')[0]);
 
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
+    Whisker.testEditor.show();
 
     Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0],
         fileSelect => fileSelect.loadAsArrayBuffer()
@@ -231,47 +233,21 @@ const initEvents = function () {
         }
     });
 
-    $('#toggle-tests').on('change', event => {
+    $('#toggle-advanced').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
                 .parent()
                 .addClass('active');
-            Whisker.testTable.show();
+            $('#projectURL').show();
+            $('#configUpload').show();
+            $('#scratch-controls').show();
         } else {
             $(event.target)
                 .parent()
                 .removeClass('active');
-            Whisker.testTable.hide();
-        }
-    });
-
-    $('#toggle-editor').on('change', event => {
-        if ($(event.target).is(':checked')) {
-            $(event.target)
-                .parent()
-                .addClass('active');
-            Whisker.testEditor.show();
-        } else {
-            $(event.target)
-                .parent()
-                .removeClass('active');
-            Whisker.testEditor.hide();
-        }
-    });
-
-    $('#toggle-output').on('change', event => {
-        if ($(event.target).is(':checked')) {
-            $(event.target)
-                .parent()
-                .addClass('active');
-            Whisker.outputRun.show();
-            Whisker.outputLog.show();
-        } else {
-            $(event.target)
-                .parent()
-                .removeClass('active');
-            Whisker.outputRun.hide();
-            Whisker.outputLog.hide();
+            $('#projectUrl').hide();
+            $('#configUpload').hide();
+            $('#scratch-controls').hide();
         }
     });
 
@@ -293,11 +269,9 @@ const toggleComponents = function () {
     if (window.localStorage) {
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
-            const [input, tests, editor, output, accelerationFactor] = JSON.parse(componentStates);
+            const [input, output, advanced, accelerationFactor] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
-            if (tests) $('#toggle-tests').click();
-            if (editor) $('#toggle-editor').click();
-            if (output) $('#toggle-output').click();
+            if (advanced) $('#toggle-advanced').click();
             if (accelerationFactor) document.querySelector('#acceleration-factor').value = accelerationFactor;
         }
     }
@@ -315,9 +289,7 @@ window.onbeforeunload = function () {
     if (window.localStorage) {
         const componentStates = [
             $('#toggle-input').is(':checked'),
-            $('#toggle-tests').is(':checked'),
-            $('#toggle-editor').is(':checked'),
-            $('#toggle-output').is(':checked'),
+            $('#toggle-advanced').is(':checked'),
             document.querySelector('#acceleration-factor').value
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));

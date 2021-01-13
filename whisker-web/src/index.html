@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <div id="header" >
+    <div id="header">
         <div class="container-fluid spacer20" style="padding-left:0px; padding-right:0px; min-width:100%;
         position:relative; text-align:center;">
             <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
@@ -28,10 +28,11 @@
                         <a class="nav-link" href="./html/faq.html">FAQ</a>
                     </li>
                     <li style="padding-left:30px;">
-                        <form method='get' action='' id='form_lang' >
-                            <select name='lang' onchange='changeLang();' style="font-size:12px; padding:4px; margin:9px;">
-                                <option value='en'  >English</option>
-                                <option value='de' selected >Deutsch</option>
+                        <form method='get' action='' id='form_lang'>
+                            <select name='lang' onchange='changeLang();'
+                                    style="font-size:12px; padding:4px; margin:9px;">
+                                <option value='en'>English</option>
+                                <option value='de' selected>Deutsch</option>
                             </select>
                         </form>
                     </li>
@@ -52,11 +53,29 @@
                     Programms getestet wurde.
                 </p>
             </div>
+            <div class="col-lg-5">
+                <!-- Use tabindex to make the canvas focusable. -->
+                <canvas id="scratch-stage" tabindex="1"></canvas>
+                <div id="startTests">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <button id="run-all-tests" class="btn btn-main" type="button"
+                                        title="Run all tests on all projects">Starte Tests
+                                </button>
+                                <button id="reset" class="btn btn-main" type="button"
+                                        title="Reset program to initial state">Zurücksetzen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="container spacer20">
             <div class="row">
-                <div class="col-lg-12">
+                <div class="col-lg-12 spacer20">
                     <form>
                         <div class="row">
                             <div class="col-lg-6">
@@ -76,49 +95,25 @@
                                             <div class="col-lg-12">
                                                 <div class="form-group" style="margin-bottom:9px;">
                                                     <input name="programmDatei" class="form-control-file" type="file"
-                                                     id="fileselect-project" accept=".sb3">
+                                                           id="fileselect-project" accept=".sb3">
                                                 </div>
                                                 <div class="form-group">
-                                                    <small id="dateiHilfe" class="form-text text-muted">Wähle eine Datei von deiner Festplatte aus.</small>
+                                                    <small id="dateiHilfe" class="form-text text-muted">Wähle eine Datei
+                                                        von deiner Festplatte aus.</small>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-6">
-                                <div id="projectURL" class="row chooseFile">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10">
-                                                <label for="programmUrl" style="padding-bottom:7px; padding-top:7px;">URL deines Scratch-Programms</label>
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img src="assets/url.png" style="max-height:40px;" alt="url"/>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
-                                                    </div>
-                                                    <input name="programmURL" type="text" class="form-control" id="programmURL" aria-describedby="basic-addon3">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
                             <div class="col-lg-6">
                                 <div id="testUpload" class="row chooseFile">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10">
                                                 <label id="fileselect-tests-label" for="fileselect-tests"
-                                                       style="padding-bottom:7px; padding-top:7px;">Deine Testdatei</label>
+                                                       style="padding-bottom:7px; padding-top:7px;">Deine
+                                                    Testdatei</label>
                                             </div>
                                             <div class="col-lg-2">
                                                 <img src="assets/js.png" style="max-height:40px;" alt="js"/>
@@ -133,6 +128,125 @@
                                                 <div class="form-group">
                                                     <small id="dateiHilfe2" class="form-text text-muted">Wähle eine
                                                         Datei von deiner Festplatte aus.</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-12">
+                    <div id="test-table" style="display: none;">
+                        <table class="display table table-sm table-striped mt-4">
+                            <thead class="thead-light">
+                            <tr>
+                                <th></th>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Categories</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="test-editor" class="mt-4" style="display: none;">
+                        <form class="form-inline mt-3">
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col">
+                                        <button class="editor-apply btn btn-sm btn-outline-secondary"
+                                                type="button">Load Tests From Editor
+                                        </button>
+                                        <button class="editor-save btn btn-sm btn-outline-secondary"
+                                                type="button">Save
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="output-run" class="mt-4" style="display: none;">
+                        <label for="output-run">TAP13</label>
+                        <pre class="output-content"></pre>
+                        <form class="form-inline mt-2">
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col">
+                                        <button class="output-clear btn btn-sm btn-outline-secondary"
+                                                type="button">Clear
+                                        </button>
+                                        <button class="output-save btn btn-sm btn-outline-secondary"
+                                                type="button">Save
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="output-log" class="mt-4" style="display: none;">
+                        <label for="output-log">Log</label>
+                        <pre class="output-content"></pre>
+                        <form class="form-inline mt-2">
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="col">
+                                        <button class="output-clear btn btn-sm btn-outline-secondary"
+                                                type="button">Clear
+                                        </button>
+                                        <button class="output-save btn btn-sm btn-outline-secondary"
+                                                type="button">Save
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="advanced" class="container">
+        <div class="row spacer50">
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-main" title="Show / hide advanced settings">
+                    <input id="toggle-advanced" class="checkbox-button" type="checkbox"
+                           autocomplete="off" aria-pressed="true"> Erweiterte Funktionen
+                </label>
+            </div>
+        </div>
+        <div class="container spacer20">
+            <div class="row">
+                <div class="col-lg-12">
+                    <form>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div id="projectURL" class="row chooseFile">
+                                    <div class="col-lg-12">
+                                        <div class="row">
+                                            <div class="col-lg-10">
+                                                <label for="programmUrl"
+                                                       style="padding-bottom:7px; padding-top:7px;">URL deines
+                                                    Scratch-Programms</label>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <img src="assets/url.png" style="max-height:40px;" alt="url"/>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
+                                                    </div>
+                                                    <input name="programmURL" type="text" class="form-control"
+                                                           id="programmURL" aria-describedby="basic-addon3">
                                                 </div>
                                             </div>
                                         </div>
@@ -155,11 +269,13 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="form-group" style="margin-bottom:9px;">
-                                                    <input name="configDatei" class="form-control-file" type="file"
+                                                    <input name="configDatei" class="form-control-file"
+                                                           type="file"
                                                            id="fileselect-config" accept=".json">
                                                 </div>
                                                 <div class="form-group">
-                                                    <small id="dateiHilfe3" class="form-text text-muted">Wähle eine
+                                                    <small id="dateiHilfe3" class="form-text text-muted">Wähle
+                                                        eine
                                                         Datei von deiner Festplatte aus.</small>
                                                 </div>
                                             </div>
@@ -171,138 +287,52 @@
                     </form>
                 </div>
             </div>
-        </div>
-
-        <div class="row spacer50">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="row">
-                        <div class="col-lg-5">
-                            <!-- Use tabindex to make the canvas focusable. -->
-                            <canvas id="scratch-stage" tabindex="1"></canvas>
-                            <div id="scratch-controls">
-                                <div class="form-group">
-                                    <div class="form-row">
-                                        <div class="col">
-                                            <button id="green-flag" class="btn btn-outline-success" type="button" title="Start the program"><i class="fas fa-flag"></i></button>
-                                            <button id="stop" class="btn btn-danger" type="button" title="Stop the program / test execution"><i class="fas fa-stop"></i></button>
-                                            <span class="mx-2"></span>
-                                            <button id="reset" class="btn btn-main" type="button"
-                                                    title="Reset program to initial state">Zurücksetzen</button>
-                                            <button id="run-all-tests" class="btn btn-main" type="button"
-                                                    title="Run all tests on all projects">Starte Tests</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="form-row">
-                                        <div class="col">
-                                            <div class="custom-control custom-checkbox" style="display: inline-block;" title="Enable / disable manual inputs to the program">
-                                                <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
-                                                <label class="custom-control-label" for="toggle-input">Eingaben zulassen</label>
-                                            </div>
-                                            <span class="mx-2"></span>
-                                            <button id="record" class="btn btn-sm btn-outline-danger" type="button"
-                                                    title="Record inputs for use in tests">Eingaben aufzeichnen</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <div class="form-row">
-                                        <div class="col">
-                                            <div class="spacer10" style="display: flex;justify-content: space-between;
+            <div id="scratch-controls">
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col">
+                            <button id="green-flag" class="btn btn-outline-success"
+                                    type="button" title="Start the program"><i
+                                class="fas fa-flag"></i></button>
+                            <button id="stop" class="btn btn-danger" type="button"
+                                    title="Stop the program / test execution"><i
+                                class="fas fa-stop"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="custom-control custom-checkbox"
+                                 style="display: inline-block;"
+                                 title="Enable / disable manual inputs to the program">
+                                <input id="toggle-input" type="checkbox"
+                                       class="custom-control-input" autocomplete="off">
+                                <label class="custom-control-label" for="toggle-input">Eingaben
+                                    zulassen</label>
+                            </div>
+                            <span class="mx-2"></span>
+                            <button id="record" class="btn btn-sm btn-outline-danger"
+                                    type="button"
+                                    title="Record inputs for use in tests">Eingaben aufzeichnen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col">
+                            <div class="spacer10" style="display: flex;justify-content: space-between;
                                                  align-items:
                                             center;">
-                                                <label style="margin: 0;" for="acceleration-factor">Beschleunigungsfaktor:</label>
-                                                <input style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
-                                                       id="acceleration-factor" type="number" autocomplete="off" />
-                                            </div>
-                                            <button id="run-search" type="button" class="btn btn-main">Starte
-                                                Suche</button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <label style="margin: 0;" for="acceleration-factor">Beschleunigungsfaktor:</label>
+                                <input
+                                    style="text-align: right; border: 1px solid lightgrey; border-radius: 2px;"
+                                    id="acceleration-factor" type="number" autocomplete="off"/>
                             </div>
-                        </div>
-                        <div class="col-lg-7">
-                                <form class="mt-3">
-                                <div id="toggle-components" class="form-group">
-                                    <div class="form-row">
-                                        <div class="col">
-                                            <div class="btn-group-toggle" data-toggle="buttons">
-                                                <label class="btn btn-main" title="Show / hide test table">
-                                                    <input id="toggle-tests" class="checkbox-button" type="checkbox"
-                                                           autocomplete="off" aria-pressed="true"> Tests
-                                                </label>
-                                                <label class="btn btn-main" title="Show / hide test editor">
-                                                    <input id="toggle-editor" class="checkbox-button" type="checkbox"
-                                                           autocomplete="off" aria-pressed="true"> Editor
-                                                </label>
-                                                <label class="btn btn-main" title="Show / hide test output">
-                                                    <input id="toggle-output" class="checkbox-button" type="checkbox"
-                                                           autocomplete="off" aria-pressed="true"> Output
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                </form>
-                                <div id="test-table" style="display: none;">
-                                    <table class="display table table-sm table-striped mt-4">
-                                        <thead class="thead-light">
-                                        <tr>
-                                            <th></th>
-                                            <th>#</th>
-                                            <th>Name</th>
-                                            <th>Categories</th>
-                                            <th></th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div id="test-editor" class="mt-4" style="display: none;">
-                                    <form class="form-inline mt-3">
-                                        <div class="form-group">
-                                            <div class="form-row">
-                                                <div class="col">
-                                                    <button class="editor-apply btn btn-sm btn-outline-secondary" type="button">Load Tests From Editor</button>
-                                                    <button class="editor-save btn btn-sm btn-outline-secondary" type="button">Save</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                                <div id="output-run" class="mt-4" style="display: none;">
-                                    <label for="output-run">TAP13</label>
-                                    <pre class="output-content"></pre>
-                                    <form class="form-inline mt-2">
-                                        <div class="form-group">
-                                            <div class="form-row">
-                                                <div class="col">
-                                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
-                                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                                <div id="output-log" class="mt-4" style="display: none;">
-                                    <label for="output-log">Log</label>
-                                    <pre class="output-content"></pre>
-                                    <form class="form-inline mt-2">
-                                        <div class="form-group">
-                                            <div class="form-row">
-                                                <div class="col">
-                                                    <button class="output-clear btn btn-sm btn-outline-secondary" type="button">Clear</button>
-                                                    <button class="output-save btn btn-sm btn-outline-secondary" type="button">Save</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
+                            <button id="run-search" type="button" class="btn btn-main">Starte
+                                Suche
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -315,21 +345,24 @@
             <div class="container" style="padding-top:30px;">
                 <div class="row">
                     <div class="col-lg-12" style="text-align:center; color:#eee;">
-                        Whisker @ Universität Passau, Innstraße 41, 94032 Passau <br />
-                        Lehrstuhl für Software Engineering II - Prof. Dr. Gordon Fraser <br />
+                        Whisker @ Universität Passau, Innstraße 41, 94032 Passau <br/>
+                        Lehrstuhl für Software Engineering II - Prof. Dr. Gordon Fraser <br/>
                     </div>
                 </div>
                 <div class="row spacer10">
                     <div class="col-lg-12">
                         <ul class="nav justify-content-center">
                             <li class="nav-item">
-                                <a class="nav-link" href="./html/contact.html" style="color:var(--mainColor);">Kontakt</a>
+                                <a class="nav-link" href="./html/contact.html"
+                                   style="color:var(--mainColor);">Kontakt</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="./html/impressum.html" style="color:var(--mainColor);">Impressum</a>
+                                <a class="nav-link" href="./html/impressum.html"
+                                   style="color:var(--mainColor);">Impressum</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="./html/datenschutz.html" style="color:var(--mainColor);">Datenschutz</a>
+                                <a class="nav-link" href="./html/datenschutz.html"
+                                   style="color:var(--mainColor);">Datenschutz</a>
                             </li>
                         </ul>
                     </div>
@@ -339,34 +372,75 @@
         <div class="row spacer20">
             <div class="col-lg-12" style="text-align:center;">
                 <!-- Sharingbutton Facebook -->
-                <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox" target="_blank" rel="noopener" aria-label="Share on Facebook">
-                    <div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--large"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg>
-                    </div>Share on Facebook</div>
+                <a class="resp-sharing-button__link"
+                   href="https://facebook.com/sharer/sharer.php?u=https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox"
+                   target="_blank" rel="noopener" aria-label="Share on Facebook">
+                    <div
+                        class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--large">
+                        <div aria-hidden="true"
+                             class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path
+                                    d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/>
+                            </svg>
+                        </div>
+                        Share on Facebook
+                    </div>
                 </a>
 
                 <!-- Sharingbutton Twitter -->
-                <a class="resp-sharing-button__link" href="https://twitter.com/intent/tweet/?text=Testing%20Scratch%20Projects%20with%20Litterbox&amp;url=https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox" target="_blank" rel="noopener" aria-label="Share on Twitter">
-                    <div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--large"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/></svg>
-                    </div>Share on Twitter</div>
+                <a class="resp-sharing-button__link"
+                   href="https://twitter.com/intent/tweet/?text=Testing%20Scratch%20Projects%20with%20Litterbox&amp;url=https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox"
+                   target="_blank" rel="noopener" aria-label="Share on Twitter">
+                    <div
+                        class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--large">
+                        <div aria-hidden="true"
+                             class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path
+                                    d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/>
+                            </svg>
+                        </div>
+                        Share on Twitter
+                    </div>
                 </a>
 
                 <!-- Sharingbutton E-Mail -->
-                <a class="resp-sharing-button__link" href="mailto:?subject=Testing%20Scratch%20Projects%20with%20Litterbox&amp;body=https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox" target="_self" rel="noopener" aria-label="Share by E-Mail">
-                    <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--large"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg></div>Share by E-Mail</div>
+                <a class="resp-sharing-button__link"
+                   href="mailto:?subject=Testing%20Scratch%20Projects%20with%20Litterbox&amp;body=https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox"
+                   target="_self" rel="noopener" aria-label="Share by E-Mail">
+                    <div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--large">
+                        <div aria-hidden="true"
+                             class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path
+                                    d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/>
+                            </svg>
+                        </div>
+                        Share by E-Mail
+                    </div>
                 </a>
 
                 <!-- Sharingbutton WhatsApp -->
-                <a class="resp-sharing-button__link" href="whatsapp://send?text=Testing%20Scratch%20Projects%20with%20Litterbox%20https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
-                    <div class="resp-sharing-button resp-sharing-button--whatsapp resp-sharing-button--large"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.1 3.9C17.9 1.7 15 .5 12 .5 5.8.5.7 5.6.7 11.9c0 2 .5 3.9 1.5 5.6L.6 23.4l6-1.6c1.6.9 3.5 1.3 5.4 1.3 6.3 0 11.4-5.1 11.4-11.4-.1-2.8-1.2-5.7-3.3-7.8zM12 21.4c-1.7 0-3.3-.5-4.8-1.3l-.4-.2-3.5 1 1-3.4L4 17c-1-1.5-1.4-3.2-1.4-5.1 0-5.2 4.2-9.4 9.4-9.4 2.5 0 4.9 1 6.7 2.8 1.8 1.8 2.8 4.2 2.8 6.7-.1 5.2-4.3 9.4-9.5 9.4zm5.1-7.1c-.3-.1-1.7-.9-1.9-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1s-1.2-.5-2.3-1.4c-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6s.3-.3.4-.5c.2-.1.3-.3.4-.5.1-.2 0-.4 0-.5C10 9 9.3 7.6 9 7c-.1-.4-.4-.3-.5-.3h-.6s-.4.1-.7.3c-.3.3-1 1-1 2.4s1 2.8 1.1 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.3-.3-.4-.6-.5z"/></svg>
-                    </div>Share on WhatsApp</div>
+                <a class="resp-sharing-button__link"
+                   href="whatsapp://send?text=Testing%20Scratch%20Projects%20with%20Litterbox%20https%3A%2F%2Fscratch.fim.uni-passau.de%2Flitterbox"
+                   target="_blank" rel="noopener" aria-label="Share on WhatsApp">
+                    <div
+                        class="resp-sharing-button resp-sharing-button--whatsapp resp-sharing-button--large">
+                        <div aria-hidden="true"
+                             class="resp-sharing-button__icon resp-sharing-button__icon--solid">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path
+                                    d="M20.1 3.9C17.9 1.7 15 .5 12 .5 5.8.5.7 5.6.7 11.9c0 2 .5 3.9 1.5 5.6L.6 23.4l6-1.6c1.6.9 3.5 1.3 5.4 1.3 6.3 0 11.4-5.1 11.4-11.4-.1-2.8-1.2-5.7-3.3-7.8zM12 21.4c-1.7 0-3.3-.5-4.8-1.3l-.4-.2-3.5 1 1-3.4L4 17c-1-1.5-1.4-3.2-1.4-5.1 0-5.2 4.2-9.4 9.4-9.4 2.5 0 4.9 1 6.7 2.8 1.8 1.8 2.8 4.2 2.8 6.7-.1 5.2-4.3 9.4-9.5 9.4zm5.1-7.1c-.3-.1-1.7-.9-1.9-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1s-1.2-.5-2.3-1.4c-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6s.3-.3.4-.5c.2-.1.3-.3.4-.5.1-.2 0-.4 0-.5C10 9 9.3 7.6 9 7c-.1-.4-.4-.3-.5-.3h-.6s-.4.1-.7.3c-.3.3-1 1-1 2.4s1 2.8 1.1 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.3-.3-.4-.6-.5z"/>
+                            </svg>
+                        </div>
+                        Share on WhatsApp
+                    </div>
                 </a>
                 <div class="row">
                     <div class="col-lg-12" style="text-align:center;">
-                        <img src="assets/uniPassauLogo.png" style="max-height:70px; padding-bottom:20px;"  alt="logo"/>
+                        <img src="assets/uniPassauLogo.png" style="max-height:70px; padding-bottom:20px;"
+                             alt="logo"/>
                     </div>
                 </div>
             </div>
