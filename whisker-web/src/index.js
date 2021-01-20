@@ -162,7 +162,9 @@ const initComponents = function () {
     Whisker.testTable.show();
 
     Whisker.outputRun = new Output($('#output-run')[0]);
+    Whisker.outputRun.show();
     Whisker.outputLog = new Output($('#output-log')[0]);
+    Whisker.outputLog.show();
 
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
@@ -241,8 +243,6 @@ const initEvents = function () {
             $('#advanced-upload').show();
             $('#scratch-controls').show();
             $('#run-search').show();
-            Whisker.outputRun.show();
-            Whisker.outputLog.show();
         } else {
             $(event.target)
                 .parent()
@@ -250,8 +250,6 @@ const initEvents = function () {
             $('#advanced-upload').hide();
             $('#scratch-controls').hide();
             $('#run-search').hide();
-            Whisker.outputRun.hide();
-            Whisker.outputLog.hide();
         }
     });
 
@@ -284,8 +282,6 @@ const hideAdvanced = function () {
     $('#advanced-upload').hide();
     $('#scratch-controls').hide();
     $('#run-search').hide();
-    Whisker.outputRun.hide();
-    Whisker.outputLog.hide();
 }
 
 $(document)
