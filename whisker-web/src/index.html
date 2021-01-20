@@ -52,6 +52,54 @@
                     erhältst anschließend Informationen dazu, welche Tests fehlgeschlagen sind und wie viel deines
                     Programms getestet wurde.
                 </p>
+                <div id="scratch-controls" class="row">
+                    <form class="search-form">
+                        <label id="scratch-controls-label" for="scratch-controls" style="padding-bottom:7px;
+                                                padding-top:7px; padding-left: 10px">Generiere Tests</label>
+
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col">
+                                    <button id="green-flag" class="btn btn-outline-success"
+                                            type="button" title="Start the program"><i
+                                        class="fas fa-flag"></i></button>
+                                    <button id="stop" class="btn btn-danger" type="button"
+                                            title="Stop the program / test execution"><i
+                                        class="fas fa-stop"></i></button>
+                                    <span class="mx-4"></span>
+                                    <div class="custom-control custom-checkbox"
+                                         style="display: inline-block;"
+                                         title="Enable / disable manual inputs to the program">
+                                        <input id="toggle-input" type="checkbox"
+                                               class="custom-control-input" autocomplete="off">
+                                        <label class="custom-control-label" for="toggle-input"></label>
+                                    </div>
+                                    <button id="record" class="btn btn-sm btn-outline-danger"
+                                            type="button"
+                                            title="Record inputs for use in tests">Eingaben aufzeichnen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col">
+                                    <div class="spacer10" style="display: flex;justify-content: space-between;
+                                                 align-items: center;">
+                                        <label style="margin: 0;" for="acceleration-factor">Beschleunigung:</label>
+                                        <input
+                                            style="text-align: right; border: 1px solid lightgrey;"
+                                            id="acceleration-factor" type="number" autocomplete="off"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <button id="run-search" type="button" class="btn btn-main search-button">Starte
+                                    Suche</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
             <div class="col-lg-5">
                 <!-- Use tabindex to make the canvas focusable. -->
@@ -67,48 +115,6 @@
                                         title="Reset program to initial state">Zurücksetzen
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="scratch-controls">
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <button id="green-flag" class="btn btn-outline-success"
-                                        type="button" title="Start the program"><i
-                                    class="fas fa-flag"></i></button>
-                                <button id="stop" class="btn btn-danger" type="button"
-                                        title="Stop the program / test execution"><i
-                                    class="fas fa-stop"></i></button>
-                                <span class="mx-4"></span>
-                                <div class="custom-control custom-checkbox"
-                                     style="display: inline-block;"
-                                     title="Enable / disable manual inputs to the program">
-                                    <input id="toggle-input" type="checkbox"
-                                           class="custom-control-input" autocomplete="off">
-                                    <label class="custom-control-label" for="toggle-input"></label>
-                                </div>
-                                <button id="record" class="btn btn-sm btn-outline-danger"
-                                        type="button"
-                                        title="Record inputs for use in tests">Eingaben aufzeichnen
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-row">
-                            <div class="col">
-                                <div class="spacer10" style="display: flex;justify-content: space-between;
-                                                 align-items: center;">
-                                    <label style="margin: 0;" for="acceleration-factor">Beschleunigung:</label>
-                                    <input
-                                        style="text-align: right; border: 1px solid lightgrey;"
-                                        id="acceleration-factor" type="number" autocomplete="off"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <button id="run-search" type="button" class="btn btn-main">Starte Suche</button>
                         </div>
                     </div>
                 </div>

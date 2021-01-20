@@ -172,6 +172,23 @@ p {
     min-height: 120px;
 }
 
+.search-form {
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    margin: 20px 20px 20px 10%;
+    min-height: 120px;
+}
+
+.form-group {
+    margin-bottom: 9px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.search-button {
+    margin-left: 25%;
+}
+
 .userData {
     margin:10px;
 }
