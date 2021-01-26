@@ -2,14 +2,6 @@
     "project-link" : "Upload project",
     "de" : "German",
     "en" : "English",
-    "welcome1" : [
-        "Welcome to our website. You want to test your Scratch program and don't know how?",
-        "Use our Whisker-Tools to write or automatically generate tests."
-    ],
-    "welcome2" : [
-        "Upload your Scratch *.sb3-File and/or tests and use Whisker to test your program.",
-        "You get information on which tests failed as well as your achieved sprite coverage."
-    ],
     "test-generation" : "Generate tests",
     "recording" : "Record input",
     "acceleration" : "Acceleration",

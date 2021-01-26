@@ -2,16 +2,6 @@
     "project-link" : "Projekt hochladen",
     "de" : "Deutsch",
     "en" : "Englisch",
-    "welcome1" : [
-        "Herzlich willkommen auf unserer Website. Du möchtest dein Scratch-Programm gerne testen und",
-        "kommst nicht weiter? Verwende unsere Whisker-Tools, um Tests zu schreiben oder automatisch",
-        "generieren zu lassen. "
-    ],
-    "welcome2" : [
-        "Lade deine Scratch *.sb3-Datei und/oder Tests hoch und lasse Whisker dein Programm testen. Du",
-        "erhältst anschließend Informationen dazu, welche Tests fehlgeschlagen sind und wie viel deines",
-        "Programms getestet wurde."
-    ],
     "test-generation" : "Generiere Tests",
     "recording" : "Eingaben aufzeichnen",
     "acceleration" : "Beschleunigung",
