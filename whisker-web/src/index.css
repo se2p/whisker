@@ -175,7 +175,7 @@ p {
 .search-form {
     background-color: #f1f1f1;
     border-radius: 5px;
-    margin: 20px 20px 20px 10%;
+    margin: 10px;
     min-height: 120px;
 }
 
@@ -186,7 +186,7 @@ p {
 }
 
 .search-button {
-    margin-left: 25%;
+    margin-left: 130px;
 }
 
 .userData {
