@@ -40,11 +40,13 @@ const cli = {
             .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../whisker-web/dist/index.html')
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
-            .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
+            .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
+            .option('-r, --addRandomInputs', 'If random inputs should be added to the test', false)
+            .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', "1")
             .option('-v, --csvFile <Path>', 'Name of CSV File to put output into', false)
             .option('-c, --configPath <Path>', 'Path to a configuration file', '../whisker-main/config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
-            .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
+            .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', "1")
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
@@ -56,6 +58,8 @@ const cli = {
             whiskerURL,
             scratchPath,
             testPath,
+            errorWitnessPath,
+            addRandomInputs,
             accelerationFactor,
             csvFile,
             configPath,
@@ -71,11 +75,13 @@ const cli = {
 
         return {
             whiskerURL: `file://${path.resolve(whiskerURL)}`,
-            testPath,
             scratchPath,
-            configPath,
-            csvFile,
+            testPath,
+            errorWitnessPath,
+            addRandomInputs,
             accelerationFactor,
+            csvFile,
+            configPath,
             isHeadless,
             numberOfTabs,
             isConsoleForwarded,

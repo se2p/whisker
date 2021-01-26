@@ -15,8 +15,8 @@ const CSVConverter = require('./converter.js');
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, configPath, csvFile, accelerationFactor, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch,
+    whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch
 } = cli.start();
 
 init();
@@ -71,7 +71,16 @@ async function init () {
 }
 
 async function runTestsOnFile (browser, targetProject) {
-    const paths = prepareTestFiles(testPath);
+    let testFilePath = testPath;
+
+    if (addRandomInputs) {
+        testFilePath = attachRandomInputsToTest(testFilePath);
+    }
+
+    if (errorWitnessPath) {
+        testFilePath = attachErrorWitnessReplayToTest(errorWitnessPath, testFilePath);
+    }
+    const paths = prepareTestFiles(testFilePath);
     const csvs = [];
     await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject)))
         .then(results => {
@@ -381,6 +390,65 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
     }
 
     return testSourcesPerTab;
+}
+
+function keyCodeToKeyString(keyCode) {
+    switch (keyCode) {
+        case 13: return 'Enter';
+        case 32: return ' ';
+        case 37: return 'ArrowLeft';
+        case 38: return 'ArrowUp';
+        case 39: return 'ArrowRight';
+        case 40: return 'ArrowDown';
+        default: throw new Error(`Unknown keycode '${keyCode}'`);
+    }
+}
+
+function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
+    const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
+    let errorReplay = "// Error witness replay\n"
+
+    for (const step of errorWitness.steps) {
+        const action = step.action;
+
+        switch (action) {
+            case 'EPSILON': break;
+            case 'WAIT': errorReplay += `    await t.runForTime(${step.waitMicros / 1000});\n`; break;
+            case 'MOUSE_MOVE': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
+            case 'ANSWER': errorReplay += `    t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
+            case 'KEY_DOWN': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
+            case 'KEY_UP': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
+            case 'MOUSE_DOWN': errorReplay += `    t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
+            case 'MOUSE_UP': errorReplay += `    t.inputImmediate({device: 'mouse', isDown: false});\n`; break;
+            default: logger.error(`Unknown error witness step action '${action}' for step ${errorWitness.steps.indexOf(step)}`);
+        }
+    }
+
+    errorReplay += "    // Run a few steps more in order to catch the violation\n    await t.runForSteps(10);\n    // Error witness replay finished\n"
+
+    return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", errorReplay, "_error_witness_replay.js");
+}
+
+function attachRandomInputsToTest(constraintsPath) {
+    const randomInputs = "    t.setRandomInputInterval(150);\n" +
+        "    t.detectRandomInputs({duration: [50, 100]});\n" +
+        "    await t.runForTime(300000);";
+
+    return replaceInFile(constraintsPath, "// RANDOM_INPUTS", randomInputs, "_random_inputs.js");
+}
+
+function replaceInFile(filePath, searchValue, replacement, outputFileSuffix) {
+    const fileWithReplacement = fs.readFileSync(filePath, {encoding: 'utf8'})
+        .toString().replace(searchValue, replacement);
+
+    if (fs.existsSync(tmpDir)) {
+        fs.rmdirSync(tmpDir, {recursive: true});
+    }
+    fs.mkdirSync(tmpDir);
+
+    const path = `${basename(filePath)}${outputFileSuffix}`;
+    fs.writeFileSync(path, fileWithReplacement, {encoding: 'utf8'});
+    return path;
 }
 
 /**
