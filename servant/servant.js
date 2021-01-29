@@ -11,8 +11,8 @@ const rimraf = require("rimraf");
 const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
 const CSVConverter = require('./converter.js');
+const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
 
-const primitivesArrayPrefix = 't.vm.runtime._primitives';
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
@@ -388,108 +388,6 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
     return testSourcesPerTab;
 }
 
-function keyCodeToKeyString(keyCode) {
-    switch (keyCode) {
-        case 13: return 'Enter';
-        case 32: return ' ';
-        case 37: return 'ArrowLeft';
-        case 38: return 'ArrowUp';
-        case 39: return 'ArrowRight';
-        case 40: return 'ArrowDown';
-        default: throw new Error(`Unknown keycode '${keyCode}'`);
-    }
-}
-
-function mockOnCondition(name, mockCondition, mock, functionParameters) {
-    const originalFunctionName = `original_${name}`;
-    let code = `    const ${originalFunctionName} = ${primitivesArrayPrefix}['${name}'];\n`;
-    code += `    ${primitivesArrayPrefix}['${name}'] = ${functionParameters} => ${mockCondition} ? ${mock} : ${originalFunctionName}${functionParameters};\n`;
-
-    return code;
-}
-
-function mockBlock(name, mock) {
-    const mockName = 'mock_' + name;
-    const mockFunction = `mock_${name}Function`;
-    let code = `    const ${mockName} = ${JSON.stringify(mock)};\n`;
-    code += `    const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
-
-    switch (name) {
-        case 'operator_random':
-            code += `    ${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
-            break;
-        case 'motion_goto':
-            code += mockOnCondition(name, `args.TO === '_random_'`, `util.target.setXY(${mockFunction}(),${mockFunction}())`, '(args, util)');
-            break;
-        case 'motion_glideto':
-            const originalGlideSecsTo = 'originalGlideSecsTo';
-            code += `    const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
-            code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, `${originalGlideSecsTo}({SECS: args.SECS, X: ${mockFunction}(), Y: ${mockFunction}()}, util)`, '(args, util)')
-            break;
-        default: throw new Error(`Unknown block ${name}`);
-    }
-    code += '\n';
-    return code;
-}
-
-function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
-    const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
-    let errorReplay = "\n"
-
-    const mocks = errorWitness.mocks;
-    if (mocks) {
-        errorReplay += "{\n    // Initializing mocks\n";
-        for (const mockName of Object.keys(mocks)) {
-            errorReplay += mockBlock(mockName, mocks[mockName]);
-        }
-        errorReplay += "}\n";
-    }
-
-    errorReplay += "    // Error witness replay\n";
-
-    for (const step of errorWitness.steps) {
-        const action = step.action;
-
-        switch (action) {
-            case 'EPSILON': break;
-            case 'WAIT': errorReplay += `    await t.runForTime(${step.waitMicros / 1000});\n`; break;
-            case 'MOUSE_MOVE': errorReplay += `    t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
-            case 'ANSWER': errorReplay += `    t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
-            case 'KEY_DOWN': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
-            case 'KEY_UP': errorReplay += `    t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
-            case 'MOUSE_DOWN': errorReplay += `    t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
-            case 'MOUSE_UP': errorReplay += `    t.inputImmediate({device: 'mouse', isDown: false});\n`; break;
-            default: logger.error(`Unknown error witness step action '${action}' for step ${errorWitness.steps.indexOf(step)}`);
-        }
-    }
-
-    errorReplay += "    // Run a few steps more in order to catch the violation\n    await t.runForSteps(10);\n    // Error witness replay finished\n"
-
-    return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", errorReplay, "_error_witness_replay.js");
-}
-
-function attachRandomInputsToTest(constraintsPath) {
-    const randomInputs = "    t.setRandomInputInterval(150);\n" +
-        "    t.detectRandomInputs({duration: [50, 100]});\n" +
-        "    await t.runForTime(300000);";
-
-    return replaceInFile(constraintsPath, "// RANDOM_INPUTS", randomInputs, "_random_inputs.js");
-}
-
-function replaceInFile(filePath, searchValue, replacement, outputFileSuffix) {
-    const fileWithReplacement = fs.readFileSync(filePath, {encoding: 'utf8'})
-        .toString().replace(searchValue, replacement);
-
-    if (fs.existsSync(tmpDir)) {
-        fs.rmdirSync(tmpDir, {recursive: true});
-    }
-    fs.mkdirSync(tmpDir);
-
-    const path = `${tmpDir}/${basename(filePath)}${outputFileSuffix}`;
-    fs.writeFileSync(path, fileWithReplacement, {encoding: 'utf8'});
-    return path;
-}
-
 /**
  * Wrapper for the test file preparation, creating the temporary working directory and reading, distributing and writing
  * the files.
@@ -499,11 +397,11 @@ function replaceInFile(filePath, searchValue, replacement, outputFileSuffix) {
  */
 function prepareTestFiles (whiskerTestPath) {
     if (addRandomInputs) {
-        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath);
+        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir);
     }
 
     if (errorWitnessPath) {
-        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, whiskerTestPath);
+        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, whiskerTestPath, tmpDir);
     }
 
     const {evaledTest, testSourceWithoutExportArray} = prepareTestSource(whiskerTestPath);
