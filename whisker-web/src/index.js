@@ -35,6 +35,7 @@ const loadTestsFromString = function (string) {
     Whisker.tests = tests;
     Whisker.testEditor.setValue(string);
     Whisker.testTable.setTests(tests);
+
     return tests;
 };
 
