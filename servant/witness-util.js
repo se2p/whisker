@@ -17,6 +17,14 @@ function keyCodeToKeyString(keyCode) {
     }
 }
 
+/**
+ * Mocks a scratch block under a given condition
+ * @param name The internal name of a scratch block
+ * @param mockCondition The condition under which the mock is called (can use arguments of the original scratch block function)
+ * @param mock The mock function
+ * @param functionParameters The parameters of the scratch block function
+ * @returns {string} The code for mocking the scratch block
+ */
 function mockOnCondition(name, mockCondition, mock, functionParameters) {
     const originalFunctionName = `original_${name}`;
     let code = `${indentation}const ${originalFunctionName} = ${primitivesArrayPrefix}['${name}'];\n`;
@@ -25,6 +33,12 @@ function mockOnCondition(name, mockCondition, mock, functionParameters) {
     return code;
 }
 
+/**
+ * Mocks a scratch block
+ * @param name The internal name of a scratch block
+ * @param mock The mock object: {values: number[], index: 0} which contains the values that the mock should provide during test execution
+ * @returns {string} The code for mocking the scratch block
+ */
 function mockBlock(name, mock) {
     const mockName = 'mock_' + name;
     const mockFunction = `mock_${name}Function`;
@@ -49,6 +63,16 @@ function mockBlock(name, mock) {
     return code;
 }
 
+/**
+ * Adds instructions to the tests that will replay the error witness.
+ * The test has to contain the comment '// REPLAY_ERROR_WITNESS'.
+ * The comment will then be replaced with the generated witness steps.
+ *
+ * @param errorWitnessPath The path to an error witness file.
+ * @param constraintsPath The path to the original test.
+ * @param tmpDir The path to the tmp directory where the generated test is placed.
+ * @returns {string} The path to the generated test.
+ */
 function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath, tmpDir) {
     const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
     let errorReplay = "\n"
@@ -85,6 +109,15 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath, tmpDi
     return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", errorReplay, "_error_witness_replay.js", tmpDir);
 }
 
+/**
+ * Adds random input generation to a test.
+ * The test has to contain the comment '// RANDOM_INPUTS'.
+ * The comment will then be replaced with the random input generation.
+ *
+ * @param constraintsPath The path to the test file.
+ * @param tmpDir The path to the tmp directory.
+ * @returns {string} The path to the generated test.
+ */
 function attachRandomInputsToTest(constraintsPath, tmpDir) {
     const randomInputs = `${indentation}.setRandomInputInterval(150);\n` +
         `${indentation}t.detectRandomInputs({duration: [50, 100]});\n` +
