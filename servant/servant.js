@@ -12,14 +12,19 @@ const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter'
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
 const CSVConverter = require('./converter.js');
 
+const primitivesArrayPrefix = 't.vm.runtime._primitives';
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
-    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
 } = cli.start();
 
-init();
+if (isGenerateWitnessTestOnly) {
+    prepareTestFiles(testPath);
+} else {
+    init();
+}
 
 /**
  * The entry point of the runners functionallity, handling the test file preperation and the browser instance.
@@ -71,16 +76,7 @@ async function init () {
 }
 
 async function runTestsOnFile (browser, targetProject) {
-    let testFilePath = testPath;
-
-    if (addRandomInputs) {
-        testFilePath = attachRandomInputsToTest(testFilePath);
-    }
-
-    if (errorWitnessPath) {
-        testFilePath = attachErrorWitnessReplayToTest(errorWitnessPath, testFilePath);
-    }
-    const paths = prepareTestFiles(testFilePath);
+    const paths = prepareTestFiles(testPath);
     const csvs = [];
     await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject)))
         .then(results => {
@@ -404,9 +400,52 @@ function keyCodeToKeyString(keyCode) {
     }
 }
 
+function mockOnCondition(name, mockCondition, mock, functionParameters) {
+    const originalFunctionName = `original_${name}`;
+    let code = `    const ${originalFunctionName} = ${primitivesArrayPrefix}['${name}'];\n`;
+    code += `    ${primitivesArrayPrefix}['${name}'] = ${functionParameters} => ${mockCondition} ? ${mock} : ${originalFunctionName}${functionParameters};\n`;
+
+    return code;
+}
+
+function mockBlock(name, mock) {
+    const mockName = 'mock_' + name;
+    const mockFunction = `mock_${name}Function`;
+    let code = `    const ${mockName} = ${JSON.stringify(mock)};\n`;
+    code += `    const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
+
+    switch (name) {
+        case 'operator_random':
+            code += `    ${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
+            break;
+        case 'motion_goto':
+            code += mockOnCondition(name, `args.TO === '_random_'`, `util.target.setXY(${mockFunction}(),${mockFunction}())`, '(args, util)');
+            break;
+        case 'motion_glideto':
+            const originalGlideSecsTo = 'originalGlideSecsTo';
+            code += `    const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
+            code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, `${originalGlideSecsTo}({SECS: args.SECS, X: ${mockFunction}(), Y: ${mockFunction}()}, util)`, '(args, util)')
+            break;
+        default: throw new Error(`Unknown block ${name}`);
+    }
+    code += '\n';
+    return code;
+}
+
 function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath) {
     const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
-    let errorReplay = "// Error witness replay\n"
+    let errorReplay = "\n"
+
+    const mocks = errorWitness.mocks;
+    if (mocks) {
+        errorReplay += "{\n    // Initializing mocks\n";
+        for (const mockName of Object.keys(mocks)) {
+            errorReplay += mockBlock(mockName, mocks[mockName]);
+        }
+        errorReplay += "}\n";
+    }
+
+    errorReplay += "    // Error witness replay\n";
 
     for (const step of errorWitness.steps) {
         const action = step.action;
@@ -446,7 +485,7 @@ function replaceInFile(filePath, searchValue, replacement, outputFileSuffix) {
     }
     fs.mkdirSync(tmpDir);
 
-    const path = `${basename(filePath)}${outputFileSuffix}`;
+    const path = `${tmpDir}/${basename(filePath)}${outputFileSuffix}`;
     fs.writeFileSync(path, fileWithReplacement, {encoding: 'utf8'});
     return path;
 }
@@ -459,6 +498,14 @@ function replaceInFile(filePath, searchValue, replacement, outputFileSuffix) {
  * @returns {Array}            The paths of the temporary test files
  */
 function prepareTestFiles (whiskerTestPath) {
+    if (addRandomInputs) {
+        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath);
+    }
+
+    if (errorWitnessPath) {
+        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, whiskerTestPath);
+    }
+
     const {evaledTest, testSourceWithoutExportArray} = prepareTestSource(whiskerTestPath);
     const singleTestSources = splitTestsSourceCodeIntoSingleTestSources(evaledTest);
     const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfTabs, singleTestSources);

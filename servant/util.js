@@ -15,7 +15,7 @@ const logger = {
 };
 
 const validateCommandLineArguments = args => {
-    if (!args.scratchPath) {
+    if (!args.scratchPath && !args.isGenerateWitnessTestOnly) {
         logger.error('No path to a Scratch file was given, please use the -s option');
         process.exit(1);
     }
@@ -41,6 +41,7 @@ const cli = {
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
+            .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs', 'If random inputs should be added to the test', false)
             .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', "1")
             .option('-v, --csvFile <Path>', 'Name of CSV File to put output into', false)
@@ -59,6 +60,7 @@ const cli = {
             scratchPath,
             testPath,
             errorWitnessPath,
+            isGenerateWitnessTestOnly,
             addRandomInputs,
             accelerationFactor,
             csvFile,
@@ -78,6 +80,7 @@ const cli = {
             scratchPath,
             testPath,
             errorWitnessPath,
+            isGenerateWitnessTestOnly,
             addRandomInputs,
             accelerationFactor,
             csvFile,
