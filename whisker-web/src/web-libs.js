@@ -15,8 +15,14 @@ require('@fortawesome/fontawesome-free/js/all');
 /* FileSaver.js */
 const FileSaver = require('file-saver');
 
+/* Internationalization */
+const i18next = require("i18next");
+const jqueryI18next = require("jquery-i18next");
+
 module.exports = {
     $,
     CodeMirror,
-    FileSaver
+    FileSaver,
+    i18next,
+    jqueryI18next
 };
