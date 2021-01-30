@@ -22,17 +22,17 @@
             <div style="position:absolute; top:8px; right:16px;">
                 <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <a class="nav-link active" href="index.html">Projekt hochladen</a>
+                        <a id="link" class="nav-link active" href="index.html" data-i18n="link">Projekt
+                            hochladen</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="./html/faq.html">FAQ</a>
                     </li>
                     <li style="padding-left:30px;">
                         <form method='get' action='' id='form_lang'>
-                            <select name='lang' onchange='changeLang();'
-                                    style="font-size:12px; padding:4px; margin:9px;">
+                            <select class="lang-select" name='lang' style="font-size:12px; padding:4px; margin:9px;">
                                 <option value='en'>English</option>
-                                <option value='de' selected>Deutsch</option>
+                                <option value='de'>Deutsch</option>
                             </select>
                         </form>
                     </li>
@@ -416,5 +416,8 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-i18next/0.0.14/i18next-jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/2.0.22/i18next.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.js"></script>
 </body>
 </html>
