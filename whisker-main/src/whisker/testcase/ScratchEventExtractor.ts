@@ -34,6 +34,7 @@ import {SoundEvent} from "./events/SoundEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
+import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target.js'
 
 export class ScratchEventExtractor {
 
@@ -69,6 +70,23 @@ export class ScratchEventExtractor {
         }
 
         return eventList;
+    }
+
+    /**
+     * Extracts critical information of all sprites of the given Scratch project.
+     * The critical information of each sprite depends on the events it 'senses'
+     * @param vm the Scratch VM
+     * @return Returns a 2-dim Matrix where each row presents a Sprite and the columns the information of the Sprite
+     */
+    static extractSpriteInfo(vm: VirtualMachine): number[][] {
+        const spriteInfos = [];
+        let counter = 0;
+        for (const target of vm.runtime.targets) {
+            if (target.sprite.name !== "Stage" && target.hasOwnProperty('sprite')) {
+                spriteInfos[counter++] = this._extractInfoFromSprite(target)
+                }
+            }
+        return spriteInfos;
     }
 
     /**
@@ -245,5 +263,34 @@ export class ScratchEventExtractor {
             }
         }
         return availableTextSnippet;
+    }
+
+    /**
+     * Extracts the critical information of the given sprite and normalises in the range [-1, 1]
+     * @param sprite the sprite from which information is gathered
+     * @return 1-dim vector containing the information of the sprite
+     */
+    static _extractInfoFromSprite(sprite:RenderedTarget): number[] {
+        const spriteInfo = []
+        
+        // stageWidth and stageHeight used for normalisation
+        const stageWidth = sprite.renderer._nativeSize[0] / 2.;
+        const stageHeight = sprite.renderer._nativeSize[1] / 2.;
+        spriteInfo[0] = sprite.x / stageWidth;
+        spriteInfo[1] = sprite.y / stageHeight;
+        spriteInfo[2] = sprite.getBounds().width / stageWidth;
+        spriteInfo[3] = sprite.getBounds().height / stageHeight;
+        spriteInfo[4] = sprite.visible ? 1: -1;
+        return spriteInfo;
+    }
+
+    /**
+     * Extracts the Stage
+     * @param stage
+     */
+    static _extractInfoFromStage(stage): number[]{
+        const stageInfo = []
+        stageInfo[1] = 2;
+        return stageInfo;
     }
 }

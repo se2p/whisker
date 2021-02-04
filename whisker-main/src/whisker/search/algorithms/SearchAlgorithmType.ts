@@ -45,6 +45,11 @@ export enum SearchAlgorithmType {
     /**
      * Value for 'Simple GA' search algorithm.
      */
-    SIMPLEGA
+    SIMPLEGA,
+
+    /**
+     * Value for "NEAT" search algorithm.
+     */
+    NEAT
 
 }

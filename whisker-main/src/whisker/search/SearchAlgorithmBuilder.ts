@@ -43,6 +43,7 @@ import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitn
 import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
+import {NEAT} from "./algorithms/NEAT";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -209,6 +210,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case SearchAlgorithmType.SIMPLEGA:
                 searchAlgorithm = this._buildSimpleGA();
                 break;
+            case SearchAlgorithmType.NEAT:
+                searchAlgorithm = this._buildNEAT()
+                break;
             case SearchAlgorithmType.RANDOM:
             default:
                 searchAlgorithm = this._buildRandom();
@@ -268,6 +272,17 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildSimpleGA() {
         const searchAlgorithm: SearchAlgorithm<C> = new SimpleGA();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
+        searchAlgorithm.setSelectionOperator(this._selectionOperator);
+
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the 'NEAT' search algorithm with all necessary properties.
+     */
+    private _buildNEAT() {
+        const searchAlgorithm: SearchAlgorithm<C> = new NEAT();
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setSelectionOperator(this._selectionOperator);
 
         return searchAlgorithm;

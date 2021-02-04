@@ -28,6 +28,7 @@ import {FixedTimeStoppingCondtion} from "../search/stoppingconditions/FixedTimeS
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
+import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
 
 class ConfigException implements Error {
     message: string;
@@ -192,6 +193,8 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.MOSA;
             case 'mio':
                 return SearchAlgorithmType.MIO;
+            case'neat':
+                return SearchAlgorithmType.NEAT;
             default:
                 throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this.dict['algorithm']);
         }
@@ -204,6 +207,8 @@ export class WhiskerSearchConfiguration {
             return new IterativeSearchBasedTestGenerator(this);
         } else if (this.dict['test-generator'] == 'many-objective') {
             return new ManyObjectiveTestGenerator(this);
+        } else if(this.dict['test-generator'] == 'neuroevolution'){
+            return new NeuroevolutionTestGenerator(this);
         }
 
         throw new ConfigException("Unknown Algorithm " + this.dict["test-generator"]);
