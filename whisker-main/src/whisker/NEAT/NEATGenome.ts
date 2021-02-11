@@ -26,55 +26,52 @@ import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 
 /**
- * A NetworkChromosome representing a neural network
+ * A NEATGenome representing a Chromosome in the NEAT-Algorithm
  */
-export class NetworkChromosome extends Chromosome {
+export class NEATGenome extends Chromosome {
 
-    private readonly _NodeGenes: List<NodeGene>
-    private readonly _ConnectionGenes: List<ConnectionGene>
-    private readonly _crossoverOp: Crossover<NetworkChromosome>
-    private readonly _mutationOp: Mutation<NetworkChromosome>
-    private readonly _genome: List<NodeGene | ConnectionGene>
+    private readonly _nodes: List<NodeGene>
+    private readonly _connections: List<ConnectionGene>
+    private readonly _crossoverOp: Crossover<NEATGenome>
+    private readonly _mutationOp: Mutation<NEATGenome>
 
     /**
-     * Constructs a new NetworkChromosome
-     * @param nodeGenes the Nodes of a neural network
-     * @param connectionGenes the connections between the Nodes
+     * Constructs a new NEATGenome
+     * @param nodes the Nodes of a neural network
+     * @param connections the connections between the Nodes
      * @param crossoverOp the crossover Operator
      * @param mutationOp the mutation Operator
      */
-    constructor(nodeGenes: List<NodeGene>, connectionGenes: List<ConnectionGene>,
-                crossoverOp: Crossover<NetworkChromosome>, mutationOp: Mutation<NetworkChromosome>) {
+    constructor(nodes: List<NodeGene>, connections: List<ConnectionGene>,
+                crossoverOp: Crossover<NEATGenome>, mutationOp: Mutation<NEATGenome>) {
         super();
-        this._NodeGenes = nodeGenes;
-        this._ConnectionGenes = connectionGenes;
+        this._nodes = nodes;
+        this._connections = connections;
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
-        this._genome[0] = nodeGenes
-        this._genome[1] = connectionGenes
     }
 
     /**
-     * Deep clone of a NetworkChromosome
+     * Deep clone of a NEATGenome
      */
-    clone(): NetworkChromosome {
-        return new NetworkChromosome(this.getNodeGenes(), this.getConnectionGenes(),
+    clone(): NEATGenome {
+        return new NEATGenome(this.getNodes(), this.getConnections(),
             this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
-     * Deep clone of a NetworkChromosome using a defined list of genes
+     * Deep clone of a NEATGenome using a defined list of genes
      * @param newGenes the genes the network should be initialised with
      */
-    cloneWith(newGenes: List<NodeGene | ConnectionGene>): NetworkChromosome {
-        return new NetworkChromosome(newGenes[0], newGenes[1], this.getCrossoverOperator(), this.getMutationOperator());
+    cloneWith(newGenes: List<NodeGene | ConnectionGene>): NEATGenome {
+        return new NEATGenome(newGenes[0], newGenes[1], this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
-     * Returns the length of the NetworkChromosome by adding the size of the NodeGenes and ConnectionGenes Lists
+     * Returns the length of the NEATGenome by adding the size of the NodeGenes and ConnectionGenes Lists
      */
     getLength(): number {
-        return this._genome[0].size() + this._genome[1].size();
+        return this.getConnections().size() + this.getConnections().size();
     }
 
     getCrossoverOperator(): Crossover<this> {
@@ -85,13 +82,12 @@ export class NetworkChromosome extends Chromosome {
         return this._mutationOp as Mutation<this>;
     }
 
-
-    getNodeGenes(): List<NodeGene> {
-        return this._NodeGenes;
+    getNodes(): List<NodeGene> {
+        return this._nodes;
     }
 
-    getConnectionGenes(): List<ConnectionGene> {
-        return this._ConnectionGenes;
+    getConnections(): List<ConnectionGene> {
+        return this._connections;
     }
 
 }
