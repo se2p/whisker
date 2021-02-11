@@ -8,14 +8,16 @@ export class ConnectionGene {
     private _to: NodeGene;
     private _weight: number;
     private _enabled: boolean;
-    private _innovation: number;
+    private _innovationNumber: number
 
-    constructor(from: NodeGene, to: NodeGene, weight: number, enabled: boolean, innovation: number) {
+    private static _innovationNumber = 0;
+
+    constructor(from: NodeGene, to: NodeGene, weight: number, enabled: boolean) {
         this._from = from;
         this._to = to;
         this._weight = weight;
         this._enabled = enabled;
-        this._innovation = innovation;
+        this._innovationNumber = ConnectionGene._innovationNumber++;
     }
 
     get from(): NodeGene {
@@ -50,12 +52,8 @@ export class ConnectionGene {
         this._enabled = value;
     }
 
-    get innovation(): number {
-        return this._innovation;
-    }
-
-    set innovation(value: number) {
-        this._innovation = value;
+    get innovationNumber(): number {
+        return this._innovationNumber;
     }
 
     /**

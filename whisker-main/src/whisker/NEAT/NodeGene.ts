@@ -2,20 +2,25 @@
  * The NodeGene represents a single Node of the neural network
  */
 import {NodeType} from "./NodeType";
-import {Gene} from "./Gene";
 
-export class NodeGene extends Gene {
-    private _id: number
+export class NodeGene {
+
+    private _id : number
     private _type: NodeType
 
-    constructor(innovationNumber: number, id: number, type: NodeType) {
-        super(innovationNumber)
-        this._id = id;
+    private static _idCounter = 0;
+
+    constructor(type: NodeType) {
+        this._id = NodeGene._idCounter++;
         this._type = type
     }
 
     public equals(other: unknown): boolean {
         if (!(other instanceof NodeGene)) return false;
-        return this.getInnovationNumber() == other.getInnovationNumber();
+        return this.id == other.id;
+    }
+
+    get id(): number {
+        return this._id;
     }
 }

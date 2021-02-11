@@ -26,24 +26,24 @@ import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 
 /**
- * A NEATGenome representing a Chromosome in the NEAT-Algorithm
+ * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
  */
-export class NEATGenome extends Chromosome {
+export class NeatChromosome extends Chromosome {
 
     private readonly _nodes: List<NodeGene>
     private readonly _connections: List<ConnectionGene>
-    private readonly _crossoverOp: Crossover<NEATGenome>
-    private readonly _mutationOp: Mutation<NEATGenome>
+    private readonly _crossoverOp: Crossover<NeatChromosome>
+    private readonly _mutationOp: Mutation<NeatChromosome>
 
     /**
-     * Constructs a new NEATGenome
+     * Constructs a new NeatChromosome
      * @param nodes the Nodes of a neural network
      * @param connections the connections between the Nodes
      * @param crossoverOp the crossover Operator
      * @param mutationOp the mutation Operator
      */
     constructor(nodes: List<NodeGene>, connections: List<ConnectionGene>,
-                crossoverOp: Crossover<NEATGenome>, mutationOp: Mutation<NEATGenome>) {
+                crossoverOp: Crossover<NeatChromosome>, mutationOp: Mutation<NeatChromosome>) {
         super();
         this._nodes = nodes;
         this._connections = connections;
@@ -52,23 +52,23 @@ export class NEATGenome extends Chromosome {
     }
 
     /**
-     * Deep clone of a NEATGenome
+     * Deep clone of a NeatChromosome
      */
-    clone(): NEATGenome {
-        return new NEATGenome(this.getNodes(), this.getConnections(),
+    clone(): NeatChromosome {
+        return new NeatChromosome(this.getNodes(), this.getConnections(),
             this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
-     * Deep clone of a NEATGenome using a defined list of genes
+     * Deep clone of a NeatChromosome using a defined list of genes
      * @param newGenes the genes the network should be initialised with
      */
-    cloneWith(newGenes: List<NodeGene | ConnectionGene>): NEATGenome {
-        return new NEATGenome(newGenes[0], newGenes[1], this.getCrossoverOperator(), this.getMutationOperator());
+    cloneWith(newGenes: List<NodeGene | ConnectionGene>): NeatChromosome {
+        return new NeatChromosome(newGenes[0], newGenes[1], this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
-     * Returns the length of the NEATGenome by adding the size of the NodeGenes and ConnectionGenes Lists
+     * Returns the length of the NeatChromosome by adding the size of the NodeGenes and ConnectionGenes Lists
      */
     getLength(): number {
         return this.getConnections().size() + this.getConnections().size();
