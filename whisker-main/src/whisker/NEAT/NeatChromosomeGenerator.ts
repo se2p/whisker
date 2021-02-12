@@ -14,9 +14,9 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private _crossoverOp: Crossover<NeatChromosome>;
 
-    private _numInputNodes: number;
+    private _inputSize: number;
 
-    private _numOutputNodes: number;
+    private _outputSize: number;
 
     constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>) {
         this._mutationOp = mutationOp;
@@ -32,7 +32,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         const nodes = new Map<number, NodeGene>()
         NodeGene._idCounter = 0;
         // Create the Input and Output Nodes and add them to the nodes list
-        for (let i = 0; i < this._numInputNodes; i++) {
+        for (let i = 0; i < this._inputSize; i++) {
             const inputNode = new NodeGene(NodeType.INPUT, 0)
             nodes.set(inputNode.id, inputNode);
         }
@@ -40,7 +40,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         nodes.set(biasNode.id, biasNode)      // Bias
 
         // Output Nodes
-        for (let i = 0; i < this._numOutputNodes; i++) {
+        for (let i = 0; i < this._outputSize; i++) {
             const outputNode = new NodeGene(NodeType.OUTPUT, 0)
             nodes.set(outputNode.id, outputNode);
         }
@@ -48,8 +48,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
         // Create connections between the input and output nodes with random weights and random enable state
         const connections = new List<ConnectionGene>();
-        for (let i = 0; i < this._numInputNodes + 1; i++) {
-            for (let o = this._numInputNodes + 1; o < nodes.size; o++) {
+        for (let i = 0; i < this._inputSize + 1; i++) {
+            for (let o = this._inputSize + 1; o < nodes.size; o++) {
                 connections.add(new ConnectionGene(nodes.get(i), nodes.get(o), Math.random(), Math.random() < 0.8))
             }
         }
@@ -66,20 +66,20 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
 
     // Used for Testing
-    set numInputNodes(value: number) {
-        this._numInputNodes = value;
+    set inputSize(value: number) {
+        this._inputSize = value;
     }
 
-    get numInputNodes(): number {
-        return this._numInputNodes;
+    get inputSize(): number {
+        return this._inputSize;
     }
 
     // Used for Testing
-    set numOutputNodes(value: number) {
-        this._numOutputNodes = value;
+    set outputSize(value: number) {
+        this._outputSize = value;
     }
 
-    get numOutputNodes(): number {
-        return this._numOutputNodes;
+    get outputSize(): number {
+        return this._outputSize;
     }
 }

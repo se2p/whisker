@@ -35,8 +35,8 @@ export class NeatChromosome extends Chromosome {
     private readonly _connections: List<ConnectionGene>
     private readonly _crossoverOp: Crossover<NeatChromosome>
     private readonly _mutationOp: Mutation<NeatChromosome>
-    private _numInputNodes: number;
-    private _numOutputNodes: number;
+    private _inputSize: number;
+    private _outputSize: number;
 
     /**
      * Constructs a new NeatChromosome
@@ -96,16 +96,16 @@ export class NeatChromosome extends Chromosome {
     generateNetwork() {
         this._nodes.clear();
         NodeGene._idCounter = 0;
-        // Create the Input and Output Nodes and add them to the nodes list
-        for (let i = 0; i < this._numInputNodes; i++) {
+        // Create the Input Nodes and add them to the nodes list
+        for (let i = 0; i < this._inputSize; i++) {
             const inputNode = new NodeGene(NodeType.INPUT, 0)
             this._nodes.set(inputNode.id, inputNode);
         }
         const biasNode = new NodeGene(NodeType.BIAS, 1)
         this._nodes.set(biasNode.id, biasNode)      // Bias
 
-        // Output Nodes
-        for (let i = 0; i < this._numOutputNodes; i++) {
+        // Create the Output Nodes and add them to the nodes list
+        for (let i = 0; i < this._outputSize; i++) {
             const outputNode = new NodeGene(NodeType.OUTPUT, 0)
             this._nodes.set(outputNode.id, outputNode);
         }
@@ -116,24 +116,68 @@ export class NeatChromosome extends Chromosome {
                 this._nodes.set(connection.from.id, new NodeGene(NodeType.HIDDEN, 0))
             if (!this._nodes.has(connection.to.id))
                 this._nodes.set(connection.to.id, new NodeGene(NodeType.HIDDEN, 0))
+            // add the connection to the list of input connections of the node
+            this._nodes.get(connection.to.id).inputConnections.add(connection)
         }
     }
 
-    activateNetwork(): number[] {
-        const output = new Array(4);
+    findInMap(map: Map<number, NodeGene>, target: NodeGene): number {
+        for (const [key, value] of map) {
+            if (value.equals(target))
+                return key;
+        }
+        return -1;
+    }
+
+    activateNetwork(inputs: number[]): number[] {
+        const output = []
         this.generateNetwork();
 
+        // Set the values of the input nodes to the given input
+        for (let i = 0; i < this._inputSize; i++) {
+            this._nodes.get(i).value = inputs[i];
+        }
+
+        this._nodes.forEach((node) => {
+            let sum = 0;
+            if (node.type === NodeType.HIDDEN) {
+                for (const connection of node.inputConnections) {
+                    if (connection.enabled) {
+                        sum += this._nodes.get(connection.from.id).value * connection.weight
+                    }
+                }
+                node.value = this.sigmoid(sum)
+            }
+        })
+
+        this._nodes.forEach((node) => {
+            let sum = 0;
+            if (node.type === NodeType.OUTPUT) {
+                for (const connection of node.inputConnections) {
+                    if (connection.enabled) {
+                        sum += this._nodes.get(connection.from.id).value * connection.weight
+                    }
+                }
+                node.value = this.sigmoid(sum)
+                output.push(node.value)
+            }
+        })
         return output;
     }
 
-    // Used for Testing
-    set numInputNodes(value: number) {
-        this._numInputNodes = value;
+    private sigmoid(x: number): number {
+        // TODO Auto-generated method stub
+        return (1 / (1 + Math.exp(-x)));
     }
 
     // Used for Testing
-    set numOutputNodes(value: number) {
-        this._numOutputNodes = value;
+    set inputSize(value: number) {
+        this._inputSize = value;
+    }
+
+    // Used for Testing
+    set outputSize(value: number) {
+        this._outputSize = value;
     }
 
     toString(): string {
