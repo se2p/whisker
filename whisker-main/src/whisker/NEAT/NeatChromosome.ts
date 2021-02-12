@@ -24,16 +24,19 @@ import {NodeGene} from "./NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
+import {NodeType} from "./NodeType";
 
 /**
  * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
  */
 export class NeatChromosome extends Chromosome {
 
-    private readonly _nodes: List<NodeGene>
+    private readonly _nodes: Map<number, NodeGene>
     private readonly _connections: List<ConnectionGene>
     private readonly _crossoverOp: Crossover<NeatChromosome>
     private readonly _mutationOp: Mutation<NeatChromosome>
+    private _numInputNodes: number;
+    private _numOutputNodes: number;
 
     /**
      * Constructs a new NeatChromosome
@@ -42,7 +45,7 @@ export class NeatChromosome extends Chromosome {
      * @param crossoverOp the crossover Operator
      * @param mutationOp the mutation Operator
      */
-    constructor(nodes: List<NodeGene>, connections: List<ConnectionGene>,
+    constructor(nodes: Map<number, NodeGene>, connections: List<ConnectionGene>,
                 crossoverOp: Crossover<NeatChromosome>, mutationOp: Mutation<NeatChromosome>) {
         super();
         this._nodes = nodes;
@@ -82,7 +85,7 @@ export class NeatChromosome extends Chromosome {
         return this._mutationOp as Mutation<this>;
     }
 
-    getNodes(): List<NodeGene> {
+    getNodes(): Map<number, NodeGene> {
         return this._nodes;
     }
 
@@ -90,4 +93,52 @@ export class NeatChromosome extends Chromosome {
         return this._connections;
     }
 
+    generateNetwork() {
+        this._nodes.clear();
+        NodeGene._idCounter = 0;
+        // Create the Input and Output Nodes and add them to the nodes list
+        for (let i = 0; i < this._numInputNodes; i++) {
+            const inputNode = new NodeGene(NodeType.INPUT, 0)
+            this._nodes.set(inputNode.id, inputNode);
+        }
+        const biasNode = new NodeGene(NodeType.BIAS, 1)
+        this._nodes.set(biasNode.id, biasNode)      // Bias
+
+        // Output Nodes
+        for (let i = 0; i < this._numOutputNodes; i++) {
+            const outputNode = new NodeGene(NodeType.OUTPUT, 0)
+            this._nodes.set(outputNode.id, outputNode);
+        }
+
+        // Add the hidden Nodes
+        for (const connection of this._connections) {
+            if (!this._nodes.has(connection.from.id))
+                this._nodes.set(connection.from.id, new NodeGene(NodeType.HIDDEN, 0))
+            if (!this._nodes.has(connection.to.id))
+                this._nodes.set(connection.to.id, new NodeGene(NodeType.HIDDEN, 0))
+        }
+    }
+
+    activateNetwork(): number[] {
+        const output = new Array(4);
+        this.generateNetwork();
+
+        return output;
+    }
+
+    // Used for Testing
+    set numInputNodes(value: number) {
+        this._numInputNodes = value;
+    }
+
+    // Used for Testing
+    set numOutputNodes(value: number) {
+        this._numOutputNodes = value;
+    }
+
+    toString(): string {
+        const printNodeList = new List<NodeGene>();
+        this._nodes.forEach(value => printNodeList.add(value))
+        return "Genome:\nNodeGenes: " + printNodeList + "\nConnectionGenes: " + this._connections;
+    }
 }

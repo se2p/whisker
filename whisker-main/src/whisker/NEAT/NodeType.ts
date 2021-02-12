@@ -15,5 +15,10 @@ export enum NodeType {
     /**
      * Value for an output Node
      */
-    OUTPUT
+    OUTPUT,
+
+    /**
+     * Value for a Bias Node
+     */
+    BIAS
 }

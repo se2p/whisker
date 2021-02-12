@@ -64,4 +64,9 @@ export class ConnectionGene {
         if (!(other instanceof ConnectionGene)) return false;
         return this.from.equals(other.from) && this.to.equals(other.to);
     }
+
+    toString(): string {
+        return " ConnectionGene{FromId: " + this.from.id + ", ToId: " + this.to.id + ", Weight: " + this.weight +
+            ", Enabled: " + this.enabled + ", InnovationNumber: " + this.innovationNumber + "}"
+    }
 }
