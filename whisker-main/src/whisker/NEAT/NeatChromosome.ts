@@ -241,6 +241,10 @@ export class NeatChromosome extends Chromosome {
     }
 
     toString(): string {
-        return "Genome:\nNodeGenes: " + this._nodes + "\nConnectionGenes: " + this._connections;
+        let nodeString = "";
+        for(const nodes of this.nodes.values()){
+            nodeString += nodes
+        }
+        return "Genome:\nNodeGenes: " + nodeString+ "\nConnectionGenes: " + this._connections;
     }
 }

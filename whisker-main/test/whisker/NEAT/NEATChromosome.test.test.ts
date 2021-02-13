@@ -8,7 +8,6 @@ import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
 import {Mutation} from "../../../src/whisker/search/Mutation";
 import {Crossover} from "../../../src/whisker/search/Crossover";
 import {List} from "../../../src/whisker/utils/List";
-import {NeatConfig} from "../../../src/whisker/NEAT/NeatConfig";
 
 describe('NeatChromosome', () => {
 
@@ -55,7 +54,6 @@ describe('NeatChromosome', () => {
         // add +1 to the input Nodes due to the Bias Node
         expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize + 1)
         expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize + 2)
-        console.log(neatChromosome.toString())
     })
 
     test('Network activation without hidden layer', () => {

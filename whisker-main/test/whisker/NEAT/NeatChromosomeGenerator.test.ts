@@ -18,6 +18,5 @@ describe('NeatChromosomeGenerator', () => {
             nodeCounter += nodeList.size();
         expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize)
         expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize)
-        console.log(neatChromosome.toString())
     })
 })
