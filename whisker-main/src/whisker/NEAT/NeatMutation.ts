@@ -13,14 +13,17 @@ export class NeatMutation implements Mutation<NeatChromosome>{
     mutateWeight(chromosome: NeatChromosome) : NeatChromosome{
         for (const connection of chromosome.getConnections())
         {
-            if (Math.random() <= NeatConfig.WEIGHT_CHANCE)
+            if (Math.random() <= NeatConfig.WEIGHT_PERTURB_CHANCE)
             {
-                if (Math.random() < NeatConfig.PERTURB_CHANCE)
-                    connection.weight = (connection.weight + (2 * Math.random() - 1) * NeatConfig.STEPS);
-                else connection.weight = (4 * Math.random() - 2);
+                const test = this.randomNumber(-1, 1)
+                connection.weight += this.randomNumber(-1, 1);
             }
         }
         return chromosome;
+    }
+
+    private randomNumber(min : number, max:number) : number{
+        return Math.random() * (max-min) + min
     }
 
 }
