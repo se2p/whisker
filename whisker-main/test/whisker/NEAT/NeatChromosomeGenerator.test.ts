@@ -1,6 +1,7 @@
 import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
+import {NeatConfig} from "../../../src/whisker/NEAT/NeatConfig";
 
 describe('NeatChromosomeGenerator', () => {
 
@@ -14,7 +15,7 @@ describe('NeatChromosomeGenerator', () => {
         let nodeCounter = 0;
         for(const nodeList of nodes)
             nodeCounter += nodeList.size();
-        expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize)
-        expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize)
+        expect(nodeCounter).toBe(NeatConfig.INPUT_NEURONS + 1 + NeatConfig.OUTPUT_NEURONS)
+        expect(neatChromosome.getConnections().size()).toBe((NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS)
     })
 })

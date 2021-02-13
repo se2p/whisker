@@ -27,8 +27,8 @@ describe("NeatMutation", () => {
             originalWeights.push(connection.weight)
 
         const mutatedWeights = [];
-        const mutation = neatMutation.mutateWeight(neatChromosome)
-        for (const connection of mutation.getConnections())
+        neatMutation.mutateWeight(neatChromosome)
+        for (const connection of neatChromosome.getConnections())
             mutatedWeights.push(connection.weight)
         originalWeights.sort();
         mutatedWeights.sort()
@@ -36,11 +36,10 @@ describe("NeatMutation", () => {
     })
 
     test("MutateAddConnection without hidden Layer", () => {
-        const originalConnections = neatChromosome.getConnections();
-        const mutant = neatMutation.mutateAddConnection(neatChromosome)
-        const mutatedConnections = mutant.getConnections();
+        const originalConnectionsSize = neatChromosome.getConnections().size();
+        neatMutation.mutateAddConnection(neatChromosome)
         // No Changes should happen since the generated network without hidden Layers is already fully connected
-        expect(originalConnections.size()).toEqual(mutatedConnections.size())
+        expect(originalConnectionsSize).toEqual(neatChromosome.getConnections().size())
     })
 
     test("MutateAddConnection with hidden Layer", () => {
@@ -49,15 +48,15 @@ describe("NeatMutation", () => {
         const hiddenLayerNode2 = new NodeGene(NodeType.HIDDEN, 0);
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
-        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode,1,true))
-        neatChromosome.getConnections().add(new ConnectionGene(hiddenLayerNode, hiddenLayerNode2,1,true))
-        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(2), new NodeGene(NodeType.HIDDEN, 0),1,true))
-        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(2), new NodeGene(NodeType.HIDDEN, 0),1,true))
+        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1, true))
+        neatChromosome.getConnections().add(new ConnectionGene(hiddenLayerNode, hiddenLayerNode2, 1, true))
+        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(2), new NodeGene(NodeType.HIDDEN, 0), 1, true))
+        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(2), new NodeGene(NodeType.HIDDEN, 0), 1, true))
         const originalConnections = neatChromosome.getConnections().size();
 
         // Make some rounds of mutations to ensure a mutation eventually happens
         for (let i = 0; i < 20; i++) {
-            neatChromosome = neatMutation.mutateAddConnection(neatChromosome)
+            neatMutation.mutateAddConnection(neatChromosome)
         }
         expect(originalConnections).not.toEqual(neatChromosome.getConnections().size())
     })

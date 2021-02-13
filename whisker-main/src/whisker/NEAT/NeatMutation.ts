@@ -8,24 +8,24 @@ import {ConnectionGene} from "./ConnectionGene";
 
 export class NeatMutation implements Mutation<NeatChromosome> {
     apply(chromosome: NeatChromosome): NeatChromosome {
-        if (Math.random() <= NeatConfig.WEIGHT_MUTATION)
+        if (Math.random() <= NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
             this.mutateWeight(chromosome);
-        if (Math.random() <= NeatConfig.ADD_CONNECTION_MUTATION)
+        if (Math.random() <= NeatConfig.MUTATE_ADD_CONNECTION)
             this.mutateAddConnection(chromosome);
+        if (Math.random() <= NeatConfig.MUTATE_CONNECTION_STATE)
+            this.mutateConnectionState(chromosome);
         return chromosome;
     }
 
-    mutateWeight(chromosome: NeatChromosome): NeatChromosome {
+    mutateWeight(chromosome: NeatChromosome): void {
         for (const connection of chromosome.getConnections()) {
-            if (Math.random() <= NeatConfig.WEIGHT_PERTURB_CHANCE) {
-                const test = this.randomNumber(-1, 1)
+            if (Math.random() <= NeatConfig.MUTATE_WEIGHT) {
                 connection.weight += this.randomNumber(-1, 1);
             }
         }
-        return chromosome;
     }
 
-    mutateAddConnection(chromosome: NeatChromosome): NeatChromosome {
+    mutateAddConnection(chromosome: NeatChromosome): void {
         chromosome.generateNetwork();
         const fromList = new List<NodeGene>();
         const toList = new List<NodeGene>();
@@ -49,8 +49,14 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // If its a new connection add it to the list of connections
         if (!this.containsConnection(chromosome.getConnections(), mutatedConnection))
             chromosome.getConnections().add(mutatedConnection);
+    }
 
-        return chromosome;
+    mutateConnectionState(chromosome: NeatChromosome): void {
+        const connections = chromosome.getConnections();
+        // Pick random connection
+        const connection = connections.get(Math.floor(Math.random() * connections.size()))
+        // Flip the state
+        connection.enabled = !connection.enabled;
     }
 
     private randomNumber(min: number, max: number): number {

@@ -8,6 +8,7 @@ import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
 import {Mutation} from "../../../src/whisker/search/Mutation";
 import {Crossover} from "../../../src/whisker/search/Crossover";
 import {List} from "../../../src/whisker/utils/List";
+import {NeatConfig} from "../../../src/whisker/NEAT/NeatConfig";
 
 describe('NeatChromosome', () => {
 
@@ -29,25 +30,31 @@ describe('NeatChromosome', () => {
         // add +1 to the input Nodes due to the Bias Node
         const nodes = neatChromosome.getNodes().values()
         let nodeCounter = 0;
-        for(const nodeList of nodes)
+        for (const nodeList of nodes)
             nodeCounter += nodeList.size();
-        expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize)
-        expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize)
+        expect(nodeCounter).toBe(NeatConfig.INPUT_NEURONS + 1 + NeatConfig.OUTPUT_NEURONS)
+        expect(neatChromosome.getConnections().size()).toBe((NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS)
     })
 
     test('Create Network with hidden layer', () => {
+        const inputNode = neatChromosome.getNodes().get(0).get(0)
+        const outputNode = neatChromosome.getNodes().get(10).get(0)
         const hiddenNode = new NodeGene(NodeType.HIDDEN, 0)
+        const deepHiddenNode = new NodeGene(NodeType.HIDDEN, 0)
         neatChromosome.generateNetwork()
-        neatChromosome.getConnections().add(new ConnectionGene(neatChromosome.getNodes().get(0).get(0), hiddenNode, 0.5, true))
-        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, neatChromosome.getNodes().get(10).get(0), 0, true))
+        neatChromosome.getConnections().add(new ConnectionGene(inputNode, hiddenNode, 0.5, true))
+        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, outputNode, 0, true))
+        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, deepHiddenNode, 1, true))
+        neatChromosome.getConnections().add(new ConnectionGene(deepHiddenNode, outputNode, 0.2, true))
         neatChromosome.generateNetwork()
         const nodes = neatChromosome.getNodes().values()
         let nodeCounter = 0;
-        for(const nodeList of nodes)
+        for (const nodeList of nodes)
             nodeCounter += nodeList.size();
         // add +1 to the input Nodes due to the Bias Node
-        expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize + 1)
-        expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize + 2)
+        expect(nodeCounter).toBe(NeatConfig.INPUT_NEURONS + 1 + NeatConfig.OUTPUT_NEURONS + 2)
+        expect(neatChromosome.getConnections().size()).toBe((NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS + 4)
+        expect(neatChromosome.getNodes().size).toBe(4)
     })
 
     test('Network activation without hidden layer', () => {
