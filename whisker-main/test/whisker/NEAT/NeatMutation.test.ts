@@ -74,4 +74,27 @@ describe("NeatMutation", () => {
         expect(connectionStates).not.toContainEqual(mutatedStates)
 
     })
+
+    test("MutateAddNode", () => {
+        const oldNodes = []
+        const oldConnections = []
+        for (const nodes of neatChromosome.getNodes())
+            oldNodes.push(nodes);
+        for (const connection of neatChromosome.getConnections())
+            oldConnections.push(connection);
+
+        neatMutation.mutateAddNode(neatChromosome);
+        neatChromosome.generateNetwork();
+        const mutantNodes = []
+        const mutantConnections = []
+        for (const nodes of neatChromosome.getNodes())
+            mutantNodes.push(nodes);
+        for (const connection of neatChromosome.getConnections())
+            mutantConnections.push(connection);
+
+        // One new Hidden Layer
+        expect(oldNodes.length + 1).toBe(mutantNodes.length)
+        // Two new Connections
+        expect(oldConnections.length + 2).toBe(mutantConnections.length)
+    })
 })

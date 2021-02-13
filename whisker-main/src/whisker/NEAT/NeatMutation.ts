@@ -4,6 +4,7 @@ import {NeatConfig} from "./NeatConfig";
 import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
+import {NodeType} from "./NodeType";
 
 
 export class NeatMutation implements Mutation<NeatChromosome> {
@@ -14,15 +15,9 @@ export class NeatMutation implements Mutation<NeatChromosome> {
             this.mutateAddConnection(chromosome);
         if (Math.random() <= NeatConfig.MUTATE_CONNECTION_STATE)
             this.mutateConnectionState(chromosome);
+        if (Math.random() <= NeatConfig.MUTATE_ADD_NODE)
+            this.mutateAddNode(chromosome);
         return chromosome;
-    }
-
-    mutateWeight(chromosome: NeatChromosome): void {
-        for (const connection of chromosome.getConnections()) {
-            if (Math.random() <= NeatConfig.MUTATE_WEIGHT) {
-                connection.weight += this.randomNumber(-1, 1);
-            }
-        }
     }
 
     mutateAddConnection(chromosome: NeatChromosome): void {
@@ -50,6 +45,44 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         if (!this.containsConnection(chromosome.getConnections(), mutatedConnection))
             chromosome.getConnections().add(mutatedConnection);
     }
+
+    mutateAddNode(chromosome: NeatChromosome): void {
+        const connections = chromosome.getConnections();
+        // Select a random Connection to split => the new node is placed in between the connection
+        const splitConnection = connections.get(Math.floor(Math.random() * connections.size()))
+        // Disable the old connection
+        splitConnection.enabled = false;
+
+        // Rewire the Network with the new Node
+        const fromNode = splitConnection.from;
+        const toNode = splitConnection.to;
+        const newNode = new NodeGene(NodeType.HIDDEN, 0);
+
+        // Restrict the network to mutate over MAX_HIDDEN_LAYERS layers
+        const fromNodeLayer = chromosome.findLayerOfNode(chromosome.getNodes(), fromNode)
+        const toNodeLayer = chromosome.findLayerOfNode(chromosome.getNodes(), toNode)
+        if (fromNodeLayer + toNodeLayer >= NeatConfig.MAX_HIDDEN_LAYERS * 2 - 1) {
+            return;
+        }
+
+        // The connection into the new Node gets a weight of 1
+        const inConnection = new ConnectionGene(fromNode, newNode, 1, true);
+        connections.add(inConnection)
+
+        // The connection out of the new Node gets the same weight as the old connection
+        const outConnection = new ConnectionGene(newNode, toNode, splitConnection.weight, true);
+        connections.add(outConnection)
+        toNode.inputConnections.add(outConnection)
+    }
+
+    mutateWeight(chromosome: NeatChromosome): void {
+        for (const connection of chromosome.getConnections()) {
+            if (Math.random() <= NeatConfig.MUTATE_WEIGHT) {
+                connection.weight += this.randomNumber(-1, 1);
+            }
+        }
+    }
+
 
     mutateConnectionState(chromosome: NeatChromosome): void {
         const connections = chromosome.getConnections();

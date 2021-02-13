@@ -11,4 +11,5 @@ export class NeatConfig {
     public static readonly MUTATE_WEIGHT = 0.4;
     public static readonly MUTATE_ADD_CONNECTION= 0.2;
     public static readonly MUTATE_CONNECTION_STATE = 0.2;
+    public static readonly MUTATE_ADD_NODE = 0.3;
 }
