@@ -60,4 +60,18 @@ describe("NeatMutation", () => {
         }
         expect(originalConnections).not.toEqual(neatChromosome.getConnections().size())
     })
+
+    test("MutateConnectionState", () => {
+        const connectionStates = []
+        for (const connection of neatChromosome.getConnections())
+            connectionStates.push(connection.enabled)
+
+        neatMutation.mutateConnectionState(neatChromosome)
+        const mutatedStates = []
+        for (const connection of neatChromosome.getConnections())
+            mutatedStates.push(connection.enabled)
+        expect(connectionStates.length).toBe(mutatedStates.length)
+        expect(connectionStates).not.toContainEqual(mutatedStates)
+
+    })
 })
