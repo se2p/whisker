@@ -15,19 +15,13 @@ describe('NeatChromosome', () => {
     let generator: NeatChromosomeGenerator
     let mutationOp: Mutation<NeatChromosome>
     let crossoverOp: Crossover<NeatChromosome>
-    const numInputs = 2
-    const numOutputs = 1
 
 
     beforeEach(() => {
         mutationOp = new NeatMutation();
         crossoverOp = new NeatCrossover();
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp);
-        generator.inputSize = numInputs;
-        generator.outputSize = numOutputs;
         neatChromosome = generator.get();
-        neatChromosome.inputSize = numInputs
-        neatChromosome.outputSize = numOutputs;
     })
 
     test('Create Network without hidden layer', () => {

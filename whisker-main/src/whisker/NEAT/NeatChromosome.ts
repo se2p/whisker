@@ -52,6 +52,8 @@ export class NeatChromosome extends Chromosome {
         this._connections = connections;
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
+        this._inputSize = NeatConfig.INPUT_NEURONS;
+        this._outputSize = NeatConfig.OUTPUT_NEURONS;
     }
 
     /**

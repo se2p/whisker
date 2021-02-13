@@ -57,7 +57,7 @@ export class ConnectionGene {
     }
 
     /**
-     * Innovation number is already included by evaluating the equals of the NodeGenes
+     * Equality of two ConnectionGenes is defined to be true when both in and output nodes are the same
      * @param other the other Gene to compare this ConnectionGene to
      */
     public equals(other: unknown): boolean {

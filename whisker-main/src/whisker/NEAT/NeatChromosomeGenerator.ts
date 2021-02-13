@@ -22,6 +22,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
     constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
+        this.inputSize = NeatConfig.INPUT_NEURONS;
+        this.outputSize = NeatConfig.OUTPUT_NEURONS;
     }
 
     /**
