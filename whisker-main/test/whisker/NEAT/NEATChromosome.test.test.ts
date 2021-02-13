@@ -8,6 +8,7 @@ import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
 import {Mutation} from "../../../src/whisker/search/Mutation";
 import {Crossover} from "../../../src/whisker/search/Crossover";
 import {List} from "../../../src/whisker/utils/List";
+import {NeatConfig} from "../../../src/whisker/NEAT/NeatConfig";
 
 describe('NeatChromosome', () => {
 
@@ -33,17 +34,26 @@ describe('NeatChromosome', () => {
     test('Create Network without hidden layer', () => {
         neatChromosome.generateNetwork()
         // add +1 to the input Nodes due to the Bias Node
-        expect(neatChromosome.getNodes().size).toBe(generator.inputSize + 1 + generator.outputSize)
+        const nodes = neatChromosome.getNodes().values()
+        let nodeCounter = 0;
+        for(const nodeList of nodes)
+            nodeCounter += nodeList.size();
+        expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize)
         expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize)
     })
 
     test('Create Network with hidden layer', () => {
         const hiddenNode = new NodeGene(NodeType.HIDDEN, 0)
-        neatChromosome.getConnections().add(new ConnectionGene(neatChromosome.getNodes().get(0), hiddenNode, 0.5, true))
-        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, neatChromosome.getNodes().get(3), 0, true))
         neatChromosome.generateNetwork()
+        neatChromosome.getConnections().add(new ConnectionGene(neatChromosome.getNodes().get(0).get(0), hiddenNode, 0.5, true))
+        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, neatChromosome.getNodes().get(10).get(0), 0, true))
+        neatChromosome.generateNetwork()
+        const nodes = neatChromosome.getNodes().values()
+        let nodeCounter = 0;
+        for(const nodeList of nodes)
+            nodeCounter += nodeList.size();
         // add +1 to the input Nodes due to the Bias Node
-        expect(neatChromosome.getNodes().size).toBe(generator.inputSize + 1 + generator.outputSize + 1)
+        expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize + 1)
         expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize + 2)
         console.log(neatChromosome.toString())
     })
@@ -67,7 +77,7 @@ describe('NeatChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.2, true))
         connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true))
 
-        neatChromosome = new NeatChromosome(nodes, connections, crossoverOp, mutationOp)
+        neatChromosome = new NeatChromosome(connections, crossoverOp, mutationOp)
         neatChromosome.inputSize = 2;
         neatChromosome.outputSize = 2;
         const brainValue = neatChromosome.activateNetwork([0.5, 0.4])
@@ -98,7 +108,7 @@ describe('NeatChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(5), nodes.get(3), 1, true))
 
 
-        neatChromosome = new NeatChromosome(nodes, connections, crossoverOp, mutationOp)
+        neatChromosome = new NeatChromosome(connections, crossoverOp, mutationOp)
         neatChromosome.inputSize = 2;
         neatChromosome.outputSize = 2;
         const brainValue = neatChromosome.activateNetwork([0.5, 0.4])

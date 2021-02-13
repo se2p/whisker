@@ -12,7 +12,11 @@ describe('NeatChromosomeGenerator', () => {
         generator.outputSize = 2;
         const neatChromosome = generator.get();
         // add +1 to the input Nodes due to the Bias Node
-        expect(neatChromosome.getNodes().size).toBe(generator.inputSize + 1 + generator.outputSize)
+        const nodes = neatChromosome.getNodes().values()
+        let nodeCounter = 0;
+        for(const nodeList of nodes)
+            nodeCounter += nodeList.size();
+        expect(nodeCounter).toBe(generator.inputSize + 1 + generator.outputSize)
         expect(neatChromosome.getConnections().size()).toBe((generator.inputSize + 1) * generator.outputSize)
         console.log(neatChromosome.toString())
     })

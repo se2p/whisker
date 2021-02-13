@@ -6,6 +6,7 @@ import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
 import {NodeType} from "./NodeType";
 import {ConnectionGene} from "./ConnectionGene";
+import {NeatConfig} from "./NeatConfig";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
@@ -29,31 +30,34 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * @ returns: A random initial Neat Phenotype
      */
     get(): NeatChromosome {
-        const nodes = new Map<number, NodeGene>()
+        const nodes = new Map<number, List<NodeGene>>()
         NodeGene._idCounter = 0;
-        // Create the Input and Output Nodes and add them to the nodes list
+        // Create the Input Nodes and add them to the nodes list
+        const inputList = new List<NodeGene>()
         for (let i = 0; i < this._inputSize; i++) {
-            const inputNode = new NodeGene(NodeType.INPUT, 0)
-            nodes.set(inputNode.id, inputNode);
+            inputList.add(new NodeGene(NodeType.INPUT, 0))
         }
-        const biasNode = new NodeGene(NodeType.BIAS, 1)
-        nodes.set(biasNode.id, biasNode)      // Bias
+        inputList.add(new NodeGene(NodeType.BIAS, 1))      // Bias
+        nodes.set(0, inputList);
 
-        // Output Nodes
+        // Create the Output Nodes and add them to the nodes list
+        const outputList = new List<NodeGene>()
         for (let i = 0; i < this._outputSize; i++) {
-            const outputNode = new NodeGene(NodeType.OUTPUT, 0)
-            nodes.set(outputNode.id, outputNode);
+            outputList.add(new NodeGene(NodeType.OUTPUT, 0))
         }
+        nodes.set(NeatConfig.MAX_HIDDEN_LAYERS, outputList)
 
 
         // Create connections between the input and output nodes with random weights and random enable state
         const connections = new List<ConnectionGene>();
-        for (let i = 0; i < this._inputSize + 1; i++) {
-            for (let o = this._inputSize + 1; o < nodes.size; o++) {
-                connections.add(new ConnectionGene(nodes.get(i), nodes.get(o), Math.random(), Math.random() < 0.8))
+        for (const inputNode of nodes.get(0)) {
+            for (const outputNode of nodes.get(NeatConfig.MAX_HIDDEN_LAYERS)) {
+                connections.add(new ConnectionGene(inputNode, outputNode, Math.random(), Math.random() < 0.8))
             }
         }
-        return new NeatChromosome(nodes, connections, this._crossoverOp, this._mutationOp);
+        const neatChromosome = new NeatChromosome(connections, this._crossoverOp, this._mutationOp);
+        neatChromosome.nodes = nodes;
+        return neatChromosome;
     }
 
     setCrossoverOperator(crossoverOp: Crossover<NeatChromosome>): void {
