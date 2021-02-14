@@ -42,11 +42,12 @@ describe('NeatChromosome', () => {
         const hiddenNode = new NodeGene(NodeType.HIDDEN, 0)
         const deepHiddenNode = new NodeGene(NodeType.HIDDEN, 0)
         neatChromosome.generateNetwork()
-        neatChromosome.getConnections().add(new ConnectionGene(inputNode, hiddenNode, 0.5, true))
-        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, outputNode, 0, true))
-        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, deepHiddenNode, 1, true))
-        neatChromosome.getConnections().add(new ConnectionGene(deepHiddenNode, outputNode, 0.2, true))
+        neatChromosome.getConnections().add(new ConnectionGene(inputNode, hiddenNode, 0.5, true,ConnectionGene.getNextInnovationNumber()))
+        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, outputNode, 0, true, ConnectionGene.getNextInnovationNumber()))
+        neatChromosome.getConnections().add(new ConnectionGene(hiddenNode, deepHiddenNode, 1, true, ConnectionGene.getNextInnovationNumber()))
+        neatChromosome.getConnections().add(new ConnectionGene(deepHiddenNode, outputNode, 0.2, true, ConnectionGene.getNextInnovationNumber()))
         neatChromosome.generateNetwork()
+        ConnectionGene.resetInnovationCounter();
         const nodes = neatChromosome.getNodes().values()
         let nodeCounter = 0;
         for (const nodeList of nodes)
@@ -69,12 +70,13 @@ describe('NeatChromosome', () => {
 
         // Create Connections
         const connections = new List<ConnectionGene>();
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.2, true))
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.5, false))
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.2, false))
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 1, true))
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.2, true))
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true))
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.2, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.5, false,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.2, false,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 1, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.2, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true,ConnectionGene.getNextInnovationNumber()))
+        ConnectionGene.resetInnovationCounter();
 
         neatChromosome = new NeatChromosome(connections, crossoverOp, mutationOp)
         neatChromosome.inputSize = 2;
@@ -97,14 +99,15 @@ describe('NeatChromosome', () => {
 
         // Create Connections
         const connections = new List<ConnectionGene>();
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.2, true))
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.5, false))
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.2, false))
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 1, true))
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.2, true))
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true))
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(5), 0.5, true))
-        connections.add(new ConnectionGene(nodes.get(5), nodes.get(3), 1, true))
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.2, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.5, false,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.2, false,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 1, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.2, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(5), 0.5, true,ConnectionGene.getNextInnovationNumber()))
+        connections.add(new ConnectionGene(nodes.get(5), nodes.get(3), 1, true,ConnectionGene.getNextInnovationNumber()))
+        ConnectionGene.resetInnovationCounter();
 
 
         neatChromosome = new NeatChromosome(connections, crossoverOp, mutationOp)

@@ -60,7 +60,7 @@ export class NeatChromosome extends Chromosome {
      * Deep clone of a NeatChromosome
      */
     clone(): NeatChromosome {
-        return new NeatChromosome(this.getConnections(), this.getCrossoverOperator(), this.getMutationOperator());
+        return new NeatChromosome(this.getConnections().clone(), this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
@@ -68,14 +68,14 @@ export class NeatChromosome extends Chromosome {
      * @param newGenes the genes the network should be initialised with
      */
     cloneWith(newGenes: List<ConnectionGene>): NeatChromosome {
-        return new NeatChromosome(newGenes, this.getCrossoverOperator(), this.getMutationOperator());
+        return new NeatChromosome(newGenes.clone(), this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
-     * Returns the length of the NeatChromosome by adding the size of the NodeGenes and ConnectionGenes Lists
+     * Returns the length of the NeatChromosome defined by the number of connections
      */
     getLength(): number {
-        return this.getConnections().size() + this.getConnections().size();
+        return this.getConnections().size()
     }
 
     getCrossoverOperator(): Crossover<this> {
@@ -94,7 +94,7 @@ export class NeatChromosome extends Chromosome {
         return this._connections;
     }
 
-    generateNetwork() {
+    generateNetwork(): void {
         this._nodes.clear();
         NodeGene._idCounter = 0;
         // Create the Input Nodes and add them to the nodes list
@@ -154,7 +154,7 @@ export class NeatChromosome extends Chromosome {
     }
 
     findNode(map: Map<number, List<NodeGene>>, target: NodeGene): NodeGene {
-        for (const [key, value] of map) {
+        for (const value of map.values()) {
             for (const node of value) {
                 if (node.equals(target))
                     return node;
@@ -190,7 +190,7 @@ export class NeatChromosome extends Chromosome {
                             nodeSum += this.findNode(this._nodes, connection.from).value * connection.weight
                         }
                     }
-                    hiddenNode.value = this.sigmoid(nodeSum);
+                    hiddenNode.value = NeatChromosome.sigmoid(nodeSum);
                 }
             }
         }
@@ -204,14 +204,14 @@ export class NeatChromosome extends Chromosome {
                     nodeSum += this.findNode(this._nodes, connection.from).value * connection.weight;
                 }
             }
-            outputNode.value = this.sigmoid(nodeSum);
+            outputNode.value = NeatChromosome.sigmoid(nodeSum);
             output.push(outputNode.value)
         }
 
         return output;
     }
 
-    private sigmoid(x: number): number {
+    private static sigmoid(x: number): number {
         // TODO Auto-generated method stub
         return (1 / (1 + Math.exp(-x)));
     }
@@ -244,9 +244,9 @@ export class NeatChromosome extends Chromosome {
 
     toString(): string {
         let nodeString = "";
-        for(const nodes of this.nodes.values()){
+        for (const nodes of this.nodes.values()) {
             nodeString += nodes
         }
-        return "Genome:\nNodeGenes: " + nodeString+ "\nConnectionGenes: " + this._connections;
+        return "Genome:\nNodeGenes: " + nodeString + "\nConnectionGenes: " + this._connections;
     }
 }

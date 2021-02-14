@@ -8,6 +8,12 @@ import {NodeType} from "./NodeType";
 
 
 export class NeatMutation implements Mutation<NeatChromosome> {
+
+    // Arbitrary easily detectable value in case of bugs => a connection should never have this value
+    private static readonly TEMP_INNOVATION_NUMBER = 100000;
+
+    private static _innovations = new List<ConnectionGene>();
+
     apply(chromosome: NeatChromosome): NeatChromosome {
         if (Math.random() <= NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
             this.mutateWeight(chromosome);
@@ -38,12 +44,15 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const fromNode = fromList.get(Math.floor(Math.random() * fromList.size()));
         const toNode = toList.get(Math.floor(Math.random() * toList.size()));
 
-        // Create new Connection
-        const mutatedConnection = new ConnectionGene(fromNode, toNode, this.randomNumber(-1, 1), Math.random() < 0.8)
+        // Create new Connection with temporary innovation number
+        const mutatedConnection = new ConnectionGene(fromNode, toNode, this.randomNumber(-1, 1),
+            Math.random() < 0.8, NeatMutation.TEMP_INNOVATION_NUMBER)
 
-        // If its a new connection add it to the list of connections
-        if (!this.containsConnection(chromosome.getConnections(), mutatedConnection))
+        // If its a new Connection assign the correct innovationNumber and add it to the list
+        if (!this.containsConnection(chromosome.getConnections(), mutatedConnection)) {
+            this.assignInnovationNumber(mutatedConnection)
             chromosome.getConnections().add(mutatedConnection);
+        }
     }
 
     mutateAddNode(chromosome: NeatChromosome): void {
@@ -66,11 +75,15 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         }
 
         // The connection into the new Node gets a weight of 1
-        const inConnection = new ConnectionGene(fromNode, newNode, 1, true);
+        const inConnection = new ConnectionGene(fromNode, newNode, 1, true,
+            NeatMutation.TEMP_INNOVATION_NUMBER);
+        this.assignInnovationNumber(inConnection)
         connections.add(inConnection)
 
         // The connection out of the new Node gets the same weight as the old connection
-        const outConnection = new ConnectionGene(newNode, toNode, splitConnection.weight, true);
+        const outConnection = new ConnectionGene(newNode, toNode, splitConnection.weight, true,
+            NeatMutation.TEMP_INNOVATION_NUMBER);
+        this.assignInnovationNumber(outConnection);
         connections.add(outConnection)
         toNode.inputConnections.add(outConnection)
     }
@@ -98,9 +111,27 @@ export class NeatMutation implements Mutation<NeatChromosome> {
 
     private containsConnection(connections: List<ConnectionGene>, connection: ConnectionGene): boolean {
         for (const con of connections) {
-            if (con.equals(connection)) return true;
+            if (con.equalsByNodes(connection)) return true;
         }
         return false;
     }
 
+    private findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
+        for (const con of connections) {
+            if (con.equalsByNodes(connection)) return con;
+        }
+        return null;
+    }
+
+    private assignInnovationNumber(newInnovation: ConnectionGene): void {
+        // Check if innovation already happened in this generation if Yes assign the same innovation number
+        const oldInnovation = this.findConnection(NeatMutation._innovations, newInnovation)
+        if (oldInnovation !== null)
+            newInnovation.innovationNumber = oldInnovation.innovationNumber;
+        // If No assign a new one
+        else {
+            newInnovation.innovationNumber = ConnectionGene.getNextInnovationNumber();
+            NeatMutation._innovations.add(newInnovation);
+        }
+    }
 }

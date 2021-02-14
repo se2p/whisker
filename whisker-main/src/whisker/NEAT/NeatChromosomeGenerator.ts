@@ -52,9 +52,11 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
         // Create connections between the input and output nodes with random weights and random enable state
         const connections = new List<ConnectionGene>();
+        let counter = 1;
         for (const inputNode of nodes.get(0)) {
             for (const outputNode of nodes.get(NeatConfig.MAX_HIDDEN_LAYERS)) {
-                connections.add(new ConnectionGene(inputNode, outputNode, Math.random(), Math.random() < 0.8))
+                connections.add(new ConnectionGene(inputNode, outputNode, Math.random(), Math.random() < 0.8, counter))
+                counter++;
             }
         }
         const neatChromosome = new NeatChromosome(connections, this._crossoverOp, this._mutationOp);
