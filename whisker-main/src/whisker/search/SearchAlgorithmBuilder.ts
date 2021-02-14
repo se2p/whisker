@@ -44,6 +44,7 @@ import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
+import {NeatChromosome} from "../NEAT/NeatChromosome";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
