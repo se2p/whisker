@@ -49,14 +49,14 @@ export class NeatMutation implements Mutation<NeatChromosome> {
             Math.random() < 0.8, NeatMutation.TEMP_INNOVATION_NUMBER)
 
         // If its a new Connection assign the correct innovationNumber and add it to the list
-        if (!this.containsConnection(chromosome.getConnections(), mutatedConnection)) {
+        if (!this.containsConnection(chromosome.connections, mutatedConnection)) {
             this.assignInnovationNumber(mutatedConnection)
-            chromosome.getConnections().add(mutatedConnection);
+            chromosome.connections.add(mutatedConnection);
         }
     }
 
     mutateAddNode(chromosome: NeatChromosome): void {
-        const connections = chromosome.getConnections();
+        const connections = chromosome.connections;
         // Select a random Connection to split => the new node is placed in between the connection
         const splitConnection = connections.get(Math.floor(Math.random() * connections.size()))
         // Disable the old connection
@@ -68,8 +68,8 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const newNode = new NodeGene(NodeType.HIDDEN, 0);
 
         // Restrict the network to mutate over MAX_HIDDEN_LAYERS layers
-        const fromNodeLayer = chromosome.findLayerOfNode(chromosome.getNodes(), fromNode)
-        const toNodeLayer = chromosome.findLayerOfNode(chromosome.getNodes(), toNode)
+        const fromNodeLayer = chromosome.findLayerOfNode(chromosome.nodes, fromNode)
+        const toNodeLayer = chromosome.findLayerOfNode(chromosome.nodes, toNode)
         if (fromNodeLayer + toNodeLayer >= NeatConfig.MAX_HIDDEN_LAYERS * 2 - 1) {
             return;
         }
@@ -89,7 +89,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     }
 
     mutateWeight(chromosome: NeatChromosome): void {
-        for (const connection of chromosome.getConnections()) {
+        for (const connection of chromosome.connections) {
             if (Math.random() <= NeatConfig.MUTATE_WEIGHT) {
                 connection.weight += this.randomNumber(-1, 1);
             }
@@ -98,7 +98,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
 
 
     mutateConnectionState(chromosome: NeatChromosome): void {
-        const connections = chromosome.getConnections();
+        const connections = chromosome.connections;
         // Pick random connection
         const connection = connections.get(Math.floor(Math.random() * connections.size()))
         // Flip the state

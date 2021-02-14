@@ -55,8 +55,8 @@ describe("NeatCrossover", () => {
         parent2.fitness = 0;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
         const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
-        expect(child1.getConnections().size()).toBe(5)
-        expect(child1.getConnections().size()).toEqual(child2.getConnections().size())
+        expect(child1.connections.size()).toBe(5)
+        expect(child1.connections.size()).toEqual(child2.connections.size())
     })
 
     test("CrossoverTest with second parent being fitter than first parent", () => {
@@ -66,8 +66,8 @@ describe("NeatCrossover", () => {
         parent2.fitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
         const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
-        expect(child1.getConnections().size()).toBe(7)
-        expect(child2.getConnections().size()).toEqual(child1.getConnections().size())
+        expect(child1.connections.size()).toBe(7)
+        expect(child2.connections.size()).toEqual(child1.connections.size())
     })
 
     test("CrossoverTest with both parents being equivalently fit", () => {
@@ -77,7 +77,7 @@ describe("NeatCrossover", () => {
         parent2.fitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
         const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
-        expect(child1.getConnections().size()).toBeGreaterThanOrEqual(4)
-        expect(child2.getConnections().size()).toBeGreaterThanOrEqual(4)
+        expect(child1.connections.size()).toBeGreaterThanOrEqual(4)
+        expect(child2.connections.size()).toBeGreaterThanOrEqual(4)
     })
 })

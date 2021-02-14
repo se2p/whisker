@@ -7,11 +7,10 @@ import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {Selection} from "../Selection";
-import {ScratchEventExtractor} from "../../testcase/ScratchEventExtractor";
-import {Container} from "../../utils/Container";
 import {NeatChromosome} from "../../NEAT/NeatChromosome";
 import {ConnectionGene} from "../../NEAT/ConnectionGene";
 import {NeatConfig} from "../../NEAT/NeatConfig";
+import {Species} from "../../NEAT/Species";
 
 
 export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chromosome> {
@@ -34,6 +33,8 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
     private _startTime: number;
 
     private _fullCoverageReached = false;
+
+    private speciesList = new List<Species<C>>()
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -75,6 +76,9 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         this._iterations = 0;
         this._startTime = Date.now();
         const parentPopulation = this.generatePopulation();
+        for (const chromosome of parentPopulation)
+            this.addToSpecies(chromosome);
+
         //const spriteInfos = ScratchEventExtractor.extractSpriteInfo(Container.vmWrapper.vm)
         return this._bestIndividuals;
     }
@@ -87,7 +91,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
     }
 
     // TODO: pulbic only for testing
-    public compatibilityDistance(genome1: C, genome2: C) : number {
+    public compatibilityDistance(chromosome1: C, chromosome2: C): number {
         let matching = 0;
         let disjoint = 0;
         let excess = 0;
@@ -97,13 +101,13 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
 
         // Save first connections in a Map <InnovationNumber, Connection>
         const genome1Innovations = new Map<number, ConnectionGene>()
-        for (const connection of genome1.getConnections()) {
+        for (const connection of chromosome1.connections) {
             genome1Innovations.set(connection.innovationNumber, connection)
         }
 
         // Save second connections in a Map <InnovationNumber, Connection>
         const genome2Innovations = new Map<number, ConnectionGene>()
-        for (const connection of genome2.getConnections()) {
+        for (const connection of chromosome2.connections) {
             genome2Innovations.set(connection.innovationNumber, connection)
         }
 
@@ -136,12 +140,31 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         }
 
         // get number of genes in the bigger Genome for normalization
-        const N = Math.max(genome1.getConnections().size(), genome2.getConnections().size())
+        const N = Math.max(chromosome1.connections.size(), chromosome2.connections.size())
 
         if (N > 0)
             distance = (excess * NeatConfig.EXCESS_COEFFICIENT + disjoint * NeatConfig.DISJOINT_COEFFICIENT) / N +
                 ((weight / matching) * NeatConfig.WEIGHT_COEFFICIENT);
         return distance;
+    }
+
+    public isSameSpecies(chromosome1: C, chromosome2: C): boolean {
+        return this.compatibilityDistance(chromosome1, chromosome2) < NeatConfig.DISTANCE_THRESHOLD;
+    }
+
+    public addToSpecies(chromosome: C): void {
+        for (const species of this.speciesList) {
+            if (species.chromosomes.size() === 0)
+                continue;
+            // Get the representative of the species
+            const representative = species.chromosomes.get(0);
+            if (this.isSameSpecies(representative, chromosome)) {
+                species.chromosomes.add(chromosome);
+                return;
+            }
+        }
+        const newSpecies = new Species(chromosome);
+        this.speciesList.add(newSpecies);
     }
 
     getStartTime(): number {

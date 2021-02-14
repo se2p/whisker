@@ -18,23 +18,23 @@ describe('NeatChromosomeGenerator', () => {
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
         // add +1 to the input Nodes due to the Bias Node
-        const nodes = neatChromosome.getNodes().values()
+        const nodes = neatChromosome.nodes.values()
         let nodeCounter = 0;
         for(const nodeList of nodes)
             nodeCounter += nodeList.size();
         expect(nodeCounter).toBe(NeatConfig.INPUT_NEURONS + 1 + NeatConfig.OUTPUT_NEURONS)
-        expect(neatChromosome.getConnections().size()).toBe((NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS)
+        expect(neatChromosome.connections.size()).toBe((NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS)
     })
 
     test('Create two random Chromosome and compare innovationNumbers', () => {
         const firstChromosome = generator.get();
         const firstInnovations = []
-        for(const firstConnection of firstChromosome.getConnections())
+        for(const firstConnection of firstChromosome.connections)
             firstInnovations.push(firstConnection.innovationNumber)
 
         const secondChromosome = generator.get();
         const secondInnovations = []
-        for(const secondConnection of secondChromosome.getConnections())
+        for(const secondConnection of secondChromosome.connections)
             secondInnovations.push(secondConnection.innovationNumber)
 
         expect(firstInnovations).toEqual(secondInnovations)

@@ -24,12 +24,12 @@ describe("NeatMutation", () => {
 
     test("MutateWeights", () => {
         const originalWeights = [];
-        for (const connection of neatChromosome.getConnections())
+        for (const connection of neatChromosome.connections)
             originalWeights.push(connection.weight)
 
         const mutatedWeights = [];
         neatMutation.mutateWeight(neatChromosome)
-        for (const connection of neatChromosome.getConnections())
+        for (const connection of neatChromosome.connections)
             mutatedWeights.push(connection.weight)
         originalWeights.sort();
         mutatedWeights.sort()
@@ -37,10 +37,10 @@ describe("NeatMutation", () => {
     })
 
     test("MutateAddConnection without hidden Layer", () => {
-        const originalConnectionsSize = neatChromosome.getConnections().size();
+        const originalConnectionsSize = neatChromosome.connections.size();
         neatMutation.mutateAddConnection(neatChromosome)
         // No Changes should happen since the generated network without hidden Layers is already fully connected
-        expect(originalConnectionsSize).toEqual(neatChromosome.getConnections().size())
+        expect(originalConnectionsSize).toEqual(neatChromosome.connections.size())
     })
 
     test("MutateAddConnection with hidden Layer", () => {
@@ -49,30 +49,30 @@ describe("NeatMutation", () => {
         const hiddenLayerNode2 = new NodeGene(NodeType.HIDDEN, 0);
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
-        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1,
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1,
             true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.getConnections().add(new ConnectionGene(hiddenLayerNode, hiddenLayerNode2, 1,
+        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode, hiddenLayerNode2, 1,
             true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(2),
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(2),
             new NodeGene(NodeType.HIDDEN, 0), 1, true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.getConnections().add(new ConnectionGene(inputNodes.get(2),
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(2),
             new NodeGene(NodeType.HIDDEN, 0), 1, true, ConnectionGene.getNextInnovationNumber()))
-        const originalConnections = neatChromosome.getConnections().size();
+        const originalConnections = neatChromosome.connections.size();
         // Make some rounds of mutations to ensure a mutation eventually happens
         for (let i = 0; i < 20; i++) {
             neatMutation.mutateAddConnection(neatChromosome)
         }
-        expect(originalConnections).not.toEqual(neatChromosome.getConnections().size())
+        expect(originalConnections).not.toEqual(neatChromosome.connections.size())
     })
 
     test("MutateConnectionState", () => {
         const connectionStates = []
-        for (const connection of neatChromosome.getConnections())
+        for (const connection of neatChromosome.connections)
             connectionStates.push(connection.enabled)
 
         neatMutation.mutateConnectionState(neatChromosome)
         const mutatedStates = []
-        for (const connection of neatChromosome.getConnections())
+        for (const connection of neatChromosome.connections)
             mutatedStates.push(connection.enabled)
         expect(connectionStates.length).toBe(mutatedStates.length)
         expect(connectionStates).not.toContainEqual(mutatedStates)
@@ -83,9 +83,9 @@ describe("NeatMutation", () => {
         const oldNodes = []
         const oldConnections = []
         const oldInnovationNumbers = []
-        for (const nodes of neatChromosome.getNodes())
+        for (const nodes of neatChromosome.nodes)
             oldNodes.push(nodes);
-        for (const connection of neatChromosome.getConnections()) {
+        for (const connection of neatChromosome.connections) {
             oldConnections.push(connection);
             oldInnovationNumbers.push(connection.innovationNumber)
         }
@@ -95,9 +95,9 @@ describe("NeatMutation", () => {
         const mutantNodes = []
         const mutantConnections = []
         const mutantInnovationNumbers = []
-        for (const nodes of neatChromosome.getNodes())
+        for (const nodes of neatChromosome.nodes)
             mutantNodes.push(nodes);
-        for (const connection of neatChromosome.getConnections()) {
+        for (const connection of neatChromosome.connections) {
             mutantConnections.push(connection);
             mutantInnovationNumbers.push(connection.innovationNumber)
         }

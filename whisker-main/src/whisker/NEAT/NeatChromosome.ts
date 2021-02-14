@@ -33,12 +33,13 @@ import {NeatConfig} from "./NeatConfig";
 export class NeatChromosome extends Chromosome {
 
     private _nodes = new Map<number, List<NodeGene>>();          // Map <Layer | Nodes>
-    private readonly _connections: List<ConnectionGene>
+    private _connections: List<ConnectionGene>
     private readonly _crossoverOp: Crossover<NeatChromosome>
     private readonly _mutationOp: Mutation<NeatChromosome>
     private _fitness: number
     private _inputSize: number;
     private _outputSize: number;
+    private _adjustedFitness: number    // Fitness value in relation to the species the Chromosome is assigned to
 
     /**
      * Constructs a new NeatChromosome
@@ -60,7 +61,7 @@ export class NeatChromosome extends Chromosome {
      * Deep clone of a NeatChromosome
      */
     clone(): NeatChromosome {
-        return new NeatChromosome(this.getConnections().clone(), this.getCrossoverOperator(), this.getMutationOperator());
+        return new NeatChromosome(this._connections.clone(), this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
@@ -75,7 +76,7 @@ export class NeatChromosome extends Chromosome {
      * Returns the length of the NeatChromosome defined by the number of connections
      */
     getLength(): number {
-        return this.getConnections().size()
+        return this._connections.size()
     }
 
     getCrossoverOperator(): Crossover<this> {
@@ -84,14 +85,6 @@ export class NeatChromosome extends Chromosome {
 
     getMutationOperator(): Mutation<this> {
         return this._mutationOp as Mutation<this>;
-    }
-
-    getNodes(): Map<number, List<NodeGene>> {
-        return this._nodes;
-    }
-
-    getConnections(): List<ConnectionGene> {
-        return this._connections;
     }
 
     generateNetwork(): void {
@@ -240,6 +233,22 @@ export class NeatChromosome extends Chromosome {
 
     set nodes(value: Map<number, List<NodeGene>>) {
         this._nodes = value;
+    }
+
+    get adjustedFitness(): number {
+        return this._adjustedFitness;
+    }
+
+    set adjustedFitness(value: number) {
+        this._adjustedFitness = value;
+    }
+
+    get connections(): List<ConnectionGene> {
+        return this._connections;
+    }
+
+    set connections(value: List<ConnectionGene>) {
+        this._connections = value;
     }
 
     toString(): string {
