@@ -5,6 +5,7 @@ import {List} from "../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
 import {NodeType} from "../../../src/whisker/NEAT/NodeType";
+import {Pair} from "../../../src/whisker/utils/Pair";
 
 describe("NeatCrossover", () => {
 
@@ -52,8 +53,10 @@ describe("NeatCrossover", () => {
         parent1.fitness = 1;
         const parent2 = new NeatChromosome(parent2Connections, crossoverOp, mutationOp)
         parent2.fitness = 0;
-        const child = crossoverOp.apply(parent1, parent2).getFirst()
-        expect(child.getConnections().size()).toBe(5)
+        const child1 = crossoverOp.apply(parent1, parent2).getFirst()
+        const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
+        expect(child1.getConnections().size()).toBe(5)
+        expect(child1.getConnections().size()).toEqual(child2.getConnections().size())
     })
 
     test("CrossoverTest with second parent being fitter than first parent", () => {
@@ -61,8 +64,10 @@ describe("NeatCrossover", () => {
         parent1.fitness = 0;
         const parent2 = new NeatChromosome(parent2Connections, crossoverOp, mutationOp)
         parent2.fitness = 1;
-        const child = crossoverOp.apply(parent1, parent2).getFirst()
-        expect(child.getConnections().size()).toBe(7)
+        const child1 = crossoverOp.apply(parent1, parent2).getFirst()
+        const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
+        expect(child1.getConnections().size()).toBe(7)
+        expect(child2.getConnections().size()).toEqual(child1.getConnections().size())
     })
 
     test("CrossoverTest with both parents being equivalently fit", () => {
@@ -70,7 +75,9 @@ describe("NeatCrossover", () => {
         parent1.fitness = 1;
         const parent2 = new NeatChromosome(parent2Connections, crossoverOp, mutationOp)
         parent2.fitness = 1;
-        const child = crossoverOp.apply(parent1, parent2).getFirst()
-        expect(child.getConnections().size()).toBeGreaterThanOrEqual(4)
+        const child1 = crossoverOp.apply(parent1, parent2).getFirst()
+        const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
+        expect(child1.getConnections().size()).toBeGreaterThanOrEqual(4)
+        expect(child2.getConnections().size()).toBeGreaterThanOrEqual(4)
     })
 })
