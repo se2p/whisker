@@ -61,7 +61,10 @@ export class NeatChromosome extends Chromosome {
      * Deep clone of a NeatChromosome
      */
     clone(): NeatChromosome {
-        return new NeatChromosome(this._connections.clone(), this.getCrossoverOperator(), this.getMutationOperator());
+        const copyConnections = new List<ConnectionGene>();
+        for (const connection of this.connections)
+            copyConnections.add(connection.copy());
+        return new NeatChromosome(copyConnections, this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
@@ -93,27 +96,27 @@ export class NeatChromosome extends Chromosome {
         // Create the Input Nodes and add them to the nodes list
         const inputList = new List<NodeGene>()
         for (let i = 0; i < this._inputSize; i++) {
-            inputList.add(new NodeGene(NodeType.INPUT, 0))
+            inputList.add(new NodeGene(i, NodeType.INPUT, 0))
         }
-        inputList.add(new NodeGene(NodeType.BIAS, 1))      // Bias
+        inputList.add(new NodeGene(this._inputSize, NodeType.BIAS, 1))      // Bias
         this._nodes.set(0, inputList);
 
         // Create the Output Nodes and add them to the nodes list
         const outputList = new List<NodeGene>()
         for (let i = 0; i < this._outputSize; i++) {
-            outputList.add(new NodeGene(NodeType.OUTPUT, 0))
+            outputList.add(new NodeGene(inputList.size() + i, NodeType.OUTPUT, 0))
         }
         this._nodes.set(NeatConfig.MAX_HIDDEN_LAYERS, outputList)
 
         // Add the hidden Nodes
         for (const connection of this._connections) {
-            if (this.findLayerOfNode(this._nodes, connection.from) < 0) {
+            if (this.findLayerOfNode(this._nodes, connection.from) < 0 && connection.from.type !== NodeType.OUTPUT) {
                 const layer = this.findLayerOfNode(this._nodes, connection.to) - 1
-                this._nodes = this.insertNodeToLayer(this._nodes, new NodeGene(NodeType.HIDDEN, 0), layer)
+                this._nodes = this.insertNodeToLayer(this._nodes, new NodeGene(this.numberOfNodes(), NodeType.HIDDEN, 0), layer)
             }
-            if (this.findLayerOfNode(this._nodes, connection.to) < 0) {
+            if (this.findLayerOfNode(this._nodes, connection.to) < 0 && connection.to.type !== NodeType.OUTPUT) {
                 const layer = this.findLayerOfNode(this._nodes, connection.from) + 1
-                this._nodes = this.insertNodeToLayer(this._nodes, new NodeGene(NodeType.HIDDEN, 0), layer)
+                this._nodes = this.insertNodeToLayer(this._nodes, new NodeGene(this.numberOfNodes(), NodeType.HIDDEN, 0), layer)
             }
             // add the connection to the list of input connections of the node
             this.findNode(this._nodes, connection.to).inputConnections.add(connection)
@@ -204,9 +207,21 @@ export class NeatChromosome extends Chromosome {
         return output;
     }
 
+    /**
+     * Modified Sigmoid function proposed by the paper
+     * @param x the value the sigmoid function should be applied to
+     * @private
+     */
     private static sigmoid(x: number): number {
-        // TODO Auto-generated method stub
-        return (1 / (1 + Math.exp(-x)));
+        return (1 / (1 + Math.exp(-4.9 * x)));
+    }
+
+    public numberOfNodes(): number {
+        let nodeCount = 0;
+        for (const layers of this.nodes.values()) {
+            nodeCount += layers.size();
+        }
+        return nodeCount;
     }
 
     // Used for Testing
@@ -257,5 +272,10 @@ export class NeatChromosome extends Chromosome {
             nodeString += nodes
         }
         return "Genome:\nNodeGenes: " + nodeString + "\nConnectionGenes: " + this._connections;
+    }
+
+    public equals(other: unknown): boolean {
+        if (!(other instanceof NeatChromosome)) return false;
+        return this.connections === other.connections;
     }
 }

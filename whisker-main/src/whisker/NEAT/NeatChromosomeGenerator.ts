@@ -37,15 +37,15 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         // Create the Input Nodes and add them to the nodes list
         const inputList = new List<NodeGene>()
         for (let i = 0; i < this._inputSize; i++) {
-            inputList.add(new NodeGene(NodeType.INPUT, 0))
+            inputList.add(new NodeGene(i, NodeType.INPUT, 0))
         }
-        inputList.add(new NodeGene(NodeType.BIAS, 1))      // Bias
+        inputList.add(new NodeGene(NeatConfig.INPUT_NEURONS, NodeType.BIAS, 1))      // Bias
         nodes.set(0, inputList);
 
         // Create the Output Nodes and add them to the nodes list
         const outputList = new List<NodeGene>()
         for (let i = 0; i < this._outputSize; i++) {
-            outputList.add(new NodeGene(NodeType.OUTPUT, 0))
+            outputList.add(new NodeGene(inputList.size() + i, NodeType.OUTPUT, 0))
         }
         nodes.set(NeatConfig.MAX_HIDDEN_LAYERS, outputList)
 
@@ -61,6 +61,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         }
         const neatChromosome = new NeatChromosome(connections, this._crossoverOp, this._mutationOp);
         neatChromosome.nodes = nodes;
+        neatChromosome.fitness = 0;
         return neatChromosome;
     }
 

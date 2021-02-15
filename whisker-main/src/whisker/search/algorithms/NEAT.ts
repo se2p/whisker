@@ -91,6 +91,12 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
     }
 
     // TODO: pulbic only for testing
+    /**
+     * Calculates the compatibility distance between two chromosomes; used for speciating
+     * @param chromosome1 the first chromosome
+     * @param chromosome2 the second chromosome
+     * @return the compatibility distance of both chromosomes
+     */
     public compatibilityDistance(chromosome1: C, chromosome2: C): number {
         let matching = 0;
         let disjoint = 0;
@@ -148,6 +154,12 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         return distance;
     }
 
+    /**
+     * Decide based on the compatibility distance if both Chromosomes belong to the same species
+     * @param chromosome1 the first chromosome
+     * @param chromosome2 the second chromosome
+     * @return true if both belong to the same species
+     */
     public isSameSpecies(chromosome1: C, chromosome2: C): boolean {
         return this.compatibilityDistance(chromosome1, chromosome2) < NeatConfig.DISTANCE_THRESHOLD;
     }

@@ -20,13 +20,13 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         // Save first connections in a Map <InnovationNumber, Connection>
         const parent1Innovations = new Map<number, ConnectionGene>()
         for (const connection of parent1.connections) {
-            parent1Innovations.set(connection.innovationNumber, connection)
+            parent1Innovations.set(connection.innovation, connection)
         }
 
         // Save second connections in a Map <InnovationNumber, Connection>
         const parent2Innovations = new Map<number, ConnectionGene>()
         for (const connection of parent2.connections) {
-            parent2Innovations.set(connection.innovationNumber, connection)
+            parent2Innovations.set(connection.innovation, connection)
         }
 
         // Save in a set to remove duplicates
@@ -59,6 +59,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
                 }
             }
         }
+        newConnections.sort((a, b) => a.innovation - b.innovation)
         // In Neat only one offspring is created in crossover => ignore second part of the pair
         return new Pair<NeatChromosome>(new NeatChromosome(newConnections, new NeatCrossover(), new NeatMutation()), null);
     }

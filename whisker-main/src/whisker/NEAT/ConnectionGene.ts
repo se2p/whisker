@@ -20,6 +20,10 @@ export class ConnectionGene {
         this._innovation = innovation;
     }
 
+    public copy(): ConnectionGene {
+        return new ConnectionGene(this.from.clone(), this.to.clone(), this.weight, this.enabled, this.innovation)
+    }
+
     get from(): NodeGene {
         return this._from;
     }
@@ -52,11 +56,11 @@ export class ConnectionGene {
         this._enabled = value;
     }
 
-    get innovationNumber(): number {
+    get innovation(): number {
         return this._innovation;
     }
 
-    set innovationNumber(innovation: number){
+    set innovation(innovation: number) {
         this._innovation = innovation;
     }
 
@@ -64,7 +68,7 @@ export class ConnectionGene {
         return ++ConnectionGene.innovationCounter;
     }
 
-    static resetInnovationCounter(): void{
+    static resetInnovationCounter(): void {
         ConnectionGene.innovationCounter = (NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS;
     }
 
@@ -83,11 +87,11 @@ export class ConnectionGene {
      */
     public equalsByInnovation(other: unknown): boolean {
         if (!(other instanceof ConnectionGene)) return false;
-        return this.equalsByNodes(other) && this.innovationNumber === other.innovationNumber;
+        return this.equalsByNodes(other) && this.innovation === other.innovation;
     }
 
     toString(): string {
         return " ConnectionGene{FromId: " + this.from.id + ", ToId: " + this.to.id + ", Weight: " + this.weight +
-            ", Enabled: " + this.enabled + ", InnovationNumber: " + this.innovationNumber + "}"
+            ", Enabled: " + this.enabled + ", InnovationNumber: " + this.innovation + "}"
     }
 }

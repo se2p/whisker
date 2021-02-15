@@ -7,17 +7,21 @@ import {List} from "../utils/List";
 
 export class NodeGene {
 
-    private readonly _id: number
+    private readonly _id: number;
     private readonly _type: NodeType
     private _value: number          // the calculated value of each node
     private _inputConnections = new List<ConnectionGene>() // list of input connections -> used for calculating the value
 
     public static _idCounter = 0;
 
-    constructor(type: NodeType, value: number) {
-        this._id = NodeGene._idCounter++;
+    constructor(id: number, type: NodeType, value: number) {
+        this._id = id;
         this._type = type
         this._value = value;
+    }
+
+    public clone(): NodeGene {
+        return new NodeGene(this._id, this.type, this.value)
     }
 
     get id(): number {
@@ -46,11 +50,11 @@ export class NodeGene {
 
     public equals(other: unknown): boolean {
         if (!(other instanceof NodeGene)) return false;
-        return this.id == other.id;
+        return this.id === other.id
     }
 
     toString(): string {
-        return " NodeGene{ID: " + this.id + ", Value: " + this.value + ", Type: " + NodeType[this.type] +
+        return " NodeGene{ID: " + this._id + ", Value: " + this.value + ", Type: " + NodeType[this.type] +
             ", InputConnections: " + this.inputConnections + "}";
     }
 

@@ -19,12 +19,12 @@ describe("NeatCrossover", () => {
         crossoverOp = new NeatCrossover();
 
         // Create Nodes of both networks
-        const node1 = new NodeGene(NodeType.INPUT, 0)
-        const node2 = new NodeGene(NodeType.INPUT, 0)
-        const node3 = new NodeGene(NodeType.INPUT, 0)
-        const node4 = new NodeGene(NodeType.HIDDEN, 0.5)
-        const node5 = new NodeGene(NodeType.OUTPUT, 1)
-        const node6 = new NodeGene(NodeType.HIDDEN, 0.5)
+        const node1 = new NodeGene(0, NodeType.INPUT, 0)
+        const node2 = new NodeGene(1, NodeType.INPUT, 0)
+        const node3 = new NodeGene(2, NodeType.INPUT, 0)
+        const node4 = new NodeGene(3, NodeType.HIDDEN, 0.5)
+        const node5 = new NodeGene(4, NodeType.OUTPUT, 1)
+        const node6 = new NodeGene(5, NodeType.HIDDEN, 0.5)
 
 
         // Create Connections of first parent

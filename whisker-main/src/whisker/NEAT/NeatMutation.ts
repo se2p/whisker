@@ -56,6 +56,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     }
 
     mutateAddNode(chromosome: NeatChromosome): void {
+        chromosome.generateNetwork();
         const connections = chromosome.connections;
         // Select a random Connection to split => the new node is placed in between the connection
         const splitConnection = connections.get(Math.floor(Math.random() * connections.size()))
@@ -65,7 +66,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // Rewire the Network with the new Node
         const fromNode = splitConnection.from;
         const toNode = splitConnection.to;
-        const newNode = new NodeGene(NodeType.HIDDEN, 0);
+        const newNode = new NodeGene(chromosome.numberOfNodes(), NodeType.HIDDEN, 0);
 
         // Restrict the network to mutate over MAX_HIDDEN_LAYERS layers
         const fromNodeLayer = chromosome.findLayerOfNode(chromosome.nodes, fromNode)
@@ -90,7 +91,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
 
     mutateWeight(chromosome: NeatChromosome): void {
         for (const connection of chromosome.connections) {
-            if (Math.random() <= NeatConfig.MUTATE_WEIGHT) {
+            if (Math.random() <= NeatConfig.MUTATE_WEIGHT_UNIFORMLY) {
                 connection.weight += this.randomNumber(-1, 1);
             }
         }
@@ -127,10 +128,10 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // Check if innovation already happened in this generation if Yes assign the same innovation number
         const oldInnovation = this.findConnection(NeatMutation._innovations, newInnovation)
         if (oldInnovation !== null)
-            newInnovation.innovationNumber = oldInnovation.innovationNumber;
+            newInnovation.innovation = oldInnovation.innovation;
         // If No assign a new one
         else {
-            newInnovation.innovationNumber = ConnectionGene.getNextInnovationNumber();
+            newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
             NeatMutation._innovations.add(newInnovation);
         }
     }
