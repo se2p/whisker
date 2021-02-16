@@ -5,6 +5,15 @@ const {logger} = require('./util');
 const primitivesArrayPrefix = 't.vm.runtime._primitives';
 const indentation = ' '.repeat(4);
 
+/**
+ * Maps a scratch block name to its Scratch VM internal name
+ */
+const scratchBlockNames = {
+    randomBetween: 'operator_random',
+    goToRandomPosition: 'motion_goto',
+    glideToRandomPosition: 'motion_glideto'
+};
+
 function keyCodeToKeyString(keyCode) {
     switch (keyCode) {
         case 13: return 'Enter';
@@ -14,6 +23,16 @@ function keyCodeToKeyString(keyCode) {
         case 39: return 'ArrowRight';
         case 40: return 'ArrowDown';
         default: throw new Error(`Unknown keycode '${keyCode}'`);
+    }
+}
+
+function mapScratchBlockNameToInternalName(scratchBlockName) {
+    const internalName = scratchBlockNames[scratchBlockName];
+
+    if (internalName) {
+        return internalName;
+    } else {
+        throw new Error(`Unknown Scratch block '${scratchBlockName}'`);
     }
 }
 
@@ -46,13 +65,13 @@ function mockBlock(name, mock) {
     code += `${indentation}const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
 
     switch (name) {
-        case 'operator_random':
+        case scratchBlockNames.randomBetween:
             code += `${indentation}${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
             break;
-        case 'motion_goto':
+        case scratchBlockNames.goToRandomPosition:
             code += mockOnCondition(name, `args.TO === '_random_'`, `util.target.setXY(${mockFunction}(),${mockFunction}())`, '(args, util)');
             break;
-        case 'motion_glideto':
+        case scratchBlockNames.glideToRandomPosition:
             const originalGlideSecsTo = 'originalGlideSecsTo';
             code += `${indentation}const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
             code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, `${originalGlideSecsTo}({SECS: args.SECS, X: ${mockFunction}(), Y: ${mockFunction}()}, util)`, '(args, util)')
@@ -69,7 +88,8 @@ function codeForInitializingMocks(mocks) {
     if (mocks) {
         code += `{\n${indentation}// Initializing mocks\n`;
         for (const mockName of Object.keys(mocks)) {
-            code += mockBlock(mockName, mocks[mockName]);
+            const internalName = mapScratchBlockNameToInternalName(mockName);
+            code += mockBlock(internalName, mocks[mockName]);
         }
         code += "}\n";
     }
