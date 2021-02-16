@@ -36,6 +36,18 @@ function mapScratchBlockNameToInternalName(scratchBlockName) {
     }
 }
 
+function prependLines(string, linePrefix) {
+    return string.replace(/(.*)\n/g, `${linePrefix}$1\n`);
+}
+
+function codeForAssignmentMockFunction(mockFunction, mockName) {
+    return `const ${mockFunction} = target => ${mockName}[target.sprite.name].values[${mockName}[target.sprite.name].index++];`;
+}
+
+function codeForIfElse(condition, ifPart, elsePart) {
+    return `if(${condition}) {\n${indentation}${ifPart}\n} else {\n${indentation}${elsePart}\n}\n`;
+}
+
 /**
  * Mocks a scratch block under a given condition
  * @param name The internal name of a scratch block
@@ -46,14 +58,10 @@ function mapScratchBlockNameToInternalName(scratchBlockName) {
  */
 function mockOnCondition(name, mockCondition, mock, functionParameters) {
     const originalFunctionName = `original_${name}`;
-    let code = `${indentation}const ${originalFunctionName} = ${primitivesArrayPrefix}['${name}'];\n`;
-    code += `${indentation}${primitivesArrayPrefix}['${name}'] = ${functionParameters} => {\n`;
-    code += `${indentation.repeat(2)}if (${mockCondition}) {\n`;
-    code += `${indentation.repeat(3)}${mock}\n`;
-    code += `${indentation.repeat(2)}} else {\n`;
-    code += `${indentation.repeat(3)}${originalFunctionName}${functionParameters}\n`;
-    code += `${indentation.repeat(2)}}\n`;
-    code += `${indentation}};`;
+    let code = `const ${originalFunctionName} = ${primitivesArrayPrefix}['${name}'];\n`;
+    code += `${primitivesArrayPrefix}['${name}'] = ${functionParameters} => {\n`;
+    code += prependLines(codeForIfElse(mockCondition, mock, `${originalFunctionName}${functionParameters}`), indentation);
+    code += `};`;
 
     return code;
 }
@@ -67,30 +75,30 @@ function mockOnCondition(name, mockCondition, mock, functionParameters) {
 function mockBlock(name, mock) {
     const mockName = 'mock_' + name;
     const mockFunction = `mock_${name}Function`;
-    let code = `${indentation}const ${mockName} = ${JSON.stringify(mock)};\n`;
+    let code = `// Mock for ${name}\nconst ${mockName} = ${JSON.stringify(mock)};\n`;
 
     switch (name) {
         case scratchBlockNames.randomBetween:
-            code += `${indentation}const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
-            code += `${indentation}${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
+            code += `const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
+            code += `${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
             break;
         case scratchBlockNames.goToRandomPosition:
-            code += `${indentation}const ${mockFunction} = target => ${mockName}[target.sprite.name].values[${mockName}[target.sprite.name].index++];\n`;
+            code += `${codeForAssignmentMockFunction(mockFunction, mockName)}\n`;
 
             const mockCode = `const {x, y} = ${mockFunction}(util.target); util.target.setXY(x, y)`;
             code += mockOnCondition(name, `args.TO === '_random_'`, mockCode, '(args, util)');
             break;
         case scratchBlockNames.glideToRandomPosition:
-            code += `${indentation}const ${mockFunction} = target => ${mockName}[target.sprite.name].values[${mockName}[target.sprite.name].index++];\n`;
+            code += `${codeForAssignmentMockFunction(mockFunction, mockName)}\n`;
 
             const originalGlideSecsTo = 'originalGlideSecsTo';
-            code += `${indentation}const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
+            code += `const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
             const mockCodeGlide = `const {x, y} = ${mockFunction}(util.target); ${originalGlideSecsTo}({SECS: args.SECS, X: x, Y: y}, util)`;
             code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, mockCodeGlide, '(args, util)')
             break;
         default: throw new Error(`Unknown block ${name}`);
     }
-    code += '\n';
+    code += '\n\n';
     return code;
 }
 
@@ -98,37 +106,36 @@ function codeForInitializingMocks(mocks) {
     let code = '';
 
     if (mocks) {
-        code += `{\n${indentation}// Initializing mocks\n`;
+        code += `// Initializing mocks\n`;
         for (const mockName of Object.keys(mocks)) {
             const internalName = mapScratchBlockNameToInternalName(mockName);
             code += mockBlock(internalName, mocks[mockName]);
         }
-        code += "}\n";
     }
 
     return code;
 }
 
 function codeForWitnessReplay(errorWitness) {
-    let code = `${indentation}// Error Witness Replay`;
+    let code = `// Error Witness Replay`;
 
     for (const step of errorWitness.steps) {
         const action = step.action;
 
         switch (action) {
             case 'EPSILON': break;
-            case 'WAIT': code += `${indentation}await t.runForTime(${step.waitMicros / 1000});\n`; break;
-            case 'MOUSE_MOVE': code += `${indentation}t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
-            case 'ANSWER': code += `${indentation}t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
-            case 'KEY_DOWN': code += `${indentation}t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
-            case 'KEY_UP': code += `${indentation}t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
-            case 'MOUSE_DOWN': code += `${indentation}t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
-            case 'MOUSE_UP': code += `${indentation}t.inputImmediate({device: 'mouse', isDown: false});\n`; break;
+            case 'WAIT': code += `await t.runForTime(${step.waitMicros / 1000});\n`; break;
+            case 'MOUSE_MOVE': code += `t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
+            case 'ANSWER': code += `t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
+            case 'KEY_DOWN': code += `t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
+            case 'KEY_UP': code += `t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
+            case 'MOUSE_DOWN': code += `t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
+            case 'MOUSE_UP': code += `t.inputImmediate({device: 'mouse', isDown: false});\n`; break;
             default: logger.error(`Unknown error witness step action '${action}' for step ${errorWitness.steps.indexOf(step)}`);
         }
     }
 
-    code += `${indentation}// Run a few steps more in order to catch the violation\n${indentation}await t.runForSteps(10);\n${indentation}// Error witness replay finished\n`;
+    code += `// Run a few steps more in order to catch the violation\nawait t.runForSteps(10);\n// Error witness replay finished\n`;
     return code;
 }
 
@@ -146,7 +153,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath, tmpDi
     const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
     const codeForReplay = `\n${codeForInitializingMocks(errorWitness.mocks)}\n${codeForWitnessReplay(errorWitness)}`;
 
-    return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", codeForReplay, "_error_witness_replay.js", tmpDir);
+    return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", prependLines(codeForReplay, indentation), "_error_witness_replay.js", tmpDir);
 }
 
 /**
