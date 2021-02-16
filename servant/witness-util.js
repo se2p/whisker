@@ -45,7 +45,7 @@ function codeForAssignmentMockFunction(mockFunction, mockName) {
 }
 
 function codeForIfElse(condition, ifPart, elsePart) {
-    return `if(${condition}) {\n${indentation}${ifPart}\n} else {\n${indentation}${elsePart}\n}\n`;
+    return `if(${condition}) {\n${prependLines(ifPart, indentation)}} else {\n${prependLines(elsePart, indentation)}}\n`;
 }
 
 /**
@@ -60,8 +60,8 @@ function mockOnCondition(name, mockCondition, mock, functionParameters) {
     const originalFunctionName = `original_${name}`;
     let code = `const ${originalFunctionName} = ${primitivesArrayPrefix}['${name}'];\n`;
     code += `${primitivesArrayPrefix}['${name}'] = ${functionParameters} => {\n`;
-    code += prependLines(codeForIfElse(mockCondition, mock, `${originalFunctionName}${functionParameters}`), indentation);
-    code += `};`;
+    code += prependLines(codeForIfElse(mockCondition, mock, `${originalFunctionName}${functionParameters};\n`), indentation);
+    code += `};\n`;
 
     return code;
 }
@@ -85,7 +85,7 @@ function mockBlock(name, mock) {
         case scratchBlockNames.goToRandomPosition:
             code += `${codeForAssignmentMockFunction(mockFunction, mockName)}\n`;
 
-            const mockCode = `const {x, y} = ${mockFunction}(util.target); util.target.setXY(x, y)`;
+            const mockCode = `const {x, y} = ${mockFunction}(util.target);\nutil.target.setXY(x, y);\n`;
             code += mockOnCondition(name, `args.TO === '_random_'`, mockCode, '(args, util)');
             break;
         case scratchBlockNames.glideToRandomPosition:
@@ -93,12 +93,12 @@ function mockBlock(name, mock) {
 
             const originalGlideSecsTo = 'originalGlideSecsTo';
             code += `const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
-            const mockCodeGlide = `const {x, y} = ${mockFunction}(util.target); ${originalGlideSecsTo}({SECS: args.SECS, X: x, Y: y}, util)`;
+            const mockCodeGlide = `const {x, y} = ${mockFunction}(util.target);\n${originalGlideSecsTo}({SECS: args.SECS, X: x, Y: y}, util);\n`;
             code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, mockCodeGlide, '(args, util)')
             break;
         default: throw new Error(`Unknown block ${name}`);
     }
-    code += '\n\n';
+    code += '\n';
     return code;
 }
 
