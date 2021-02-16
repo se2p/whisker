@@ -66,6 +66,26 @@ function mockOnCondition(name, mockCondition, mock, functionParameters) {
     return code;
 }
 
+function mockGoToRandomPosition(mockFunction, mockName) {
+    let code = `${codeForAssignmentMockFunction(mockFunction, mockName)}\n`;
+
+    const mockCode = `const {x, y} = ${mockFunction}(util.target);\nutil.target.setXY(x, y);\n`;
+    code += mockOnCondition(scratchBlockNames.goToRandomPosition, `args.TO === '_random_'`, mockCode, '(args, util)');
+
+    return code;
+}
+
+function mockGlideToRandomPosition(mockFunction, mockName) {
+    let code = `${codeForAssignmentMockFunction(mockFunction, mockName)}\n`;
+
+    const originalGlideSecsTo = 'originalGlideSecsTo';
+    code += `const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
+    const mockCodeGlide = `const {x, y} = ${mockFunction}(util.target);\n${originalGlideSecsTo}({SECS: args.SECS, X: x, Y: y}, util);\n`;
+    code += mockOnCondition(scratchBlockNames.glideToRandomPosition, `args.TO === '_random_' && !util.stackFrame.timer`, mockCodeGlide, '(args, util)');
+
+    return code;
+}
+
 /**
  * Mocks a scratch block
  * @param blockName The name of a scratch block
@@ -84,22 +104,14 @@ function mockBlock(blockName, mock) {
             code += `${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
             break;
         case scratchBlockNames.goToRandomPosition:
-            code += `${codeForAssignmentMockFunction(mockFunction, mockName)}\n`;
-
-            const mockCode = `const {x, y} = ${mockFunction}(util.target);\nutil.target.setXY(x, y);\n`;
-            code += mockOnCondition(name, `args.TO === '_random_'`, mockCode, '(args, util)');
+            code += `${mockGoToRandomPosition(mockFunction, mockName)}`;
             break;
         case scratchBlockNames.glideToRandomPosition:
-            code += `${codeForAssignmentMockFunction(mockFunction, mockName)}\n`;
-
-            const originalGlideSecsTo = 'originalGlideSecsTo';
-            code += `const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
-            const mockCodeGlide = `const {x, y} = ${mockFunction}(util.target);\n${originalGlideSecsTo}({SECS: args.SECS, X: x, Y: y}, util);\n`;
-            code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, mockCodeGlide, '(args, util)')
+            code += `${mockGlideToRandomPosition(mockFunction, mockName)}`;
             break;
         default: throw new Error(`Unknown block ${name}`);
     }
-    code += '\n';
+
     return code;
 }
 
@@ -109,7 +121,7 @@ function codeForInitializingMocks(mocks) {
     if (mocks) {
         code += `// Initializing mocks\n`;
         for (const mockName of Object.keys(mocks)) {
-            code += mockBlock(mockName, mocks[mockName]);
+            code += `${mockBlock(mockName, mocks[mockName])}\n`;
         }
     }
 
