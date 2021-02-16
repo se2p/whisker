@@ -47,7 +47,13 @@ function mapScratchBlockNameToInternalName(scratchBlockName) {
 function mockOnCondition(name, mockCondition, mock, functionParameters) {
     const originalFunctionName = `original_${name}`;
     let code = `${indentation}const ${originalFunctionName} = ${primitivesArrayPrefix}['${name}'];\n`;
-    code += `${indentation}${primitivesArrayPrefix}['${name}'] = ${functionParameters} => ${mockCondition} ? ${mock} : ${originalFunctionName}${functionParameters};\n`;
+    code += `${indentation}${primitivesArrayPrefix}['${name}'] = ${functionParameters} => {\n`;
+    code += `${indentation.repeat(2)}if (${mockCondition}) {\n`;
+    code += `${indentation.repeat(3)}${mock}\n`;
+    code += `${indentation.repeat(2)}} else {\n`;
+    code += `${indentation.repeat(3)}${originalFunctionName}${functionParameters}\n`;
+    code += `${indentation.repeat(2)}}\n`;
+    code += `${indentation}};`;
 
     return code;
 }
@@ -62,19 +68,25 @@ function mockBlock(name, mock) {
     const mockName = 'mock_' + name;
     const mockFunction = `mock_${name}Function`;
     let code = `${indentation}const ${mockName} = ${JSON.stringify(mock)};\n`;
-    code += `${indentation}const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
 
     switch (name) {
         case scratchBlockNames.randomBetween:
+            code += `${indentation}const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
             code += `${indentation}${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
             break;
         case scratchBlockNames.goToRandomPosition:
-            code += mockOnCondition(name, `args.TO === '_random_'`, `util.target.setXY(${mockFunction}(),${mockFunction}())`, '(args, util)');
+            code += `${indentation}const ${mockFunction} = target => ${mockName}[target.sprite.name].values[${mockName}[target.sprite.name].index++];\n`;
+
+            const mockCode = `const {x, y} = ${mockFunction}(util.target); util.target.setXY(x, y)`;
+            code += mockOnCondition(name, `args.TO === '_random_'`, mockCode, '(args, util)');
             break;
         case scratchBlockNames.glideToRandomPosition:
+            code += `${indentation}const ${mockFunction} = target => ${mockName}[target.sprite.name].values[${mockName}[target.sprite.name].index++];\n`;
+
             const originalGlideSecsTo = 'originalGlideSecsTo';
             code += `${indentation}const ${originalGlideSecsTo} = ${primitivesArrayPrefix}['motion_glidesecstoxy'];\n`
-            code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, `${originalGlideSecsTo}({SECS: args.SECS, X: ${mockFunction}(), Y: ${mockFunction}()}, util)`, '(args, util)')
+            const mockCodeGlide = `const {x, y} = ${mockFunction}(util.target); ${originalGlideSecsTo}({SECS: args.SECS, X: x, Y: y}, util)`;
+            code += mockOnCondition(name, `args.TO === '_random_' && !util.stackFrame.timer`, mockCodeGlide, '(args, util)')
             break;
         default: throw new Error(`Unknown block ${name}`);
     }
