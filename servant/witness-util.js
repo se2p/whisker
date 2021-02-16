@@ -68,14 +68,15 @@ function mockOnCondition(name, mockCondition, mock, functionParameters) {
 
 /**
  * Mocks a scratch block
- * @param name The internal name of a scratch block
+ * @param blockName The name of a scratch block
  * @param mock The mock object: {values: number[], index: 0} which contains the values that the mock should provide during test execution
  * @returns {string} The code for mocking the scratch block
  */
-function mockBlock(name, mock) {
+function mockBlock(blockName, mock) {
+    const name = mapScratchBlockNameToInternalName(blockName);
     const mockName = 'mock_' + name;
     const mockFunction = `mock_${name}Function`;
-    let code = `// Mock for ${name}\nconst ${mockName} = ${JSON.stringify(mock)};\n`;
+    let code = `// Mock for ${blockName}\nconst ${mockName} = ${JSON.stringify(mock)};\n`;
 
     switch (name) {
         case scratchBlockNames.randomBetween:
@@ -108,8 +109,7 @@ function codeForInitializingMocks(mocks) {
     if (mocks) {
         code += `// Initializing mocks\n`;
         for (const mockName of Object.keys(mocks)) {
-            const internalName = mapScratchBlockNameToInternalName(mockName);
-            code += mockBlock(internalName, mocks[mockName]);
+            code += mockBlock(mockName, mocks[mockName]);
         }
     }
 
