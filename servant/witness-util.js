@@ -63,6 +63,43 @@ function mockBlock(name, mock) {
     return code;
 }
 
+function codeForInitializingMocks(mocks) {
+    let code = '';
+
+    if (mocks) {
+        code += `{\n${indentation}// Initializing mocks\n`;
+        for (const mockName of Object.keys(mocks)) {
+            code += mockBlock(mockName, mocks[mockName]);
+        }
+        code += "}\n";
+    }
+
+    return code;
+}
+
+function codeForWitnessReplay(errorWitness) {
+    let code = `${indentation}// Error Witness Replay`;
+
+    for (const step of errorWitness.steps) {
+        const action = step.action;
+
+        switch (action) {
+            case 'EPSILON': break;
+            case 'WAIT': code += `${indentation}await t.runForTime(${step.waitMicros / 1000});\n`; break;
+            case 'MOUSE_MOVE': code += `${indentation}t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
+            case 'ANSWER': code += `${indentation}t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
+            case 'KEY_DOWN': code += `${indentation}t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
+            case 'KEY_UP': code += `${indentation}t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
+            case 'MOUSE_DOWN': code += `${indentation}t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
+            case 'MOUSE_UP': code += `${indentation}t.inputImmediate({device: 'mouse', isDown: false});\n`; break;
+            default: logger.error(`Unknown error witness step action '${action}' for step ${errorWitness.steps.indexOf(step)}`);
+        }
+    }
+
+    code += `${indentation}// Run a few steps more in order to catch the violation\n${indentation}await t.runForSteps(10);\n${indentation}// Error witness replay finished\n`;
+    return code;
+}
+
 /**
  * Adds instructions to the tests that will replay the error witness.
  * The test has to contain the comment '// REPLAY_ERROR_WITNESS'.
@@ -75,38 +112,9 @@ function mockBlock(name, mock) {
  */
 function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath, tmpDir) {
     const errorWitness = JSON.parse(fs.readFileSync(errorWitnessPath, {encoding: 'utf8'}).toString());
-    let errorReplay = "\n"
+    const codeForReplay = `\n${codeForInitializingMocks(errorWitness.mocks)}\n${codeForWitnessReplay(errorWitness)}`;
 
-    const mocks = errorWitness.mocks;
-    if (mocks) {
-        errorReplay += `{\n${indentation}// Initializing mocks\n`;
-        for (const mockName of Object.keys(mocks)) {
-            errorReplay += mockBlock(mockName, mocks[mockName]);
-        }
-        errorReplay += "}\n";
-    }
-
-    errorReplay += `${indentation}// Error witness replay\n`;
-
-    for (const step of errorWitness.steps) {
-        const action = step.action;
-
-        switch (action) {
-            case 'EPSILON': break;
-            case 'WAIT': errorReplay += `${indentation}await t.runForTime(${step.waitMicros / 1000});\n`; break;
-            case 'MOUSE_MOVE': errorReplay += `${indentation}t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
-            case 'ANSWER': errorReplay += `${indentation}t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
-            case 'KEY_DOWN': errorReplay += `${indentation}t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
-            case 'KEY_UP': errorReplay += `${indentation}t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
-            case 'MOUSE_DOWN': errorReplay += `${indentation}t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
-            case 'MOUSE_UP': errorReplay += `${indentation}t.inputImmediate({device: 'mouse', isDown: false});\n`; break;
-            default: logger.error(`Unknown error witness step action '${action}' for step ${errorWitness.steps.indexOf(step)}`);
-        }
-    }
-
-    errorReplay += `${indentation}// Run a few steps more in order to catch the violation\n${indentation}await t.runForSteps(10);\n${indentation}// Error witness replay finished\n`;
-
-    return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", errorReplay, "_error_witness_replay.js", tmpDir);
+    return replaceInFile(constraintsPath, "// REPLAY_ERROR_WITNESS", codeForReplay, "_error_witness_replay.js", tmpDir);
 }
 
 /**
