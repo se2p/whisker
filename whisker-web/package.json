@@ -26,7 +26,6 @@
         "file-saver": "^2.0.5",
         "i18next": "^19.8.4",
         "jquery": "^3.5.1",
-        "jquery-i18next": "^1.2.1",
         "scratch-audio": "0.1.0-prerelease.20200528195344",
         "scratch-render": "0.1.0-prerelease.20201113223804",
         "scratch-storage": "1.3.3",

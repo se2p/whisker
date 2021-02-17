@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" href="whisker-gui.css"/>
     <script defer src="whisker-gui.js"></script>
+    <script src="https://unpkg.com/i18next/i18next.js"></script>
 </head>
 
 <body>
@@ -22,7 +23,7 @@
             <div style="position:absolute; top:8px; right:16px;">
                 <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <a class="nav-link active" href="index.html">Projekt hochladen</a>
+                        <a id="link" class="nav-link active" href="index.html">Projekt hochladen</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="./html/faq.html">FAQ</a>
@@ -30,8 +31,8 @@
                     <li style="padding-left:30px;">
                         <form method='get' action='' id='form_lang'>
                             <select class="lang-select" name='lang' style="font-size:12px; padding:4px; margin:9px;">
-                                <option value='en'>English</option>
-                                <option value='de'>Deutsch</option>
+                                <option value='en' >English</option>
+                                <option value='de' selected >Deutsch</option>
                             </select>
                         </form>
                     </li>
@@ -53,7 +54,7 @@
                                             <div class="col-lg-10">
                                                 <label id="fileselect-project-label" for="fileselect-project"
                                                        style="padding-bottom:7px;
-                                                padding-top:7px;">Deine Programmdatei</label>
+                                                padding-top:7px;" ></label>
                                             </div>
                                             <div class="col-lg-2">
                                                 <img src="assets/sb3.png" style="max-height:40px;" alt="sb3"/>

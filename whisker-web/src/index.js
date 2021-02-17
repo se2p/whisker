@@ -1,5 +1,7 @@
 const {$} = require('./web-libs');
 
+import i18next from 'i18next';
+
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
 
@@ -303,6 +305,40 @@ window.onbeforeunload = function () {
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
 };
+
+i18next.init({
+    lng: 'de',
+    resources: {
+        en: {
+            translation: {
+                label: 'Your program file'
+            }
+        },
+        de: {
+            translation: {
+                label: 'Deine Programmdatei'
+
+            }
+        }
+    }
+}, function (err, t) {
+    updateContent();
+}).then();
+
+i18next.on('languageChanged', () => {
+    updateContent();
+});
+
+function updateContent() {
+    document.getElementById('fileselect-project-label').innerHTML = i18next.t('label');
+}
+
+function changeLng(lng) {
+    i18next.changeLanguage(lng).then();
+}
+
+
+
 
 
 
