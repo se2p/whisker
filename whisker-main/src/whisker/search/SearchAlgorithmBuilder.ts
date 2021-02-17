@@ -212,7 +212,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 searchAlgorithm = this._buildSimpleGA();
                 break;
             case SearchAlgorithmType.NEAT:
-                searchAlgorithm = this._buildNEAT()
+                searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>
                 break;
             case SearchAlgorithmType.RANDOM:
             default:
@@ -282,10 +282,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'NEAT' search algorithm with all necessary properties.
      */
     private _buildNEAT() {
-        const searchAlgorithm: SearchAlgorithm<C> = new NEAT();
-        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
-        searchAlgorithm.setSelectionOperator(this._selectionOperator);
-
+        const searchAlgorithm = new NEAT();
+        //searchAlgorithm.setFitnessFunctions(this._fitnessFunctions as NeatChromosome);
+        //searchAlgorithm.setSelectionOperator(this._selectionOperator);
         return searchAlgorithm;
     }
 

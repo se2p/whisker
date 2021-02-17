@@ -1,19 +1,21 @@
-import {Chromosome} from '../Chromosome';
 import {List} from '../../utils/List';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {FitnessFunction} from "../FitnessFunction";
-import {StoppingCondition} from "../StoppingCondition";
-import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Selection} from "../Selection";
 import {NeatChromosome} from "../../NEAT/NeatChromosome";
 import {ConnectionGene} from "../../NEAT/ConnectionGene";
-import {NeatConfig} from "../../NEAT/NeatConfig";
 import {Species} from "../../NEAT/Species";
+import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
+import {StoppingCondition} from "../StoppingCondition";
+import {NeatConfig} from "../../NEAT/NeatConfig";
+import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
+import {FitnessFunction} from "../FitnessFunction";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {Selection} from "../Selection";
+import {NeuroevolutionTestChromosome} from "../../NEAT/NeuroevolutionTestChromosome";
+import {NeatCrossover} from "../../NEAT/NeatCrossover";
+import {NeatMutation} from "../../NEAT/NeatMutation";
 
 
-export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chromosome> {
+export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {
     private _chromosomeGenerator: ChromosomeGenerator<C>;
 
     private _properties: SearchAlgorithmProperties<C>;
@@ -34,6 +36,10 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
 
     private _fullCoverageReached = false;
 
+    private _topChromosome: C;
+
+    private _topFitness: number;
+
     private speciesList = new List<Species<C>>()
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
@@ -50,10 +56,6 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
-    setSelectionOperator(selectionOperator: Selection<C>): void {
-        this._selectionOperator = selectionOperator;
-    }
-
     getNumberOfIterations(): number {
         return this._iterations;
     }
@@ -62,8 +64,13 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         return this._bestIndividuals;
     }
 
-    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        return this._fitnessFunctions.values();
+    async evaluatePopulation(population: List<C>) : Promise<void> {
+        let counter = 0;
+        for (const chromosome of population) {
+            console.log("Evaluate chrom " + counter++)
+            const testChromosome = new NeuroevolutionTestChromosome(chromosome.connections, new NeatCrossover(), new NeatMutation());
+            await testChromosome.evaluate();
+        }
     }
 
     /**
@@ -72,12 +79,22 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        this._bestIndividuals.clear();
         this._iterations = 0;
         this._startTime = Date.now();
-        const parentPopulation = this.generatePopulation();
-        for (const chromosome of parentPopulation)
-            this.addToSpecies(chromosome);
+        let population = this.generatePopulation();
+        console.log(population)
+
+        while (!this._stoppingCondition.isFinished(this)) {
+            console.log("Iteration: " + this._iterations + " Best Fitness: " + this._topFitness)
+            await this.evaluatePopulation(population);
+            this._topChromosome = this.getTopChromosome(population);
+            //this._topFitness = this._topChromosome.fitness;
+            //this.dividePopulationIntoSpecies(population);
+            population = this.breedNewGeneration();
+            this._iterations++;
+        }
+
+
 
         //const spriteInfos = ScratchEventExtractor.extractSpriteInfo(Container.vmWrapper.vm)
         return this._bestIndividuals;
@@ -88,6 +105,61 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         while (population.size() < this._properties.getPopulationSize())
             population.add(this._chromosomeGenerator.get())
         return population;
+    }
+
+    private breedNewGeneration(): List<C> {
+        const nextGeneration = new List<C>()        // Save next Generation
+        const speciesRepresentatives = new List<Species<C>>()       // Save representatives of each species
+
+        // Remove the weak Chromosomes in each Species
+        this.killWeakChromosomesInSpecies();
+
+        // Calculate the total AdjustedFitness Value of the Population used for determining how much Chromosomes in each
+        // species are used for reproduction
+        const adjustedFitnessPopulation = this.calculateAdjustedPopulation();
+        for (const species of this.speciesList) {
+
+            // Pick random representative for this species
+            const representative = species.chromosomes.get(Math.floor(Math.random() * species.chromosomes.size()));
+            speciesRepresentatives.add(new Species<C>(representative));
+
+            // Calculate the number of Children to pick from this species
+            let numberChildren = Math.floor(this._properties.getPopulationSize() * (species.getAdjustedFitnessTotal() / adjustedFitnessPopulation))
+
+            // Elitism
+            const elites = species.getElites(NeatConfig.ELITE_RATE);
+            nextGeneration.addList(elites)
+            numberChildren -= elites.size();
+
+            // Children from mutation without Crossover
+            numberChildren *= NeatConfig.MUTATION_WITHOUT_CROSSOVER
+            for (let i = 0; i < numberChildren; i++) {
+                nextGeneration.add(species.breedChildMutationOnly())
+            }
+
+            // Children from Crossover and Mutation
+            numberChildren *= NeatConfig.MUTATION_WITHOUT_CROSSOVER - 1;
+            for (let i = 0; i < numberChildren; i++) {
+                nextGeneration.add(species.breedChildCrossoverAndMutation())
+            }
+        }
+
+        // Set Species for next Generation
+        this.speciesList = speciesRepresentatives;
+        return nextGeneration;
+    }
+
+    private killWeakChromosomesInSpecies() {
+        for (const species of this.speciesList)
+            species.removeWeakChromosomes(NeatConfig.CHROMOSOME_IN_SPECIES_EXTINCTION)
+    }
+
+    private calculateAdjustedPopulation(): number {
+        let totalFitness = 0;
+        for (const species of this.speciesList) {
+            totalFitness += species.getAdjustedFitnessTotal();
+        }
+        return totalFitness;
     }
 
     // TODO: pulbic only for testing
@@ -103,18 +175,18 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         let excess = 0;
         let weight = 0;
         let distance = 0;
-        let lowestMaxInnovation = 0;
+        let lowestMaxInnovation;
 
         // Save first connections in a Map <InnovationNumber, Connection>
         const genome1Innovations = new Map<number, ConnectionGene>()
         for (const connection of chromosome1.connections) {
-            genome1Innovations.set(connection.innovationNumber, connection)
+            genome1Innovations.set(connection.innovation, connection)
         }
 
         // Save second connections in a Map <InnovationNumber, Connection>
         const genome2Innovations = new Map<number, ConnectionGene>()
         for (const connection of chromosome2.connections) {
-            genome2Innovations.set(connection.innovationNumber, connection)
+            genome2Innovations.set(connection.innovation, connection)
         }
 
         // Get the highest innovation Number of the genome with the least gene innovationNumber
@@ -179,7 +251,25 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<Chrom
         this.speciesList.add(newSpecies);
     }
 
-    getStartTime(): number {
+    public dividePopulationIntoSpecies(population: List<C>): void {
+        for (const chromosome of population) {
+            this.addToSpecies(chromosome);
+        }
+    }
+
+    private getTopChromosome(population: List<C>): C {
+        let topChromosome = population.get(0);
+        for (const chromosome of population) {
+            if (topChromosome.fitness < chromosome.fitness) {
+                topChromosome = chromosome;
+            }
+        }
+        return topChromosome;
+    }
+
+    getStartTime()
+        :
+        number {
         return this._startTime;
     }
 }

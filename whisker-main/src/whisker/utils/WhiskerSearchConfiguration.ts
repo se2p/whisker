@@ -29,6 +29,7 @@ import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStopping
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
+import {NeatChromosomeGenerator} from "../NEAT/NeatChromosomeGenerator";
 
 class ConfigException implements Error {
     message: string;
@@ -146,6 +147,8 @@ export class WhiskerSearchConfiguration {
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
                     this.dict['init-var-length']);
+            case 'neatChromosome':
+                return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator())
 
             case 'test':
             default:

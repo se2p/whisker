@@ -78,12 +78,11 @@ export class ScratchEventExtractor {
      * @param vm the Scratch VM
      * @return Returns a 2-dim Matrix where each row presents a Sprite and the columns the information of the Sprite
      */
-    static extractSpriteInfo(vm: VirtualMachine): number[][] {
+    static extractSpriteInfo(vm: VirtualMachine): number[] {
         const spriteInfos = [];
-        let counter = 0;
         for (const target of vm.runtime.targets) {
             if (target.sprite.name !== "Stage" && target.hasOwnProperty('sprite')) {
-                spriteInfos[counter++] = this._extractInfoFromSprite(target)
+                spriteInfos.push(this._extractInfoFromSprite(target));
                 }
             }
         return spriteInfos;
@@ -272,7 +271,7 @@ export class ScratchEventExtractor {
      */
     static _extractInfoFromSprite(sprite:RenderedTarget): number[] {
         const spriteInfo = []
-        
+
         // stageWidth and stageHeight used for normalisation
         const stageWidth = sprite.renderer._nativeSize[0] / 2.;
         const stageHeight = sprite.renderer._nativeSize[1] / 2.;

@@ -13,32 +13,32 @@ import {List} from "../../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../../src/whisker/NEAT/ConnectionGene";
 
 
-describe("NEAT SearchAlgorithm", () =>{
-    let neat : SearchAlgorithm<NeatChromosome>
+describe("NEAT SearchAlgorithm", () => {
+    let neat: SearchAlgorithm<NeatChromosome>
     const populationSize = 20;
     const hiddenLayerSize = 10;
 
-    beforeEach(() =>{
+    beforeEach(() => {
         const builder: SearchAlgorithmBuilder<NeatChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         builder.addChromosomeGenerator(new NeatChromosomeGenerator(new NeatMutation(), new NeatCrossover()))
         neat = builder.buildSearchAlgorithm();
     })
 
-    test("NEAT findSolution", () =>{
+    test("NEAT findSolution", () => {
         neat.findSolution();
 
     })
 })
 
-describe("NEAT Helper Methods", () =>{
+describe("NEAT Helper Methods", () => {
 
-    let neat : SearchAlgorithm<NeatChromosome>
+    let neat: SearchAlgorithm<NeatChromosome>
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
     let parent1Connections: List<ConnectionGene>
     let parent2Connections: List<ConnectionGene>
 
-    beforeEach(() =>{
+    beforeEach(() => {
         const builder: SearchAlgorithmBuilder<NeatChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         builder.addChromosomeGenerator(new NeatChromosomeGenerator(new NeatMutation(), new NeatCrossover()))
         neat = builder.buildSearchAlgorithm();
@@ -46,12 +46,12 @@ describe("NEAT Helper Methods", () =>{
         crossoverOp = new NeatCrossover();
 
         // Create Nodes of both networks
-        const node1 = new NodeGene(NodeType.INPUT, 0)
-        const node2 = new NodeGene(NodeType.INPUT, 0)
-        const node3 = new NodeGene(NodeType.INPUT, 0)
-        const node4 = new NodeGene(NodeType.HIDDEN, 0.5)
-        const node5 = new NodeGene(NodeType.OUTPUT, 1)
-        const node6 = new NodeGene(NodeType.HIDDEN, 0.5)
+        const node1 = new NodeGene(0, NodeType.INPUT, 0)
+        const node2 = new NodeGene(1, NodeType.INPUT, 0)
+        const node3 = new NodeGene(2, NodeType.INPUT, 0)
+        const node4 = new NodeGene(3, NodeType.HIDDEN, 0.5)
+        const node5 = new NodeGene(4, NodeType.OUTPUT, 1)
+        const node6 = new NodeGene(5, NodeType.HIDDEN, 0.5)
 
 
         // Create Connections of first parent
@@ -76,9 +76,9 @@ describe("NEAT Helper Methods", () =>{
 
     })
 
-    test("Calculate Compatibility Distance", () =>{
+    test("Calculate Compatibility Distance", () => {
         const genome1 = new NeatChromosome(parent1Connections, crossoverOp, mutationOp);
-        const genome2 = new NeatChromosome(parent2Connections,crossoverOp,mutationOp)
+        const genome2 = new NeatChromosome(parent2Connections, crossoverOp, mutationOp)
         const test = new NEAT();
         test.compatibilityDistance(genome1, genome2)
     })

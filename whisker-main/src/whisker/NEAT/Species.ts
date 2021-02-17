@@ -1,5 +1,6 @@
 import {List} from "../utils/List";
 import {NeatChromosome} from "./NeatChromosome";
+import {Chromosome} from "../search/Chromosome";
 
 export class Species<C extends NeatChromosome> {
     private _chromosomes: List<C>
@@ -72,24 +73,24 @@ export class Species<C extends NeatChromosome> {
         return this.chromosomes.get(0);
     }
 
-    /**
+    /**x
      * Breed a new Child by applying mutation only
      */
-    public breedChildMutationOnly(): NeatChromosome {
+    public breedChildMutationOnly(): C {
         const parent = this.chromosomes.get(Math.floor(Math.random()) * this.chromosomes.size())
         let child = parent.clone();
         child = child.mutate();
-        return child;
+        return child as C;
     }
 
     /**
      * Breed a new Child by applying Crossover followed by Mutation
      */
-    public breedChildCrossoverAndMutation(): NeatChromosome {
+    public breedChildCrossoverAndMutation(): C {
         let child: NeatChromosome;
         if (this.chromosomes.size() < 2) {
             child = this.chromosomes.get(0).mutate();
-            return child;
+            return child as C;
         }
         const parent1 = this.chromosomes.get(Math.floor(Math.random() * this.chromosomes.size()))
         let parent2 = this.chromosomes.get(Math.floor(Math.random() * this.chromosomes.size()))
@@ -101,7 +102,7 @@ export class Species<C extends NeatChromosome> {
         // In Neat we only get one Child in the process of Crossover
         child = parent1.crossover(parent2).getFirst();
         child = child.mutate();
-        return child;
+        return child as C;
     }
 
     get chromosomes(): List<C> {

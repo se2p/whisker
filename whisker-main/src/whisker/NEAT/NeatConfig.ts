@@ -15,6 +15,8 @@ export class NeatConfig {
     public static STALE_SPECIES = 15;
     public static STALE_POPULATION = 20;
     public static MUTATION_WITHOUT_CROSSOVER = 0.25;
+    public static CHROMOSOME_IN_SPECIES_EXTINCTION = 0.2;
+    public static ELITE_RATE = 0.2;
 
 
     // Mutation Rates

@@ -193,6 +193,7 @@ export class NeatChromosome extends Chromosome {
 
         // activate output Nodes and push to output Array
         const outputNodes = this._nodes.get(NeatConfig.MAX_HIDDEN_LAYERS)
+        const outputValues = new List<number>();
         for (const outputNode of outputNodes) {
             let nodeSum = 0;
             for (const connection of outputNode.inputConnections) {
@@ -200,7 +201,13 @@ export class NeatChromosome extends Chromosome {
                     nodeSum += this.findNode(this._nodes, connection.from).value * connection.weight;
                 }
             }
-            outputNode.value = NeatChromosome.sigmoid(nodeSum);
+            outputNode.value = nodeSum;
+            outputValues.add(nodeSum);
+        }
+
+        // Use softmax for multiclass Classification
+        for(const outputNode of outputNodes) {
+            outputNode.value = NeatChromosome.softmax(outputNode.value, outputValues);
             output.push(outputNode.value)
         }
 
@@ -214,6 +221,13 @@ export class NeatChromosome extends Chromosome {
      */
     private static sigmoid(x: number): number {
         return (1 / (1 + Math.exp(-4.9 * x)));
+    }
+
+    private static softmax(x: number, v:List<number>) : number{
+        let denominator = 0;
+        for(const num of v)
+            denominator += Math.exp(num);
+        return Math.exp(x) / denominator;
     }
 
     public numberOfNodes(): number {

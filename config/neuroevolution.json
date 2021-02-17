@@ -1,15 +1,15 @@
 {
     "test-generator": "neuroevolution",
     "algorithm": "neat",
-    "chromosome": "variablelengthtest",
+    "chromosome": "neatChromosome",
     "population-size": 10,
     "chromosome-length": 20,
     "crossover": {
-        "operator": "singlepointrelative",
+        "operator": "neatCrossover",
         "probability": 0.8
     },
     "mutation": {
-        "operator": "variablelength",
+        "operator": "neatMutation",
         "probability": 1,
         "maxMutationCountStart": null,
         "maxMutationCountFocusedPhase": null
@@ -25,12 +25,8 @@
         "targets": []
     },
     "stopping-condition": {
-        "type": "one-of",
-        "conditions": [
-            {
-                "type": "optimal"
-            }
-        ]
+        "type": "fixed-iteration",
+        "iterations": 500
     },
     "archive": {
         "maxArchiveSizeStart": null,
