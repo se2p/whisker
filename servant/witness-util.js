@@ -41,7 +41,9 @@ function prependLines(string, linePrefix) {
 }
 
 function codeForAssignmentMockFunction(mockFunction, mockName) {
-    return `const ${mockFunction} = target => ${mockName}[target.sprite.name].values[${mockName}[target.sprite.name].index++];`;
+    return `const ${mockFunction} = target => {\n`
+        + `${indentation}const mock = ${mockName}.assignments.find(m => m.actor === target.sprite.name);\n`
+        + `${indentation}return mock.assigns[mock.index++];\n};`;
 }
 
 function codeForIfElse(condition, ifPart, elsePart) {
@@ -100,7 +102,7 @@ function mockBlock(blockName, mock) {
 
     switch (name) {
         case scratchBlockNames.randomBetween:
-            code += `const ${mockFunction} = () => ${mockName}.values[${mockName}.index++];\n`;
+            code += `const ${mockFunction} = () => ${mockName}.returns[${mockName}.index++];\n`;
             code += `${primitivesArrayPrefix}['${name}'] = () => ${mockFunction}();\n`
             break;
         case scratchBlockNames.goToRandomPosition:
@@ -120,8 +122,9 @@ function codeForInitializingMocks(mocks) {
 
     if (mocks) {
         code += `// Initializing mocks\n`;
-        for (const mockName of Object.keys(mocks)) {
-            code += `${mockBlock(mockName, mocks[mockName])}\n`;
+        for (const mock of mocks) {
+            const mockName = mock.forFunction;
+            code += `${mockBlock(mockName, mock)}\n`;
         }
     }
 
