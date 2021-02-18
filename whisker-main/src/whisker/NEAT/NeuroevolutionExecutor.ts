@@ -55,7 +55,8 @@ export class NeuroevolutionExecutor {
                 continue;
             }
             let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
-            inputs = [].concat(inputs);
+            // eslint-disable-next-line prefer-spread
+            inputs = [].concat.apply([], inputs);
             const output = network.activateNetwork(inputs);
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)

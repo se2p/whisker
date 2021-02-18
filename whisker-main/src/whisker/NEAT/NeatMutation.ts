@@ -31,7 +31,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const fromList = new List<NodeGene>();
         const toList = new List<NodeGene>();
         // Collect all possible node from which and to which a connection is possible
-        chromosome.nodes.forEach(((value, key) => {
+        chromosome.layerMap.forEach(((value, key) => {
             // Exclude connections from outputNodes
             if (key < NeatConfig.MAX_HIDDEN_LAYERS)
                 fromList.addList(value);
@@ -66,11 +66,11 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // Rewire the Network with the new Node
         const fromNode = splitConnection.from;
         const toNode = splitConnection.to;
-        const newNode = new NodeGene(chromosome.numberOfNodes(), NodeType.HIDDEN, 0);
+        const newNode = new NodeGene(chromosome.allNodes.size(), NodeType.HIDDEN);
 
         // Restrict the network to mutate over MAX_HIDDEN_LAYERS layers
-        const fromNodeLayer = chromosome.findLayerOfNode(chromosome.nodes, fromNode)
-        const toNodeLayer = chromosome.findLayerOfNode(chromosome.nodes, toNode)
+        const fromNodeLayer = chromosome.findLayerOfNode(chromosome.layerMap, fromNode)
+        const toNodeLayer = chromosome.findLayerOfNode(chromosome.layerMap, toNode)
         if (fromNodeLayer + toNodeLayer >= NeatConfig.MAX_HIDDEN_LAYERS * 2 - 1) {
             return;
         }
@@ -86,7 +86,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
             NeatMutation.TEMP_INNOVATION_NUMBER);
         this.assignInnovationNumber(outConnection);
         connections.add(outConnection)
-        toNode.inputConnections.add(outConnection)
+        toNode.incomingConnections.add(outConnection)
     }
 
     mutateWeight(chromosome: NeatChromosome): void {

@@ -10,8 +10,6 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {Selection} from "../Selection";
-import {NeatCrossover} from "../../NEAT/NeatCrossover";
-import {NeatMutation} from "../../NEAT/NeatMutation";
 import {NeuroevolutionExecutor} from "../../NEAT/NeuroevolutionExecutor";
 import {Container} from "../../utils/Container";
 
@@ -94,13 +92,8 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             console.log("Iteration: " + this._iterations + " Best Fitness: " + this._topFitness)
             await this.evaluatePopulation(population);
             this.calculateFitness(population);
-            this._topChromosome = this.getTopChromosome(population);
-            console.log(this._topChromosome);
-            this._topFitness = this._topChromosome.fitness;
-            this.dividePopulationIntoSpecies(population);
-            console.log(this.speciesList)
-            population = this.breedNewGeneration();
-            population.add(this._topChromosome.clone() as C)
+            population = this.breedNewGeneration(population);
+            console.log(population)
             this._iterations++;
         }
 
@@ -121,7 +114,11 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         }
     }
 
-    private breedNewGeneration(): List<C> {
+    private breedNewGeneration(population:List<C>): List<C> {
+
+        // divide population into species
+        this.dividePopulationIntoSpecies(population)
+
         const nextGeneration = new List<C>()        // Save next Generation
         const speciesRepresentatives = new List<Species<C>>()       // Save representatives of each species
 

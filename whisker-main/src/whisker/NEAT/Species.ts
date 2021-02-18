@@ -94,13 +94,13 @@ export class Species<C extends NeatChromosome> {
         }
         const parent1 = this.chromosomes.get(Math.floor(Math.random() * this.chromosomes.size()))
         let parent2 = this.chromosomes.get(Math.floor(Math.random() * this.chromosomes.size()))
-        const test = Math.floor(Math.random() * this.chromosomes.size())
         // Pick a new second parent if by chance the same parent has been selected
         while (parent2.equals(parent1))
             parent2 = this.chromosomes.get(Math.floor(Math.random() * this.chromosomes.size()))
 
         // In Neat we only get one Child in the process of Crossover
-        child = parent1.crossover(parent2).getFirst();
+        child = parent1.clone();
+        child = child.crossover(parent2).getFirst();
         child = child.mutate();
         return child as C;
     }

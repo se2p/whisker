@@ -1,7 +1,6 @@
 import {Crossover} from "../search/Crossover";
 import {NeatChromosome} from "./NeatChromosome";
 import {Pair} from "../utils/Pair";
-import {NeatMutation} from "./NeatMutation";
 import {ConnectionGene} from "./ConnectionGene";
 import {List} from "../utils/List";
 

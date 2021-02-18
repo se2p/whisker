@@ -10,7 +10,7 @@ export class ConnectionGene {
     private _weight: number;
     private _enabled: boolean;
     private _innovation;
-    private static innovationCounter = (NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS; // +1 for Bias-Node
+    private static innovationCounter = NeatConfig.INPUT_NEURONS * NeatConfig.OUTPUT_NEURONS;
 
     constructor(from: NodeGene, to: NodeGene, weight: number, enabled: boolean, innovation: number) {
         this._from = from;
@@ -69,7 +69,7 @@ export class ConnectionGene {
     }
 
     static resetInnovationCounter(): void {
-        ConnectionGene.innovationCounter = (NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS;
+        ConnectionGene.innovationCounter = NeatConfig.INPUT_NEURONS * NeatConfig.OUTPUT_NEURONS;
     }
 
     /**

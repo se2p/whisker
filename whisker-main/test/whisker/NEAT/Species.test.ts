@@ -7,17 +7,22 @@ import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {List} from "../../../src/whisker/utils/List";
 import {Species} from "../../../src/whisker/NEAT/Species";
 
+
 describe("Species Test", () => {
 
     let generator: NeatChromosomeGenerator;
     let mutationOp: Mutation<NeatChromosome>
     let crossoverOp: Crossover<NeatChromosome>
     let population: List<NeatChromosome>
+    let inputSize: number;
+    let outputSize: number;
 
     beforeEach(() => {
         mutationOp = new NeatMutation();
         crossoverOp = new NeatCrossover();
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp);
+        inputSize = 3;
+        outputSize = 4;
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize);
         population = new List<NeatChromosome>();
         while (population.size() < 10)
             population.add(generator.get())

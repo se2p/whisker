@@ -7,6 +7,8 @@ import {NodeGene} from "./NodeGene";
 import {NodeType} from "./NodeType";
 import {ConnectionGene} from "./ConnectionGene";
 import {NeatConfig} from "./NeatConfig";
+import {NeatCrossover} from "./NeatCrossover";
+import {NeatMutation} from "./NeatMutation";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
@@ -48,11 +50,16 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         }
 
 
-        // Create connections between the input and output nodes with random weights and random enable state
+        const neatChromosome = NeatChromosomeGenerator.createConnections(inputList, outputList);
+        neatChromosome.fitness = 0;
+        return neatChromosome;
+    }
+
+    static createConnections(inputNodes:List<NodeGene>, outputNodes:List<NodeGene>) : NeatChromosome{
         const connections = new List<ConnectionGene>();
         let counter = 1;
-        for (const inputNode of inputList) {
-            for (const outputNode of outputList) {
+        for (const inputNode of inputNodes) {
+            for (const outputNode of outputNodes) {
                 // Do not connect the Bias Node
                 if (inputNode.type !== NodeType.BIAS) {
                     connections.add(new ConnectionGene(inputNode, outputNode, Math.random(), Math.random() < 0.6, counter))
@@ -60,7 +67,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
                 }
             }
         }
-        const neatChromosome = new NeatChromosome(connections, inputList, outputList, this._crossoverOp, this._mutationOp);
+        const neatChromosome = new NeatChromosome(connections, inputNodes, outputNodes, new NeatCrossover(), new NeatMutation());
         neatChromosome.fitness = 0;
         return neatChromosome;
     }

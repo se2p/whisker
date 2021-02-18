@@ -29,6 +29,7 @@ import {NeatConfig} from "./NeatConfig";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {ActivationFunctions} from "./ActivationFunctions";
+import {NeatChromosomeGenerator} from "./NeatChromosomeGenerator";
 
 /**
  * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
@@ -83,8 +84,7 @@ export class NeatChromosome extends Chromosome {
         for (const outputNode of this.outputNodes)
             copyOutputNodes.add(outputNode.clone());
 
-        return new NeatChromosome(copyConnections, copyInputNodes, copyOutputNodes,
-            this.getCrossoverOperator(), this.getMutationOperator());
+        return NeatChromosomeGenerator.createConnections(copyInputNodes, copyOutputNodes);
     }
 
     /**
@@ -120,18 +120,19 @@ export class NeatChromosome extends Chromosome {
 
         // Add the hidden Nodes
         for (const connection of this._connections) {
-            if (!this._allNodes.contains(connection.from)) {
+            if (!this.containsNode(connection.from)) {
                 const layer = this.findLayerOfNode(this._layerMap, connection.to) - 1
                 this._layerMap = this.insertNodeToLayer(this._layerMap, connection.from, layer)
                 this._allNodes.add(connection.from);
             }
-            if (!this._allNodes.contains(connection.to)) {
+            if (!this.containsNode(connection.to)){
                 const layer = this.findLayerOfNode(this._layerMap, connection.from) + 1
                 this._layerMap = this.insertNodeToLayer(this._layerMap, connection.to, layer)
                 this._allNodes.add(connection.to);
             }
             // add the connection to the list of input connections of the node
-            connection.to.incomingConnections.add(connection)
+            if(!connection.to.incomingConnections.contains(connection))
+                connection.to.incomingConnections.add(connection)
         }
     }
 
@@ -209,6 +210,13 @@ export class NeatChromosome extends Chromosome {
                 return false;
         }
         return true;
+    }
+
+    containsNode(node:NodeGene):boolean{
+        for(const n of this.allNodes)
+            if(n.equals(node))
+                return true
+        return false;
     }
 
     insertNodeToLayer(map: Map<number, List<NodeGene>>, target: NodeGene, layer: number):

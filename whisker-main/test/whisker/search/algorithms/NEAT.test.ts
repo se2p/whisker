@@ -12,7 +12,7 @@ import {NodeType} from "../../../../src/whisker/NEAT/NodeType";
 import {List} from "../../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../../src/whisker/NEAT/ConnectionGene";
 
-
+/*
 describe("NEAT SearchAlgorithm", () => {
     let neat: SearchAlgorithm<NeatChromosome>
     const populationSize = 20;
@@ -83,3 +83,6 @@ describe("NEAT Helper Methods", () => {
         test.compatibilityDistance(genome1, genome2)
     })
 })
+
+
+ */
