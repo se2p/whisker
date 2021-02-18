@@ -30,6 +30,8 @@ import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/Opt
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
 import {NeatChromosomeGenerator} from "../NEAT/NeatChromosomeGenerator";
+import {NeatMutation} from "../NEAT/NeatMutation";
+import {NeatCrossover} from "../NEAT/NeatCrossover";
 
 class ConfigException implements Error {
     message: string;
@@ -106,6 +108,8 @@ export class WhiskerSearchConfiguration {
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['alpha']);
+            case'neatMutation':
+                return new NeatMutation();
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
@@ -116,6 +120,8 @@ export class WhiskerSearchConfiguration {
         switch (this.dict['crossover']['operator']) {
             case 'singlepointrelative':
                 return new SinglePointRelativeCrossover();
+            case 'neatCrossover':
+                return new NeatCrossover();
             case 'singlepoint':
             default:
                 return new SinglePointCrossover();
@@ -165,6 +171,8 @@ export class WhiskerSearchConfiguration {
                 return FitnessFunctionType.STATEMENT;
             case 'one-max':
                 return FitnessFunctionType.ONE_MAX;
+            case 'time-played':
+                return FitnessFunctionType.TIME_PLAYED;
             case 'single-bit':
             default:
                 return FitnessFunctionType.SINGLE_BIT;
@@ -210,7 +218,7 @@ export class WhiskerSearchConfiguration {
             return new IterativeSearchBasedTestGenerator(this);
         } else if (this.dict['test-generator'] == 'many-objective') {
             return new ManyObjectiveTestGenerator(this);
-        } else if(this.dict['test-generator'] == 'neuroevolution'){
+        } else if (this.dict['test-generator'] == 'neuroevolution') {
             return new NeuroevolutionTestGenerator(this);
         }
 

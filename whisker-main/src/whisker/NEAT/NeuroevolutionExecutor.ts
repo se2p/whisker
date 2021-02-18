@@ -3,13 +3,13 @@ import {List} from "../utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "../testcase/ScratchEvent";
 import {EventObserver} from "../testcase/EventObserver";
-import {NeuroevolutionTestChromosome} from "./NeuroevolutionTestChromosome";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
 import {seedScratch} from "../../util/random"
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
+import {NeatChromosome} from "./NeatChromosome";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -21,6 +21,7 @@ export class NeuroevolutionExecutor {
     private eventObservers: EventObserver[] = [];
     private _initialState = {};
     private _projectRunning
+    private initialRunStop;
 
     constructor(vmWrapper: VMWrapper) {
         this._vmWrapper = vmWrapper;
@@ -28,7 +29,7 @@ export class NeuroevolutionExecutor {
         this.recordInitialState();
     }
 
-    async executeTests(networks: List<NeuroevolutionTestChromosome>): Promise<void> {
+    async executeTests(networks: List<NeatChromosome>): Promise<void> {
         for (const network of networks) {
             if (network.trace == null) {
                 await this.execute(network);
@@ -36,33 +37,33 @@ export class NeuroevolutionExecutor {
         }
     }
 
-    async execute(network: NeuroevolutionTestChromosome): Promise<ExecutionTrace> {
+    async execute(network: NeatChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
-        let paramCount = 0;
         let steps = 0;
         seedScratch(String(Randomness.getInitialSeed()))
         this._vmWrapper.start();
+        this.initialRunStop = this._vm._events.PROJECT_RUN_STOP;
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         network.generateNetwork();
-        const _onRunStop = this.projectStopped.bind(this);
 
         while (this._projectRunning) {
-            this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
-            const inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
+            let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
+            // eslint-disable-next-line prefer-spread
+            inputs = [].concat.apply([], inputs);
             const output = network.activateNetwork(inputs);
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
-            const args = this._getArgs(nextEvent, new List<number>(output), paramCount)
-            events.add([nextEvent, args]);
-            paramCount += nextEvent.getNumParameters() + 1;
-            this.notify(nextEvent, args);
+            events.add([nextEvent, [1]]);
+            this.notify(nextEvent, [1]);
 
-            await nextEvent.apply(this._vm, args)
+            await nextEvent.apply(this._vm, [1])
             StatisticsCollector.getInstance().incrementEventsCount();
 
             const waitEvent = new WaitEvent();
@@ -70,9 +71,9 @@ export class NeuroevolutionExecutor {
             await waitEvent.apply(this._vm);
             steps++;
         }
-
+        network.successScore = steps;
         await new WaitEvent().apply(this._vm);
-
+        this._vm._events.PROJECT_RUN_STOP = this.initialRunStop;
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         this._vmWrapper.end();
         this.resetState();
@@ -158,6 +159,7 @@ export class NeuroevolutionExecutor {
             this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
             this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
             this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
+            this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop']
         }
     }
 }

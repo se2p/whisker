@@ -45,6 +45,7 @@ import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
 import {NeatChromosome} from "../NEAT/NeatChromosome";
+import {TimePlayedFitness} from "../NEAT/TimePlayedFitness";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -167,6 +168,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case FitnessFunctionType.STATEMENT:
                 this._initializeStatementFitness(length, targets);
                 break;
+            case FitnessFunctionType.TIME_PLAYED:
+                this._initializeTimePlayedFitness();
         }
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
@@ -282,9 +285,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * A helper method that builds the 'NEAT' search algorithm with all necessary properties.
      */
     private _buildNEAT() {
-        const searchAlgorithm = new NEAT();
-        //searchAlgorithm.setFitnessFunctions(this._fitnessFunctions as NeatChromosome);
-        //searchAlgorithm.setSelectionOperator(this._selectionOperator);
+        const searchAlgorithm: SearchAlgorithm<C> = new NEAT() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunction(this._fitnessFunction);
         return searchAlgorithm;
     }
 
@@ -325,6 +327,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }
+    }
+
+    private _initializeTimePlayedFitness() {
+        this._fitnessFunction = new TimePlayedFitness() as unknown as FitnessFunction<C>;
     }
 
 

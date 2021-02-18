@@ -10,7 +10,6 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {Selection} from "../Selection";
-import {NeuroevolutionTestChromosome} from "../../NEAT/NeuroevolutionTestChromosome";
 import {NeatCrossover} from "../../NEAT/NeatCrossover";
 import {NeatMutation} from "../../NEAT/NeatMutation";
 
@@ -20,7 +19,9 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     private _properties: SearchAlgorithmProperties<C>;
 
-    private _fitnessFunctions: Map<number, FitnessFunction<C>>;
+    private _fitnessFunctions: List<FitnessFunction<C>>;
+
+    private _fitnessFunction: FitnessFunction<C>;
 
     private _stoppingCondition: StoppingCondition<C>;
 
@@ -51,9 +52,11 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
-    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
-        this._fitnessFunctions = fitnessFunctions;
-        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    setFitnessFunction(fitnessFunction: FitnessFunction<NeatChromosome>) {
+        StatisticsCollector.getInstance().fitnessFunctionCount = 1;
+        this._fitnessFunction = fitnessFunction;
+        this._fitnessFunctions = new List<FitnessFunction<C>>();
+        this._fitnessFunctions.add(fitnessFunction);
     }
 
     getNumberOfIterations(): number {
@@ -64,12 +67,9 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         return this._bestIndividuals;
     }
 
-    async evaluatePopulation(population: List<C>) : Promise<void> {
-        let counter = 0;
+    async evaluatePopulation(population: List<C>): Promise<void> {
         for (const chromosome of population) {
-            console.log("Evaluate chrom " + counter++)
-            const testChromosome = new NeuroevolutionTestChromosome(chromosome.connections, new NeatCrossover(), new NeatMutation());
-            await testChromosome.evaluate();
+            await chromosome.evaluate();
         }
     }
 
@@ -82,21 +82,22 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         this._iterations = 0;
         this._startTime = Date.now();
         let population = this.generatePopulation();
-        console.log(population)
 
         while (!this._stoppingCondition.isFinished(this)) {
             console.log("Iteration: " + this._iterations + " Best Fitness: " + this._topFitness)
             await this.evaluatePopulation(population);
+            this.calculateFitness(population);
             this._topChromosome = this.getTopChromosome(population);
-            //this._topFitness = this._topChromosome.fitness;
-            //this.dividePopulationIntoSpecies(population);
+            console.log(this._topChromosome);
+            this._topFitness = this._topChromosome.fitness;
+            this.dividePopulationIntoSpecies(population);
+            console.log(this.speciesList)
             population = this.breedNewGeneration();
+            population.add(this._topChromosome.clone() as C)
             this._iterations++;
         }
 
-
-
-        //const spriteInfos = ScratchEventExtractor.extractSpriteInfo(Container.vmWrapper.vm)
+        this._bestIndividuals.add(this._topChromosome);
         return this._bestIndividuals;
     }
 
@@ -105,6 +106,12 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         while (population.size() < this._properties.getPopulationSize())
             population.add(this._chromosomeGenerator.get())
         return population;
+    }
+
+    private calculateFitness(population: List<C>): void {
+        for (const chromosome of population) {
+            chromosome.fitness = this._fitnessFunction.getFitness(chromosome);
+        }
     }
 
     private breedNewGeneration(): List<C> {
@@ -267,9 +274,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         return topChromosome;
     }
 
-    getStartTime()
-        :
-        number {
+    getStartTime(): number {
         return this._startTime;
     }
 }

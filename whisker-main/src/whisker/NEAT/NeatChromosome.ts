@@ -26,13 +26,21 @@ import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 import {NodeType} from "./NodeType";
 import {NeatConfig} from "./NeatConfig";
+import {NeuroevolutionExecutor} from "./NeuroevolutionExecutor";
+import {Container} from "../utils/Container";
+import {FitnessFunction} from "../search/FitnessFunction";
+import {ExecutionTrace} from "../testcase/ExecutionTrace";
+import {seedScratch} from "../../util/random";
+import {Randomness} from "../utils/Randomness";
+import {ActivationFunctions} from "./ActivationFunctions";
 
 /**
  * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
  */
 export class NeatChromosome extends Chromosome {
-
     private _nodes = new Map<number, List<NodeGene>>();          // Map <Layer | Nodes>
+    private _trace: ExecutionTrace;
+    private _successScore: number;
     private _connections: List<ConnectionGene>
     private readonly _crossoverOp: Crossover<NeatChromosome>
     private readonly _mutationOp: Mutation<NeatChromosome>
@@ -55,6 +63,7 @@ export class NeatChromosome extends Chromosome {
         this._mutationOp = mutationOp;
         this._inputSize = NeatConfig.INPUT_NEURONS;
         this._outputSize = NeatConfig.OUTPUT_NEURONS;
+        this._trace = null;
     }
 
     /**
@@ -186,7 +195,7 @@ export class NeatChromosome extends Chromosome {
                             nodeSum += this.findNode(this._nodes, connection.from).value * connection.weight
                         }
                     }
-                    hiddenNode.value = NeatChromosome.sigmoid(nodeSum);
+                    hiddenNode.value = ActivationFunctions.sigmoid(nodeSum);
                 }
             }
         }
@@ -206,28 +215,12 @@ export class NeatChromosome extends Chromosome {
         }
 
         // Use softmax for multiclass Classification
-        for(const outputNode of outputNodes) {
-            outputNode.value = NeatChromosome.softmax(outputNode.value, outputValues);
+        for (const outputNode of outputNodes) {
+            outputNode.value = ActivationFunctions.softmax(outputNode.value, outputValues);
             output.push(outputNode.value)
         }
 
         return output;
-    }
-
-    /**
-     * Modified Sigmoid function proposed by the paper
-     * @param x the value the sigmoid function should be applied to
-     * @private
-     */
-    private static sigmoid(x: number): number {
-        return (1 / (1 + Math.exp(-4.9 * x)));
-    }
-
-    private static softmax(x: number, v:List<number>) : number{
-        let denominator = 0;
-        for(const num of v)
-            denominator += Math.exp(num);
-        return Math.exp(x) / denominator;
     }
 
     public numberOfNodes(): number {
@@ -236,6 +229,24 @@ export class NeatChromosome extends Chromosome {
             nodeCount += layers.size();
         }
         return nodeCount;
+    }
+
+    async evaluate(): Promise<void> {
+        const executor = new NeuroevolutionExecutor(Container.vmWrapper);
+        await executor.execute(this);
+    }
+
+    getFitness(fitnessFunction: FitnessFunction<this>): number {
+        const fitness = fitnessFunction.getFitness(this);
+        return fitness;
+    }
+
+    get trace(): ExecutionTrace {
+        return this._trace;
+    }
+
+    set trace(value: ExecutionTrace) {
+        this._trace = value;
     }
 
     // Used for Testing
@@ -278,6 +289,14 @@ export class NeatChromosome extends Chromosome {
 
     set connections(value: List<ConnectionGene>) {
         this._connections = value;
+    }
+
+    get successScore(): number {
+        return this._successScore;
+    }
+
+    set successScore(value: number) {
+        this._successScore = value;
     }
 
     toString(): string {

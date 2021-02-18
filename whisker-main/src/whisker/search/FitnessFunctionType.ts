@@ -35,5 +35,10 @@ export enum FitnessFunctionType {
     /**
      * Value for 'Statement' fitness.
      */
-    STATEMENT
+    STATEMENT,
+
+    /**
+     * Value for 'Time Played' fitness.
+     */
+    TIME_PLAYED
 }

@@ -70,7 +70,6 @@ export abstract class Chromosome {
     }
 
     async evaluate(): Promise<void> {
-        console.log("Evaluate")
         // No-op
     }
 

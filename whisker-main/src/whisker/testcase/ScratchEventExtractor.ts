@@ -83,8 +83,8 @@ export class ScratchEventExtractor {
         for (const target of vm.runtime.targets) {
             if (target.sprite.name !== "Stage" && target.hasOwnProperty('sprite')) {
                 spriteInfos.push(this._extractInfoFromSprite(target));
-                }
             }
+        }
         return spriteInfos;
     }
 
@@ -269,17 +269,18 @@ export class ScratchEventExtractor {
      * @param sprite the sprite from which information is gathered
      * @return 1-dim vector containing the information of the sprite
      */
-    static _extractInfoFromSprite(sprite:RenderedTarget): number[] {
+    static _extractInfoFromSprite(sprite: RenderedTarget): number[] {
         const spriteInfo = []
 
         // stageWidth and stageHeight used for normalisation
         const stageWidth = sprite.renderer._nativeSize[0] / 2.;
         const stageHeight = sprite.renderer._nativeSize[1] / 2.;
-        spriteInfo[0] = sprite.x / stageWidth;
-        spriteInfo[1] = sprite.y / stageHeight;
-        spriteInfo[2] = sprite.getBounds().width / stageWidth;
-        spriteInfo[3] = sprite.getBounds().height / stageHeight;
-        spriteInfo[4] = sprite.visible ? 1: -1;
+        spriteInfo.push(sprite.x / stageWidth);
+        spriteInfo.push(sprite.y / stageHeight);
+        //spriteInfo[1] = sprite.y / stageHeight;
+        //spriteInfo[2] = sprite.getBounds().width / stageWidth;
+        //spriteInfo[3] = sprite.getBounds().height / stageHeight;
+        //spriteInfo[4] = sprite.visible ? 1: -1;
         return spriteInfo;
     }
 
@@ -287,7 +288,7 @@ export class ScratchEventExtractor {
      * Extracts the Stage
      * @param stage
      */
-    static _extractInfoFromStage(stage): number[]{
+    static _extractInfoFromStage(stage): number[] {
         const stageInfo = []
         stageInfo[1] = 2;
         return stageInfo;
