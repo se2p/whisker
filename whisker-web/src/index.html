@@ -11,7 +11,6 @@
 
     <link rel="stylesheet" href="whisker-gui.css"/>
     <script defer src="whisker-gui.js"></script>
-    <script src="https://unpkg.com/i18next/i18next.js"></script>
 </head>
 
 <body>
@@ -30,10 +29,13 @@
                     </li>
                     <li style="padding-left:30px;">
                         <form method='get' action='' id='form_lang'>
-                            <select class="lang-select" name='lang' style="font-size:12px; padding:4px; margin:9px;">
-                                <option value='en' >English</option>
-                                <option value='de' selected >Deutsch</option>
-                            </select>
+                            <label>
+                                <select class="lang-select" name='lang' style="font-size:12px; padding:4px;
+                                margin:9px;">
+                                    <option value='de' selected >Deutsch</option>
+                                    <option value='en' >English</option>
+                                </select>
+                            </label>
                         </form>
                     </li>
                 </ul>
@@ -414,9 +416,5 @@
             </div>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-i18next/0.0.14/i18next-jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/i18next/2.0.22/i18next.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.js"></script>
 </body>
 </html>

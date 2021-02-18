@@ -1,6 +1,8 @@
 const {$} = require('./web-libs');
 
 import i18next from 'i18next';
+const indexDE = require('./locales/de/index.json');
+const indexEN = require('./locales/en/index.json');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
@@ -268,6 +270,12 @@ const initEvents = function () {
                 },
             );
         });
+
+    $('.lang-select').on('change', () => {
+        const lng = $('.lang-select').val();
+        i18next.changeLanguage(lng).then(updateContent());
+    });
+
 };
 
 const toggleComponents = function () {
@@ -308,34 +316,30 @@ window.onbeforeunload = function () {
 
 i18next.init({
     lng: 'de',
+    fallbackLng: 'de',
+    debug: true,
+    ns: ['index'],
+    defaultNS: 'index',
+    interpolation: {
+        escapeValue: false,
+    },
     resources: {
         en: {
-            translation: {
-                label: 'Your program file'
-            }
+            index: indexEN
         },
         de: {
-            translation: {
-                label: 'Deine Programmdatei'
-
-            }
+            index: indexDE
         }
     }
 }, function (err, t) {
     updateContent();
 }).then();
 
-i18next.on('languageChanged', () => {
-    updateContent();
-});
-
 function updateContent() {
-    document.getElementById('fileselect-project-label').innerHTML = i18next.t('label');
+    document.getElementById('fileselect-project-label').innerHTML = i18next.t('program');
 }
 
-function changeLng(lng) {
-    i18next.changeLanguage(lng).then();
-}
+
 
 
 
