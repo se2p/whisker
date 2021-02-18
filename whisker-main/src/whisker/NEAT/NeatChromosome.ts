@@ -94,6 +94,7 @@ export class NeatChromosome extends Chromosome {
     cloneWith(newGenes: List<ConnectionGene>): NeatChromosome {
         const clone = this.clone();
         clone.connections = newGenes;
+        this.generateNetwork();
         return clone;
     }
 

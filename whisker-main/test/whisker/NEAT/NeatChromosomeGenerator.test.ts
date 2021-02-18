@@ -1,29 +1,27 @@
 import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
 import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
-import {NeatConfig} from "../../../src/whisker/NEAT/NeatConfig";
 
 describe('NeatChromosomeGenerator', () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
     let generator: NeatChromosomeGenerator
+    let inputSize: number
+    let outputSize: number
 
     beforeEach(() => {
         mutationOp = new NeatMutation();
         crossoverOp = new NeatCrossover();
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp);
+        inputSize = 10;
+        outputSize = 7;
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize);
     })
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
-        // add +1 to the input Nodes due to the Bias Node
-        const nodes = neatChromosome.nodes.values()
-        let nodeCounter = 0;
-        for (const nodeList of nodes)
-            nodeCounter += nodeList.size();
-        expect(nodeCounter).toBe(NeatConfig.INPUT_NEURONS + 1 + NeatConfig.OUTPUT_NEURONS)
-        expect(neatChromosome.connections.size()).toBe((NeatConfig.INPUT_NEURONS + 1) * NeatConfig.OUTPUT_NEURONS)
+        expect(neatChromosome.allNodes.size()).toBe(inputSize + 1 + outputSize) // +1 for Bias
+        expect(neatChromosome.connections.size()).toBe(inputSize * outputSize)
     })
 
     test('Create two random Chromosome and compare innovationNumbers', () => {

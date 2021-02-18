@@ -61,7 +61,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         }
         newConnections.sort((a, b) => a.innovation - b.innovation)
         // In Neat only one offspring is created in crossover => ignore second part of the pair
-        return new Pair<NeatChromosome>(new NeatChromosome(newConnections, new NeatCrossover(), new NeatMutation()), null);
+        return new Pair<NeatChromosome>(parent1.cloneWith(newConnections), null);
     }
 
     applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {
