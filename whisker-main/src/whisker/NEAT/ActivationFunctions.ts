@@ -1,6 +1,3 @@
-import {List} from "../utils/List";
-
-
 export class ActivationFunctions {
     /**
      * Modified Sigmoid function proposed by the paper
@@ -11,7 +8,7 @@ export class ActivationFunctions {
         return (1 / (1 + Math.exp(-4.9 * x)));
     }
 
-    public static softmax(x: number, v: List<number>): number {
+    public static softmax(x: number, v: number[]): number {
         let denominator = 0;
         for (const num of v)
             denominator += Math.exp(num);

@@ -15,7 +15,7 @@ export class TimePlayedFitness implements FitnessFunction<NeatChromosome> {
     }
 
     isOptimal(fitnessValue: number): boolean {
-        return fitnessValue === 1;
+        return fitnessValue === 600;
     }
 
 }

@@ -19,11 +19,12 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private _outputSize: number;
 
-    constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>) {
+    constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, numInputNodes: number,
+                numOutputNodes: number) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
-        this.inputSize = NeatConfig.INPUT_NEURONS;
-        this.outputSize = NeatConfig.OUTPUT_NEURONS;
+        this.inputSize = numInputNodes;
+        this.outputSize = numOutputNodes;
     }
 
     /**
@@ -32,35 +33,34 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * @ returns: A random initial Neat Phenotype
      */
     get(): NeatChromosome {
-        const nodes = new Map<number, List<NodeGene>>()
         NodeGene._idCounter = 0;
         // Create the Input Nodes and add them to the nodes list
         const inputList = new List<NodeGene>()
         for (let i = 0; i < this._inputSize; i++) {
-            inputList.add(new NodeGene(i, NodeType.INPUT, 0))
+            inputList.add(new NodeGene(i, NodeType.INPUT))
         }
-        inputList.add(new NodeGene(NeatConfig.INPUT_NEURONS, NodeType.BIAS, 1))      // Bias
-        nodes.set(0, inputList);
+        inputList.add(new NodeGene(inputList.size(), NodeType.BIAS))    // Bias
 
         // Create the Output Nodes and add them to the nodes list
         const outputList = new List<NodeGene>()
         for (let i = 0; i < this._outputSize; i++) {
-            outputList.add(new NodeGene(inputList.size() + i, NodeType.OUTPUT, 0))
+            outputList.add(new NodeGene(inputList.size() + i, NodeType.OUTPUT))
         }
-        nodes.set(NeatConfig.MAX_HIDDEN_LAYERS, outputList)
 
 
         // Create connections between the input and output nodes with random weights and random enable state
         const connections = new List<ConnectionGene>();
         let counter = 1;
-        for (const inputNode of nodes.get(0)) {
-            for (const outputNode of nodes.get(NeatConfig.MAX_HIDDEN_LAYERS)) {
-                connections.add(new ConnectionGene(inputNode, outputNode, Math.random(), Math.random() < 0.8, counter))
-                counter++;
+        for (const inputNode of inputList) {
+            for (const outputNode of outputList) {
+                // Do not connect the Bias Node
+                if (inputNode.type !== NodeType.BIAS) {
+                    connections.add(new ConnectionGene(inputNode, outputNode, Math.random(), Math.random() < 0.6, counter))
+                    counter++;
+                }
             }
         }
-        const neatChromosome = new NeatChromosome(connections, this._crossoverOp, this._mutationOp);
-        neatChromosome.nodes = nodes;
+        const neatChromosome = new NeatChromosome(connections, inputList, outputList, this._crossoverOp, this._mutationOp);
         neatChromosome.fitness = 0;
         return neatChromosome;
     }

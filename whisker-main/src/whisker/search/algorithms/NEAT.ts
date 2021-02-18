@@ -12,6 +12,8 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {Selection} from "../Selection";
 import {NeatCrossover} from "../../NEAT/NeatCrossover";
 import {NeatMutation} from "../../NEAT/NeatMutation";
+import {NeuroevolutionExecutor} from "../../NEAT/NeuroevolutionExecutor";
+import {Container} from "../../utils/Container";
 
 
 export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {
@@ -69,8 +71,13 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     async evaluatePopulation(population: List<C>): Promise<void> {
         for (const chromosome of population) {
-            await chromosome.evaluate();
+            await this.evaluate(chromosome);
         }
+    }
+
+    async evaluate(chromosome: NeatChromosome): Promise<void> {
+        const executor = new NeuroevolutionExecutor(Container.vmWrapper);
+        await executor.execute(chromosome);
     }
 
     /**

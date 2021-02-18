@@ -26,54 +26,65 @@ import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 import {NodeType} from "./NodeType";
 import {NeatConfig} from "./NeatConfig";
-import {NeuroevolutionExecutor} from "./NeuroevolutionExecutor";
-import {Container} from "../utils/Container";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
-import {seedScratch} from "../../util/random";
-import {Randomness} from "../utils/Randomness";
 import {ActivationFunctions} from "./ActivationFunctions";
 
 /**
  * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
  */
 export class NeatChromosome extends Chromosome {
-    private _nodes = new Map<number, List<NodeGene>>();          // Map <Layer | Nodes>
-    private _trace: ExecutionTrace;
-    private _successScore: number;
+    private _inputNodes = new List<NodeGene>();
+    private _outputNodes = new List<NodeGene>();
+    private _allNodes = new List<NodeGene>()
+    private _layerMap = new Map<number, List<NodeGene>>();          // Map <Layer | Nodes>
     private _connections: List<ConnectionGene>
     private readonly _crossoverOp: Crossover<NeatChromosome>
     private readonly _mutationOp: Mutation<NeatChromosome>
+    private _trace: ExecutionTrace;
+    private _successScore: number;
     private _fitness: number
-    private _inputSize: number;
-    private _outputSize: number;
     private _adjustedFitness: number    // Fitness value in relation to the species the Chromosome is assigned to
 
     /**
      * Constructs a new NeatChromosome
      * @param connections the connections between the Nodes
+     * @param inputNodes all input Nodes of this network
+     * @param outputNodes all output Nodes of this network
      * @param crossoverOp the crossover Operator
      * @param mutationOp the mutation Operator
      */
-    constructor(connections: List<ConnectionGene>,
+    constructor(connections: List<ConnectionGene>, inputNodes: List<NodeGene>, outputNodes: List<NodeGene>,
                 crossoverOp: Crossover<NeatChromosome>, mutationOp: Mutation<NeatChromosome>) {
         super();
         this._connections = connections;
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
-        this._inputSize = NeatConfig.INPUT_NEURONS;
-        this._outputSize = NeatConfig.OUTPUT_NEURONS;
+        this._inputNodes = inputNodes;
+        this._outputNodes = outputNodes;
+        this.allNodes.addList(inputNodes);
+        this.allNodes.addList(outputNodes);
         this._trace = null;
     }
 
     /**
-     * Deep clone of a NeatChromosome
+     * Deep clone of a NeatChromosome (what a rhyme)
      */
     clone(): NeatChromosome {
         const copyConnections = new List<ConnectionGene>();
         for (const connection of this.connections)
             copyConnections.add(connection.copy());
-        return new NeatChromosome(copyConnections, this.getCrossoverOperator(), this.getMutationOperator());
+
+        const copyInputNodes = new List<NodeGene>();
+        for (const inputNode of this.inputNodes)
+            copyInputNodes.add(inputNode.clone());
+
+        const copyOutputNodes = new List<NodeGene>();
+        for (const outputNode of this.outputNodes)
+            copyOutputNodes.add(outputNode.clone());
+
+        return new NeatChromosome(copyConnections, copyInputNodes, copyOutputNodes,
+            this.getCrossoverOperator(), this.getMutationOperator());
     }
 
     /**
@@ -81,7 +92,9 @@ export class NeatChromosome extends Chromosome {
      * @param newGenes the genes the network should be initialised with
      */
     cloneWith(newGenes: List<ConnectionGene>): NeatChromosome {
-        return new NeatChromosome(newGenes.clone(), this.getCrossoverOperator(), this.getMutationOperator());
+        const clone = this.clone();
+        clone.connections = newGenes;
+        return clone;
     }
 
     /**
@@ -100,41 +113,108 @@ export class NeatChromosome extends Chromosome {
     }
 
     generateNetwork(): void {
-        this._nodes.clear();
-        NodeGene._idCounter = 0;
-        // Create the Input Nodes and add them to the nodes list
-        const inputList = new List<NodeGene>()
-        for (let i = 0; i < this._inputSize; i++) {
-            inputList.add(new NodeGene(i, NodeType.INPUT, 0))
-        }
-        inputList.add(new NodeGene(this._inputSize, NodeType.BIAS, 1))      // Bias
-        this._nodes.set(0, inputList);
-
-        // Create the Output Nodes and add them to the nodes list
-        const outputList = new List<NodeGene>()
-        for (let i = 0; i < this._outputSize; i++) {
-            outputList.add(new NodeGene(inputList.size() + i, NodeType.OUTPUT, 0))
-        }
-        this._nodes.set(NeatConfig.MAX_HIDDEN_LAYERS, outputList)
+        // Set the input and output Nodes
+        this._layerMap.set(0, this._inputNodes);
+        this._layerMap.set(NeatConfig.MAX_HIDDEN_LAYERS, this._outputNodes)
 
         // Add the hidden Nodes
         for (const connection of this._connections) {
-            if (this.findLayerOfNode(this._nodes, connection.from) < 0 && connection.from.type !== NodeType.OUTPUT) {
-                const layer = this.findLayerOfNode(this._nodes, connection.to) - 1
-                this._nodes = this.insertNodeToLayer(this._nodes, new NodeGene(this.numberOfNodes(), NodeType.HIDDEN, 0), layer)
+            if (!this._allNodes.contains(connection.from)) {
+                const layer = this.findLayerOfNode(this._layerMap, connection.to) - 1
+                this._layerMap = this.insertNodeToLayer(this._layerMap, connection.from, layer)
+                this._allNodes.add(connection.from);
             }
-            if (this.findLayerOfNode(this._nodes, connection.to) < 0 && connection.to.type !== NodeType.OUTPUT) {
-                const layer = this.findLayerOfNode(this._nodes, connection.from) + 1
-                this._nodes = this.insertNodeToLayer(this._nodes, new NodeGene(this.numberOfNodes(), NodeType.HIDDEN, 0), layer)
+            if (!this._allNodes.contains(connection.to)) {
+                const layer = this.findLayerOfNode(this._layerMap, connection.from) + 1
+                this._layerMap = this.insertNodeToLayer(this._layerMap, connection.to, layer)
+                this._allNodes.add(connection.to);
             }
             // add the connection to the list of input connections of the node
-            this.findNode(this._nodes, connection.to).inputConnections.add(connection)
+            connection.to.incomingConnections.add(connection)
         }
     }
 
-    insertNodeToLayer(map: Map<number, List<NodeGene>>, target: NodeGene, layer: number): Map<number, List<NodeGene>> {
+    activateNetwork(inputs: number[]): number[] {
+        const output = []
+        let activatedOnce = false;
+        let abortCount = 0;  // Used if we have created a network which has not one path from input to output Node
+        this.generateNetwork();
+
+        for (let i = 0; i < inputs.length; i++) {
+            // Input Nodes have no activation function -> the activationValue is the same as the nodeValue
+            const inputNode = this.inputNodes.get(i);
+            inputNode.activationValue = inputs[i];
+            inputNode.nodeValue = inputs[i];
+        }
+
+        while (!activatedOnce || !this.isOutputActivated()) {
+
+            abortCount++;
+            if (abortCount >= 50) {
+                console.error("Defect Network detected")
+                return null;
+            }
+
+            // For each node, compute the sum of its incoming activation
+            for (const layer of this._layerMap.keys()) {
+                for (const node of this._layerMap.get(layer)) {
+                    if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
+                        // reset activation value and activation flag
+                        node.nodeValue = 0;
+                        node.activatedFlag = false;
+
+                        for (const connection of node.incomingConnections) {
+                            node.nodeValue += connection.weight * connection.from.getActivationValue();
+                            if (connection.from.activatedFlag || connection.from.type === NodeType.INPUT || connection.from.type === NodeType.BIAS)
+                                node.activatedFlag = true;
+                        }
+                    }
+                }
+            }
+
+            for (const layer of this._layerMap.keys()) {
+                for (const node of this._layerMap.get(layer)) {
+                    if (node.type === NodeType.HIDDEN) {
+                        // Only activate the node if it received an input from the layer before
+                        if (node.activatedFlag) {
+                            node.activationValue = ActivationFunctions.sigmoid(node.nodeValue);
+                            node.activationCount++;
+                        }
+                    } else if (node.type === NodeType.OUTPUT) {
+                        const softMaxVector: number[] = []
+                        for (const outputNode of this.outputNodes)
+                            softMaxVector.push(outputNode.nodeValue)
+                        // Only activate the node if it received an input from the layer before
+                        if (node.activatedFlag) {
+                            node.activationValue = ActivationFunctions.softmax(node.nodeValue, softMaxVector);
+                            node.activationCount++;
+                            output.push(node.activationValue)
+                        }
+                    }
+                }
+            }
+            activatedOnce = true;
+        }
+
+        return output;
+    }
+
+    /**
+     * Checks if each output Node has been activated at least once
+     */
+    isOutputActivated(): boolean {
+        for (const outputNode of this.outputNodes) {
+            if (outputNode.activationCount == 0)
+                return false;
+        }
+        return true;
+    }
+
+    insertNodeToLayer(map: Map<number, List<NodeGene>>, target: NodeGene, layer: number):
+        Map<number, List<NodeGene>> {
         // if element already in List do nothing
-        if (this.findLayerOfNode(map, target) > 0)
+        if (this.findLayerOfNode(map, target) > 0
+        )
             return map;
 
         if (map.get(layer) === undefined) {
@@ -145,10 +225,11 @@ export class NeatChromosome extends Chromosome {
             const layerList = map.get(layer);
             layerList.add(target)
         }
-        return this.sortMapByKeys(map)
+        return new Map([...map].sort((a, b) => a[0] - b[0]));
     }
 
-    findLayerOfNode(map: Map<number, List<NodeGene>>, target: NodeGene): number {
+    findLayerOfNode(map: Map<number, List<NodeGene>>, target: NodeGene):
+        number {
         for (const [key, value] of map) {
             for (const node of value) {
                 if (node.equals(target))
@@ -158,156 +239,126 @@ export class NeatChromosome extends Chromosome {
         return -1;
     }
 
-    findNode(map: Map<number, List<NodeGene>>, target: NodeGene): NodeGene {
-        for (const value of map.values()) {
-            for (const node of value) {
-                if (node.equals(target))
-                    return node;
-            }
-        }
-        return undefined;
-    }
-
-    sortMapByKeys(map: Map<number, List<NodeGene>>): Map<number, List<NodeGene>> {
-        return new Map([...map].sort((a, b) => a[0] - b[0]));
-    }
-
-    activateNetwork(inputs: number[]): number[] {
-        const output = []
-        this.generateNetwork();
-
-        // Set the values of the input nodes to the given input
-        let i = 0;
-        for (const inputNode of this._nodes.get(0)) {
-            if (inputNode.type === NodeType.INPUT)
-                inputNode.value = inputs[i++]
-        }
-
-        // TODO: recurrent calculus
-        // activate hidden Layers in order => FeedForward Network
-        for (let i = 1; i < NeatConfig.MAX_HIDDEN_LAYERS; i++) {
-            let nodeSum = 0
-            const layer = this._nodes.get(i);
-            if (layer !== undefined) {
-                for (const hiddenNode of layer) {
-                    for (const connection of hiddenNode.inputConnections) {
-                        if (connection.enabled) {
-                            nodeSum += this.findNode(this._nodes, connection.from).value * connection.weight
-                        }
-                    }
-                    hiddenNode.value = ActivationFunctions.sigmoid(nodeSum);
-                }
-            }
-        }
-
-        // activate output Nodes and push to output Array
-        const outputNodes = this._nodes.get(NeatConfig.MAX_HIDDEN_LAYERS)
-        const outputValues = new List<number>();
-        for (const outputNode of outputNodes) {
-            let nodeSum = 0;
-            for (const connection of outputNode.inputConnections) {
-                if (connection.enabled) {
-                    nodeSum += this.findNode(this._nodes, connection.from).value * connection.weight;
-                }
-            }
-            outputNode.value = nodeSum;
-            outputValues.add(nodeSum);
-        }
-
-        // Use softmax for multiclass Classification
-        for (const outputNode of outputNodes) {
-            outputNode.value = ActivationFunctions.softmax(outputNode.value, outputValues);
-            output.push(outputNode.value)
-        }
-
-        return output;
-    }
-
-    public numberOfNodes(): number {
-        let nodeCount = 0;
-        for (const layers of this.nodes.values()) {
-            nodeCount += layers.size();
-        }
-        return nodeCount;
-    }
-
-    async evaluate(): Promise<void> {
-        const executor = new NeuroevolutionExecutor(Container.vmWrapper);
-        await executor.execute(this);
-    }
-
-    getFitness(fitnessFunction: FitnessFunction<this>): number {
+    getFitness(fitnessFunction: FitnessFunction<this>):
+        number {
         const fitness = fitnessFunction.getFitness(this);
         return fitness;
     }
 
-    get trace(): ExecutionTrace {
+
+    get layerMap(): Map<number, List<NodeGene>> {
+        return this._layerMap;
+    }
+
+    set layerMap(value: Map<number, List<NodeGene>>) {
+        this._layerMap = value;
+    }
+
+    get inputNodes(): List<NodeGene> {
+        return this._inputNodes;
+    }
+
+    set inputNodes(value: List<NodeGene>) {
+        this._inputNodes = value;
+    }
+
+    get outputNodes(): List<NodeGene> {
+        return this._outputNodes;
+    }
+
+    set outputNodes(value: List<NodeGene>) {
+        this._outputNodes = value;
+    }
+
+    get allNodes(): List<NodeGene> {
+        return this._allNodes;
+    }
+
+    set allNodes(value
+                     :
+                     List<NodeGene>
+    ) {
+        this._allNodes = value;
+    }
+
+    get trace()
+        :
+        ExecutionTrace {
         return this._trace;
     }
 
-    set trace(value: ExecutionTrace) {
+    set trace(value
+                  :
+                  ExecutionTrace
+    ) {
         this._trace = value;
     }
 
-    // Used for Testing
-    set inputSize(value: number) {
-        this._inputSize = value;
-    }
-
-    // Used for Testing
-    set outputSize(value: number) {
-        this._outputSize = value;
-    }
-
-    get fitness(): number {
-        return this._fitness;
-    }
-
-    set fitness(value: number) {
-        this._fitness = value;
-    }
-
-    get nodes(): Map<number, List<NodeGene>> {
-        return this._nodes;
-    }
-
-    set nodes(value: Map<number, List<NodeGene>>) {
-        this._nodes = value;
-    }
-
-    get adjustedFitness(): number {
-        return this._adjustedFitness;
-    }
-
-    set adjustedFitness(value: number) {
-        this._adjustedFitness = value;
-    }
-
-    get connections(): List<ConnectionGene> {
-        return this._connections;
-    }
-
-    set connections(value: List<ConnectionGene>) {
-        this._connections = value;
-    }
-
-    get successScore(): number {
+    get successScore()
+        :
+        number {
         return this._successScore;
     }
 
-    set successScore(value: number) {
+    set successScore(value
+                         :
+                         number
+    ) {
         this._successScore = value;
     }
 
-    toString(): string {
-        let nodeString = "";
-        for (const nodes of this.nodes.values()) {
-            nodeString += nodes
-        }
-        return "Genome:\nNodeGenes: " + nodeString + "\nConnectionGenes: " + this._connections;
+    get connections()
+        :
+        List<ConnectionGene> {
+        return this._connections;
     }
 
-    public equals(other: unknown): boolean {
+    set connections(value
+                        :
+                        List<ConnectionGene>
+    ) {
+        this._connections = value;
+    }
+
+    get fitness()
+        :
+        number {
+        return this._fitness;
+    }
+
+    set fitness(value
+                    :
+                    number
+    ) {
+        this._fitness = value;
+    }
+
+    get adjustedFitness()
+        :
+        number {
+        return this._adjustedFitness;
+    }
+
+    set adjustedFitness(value
+                            :
+                            number
+    ) {
+        this._adjustedFitness = value;
+    }
+
+    toString()
+        :
+        string {
+        return "Genome:\nNodeGenes: " + this.allNodes + "\nConnectionGenes: " + this._connections;
+    }
+
+    public
+
+    equals(other
+               :
+               unknown
+    ):
+        boolean {
         if (!(other instanceof NeatChromosome)) return false;
         return this.connections === other.connections;
     }
