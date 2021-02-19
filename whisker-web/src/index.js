@@ -6,6 +6,9 @@ const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
 const faqDE = require('./locales/de/faq.json');
 const faqEN = require('./locales/en/faq.json');
+const contactDE = require('./locales/de/contact.json');
+const contactEN = require('./locales/en/contact.json');
+
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
@@ -325,7 +328,7 @@ i18next
     lng: 'de',
     fallbackLng: 'de',
     debug: true,
-    ns: ['index', 'faq'],
+    ns: ['index', 'faq', 'contact'],
     defaultNS: 'index',
     interpolation: {
         escapeValue: false,
@@ -333,11 +336,13 @@ i18next
     resources: {
         de: {
             index: indexDE,
-            faq: faqDE
+            faq: faqDE,
+            contact: contactDE
         },
         en: {
             index: indexEN,
-            faq: faqEN
+            faq: faqEN,
+            contact: contactEN
         }
     }
 }, function (err, t) {

@@ -12,7 +12,7 @@
     "female" : "female",
     "diverse" : "other",
     "noInfo" : "no information",
-    "topic" : "Subject",
+    "sbj" : "Subject",
     "msg" : "Message",
     "submit" : "Send message"
 }

@@ -12,7 +12,7 @@
     "female" : "weiblich",
     "diverse" : "divers",
     "noInfo" : "keine Angabe",
-    "topic" : "Betreff",
+    "sbj" : "Betreff",
     "msg" : "Nachricht",
     "submit" : "Nachricht absenden"
 }
