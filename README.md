@@ -62,7 +62,8 @@ Options:
                                       false)
   -t, --testPath <Path>               Tests to run (default: false)
   -a, --accelerationFactor <Integer>  Acceleration factor (default: 1)
-  -v, --csvFile <Path>                Name of CSV File to put output into (default: false)
+  -v, --csvFile <Path>                Name of CSV File to put output into, requires scratchPath to point to
+                                      a directory (default: false)
   -c, --configPath <Path>             Path to a configuration file (default:
                                       "../whisker-main/config/default.json")
   -d, --isHeadless                    If should run headless (d like in decapitated)
