@@ -53,7 +53,7 @@ async function init () {
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
                     logger.info("Not a Scratch project: "+file);
-                    next;
+                    continue;
                 }
                 logger.info("Testing project "+file);
                 csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
