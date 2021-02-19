@@ -6,10 +6,10 @@ export class NeatConfig {
     public static OUTPUT_NEURONS = 2;
 
     // Compatibility Distance
-    public static EXCESS_COEFFICIENT = 4.5
-    public static DISJOINT_COEFFICIENT = 4.5
-    public static WEIGHT_COEFFICIENT = 0.9
-    public static DISTANCE_THRESHOLD = 1.9;
+    public static EXCESS_COEFFICIENT = 5
+    public static DISJOINT_COEFFICIENT = 5
+    public static WEIGHT_COEFFICIENT = 0.8
+    public static DISTANCE_THRESHOLD = 2;
 
     // Population Management
     public static STALE_SPECIES = 15;
@@ -20,9 +20,9 @@ export class NeatConfig {
 
 
     // Mutation Rates
-    public static MUTATE_WEIGHT_NETWORK_LEVEL = 0.8;
+    public static MUTATE_WEIGHT_NETWORK_LEVEL = 0.2;
     public static MUTATE_WEIGHT_UNIFORMLY = 0.9;
-    public static MUTATE_ADD_CONNECTION = 0.4;
-    public static MUTATE_CONNECTION_STATE = 0.5;
-    public static MUTATE_ADD_NODE = 0.2;
+    public static MUTATE_ADD_CONNECTION = 0.2;
+    public static MUTATE_CONNECTION_STATE = 0.3;
+    public static MUTATE_ADD_NODE = 0.1;
 }

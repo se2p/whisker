@@ -21,7 +21,6 @@ export class NeuroevolutionExecutor {
     private eventObservers: EventObserver[] = [];
     private _initialState = {};
     private _projectRunning
-    private initialRunStop;
 
     constructor(vmWrapper: VMWrapper) {
         this._vmWrapper = vmWrapper;
@@ -39,25 +38,28 @@ export class NeuroevolutionExecutor {
 
     async execute(network: NeatChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
-        let steps = 0;
+        network.generateNetwork();
+        network.flushNodeValues();
         seedScratch(String(Randomness.getInitialSeed()))
-        this._vmWrapper.start();
-        this.initialRunStop = this._vm._events.PROJECT_RUN_STOP;
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
-        network.generateNetwork();
-
+        this._vmWrapper.start();
+        const start = Date.now();
         while (this._projectRunning) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
+
             let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
             const output = network.activateNetwork(inputs);
+            if(output === null){
+                continue;
+            }
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
             events.add([nextEvent, [1]]);
@@ -69,13 +71,14 @@ export class NeuroevolutionExecutor {
             const waitEvent = new WaitEvent();
             events.add([waitEvent, []])
             await waitEvent.apply(this._vm);
-            steps++;
         }
-        network.successScore = steps;
-        await new WaitEvent().apply(this._vm);
-        this._vm._events.PROJECT_RUN_STOP = this.initialRunStop;
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        const end = Math.round((Date.now()-start)/100);
+        // round due to small variances in runtime
+        network.timePlayed = end;
+        //await new WaitEvent().apply(this._vm);
         this._vmWrapper.end();
+        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this.resetState();
         return network.trace;
     }

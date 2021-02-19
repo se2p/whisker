@@ -29,7 +29,6 @@ import {NeatConfig} from "./NeatConfig";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {ActivationFunctions} from "./ActivationFunctions";
-import {NeatChromosomeGenerator} from "./NeatChromosomeGenerator";
 
 /**
  * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
@@ -43,7 +42,7 @@ export class NeatChromosome extends Chromosome {
     private readonly _crossoverOp: Crossover<NeatChromosome>
     private readonly _mutationOp: Mutation<NeatChromosome>
     private _trace: ExecutionTrace;
-    private _successScore: number;
+    private _timePlayed: number;
     private _fitness: number
     private _adjustedFitness: number    // Fitness value in relation to the species the Chromosome is assigned to
 
@@ -72,19 +71,29 @@ export class NeatChromosome extends Chromosome {
      * Deep clone of a NeatChromosome (what a rhyme)
      */
     clone(): NeatChromosome {
-        const copyConnections = new List<ConnectionGene>();
-        for (const connection of this.connections)
-            copyConnections.add(connection.copy());
+        const cloneConnections = new List<ConnectionGene>();
+        const cloneInputNodes = new List<NodeGene>();
+        const cloneOutputNodes = new List<NodeGene>();
+        const cloneAllNodes = new List<NodeGene>();
 
-        const copyInputNodes = new List<NodeGene>();
-        for (const inputNode of this.inputNodes)
-            copyInputNodes.add(inputNode.clone());
-
-        const copyOutputNodes = new List<NodeGene>();
-        for (const outputNode of this.outputNodes)
-            copyOutputNodes.add(outputNode.clone());
-
-        return NeatChromosomeGenerator.createConnections(copyInputNodes, copyOutputNodes);
+        for (const node of this._allNodes) {
+            const nodeClone = node.clone();
+            cloneAllNodes.add(nodeClone);
+            if (nodeClone.type === NodeType.INPUT || nodeClone.type === NodeType.BIAS)
+                cloneInputNodes.add(nodeClone);
+            if (nodeClone.type === NodeType.OUTPUT)
+                cloneOutputNodes.add(nodeClone);
+        }
+        for (const originalConnection of this._connections) {
+            const fromNode = this.searchNode(originalConnection.from, cloneAllNodes);
+            const toNode = this.searchNode(originalConnection.to, cloneAllNodes);
+            cloneConnections.add(originalConnection.copyWithNodes(fromNode, toNode));
+        }
+        const chromosomeClone = new NeatChromosome(cloneConnections, cloneInputNodes, cloneOutputNodes, this._crossoverOp, this._mutationOp);
+        chromosomeClone.fitness = this.fitness;
+        chromosomeClone.timePlayed = this.timePlayed;
+        chromosomeClone.generateNetwork();
+        return chromosomeClone;
     }
 
     /**
@@ -125,13 +134,13 @@ export class NeatChromosome extends Chromosome {
                 this._layerMap = this.insertNodeToLayer(this._layerMap, connection.from, layer)
                 this._allNodes.add(connection.from);
             }
-            if (!this.containsNode(connection.to)){
+            if (!this.containsNode(connection.to)) {
                 const layer = this.findLayerOfNode(this._layerMap, connection.from) + 1
                 this._layerMap = this.insertNodeToLayer(this._layerMap, connection.to, layer)
                 this._allNodes.add(connection.to);
             }
             // add the connection to the list of input connections of the node
-            if(!connection.to.incomingConnections.contains(connection))
+            if (!connection.to.incomingConnections.contains(connection))
                 connection.to.incomingConnections.add(connection)
         }
     }
@@ -154,6 +163,7 @@ export class NeatChromosome extends Chromosome {
             abortCount++;
             if (abortCount >= 50) {
                 console.error("Defect Network detected")
+                console.log(this)
                 return null;
             }
 
@@ -166,7 +176,8 @@ export class NeatChromosome extends Chromosome {
                         node.activatedFlag = false;
 
                         for (const connection of node.incomingConnections) {
-                            node.nodeValue += connection.weight * connection.from.getActivationValue();
+                            if (connection.enabled)
+                                node.nodeValue += connection.weight * connection.from.getActivationValue();
                             if (connection.from.activatedFlag || connection.from.type === NodeType.INPUT || connection.from.type === NodeType.BIAS)
                                 node.activatedFlag = true;
                         }
@@ -212,9 +223,32 @@ export class NeatChromosome extends Chromosome {
         return true;
     }
 
-    containsNode(node:NodeGene):boolean{
-        for(const n of this.allNodes)
-            if(n.equals(node))
+    flushNodeValues(): void {
+        for (const node of this.allNodes) {
+            if (node.type === NodeType.HIDDEN || node.type === NodeType.OUTPUT) {
+                node.activationValue = 0;
+                node.activationCount = 0;
+            }
+        }
+    }
+
+    containsNode(node: NodeGene): boolean {
+        for (const n of this.allNodes)
+            if (n.equals(node))
+                return true
+        return false;
+    }
+
+    searchNode(node: NodeGene, allNodes: List<NodeGene>): NodeGene {
+        for (const n of allNodes)
+            if (n.equals(node))
+                return n;
+        return null;
+    }
+
+    containsConnection(connection: ConnectionGene, connections: List<ConnectionGene>): boolean {
+        for (const c of connections)
+            if (c.equalsByNodes(connection))
                 return true
         return false;
     }
@@ -283,90 +317,59 @@ export class NeatChromosome extends Chromosome {
         return this._allNodes;
     }
 
-    set allNodes(value
-                     :
-                     List<NodeGene>
+    set allNodes(value: List<NodeGene>
     ) {
         this._allNodes = value;
     }
 
-    get trace()
-        :
-        ExecutionTrace {
+    get trace(): ExecutionTrace {
         return this._trace;
     }
 
-    set trace(value
-                  :
-                  ExecutionTrace
+    set trace(value: ExecutionTrace
     ) {
         this._trace = value;
     }
 
-    get successScore()
-        :
-        number {
-        return this._successScore;
+    get timePlayed(): number {
+        return this._timePlayed;
     }
 
-    set successScore(value
-                         :
-                         number
-    ) {
-        this._successScore = value;
+    set timePlayed(value: number) {
+        this._timePlayed = value;
     }
 
-    get connections()
-        :
-        List<ConnectionGene> {
+    get connections(): List<ConnectionGene> {
         return this._connections;
     }
 
-    set connections(value
-                        :
-                        List<ConnectionGene>
-    ) {
+    set connections(value: List<ConnectionGene>) {
         this._connections = value;
     }
 
-    get fitness()
-        :
-        number {
+    get fitness(): number {
         return this._fitness;
     }
 
-    set fitness(value
-                    :
-                    number
-    ) {
+    set fitness(value: number) {
         this._fitness = value;
     }
 
-    get adjustedFitness()
-        :
-        number {
+    get adjustedFitness(): number {
         return this._adjustedFitness;
     }
 
-    set adjustedFitness(value
-                            :
-                            number
-    ) {
+    set adjustedFitness(value: number) {
         this._adjustedFitness = value;
     }
 
-    toString()
-        :
-        string {
+    toString(): string {
         return "Genome:\nNodeGenes: " + this.allNodes + "\nConnectionGenes: " + this._connections;
     }
 
     public
 
-    equals(other
-               :
-               unknown
-    ):
+    equals(other: unknown):
         boolean {
         if (!(other instanceof NeatChromosome)) return false;
         return this.connections === other.connections;

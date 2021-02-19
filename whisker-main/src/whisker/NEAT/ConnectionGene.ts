@@ -24,6 +24,10 @@ export class ConnectionGene {
         return new ConnectionGene(this.from.clone(), this.to.clone(), this.weight, this.enabled, this.innovation)
     }
 
+    public copyWithNodes(from: NodeGene, to: NodeGene){
+        return new ConnectionGene(from, to, this.weight, this.enabled, this.innovation)
+    }
+
     get from(): NodeGene {
         return this._from;
     }

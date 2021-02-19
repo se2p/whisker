@@ -87,13 +87,17 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         this._iterations = 0;
         this._startTime = Date.now();
         let population = this.generatePopulation();
+        let topScorer = population.get(0);
 
         while (!this._stoppingCondition.isFinished(this)) {
-            console.log("Iteration: " + this._iterations + " Best Fitness: " + this._topFitness)
+            console.log("Iteration: " + this._iterations + " Best Fitness: " + topScorer.fitness)
             await this.evaluatePopulation(population);
             this.calculateFitness(population);
-            population = this.breedNewGeneration(population);
-            console.log(population)
+            topScorer = this.getTopChromosome(population) as C
+            console.log(topScorer)
+            this.dividePopulationIntoSpecies(population)
+            console.log(this.speciesList)
+            population = this.breedNewGeneration();
             this._iterations++;
         }
 
@@ -114,10 +118,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         }
     }
 
-    private breedNewGeneration(population:List<C>): List<C> {
-
-        // divide population into species
-        this.dividePopulationIntoSpecies(population)
+    private breedNewGeneration(): List<C> {
 
         const nextGeneration = new List<C>()        // Save next Generation
         const speciesRepresentatives = new List<Species<C>>()       // Save representatives of each species
@@ -139,7 +140,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
             // Elitism
             const elites = species.getElites(NeatConfig.ELITE_RATE);
-            nextGeneration.addList(elites)
+            nextGeneration.addList(elites as List<C>)
             numberChildren -= elites.size();
 
             // Children from mutation without Crossover

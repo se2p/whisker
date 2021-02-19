@@ -1,6 +1,5 @@
 import {List} from "../utils/List";
 import {NeatChromosome} from "./NeatChromosome";
-import {Chromosome} from "../search/Chromosome";
 
 export class Species<C extends NeatChromosome> {
     private _chromosomes: List<C>
@@ -60,7 +59,7 @@ export class Species<C extends NeatChromosome> {
         const numberElites = Math.floor(eliteRate * this.chromosomes.size());
         this.sortChromosomes();
         for (let i = 0; i < numberElites; i++) {
-            elites.add(this.chromosomes.get(i))
+            elites.add(this.chromosomes.get(i).clone() as C)
         }
         return elites;
     }

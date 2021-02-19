@@ -156,4 +156,108 @@ describe('NeatChromosome', () => {
         expect(Math.round(outputSum)).toBe(1)
     })
 
+    test("Clone Test without hidden Layer", () => {
+        chromosome.generateNetwork();
+        const clone = chromosome.clone();
+        expect(clone.connections.size()).toBe(chromosome.connections.size())
+        expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
+        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
+        expect(clone.timePlayed).toBe(chromosome.timePlayed)
+        expect(clone.fitness).toBe(chromosome.fitness)
+    })
+
+    test("Clone Test with hidden Layer", () => {
+        // Create input Nodes
+        const inputNodes = new List<NodeGene>()
+        inputNodes.add(new NodeGene(0, NodeType.INPUT))
+        inputNodes.add(new NodeGene(1, NodeType.INPUT))
+        inputNodes.add(new NodeGene(2, NodeType.BIAS))
+
+        // Create output Nodes
+        const outputNodes = new List<NodeGene>()
+        outputNodes.add(new NodeGene(3, NodeType.OUTPUT))
+        outputNodes.add(new NodeGene(4, NodeType.OUTPUT))
+
+        const hiddenNode = new NodeGene(5, NodeType.HIDDEN)
+        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN)
+
+        // Create Connections
+        const connections = new List<ConnectionGene>();
+        connections.add(new ConnectionGene(inputNodes.get(0), outputNodes.get(0), 0.2, true, 1))
+        connections.add(new ConnectionGene(inputNodes.get(0), outputNodes.get(1), 0.5, false, 2))
+        connections.add(new ConnectionGene(inputNodes.get(1), outputNodes.get(0), 0.2, false, 3))
+        connections.add(new ConnectionGene(inputNodes.get(1), outputNodes.get(1), 1, true, 4))
+        connections.add(new ConnectionGene(inputNodes.get(2), outputNodes.get(0), 0.2, true, 5))
+        connections.add(new ConnectionGene(inputNodes.get(2), outputNodes.get(1), 0.7, true, 6))
+        connections.add(new ConnectionGene(inputNodes.get(0), hiddenNode, 0.3, true, 7));
+        connections.add(new ConnectionGene(hiddenNode, outputNodes.get(0), 0.7, true, 8));
+        connections.add(new ConnectionGene(hiddenNode, deepHiddenNode, 0.3, true, 9));
+        connections.add(new ConnectionGene(deepHiddenNode, hiddenNode, 1, true, 10));
+        connections.add(new ConnectionGene(deepHiddenNode, outputNodes.get(1), 1, true, 11))
+
+
+        chromosome = new NeatChromosome(connections, inputNodes, outputNodes, crossoverOp, mutationOp)
+        chromosome.generateNetwork();
+        const clone = chromosome.clone();
+        expect(clone.connections.size()).toBe(chromosome.connections.size())
+        expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
+        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
+        expect(clone.timePlayed).toBe(chromosome.timePlayed)
+        expect(clone.fitness).toBe(chromosome.fitness)
+    })
+
+    test("Clone with gene Test without hidden Layer", () => {
+        chromosome.generateNetwork();
+        const clone = chromosome.cloneWith(chromosome.connections);
+        expect(clone.connections.size()).toBe(chromosome.connections.size())
+        expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
+        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
+        expect(clone.timePlayed).toBe(chromosome.timePlayed)
+        expect(clone.fitness).toBe(chromosome.fitness)
+    })
+
+    test("Clone with gene Test with hidden Layer", () => {
+        // Create input Nodes
+        const inputNodes = new List<NodeGene>()
+        inputNodes.add(new NodeGene(0, NodeType.INPUT))
+        inputNodes.add(new NodeGene(1, NodeType.INPUT))
+        inputNodes.add(new NodeGene(2, NodeType.BIAS))
+
+        // Create output Nodes
+        const outputNodes = new List<NodeGene>()
+        outputNodes.add(new NodeGene(3, NodeType.OUTPUT))
+        outputNodes.add(new NodeGene(4, NodeType.OUTPUT))
+
+        const hiddenNode = new NodeGene(5, NodeType.HIDDEN)
+        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN)
+
+        // Create Connections
+        const connections = new List<ConnectionGene>();
+        connections.add(new ConnectionGene(inputNodes.get(0), outputNodes.get(0), 0.2, true, 1))
+        connections.add(new ConnectionGene(inputNodes.get(0), outputNodes.get(1), 0.5, false, 2))
+        connections.add(new ConnectionGene(inputNodes.get(1), outputNodes.get(0), 0.2, false, 3))
+        connections.add(new ConnectionGene(inputNodes.get(1), outputNodes.get(1), 1, true, 4))
+        connections.add(new ConnectionGene(inputNodes.get(2), outputNodes.get(0), 0.2, true, 5))
+        connections.add(new ConnectionGene(inputNodes.get(2), outputNodes.get(1), 0.7, true, 6))
+        connections.add(new ConnectionGene(inputNodes.get(0), hiddenNode, 0.3, true, 7));
+        connections.add(new ConnectionGene(hiddenNode, outputNodes.get(0), 0.7, true, 8));
+        connections.add(new ConnectionGene(hiddenNode, deepHiddenNode, 0.3, true, 9));
+        connections.add(new ConnectionGene(deepHiddenNode, hiddenNode, 1, true, 10));
+        connections.add(new ConnectionGene(deepHiddenNode, outputNodes.get(1), 1, true, 11))
+
+
+        chromosome = new NeatChromosome(connections, inputNodes, outputNodes, crossoverOp, mutationOp)
+        chromosome.generateNetwork();
+        const clone = chromosome.cloneWith(chromosome.connections);
+        expect(clone.connections.size()).toBe(chromosome.connections.size())
+        expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
+        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
+        expect(clone.timePlayed).toBe(chromosome.timePlayed)
+        expect(clone.fitness).toBe(chromosome.fitness)
+    })
+
 })

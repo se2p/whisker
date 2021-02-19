@@ -29,7 +29,7 @@ export class NodeGene {
             this._nodeValue = 0;
         }
 
-        if(type === NodeType.OUTPUT) {
+        if(type === NodeType.OUTPUT || type === NodeType.HIDDEN) {
             this._activatedFlag = false;
             this._activationCount = 0;
         }

@@ -44,12 +44,15 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const fromNode = fromList.get(Math.floor(Math.random() * fromList.size()));
         const toNode = toList.get(Math.floor(Math.random() * toList.size()));
 
+        const fromLayer = chromosome.findLayerOfNode(chromosome.layerMap,fromNode)
+        const toLayer = chromosome.findLayerOfNode(chromosome.layerMap, toNode)
+
         // Create new Connection with temporary innovation number
         const mutatedConnection = new ConnectionGene(fromNode, toNode, this.randomNumber(-1, 1),
             Math.random() < 0.8, NeatMutation.TEMP_INNOVATION_NUMBER)
 
         // If its a new Connection assign the correct innovationNumber and add it to the list
-        if (!this.containsConnection(chromosome.connections, mutatedConnection)) {
+        if (!this.containsConnection(chromosome.connections, mutatedConnection) && (fromLayer !== toLayer)) {
             this.assignInnovationNumber(mutatedConnection)
             chromosome.connections.add(mutatedConnection);
         }
@@ -92,8 +95,10 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     mutateWeight(chromosome: NeatChromosome): void {
         for (const connection of chromosome.connections) {
             if (Math.random() <= NeatConfig.MUTATE_WEIGHT_UNIFORMLY) {
-                connection.weight += this.randomNumber(-1, 1);
+                connection.weight += this.randomNumber(-0.5, 0.5);
             }
+            else
+                connection.weight = this.randomNumber(-1, 1)
         }
     }
 
