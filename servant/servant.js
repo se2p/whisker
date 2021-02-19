@@ -65,6 +65,10 @@ async function init () {
             }
         } else {
             await runTestsOnFile(browser, scratchPath);
+
+            if (csvFile != false) {
+                logger.warn(`"Scratch path ${scratchPath} is not a directory, skipping CSV file creation`);
+            }
         }
         await browser.close();
     }
