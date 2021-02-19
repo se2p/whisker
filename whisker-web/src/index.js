@@ -1,6 +1,7 @@
 const {$} = require('./web-libs');
 
 import i18next from 'i18next';
+import locI18next from "loc-i18next";
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
 
@@ -314,6 +315,14 @@ window.onbeforeunload = function () {
     }
 };
 
+const localize = locI18next.init(i18next, {
+    selectorAttr: 'data-i18n', // selector for translating elements
+    targetAttr: 'i18n-target',
+    optionsAttr: 'i18n-options',
+    useOptionsAttr: false,
+    parseDefaultValueFromContent: true
+});
+
 i18next.init({
     lng: 'de',
     fallbackLng: 'de',
@@ -336,8 +345,9 @@ i18next.init({
 }).then();
 
 function updateContent() {
-    document.getElementById('fileselect-project-label').innerHTML = i18next.t('program');
+    localize('#body');
 }
+
 
 
 
