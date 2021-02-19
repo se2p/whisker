@@ -4,6 +4,8 @@ import i18next from 'i18next';
 import locI18next from "loc-i18next";
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
+const faqDE = require('./locales/de/faq.json');
+const faqEN = require('./locales/en/faq.json');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
@@ -272,11 +274,6 @@ const initEvents = function () {
             );
         });
 
-    $('.lang-select').on('change', () => {
-        const lng = $('.lang-select').val();
-        i18next.changeLanguage(lng).then(updateContent());
-    });
-
 };
 
 const toggleComponents = function () {
@@ -323,21 +320,24 @@ const localize = locI18next.init(i18next, {
     parseDefaultValueFromContent: true
 });
 
-i18next.init({
+i18next
+    .init({
     lng: 'de',
     fallbackLng: 'de',
     debug: true,
-    ns: ['index'],
+    ns: ['index', 'faq'],
     defaultNS: 'index',
     interpolation: {
         escapeValue: false,
     },
     resources: {
-        en: {
-            index: indexEN
-        },
         de: {
-            index: indexDE
+            index: indexDE,
+            faq: faqDE
+        },
+        en: {
+            index: indexEN,
+            faq: faqEN
         }
     }
 }, function (err, t) {
@@ -347,6 +347,13 @@ i18next.init({
 function updateContent() {
     localize('#body');
 }
+
+$('.lang-select').on('change', () => {
+    const lng = $('.lang-select').val();
+    i18next.changeLanguage(lng).then(updateContent());
+});
+
+
 
 
 
