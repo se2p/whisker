@@ -132,7 +132,7 @@ function codeForInitializingMocks(mocks) {
 }
 
 function codeForWitnessReplay(errorWitness) {
-    let code = `// Error Witness Replay`;
+    let code = `// Error Witness Replay\n`;
 
     for (const step of errorWitness.steps) {
         const action = step.action;
