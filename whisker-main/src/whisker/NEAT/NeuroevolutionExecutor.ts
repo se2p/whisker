@@ -57,7 +57,7 @@ export class NeuroevolutionExecutor {
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
             const output = network.activateNetwork(inputs);
-            if(output === null){
+            if (output === null) {
                 continue;
             }
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
@@ -72,10 +72,22 @@ export class NeuroevolutionExecutor {
             events.add([waitEvent, []])
             await waitEvent.apply(this._vm);
         }
-        const end = Math.round((Date.now()-start)/100);
         // round due to small variances in runtime
+        const end = Math.round((Date.now() - start) / 100);
         network.timePlayed = end;
-        //await new WaitEvent().apply(this._vm);
+
+        let points = 0;
+        for (const target of this._vm.runtime.targets) {
+            if (target.sprite.name === 'Stage')
+                for (const [key, value] of Object.entries(target.variables)) {
+                    // @ts-ignore
+                    if (value.name === 'Punkte') { // @ts-ignore
+                        points = value.value
+                    }
+                }
+        }
+
+        network.points = points
         this._vmWrapper.end();
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);

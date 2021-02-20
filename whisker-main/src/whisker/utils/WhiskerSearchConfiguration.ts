@@ -175,6 +175,8 @@ export class WhiskerSearchConfiguration {
                 return FitnessFunctionType.ONE_MAX;
             case 'time-played':
                 return FitnessFunctionType.TIME_PLAYED;
+            case 'score':
+                return FitnessFunctionType.SCORE;
             case 'single-bit':
             default:
                 return FitnessFunctionType.SINGLE_BIT;

@@ -12,17 +12,18 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     // Arbitrary easily detectable value in case of bugs => a connection should never have this value
     private static readonly TEMP_INNOVATION_NUMBER = 100000;
 
-    private static _innovations = new List<ConnectionGene>();
+    public static _innovations = new List<ConnectionGene>();
 
     apply(chromosome: NeatChromosome): NeatChromosome {
         if (Math.random() <= NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
             this.mutateWeight(chromosome);
+        if (Math.random() <= NeatConfig.MUTATE_ADD_NODE)
+            this.mutateAddNode(chromosome);
         if (Math.random() <= NeatConfig.MUTATE_ADD_CONNECTION)
             this.mutateAddConnection(chromosome);
         if (Math.random() <= NeatConfig.MUTATE_CONNECTION_STATE)
             this.mutateConnectionState(chromosome);
-        if (Math.random() <= NeatConfig.MUTATE_ADD_NODE)
-            this.mutateAddNode(chromosome);
+        chromosome.generateNetwork();
         return chromosome;
     }
 
@@ -93,6 +94,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     }
 
     mutateWeight(chromosome: NeatChromosome): void {
+        chromosome.generateNetwork();
         for (const connection of chromosome.connections) {
             if (Math.random() <= NeatConfig.MUTATE_WEIGHT_UNIFORMLY) {
                 connection.weight += this.randomNumber(-0.5, 0.5);
@@ -104,6 +106,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
 
 
     mutateConnectionState(chromosome: NeatChromosome): void {
+        chromosome.generateNetwork();
         const connections = chromosome.connections;
         // Pick random connection
         const connection = connections.get(Math.floor(Math.random() * connections.size()))

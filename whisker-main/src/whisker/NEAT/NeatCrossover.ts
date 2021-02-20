@@ -8,7 +8,8 @@ import {List} from "../utils/List";
 export class NeatCrossover implements Crossover<NeatChromosome> {
 
     apply(parent1: NeatChromosome, parent2: NeatChromosome): Pair<NeatChromosome> {
-
+        parent1.generateNetwork();
+        parent2.generateNetwork();
         // Triangle-Swap to have the fittest chromosome always as parent1
         if (parent1.fitness < parent2.fitness) {
             const temp = parent1;

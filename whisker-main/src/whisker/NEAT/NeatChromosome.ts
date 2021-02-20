@@ -45,6 +45,7 @@ export class NeatChromosome extends Chromosome {
     private _timePlayed: number;
     private _fitness: number
     private _adjustedFitness: number    // Fitness value in relation to the species the Chromosome is assigned to
+    private _points: number
 
     /**
      * Constructs a new NeatChromosome
@@ -71,6 +72,14 @@ export class NeatChromosome extends Chromosome {
      * Deep clone of a NeatChromosome (what a rhyme)
      */
     clone(): NeatChromosome {
+        return this.cloneWith(this.connections)
+    }
+
+    /**
+     * Deep clone of a NeatChromosome using a defined list of genes
+     * @param newGenes the genes the network should be initialised with
+     */
+    cloneWith(newGenes: List<ConnectionGene>): NeatChromosome {
         const cloneConnections = new List<ConnectionGene>();
         const cloneInputNodes = new List<NodeGene>();
         const cloneOutputNodes = new List<NodeGene>();
@@ -84,9 +93,21 @@ export class NeatChromosome extends Chromosome {
             if (nodeClone.type === NodeType.OUTPUT)
                 cloneOutputNodes.add(nodeClone);
         }
-        for (const originalConnection of this._connections) {
-            const fromNode = this.searchNode(originalConnection.from, cloneAllNodes);
-            const toNode = this.searchNode(originalConnection.to, cloneAllNodes);
+        for (const originalConnection of newGenes) {
+
+            // search for the fromNode in the List of cloned Nodes; if it is nonexistent so far, create a clone of it
+            let fromNode = this.searchNode(originalConnection.from, cloneAllNodes);
+            if(fromNode === null){
+                fromNode = originalConnection.from.clone();
+                cloneAllNodes.add(fromNode);
+            }
+
+            // search for the toNode in the List of cloned Nodes; if it is nonexistent so far, create a clone of it
+            let toNode = this.searchNode(originalConnection.to, cloneAllNodes);
+            if(toNode === null){
+                toNode = originalConnection.to.clone();
+                cloneAllNodes.add(toNode);
+            }
             cloneConnections.add(originalConnection.copyWithNodes(fromNode, toNode));
         }
         const chromosomeClone = new NeatChromosome(cloneConnections, cloneInputNodes, cloneOutputNodes, this._crossoverOp, this._mutationOp);
@@ -94,17 +115,6 @@ export class NeatChromosome extends Chromosome {
         chromosomeClone.timePlayed = this.timePlayed;
         chromosomeClone.generateNetwork();
         return chromosomeClone;
-    }
-
-    /**
-     * Deep clone of a NeatChromosome using a defined list of genes
-     * @param newGenes the genes the network should be initialised with
-     */
-    cloneWith(newGenes: List<ConnectionGene>): NeatChromosome {
-        const clone = this.clone();
-        clone.connections = newGenes;
-        this.generateNetwork();
-        return clone;
     }
 
     /**
@@ -228,6 +238,7 @@ export class NeatChromosome extends Chromosome {
             if (node.type === NodeType.HIDDEN || node.type === NodeType.OUTPUT) {
                 node.activationValue = 0;
                 node.activationCount = 0;
+                node.activatedFlag = false;
             }
         }
     }
@@ -361,6 +372,13 @@ export class NeatChromosome extends Chromosome {
 
     set adjustedFitness(value: number) {
         this._adjustedFitness = value;
+    }
+    get points(): number {
+        return this._points;
+    }
+
+    set points(value: number) {
+        this._points = value;
     }
 
     toString(): string {

@@ -46,6 +46,7 @@ import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
 import {NeatChromosome} from "../NEAT/NeatChromosome";
 import {TimePlayedFitness} from "../NEAT/TimePlayedFitness";
+import {ScoreFitness} from "../NEAT/ScoreFitness";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -170,6 +171,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 break;
             case FitnessFunctionType.TIME_PLAYED:
                 this._initializeTimePlayedFitness();
+                break;
+            case FitnessFunctionType.SCORE:
+                this._initializeScoreFitness();
         }
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
@@ -331,6 +335,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
 
     private _initializeTimePlayedFitness() {
         this._fitnessFunction = new TimePlayedFitness() as unknown as FitnessFunction<C>;
+    }
+
+    private _initializeScoreFitness() {
+        this._fitnessFunction = new ScoreFitness() as unknown as FitnessFunction<C>;
     }
 
 
