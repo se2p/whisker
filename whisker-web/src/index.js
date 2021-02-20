@@ -10,6 +10,8 @@ const contactDE = require('./locales/de/contact.json');
 const contactEN = require('./locales/en/contact.json');
 const imprintDE = require('./locales/de/imprint.json');
 const imprintEN = require('./locales/en/imprint.json');
+const privacyDE = require('./locales/de/privacy.json');
+const privacyEN = require('./locales/en/privacy.json');
 
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
@@ -330,7 +332,7 @@ i18next
     lng: 'de',
     fallbackLng: 'de',
     debug: true,
-    ns: ['index', 'faq', 'contact', 'imprint'],
+    ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
     defaultNS: 'index',
     interpolation: {
         escapeValue: false,
@@ -340,13 +342,15 @@ i18next
             index: indexDE,
             faq: faqDE,
             contact: contactDE,
-            imprint: imprintDE
+            imprint: imprintDE,
+            privacy: privacyDE
         },
         en: {
             index: indexEN,
             faq: faqEN,
             contact: contactEN,
-            imprint: imprintEN
+            imprint: imprintEN,
+            privacy: privacyEN
         }
     }
 }, function (err, t) {
