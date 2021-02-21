@@ -15,15 +15,34 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     public static _innovations = new List<ConnectionGene>();
 
     apply(chromosome: NeatChromosome): NeatChromosome {
-        if (Math.random() <= NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
-            this.mutateWeight(chromosome);
-        if (Math.random() <= NeatConfig.MUTATE_ADD_NODE)
-            this.mutateAddNode(chromosome);
-        if (Math.random() <= NeatConfig.MUTATE_ADD_CONNECTION)
-            this.mutateAddConnection(chromosome);
-        if (Math.random() <= NeatConfig.MUTATE_CONNECTION_STATE)
-            this.mutateConnectionState(chromosome);
-        chromosome.generateNetwork();
+
+        // Special treatment for population Champions => either add a Connection or change the weights
+        if(chromosome.populationChampion){
+            if(Math.random() <= NeatConfig.POPULATION_CHAMPION_CONNECTION_MUTATION){
+                this.mutateAddConnection(chromosome);
+            }
+            else {
+                this.mutateWeight(chromosome);
+            }
+        }
+
+        // If we dont have a population Champion apply either structural mutation or non structural mutation but not both!
+        else {
+            // Structural mutation
+            if(Math.random() < NeatConfig.MUTATE_ADD_NODE) {
+                this.mutateAddNode(chromosome);
+            }
+            else if(Math.random() < NeatConfig.MUTATE_ADD_CONNECTION)
+                this.mutateAddConnection(chromosome);
+
+            // Non structural mutation
+            else{
+                if(Math.random() < NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
+                    this.mutateWeight(chromosome);
+                if(Math.random() < NeatConfig.MUTATE_CONNECTION_STATE)
+                    this.mutateConnectionState(chromosome);
+            }
+        }
         return chromosome;
     }
 

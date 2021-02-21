@@ -29,6 +29,7 @@ import {NeatConfig} from "./NeatConfig";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {ActivationFunctions} from "./ActivationFunctions";
+import {Species} from "./Species";
 
 /**
  * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
@@ -43,9 +44,15 @@ export class NeatChromosome extends Chromosome {
     private readonly _mutationOp: Mutation<NeatChromosome>
     private _trace: ExecutionTrace;
     private _timePlayed: number;
-    private _fitness: number
-    private _adjustedFitness: number    // Fitness value in relation to the species the Chromosome is assigned to
+    private _nonAdjustedFitness: number     // non shared Fitness with species
+    private _fitness: number    // shared Fitness with species
     private _points: number
+    private _champion: boolean;     // true if this Chromosome is the best member of a species
+    private _eliminate: boolean;     // true if this Chromosome is marked dead in its species
+    private _expectedOffspring: number // number of children this Chromosome is allowed to produce
+    private _populationChampion: boolean      // A population champion is the best chromosome of the whole population
+    private _numberOffspringPopulationChamp: number;    // Number of children the population champion is allowed to produce
+    private _species: Species<NeatChromosome> // Points to the species of this Chromosome
 
     /**
      * Constructs a new NeatChromosome
@@ -66,6 +73,8 @@ export class NeatChromosome extends Chromosome {
         this.allNodes.addList(inputNodes);
         this.allNodes.addList(outputNodes);
         this._trace = null;
+        this._champion = false;
+        this._eliminate = false;
     }
 
     /**
@@ -97,14 +106,14 @@ export class NeatChromosome extends Chromosome {
 
             // search for the fromNode in the List of cloned Nodes; if it is nonexistent so far, create a clone of it
             let fromNode = this.searchNode(originalConnection.from, cloneAllNodes);
-            if(fromNode === null){
+            if (fromNode === null) {
                 fromNode = originalConnection.from.clone();
                 cloneAllNodes.add(fromNode);
             }
 
             // search for the toNode in the List of cloned Nodes; if it is nonexistent so far, create a clone of it
             let toNode = this.searchNode(originalConnection.to, cloneAllNodes);
-            if(toNode === null){
+            if (toNode === null) {
                 toNode = originalConnection.to.clone();
                 cloneAllNodes.add(toNode);
             }
@@ -222,6 +231,70 @@ export class NeatChromosome extends Chromosome {
         return output;
     }
 
+    // TODO: pulbic only for testing
+    /**
+     * Calculates the compatibility distance between two chromosomes; used for speciating
+     * @param chromosome1 the first chromosome
+     * @param chromosome2 the second chromosome
+     * @return the compatibility distance of both chromosomes
+     */
+    public compatibilityDistance(chromosome2: NeatChromosome): number {
+        let matching = 0;
+        let disjoint = 0;
+        let excess = 0;
+        let weight = 0;
+        let distance = 0;
+        let lowestMaxInnovation;
+
+        // Save first connections in a Map <InnovationNumber, Connection>
+        const genome1Innovations = new Map<number, ConnectionGene>()
+        for (const connection of this.connections) {
+            genome1Innovations.set(connection.innovation, connection)
+        }
+
+        // Save second connections in a Map <InnovationNumber, Connection>
+        const genome2Innovations = new Map<number, ConnectionGene>()
+        for (const connection of chromosome2.connections) {
+            genome2Innovations.set(connection.innovation, connection)
+        }
+
+        // Get the highest innovation Number of the genome with the least gene innovationNumber
+        // Later used to decide between excess and disjoint genes
+        if (genome1Innovations.size === 0 || genome2Innovations.size === 0)
+            lowestMaxInnovation = 0;
+        else {
+            const genome1Highest = Array.from(genome1Innovations.keys()).pop()
+            const genome2Highest = Array.from(genome2Innovations.keys()).pop()
+            lowestMaxInnovation = Math.min(genome1Highest, genome2Highest)
+        }
+
+        // Save in a set to remove duplicates
+        let allInnovations = new Set<number>(genome1Innovations.keys());
+        genome2Innovations.forEach((value, key) => allInnovations.add(key))
+        allInnovations = new Set([...allInnovations].sort());
+
+        for (const innovation of allInnovations) {
+            // If both share the connection then increasing matching and sum the weight difference
+            if (genome1Innovations.has(innovation) && genome2Innovations.has(innovation)) {
+                matching++;
+                weight += Math.abs(genome1Innovations.get(innovation).weight - genome2Innovations.get(innovation).weight)
+            }
+                // If the innovationNumber is lower then the lowestMaxInnovation
+            // its a disjoint connection otherwise its an excess connection
+            else {
+                innovation < lowestMaxInnovation ? disjoint++ : excess++;
+            }
+        }
+
+        // get number of genes in the bigger Genome for normalization
+        const N = Math.max(this.connections.size(), chromosome2.connections.size())
+
+        if (N > 0)
+            distance = (excess * NeatConfig.EXCESS_COEFFICIENT + disjoint * NeatConfig.DISJOINT_COEFFICIENT) / N +
+                ((weight / matching) * NeatConfig.WEIGHT_COEFFICIENT);
+        return distance;
+    }
+
     /**
      * Checks if each output Node has been activated at least once
      */
@@ -293,10 +366,13 @@ export class NeatChromosome extends Chromosome {
         return -1;
     }
 
-    getFitness(fitnessFunction: FitnessFunction<this>):
-        number {
-        const fitness = fitnessFunction.getFitness(this);
-        return fitness;
+    /**
+     * In NEAT we are interested in the shared fitness in the species -> the fitness function would only give
+     * us the non-shared value
+     * @param fitnessFunction
+     */
+    getFitness(fitnessFunction: FitnessFunction<this>): number {
+        return this.fitness;
     }
 
 
@@ -366,13 +442,14 @@ export class NeatChromosome extends Chromosome {
         this._fitness = value;
     }
 
-    get adjustedFitness(): number {
-        return this._adjustedFitness;
+    get nonAdjustedFitness(): number {
+        return this._nonAdjustedFitness;
     }
 
-    set adjustedFitness(value: number) {
-        this._adjustedFitness = value;
+    set nonAdjustedFitness(value: number) {
+        this._nonAdjustedFitness = value;
     }
+
     get points(): number {
         return this._points;
     }
@@ -381,11 +458,59 @@ export class NeatChromosome extends Chromosome {
         this._points = value;
     }
 
+
+    get champion(): boolean {
+        return this._champion;
+    }
+
+    set champion(value: boolean) {
+        this._champion = value;
+    }
+
+    get eliminate(): boolean {
+        return this._eliminate;
+    }
+
+    set eliminate(value: boolean) {
+        this._eliminate = value;
+    }
+
+    get expectedOffspring(): number {
+        return this._expectedOffspring;
+    }
+
+    set expectedOffspring(value: number) {
+        this._expectedOffspring = value;
+    }
+
+
+    get populationChampion(): boolean {
+        return this._populationChampion;
+    }
+
+    set populationChampion(value: boolean) {
+        this._populationChampion = value;
+    }
+
+    get numberOffspringPopulationChamp(): number {
+        return this._numberOffspringPopulationChamp;
+    }
+
+    set numberOffspringPopulationChamp(value: number) {
+        this._numberOffspringPopulationChamp = value;
+    }
+
+    get species(): Species<NeatChromosome> {
+        return this._species;
+    }
+
+    set species(value: Species<NeatChromosome>) {
+        this._species = value;
+    }
+
     toString(): string {
         return "Genome:\nNodeGenes: " + this.allNodes + "\nConnectionGenes: " + this._connections;
     }
-
-    public
 
     equals(other: unknown):
         boolean {

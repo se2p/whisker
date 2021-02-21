@@ -3,12 +3,12 @@ import {NeatChromosome} from "./NeatChromosome";
 
 export class TimePlayedFitness implements FitnessFunction<NeatChromosome> {
     compare(value1: number, value2: number): number {
-        return value1 - value2;
+        return value2 - value1;
     }
 
     getFitness(chromosome: NeatChromosome): number {
-        chromosome.fitness = chromosome.timePlayed;
-        return chromosome.fitness;
+        chromosome.nonAdjustedFitness = chromosome.timePlayed;
+        return chromosome.nonAdjustedFitness;
     }
 
     isCovered(chromosome: NeatChromosome): boolean {
