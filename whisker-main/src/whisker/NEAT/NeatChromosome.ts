@@ -70,10 +70,15 @@ export class NeatChromosome extends Chromosome {
         this._mutationOp = mutationOp;
         this._inputNodes = inputNodes;
         this._outputNodes = outputNodes;
-        this.allNodes.addList(inputNodes);
-        this.allNodes.addList(outputNodes);
+        this._allNodes.addList(inputNodes);
+        this._allNodes.addList(outputNodes);
         this._trace = null;
         this._champion = false;
+        this._populationChampion = false;
+        this._numberOffspringPopulationChamp = 0;
+        this._nonAdjustedFitness = 0;
+        this._fitness = 0;
+        this._expectedOffspring = 0;
         this._eliminate = false;
     }
 
@@ -121,6 +126,7 @@ export class NeatChromosome extends Chromosome {
         }
         const chromosomeClone = new NeatChromosome(cloneConnections, cloneInputNodes, cloneOutputNodes, this._crossoverOp, this._mutationOp);
         chromosomeClone.fitness = this.fitness;
+        chromosomeClone.nonAdjustedFitness = this.nonAdjustedFitness;
         chromosomeClone.timePlayed = this.timePlayed;
         chromosomeClone.generateNetwork();
         return chromosomeClone;
@@ -148,11 +154,6 @@ export class NeatChromosome extends Chromosome {
 
         // Add the hidden Nodes
         for (const connection of this._connections) {
-            if (!this.containsNode(connection.from)) {
-                const layer = this.findLayerOfNode(this._layerMap, connection.to) - 1
-                this._layerMap = this.insertNodeToLayer(this._layerMap, connection.from, layer)
-                this._allNodes.add(connection.from);
-            }
             if (!this.containsNode(connection.to)) {
                 const layer = this.findLayerOfNode(this._layerMap, connection.from) + 1
                 this._layerMap = this.insertNodeToLayer(this._layerMap, connection.to, layer)
@@ -164,7 +165,7 @@ export class NeatChromosome extends Chromosome {
         }
     }
 
-    activateNetwork(inputs: number[]): number[] {
+    activateNetwork(inputs: number[], verifyMode:boolean): number[] {
         const output = []
         let activatedOnce = false;
         let abortCount = 0;  // Used if we have created a network which has not one path from input to output Node
@@ -181,8 +182,10 @@ export class NeatChromosome extends Chromosome {
 
             abortCount++;
             if (abortCount >= 50) {
-                console.error("Defect Network detected")
-                console.log(this)
+                if(!verifyMode) {
+                    console.error("Defect Network detected")
+                    console.log(this)
+                }
                 return null;
             }
 
@@ -230,8 +233,6 @@ export class NeatChromosome extends Chromosome {
 
         return output;
     }
-
-    // TODO: pulbic only for testing
     /**
      * Calculates the compatibility distance between two chromosomes; used for speciating
      * @param chromosome1 the first chromosome
@@ -245,6 +246,11 @@ export class NeatChromosome extends Chromosome {
         let weight = 0;
         let distance = 0;
         let lowestMaxInnovation;
+
+        if(this === undefined || chromosome2 === undefined){
+            console.error("Undefined chromosomes in compat Distance calculation")
+            return NeatConfig.DISTANCE_THRESHOLD + 1;
+        }
 
         // Save first connections in a Map <InnovationNumber, Connection>
         const genome1Innovations = new Map<number, ConnectionGene>()

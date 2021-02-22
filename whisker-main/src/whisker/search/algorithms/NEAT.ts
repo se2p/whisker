@@ -92,10 +92,11 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
         while (!this._stoppingCondition.isFinished(this)) {
             console.log("Iteration: " + this._iterations + " Best Fitness: " + population.highestFitness)
-            console.log(population.species);
             await this.evaluatePopulation(population.chromosomes);
             this.calculateFitness(population.chromosomes);
             population.evolution();
+            console.log("Size of Population: " + population.chromosomes.size())
+            console.log("Size of Species: " + population.species.size())
             this._iterations++;
         }
 

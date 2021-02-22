@@ -21,20 +21,20 @@ describe('NeatChromosomeGenerator', () => {
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
         expect(neatChromosome.allNodes.size()).toBe(inputSize + 1 + outputSize) // +1 for Bias
-        expect(neatChromosome.connections.size()).toBe(inputSize * outputSize)
+        expect(neatChromosome.connections.size()).toBeGreaterThanOrEqual(1)
     })
 
-    test('Create two random Chromosome and compare innovationNumbers', () => {
-        const firstChromosome = generator.get();
-        const firstInnovations = []
-        for (const firstConnection of firstChromosome.connections)
-            firstInnovations.push(firstConnection.innovation)
-
-        const secondChromosome = generator.get();
-        const secondInnovations = []
-        for (const secondConnection of secondChromosome.connections)
-            secondInnovations.push(secondConnection.innovation)
-
-        expect(firstInnovations).toEqual(secondInnovations)
+    test('Create several Chromosomes to test if defect chromosomes survive', () => {
+        inputSize = 3;
+        outputSize = 1;
+        const chromosomes = []
+        const inputs = [1,2,3];
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize);
+        for (let i = 0; i < 100; i++) {
+            chromosomes.push(generator.get())
+        }
+        for(const chromosome of chromosomes){
+            expect(chromosome.activateNetwork(inputs)).not.toBe(null);
+        }
     })
 })

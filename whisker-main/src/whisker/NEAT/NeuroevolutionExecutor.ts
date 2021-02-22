@@ -10,6 +10,9 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NeatChromosome} from "./NeatChromosome";
+import {KeyDownEvent} from "../testcase/events/KeyDownEvent";
+import {Container} from "../utils/Container";
+import {NeatConfig} from "./NeatConfig";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -40,7 +43,8 @@ export class NeuroevolutionExecutor {
         const events = new List<[ScratchEvent, number[]]>();
         network.generateNetwork();
         network.flushNodeValues();
-        seedScratch(String(Randomness.getInitialSeed()))
+        seedScratch("KingBaileys")
+
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -56,16 +60,24 @@ export class NeuroevolutionExecutor {
             let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
-            const output = network.activateNetwork(inputs);
+            for (let i = 0; i < NeatConfig.MAX_HIDDEN_LAYERS; i++) {
+                network.activateNetwork(inputs, false);
+            }
+            const output = network.activateNetwork(inputs, false);
             if (output === null) {
                 continue;
             }
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
-            events.add([nextEvent, [1]]);
-            this.notify(nextEvent, [1]);
-
-            await nextEvent.apply(this._vm, [1])
+            let args = [1];
+            if (nextEvent instanceof KeyDownEvent) {
+                args = [+true];
+            } else if (nextEvent instanceof WaitEvent) {
+                args = [Container.config.getWaitDuration()];
+            }
+            events.add([nextEvent, args]);
+            this.notify(nextEvent, args);
+            await nextEvent.apply(this._vm, args)
             StatisticsCollector.getInstance().incrementEventsCount();
 
             const waitEvent = new WaitEvent();

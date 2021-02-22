@@ -60,8 +60,18 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
             }
         }
         newConnections.sort((a, b) => a.innovation - b.innovation)
+        let child = parent1.cloneWith(newConnections);
+
+        //Check the network if by chance we destroyed the network return the fittest parent
+        child.generateNetwork();
+        const testInput = [];
+        for (let i = 0; i < child.inputNodes.size(); i++) {
+            testInput.push(i);
+        }
+        if(child.activateNetwork(testInput, true) === null)
+            child = parent1.clone();
         // In Neat only one offspring is created in crossover => ignore second part of the pair
-        return new Pair<NeatChromosome>(parent1.cloneWith(newConnections), null);
+        return new Pair<NeatChromosome>(child, null);
     }
 
     applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {

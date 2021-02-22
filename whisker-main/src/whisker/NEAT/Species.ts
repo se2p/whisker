@@ -53,7 +53,10 @@ export class Species<C extends NeatChromosome> {
 
         // Calculate the age debt based on the penalizing factor -> Determines after how much generations of no improvement
         // the species gets penalized
-        const ageDept = this.lastImproved() - NeatConfig.PENALIZING_AGE;
+        let ageDept = (this._age - this.ageOfLastImprovement + 1) - NeatConfig.PENALIZING_AGE;
+        if(ageDept == 0)
+            ageDept = 1;
+
         const speciesSize = this.chromosomes.size();
 
         for (const chromosome of this.chromosomes) {
@@ -61,7 +64,7 @@ export class Species<C extends NeatChromosome> {
             chromosome.nonAdjustedFitness = chromosome.fitness;
 
             // Penalize fitness if it has not improved since NeatConfig.PENALIZING_AGEs
-            if (ageDept > 0)
+            if (ageDept >= 1)
                 chromosome.fitness = chromosome.fitness * 0.01;
 
             // Boost fitness for young generations to give them a chance to evolve for some generations
@@ -69,11 +72,13 @@ export class Species<C extends NeatChromosome> {
                 chromosome.fitness = chromosome.fitness * NeatConfig.AGE_SIGNIFICANCE;
 
             // Do not allow negative fitness values
-            if (chromosome.fitness <= 0.0)
+            if (chromosome.fitness < 0.0)
                 chromosome.fitness = 0.0001;
 
             // Share fitness with the entire species
             chromosome.fitness = chromosome.fitness / speciesSize;
+
+            this.markKillCandidates();
         }
     }
 
@@ -86,7 +91,6 @@ export class Species<C extends NeatChromosome> {
         // Sort the chromosomes in the species based on their fitness -> the first chromosome is the fittest
         this.sortChromosomes();
         const champion = this.chromosomes.get(0);
-        champion.champion = true;
 
         // Update the age of last improvement based on the non AdjustedFitness value
         if (champion.nonAdjustedFitness > this._allTimeBestFitness) {
@@ -97,13 +101,16 @@ export class Species<C extends NeatChromosome> {
         // Determines which members of this species are allowed to reproduce
         // based on the NeatConfig.SPECIES_PARENTS factor
         // +1 ensures that the species will not go extinct -> at least one member survives
-        const numberOfParents = Math.floor(NeatConfig.SPECIES_PARENTS * this.chromosomes.size() + 1);
+        const numberOfParents = Math.floor((NeatConfig.SPECIES_PARENTS * this.chromosomes.size()) + 1);
+
+        this.chromosomes.get(0).champion = true;
 
         // Assign the death mark to the chromosomes which are not within the numberOfParents
-        let position = 0;
+        let position = 1;
         for (const chromosome of this.chromosomes) {
-            if (position > numberOfParents)
+            if (position > numberOfParents) {
                 chromosome.eliminate = true;
+            }
             position++;
         }
     }
@@ -142,26 +149,32 @@ export class Species<C extends NeatChromosome> {
      * @param leftOver
      */
     public getNumberOfOffsprings(leftOver: number): number {
-        let expectedCounter = 0;
-        let currentExpected = 0.0;
-        const reduceFactor = 1.0;  // factor to reduce reproduction
-        let reducedExpected = 0.0;
-        let rest = 0.0;
-        for (const chromosome of this.chromosomes) {
-            currentExpected = chromosome.expectedOffspring;
-            reducedExpected = Math.floor(currentExpected / reduceFactor);
-            rest = currentExpected - (Math.floor(currentExpected / reduceFactor) * reduceFactor);
-            expectedCounter += reducedExpected;
-            leftOver += rest;
+        this._expectedOffspring = 0;
 
-            // If we reach a leftOver count over 1 add it up to the counter and reduce the leftOver count
-            if (leftOver >= 1) {
-                expectedCounter++;
-                leftOver--;
+        let x1 = 0.0;
+        let r1 = 0.0;
+        let r2 = leftOver;
+        let n1 = 0;
+        let n2 = 0;
+
+        for(const chromosome of this.chromosomes)
+        {
+            x1 = chromosome.expectedOffspring;
+
+            n1 = Math.floor(x1);
+            r1 = x1 - Math.floor(x1);
+            n2 = n2 + n1;
+            r2 = r2 + r1;
+
+            if (r2 >= 1.0)
+            {
+                n2 = n2 + 1;
+                r2 = r2 - 1.0;
             }
         }
-        this._expectedOffspring = expectedCounter;
-        return leftOver;
+
+        this._expectedOffspring = n2;
+        return r2;
     }
 
     /**
@@ -171,23 +184,23 @@ export class Species<C extends NeatChromosome> {
      * @return returns true if everything went fine and false otherwise
      */
     public breed(population: NeatPopulation<C>, sortedSpecies: List<Species<C>>): boolean {
-        console.log("Breed")
         if (this.expectedOffspring > 0 && this.chromosomes.size() == 0) {
             console.error("An empty species cannot be reproduced!")
             return false;
         }
 
         const champion = this.chromosomes.get(0);
-        console.log(champion);
+
+        if (this.expectedOffspring > NeatConfig.POPULATION_SIZE) {
+            console.error("Attempt to produce more offsprings than the size of the population")
+            this.expectedOffspring = Math.floor(NeatConfig.POPULATION_SIZE * 0.95);
+        }
 
         // Create the calculated number of offspring of this species; one at a time
         let champCloned = false;
         for (let count = 0; count < this.expectedOffspring; count++) {
 
             let child: C;
-            if (this.expectedOffspring > NeatConfig.POPULATION_SIZE) {
-                console.error("Attempt to produce more offsprings than the size of the population")
-            }
 
             // If we have a population Champion in this species
             if (champion.numberOffspringPopulationChamp > 0 && champion.populationChampion) {
@@ -225,15 +238,17 @@ export class Species<C extends NeatChromosome> {
             else {
                 let foundSpecies = false;
                 for (const specie of population.species) {
-                    const representative = specie.chromosomes.get(0);
-                    const compatDistance = child.compatibilityDistance(representative);
+                    if(specie.chromosomes.size() > 0) {
+                        const representative = specie.chromosomes.get(0);
+                        const compatDistance = child.compatibilityDistance(representative);
 
-                    // Found a matching Specie
-                    if (compatDistance < NeatConfig.DISTANCE_THRESHOLD) {
-                        specie.addChromosome(child);
-                        child.species = specie;
-                        foundSpecies = true;
-                        break;
+                        // Found a matching Specie
+                        if (compatDistance < NeatConfig.DISTANCE_THRESHOLD) {
+                            specie.addChromosome(child);
+                            child.species = specie;
+                            foundSpecies = true;
+                            break;
+                        }
                     }
                 }
 
@@ -310,7 +325,7 @@ export class Species<C extends NeatChromosome> {
      * @private
      */
     private sortChromosomes(): void {
-        this._chromosomes.sort((a, b) => b.fitness - a._fitness);
+        this._chromosomes.sort((a, b) => a.fitness < b.fitness ? +1 : -1);
     }
 
 

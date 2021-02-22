@@ -131,6 +131,15 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const connection = connections.get(Math.floor(Math.random() * connections.size()))
         // Flip the state
         connection.enabled = !connection.enabled;
+
+        //Check the network and re-enable the connection if by chance we destroyed the network
+        chromosome.generateNetwork();
+        const testInput = [];
+        for (let i = 0; i < chromosome.inputNodes.size(); i++) {
+            testInput.push(i);
+        }
+        if(chromosome.activateNetwork(testInput, true) === null)
+            connection.enabled = true;
     }
 
     private randomNumber(min: number, max: number): number {

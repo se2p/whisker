@@ -3,6 +3,7 @@ import {NeatChromosome} from "./NeatChromosome";
 import {NeatChromosomeGenerator} from "./NeatChromosomeGenerator";
 import {Species} from "./Species";
 import {NeatConfig} from "./NeatConfig";
+import {Randomness} from "../utils/Randomness";
 
 export class NeatPopulation<C extends NeatChromosome> {
 
@@ -58,7 +59,7 @@ export class NeatPopulation<C extends NeatChromosome> {
                 chromosome.species = newSpecies;
             }
 
-                // If we already have some species find the correct one or create a new one for the chromosome if it
+            // If we already have some species find the correct one or create a new one for the chromosome if it
             // fits in none of them
             else {
                 let foundSpecies = false;
@@ -96,9 +97,8 @@ export class NeatPopulation<C extends NeatChromosome> {
     public evolution(): void {
 
         let bestSpecie: Species<C>;
-        const currentPopulationSize: number = this.chromosomes.size();
         const currentSpeciesSize: number = this._species.size();
-        const compatibilityModifier = 0.3;
+        const compatibilityModifier = 0.2;
 
         // Adjust the Distance Threshold to aim for the targeted number of Species
         if (this.generation > 1) {
@@ -108,30 +108,32 @@ export class NeatPopulation<C extends NeatChromosome> {
                 NeatConfig.DISTANCE_THRESHOLD += compatibilityModifier;
 
             if (NeatConfig.DISTANCE_THRESHOLD < 0.3) NeatConfig.DISTANCE_THRESHOLD = 0.3;
-
         }
+        console.log("Current Threshold: " + NeatConfig.DISTANCE_THRESHOLD)
 
         // First calculate the shared fitness value of each chromosome in each Specie and mark the chromosomes
         // which will not survive this generation
         for (const specie of this.species) {
             specie.assignAdjustFitness();
-            specie.markKillCandidates();
         }
 
         // Calculate the total average fitness value of all chromosomes in the generation
-        let fitnessSum = 0;
-        for (const chromosome of this.chromosomes)
+        let fitnessSum = 0.0;
+        for (const chromosome of this.chromosomes) {
             fitnessSum += chromosome.fitness;
-
-        const averageFitness = fitnessSum / currentPopulationSize;
+        }
+        const numberOrganisms = this.chromosomes.size();
+        const averageFitness = fitnessSum / numberOrganisms;
 
         // Compute the expected number of offspring for each chromosome which depends on its fitness value
         // in comparison to the averageFitness of the population
-        for (const chromosome of this.chromosomes)
+        for (const chromosome of this.chromosomes) {
             chromosome.expectedOffspring = chromosome.fitness / averageFitness;
+        }
 
+        console.log("Average Fitness: " + averageFitness)
         // Now calculate the number of offspring in each Species
-        let leftOver = 0;
+        let leftOver = 0.0;
         let totalOffspringExpected = 0;
         for (const specie of this.species) {
             leftOver = specie.getNumberOfOffsprings(leftOver);
@@ -139,8 +141,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
 
         // Handle lost children due to rounding precision
-        if (totalOffspringExpected < currentPopulationSize) {
-
+        if (totalOffspringExpected < numberOrganisms) {
             // Find the species which expects the most children and simultaneously is the best specie
             let maxExpectedOffspring = 0;
             let finalExpectedOffspring = 0;
@@ -159,12 +160,12 @@ export class NeatPopulation<C extends NeatChromosome> {
             // If we still dont reach the size of the current Population, something went wrong
             // This might happen when a stagnant species dominates the population and then gets killed due to its age
             // We handle this problem by only allowing the best specie to reproduce
-            if (finalExpectedOffspring < currentPopulationSize) {
+            if (finalExpectedOffspring < numberOrganisms) {
                 console.info("The population has died!")
                 for (const specie of this.species) {
                     specie.expectedOffspring = 0;
                 }
-                bestSpecie.expectedOffspring = currentPopulationSize;
+                bestSpecie.expectedOffspring = NeatConfig.POPULATION_SIZE;
             }
         }
 
@@ -196,7 +197,7 @@ export class NeatPopulation<C extends NeatChromosome> {
             const halfPopulation = NeatConfig.POPULATION_SIZE / 2;
             const tmp = NeatConfig.POPULATION_SIZE - halfPopulation;
             console.info("Population size is: " + NeatConfig.POPULATION_SIZE);
-            console.info("Half population size is: " + halfPopulation + "popSize - halfPopSize = " + tmp);
+            console.info("Half population size is: " + halfPopulation + " popSize - halfPopSize = " + tmp);
 
             // If we only have one Specie allow only the champ to reproduce
             if (sortedSpecies.size() == 1) {
@@ -255,9 +256,9 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Furthermore, add the members of the surviving species to the population List
         const doomedSpecies = new List<Species<C>>();
         for (const specie of this.species) {
-            if (specie.chromosomes.size() == 0)
+            if (specie.chromosomes.size() == 0) {
                 doomedSpecies.add(specie);
-            else {
+            } else {
                 // Give the new species an age bonus!
                 if (specie.novel)
                     specie.novel = false;
@@ -268,9 +269,10 @@ export class NeatPopulation<C extends NeatChromosome> {
             }
         }
 
-        for (const specie of doomedSpecies)
+        for (const specie of doomedSpecies) {
+            specie.expectedOffspring = 0;
             this.species.remove(specie);
-
+        }
 
         // To be sure check if the best specie survived. If it died something went terribly wrong!
         let foundBest = false;
@@ -281,6 +283,8 @@ export class NeatPopulation<C extends NeatChromosome> {
             }
         if (!foundBest)
             console.error("Lost best Species :(")
+        this.generation++;
+        console.log(this.species)
     }
 
 
