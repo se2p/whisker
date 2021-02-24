@@ -4,6 +4,7 @@ import {NeatChromosomeGenerator} from "./NeatChromosomeGenerator";
 import {Species} from "./Species";
 import {NeatConfig} from "./NeatConfig";
 import {Randomness} from "../utils/Randomness";
+import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 
 export class NeatPopulation<C extends NeatChromosome> {
 
@@ -13,16 +14,20 @@ export class NeatPopulation<C extends NeatChromosome> {
     private _highestFitness: number;
     private _highestFitnessLastChanged: number
     private _generation: number;
-    private _numberOfSpeciesTargeted: number;
+    private readonly _numberOfSpeciesTargeted: number;
+    private _populationChampion: C;
+    private readonly _generator: ChromosomeGenerator<C>
+    private readonly _startSize: number;
 
-    constructor(chromosomeType: C, size: number, numberOfSpecies: number) {
+    constructor(size: number, numberOfSpecies: number, generator: ChromosomeGenerator<C>) {
         this._speciesCount = 0;
         this._highestFitness = 0;
         this._highestFitnessLastChanged = 0;
         this._numberOfSpeciesTargeted = numberOfSpecies
-        this._chromosomes = this.generatePopulation(chromosomeType, size);
+        this._generator = generator;
+        this._startSize = size;
         this._generation = 0;
-        this.speciate();
+        this.generatePopulation();
     }
 
     /**
@@ -31,15 +36,14 @@ export class NeatPopulation<C extends NeatChromosome> {
      * @param size the size of the population
      * @private
      */
-    private generatePopulation(sample: C, size: number): List<C> {
-        const inputSize = sample.inputNodes.size();
-        const outputSize = sample.outputNodes.size();
-        const mutationOp = sample.getMutationOperator();
-        const crossoverOp = sample.getCrossoverOperator();
-        const generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize);
+    private generatePopulation(): List<C> {
         const population = new List<C>()
-        while (population.size() < size)
-            population.add(generator.get() as C)
+        while (population.size() < this._startSize) {
+            population.add(this._generator.get() as C)
+        }
+        this.chromosomes = population;
+        this.speciate();
+        console.log(this.species);
         return population;
     }
 
@@ -53,13 +57,13 @@ export class NeatPopulation<C extends NeatChromosome> {
             // If we have no species at all so far create the first one
             if (this._species.isEmpty()) {
                 const newSpecies = new Species(speciesCounter, false);
-                this.species.add(newSpecies as Species<C>);
+                this._species.add(newSpecies as Species<C>);
                 speciesCounter++;
                 newSpecies.addChromosome(chromosome);
                 chromosome.species = newSpecies;
             }
 
-            // If we already have some species find the correct one or create a new one for the chromosome if it
+                // If we already have some species find the correct one or create a new one for the chromosome if it
             // fits in none of them
             else {
                 let foundSpecies = false;
@@ -80,7 +84,7 @@ export class NeatPopulation<C extends NeatChromosome> {
                 // If the chromosome fits to no species create one for it
                 if (!foundSpecies) {
                     const newSpecies = new Species(speciesCounter, false);
-                    this.species.add(newSpecies as Species<C>)
+                    this._species.add(newSpecies as Species<C>)
                     speciesCounter++;
                     newSpecies.addChromosome(chromosome);
                     chromosome.species = newSpecies;
@@ -98,7 +102,7 @@ export class NeatPopulation<C extends NeatChromosome> {
 
         let bestSpecie: Species<C>;
         const currentSpeciesSize: number = this._species.size();
-        const compatibilityModifier = 0.2;
+        const compatibilityModifier = 0.3;
 
         // Adjust the Distance Threshold to aim for the targeted number of Species
         if (this.generation > 1) {
@@ -145,7 +149,7 @@ export class NeatPopulation<C extends NeatChromosome> {
             // Find the species which expects the most children and simultaneously is the best specie
             let maxExpectedOffspring = 0;
             let finalExpectedOffspring = 0;
-            for (const specie of this.species) {
+            for (const specie of this._species) {
                 if (specie.expectedOffspring >= maxExpectedOffspring) {
                     maxExpectedOffspring = specie.expectedOffspring;
                     bestSpecie = specie;
@@ -171,20 +175,20 @@ export class NeatPopulation<C extends NeatChromosome> {
 
         // Copy the current species into a new List for sorting the species in descending order according to the
         // non adjusted fitness value of the best chromosome in the species.
-        const sortedSpecies = new List<Species<C>>();
-        sortedSpecies.addList(this.species);
-        sortedSpecies.sort((a, b) =>
-            b.chromosomes.get(0).nonAdjustedFitness - a.chromosomes.get(0).nonAdjustedFitness);
 
-        const currentSpecie = sortedSpecies.get(0);
+
+        this.species.sort((a, b) =>
+            a.chromosomes.get(0).nonAdjustedFitness < b.chromosomes.get(0).nonAdjustedFitness ? +1 : -1);
+
+        const currentSpecie = this.species.get(0);
         const bestSpeciesId = currentSpecie.id;
-        const populationChamp = currentSpecie.chromosomes.get(0);
-        populationChamp.populationChampion = true;
-        populationChamp.numberOffspringPopulationChamp = 3;
+        this._populationChampion = currentSpecie.chromosomes.get(0);
+        this._populationChampion.populationChampion = true;
+        this._populationChampion.numberOffspringPopulationChamp = 3;
 
         // Check for fitness stagnation
-        if (populationChamp.nonAdjustedFitness > this._highestFitness) {
-            this._highestFitness = populationChamp.nonAdjustedFitness;
+        if (this._populationChampion.nonAdjustedFitness > this._highestFitness) {
+            this._highestFitness = this._populationChampion.nonAdjustedFitness;
             this._highestFitnessLastChanged = 0;
         } else {
             this._highestFitnessLastChanged++;
@@ -200,17 +204,17 @@ export class NeatPopulation<C extends NeatChromosome> {
             console.info("Half population size is: " + halfPopulation + " popSize - halfPopSize = " + tmp);
 
             // If we only have one Specie allow only the champ to reproduce
-            if (sortedSpecies.size() == 1) {
-                sortedSpecies.get(0).chromosomes.get(0).numberOffspringPopulationChamp = NeatConfig.POPULATION_SIZE;
-                sortedSpecies.get(0).expectedOffspring = NeatConfig.POPULATION_SIZE;
+            if (this.species.size() == 1) {
+                this.species.get(0).chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(NeatConfig.POPULATION_SIZE / 3);
+                this.species.get(0).expectedOffspring = NeatConfig.POPULATION_SIZE;
             }
 
             // Otherwise allow the first two species only to reproduce and mark the others dead.
-            for (let i = 0; i < sortedSpecies.size(); i++) {
-                const specie = sortedSpecies.get(i);
+            for (let i = 0; i < this.species.size(); i++) {
+                const specie = this.species.get(i);
                 // The first two species are allowed to reproduce the whole population
                 if (i <= 1) {
-                    specie.chromosomes.get(0).numberOffspringPopulationChamp = halfPopulation;
+                    specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(halfPopulation / 3);
                     specie.expectedOffspring = halfPopulation;
                     specie.ageOfLastImprovement = specie.age;
                 }
@@ -224,25 +228,21 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
 
         // Now eliminate chromosomes which are marked for dead
-        // Store the chromosomes to kill
-        const doomedDead = new List<C>()
-        for (const chromosome of this.chromosomes) {
+        for(const specie of this.species)
+            for(const chromosome of specie.chromosomes)
+                if(chromosome.eliminate)
+                    specie.removeChromosome(chromosome);
+
+        for (const chromosome of this._chromosomes) {
             if (chromosome.eliminate) {
-                // Remove the chromosome from its species
-                const specie = chromosome.species;
-                specie.removeChromosome(chromosome);
-                doomedDead.add(chromosome);
+                this.chromosomes.remove(chromosome);
             }
         }
-        // Remove the chromosomes from the population pool.
-        for (const chromosome of doomedDead) {
-            this.chromosomes.remove(chromosome);
-        }
-        doomedDead.clear();
+
 
         // Now let the reproduction start
-        for (const specie of sortedSpecies) {
-            specie.breed(this, sortedSpecies);
+        for (const specie of this._species) {
+            specie.breed(this, this._species);
         }
 
         // Remove the old chromosomes from the population and the species. The new ones are saved in the species
@@ -255,8 +255,9 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Remove empty species and age the ones that survive.
         // Furthermore, add the members of the surviving species to the population List
         const doomedSpecies = new List<Species<C>>();
-        for (const specie of this.species) {
-            if (specie.chromosomes.size() == 0) {
+        for (const specie of this._species) {
+            console.log("Specie " + specie.id  + " has a size of: " + specie.chromosomes.size())
+            if (specie.chromosomes.size() === 0) {
                 doomedSpecies.add(specie);
             } else {
                 // Give the new species an age bonus!
@@ -270,8 +271,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
 
         for (const specie of doomedSpecies) {
-            specie.expectedOffspring = 0;
-            this.species.remove(specie);
+            this._species.remove(specie);
         }
 
         // To be sure check if the best specie survived. If it died something went terribly wrong!
@@ -334,5 +334,13 @@ export class NeatPopulation<C extends NeatChromosome> {
 
     set generation(value: number) {
         this._generation = value;
+    }
+
+    get populationChampion(): C {
+        return this._populationChampion;
+    }
+
+    set populationChampion(value: C) {
+        this._populationChampion = value;
     }
 }

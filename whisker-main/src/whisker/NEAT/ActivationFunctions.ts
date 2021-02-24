@@ -10,8 +10,9 @@ export class ActivationFunctions {
 
     public static softmax(x: number, v: number[]): number {
         let denominator = 0;
-        for (const num of v)
+        for (const num of v) {
             denominator += Math.exp(num);
+        }
         return Math.exp(x) / denominator;
     }
 }

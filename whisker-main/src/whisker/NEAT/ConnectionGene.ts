@@ -10,7 +10,7 @@ export class ConnectionGene {
     private _weight: number;
     private _enabled: boolean;
     private _innovation;
-    private static innovationCounter = NeatConfig.INPUT_NEURONS * NeatConfig.OUTPUT_NEURONS;
+    private static innovationCounter = 0;
 
     constructor(from: NodeGene, to: NodeGene, weight: number, enabled: boolean, innovation: number) {
         this._from = from;
@@ -24,7 +24,7 @@ export class ConnectionGene {
         return new ConnectionGene(this.from.clone(), this.to.clone(), this.weight, this.enabled, this.innovation)
     }
 
-    public copyWithNodes(from: NodeGene, to: NodeGene){
+    public copyWithNodes(from: NodeGene, to: NodeGene) {
         return new ConnectionGene(from, to, this.weight, this.enabled, this.innovation)
     }
 
@@ -73,7 +73,7 @@ export class ConnectionGene {
     }
 
     static resetInnovationCounter(): void {
-        ConnectionGene.innovationCounter = NeatConfig.INPUT_NEURONS * NeatConfig.OUTPUT_NEURONS;
+        ConnectionGene.innovationCounter = 0;
     }
 
     /**

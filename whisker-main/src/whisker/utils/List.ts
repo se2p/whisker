@@ -99,6 +99,14 @@ export class List<T> implements Iterable<T> {
     }
 
     /**
+     * Returns all elements the list currently holds.
+     * @return all elements in an array
+     */
+    getElements(): T[]{
+        return this._items;
+    }
+
+    /**
      * Remove all elements in the list
      */
     clear() {

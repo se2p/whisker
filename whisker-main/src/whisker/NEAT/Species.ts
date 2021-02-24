@@ -8,7 +8,7 @@ export class Species<C extends NeatChromosome> {
     private _id: number;
     private _age: number;
     private _averageFitness: number;
-    private _maxFitness: number;
+    private _currentBestFitness: number;
     private _allTimeBestFitness: number;
     private _expectedOffspring: number;
     private _chromosomes: List<C>
@@ -23,7 +23,7 @@ export class Species<C extends NeatChromosome> {
         this._expectedOffspring = 0;
         this._novel = novel;
         this._ageOfLastImprovement = 0;
-        this._maxFitness = 0;
+        this._currentBestFitness = 0;
         this._allTimeBestFitness = 0;
         this._chromosomes = new List<C>();
         this._randomness = Randomness.getInstance();
@@ -54,7 +54,7 @@ export class Species<C extends NeatChromosome> {
         // Calculate the age debt based on the penalizing factor -> Determines after how much generations of no improvement
         // the species gets penalized
         let ageDept = (this._age - this.ageOfLastImprovement + 1) - NeatConfig.PENALIZING_AGE;
-        if(ageDept == 0)
+        if (ageDept == 0)
             ageDept = 1;
 
         const speciesSize = this.chromosomes.size();
@@ -78,8 +78,8 @@ export class Species<C extends NeatChromosome> {
             // Share fitness with the entire species
             chromosome.fitness = chromosome.fitness / speciesSize;
 
-            this.markKillCandidates();
         }
+            this.markKillCandidates();
     }
 
     /**
@@ -101,7 +101,7 @@ export class Species<C extends NeatChromosome> {
         // Determines which members of this species are allowed to reproduce
         // based on the NeatConfig.SPECIES_PARENTS factor
         // +1 ensures that the species will not go extinct -> at least one member survives
-        const numberOfParents = Math.floor((NeatConfig.SPECIES_PARENTS * this.chromosomes.size()) + 1);
+        const numberOfParents = Math.floor((NeatConfig.SPECIES_PARENTS * this.chromosomes.size())) + 1;
 
         this.chromosomes.get(0).champion = true;
 
@@ -140,7 +140,7 @@ export class Species<C extends NeatChromosome> {
      */
     private setMaxFitness(): void {
         this.sortChromosomes();
-        this._maxFitness = this.chromosomes.get(0).fitness;
+        this._currentBestFitness = this.chromosomes.get(0).fitness;
     }
 
     /**
@@ -157,8 +157,7 @@ export class Species<C extends NeatChromosome> {
         let n1 = 0;
         let n2 = 0;
 
-        for(const chromosome of this.chromosomes)
-        {
+        for (const chromosome of this.chromosomes) {
             x1 = chromosome.expectedOffspring;
 
             n1 = Math.floor(x1);
@@ -166,8 +165,7 @@ export class Species<C extends NeatChromosome> {
             n2 = n2 + n1;
             r2 = r2 + r1;
 
-            if (r2 >= 1.0)
-            {
+            if (r2 >= 1.0) {
                 n2 = n2 + 1;
                 r2 = r2 - 1.0;
             }
@@ -185,7 +183,6 @@ export class Species<C extends NeatChromosome> {
      */
     public breed(population: NeatPopulation<C>, sortedSpecies: List<Species<C>>): boolean {
         if (this.expectedOffspring > 0 && this.chromosomes.size() == 0) {
-            console.error("An empty species cannot be reproduced!")
             return false;
         }
 
@@ -193,7 +190,7 @@ export class Species<C extends NeatChromosome> {
 
         if (this.expectedOffspring > NeatConfig.POPULATION_SIZE) {
             console.error("Attempt to produce more offsprings than the size of the population")
-            this.expectedOffspring = Math.floor(NeatConfig.POPULATION_SIZE * 0.95);
+            this.expectedOffspring = Math.floor(NeatConfig.POPULATION_SIZE * 0.75);
         }
 
         // Create the calculated number of offspring of this species; one at a time
@@ -213,7 +210,7 @@ export class Species<C extends NeatChromosome> {
                 champCloned = true;
             }
 
-            // In some cases we only mutate and do no crossover
+                // In some cases we only mutate and do no crossover
             // Furthermore, if we have only one member in the species we cannot apply crossover
             else if (Math.random() <= NeatConfig.MUTATION_WITHOUT_CROSSOVER || this.chromosomes.size() == 1) {
                 child = this.breedMutationOnly();
@@ -221,7 +218,7 @@ export class Species<C extends NeatChromosome> {
 
             // Otherwise we apply crossover
             else {
-                child = this.breedCrossover(population);
+                child = this.breedCrossover(sortedSpecies);
             }
 
             // Now add the child to the proper species
@@ -229,19 +226,18 @@ export class Species<C extends NeatChromosome> {
             if (sortedSpecies.isEmpty()) {
                 const newSpecies = new Species(population.speciesCount, true) as Species<C>;
                 population.speciesCount++;
-                population.species.add(newSpecies);
+                sortedSpecies.add(newSpecies);
                 newSpecies.addChromosome(child);
                 child.species = newSpecies;
             }
 
-            // Otherwise find the correct species or create a new one of the child fits in no existing species
+            // Otherwise find the correct species or create a new one if the child fits in no existing species
             else {
                 let foundSpecies = false;
-                for (const specie of population.species) {
-                    if(specie.chromosomes.size() > 0) {
+                for (const specie of sortedSpecies) {
+                    if (specie.chromosomes.size() > 0) {
                         const representative = specie.chromosomes.get(0);
                         const compatDistance = child.compatibilityDistance(representative);
-
                         // Found a matching Specie
                         if (compatDistance < NeatConfig.DISTANCE_THRESHOLD) {
                             specie.addChromosome(child);
@@ -256,7 +252,7 @@ export class Species<C extends NeatChromosome> {
                 if (!foundSpecies) {
                     const newSpecie = new Species(population.speciesCount, true) as Species<C>;
                     population.speciesCount++;
-                    population.species.add(newSpecie);
+                    sortedSpecies.add(newSpecie);
                     newSpecie.addChromosome(child);
                     child.species = newSpecie;
                 }
@@ -286,7 +282,7 @@ export class Species<C extends NeatChromosome> {
         return parent;
     }
 
-    private breedCrossover(population: NeatPopulation<C>): C {
+    private breedCrossover(sortedSpecies: List<Species<C>>): C {
         // Pick first parent
         const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes);
         let parent2: C
@@ -300,14 +296,18 @@ export class Species<C extends NeatChromosome> {
         else {
             let randomSpecies = this as Species<C>;
             let giveUp = 0;
-            // Give Up if by chance we do not find another Species
-            while (randomSpecies === this && giveUp < 5) {
-                randomSpecies = this._randomness.pickRandomElementFromList(population.species) as Species<C>;
+            // Give Up if by chance we do not find another Species or only species which are empty
+            while (randomSpecies === this && giveUp < 5 && parent2 === undefined) {
+                randomSpecies = this._randomness.pickRandomElementFromList(sortedSpecies) as Species<C>;
                 giveUp++;
+                parent2 = randomSpecies.chromosomes.get(0);
             }
-            parent2 = randomSpecies.chromosomes.get(0);
         }
 
+        if (parent2 === undefined) {
+            console.error("Parent2 Undefined")
+            return parent1.clone().mutate() as C;
+        }
         // Apply the Crossover Operation
         const child = parent1.crossover(parent2).getFirst();
 
@@ -353,12 +353,12 @@ export class Species<C extends NeatChromosome> {
         this._averageFitness = value;
     }
 
-    get maxFitness(): number {
-        return this._maxFitness;
+    get currentBestFitness(): number {
+        return this._currentBestFitness;
     }
 
-    set maxFitness(value: number) {
-        this._maxFitness = value;
+    set currentBestFitness(value: number) {
+        this._currentBestFitness = value;
     }
 
     get allTimeBestFitness(): number {

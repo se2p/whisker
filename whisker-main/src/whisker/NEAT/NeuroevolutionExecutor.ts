@@ -43,7 +43,7 @@ export class NeuroevolutionExecutor {
         const events = new List<[ScratchEvent, number[]]>();
         network.generateNetwork();
         network.flushNodeValues();
-        seedScratch("KingBaileys")
+        seedScratch(String(Randomness.getInitialSeed()))
 
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
@@ -61,18 +61,16 @@ export class NeuroevolutionExecutor {
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
             for (let i = 0; i < NeatConfig.MAX_HIDDEN_LAYERS; i++) {
-                network.activateNetwork(inputs, false);
+                network.activateNetwork(inputs);
             }
-            const output = network.activateNetwork(inputs, false);
-            if (output === null) {
-                continue;
-            }
+            const output = network.activateNetwork(inputs);
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-            const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
+            let nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
             let args = [1];
             if (nextEvent instanceof KeyDownEvent) {
                 args = [+true];
             } else if (nextEvent instanceof WaitEvent) {
+                nextEvent = new WaitEvent()
                 args = [Container.config.getWaitDuration()];
             }
             events.add([nextEvent, args]);

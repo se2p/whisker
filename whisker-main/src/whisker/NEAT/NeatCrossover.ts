@@ -68,8 +68,10 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         for (let i = 0; i < child.inputNodes.size(); i++) {
             testInput.push(i);
         }
-        if(child.activateNetwork(testInput, true) === null)
+        if(child.connections.size() === 0){
+            console.error("Crossover Undefined Network")
             child = parent1.clone();
+        }
         // In Neat only one offspring is created in crossover => ignore second part of the pair
         return new Pair<NeatChromosome>(child, null);
     }

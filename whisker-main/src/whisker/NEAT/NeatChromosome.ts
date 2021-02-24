@@ -80,6 +80,7 @@ export class NeatChromosome extends Chromosome {
         this._fitness = 0;
         this._expectedOffspring = 0;
         this._eliminate = false;
+        this._species = null;
     }
 
     /**
@@ -165,10 +166,9 @@ export class NeatChromosome extends Chromosome {
         }
     }
 
-    activateNetwork(inputs: number[], verifyMode:boolean): number[] {
+    activateNetwork(inputs: number[]): number[] {
         const output = []
         let activatedOnce = false;
-        let abortCount = 0;  // Used if we have created a network which has not one path from input to output Node
         this.generateNetwork();
 
         for (let i = 0; i < inputs.length; i++) {
@@ -177,17 +177,11 @@ export class NeatChromosome extends Chromosome {
             inputNode.activationValue = inputs[i];
             inputNode.nodeValue = inputs[i];
         }
+        const bias = this.inputNodes.get(this.inputNodes.size() - 1);
+        bias.nodeValue = 1;
+        bias.activationValue = 1;
 
         while (!activatedOnce || !this.isOutputActivated()) {
-
-            abortCount++;
-            if (abortCount >= 50) {
-                if(!verifyMode) {
-                    console.error("Defect Network detected")
-                    console.log(this)
-                }
-                return null;
-            }
 
             // For each node, compute the sum of its incoming activation
             for (const layer of this._layerMap.keys()) {
@@ -224,6 +218,11 @@ export class NeatChromosome extends Chromosome {
                             node.activationValue = ActivationFunctions.softmax(node.nodeValue, softMaxVector);
                             node.activationCount++;
                             output.push(node.activationValue)
+                        } else {
+                            node.nodeValue = 0;
+                            node.activationValue = ActivationFunctions.softmax(node.nodeValue, softMaxVector)
+                            node.activationCount++;
+                            output.push(node.activationValue);
                         }
                     }
                 }
@@ -233,6 +232,7 @@ export class NeatChromosome extends Chromosome {
 
         return output;
     }
+
     /**
      * Calculates the compatibility distance between two chromosomes; used for speciating
      * @param chromosome1 the first chromosome
@@ -247,7 +247,7 @@ export class NeatChromosome extends Chromosome {
         let distance = 0;
         let lowestMaxInnovation;
 
-        if(this === undefined || chromosome2 === undefined){
+        if (this === undefined || chromosome2 === undefined) {
             console.error("Undefined chromosomes in compat Distance calculation")
             return NeatConfig.DISTANCE_THRESHOLD + 1;
         }
@@ -285,7 +285,7 @@ export class NeatChromosome extends Chromosome {
                 matching++;
                 weight += Math.abs(genome1Innovations.get(innovation).weight - genome2Innovations.get(innovation).weight)
             }
-                // If the innovationNumber is lower then the lowestMaxInnovation
+                // If the innovationNumber is lower than the lowestMaxInnovation
             // its a disjoint connection otherwise its an excess connection
             else {
                 innovation < lowestMaxInnovation ? disjoint++ : excess++;
@@ -294,9 +294,9 @@ export class NeatChromosome extends Chromosome {
 
         // get number of genes in the bigger Genome for normalization
         const N = Math.max(this.connections.size(), chromosome2.connections.size())
-
+        matching = Math.max(matching, 1);
         if (N > 0)
-            distance = (excess * NeatConfig.EXCESS_COEFFICIENT + disjoint * NeatConfig.DISJOINT_COEFFICIENT) / N +
+            distance = ((excess * NeatConfig.EXCESS_COEFFICIENT + disjoint * NeatConfig.DISJOINT_COEFFICIENT) / N) +
                 ((weight / matching) * NeatConfig.WEIGHT_COEFFICIENT);
         return distance;
     }
@@ -518,9 +518,13 @@ export class NeatChromosome extends Chromosome {
         return "Genome:\nNodeGenes: " + this.allNodes + "\nConnectionGenes: " + this._connections;
     }
 
-    equals(other: unknown):
-        boolean {
+    equals(other: unknown): boolean {
         if (!(other instanceof NeatChromosome)) return false;
-        return this.connections === other.connections;
+        for (const connection of this.connections) {
+            if (!connection.equalsByNodes(other.connections)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

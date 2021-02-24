@@ -19,11 +19,10 @@ describe("NeatMutation", () => {
     beforeEach(() => {
         neatMutation = new NeatMutation();
         neatCrossover = new NeatCrossover();
-        inputSize = 4;
+        inputSize = 6;
         outputSize = 3;
         neatChromosomeGenerator = new NeatChromosomeGenerator(neatMutation, neatCrossover, inputSize, outputSize)
         neatChromosome = neatChromosomeGenerator.get();
-        ConnectionGene.resetInnovationCounter()
     })
 
     test("MutateWeights", () => {

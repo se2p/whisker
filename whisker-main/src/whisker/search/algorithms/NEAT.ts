@@ -85,18 +85,21 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        const speciesNumber = 4;
-        const population = new NeatPopulation(this._chromosomeGenerator.get(),this._properties.getPopulationSize(), speciesNumber);
+        const speciesNumber = 5;
+        const population = new NeatPopulation(this._properties.getPopulationSize(), speciesNumber, this._chromosomeGenerator);
         this._iterations = 0;
         this._startTime = Date.now();
 
         while (!this._stoppingCondition.isFinished(this)) {
+            console.log("-----------------------------------------------------")
             console.log("Iteration: " + this._iterations + " Best Fitness: " + population.highestFitness)
             await this.evaluatePopulation(population.chromosomes);
             this.calculateFitness(population.chromosomes);
             population.evolution();
             console.log("Size of Population: " + population.chromosomes.size())
-            console.log("Size of Species: " + population.species.size())
+            console.log("Number of Species: " + population.species.size())
+            console.log("Population Champion: ");
+            console.log(population.populationChampion);
             this._iterations++;
         }
 

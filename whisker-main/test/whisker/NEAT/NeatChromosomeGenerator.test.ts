@@ -13,13 +13,14 @@ describe('NeatChromosomeGenerator', () => {
     beforeEach(() => {
         mutationOp = new NeatMutation();
         crossoverOp = new NeatCrossover();
-        inputSize = 10;
-        outputSize = 7;
+        inputSize = 6;
+        outputSize = 3;
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize);
     })
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
+        const test = neatChromosome.activateNetwork([1,2,3])
         expect(neatChromosome.allNodes.size()).toBe(inputSize + 1 + outputSize) // +1 for Bias
         expect(neatChromosome.connections.size()).toBeGreaterThanOrEqual(1)
     })

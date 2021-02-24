@@ -29,10 +29,10 @@ describe('NeatChromosome', () => {
     })
 
     test('Create Network without hidden layer', () => {
+        chromosome.connections.add(new ConnectionGene(chromosome.inputNodes.get(0), chromosome.outputNodes.get(0),1, true, 3));
         chromosome.generateNetwork();
         // add +1 to the input Nodes due to the Bias Node
         expect(chromosome.allNodes.size()).toBe(inputSize + 1 + outputSize)
-        expect(chromosome.activateNetwork([1,2,3], false)).not.toBe(null)
     })
 
 
@@ -48,7 +48,6 @@ describe('NeatChromosome', () => {
         chromosome.generateNetwork()
         // add +1 to the input Nodes due to the Bias Node
         expect(chromosome.allNodes.size()).toBe(inputSize + 1 + outputSize + 2)
-        expect(chromosome.activateNetwork([1,2,3], false)).not.toBe(null)
         expect(chromosome.layerMap.size).toBe(4)
     })
 
@@ -76,7 +75,7 @@ describe('NeatChromosome', () => {
         connections.add(new ConnectionGene(inputNodes.get(2), outputNodes.get(1), 0.7, true, 6))
 
         chromosome = new NeatChromosome(connections, inputNodes, outputNodes, crossoverOp, mutationOp)
-        const brainValue = chromosome.activateNetwork([0.2, 0.1], false)
+        const brainValue = chromosome.activateNetwork([0.2, 0.1])
         const outputSum = brainValue.reduce((a, b) => a + b, 0)
         expect(Math.round(outputSum)).toBe(1)
     })
@@ -113,7 +112,7 @@ describe('NeatChromosome', () => {
 
 
         chromosome = new NeatChromosome(connections, inputNodes, outputNodes, crossoverOp, mutationOp)
-        const brainValue = chromosome.activateNetwork([0.2, 0.1], false)
+        const brainValue = chromosome.activateNetwork([0.2, 0.1])
         const outputSum = brainValue.reduce((a, b) => a + b, 0)
         expect(Math.round(outputSum)).toBe(1)
     })
@@ -150,8 +149,8 @@ describe('NeatChromosome', () => {
 
 
         chromosome = new NeatChromosome(connections, inputNodes, outputNodes, crossoverOp, mutationOp)
-        chromosome.activateNetwork([0.2, 0.1], false)
-        const brainValue = chromosome.activateNetwork([0.2, 0.1], false)
+        chromosome.activateNetwork([0.2, 0.1])
+        const brainValue = chromosome.activateNetwork([0.2, 0.1])
         const outputSum = brainValue.reduce((a, b) => a + b, 0)
         expect(Math.round(outputSum)).toBe(1)
     })

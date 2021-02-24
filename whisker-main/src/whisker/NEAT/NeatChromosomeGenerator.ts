@@ -6,11 +6,15 @@ import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
 import {NodeType} from "./NodeType";
 import {ConnectionGene} from "./ConnectionGene";
-import {NeatConfig} from "./NeatConfig";
 import {NeatMutation} from "./NeatMutation";
+import {Randomness} from "../utils/Randomness";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
+    // Arbitrary easily detectable value in case of bugs => a connection should never have this value
+    private static readonly TEMP_INNOVATION_NUMBER = 100000;
+
+    public static _innovations = new List<ConnectionGene>();
 
     private _mutationOp: Mutation<NeatChromosome>;
 
@@ -19,6 +23,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
     private _inputSize: number;
 
     private _outputSize: number;
+
+    private _random = Randomness.getInstance();
 
     constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, numInputNodes: number,
                 numOutputNodes: number) {
@@ -34,48 +40,64 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * @ returns: A random initial Neat Phenotype
      */
     get(): NeatChromosome {
-        let valid = false;
-        let generatedChromosome : NeatChromosome;
         //Create some input for testing the generated network
         const input = []
         while (input.length < this.inputSize)
             input.push(Math.random())
         // Loop until we get a valid chromosome
-        while(!valid) {
-            NodeGene._idCounter = 0;
-            // Create the Input Nodes and add them to the nodes list
-            const inputList = new List<NodeGene>()
-            for (let i = 0; i < this._inputSize; i++) {
-                inputList.add(new NodeGene(i, NodeType.INPUT))
-            }
-            inputList.add(new NodeGene(inputList.size(), NodeType.BIAS))    // Bias
-
-            // Create the Output Nodes and add them to the nodes list
-            const outputList = new List<NodeGene>()
-            for (let i = 0; i < this._outputSize; i++) {
-                outputList.add(new NodeGene(inputList.size() + i, NodeType.OUTPUT))
-            }
-            generatedChromosome = this.createConnections(inputList, outputList);
-            generatedChromosome.generateNetwork();
-            if(generatedChromosome.activateNetwork(input, true) !== null)
-                valid = true;
+        let positionId = 0;
+        // Create the Input Nodes and add them to the nodes list
+        const inputList = new List<NodeGene>()
+        while (inputList.size() < this.inputSize) {
+            inputList.add(new NodeGene(positionId, NodeType.INPUT))
+            positionId++;
         }
+        inputList.add(new NodeGene(positionId, NodeType.BIAS))    // Bias
+        positionId++;
+
+        // Create the Output Nodes and add them to the nodes list
+        const outputList = new List<NodeGene>()
+        while (outputList.size() < this.outputSize) {
+            outputList.add(new NodeGene(positionId, NodeType.OUTPUT))
+            positionId++;
+        }
+        const generatedChromosome = this.createConnections(inputList, outputList);
+        generatedChromosome.generateNetwork();
+
         return generatedChromosome;
     }
 
-    private createConnections(inputNodes:List<NodeGene>, outputNodes:List<NodeGene>) : NeatChromosome{
+    private createConnections(inputNodes: List<NodeGene>, outputNodes: List<NodeGene>): NeatChromosome {
         const connections = new List<ConnectionGene>();
-        let counter = 1;
-        for (const inputNode of inputNodes) {
-            for (const outputNode of outputNodes) {
-                // Do not connect the Bias Node and do not connect all inputs to the outputs
-                if ((inputNode.type !== NodeType.BIAS) && (Math.random() < NeatConfig.INITIAL_CONNECTION_RATE)) {
-                    connections.add(new ConnectionGene(inputNode, outputNode, Math.random(), Math.random() < 0.6, counter))
-                    counter++;
-                }
-            }
+        let inputNode = this._random.pickRandomElementFromList(inputNodes);
+        // We dont want the Bias as a first connection of the Network; only input nodes
+        while (inputNode.type === NodeType.BIAS) {
+            inputNode = this._random.pickRandomElementFromList(inputNodes);
         }
+        const outputNode = this._random.pickRandomElementFromList(outputNodes);
+        const newConnection = new ConnectionGene(inputNode, outputNode, Math.random(), true, NeatChromosomeGenerator.TEMP_INNOVATION_NUMBER)
+        this.assignInnovationNumber(newConnection);
+        connections.add(newConnection)
         return new NeatChromosome(connections, inputNodes, outputNodes, this._crossoverOp, this._mutationOp);
+    }
+
+    private findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
+        for (const con of connections) {
+            if (con.equalsByNodes(connection)) return con;
+        }
+        return null;
+    }
+
+    private assignInnovationNumber(newInnovation: ConnectionGene): void {
+        // Check if innovation already happened in this generation if Yes assign the same innovation number
+        const oldInnovation = this.findConnection(NeatMutation._innovations, newInnovation)
+        if (oldInnovation !== null)
+            newInnovation.innovation = oldInnovation.innovation;
+        // If No assign a new one
+        else {
+            newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
+            NeatMutation._innovations.add(newInnovation);
+        }
     }
 
     setCrossoverOperator(crossoverOp: Crossover<NeatChromosome>): void {

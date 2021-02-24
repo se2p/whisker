@@ -5,6 +5,7 @@ import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
 import {NodeType} from "./NodeType";
+import {Randomness} from "../utils/Randomness";
 
 
 export class NeatMutation implements Mutation<NeatChromosome> {
@@ -13,15 +14,15 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     private static readonly TEMP_INNOVATION_NUMBER = 100000;
 
     public static _innovations = new List<ConnectionGene>();
+    private _random = Randomness.getInstance();
 
     apply(chromosome: NeatChromosome): NeatChromosome {
 
         // Special treatment for population Champions => either add a Connection or change the weights
-        if(chromosome.populationChampion){
-            if(Math.random() <= NeatConfig.POPULATION_CHAMPION_CONNECTION_MUTATION){
+        if (chromosome.populationChampion) {
+            if (Math.random() <= NeatConfig.POPULATION_CHAMPION_CONNECTION_MUTATION) {
                 this.mutateAddConnection(chromosome);
-            }
-            else {
+            } else {
                 this.mutateWeight(chromosome);
             }
         }
@@ -29,17 +30,16 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // If we dont have a population Champion apply either structural mutation or non structural mutation but not both!
         else {
             // Structural mutation
-            if(Math.random() < NeatConfig.MUTATE_ADD_NODE) {
+            if (Math.random() < NeatConfig.MUTATE_ADD_NODE) {
                 this.mutateAddNode(chromosome);
-            }
-            else if(Math.random() < NeatConfig.MUTATE_ADD_CONNECTION)
+            } else if (Math.random() < NeatConfig.MUTATE_ADD_CONNECTION)
                 this.mutateAddConnection(chromosome);
 
             // Non structural mutation
-            else{
-                if(Math.random() < NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
+            else {
+                if (Math.random() < NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
                     this.mutateWeight(chromosome);
-                if(Math.random() < NeatConfig.MUTATE_CONNECTION_STATE)
+                if (Math.random() < NeatConfig.MUTATE_CONNECTION_STATE)
                     this.mutateConnectionState(chromosome);
             }
         }
@@ -61,10 +61,10 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         }))
 
         // Pick random from and to Node
-        const fromNode = fromList.get(Math.floor(Math.random() * fromList.size()));
-        const toNode = toList.get(Math.floor(Math.random() * toList.size()));
+        const fromNode = this._random.pickRandomElementFromList(fromList);
+        const toNode = this._random.pickRandomElementFromList(toList);
 
-        const fromLayer = chromosome.findLayerOfNode(chromosome.layerMap,fromNode)
+        const fromLayer = chromosome.findLayerOfNode(chromosome.layerMap, fromNode)
         const toLayer = chromosome.findLayerOfNode(chromosome.layerMap, toNode)
 
         // Create new Connection with temporary innovation number
@@ -72,7 +72,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
             Math.random() < 0.8, NeatMutation.TEMP_INNOVATION_NUMBER)
 
         // If its a new Connection assign the correct innovationNumber and add it to the list
-        if (!this.containsConnection(chromosome.connections, mutatedConnection) && (fromLayer !== toLayer)) {
+        if (!this.containsConnection(chromosome.connections, mutatedConnection) && (fromLayer !== toLayer) && !(fromNode.equals(toNode))) {
             this.assignInnovationNumber(mutatedConnection)
             chromosome.connections.add(mutatedConnection);
         }
@@ -82,7 +82,12 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         chromosome.generateNetwork();
         const connections = chromosome.connections;
         // Select a random Connection to split => the new node is placed in between the connection
-        const splitConnection = connections.get(Math.floor(Math.random() * connections.size()))
+        const splitConnection = this._random.pickRandomElementFromList(connections);
+        if(splitConnection === undefined){
+            console.error("Undefined connection")
+            console.log(chromosome)
+            return;
+        }
         // Disable the old connection
         splitConnection.enabled = false;
 
@@ -94,7 +99,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // Restrict the network to mutate over MAX_HIDDEN_LAYERS layers
         const fromNodeLayer = chromosome.findLayerOfNode(chromosome.layerMap, fromNode)
         const toNodeLayer = chromosome.findLayerOfNode(chromosome.layerMap, toNode)
-        if (fromNodeLayer + toNodeLayer >= NeatConfig.MAX_HIDDEN_LAYERS * 2 - 1) {
+        if (fromNodeLayer + toNodeLayer >= (NeatConfig.MAX_HIDDEN_LAYERS * 2 - 1)) {
             return;
         }
 
@@ -117,8 +122,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         for (const connection of chromosome.connections) {
             if (Math.random() <= NeatConfig.MUTATE_WEIGHT_UNIFORMLY) {
                 connection.weight += this.randomNumber(-0.5, 0.5);
-            }
-            else
+            } else
                 connection.weight = this.randomNumber(-1, 1)
         }
     }
@@ -128,7 +132,12 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         chromosome.generateNetwork();
         const connections = chromosome.connections;
         // Pick random connection
-        const connection = connections.get(Math.floor(Math.random() * connections.size()))
+        const connection = this._random.pickRandomElementFromList(connections);
+        if(connection === undefined){
+            console.error("Undefined connection")
+            console.log(chromosome)
+            return;
+        }
         // Flip the state
         connection.enabled = !connection.enabled;
 
@@ -138,8 +147,6 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         for (let i = 0; i < chromosome.inputNodes.size(); i++) {
             testInput.push(i);
         }
-        if(chromosome.activateNetwork(testInput, true) === null)
-            connection.enabled = true;
     }
 
     private randomNumber(min: number, max: number): number {
