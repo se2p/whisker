@@ -69,7 +69,8 @@
                                                            id="fileselect-project" accept=".sb3">
                                                 </div>
                                                 <div class="form-group">
-                                                    <small id="dateiHilfe" class="form-text text-muted" data-i18n="choose-file"></small>
+                                                    <small id="dateiHilfe" class="form-text text-muted"
+                                                           data-i18n="choose-file"></small>
                                                 </div>
                                             </div>
                                         </div>
@@ -82,7 +83,8 @@
                                         <div class="row">
                                             <div class="col-lg-10">
                                                 <label id="fileselect-tests-label" for="fileselect-tests"
-                                                       style="padding-bottom:7px; padding-top:7px;" data-i18n="test"></label>
+                                                       style="padding-bottom:7px; padding-top:7px;"
+                                                       data-i18n="test"></label>
                                             </div>
                                             <div class="col-lg-2">
                                                 <img src="assets/js.png" style="max-height:40px;" alt="js"/>
@@ -95,7 +97,8 @@
                                                            id="fileselect-tests" accept=".js">
                                                 </div>
                                                 <div class="form-group">
-                                                    <small id="dateiHilfe2" class="form-text text-muted" data-i18n="choose-file"></small>
+                                                    <small id="dateiHilfe2" class="form-text text-muted"
+                                                           data-i18n="choose-file"></small>
                                                 </div>
                                             </div>
                                         </div>
@@ -103,36 +106,36 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Separate issue: Download via URL
                         <div id="advanced-upload" class="row">
-                            <div class="col-lg-6">
-                                <div id="project-url" class="row chooseFile">
-                                    <div class="col-lg-12">
-                                       <!-- Separate issue: Download via URL
-                                       <div class="row">
-                                           <div class="col-lg-10">
-                                               <label for="programUrl"
-                                                      style="padding-bottom:7px; padding-top:7px;" data-i18n="url"></label>
-                                           </div>
-                                           <div class="col-lg-2">
-                                               <img src="assets/url.png" style="max-height:40px;" alt="url"/>
-                                           </div>
-                                       </div>
-                                       <div class="row">
-                                           <div class="col-lg-12">
-                                               <div class="input-group mb-3">
-                                                   <div class="input-group-prepend">
-                                                       <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
-                                                   </div>
-                                                   <input name="programURL" type="text" class="form-control"
-                                                          id="programURL" aria-describedby="basic-addon3">
-                                               </div>
-                                           </div>
-                                       </div>
-                                       -->
+                           <div class="col-lg-6">
+                               <div id="project-url" class="row chooseFile">
+                                   <div class="col-lg-12">
+                                      <div class="row">
+                                          <div class="col-lg-10">
+                                              <label for="programUrl"
+                                                     style="padding-bottom:7px; padding-top:7px;" data-i18n="url"></label>
+                                          </div>
+                                          <div class="col-lg-2">
+                                              <img src="assets/url.png" style="max-height:40px;" alt="url"/>
+                                          </div>
+                                      </div>
+                                      <div class="row">
+                                          <div class="col-lg-12">
+                                              <div class="input-group mb-3">
+                                                  <div class="input-group-prepend">
+                                                      <span class="input-group-text" id="basic-addon3">https://scratch.mit.edu/projects/</span>
+                                                  </div>
+                                                  <input name="programURL" type="text" class="form-control"
+                                                         id="programURL" aria-describedby="basic-addon3">
+                                              </div>
+                                          </div>
+                                      </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        -->
                     </form>
                 </div>
 
@@ -143,7 +146,7 @@
                         <div class="btn-group-toggle" data-toggle="buttons" style="box-sizing: revert; ">
                             <label class="btn btn-main" title="Show / hide advanced settings">
                                 <input id="toggle-advanced" class="checkbox-button" type="checkbox"
-                                       autocomplete="off">+
+                                       autocomplete="off" data-i18n="advanced">
                             </label>
                             <button id="run-all-tests" class="btn btn-main" type="button"
                                     title="Run all tests on all projects" data-i18n="tests">
@@ -155,39 +158,43 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div id="scratch-controls" style="margin-top: 100px;">
-                        <form class="row search-form">
-                            <div class="col-lg-6">
-                                <div id="config-upload" class="row chooseFile">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="col-lg-10">
-                                                <label id="fileselect-config-label" for="fileselect-config"
-                                                       style="padding-bottom:7px; padding-top:7px;" data-i18n="configuration"></label>
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <img src="assets/json.png" style="max-height:40px;" alt="json"/>
-                                            </div>
+                    <div id="scratch-controls">
+                        <form class="row search-form spacer20">
+                            <div class="col-lg-12">
+                                <div id="config-upload" class="chooseFile">
+                                    <div class="row">
+                                        <div class="col-lg-10">
+                                            <label id="fileselect-config-label" for="fileselect-config"
+                                                   style="padding-bottom:7px; padding-top:7px;"
+                                                   data-i18n="configuration"></label>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="form-group" style="margin-bottom:9px;">
-                                                    <input name="configDatei" class="form-control-file"
-                                                           type="file"
-                                                           id="fileselect-config" accept=".json">
-                                                </div>
-                                                <div class="form-group">
-                                                    <small id="dateiHilfe3" class="form-text text-muted" data-i18n="choose-file"></small>
-                                                </div>
+                                        <div class="col-lg-2">
+                                            <img src="assets/json.png" style="max-height:40px;" alt="json"/>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="form-group" style="margin-bottom:9px;">
+                                                <input name="configDatei" class="form-control-file"
+                                                       type="file"
+                                                       id="fileselect-config" accept=".json">
+                                            </div>
+                                            <div class="form-group">
+                                                <small id="dateiHilfe3" class="form-text text-muted"
+                                                       data-i18n="choose-file"></small>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </form>
+                        <form class="row search-form">
                             <div class="col-lg-12">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <label id="scratch-controls-label" for="scratch-controls" data-i18n="test-generation"></label>
+                                        <label id="scratch-controls-label" for="scratch-controls"
+                                               style="padding-bottom:7px; padding-top:7px;"
+                                               data-i18n="test-generation"></label>
                                     </div>
                                 </div>
                                 <div class="row">
