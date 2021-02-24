@@ -1,4 +1,6 @@
-export class NeatConfig {
+export class NeatParameter {
+
+    // Parameter
 
     // Network Settings
     public static INPUT_NEURONS = 6;
@@ -9,7 +11,7 @@ export class NeatConfig {
     public static EXCESS_COEFFICIENT = 1.0
     public static DISJOINT_COEFFICIENT = 1.0
     public static WEIGHT_COEFFICIENT = 0.2
-    public static DISTANCE_THRESHOLD = 2.5;
+    public static DISTANCE_THRESHOLD = 5.0;
 
     // Population Management
     public static MUTATION_WITHOUT_CROSSOVER = 0.25;

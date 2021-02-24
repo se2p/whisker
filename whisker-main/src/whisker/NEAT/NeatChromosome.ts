@@ -25,8 +25,8 @@ import {ConnectionGene} from "./ConnectionGene";
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 import {NodeType} from "./NodeType";
-import {NeatConfig} from "./NeatConfig";
 import {FitnessFunction} from "../search/FitnessFunction";
+import {NeatParameter} from "./NeatParameter";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {ActivationFunctions} from "./ActivationFunctions";
 import {Species} from "./Species";
@@ -126,9 +126,6 @@ export class NeatChromosome extends Chromosome {
             cloneConnections.add(originalConnection.copyWithNodes(fromNode, toNode));
         }
         const chromosomeClone = new NeatChromosome(cloneConnections, cloneInputNodes, cloneOutputNodes, this._crossoverOp, this._mutationOp);
-        chromosomeClone.fitness = this.fitness;
-        chromosomeClone.nonAdjustedFitness = this.nonAdjustedFitness;
-        chromosomeClone.timePlayed = this.timePlayed;
         chromosomeClone.generateNetwork();
         return chromosomeClone;
     }
@@ -151,7 +148,7 @@ export class NeatChromosome extends Chromosome {
     generateNetwork(): void {
         // Set the input and output Nodes
         this._layerMap.set(0, this._inputNodes);
-        this._layerMap.set(NeatConfig.MAX_HIDDEN_LAYERS, this._outputNodes)
+        this._layerMap.set(NeatParameter.MAX_HIDDEN_LAYERS, this._outputNodes)
 
         // Add the hidden Nodes
         for (const connection of this._connections) {
@@ -231,74 +228,6 @@ export class NeatChromosome extends Chromosome {
         }
 
         return output;
-    }
-
-    /**
-     * Calculates the compatibility distance between two chromosomes; used for speciating
-     * @param chromosome1 the first chromosome
-     * @param chromosome2 the second chromosome
-     * @return the compatibility distance of both chromosomes
-     */
-    public compatibilityDistance(chromosome2: NeatChromosome): number {
-        let matching = 0;
-        let disjoint = 0;
-        let excess = 0;
-        let weight = 0;
-        let distance = 0;
-        let lowestMaxInnovation;
-
-        if (this === undefined || chromosome2 === undefined) {
-            console.error("Undefined chromosomes in compat Distance calculation")
-            return NeatConfig.DISTANCE_THRESHOLD + 1;
-        }
-
-        // Save first connections in a Map <InnovationNumber, Connection>
-        const genome1Innovations = new Map<number, ConnectionGene>()
-        for (const connection of this.connections) {
-            genome1Innovations.set(connection.innovation, connection)
-        }
-
-        // Save second connections in a Map <InnovationNumber, Connection>
-        const genome2Innovations = new Map<number, ConnectionGene>()
-        for (const connection of chromosome2.connections) {
-            genome2Innovations.set(connection.innovation, connection)
-        }
-
-        // Get the highest innovation Number of the genome with the least gene innovationNumber
-        // Later used to decide between excess and disjoint genes
-        if (genome1Innovations.size === 0 || genome2Innovations.size === 0)
-            lowestMaxInnovation = 0;
-        else {
-            const genome1Highest = Array.from(genome1Innovations.keys()).pop()
-            const genome2Highest = Array.from(genome2Innovations.keys()).pop()
-            lowestMaxInnovation = Math.min(genome1Highest, genome2Highest)
-        }
-
-        // Save in a set to remove duplicates
-        let allInnovations = new Set<number>(genome1Innovations.keys());
-        genome2Innovations.forEach((value, key) => allInnovations.add(key))
-        allInnovations = new Set([...allInnovations].sort());
-
-        for (const innovation of allInnovations) {
-            // If both share the connection then increasing matching and sum the weight difference
-            if (genome1Innovations.has(innovation) && genome2Innovations.has(innovation)) {
-                matching++;
-                weight += Math.abs(genome1Innovations.get(innovation).weight - genome2Innovations.get(innovation).weight)
-            }
-                // If the innovationNumber is lower than the lowestMaxInnovation
-            // its a disjoint connection otherwise its an excess connection
-            else {
-                innovation < lowestMaxInnovation ? disjoint++ : excess++;
-            }
-        }
-
-        // get number of genes in the bigger Genome for normalization
-        const N = Math.max(this.connections.size(), chromosome2.connections.size())
-        matching = Math.max(matching, 1);
-        if (N > 0)
-            distance = ((excess * NeatConfig.EXCESS_COEFFICIENT + disjoint * NeatConfig.DISJOINT_COEFFICIENT) / N) +
-                ((weight / matching) * NeatConfig.WEIGHT_COEFFICIENT);
-        return distance;
     }
 
     /**

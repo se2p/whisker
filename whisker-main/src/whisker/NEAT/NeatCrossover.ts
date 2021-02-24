@@ -11,7 +11,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         parent1.generateNetwork();
         parent2.generateNetwork();
         // Triangle-Swap to have the fittest chromosome always as parent1
-        if (parent1.fitness < parent2.fitness) {
+        if (parent1.nonAdjustedFitness < parent2.nonAdjustedFitness) {
             const temp = parent1;
             parent1 = parent2;
             parent2 = temp;

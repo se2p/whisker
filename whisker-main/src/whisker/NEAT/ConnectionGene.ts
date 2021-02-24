@@ -2,7 +2,6 @@
  * A ConnectionGene represents the connections of a neural network
  */
 import {NodeGene} from "./NodeGene";
-import {NeatConfig} from "./NeatConfig";
 
 export class ConnectionGene {
     private _from: NodeGene;

@@ -1,6 +1,7 @@
 import {List} from "../utils/List";
 import {NeatChromosome} from "./NeatChromosome";
-import {NeatConfig} from "./NeatConfig";
+import {NeatParameter} from "./NeatParameter";
+import {NeatUtil} from "./NeatUtil";
 import {Randomness} from "../utils/Randomness";
 import {NeatPopulation} from "./NeatPopulation";
 
@@ -46,6 +47,13 @@ export class Species<C extends NeatChromosome> {
     }
 
     /**
+     * Returns population size of this Specie.
+     */
+    public size(): number {
+        return this.chromosomes.size();
+    }
+
+    /**
      * Assigns the Adjust-fitness value to each member of the species.
      * The Adjust-Fitness value is calculated as a shared fitness value between all the members of a species
      */
@@ -53,7 +61,7 @@ export class Species<C extends NeatChromosome> {
 
         // Calculate the age debt based on the penalizing factor -> Determines after how much generations of no improvement
         // the species gets penalized
-        let ageDept = (this._age - this.ageOfLastImprovement + 1) - NeatConfig.PENALIZING_AGE;
+        let ageDept = (this._age - this.ageOfLastImprovement + 1) - NeatParameter.PENALIZING_AGE;
         if (ageDept == 0)
             ageDept = 1;
 
@@ -69,7 +77,7 @@ export class Species<C extends NeatChromosome> {
 
             // Boost fitness for young generations to give them a chance to evolve for some generations
             if (this._age <= 10)
-                chromosome.fitness = chromosome.fitness * NeatConfig.AGE_SIGNIFICANCE;
+                chromosome.fitness = chromosome.fitness * NeatParameter.AGE_SIGNIFICANCE;
 
             // Do not allow negative fitness values
             if (chromosome.fitness < 0.0)
@@ -79,7 +87,7 @@ export class Species<C extends NeatChromosome> {
             chromosome.fitness = chromosome.fitness / speciesSize;
 
         }
-            this.markKillCandidates();
+        this.markKillCandidates();
     }
 
     /**
@@ -101,7 +109,7 @@ export class Species<C extends NeatChromosome> {
         // Determines which members of this species are allowed to reproduce
         // based on the NeatConfig.SPECIES_PARENTS factor
         // +1 ensures that the species will not go extinct -> at least one member survives
-        const numberOfParents = Math.floor((NeatConfig.SPECIES_PARENTS * this.chromosomes.size())) + 1;
+        const numberOfParents = Math.floor((NeatParameter.SPECIES_PARENTS * this.chromosomes.size())) + 1;
 
         this.chromosomes.get(0).champion = true;
 
@@ -113,34 +121,6 @@ export class Species<C extends NeatChromosome> {
             }
             position++;
         }
-    }
-
-    /**
-     * Calculates the generations since an improvement has happened in the generation
-     * @private
-     */
-    private lastImproved(): number {
-        return this._age - this._ageOfLastImprovement;
-    }
-
-    /**
-     * Calculates the average fitness of the species
-     * @private
-     */
-    private calculateAverageFitness() {
-        let sum = 0.0;
-        for (const chromosome of this.chromosomes)
-            sum += chromosome.fitness;
-        this._averageFitness = sum / this.chromosomes.size();
-    }
-
-    /**
-     * Sets the value of the current best fitness value of the species
-     * @private
-     */
-    private setMaxFitness(): void {
-        this.sortChromosomes();
-        this._currentBestFitness = this.chromosomes.get(0).fitness;
     }
 
     /**
@@ -186,11 +166,12 @@ export class Species<C extends NeatChromosome> {
             return false;
         }
 
+        this.sortChromosomes();
         const champion = this.chromosomes.get(0);
 
-        if (this.expectedOffspring > NeatConfig.POPULATION_SIZE) {
+        if (this.expectedOffspring > NeatParameter.POPULATION_SIZE) {
             console.error("Attempt to produce more offsprings than the size of the population")
-            this.expectedOffspring = Math.floor(NeatConfig.POPULATION_SIZE * 0.75);
+            this.expectedOffspring = Math.floor(NeatParameter.POPULATION_SIZE * 0.75);
         }
 
         // Create the calculated number of offspring of this species; one at a time
@@ -212,7 +193,7 @@ export class Species<C extends NeatChromosome> {
 
                 // In some cases we only mutate and do no crossover
             // Furthermore, if we have only one member in the species we cannot apply crossover
-            else if (Math.random() <= NeatConfig.MUTATION_WITHOUT_CROSSOVER || this.chromosomes.size() == 1) {
+            else if ((Math.random() <= NeatParameter.MUTATION_WITHOUT_CROSSOVER) || (this.size() == 1)) {
                 child = this.breedMutationOnly();
             }
 
@@ -222,41 +203,7 @@ export class Species<C extends NeatChromosome> {
             }
 
             // Now add the child to the proper species
-            // If we do not have species create the first one
-            if (sortedSpecies.isEmpty()) {
-                const newSpecies = new Species(population.speciesCount, true) as Species<C>;
-                population.speciesCount++;
-                sortedSpecies.add(newSpecies);
-                newSpecies.addChromosome(child);
-                child.species = newSpecies;
-            }
-
-            // Otherwise find the correct species or create a new one if the child fits in no existing species
-            else {
-                let foundSpecies = false;
-                for (const specie of sortedSpecies) {
-                    if (specie.chromosomes.size() > 0) {
-                        const representative = specie.chromosomes.get(0);
-                        const compatDistance = child.compatibilityDistance(representative);
-                        // Found a matching Specie
-                        if (compatDistance < NeatConfig.DISTANCE_THRESHOLD) {
-                            specie.addChromosome(child);
-                            child.species = specie;
-                            foundSpecies = true;
-                            break;
-                        }
-                    }
-                }
-
-                // If the child fits in no existing specie create a new one for it
-                if (!foundSpecies) {
-                    const newSpecie = new Species(population.speciesCount, true) as Species<C>;
-                    population.speciesCount++;
-                    sortedSpecies.add(newSpecie);
-                    newSpecie.addChromosome(child);
-                    child.species = newSpecie;
-                }
-            }
+            NeatUtil.speciate(child, population);
         }
         // Return true if everything went fine.
         return true;
@@ -267,8 +214,10 @@ export class Species<C extends NeatChromosome> {
 
         // If we have some offsprings left to generate allow mutation of the population champion to happen
         if (populationChampion.numberOffspringPopulationChamp > 1) {
-            populationChampion.numberOffspringPopulationChamp--;
-            return parent.mutate();
+            // We want the popChamp clone to be treated like a popChamp during mutation but to not keep afterwards.
+            parent.populationChampion = true;
+            parent.mutate();
+            parent.populationChampion = false;
         }
         // Otherwise just clone the champion -> Elitism
         populationChampion.numberOffspringPopulationChamp--;
@@ -288,7 +237,7 @@ export class Species<C extends NeatChromosome> {
         let parent2: C
 
         // Pick second parent either from within the species or from another species (interspecies mating)
-        if (this._randomness.nextDouble() > NeatConfig.INTERSPECIES_CROSSOVER_RATE) {
+        if (this._randomness.nextDouble() > NeatParameter.INTERSPECIES_CROSSOVER_RATE) {
             // Second parent picked from the same species (= this species)
             parent2 = this._randomness.pickRandomElementFromList(this.chromosomes)
         }
@@ -297,24 +246,20 @@ export class Species<C extends NeatChromosome> {
             let randomSpecies = this as Species<C>;
             let giveUp = 0;
             // Give Up if by chance we do not find another Species or only species which are empty
-            while (randomSpecies === this && giveUp < 5 && parent2 === undefined) {
+            while ((randomSpecies === this && giveUp < 5) || randomSpecies.size() === 0) {
                 randomSpecies = this._randomness.pickRandomElementFromList(sortedSpecies) as Species<C>;
                 giveUp++;
-                parent2 = randomSpecies.chromosomes.get(0);
             }
+            parent2 = randomSpecies.chromosomes.get(0);
         }
 
-        if (parent2 === undefined) {
-            console.error("Parent2 Undefined")
-            return parent1.clone().mutate() as C;
-        }
         // Apply the Crossover Operation
         const child = parent1.crossover(parent2).getFirst();
 
-        // Decide if we additionally apply crossover -> done randomly or
-        // if both parents have a compatibility distance of 0 which means they are equal
-        if (this._randomness.nextDouble() > NeatConfig.CROSSOVER_ONLY_RATE || parent1.equals(parent2) ||
-            parent1.compatibilityDistance(parent2) === 0) {
+        // Decide if we additionally apply mutation -> done randomly or
+        // if both parents have a compatibility distance of 0 which means they have the same structure and weights
+        if (this._randomness.nextDouble() > NeatParameter.CROSSOVER_ONLY_RATE || parent1.equals(parent2) ||
+            NeatUtil.compatibilityDistance(parent1,parent2) === 0) {
             child.mutate();
         }
         return child;

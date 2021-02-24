@@ -32,7 +32,7 @@ import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGe
 import {NeatChromosomeGenerator} from "../NEAT/NeatChromosomeGenerator";
 import {NeatMutation} from "../NEAT/NeatMutation";
 import {NeatCrossover} from "../NEAT/NeatCrossover";
-import {NeatConfig} from "../NEAT/NeatConfig";
+import {NeatParameter} from "../NEAT/NeatParameter";
 
 class ConfigException implements Error {
     message: string;
@@ -155,8 +155,8 @@ export class WhiskerSearchConfiguration {
                     this._getCrossoverOperator(),
                     this.dict['init-var-length']);
             case 'neatChromosome':
-                return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(), NeatConfig.INPUT_NEURONS,
-                    NeatConfig.OUTPUT_NEURONS)
+                return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(), NeatParameter.INPUT_NEURONS,
+                    NeatParameter.OUTPUT_NEURONS)
 
             case 'test':
             default:

@@ -12,7 +12,7 @@ import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NeatChromosome} from "./NeatChromosome";
 import {KeyDownEvent} from "../testcase/events/KeyDownEvent";
 import {Container} from "../utils/Container";
-import {NeatConfig} from "./NeatConfig";
+import {NeatParameter} from "./NeatParameter";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -60,7 +60,7 @@ export class NeuroevolutionExecutor {
             let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
-            for (let i = 0; i < NeatConfig.MAX_HIDDEN_LAYERS; i++) {
+            for (let i = 0; i < NeatParameter.MAX_HIDDEN_LAYERS; i++) {
                 network.activateNetwork(inputs);
             }
             const output = network.activateNetwork(inputs);

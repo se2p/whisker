@@ -1,6 +1,6 @@
 import {Mutation} from "../search/Mutation";
 import {NeatChromosome} from "./NeatChromosome";
-import {NeatConfig} from "./NeatConfig";
+import {NeatParameter} from "./NeatParameter";
 import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
@@ -20,26 +20,27 @@ export class NeatMutation implements Mutation<NeatChromosome> {
 
         // Special treatment for population Champions => either add a Connection or change the weights
         if (chromosome.populationChampion) {
-            if (Math.random() <= NeatConfig.POPULATION_CHAMPION_CONNECTION_MUTATION) {
-                this.mutateAddConnection(chromosome);
-            } else {
+            if (Math.random() <= 0.8) {
                 this.mutateWeight(chromosome);
+            } else {
+                this.mutateAddConnection(chromosome);
             }
         }
 
         // If we dont have a population Champion apply either structural mutation or non structural mutation but not both!
         else {
             // Structural mutation
-            if (Math.random() < NeatConfig.MUTATE_ADD_NODE) {
+            if (Math.random() < NeatParameter.MUTATE_ADD_NODE) {
                 this.mutateAddNode(chromosome);
-            } else if (Math.random() < NeatConfig.MUTATE_ADD_CONNECTION)
+            } else if (Math.random() < NeatParameter.MUTATE_ADD_CONNECTION) {
                 this.mutateAddConnection(chromosome);
+            }
 
             // Non structural mutation
             else {
-                if (Math.random() < NeatConfig.MUTATE_WEIGHT_NETWORK_LEVEL)
+                if (Math.random() < NeatParameter.MUTATE_WEIGHT_NETWORK_LEVEL)
                     this.mutateWeight(chromosome);
-                if (Math.random() < NeatConfig.MUTATE_CONNECTION_STATE)
+                if (Math.random() < NeatParameter.MUTATE_CONNECTION_STATE)
                     this.mutateConnectionState(chromosome);
             }
         }
@@ -53,7 +54,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // Collect all possible node from which and to which a connection is possible
         chromosome.layerMap.forEach(((value, key) => {
             // Exclude connections from outputNodes
-            if (key < NeatConfig.MAX_HIDDEN_LAYERS)
+            if (key < NeatParameter.MAX_HIDDEN_LAYERS)
                 fromList.addList(value);
             // Exclude connections to inputNodes
             if (key > 0)
@@ -99,7 +100,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // Restrict the network to mutate over MAX_HIDDEN_LAYERS layers
         const fromNodeLayer = chromosome.findLayerOfNode(chromosome.layerMap, fromNode)
         const toNodeLayer = chromosome.findLayerOfNode(chromosome.layerMap, toNode)
-        if (fromNodeLayer + toNodeLayer >= (NeatConfig.MAX_HIDDEN_LAYERS * 2 - 1)) {
+        if (fromNodeLayer + toNodeLayer >= (NeatParameter.MAX_HIDDEN_LAYERS * 2 - 1)) {
             return;
         }
 
@@ -120,7 +121,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     mutateWeight(chromosome: NeatChromosome): void {
         chromosome.generateNetwork();
         for (const connection of chromosome.connections) {
-            if (Math.random() <= NeatConfig.MUTATE_WEIGHT_UNIFORMLY) {
+            if (Math.random() <= NeatParameter.MUTATE_WEIGHT_UNIFORMLY) {
                 connection.weight += this.randomNumber(-0.5, 0.5);
             } else
                 connection.weight = this.randomNumber(-1, 1)

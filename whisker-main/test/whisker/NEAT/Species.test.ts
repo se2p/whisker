@@ -5,7 +5,8 @@ import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeG
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {NeatConfig} from "../../../src/whisker/NEAT/NeatConfig";
+import {NeatParameter} from "../../../src/whisker/NEAT/NeatParameter";
+import {NeatPopulation} from "../../../src/whisker/NEAT/NeatPopulation";
 
 describe("Species Test", () => {
 
@@ -17,7 +18,8 @@ describe("Species Test", () => {
     let species: Species<NeatChromosome>;
     let population: List<NeatChromosome>;
     let populationSize: number;
-    let random : Randomness
+    let random: Randomness;
+    let champion: NeatChromosome;
 
     beforeEach(() => {
         crossOver = new NeatCrossover();
@@ -32,21 +34,20 @@ describe("Species Test", () => {
             population.add(generator.get())
         species.chromosomes.addList(population);
         random = Randomness.getInstance();
-    })
-
-    test("Test markKillCandidates()", () =>{
         for (let i = 0; i < species.chromosomes.size(); i++) {
             species.chromosomes.get(i).fitness = (i % 5) + 1;
         }
-        const champion = random.pickRandomElementFromList(species.chromosomes)
+        champion = random.pickRandomElementFromList(species.chromosomes)
         champion.fitness = 10;
         champion.nonAdjustedFitness = 10;
+    })
 
+    test("Test markKillCandidates()", () => {
         species.markKillCandidates();
 
         const eliminateList = new List<NeatChromosome>();
-        for(const c of species.chromosomes)
-            if(c.eliminate)
+        for (const c of species.chromosomes)
+            if (c.eliminate)
                 eliminateList.add(c);
 
         expect(species.chromosomes.get(0).fitness).toBe(10);
@@ -54,21 +55,102 @@ describe("Species Test", () => {
         expect(species.chromosomes.get(0).eliminate).toBe(false);
         expect(species.allTimeBestFitness).toBe(10);
         expect(species.ageOfLastImprovement).toBe(species.age);
-        expect(eliminateList.size()).toBeGreaterThanOrEqual(species.chromosomes.size() - (Math.floor(NeatConfig.SPECIES_PARENTS * species.chromosomes.size()) + 1))
+        expect(eliminateList.size()).toBeGreaterThanOrEqual(species.chromosomes.size() - (Math.floor(NeatParameter.SPECIES_PARENTS * species.chromosomes.size()) + 1))
     })
 
-    test("Test assignAdjustFitness()", () =>{
-        for (let i = 0; i < species.chromosomes.size(); i++) {
-            species.chromosomes.get(i).fitness = (i % 5) + 1;
+    test("Test assignAdjustFitness()", () => {
+        species.assignAdjustFitness();
+
+        expect(champion.fitness).toBeGreaterThan(species.chromosomes.get(1).fitness);
+        expect(champion.fitness).toBe(
+            champion.nonAdjustedFitness * NeatParameter.AGE_SIGNIFICANCE / species.chromosomes.size())
+        expect(species.chromosomes.get(1).fitness).toBe(
+            species.chromosomes.get(1).nonAdjustedFitness * NeatParameter.AGE_SIGNIFICANCE / species.chromosomes.size())
+        expect(champion.fitness).not.toBe(champion.nonAdjustedFitness)
+    })
+
+    test("Calculate the number of Offspring with leftOver of 0", () => {
+        species.assignAdjustFitness();
+
+        let totalOffsprings = 0;
+        let avgFitness = 0;
+        for (const c of species.chromosomes) {
+            avgFitness += c.fitness;
         }
-        const champion = random.pickRandomElementFromList(species.chromosomes)
+        avgFitness /= species.chromosomes.size();
+        for (const c of species.chromosomes) {
+            c.expectedOffspring = c.fitness / avgFitness;
+            totalOffsprings += c.expectedOffspring;
+        }
+        const leftOver = species.getNumberOfOffsprings(0);
+        expect(Math.floor(totalOffsprings)).toBe(species.expectedOffspring)
+        expect(leftOver).toBeLessThan(1)
+    })
+
+    test("Calculate the number of Offspring with leftOver of 0.99", () => {
+        species.assignAdjustFitness();
+
+        let totalOffsprings = 0;
+        let avgFitness = 0;
+        for (const c of species.chromosomes) {
+            avgFitness += c.fitness;
+        }
+        avgFitness /= species.chromosomes.size();
+        for (const c of species.chromosomes) {
+            c.expectedOffspring = c.fitness / avgFitness;
+            totalOffsprings += c.expectedOffspring;
+        }
+        const leftOver = species.getNumberOfOffsprings(0.99);
+        expect(Math.floor(totalOffsprings)).toBe(species.expectedOffspring)
+        expect(leftOver).toBeGreaterThan(0.99)
+    })
+
+    test("Remove and Add Chromosome", () => {
+        const speciesSizeBefore = species.size();
+        const testChrom = generator.get();
+        species.addChromosome(testChrom)
+        const speciesSizeAdded = species.size();
+        species.removeChromosome(testChrom);
+        const speciesSizeRemoved = species.size();
+
+        expect(speciesSizeAdded).toBe(speciesSizeBefore + 1);
+        expect(speciesSizeRemoved).toBe(speciesSizeBefore)
+    })
+
+    test("Breed new Chromosomes in Species", () => {
+        const neatPopulation = new NeatPopulation(50, 1, generator)
+        const speciesList = new List<Species<NeatChromosome>>();
+        const popSpecie = neatPopulation.species.get(0);
+
+        for (let i = 0; i < popSpecie.chromosomes.size(); i++) {
+            popSpecie.chromosomes.get(i).fitness = (i % 5) + 1;
+        }
+        champion = random.pickRandomElementFromList(popSpecie.chromosomes)
         champion.fitness = 10;
         champion.nonAdjustedFitness = 10;
+        champion.populationChampion = true;
+        champion.numberOffspringPopulationChamp = 3;
 
-        species.assignAdjustFitness();
-        expect(champion.fitness).toBeGreaterThan(species.chromosomes.get(1).fitness);
-        expect(champion.fitness).toBe(0.22)
-        expect(species.chromosomes.get(1).fitness).toBe(0.11)
-        expect(champion.fitness).not.toBe(champion.nonAdjustedFitness)
+        speciesList.add(popSpecie);
+        speciesList.add(new Species<NeatChromosome>(1, true))
+        popSpecie.assignAdjustFitness();
+
+        let avgFitness = 0;
+        for (const c of popSpecie.chromosomes) {
+            avgFitness += c.fitness;
+        }
+        avgFitness /= popSpecie.chromosomes.size();
+        for (const c of popSpecie.chromosomes) {
+            c.expectedOffspring = c.fitness / avgFitness;
+        }
+        popSpecie.getNumberOfOffsprings(0);
+        const sizeBeforeBreed = popSpecie.size();
+
+        for (let i = 0; i < 100; i++) {
+            popSpecie.breed(neatPopulation, speciesList)
+        }
+
+        // We did not eliminate the marked Chromosomes here therefore 101 the size of the old population
+        expect(popSpecie.size()).toBe(101 * sizeBeforeBreed)
     })
 })
