@@ -14,33 +14,27 @@
 </head>
 
 <body id="body">
-    <div id="header">
-        <div class="container-fluid spacer20" style="padding-left:0; padding-right:0; min-width:100%;
-        position:relative; text-align:center;">
-            <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
-                <img src="assets/banner.jpg" class="banner" alt="Scratch Items" style="width:100%;"></a>
-            <div style="position:absolute; top:8px; right:16px;">
-                <ul class="nav justify-content-center">
-                    <li class="nav-item">
-                        <a id="link" class="nav-link active" href="index.html" data-i18n="project-link"></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="./html/faq.html">FAQ</a>
-                    </li>
-                    <li style="padding-left:30px;">
-                        <form id="form_lang">
-                            <label>
-                                <select class="lang-select" name="lang" style="font-size:12px; padding:4px;
-                                margin:9px;">
-                                    <option value="de" selected data-i18n="de"></option>
-                                    <option value="en" data-i18n="en"></option>
-                                </select>
-                            </label>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <div id="header" class="container-fluid spacer20">
+        <a href="https://scratch.fim.uni-passau.de/whisker/" target="_self">
+            <img src="assets/banner.jpg" class="banner" alt="Scratch Items"></a>
+        <ul id="nav-links" class="nav justify-content-center">
+            <li class="nav-item">
+                <a id="link" class="nav-link active" href="index.html" data-i18n="project-link"></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./html/faq.html" data-i18n="faq"></a>
+            </li>
+            <li class="links">
+                <form id="form_lang">
+                    <label>
+                        <select class="lang-select" name="lang">
+                            <option value="de" selected data-i18n="de"></option>
+                            <option value="en" data-i18n="en"></option>
+                        </select>
+                    </label>
+                </form>
+            </li>
+        </ul>
     </div>
 
     <div id="main" class="container">
@@ -332,8 +326,7 @@
                         <ul class="nav justify-content-center">
                             <!-- Not currently needed.
                             <li class="nav-item">
-                                <a class="nav-link" href="./html/contact.html"
-                                   style="color:var(--mainColor);" data-i18n="contact"></a>
+                                <a class="nav-link footer-link" href="./html/contact.html" data-i18n="contact"></a>
                             </li>
                             -->
                             <li class="nav-item">
@@ -366,7 +359,6 @@
                         </div>
                     </div>
                 </a>
-
                 <!-- Sharingbutton Twitter -->
                 <a class="resp-sharing-button__link"
                    href="https://twitter.com/intent/tweet/?text=Testing%20Scratch%20Projects%20with%20Whisker&amp;url=https%3A%2F%2Fscratch.fim.uni-passau.de%2Fwhisker"
@@ -382,7 +374,6 @@
                         </div>
                     </div>
                 </a>
-
                 <!-- Sharingbutton E-Mail -->
                 <a class="resp-sharing-button__link"
                    href="mailto:?subject=Testing%20Scratch%20Projects%20with%20Whisker&amp;body=https%3A%2F%2Fscratch.fim.uni-passau.de%2Fwhisker"
@@ -398,7 +389,6 @@
                         </div>
                     </div>
                 </a>
-
                 <!-- Sharingbutton WhatsApp -->
                 <a class="resp-sharing-button__link"
                    href="whatsapp://send?text=Testing%20Scratch%20Projects%20with%20Whisker%20https%3A%2F%2Fscratch.fim.uni-passau.de%2Fwhisker"
@@ -414,10 +404,9 @@
                         </div>
                     </div>
                 </a>
-                <div class="row">
-                    <div class="col-lg-12" style="text-align:center;">
-                        <img src="assets/uniPassauLogo.png" style="max-height:70px; padding-bottom:20px;"
-                             alt="logo"/>
+                <div id="logo" class="row">
+                    <div class="col-lg-12">
+                        <img src="assets/uniPassauLogo.png" alt="uni-logo"/>
                     </div>
                 </div>
             </div>
