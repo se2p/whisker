@@ -147,7 +147,8 @@
                     <!-- Use tabindex to make the canvas focusable. -->
                     <canvas id="scratch-stage" tabindex="1"></canvas>
                     <div id="startTests" class="spacer20">
-                        <div class="btn-group-toggle" data-toggle="buttons" style="box-sizing: revert; ">
+                        <div class="btn-group-toggle" data-toggle="buttons" style="box-sizing: revert;
+                         padding-left: 10px;">
                             <label class="btn btn-main" title="Show / hide advanced settings">
                                 <input id="toggle-advanced" class="checkbox-button" type="checkbox"
                                        autocomplete="off">
@@ -257,86 +258,70 @@
                                 <th></th>
                             </tr>
                             </thead>
-                            <tbody>
-
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
-                    <div id="test-editor" class="mt-4" style="display: none;">
-                        <form class="form-inline mt-3">
-                            <div class="form-group">
-                                <div class="form-row">
-                                    <div class="col">
-                                        <button class="editor-apply btn btn-sm btn-outline-secondary"
-                                                type="button" data-i18n="load">
-                                        </button>
-                                    </div>
-                                    <div class="col">
-                                        <button class="editor-save btn btn-sm btn-outline-secondary"
-                                                type="button" data-i18n="save">
-                                        </button>
-                                    </div>
-                                    <div class="col">
-                                        <div class="btn-group-toggle" data-toggle="buttons">
-                                            <label class="btn btn-sm btn-outline-secondary" title="Show TAP13">
-                                                <input id="toggle-tap" class="checkbox-button" type="checkbox"
-                                                       autocomplete="off">
-                                                <div data-i18n="tap"></div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <div class="btn-group-toggle" data-toggle="buttons">
-                                            <label class="btn btn-sm btn-outline-secondary" title="Show Log">
-                                                <input id="toggle-log" class="checkbox-button" type="checkbox"
-                                                       autocomplete="off">
-                                                <div data-i18n="log"></div>
-                                            </label>
-                                        </div>
-                                    </div>
+                    <div id="test-editor" class="mt-4 spacer10" style="display: none;"></div>
+                    <div class="col-lg-12 spacer50">
+                        <div class="btn-group-toggle" data-toggle="buttons">
+                            <button class="editor-apply btn btn-main"
+                                    type="button" data-i18n="load">
+                            </button>
+                            <button class="editor-save btn btn-main"
+                                    type="button" data-i18n="save">
+                            </button>
+                            <label class="btn btn-main" title="Show TAP13">
+                                <input id="toggle-tap" class="checkbox-button" type="checkbox"
+                                       autocomplete="off">
+                                <div data-i18n="tap"></div>
+                            </label>
+                            <label class="btn btn-main" title="Show Log">
+                                <input id="toggle-log" class="checkbox-button" type="checkbox"
+                                       autocomplete="off">
+                                <div data-i18n="log"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="output-run" class="col-lg-12 spacer20" style="display: none;">
+                    <label for="output-run" data-i18n="tap"></label>
+                    <pre class="output-content"></pre>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col">
+                                    <button class="output-clear btn btn-sm btn-main"
+                                            type="button" data-i18n="clear">
+                                    </button>
+                                    <button class="output-save btn btn-sm btn-main"
+                                            type="button" data-i18n="save">
+                                    </button>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                    <div id="output-run" class="mt-4" style="display: none;">
-                        <label for="output-run" data-i18n="tap"></label>
-                        <pre class="output-content"></pre>
-                        <form class="form-inline mt-2">
-                            <div class="form-group">
-                                <div class="form-row">
-                                    <div class="col">
-                                        <button class="output-clear btn btn-sm btn-outline-secondary"
-                                                type="button" data-i18n="clear">
-                                        </button>
-                                        <button class="output-save btn btn-sm btn-outline-secondary"
-                                                type="button" data-i18n="save">
-                                        </button>
-                                    </div>
+                        </div>
+                    </form>
+                </div>
+                <div id="output-log" class="col-lg-12" style="display: none;">
+                    <label for="output-log" data-i18n="log"></label>
+                    <pre class="output-content"></pre>
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <div class="col">
+                                    <button class="output-clear btn btn-sm btn-main"
+                                            type="button" data-i18n="clear">
+                                    </button>
+                                    <button class="output-save btn btn-sm btn-main"
+                                            type="button" data-i18n="save">
+                                    </button>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                    <div id="output-log" class="mt-4" style="display: none;">
-                        <label for="output-log" data-i18n="log"></label>
-                        <pre class="output-content"></pre>
-                        <form class="form-inline mt-2">
-                            <div class="form-group">
-                                <div class="form-row">
-                                    <div class="col">
-                                        <button class="output-clear btn btn-sm btn-outline-secondary"
-                                                type="button" data-i18n="clear">
-                                        </button>
-                                        <button class="output-save btn btn-sm btn-outline-secondary"
-                                                type="button" data-i18n="save">
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <div id="footer">
