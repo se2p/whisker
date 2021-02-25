@@ -191,7 +191,7 @@
                                                            data-i18n="choose-file"></small>
                                                 </div>
                                             </div>
-                                    </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -270,16 +270,36 @@
                                         <button class="editor-apply btn btn-sm btn-outline-secondary"
                                                 type="button" data-i18n="load">
                                         </button>
+                                    </div>
+                                    <div class="col">
                                         <button class="editor-save btn btn-sm btn-outline-secondary"
                                                 type="button" data-i18n="save">
                                         </button>
+                                    </div>
+                                    <div class="col">
+                                        <div class="btn-group-toggle" data-toggle="buttons">
+                                            <label class="btn btn-sm btn-outline-secondary" title="Show TAP13">
+                                                <input id="toggle-tap" class="checkbox-button" type="checkbox"
+                                                       autocomplete="off">
+                                                <div data-i18n="tap"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="btn-group-toggle" data-toggle="buttons">
+                                            <label class="btn btn-sm btn-outline-secondary" title="Show Log">
+                                                <input id="toggle-log" class="checkbox-button" type="checkbox"
+                                                       autocomplete="off">
+                                                <div data-i18n="log"></div>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </form>
                     </div>
                     <div id="output-run" class="mt-4" style="display: none;">
-                        <label for="output-run">TAP13</label>
+                        <label for="output-run" data-i18n="tap"></label>
                         <pre class="output-content"></pre>
                         <form class="form-inline mt-2">
                             <div class="form-group">
@@ -297,7 +317,7 @@
                         </form>
                     </div>
                     <div id="output-log" class="mt-4" style="display: none;">
-                        <label for="output-log">Log</label>
+                        <label for="output-log" data-i18n="log"></label>
                         <pre class="output-content"></pre>
                         <form class="form-inline mt-2">
                             <div class="form-group">
