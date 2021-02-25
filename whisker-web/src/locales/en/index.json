@@ -27,5 +27,7 @@
     "facebook" : "Share on Facebook",
     "twitter" : "Share on Twitter",
     "mail" : "Share by E-Mail",
-    "whatsApp" : "Share on WhatsApp"
+    "whatsApp" : "Share on WhatsApp",
+    "no-file" : "No file selected.",
+    "browse" : "Browse..."
 }

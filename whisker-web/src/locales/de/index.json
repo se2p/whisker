@@ -27,5 +27,7 @@
     "facebook" : "Teile auf Facebook",
     "twitter" : "Teile auf Twitter",
     "mail" : "Teile per E-Mail",
-    "whatsApp" : "Teile auf WhatsApp"
+    "whatsApp" : "Teile auf WhatsApp",
+    "no-file" : "Keine Datei ausgewählt.",
+    "browse" : "Durchsuchen..."
 }
