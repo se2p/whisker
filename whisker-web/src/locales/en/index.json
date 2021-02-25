@@ -19,6 +19,8 @@
     "load" : "Load Tests of Editor",
     "save" : "Save",
     "clear" : "Clear",
+    "tap" : "TAP13",
+    "log" : "Log",
     "footer1" : "Whisker @ University of Passau, Innstraße 41, 94032 Passau",
     "footer2" : "Chair of Software Engineering II - Prof. Dr. Gordon Fraser",
     "contact" : "Contact",

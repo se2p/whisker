@@ -177,9 +177,9 @@ const initComponents = function () {
     Whisker.testTable.show();
 
     Whisker.outputRun = new Output($('#output-run')[0]);
-    Whisker.outputRun.show();
+    Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
-    Whisker.outputLog.show();
+    Whisker.outputLog.hide();
 
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
@@ -265,6 +265,34 @@ const initEvents = function () {
             $('#advanced-upload').hide();
             $('#scratch-controls').hide();
             $('#run-search').hide();
+        }
+    });
+
+    $('#toggle-tap').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            $('#output-run').show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#output-run').hide();
+        }
+    });
+
+    $('#toggle-log').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            $('#output-log').show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#output-log').hide();
         }
     });
 
