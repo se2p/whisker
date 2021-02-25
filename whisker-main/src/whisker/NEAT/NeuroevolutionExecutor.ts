@@ -43,7 +43,7 @@ export class NeuroevolutionExecutor {
         const events = new List<[ScratchEvent, number[]]>();
         network.generateNetwork();
         network.flushNodeValues();
-        seedScratch(String(Randomness.getInitialSeed()))
+        seedScratch("KingBaileys")
 
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);

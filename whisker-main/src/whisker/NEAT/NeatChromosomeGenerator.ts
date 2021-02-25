@@ -62,6 +62,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
             positionId++;
         }
         const generatedChromosome = this.createConnections(inputList, outputList);
+        const mutationOp = generatedChromosome.getMutationOperator() as NeatMutation;
+        mutationOp.mutateWeight(generatedChromosome, 1, 1);
         generatedChromosome.generateNetwork();
 
         return generatedChromosome;
@@ -75,7 +77,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
             inputNode = this._random.pickRandomElementFromList(inputNodes);
         }
         const outputNode = this._random.pickRandomElementFromList(outputNodes);
-        const newConnection = new ConnectionGene(inputNode, outputNode, Math.random(), true, NeatChromosomeGenerator.TEMP_INNOVATION_NUMBER)
+        const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, NeatChromosomeGenerator.TEMP_INNOVATION_NUMBER)
         this.assignInnovationNumber(newConnection);
         connections.add(newConnection)
         return new NeatChromosome(connections, inputNodes, outputNodes, this._crossoverOp, this._mutationOp);

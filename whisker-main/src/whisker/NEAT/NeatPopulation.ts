@@ -154,9 +154,13 @@ export class NeatPopulation<C extends NeatChromosome> {
             this._highestFitnessLastChanged++;
         }
 
+        console.log("Highest fitness last changed: " + this.highestFitnessLastChanged)
+        console.log("Population Champion: ")
+        console.log(this.populationChampion)
+
         // If there is a stagnation in fitness perform delta-coding
         if (this._highestFitnessLastChanged > NeatParameter.PENALIZING_AGE + 5) {
-            console.info("Perform detla-coding")
+            console.info("Perform delta-coding")
             this._highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize() / 2;
             console.info("Population size is: " + this.populationSize());
@@ -181,6 +185,8 @@ export class NeatPopulation<C extends NeatChromosome> {
                     specie.expectedOffspring = 0;
                 }
             }
+            console.log("After Delta: ")
+            console.log(this.species)
 
             //TODO: Baby Stolen
         }

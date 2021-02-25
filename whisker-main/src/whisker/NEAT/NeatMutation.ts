@@ -21,7 +21,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         // Special treatment for population Champions => either add a Connection or change the weights
         if (chromosome.populationChampion) {
             if (Math.random() <= 0.8) {
-                this.mutateWeight(chromosome);
+                this.mutateWeight(chromosome, NeatParameter.MUTATE_WEIGHT_POWER, 1);
             } else {
                 this.mutateAddConnection(chromosome);
             }
@@ -39,7 +39,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
             // Non structural mutation
             else {
                 if (Math.random() < NeatParameter.MUTATE_WEIGHT_NETWORK_LEVEL)
-                    this.mutateWeight(chromosome);
+                    this.mutateWeight(chromosome, NeatParameter.MUTATE_WEIGHT_POWER, 1);
                 if (Math.random() < NeatParameter.MUTATE_CONNECTION_STATE)
                     this.mutateConnectionState(chromosome);
             }
@@ -84,7 +84,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const connections = chromosome.connections;
         // Select a random Connection to split => the new node is placed in between the connection
         const splitConnection = this._random.pickRandomElementFromList(connections);
-        if(splitConnection === undefined){
+        if (splitConnection === undefined) {
             console.error("Undefined connection")
             console.log(chromosome)
             return;
@@ -118,14 +118,51 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         toNode.incomingConnections.add(outConnection)
     }
 
-    mutateWeight(chromosome: NeatChromosome): void {
-        chromosome.generateNetwork();
-        for (const connection of chromosome.connections) {
-            if (Math.random() <= NeatParameter.MUTATE_WEIGHT_UNIFORMLY) {
-                connection.weight += this.randomNumber(-0.5, 0.5);
-            } else
-                connection.weight = this.randomNumber(-1, 1)
+    public mutateWeight(chromosome: NeatChromosome, power: number, rate: number): void {
+
+        let gaussPoint = 0;
+        let coldGaussPoint = 0;
+
+        // Randomly shake things up!
+        const severe = this._random.nextDouble() > 0.5;
+
+        const connections = chromosome.connections;
+        const connectionsSize = connections.size();
+        const endPart = connectionsSize * 0.8;
+        const powerMod = 1.0;
+        let counter = 0;
+
+
+        for (const connection of connections) {
+            if (severe) {
+                gaussPoint = 0.3;
+                coldGaussPoint = 0.1;
+            } else {
+
+                if (connectionsSize >= 10 && counter > endPart) {
+                    gaussPoint = 0.5;
+                    coldGaussPoint = 0.3;
+                } else {
+                    if (this._random.nextDouble() > 0.5) {
+                        gaussPoint = 1.0 - rate;
+                        coldGaussPoint = 1.0 - rate - 0.1;
+                    } else {
+                        gaussPoint = 1.0 - rate;
+                        coldGaussPoint = 1.0 - rate;
+                    }
+                }
+            }
+
+            const randomPosNegValue = this._random.randomBoolean() ? +1 : -1;
+            const weightModification = randomPosNegValue * this._random.nextDouble() * power * powerMod;
+            const randomDouble = this._random.nextDouble();
+            if (randomDouble > gaussPoint)
+                connection.weight += weightModification;
+            else if (randomDouble > coldGaussPoint)
+                connection.weight = weightModification;
+            counter++;
         }
+
     }
 
 
@@ -134,7 +171,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const connections = chromosome.connections;
         // Pick random connection
         const connection = this._random.pickRandomElementFromList(connections);
-        if(connection === undefined){
+        if (connection === undefined) {
             console.error("Undefined connection")
             console.log(chromosome)
             return;

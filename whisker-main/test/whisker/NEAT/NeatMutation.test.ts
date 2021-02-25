@@ -5,6 +5,7 @@ import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
 import {NodeType} from "../../../src/whisker/NEAT/NodeType";
+import {NeatParameter} from "../../../src/whisker/NEAT/NeatParameter";
 
 
 describe("NeatMutation", () => {
@@ -31,7 +32,7 @@ describe("NeatMutation", () => {
             originalWeights.push(connection.weight)
 
         const mutatedWeights = [];
-        neatMutation.mutateWeight(neatChromosome)
+        neatMutation.mutateWeight(neatChromosome, NeatParameter.MUTATE_WEIGHT_POWER, 1)
         for (const connection of neatChromosome.connections)
             mutatedWeights.push(connection.weight)
         originalWeights.sort();

@@ -96,8 +96,6 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             population.evolution();
             console.log("Size of Population: " + population.chromosomes.size())
             console.log("Number of Species: " + population.species.size())
-            console.log("Population Champion: ");
-            console.log(population.populationChampion);
             this._iterations++;
         }
 
