@@ -13,7 +13,6 @@ const imprintEN = require('./locales/en/imprint.json');
 const privacyDE = require('./locales/de/privacy.json');
 const privacyEN = require('./locales/en/privacy.json');
 
-
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
 
@@ -230,7 +229,7 @@ const initEvents = function () {
             .text('Record Inputs');
     });
 
-    $('#record').on('click', event => {
+    $('#record').on('click', () => {
         if (Whisker.scratch.isInputEnabled()) {
             if (Whisker.inputRecorder.isRecording()) {
                 Whisker.inputRecorder.stopRecording();
@@ -309,6 +308,23 @@ const initEvents = function () {
             );
         });
 
+    $('#fileselect-config').on('change', event => {
+        $(event.target).parent().removeAttr('data-i18n');
+        const fileName = $(this).val();
+        $(this).next('.config-label').html(fileName);
+    });
+
+    $('#fileselect-project').on('change', event => {
+        $(event.target).parent().removeAttr('data-i18n');
+        const fileName = $(this).val();
+        $(this).next('.project-label').html(fileName);
+    });
+
+    $('#fileselect-tests').on('change', event => {
+        $(event.target).parent().removeAttr('data-i18n');
+        const fileName = $(this).val();
+        $(this).next('.tests-label').html(fileName);
+    });
 };
 
 const toggleComponents = function () {
@@ -381,7 +397,7 @@ i18next
             privacy: privacyEN
         }
     }
-}, function (err, t) {
+}, function () {
     updateContent();
 }).then();
 
