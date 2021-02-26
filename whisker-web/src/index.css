@@ -166,10 +166,6 @@ p {
 
 /* ==== Basic Body Structure ==== */
 
-.center {
-    text-align:center;
-}
-
 .spacer10 {
     margin-bottom: 10px;
 }
@@ -180,6 +176,14 @@ p {
 
 .spacer50 {
     margin-bottom: 50px;
+}
+
+.center {
+    text-align:center;
+}
+
+.hide {
+    display: none;
 }
 
 #main {
@@ -215,6 +219,39 @@ p {
 
 .userData {
     margin:10px;
+}
+
+.label-padding {
+    padding-bottom:7px;
+    padding-top:7px;
+}
+
+.img {
+    max-height:40px;
+}
+
+.btn-group-toggle {
+    box-sizing: revert;
+    padding-left: 10px;
+}
+
+.inline {
+    display: inline-block;
+}
+
+.advanced-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.acc-label {
+    margin: 0;
+}
+
+.acc-input {
+    text-align: right;
+    border: 1px solid lightgrey;
 }
 
 @media (max-width: 1400px) {

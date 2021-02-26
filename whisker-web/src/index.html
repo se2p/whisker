@@ -47,13 +47,11 @@
                                 <div id="file-upload" class="row chooseFile">
                                     <div class="col-lg-12">
                                         <div class="row">
-                                            <div class="col-lg-10">
-                                                <label id="fileselect-project-label" for="fileselect-project"
-                                                       style="padding-bottom:7px;
-                                                padding-top:7px;" data-i18n="program"></label>
+                                            <div class="col-lg-10 label-padding">
+                                                <label id="fileselect-project-label" for="fileselect-project" data-i18n="program"></label>
                                             </div>
                                             <div class="col-lg-2">
-                                                <img src="assets/sb3.png" style="max-height:40px;" alt="sb3"/>
+                                                <img class="img" src="assets/sb3.png" alt="sb3"/>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -61,12 +59,10 @@
                                                 <div class="upload-btn-wrapper">
                                                     <button class="btnr" title="browse" data-i18n="browse"></button>
                                                     <span data-i18n="no-file"></span>
-                                                    <input type="file" id="fileselect-project" accept=".sb3"
-                                                           name="programmDatei"/>
+                                                    <input type="file" id="fileselect-project" accept=".sb3" name="program-file"/>
                                                 </div>
                                                 <div class="form-group">
-                                                    <small id="dateiHilfe" class="form-text text-muted"
-                                                           data-i18n="choose-file"></small>
+                                                    <small id="help-text" class="form-text text-muted" data-i18n="choose-file"></small>
                                                 </div>
                                             </div>
                                         </div>
@@ -77,13 +73,11 @@
                                 <div id="test-upload" class="row chooseFile">
                                     <div class="col-lg-12">
                                         <div class="row">
-                                            <div class="col-lg-10">
-                                                <label id="fileselect-tests-label" for="fileselect-tests"
-                                                       style="padding-bottom:7px; padding-top:7px;"
-                                                       data-i18n="test"></label>
+                                            <div class="col-lg-10 label-padding">
+                                                <label id="fileselect-tests-label" for="fileselect-tests" data-i18n="test"></label>
                                             </div>
                                             <div class="col-lg-2">
-                                                <img src="assets/js.png" style="max-height:40px;" alt="js"/>
+                                                <img class="img" src="assets/js.png" alt="js"/>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -91,12 +85,10 @@
                                                 <div class="upload-btn-wrapper">
                                                     <button class="btnr" title="browse" data-i18n="browse"></button>
                                                     <span data-i18n="no-file"></span>
-                                                    <input type="file" id="fileselect-tests" accept=".js"
-                                                           name="testDatei"/>
+                                                    <input type="file" id="fileselect-tests" accept=".js" name="test-file"/>
                                                 </div>
                                                 <div class="form-group">
-                                                    <small id="dateiHilfe2" class="form-text text-muted"
-                                                           data-i18n="choose-file"></small>
+                                                    <small id="help-text2" class="form-text text-muted" data-i18n="choose-file"></small>
                                                 </div>
                                             </div>
                                         </div>
@@ -110,12 +102,11 @@
                                <div id="project-url" class="row chooseFile">
                                    <div class="col-lg-12">
                                       <div class="row">
-                                          <div class="col-lg-10">
-                                              <label for="programUrl"
-                                                     style="padding-bottom:7px; padding-top:7px;" data-i18n="url"></label>
+                                          <div class="col-lg-10 label-padding">
+                                              <label for="programUrl" data-i18n="url"></label>
                                           </div>
                                           <div class="col-lg-2">
-                                              <img src="assets/url.png" style="max-height:40px;" alt="url"/>
+                                              <img class="img" src="assets/url.png" alt="url"/>
                                           </div>
                                       </div>
                                       <div class="row">
@@ -136,23 +127,17 @@
                         -->
                     </form>
                 </div>
-
                 <div class="col-lg-6">
                     <!-- Use tabindex to make the canvas focusable. -->
                     <canvas id="scratch-stage" tabindex="1"></canvas>
                     <div id="startTests" class="spacer20">
-                        <div class="btn-group-toggle" data-toggle="buttons" style="box-sizing: revert;
-                         padding-left: 10px;">
+                        <div class="btn-group-toggle" data-toggle="buttons">
                             <label class="btn btn-main" data-i18n="[title]show-advanced">
                                 <input id="toggle-advanced" class="checkbox-button" type="checkbox" autocomplete="off">
                                 <div data-i18n="advanced"></div>
                             </label>
-                            <button id="run-all-tests" class="btn btn-main" type="button"
-                                    data-i18n="[title]tests-title;tests;">
-                            </button>
-                            <button id="reset" class="btn btn-main" type="button"
-                                    data-i18n="[title]reset-title;reset;">
-                            </button>
+                            <button id="run-all-tests" class="btn btn-main" type="button" data-i18n="[title]t-tests;tests;"></button>
+                            <button id="reset" class="btn btn-main" type="button" data-i18n="[title]t-reset;reset;"></button>
                         </div>
                     </div>
                 </div>
@@ -163,13 +148,11 @@
                                 <div id="config-upload" class="row chooseFile">
                                     <div class="col-lg-12">
                                         <div class="row">
-                                            <div class="col-lg-10">
-                                                <label id="fileselect-config-label" for="fileselect-config"
-                                                       style="padding-bottom:7px; padding-top:7px;"
-                                                       data-i18n="configuration"></label>
+                                            <div class="col-lg-10 label-padding">
+                                                <label id="fileselect-config-label" for="fileselect-config" data-i18n="configuration"></label>
                                             </div>
                                             <div class="col-lg-2">
-                                                <img src="assets/json.png" style="max-height:40px;" alt="json"/>
+                                                <img class="img" src="assets/json.png" alt="json"/>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -177,12 +160,10 @@
                                                 <div class="upload-btn-wrapper">
                                                     <button class="btnr" title="browse" data-i18n="browse"></button>
                                                     <span data-i18n="no-file"></span>
-                                                    <input type="file" id="fileselect-config" accept=".json"
-                                                           name="configDatei"/>
+                                                    <input type="file" id="fileselect-config" accept=".json" name="config-file"/>
                                                 </div>
                                                 <div class="form-group">
-                                                    <small id="dateiHilfe3" class="form-text text-muted"
-                                                           data-i18n="choose-file"></small>
+                                                    <small id="help-text3" class="form-text text-muted" data-i18n="choose-file"></small>
                                                 </div>
                                             </div>
                                         </div>
@@ -193,54 +174,41 @@
                         <form class="row search-form">
                             <div class="col-lg-12">
                                 <div class="row">
-                                    <div class="col-lg-12">
-                                        <label id="scratch-controls-label" for="scratch-controls"
-                                               style="padding-bottom:7px; padding-top:7px;"
-                                               data-i18n="test-generation"></label>
+                                    <div class="col-lg-12 label-padding">
+                                        <label id="scratch-controls-label" for="scratch-controls" data-i18n="test-generation"></label>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <button id="green-flag" class="btn btn-outline-success"
-                                                type="button" title="Start the program"><i
-                                            class="fas fa-flag"></i></button>
+                                        <button id="green-flag" class="btn btn-outline-success" type="button"
+                                                data-i18n="[title]start"><i class="fas fa-flag"></i></button>
                                         <button id="stop" class="btn btn-danger" type="button"
-                                                title="Stop the program / test execution"><i
-                                            class="fas fa-stop"></i></button>
-                                        <div class="custom-control custom-checkbox"
-                                             style="display: inline-block;"
-                                             title="Enable / disable manual inputs to the program">
-                                            <input id="toggle-input" type="checkbox"
-                                                   class="custom-control-input" autocomplete="off">
+                                                data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
+                                        <div class="custom-control custom-checkbox inline" data-i18n="[title]input">
+                                            <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
                                             <label class="custom-control-label" for="toggle-input"></label>
                                         </div>
-                                        <button id="record" class="btn btn-sm btn-outline-danger"
-                                                type="button"
-                                                title="Record inputs for use in tests" data-i18n="recording">
+                                        <button id="record" class="btn btn-sm btn-outline-danger" type="button"
+                                                data-i18n="[title]t-record;record;">
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-12">
-                                <div class="spacer10" style="display: flex;justify-content: space-between;
-                                                 align-items: center;">
-                                    <label style="margin: 0;"
-                                           for="acceleration-factor" data-i18n="acceleration"></label>
-                                    <input
-                                        style="text-align: right; border: 1px solid lightgrey;"
-                                        id="acceleration-factor" type="number" autocomplete="off"/>
+                                <div class="spacer10 advanced-input">
+                                    <label class="acc-label" for="acceleration-factor" data-i18n="acceleration"></label>
+                                    <input class=acc-input" id="acceleration-factor" type="number" autocomplete="off"/>
                                 </div>
                                 <div class="row spacer10">
                                     <button id="run-search" type="button" class="btn btn-main search-button"
-                                            data-i18n="search"></button>
+                                            data-i18n="[title]search;search;"></button>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
-
                 <div class="col-lg-12">
-                    <div id="test-table" style="display: none;">
+                    <div id="test-table" class="hide">
                         <table class="display table table-sm table-striped mt-4">
                             <thead class="thead-light">
                             <tr>
@@ -254,55 +222,45 @@
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div id="test-editor" class="mt-4 spacer10" style="display: none;"></div>
+                    <div id="test-editor" class="mt-4 spacer10 hide"></div>
                     <div class="col-lg-12 spacer50">
                         <div class="btn-group-toggle" data-toggle="buttons">
-                            <button class="editor-apply btn btn-main" type="button" data-i18n="[title]load-title;load;">
-                            </button>
-                            <button class="editor-save btn btn-main" type="button" data-i18n="[title]save-title;save;">
-                            </button>
-                            <label class="btn btn-main" data-i18n="[title]tap-title">
+                            <button class="editor-apply btn btn-main" type="button" data-i18n="[title]t-load;load;"></button>
+                            <button class="editor-save btn btn-main" type="button" data-i18n="[title]t-save;save;"></button>
+                            <label class="btn btn-main" data-i18n="[title]t-tap">
                                 <input id="toggle-tap" class="checkbox-button" type="checkbox" autocomplete="off">
                                 <div data-i18n="tap"></div>
                             </label>
-                            <label class="btn btn-main" data-i18n="[title]log-title">
+                            <label class="btn btn-main" data-i18n="[title]t-log">
                                 <input id="toggle-log" class="checkbox-button" type="checkbox" autocomplete="off">
                                 <div data-i18n="log"></div>
                             </label>
                         </div>
                     </div>
                 </div>
-                <div id="output-run" class="col-lg-12 spacer20" style="display: none;">
+                <div id="output-run" class="col-lg-12 spacer20 hide">
                     <label for="output-run" data-i18n="tap"></label>
                     <pre class="output-content"></pre>
                     <form class="form-inline">
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col">
-                                    <button class="output-clear btn btn-sm btn-main" type="button"
-                                            data-i18n="[title]clear-title;clear;">
-                                    </button>
-                                    <button class="output-save btn btn-sm btn-main" type="button"
-                                            data-i18n="[title]save-title;save;">
-                                    </button>
+                                    <button class="output-clear btn btn-sm btn-main" type="button" data-i18n="[title]t-clear;clear;"></button>
+                                    <button class="output-save btn btn-sm btn-main" type="button" data-i18n="[title]t-save;save;"></button>
                                 </div>
                             </div>
                         </div>
                     </form>
                 </div>
-                <div id="output-log" class="col-lg-12" style="display: none;">
+                <div id="output-log" class="col-lg-12 hide">
                     <label for="output-log" data-i18n="log"></label>
                     <pre class="output-content"></pre>
                     <form class="form-inline">
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col">
-                                    <button class="output-clear btn btn-sm btn-main" type="button"
-                                            data-i18n="[title]clear-title;clear;">
-                                    </button>
-                                    <button class="output-save btn btn-sm btn-main" type="button"
-                                            data-i18n="[title]save-title;save;">
-                                    </button>
+                                    <button class="output-clear btn btn-sm btn-main" type="button" data-i18n="[title]t-clear;clear;"></button>
+                                    <button class="output-save btn btn-sm btn-main" type="button" data-i18n="[title]t-save;save;"></button>
                                 </div>
                             </div>
                         </div>
