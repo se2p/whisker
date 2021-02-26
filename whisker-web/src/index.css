@@ -166,6 +166,10 @@ p {
 
 /* ==== Basic Body Structure ==== */
 
+.center {
+    text-align:center;
+}
+
 .spacer10 {
     margin-bottom: 10px;
 }
@@ -257,12 +261,17 @@ p {
     background-color: var(--backgroundColor);
 }
 
-#logo.col-lg-12 {
-    text-align:center;
+.footer-container {
+    padding-top:30px;
+}
+
+.footer-text {
+    color:#eee;
 }
 
 #logo img {
-    max-height:70px; padding-bottom:20px;
+    max-height:70px;
+    padding-bottom:20px;
 }
 
 /* ===== Socials ===== */
@@ -598,6 +607,8 @@ img {vertical-align: middle;}
 @media only screen and (max-width: 300px) {
     .prev, .next,.text {font-size: 11px}
 }
+
+/* ==== Upload buttons ==== */
 
 .upload-btn-wrapper {
     position: relative;
