@@ -192,12 +192,12 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="form-group">
+                                    <div class="form-group col-lg-12">
                                         <button id="green-flag" class="btn btn-outline-success" type="button"
                                                 data-i18n="[title]start"><i class="fas fa-flag"></i></button>
                                         <button id="stop" class="btn btn-danger" type="button"
                                                 data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
-                                        <div class="custom-control custom-checkbox inline" data-i18n="[title]input">
+                                        <div class="custom-control custom-checkbox inline button-padding" data-i18n="[title]input">
                                             <input id="toggle-input" type="checkbox" class="custom-control-input" autocomplete="off">
                                             <label class="custom-control-label" for="toggle-input"></label>
                                         </div>
@@ -207,13 +207,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-12">
+                            <div class="form-group col-lg-12">
                                 <div class="spacer10 advanced-input">
                                     <label class="acc-label" for="acceleration-factor" data-i18n="acceleration"></label>
-                                    <input class=acc-input" id="acceleration-factor" type="number" autocomplete="off"/>
+                                    <input class="acc-input" id="acceleration-factor" type="number" autocomplete="off"/>
                                 </div>
                                 <div class="row spacer10">
-                                    <button id="run-search" type="button" class="btn btn-main search-button"
+                                    <button id="run-search" type="button" class="btn btn-main btn-sm search-button"
                                             data-i18n="[title]search;search;"></button>
                                 </div>
                             </div>
@@ -238,13 +238,15 @@
                     <div id="test-editor" class="mt-4 spacer10 hide"></div>
                     <div class="col-lg-12 spacer50">
                         <div class="btn-group-toggle" data-toggle="buttons">
-                            <button class="editor-apply btn btn-main" type="button" data-i18n="[title]t-load;load;"></button>
-                            <button class="editor-save btn btn-main" type="button" data-i18n="[title]t-save;save;"></button>
-                            <label class="btn btn-main" data-i18n="[title]t-tap">
+                            <button class="editor-apply btn btn-sm btn-main" type="button"
+                                    data-i18n="[title]t-load;load;"></button>
+                            <button class="editor-save btn btn-sm btn-main" type="button"
+                                    data-i18n="[title]t-save;save;"></button>
+                            <label class="btn btn-sm btn-main" data-i18n="[title]t-tap">
                                 <input id="toggle-tap" class="checkbox-button" type="checkbox" autocomplete="off">
                                 <div data-i18n="tap"></div>
                             </label>
-                            <label class="btn btn-main" data-i18n="[title]t-log">
+                            <label class="btn btn-sm btn-main" data-i18n="[title]t-log">
                                 <input id="toggle-log" class="checkbox-button" type="checkbox" autocomplete="off">
                                 <div data-i18n="log"></div>
                             </label>

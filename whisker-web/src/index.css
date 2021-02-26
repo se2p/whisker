@@ -213,12 +213,16 @@ p {
 
 .form-group {
     margin-bottom: 9px;
-    padding-left: 15px;
+    padding-left: 25px;
     padding-right: 15px;
 }
 
 .search-button {
-    margin-left: 130px;
+    margin-left: 35%;
+}
+
+.button-padding {
+    margin-left: 35%;
 }
 
 .userData {
