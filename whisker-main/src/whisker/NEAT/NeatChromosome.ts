@@ -37,7 +37,6 @@ export class NeatChromosome extends Chromosome {
     private _inputNodes = new List<NodeGene>();
     private _outputNodes = new List<NodeGene>();
     private _allNodes = new List<NodeGene>()
-    private _layerMap = new Map<number, List<NodeGene>>();          // Map <Layer | Nodes>
     private _connections: List<ConnectionGene>
     private readonly _crossoverOp: Crossover<NeatChromosome>
     private readonly _mutationOp: Mutation<NeatChromosome>
@@ -52,25 +51,22 @@ export class NeatChromosome extends Chromosome {
     private _populationChampion: boolean      // A population champion is the best chromosome of the whole population
     private _numberOffspringPopulationChamp: number;    // Number of children the population champion is allowed to produce
     private _species: Species<NeatChromosome> // Points to the species of this Chromosome
+    private _loop: boolean
+    private _networkFitness: number
 
     /**
      * Constructs a new NeatChromosome
      * @param connections the connections between the Nodes
-     * @param inputNodes all input Nodes of this network
-     * @param outputNodes all output Nodes of this network
+     * @param allNodes all the nodes of a Chromosome
      * @param crossoverOp the crossover Operator
      * @param mutationOp the mutation Operator
      */
-    constructor(connections: List<ConnectionGene>, inputNodes: List<NodeGene>, outputNodes: List<NodeGene>,
-                crossoverOp: Crossover<NeatChromosome>, mutationOp: Mutation<NeatChromosome>) {
+    constructor(connections: List<ConnectionGene>, allNodes: List<NodeGene>,
+                mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>) {
         super();
         this._connections = connections;
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
-        this._inputNodes = inputNodes;
-        this._outputNodes = outputNodes;
-        this._allNodes.addList(inputNodes);
-        this._allNodes.addList(outputNodes);
         this._trace = null;
         this._champion = false;
         this._populationChampion = false;
@@ -80,6 +76,12 @@ export class NeatChromosome extends Chromosome {
         this._expectedOffspring = 0;
         this._eliminate = false;
         this._species = null;
+        this._allNodes = allNodes;
+        this._inputNodes = new List<NodeGene>();
+        this._outputNodes = new List<NodeGene>();
+        this._loop = false;
+        this._networkFitness = 0;
+        this.generateNetwork();
     }
 
     /**
@@ -94,39 +96,23 @@ export class NeatChromosome extends Chromosome {
      * @param newGenes the genes the network should be initialised with
      */
     cloneWith(newGenes: List<ConnectionGene>): NeatChromosome {
-        const cloneConnections = new List<ConnectionGene>();
-        const cloneInputNodes = new List<NodeGene>();
-        const cloneOutputNodes = new List<NodeGene>();
-        const cloneAllNodes = new List<NodeGene>();
+        const connectionsClone = new List<ConnectionGene>();
+        const nodesClone = new List<NodeGene>();
 
-        for (const node of this._allNodes) {
-            const nodeClone = node.clone();
-            cloneAllNodes.add(nodeClone);
-            if (nodeClone.type === NodeType.INPUT || nodeClone.type === NodeType.BIAS)
-                cloneInputNodes.add(nodeClone);
-            if (nodeClone.type === NodeType.OUTPUT)
-                cloneOutputNodes.add(nodeClone);
+        // duplicate Nodes
+        for (const node of this.allNodes) {
+            const nodeClone = node.clone()
+            nodesClone.add(nodeClone);
         }
-        for (const originalConnection of newGenes) {
 
-            // search for the fromNode in the List of cloned Nodes; if it is nonexistent so far, create a clone of it
-            let fromNode = this.searchNode(originalConnection.from, cloneAllNodes);
-            if (fromNode === null) {
-                fromNode = originalConnection.from.clone();
-                cloneAllNodes.add(fromNode);
-            }
-
-            // search for the toNode in the List of cloned Nodes; if it is nonexistent so far, create a clone of it
-            let toNode = this.searchNode(originalConnection.to, cloneAllNodes);
-            if (toNode === null) {
-                toNode = originalConnection.to.clone();
-                cloneAllNodes.add(toNode);
-            }
-            cloneConnections.add(originalConnection.copyWithNodes(fromNode, toNode));
+        for (const connection of newGenes) {
+            const fromNode = this.searchNode(connection.from, nodesClone)
+            const toNode = this.searchNode(connection.to, nodesClone)
+            const connectionClone = connection.copyWithNodes(fromNode, toNode);
+            connectionsClone.add(connectionClone);
         }
-        const chromosomeClone = new NeatChromosome(cloneConnections, cloneInputNodes, cloneOutputNodes, this._crossoverOp, this._mutationOp);
-        chromosomeClone.generateNetwork();
-        return chromosomeClone;
+
+        return new NeatChromosome(connectionsClone, nodesClone, this.getMutationOperator(), this.getCrossoverOperator());
     }
 
     /**
@@ -145,24 +131,26 @@ export class NeatChromosome extends Chromosome {
     }
 
     generateNetwork(): void {
-        // Set the input and output Nodes
-        this._layerMap.set(0, this._inputNodes);
-        this._layerMap.set(NeatParameter.MAX_HIDDEN_LAYERS, this._outputNodes)
-
-        // Add the hidden Nodes
-        for (const connection of this._connections) {
-            if (!this.containsNode(connection.to)) {
-                const layer = this.findLayerOfNode(this._layerMap, connection.from) + 1
-                this._layerMap = this.insertNodeToLayer(this._layerMap, connection.to, layer)
-                this._allNodes.add(connection.to);
+        // Place the input and output nodes into their lists
+        for (const node of this.allNodes) {
+            if ((!this.inputNodes.contains(node)) && (node.type === NodeType.INPUT || node.type === NodeType.BIAS)) {
+                this.inputNodes.add(node);
             }
-            // add the connection to the list of input connections of the node
-            if (!connection.to.incomingConnections.contains(connection) && connection.enabled)
-                connection.to.incomingConnections.add(connection)
+            if ((!this.outputNodes.contains(node)) && (node.type === NodeType.OUTPUT))
+                this.outputNodes.add(node);
+        }
+
+        // Go through each connection and set up the incoming connections of each Node
+        for (const connection of this.connections) {
+            const toNode = connection.to;
+            // Add the connection to the incoming connections of the toNode if it is not present yet and enabled
+            if (!toNode.incomingConnections.contains(connection) && connection.enabled) {
+                toNode.incomingConnections.add(connection);
+            }
         }
     }
 
-    public stabilizedCounter(period: number, verifyMode:boolean): number {
+    public stabilizedCounter(period: number, verifyMode: boolean): number {
         this.generateNetwork();
         this.flushNodeValues();
 
@@ -189,8 +177,9 @@ export class NeatChromosome extends Chromosome {
         while (!done) {
 
             if (rounds >= limit) {
-                if(!verifyMode) {
+                if (!verifyMode) {
                     console.error("Network is unstable");
+                    console.log(this)
                 }
                 return -1;
             }
@@ -222,7 +211,7 @@ export class NeatChromosome extends Chromosome {
         return (level - period + 1);
     }
 
-    activateNetwork(verifyMode:boolean): boolean {
+    activateNetwork(verifyMode: boolean): boolean {
         let activatedOnce = false;
         this.generateNetwork();
         let abortCount = 0;
@@ -232,7 +221,7 @@ export class NeatChromosome extends Chromosome {
 
             abortCount++;
             if (abortCount >= 30) {
-                if(!verifyMode) {
+                if (!verifyMode) {
                     console.error("Inputs Disconnected from output!")
                     console.log(this)
                 }
@@ -285,6 +274,37 @@ export class NeatChromosome extends Chromosome {
             }
         }
     }
+
+    public isRecurrentNetwork(node1: NodeGene, node2: NodeGene, level: number, threshold: number): boolean {
+        this.generateNetwork();
+
+        level++;
+
+        // Reset the traverse flag
+        for (const node of this.allNodes)
+            node.traversed = false;
+
+        if (level > threshold) {
+            this.loop = true;
+            return false;
+        }
+
+        if (node1 === node2)
+            return true;
+
+        for (const inConnection of node1.incomingConnections) {
+            if (!inConnection.recurrent) {
+                if (!inConnection.from.traversed) {
+                    inConnection.from.traversed = true;
+                    if (this.isRecurrentNetwork(inConnection.from, node2, level, threshold))
+                        return true;
+                }
+            }
+        }
+        node1.traversed = true;
+        return false;
+    }
+
 
     /**
      * Checks if at least one output has been activated
@@ -363,15 +383,6 @@ export class NeatChromosome extends Chromosome {
         return this.fitness;
     }
 
-
-    get layerMap(): Map<number, List<NodeGene>> {
-        return this._layerMap;
-    }
-
-    set layerMap(value: Map<number, List<NodeGene>>) {
-        this._layerMap = value;
-    }
-
     get inputNodes(): List<NodeGene> {
         return this._inputNodes;
     }
@@ -428,6 +439,14 @@ export class NeatChromosome extends Chromosome {
 
     set fitness(value: number) {
         this._fitness = value;
+    }
+
+    get networkFitness(): number {
+        return this._networkFitness;
+    }
+
+    set networkFitness(value: number) {
+        this._networkFitness = value;
     }
 
     get nonAdjustedFitness(): number {
@@ -494,6 +513,14 @@ export class NeatChromosome extends Chromosome {
 
     set species(value: Species<NeatChromosome>) {
         this._species = value;
+    }
+
+    get loop(): boolean {
+        return this._loop;
+    }
+
+    set loop(value: boolean) {
+        this._loop = value;
     }
 
     toString(): string {

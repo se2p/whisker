@@ -47,7 +47,7 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Speciation with a chromosome mutated several times", () => {
-        NeatParameter.DISTANCE_THRESHOLD = 1.2;
+        NeatParameter.DISTANCE_THRESHOLD = 0.1;
         population = new NeatPopulation<NeatChromosome>(populationSize, 2, generator)
         const chromosome = generator.get();
         const mutant = chromosome.clone();
@@ -70,16 +70,14 @@ describe("NeatUtil Tests", () => {
         const inputNode2 = new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE);
         const outputNode = new NodeGene(2, NodeType.OUTPUT, ActivationFunctions.NONE);
 
-        const inputNodes = new List<NodeGene>();
-        inputNodes.add(inputNode1);
-        inputNodes.add(inputNode2);
-
-        const outputNodes = new List<NodeGene>();
-        outputNodes.add(outputNode);
+        const nodes = new List<NodeGene>();
+        nodes.add(inputNode1);
+        nodes.add(inputNode2);
+        nodes.add(outputNode);
 
 
-        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0);
-        const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1);
+        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
+        const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1, false);
 
         const connections1 = new List<ConnectionGene>()
         connections1.add(connection1);
@@ -87,12 +85,12 @@ describe("NeatUtil Tests", () => {
         const connections2 = new List<ConnectionGene>()
         connections2.add(connection2);
 
-        const chromosome1 = new NeatChromosome(connections1, inputNodes, outputNodes, crossOver, mutation)
-        const chromosome2 = new NeatChromosome(connections2, inputNodes, outputNodes, crossOver, mutation)
+        const chromosome1 = new NeatChromosome(connections1, nodes, mutation, crossOver)
+        const chromosome2 = new NeatChromosome(connections2, nodes, mutation, crossOver)
 
         const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(1)
+        expect(compatDistance).toBe(NeatParameter.DISJOINT_COEFFICIENT)
     })
 
     test("Compatibility Distance of Chromosomes with excess connections", () => {
@@ -101,10 +99,10 @@ describe("NeatUtil Tests", () => {
 
         const node1 = chromosome1.inputNodes.get(0);
         const node2 = chromosome1.outputNodes.get(1);
-        chromosome2.connections.add(new ConnectionGene(node1, node2, 1, true, 1000));
+        chromosome2.connections.add(new ConnectionGene(node1, node2, 1, true, 1000, false));
         const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(1)
+        expect(compatDistance).toBe(NeatParameter.EXCESS_COEFFICIENT)
     })
 
     test("Compatibility Distance of Chromosomes with same connections but different weights", () => {

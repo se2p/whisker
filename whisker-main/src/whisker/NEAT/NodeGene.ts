@@ -18,16 +18,18 @@ export class NodeGene {
     private _incomingConnections = new List<ConnectionGene>() // list of incoming connections -> used for calculating the activation value
     private _activationFunction: number;    // Defines the activation function
     private _lastActivationValue: number;
+    private _traversed: boolean
 
     public static _idCounter = 0;
 
-    constructor(id: number, type: NodeType, activationFunction: number) {
+    constructor(id: number, type: NodeType, activationFunction: ActivationFunctions) {
         this._id = id;
         this._type = type
         this._activationFunction = activationFunction;
         this._activatedFlag = false;
         this._activationCount = 0;
         this._activationValue = 0;
+        this._traversed = false;
 
         if (type === NodeType.BIAS) {
             this._nodeValue = 1;
@@ -39,6 +41,7 @@ export class NodeGene {
         }
 
         this._activationFunction = activationFunction;
+        this._incomingConnections = new List<ConnectionGene>();
     }
 
     public clone(): NodeGene {
@@ -60,9 +63,9 @@ export class NodeGene {
             return 0.0;
     }
 
-    public reset():void{
+    public reset(): void {
         this.activationCount = 0;
-        if(this.type !== NodeType.BIAS){
+        if (this.type !== NodeType.BIAS) {
             this.activationValue = 0;
             this.nodeValue = 0;
             this.lastActivationValue = 0;
@@ -131,6 +134,14 @@ export class NodeGene {
 
     set lastActivationValue(value: number) {
         this._lastActivationValue = value;
+    }
+
+    get traversed(): boolean {
+        return this._traversed;
+    }
+
+    set traversed(value: boolean) {
+        this._traversed = value;
     }
 
     public equals(other: unknown): boolean {

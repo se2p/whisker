@@ -7,8 +7,8 @@ export class TimePlayedFitness implements FitnessFunction<NeatChromosome> {
     }
 
     getFitness(chromosome: NeatChromosome): number {
-        chromosome.nonAdjustedFitness = chromosome.timePlayed;
-        return chromosome.nonAdjustedFitness;
+        chromosome.networkFitness = chromosome.timePlayed;
+        return chromosome.networkFitness;
     }
 
     isCovered(chromosome: NeatChromosome): boolean {

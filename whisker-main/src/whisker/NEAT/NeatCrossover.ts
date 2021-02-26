@@ -151,9 +151,13 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
 
             // At this point we found a potential new Connection now set up everything for the mating process
             // First Check if the new Connection does not conflict with an already chosen connection
-
             for (const c of newConnections) {
-                if (c.equalsByNodes(currentConnection)) {
+                if ((c.from.equals(currentConnection.from)) && c.to.equals(currentConnection.to) &&
+                    (c.recurrent === currentConnection.recurrent)) {
+                    skip = true;
+                    break;
+                }
+                if (c.from.equals(currentConnection.to) && c.to.equals(currentConnection.from) && (!c.recurrent) && (!currentConnection.recurrent)) {
                     skip = true;
                     break;
                 }
@@ -198,10 +202,11 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
                 }
 
                 // Now add the new Connection
-                const newConnection = new ConnectionGene(newFromNode, newOutNode, currentConnection.weight, !disable, currentConnection.innovation)
+                const newConnection = new ConnectionGene(newFromNode, newOutNode, currentConnection.weight, !disable, currentConnection.innovation,
+                    currentConnection.recurrent)
 
                 // Collect the disabled Connections
-                if(disable)
+                if (disable)
                     disabledConnections.add(newConnection);
 
                 // Average the weight if we set the flag
@@ -214,18 +219,22 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         }
 
         // Finally create the child with the selected Connections and Nodes
-        const child = new NeatChromosome(newConnections, inputNodes, outputNodes, parent1.getCrossoverOperator(), parent1.getMutationOperator())
+        let child = new NeatChromosome(newConnections, newNodes, parent1.getMutationOperator(), parent1.getCrossoverOperator())
         child.generateNetwork();
 
-        let i = 0;
         // Check if everything went fine and enable some connections to fix a defect network if necessary
-        while (child.stabilizedCounter(30, true) < 0){
+        let i = 0;
+        while (child.stabilizedCounter(100, true) < 0 && i < disabledConnections.size()) {
             disabledConnections.get(i).enabled = true;
             child.generateNetwork();
             i++;
         }
 
-        return child;
+        if (child.stabilizedCounter(100, true) < 0) {
+            child = parent1.clone();
+            child.eliminate = true;
+        }
 
+        return child;
     }
 }

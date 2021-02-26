@@ -68,23 +68,23 @@ export class Species<C extends NeatChromosome> {
         const speciesSize = this.chromosomes.size();
 
         for (const chromosome of this.chromosomes) {
-            // Save the original fitness value from the fitness function
-            chromosome.nonAdjustedFitness = chromosome.fitness;
+            // Save the original networkfitness value from the networkfitness function
+            chromosome.nonAdjustedFitness = chromosome.networkFitness;
 
             // Penalize fitness if it has not improved since NeatConfig.PENALIZING_AGEs
             if (ageDept >= 1)
-                chromosome.fitness = chromosome.fitness * 0.01;
+                chromosome.networkFitness = chromosome.networkFitness * 0.01;
 
             // Boost fitness for young generations to give them a chance to evolve for some generations
             if (this._age <= 10)
-                chromosome.fitness = chromosome.fitness * NeatParameter.AGE_SIGNIFICANCE;
+                chromosome.networkFitness = chromosome.networkFitness * NeatParameter.AGE_SIGNIFICANCE;
 
             // Do not allow negative fitness values
-            if (chromosome.fitness < 0.0)
-                chromosome.fitness = 0.0001;
+            if (chromosome.networkFitness < 0.0)
+                chromosome.networkFitness = 0.0001;
 
             // Share fitness with the entire species
-            chromosome.fitness = chromosome.fitness / speciesSize;
+            chromosome.networkFitness = chromosome.networkFitness / speciesSize;
 
         }
         this.markKillCandidates();
@@ -259,7 +259,7 @@ export class Species<C extends NeatChromosome> {
         // Decide if we additionally apply mutation -> done randomly or
         // if both parents have a compatibility distance of 0 which means they have the same structure and weights
         if (this._randomness.nextDouble() > NeatParameter.CROSSOVER_ONLY_RATE || parent1.equals(parent2) ||
-            NeatUtil.compatibilityDistance(parent1,parent2) === 0) {
+            NeatUtil.compatibilityDistance(parent1, parent2) === 0) {
             child.mutate();
         }
         return child;
@@ -269,8 +269,8 @@ export class Species<C extends NeatChromosome> {
      * Sorts the Chromosomes of the species in decreasing order according to its fitness values
      * @private
      */
-    private sortChromosomes(): void {
-        this._chromosomes.sort((a, b) => a.fitness < b.fitness ? +1 : -1);
+    public sortChromosomes(): void {
+        this._chromosomes.sort((a, b) => a.networkFitness < b.networkFitness ? +1 : -1);
     }
 
 

@@ -290,7 +290,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      */
     private _buildNEAT() {
         const searchAlgorithm: SearchAlgorithm<C> = new NEAT() as unknown as SearchAlgorithm<C>;
-        searchAlgorithm.setFitnessFunction(this._fitnessFunction);
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         return searchAlgorithm;
     }
 

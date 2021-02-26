@@ -1,16 +1,17 @@
 import {List} from '../../utils/List';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {NeatChromosome} from "../../NEAT/NeatChromosome";
-import {Species} from "../../NEAT/Species";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Selection} from "../Selection";
 import {NeuroevolutionExecutor} from "../../NEAT/NeuroevolutionExecutor";
 import {Container} from "../../utils/Container";
 import {NeatPopulation} from "../../NEAT/NeatPopulation";
+import {TimePlayedFitness} from "../../NEAT/TimePlayedFitness";
+import {TestChromosome} from "../../testcase/TestChromosome";
+import {NeatMutation} from "../../NEAT/NeatMutation";
 
 
 export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {
@@ -18,9 +19,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     private _properties: SearchAlgorithmProperties<C>;
 
-    private _fitnessFunctions: List<FitnessFunction<C>>;
-
-    private _fitnessFunction: FitnessFunction<C>;
+    private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
     private _stoppingCondition: StoppingCondition<C>;
 
@@ -30,17 +29,13 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     private _archive = new Map<number, C>();
 
-    private _selectionOperator: Selection<C>;
-
     private _startTime: number;
-
-    private _fullCoverageReached = false;
 
     private _topChromosome: C;
 
-    private _topFitness: number;
+    private _networkFitness = new TimePlayedFitness();
 
-    private speciesList = new List<Species<C>>()
+    private _fullCoverageReached = false;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -51,13 +46,6 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
-    setFitnessFunction(fitnessFunction: FitnessFunction<NeatChromosome>) {
-        StatisticsCollector.getInstance().fitnessFunctionCount = 1;
-        this._fitnessFunction = fitnessFunction;
-        this._fitnessFunctions = new List<FitnessFunction<C>>();
-        this._fitnessFunctions.add(fitnessFunction);
-    }
-
     getNumberOfIterations(): number {
         return this._iterations;
     }
@@ -66,15 +54,20 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         return this._bestIndividuals;
     }
 
-    async evaluatePopulation(population: List<C>): Promise<void> {
-        for (const chromosome of population) {
-            await this.evaluate(chromosome);
-        }
+    getFitnessFunctions(): Iterable<FitnessFunction<C>> {
+        return this._fitnessFunctions.values();
     }
 
-    async evaluate(chromosome: NeatChromosome): Promise<void> {
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
+        this._fitnessFunctions = fitnessFunctions;
+        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    }
+
+    async evaluateNetworks(networks: List<C>): Promise<void> {
         const executor = new NeuroevolutionExecutor(Container.vmWrapper);
-        await executor.execute(chromosome);
+        for (const network of networks) {
+            await executor.execute(network);
+        }
     }
 
     /**
@@ -83,33 +76,74 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        const speciesNumber = 5;
+        const speciesNumber = 4;
         const population = new NeatPopulation(this._properties.getPopulationSize(), speciesNumber, this._chromosomeGenerator);
         this._iterations = 0;
         this._startTime = Date.now();
+        console.log(this._stoppingCondition)
 
-        while (!this._stoppingCondition.isFinished(this)) {
+        while (!(this._stoppingCondition.isFinished(this))) {
             console.log("-----------------------------------------------------")
-            console.log("Iteration: " + this._iterations + " Best Fitness: " + population.highestFitness)
-            await this.evaluatePopulation(population.chromosomes);
-            this.calculateFitness(population.chromosomes);
+            console.log("Iteration: " + this._iterations + " Network Fitness: " + population.highestFitness)
+            await this.evaluateNetworks(population.chromosomes);
+            this.calculateNetworkFitness(population.chromosomes);
+            this.updateArchive(population.chromosomes)
             population.evolution();
             console.log("Size of Population: " + population.chromosomes.size())
             console.log("Number of Species: " + population.species.size())
             this._iterations++;
+            this.updateBestIndividualAndStatistics();
         }
-
-        this._bestIndividuals.add(this._topChromosome);
+        console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
         return this._bestIndividuals;
     }
 
-    private calculateFitness(population: List<C>): void {
+    private calculateNetworkFitness(population: List<NeatChromosome>): void {
         for (const chromosome of population) {
-            chromosome.fitness = this._fitnessFunction.getFitness(chromosome);
+            chromosome.networkFitness = this._networkFitness.getFitness(chromosome);
         }
     }
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    /**
+     * Updates the archive of best chromosomes.
+     *
+     * @param chromosomes The candidate chromosomes for the archive.
+     */
+    private updateArchive(chromosomes: List<C>): void {
+        for (const candidateChromosome of chromosomes) {
+            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                let bestLength = this._archive.has(fitnessFunctionKey)
+                    ? this._archive.get(fitnessFunctionKey).getLength()
+                    : Number.MAX_SAFE_INTEGER;
+                const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+                const candidateLength = candidateChromosome.getLength();
+                if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                    bestLength = candidateLength;
+                    if (!this._archive.has(fitnessFunctionKey)) {
+                        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    }
+                    this._archive.set(fitnessFunctionKey, candidateChromosome);
+                    //console.log("Found test for goal: " + fitnessFunction);
+                }
+            }
+        }
+    }
+
+    private updateBestIndividualAndStatistics() {
+        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+        StatisticsCollector.getInstance().incrementIterationCount();
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
+        if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
+                (this._iterations + 1) * this._properties.getPopulationSize();
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+        }
     }
 }

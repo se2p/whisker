@@ -9,10 +9,10 @@ export class NeatParameter {
     public static STARTING_CONNECTION_RATE = 0.3;
 
     // Compatibility Distance
-    public static EXCESS_COEFFICIENT = 0.5;
-    public static DISJOINT_COEFFICIENT = 0.5;
+    public static EXCESS_COEFFICIENT = 0.25;
+    public static DISJOINT_COEFFICIENT = 0.25;
     public static WEIGHT_COEFFICIENT = 0.4;
-    public static DISTANCE_THRESHOLD = 5.0;
+    public static DISTANCE_THRESHOLD = 2.0;
 
     // Population Management
     public static POPULATION_SIZE = 200;
@@ -27,10 +27,13 @@ export class NeatParameter {
     public static CROSSOVER_WEIGHT_AVERAGES_RATE = 0.4
 
     // Mutation Rates
-    public static MUTATE_WEIGHT_NETWORK_LEVEL = 0.9;
+    public static MUTATE_WEIGHTS = 0.9;
     public static MUTATE_WEIGHT_POWER = 1.5;
     public static MUTATE_ADD_CONNECTION = 0.03;
-    public static MUTATE_CONNECTION_STATE = 0.1;
+    public static MUTATE_CONNECTION_STATE = 0.05;
     public static MUTATE_ADD_NODE = 0.01;
     public static POPULATION_CHAMPION_CONNECTION_MUTATION = 0.2;
+    public static RECURRENCY_RATE = 0.1;
+    public static ADD_CONNECTION_TRIES = 50;
+    public static MUTATE_REENABLE_STATE = 0.1;
 }

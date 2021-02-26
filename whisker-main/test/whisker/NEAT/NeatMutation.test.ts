@@ -44,7 +44,7 @@ describe("NeatMutation", () => {
     test("MutateAddConnection without hidden Layer", () => {
         const originalConnectionsSize = neatChromosome.connections.size();
         neatChromosome.generateNetwork();
-        neatMutation.mutateAddConnection(neatChromosome)
+        neatMutation.mutateAddConnection(neatChromosome, 30)
         // Equal if by chance an already established connection is chosen
         expect(originalConnectionsSize).toBeLessThanOrEqual(neatChromosome.connections.size())
     })
@@ -60,29 +60,20 @@ describe("NeatMutation", () => {
         const deepHiddenLayerNode = new NodeGene(12, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
-        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(deepHiddenLayerNode, outputNodes.get(0), 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode2, 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode2, outputNodes.get(1), 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode3, 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode3, outputNodes.get(1), 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(2), hiddenLayerNode4, 1,
-            true, ConnectionGene.getNextInnovationNumber()))
-        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode4, outputNodes.get(0), 1,
-            true, ConnectionGene.getNextInnovationNumber()))
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1,true, 50,false))
+        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1, true, 51, false))
+        neatChromosome.connections.add(new ConnectionGene(deepHiddenLayerNode, outputNodes.get(0), 1, true, 52, false))
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode2, 1, true, 53, false))
+        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode2, outputNodes.get(1), 1, true, 54, false))
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode3, 1, true,56, false))
+        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode3, outputNodes.get(1), 1, true, 57, false))
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(2), hiddenLayerNode4, 1, true, 58, false))
+        neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode4, outputNodes.get(0), 1, true, 59, false))
         neatChromosome.generateNetwork();
         const originalConnections = neatChromosome.connections.size();
         // Make some rounds of mutations to ensure a mutation eventually happens
         for (let i = 0; i < 20; i++) {
-            neatMutation.mutateAddConnection(neatChromosome)
+            neatMutation.mutateAddConnection(neatChromosome, 50)
         }
         neatChromosome.generateNetwork();
         expect(originalConnections).not.toEqual(neatChromosome.connections.size())
@@ -93,7 +84,7 @@ describe("NeatMutation", () => {
         for (const connection of neatChromosome.connections)
             connectionStates.push(connection.enabled)
 
-        neatMutation.mutateConnectionState(neatChromosome)
+        neatMutation.mutateConnectionState(neatChromosome, 1)
         const mutatedStates = []
         for (const connection of neatChromosome.connections)
             mutatedStates.push(connection.enabled)

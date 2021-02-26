@@ -14,51 +14,48 @@ describe("NeatCrossover", () => {
     let crossoverOp: NeatCrossover;
     let parent1Connections: List<ConnectionGene>
     let parent2Connections: List<ConnectionGene>
-    let inputNodes1: List<NodeGene>
-    let outputNodes1: List<NodeGene>
-    let inputNodes2: List<NodeGene>
-    let outputNodes2: List<NodeGene>
+    let nodes1: List<NodeGene>
+    let nodes2: List<NodeGene>
 
     beforeEach(() => {
         mutationOp = new NeatMutation();
         crossoverOp = new NeatCrossover();
 
         // Create Nodes of first network
+        nodes1 = new List<NodeGene>();
         const iNode1 = new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE)
         const iNode2 = new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE)
         const iNode3 = new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE)
-        inputNodes1 = new List<NodeGene>();
-        inputNodes1.add(iNode1)
-        inputNodes1.add(iNode2)
-        inputNodes1.add(iNode3)
+        nodes1.add(iNode1)
+        nodes1.add(iNode2)
+        nodes1.add(iNode3)
 
-        outputNodes1 = new List<NodeGene>();
         const oNode1 = new NodeGene(4, NodeType.OUTPUT, ActivationFunctions.NONE)
-        outputNodes1.add(oNode1)
+        nodes1.add(oNode1)
         const hiddenNode1 = new NodeGene(3, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        nodes1.add(hiddenNode1)
 
 
         // Create Connections of first parent
         parent1Connections = new List<ConnectionGene>();
-        parent1Connections.add(new ConnectionGene(iNode1, hiddenNode1, 1, true, 1));
-        parent1Connections.add(new ConnectionGene(iNode2, hiddenNode1, 2, true, 2));
-        parent1Connections.add(new ConnectionGene(iNode2, oNode1, 3, false, 4));
-        parent1Connections.add(new ConnectionGene(iNode3, oNode1, 4, true, 5));
-        parent1Connections.add(new ConnectionGene(hiddenNode1, oNode1, 5, true, 6));
+        parent1Connections.add(new ConnectionGene(iNode1, hiddenNode1, 1, true, 1,false));
+        parent1Connections.add(new ConnectionGene(iNode2, hiddenNode1, 2, true, 2,false));
+        parent1Connections.add(new ConnectionGene(iNode2, oNode1, 3, false, 4, false));
+        parent1Connections.add(new ConnectionGene(iNode3, oNode1, 4, true, 5, false));
+        parent1Connections.add(new ConnectionGene(hiddenNode1, oNode1, 5, true, 6, false));
 
         // Create Nodes of second network
 
         const iNode4 = iNode1.clone()
         const iNode5 = iNode2.clone()
         const iNode6 = iNode3.clone()
-        inputNodes2 = new List<NodeGene>();
-        inputNodes2.add(iNode4)
-        inputNodes2.add(iNode5)
-        inputNodes2.add(iNode6)
+        nodes2 = new List<NodeGene>();
+        nodes2.add(iNode4)
+        nodes2.add(iNode5)
+        nodes2.add(iNode6)
 
         const oNode2 = oNode1.clone()
-        outputNodes2 = new List<NodeGene>();
-        outputNodes2.add(oNode2)
+        nodes2.add(oNode2)
 
 
         const hiddenNode2 = hiddenNode1.clone()
@@ -67,20 +64,20 @@ describe("NeatCrossover", () => {
 
         // Create Connections of second parent
         parent2Connections = new List<ConnectionGene>();
-        parent2Connections.add(new ConnectionGene(iNode4, hiddenNode2, 6, false, 1));
-        parent2Connections.add(new ConnectionGene(iNode5, hiddenNode2, 7, true, 2));
-        parent2Connections.add(new ConnectionGene(iNode6, hiddenNode2, 8, true, 3));
-        parent2Connections.add(new ConnectionGene(iNode5, oNode2, 9, false, 4));
-        parent2Connections.add(new ConnectionGene(hiddenNode2, oNode2, 10, true, 6));
-        parent2Connections.add(new ConnectionGene(iNode4, hiddenNode3, 11, true, 7));
-        parent2Connections.add(new ConnectionGene(hiddenNode3, hiddenNode2, 12, true, 8));
+        parent2Connections.add(new ConnectionGene(iNode4, hiddenNode2, 6, false, 1, false));
+        parent2Connections.add(new ConnectionGene(iNode5, hiddenNode2, 7, true, 2, false));
+        parent2Connections.add(new ConnectionGene(iNode6, hiddenNode2, 8, true, 3, false));
+        parent2Connections.add(new ConnectionGene(iNode5, oNode2, 9, false, 4, false));
+        parent2Connections.add(new ConnectionGene(hiddenNode2, oNode2, 10, true, 6, false));
+        parent2Connections.add(new ConnectionGene(iNode4, hiddenNode3, 11, true, 7, false));
+        parent2Connections.add(new ConnectionGene(hiddenNode3, hiddenNode2, 12, true, 8, false));
     })
 
 
     test("CrossoverTest with first parent being fitter than second parent", () => {
-        const parent1 = new NeatChromosome(parent1Connections, inputNodes1, outputNodes1, crossoverOp, mutationOp)
+        const parent1 = new NeatChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(parent2Connections, inputNodes2, outputNodes2, crossoverOp, mutationOp)
+        const parent2 = new NeatChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
         parent2.fitness = 0;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
         const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
@@ -89,9 +86,9 @@ describe("NeatCrossover", () => {
     })
 
     test("CrossoverTest with second parent being fitter than first parent", () => {
-        const parent1 = new NeatChromosome(parent1Connections, inputNodes1, outputNodes1, crossoverOp, mutationOp)
+        const parent1 = new NeatChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
         parent1.nonAdjustedFitness = 0;
-        const parent2 = new NeatChromosome(parent2Connections, inputNodes2, outputNodes2, crossoverOp, mutationOp)
+        const parent2 = new NeatChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
         parent2.nonAdjustedFitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
         const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
@@ -100,9 +97,9 @@ describe("NeatCrossover", () => {
     })
 
     test("CrossoverTest with both parents being equivalently fit", () => {
-        const parent1 = new NeatChromosome(parent1Connections, inputNodes1, outputNodes1, crossoverOp, mutationOp)
+        const parent1 = new NeatChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
         parent1.fitness = 1;
-        const parent2 = new NeatChromosome(parent2Connections, inputNodes2, outputNodes2, crossoverOp, mutationOp)
+        const parent2 = new NeatChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
         parent2.fitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
         const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()

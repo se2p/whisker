@@ -12,7 +12,6 @@ import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NeatChromosome} from "./NeatChromosome";
 import {KeyDownEvent} from "../testcase/events/KeyDownEvent";
 import {Container} from "../utils/Container";
-import {NeatParameter} from "./NeatParameter";
 import {NeatUtil} from "./NeatUtil";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
@@ -43,8 +42,9 @@ export class NeuroevolutionExecutor {
     async execute(network: NeatChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         let args = [];
+        let workingNetwork = false;
 
-        const stabilizeCounter = network.stabilizedCounter(30, false)
+        const stabilizeCounter = network.stabilizedCounter(100, false)
         seedScratch(String(Randomness.getInitialSeed()))
 
         const _onRunStop = this.projectStopped.bind(this);
@@ -52,7 +52,9 @@ export class NeuroevolutionExecutor {
         this._projectRunning = true;
         this._vmWrapper.start();
         const start = Date.now();
-        while (this._projectRunning) {
+        let timer = Date.now();
+        const timeout = start + 10000;
+        while (this._projectRunning && timer < timeout) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -68,7 +70,7 @@ export class NeuroevolutionExecutor {
 
             // Activate the network stabilizeCounter + 1 times to stabilise it for classification
             for (let i = 0; i < stabilizeCounter + 1; i++) {
-                network.activateNetwork(false);
+                workingNetwork = network.activateNetwork(false);
             }
 
             // Get the classification results by using the softmax function over the outputNode values
@@ -92,6 +94,7 @@ export class NeuroevolutionExecutor {
             const waitEvent = new WaitEvent();
             events.add([waitEvent, []])
             await waitEvent.apply(this._vm);
+            timer = Date.now();
         }
         // round due to small variances in runtime
         const end = Math.round((Date.now() - start) / 100);
@@ -113,6 +116,8 @@ export class NeuroevolutionExecutor {
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this.resetState();
+        if (!workingNetwork)
+            network.eliminate = true;
         return network.trace;
     }
 

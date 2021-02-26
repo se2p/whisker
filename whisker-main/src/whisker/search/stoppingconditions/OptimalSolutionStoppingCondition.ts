@@ -29,6 +29,8 @@ export class OptimalSolutionStoppingCondition<T extends Chromosome> implements S
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
         const solutions = algorithm.getCurrentSolution();
         const fitnessFunctions = algorithm.getFitnessFunctions();
+        console.log(solutions)
+        console.log(fitnessFunctions)
 
         // TODO: This could be written in a single line by extending the List class?
         for (const f of fitnessFunctions) {

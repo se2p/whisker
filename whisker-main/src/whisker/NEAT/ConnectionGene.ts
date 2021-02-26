@@ -10,21 +10,23 @@ export class ConnectionGene {
     private _enabled: boolean;
     private _innovation;
     private static innovationCounter = 0;
+    private _recurrent: boolean
 
-    constructor(from: NodeGene, to: NodeGene, weight: number, enabled: boolean, innovation: number) {
+    constructor(from: NodeGene, to: NodeGene, weight: number, enabled: boolean, innovation: number, recurrent: boolean) {
         this._from = from;
         this._to = to;
         this._weight = weight;
         this._enabled = enabled;
         this._innovation = innovation;
+        this._recurrent = recurrent;
     }
 
     public copy(): ConnectionGene {
-        return new ConnectionGene(this.from.clone(), this.to.clone(), this.weight, this.enabled, this.innovation)
+        return new ConnectionGene(this.from.clone(), this.to.clone(), this.weight, this.enabled, this.innovation, this.recurrent)
     }
 
-    public copyWithNodes(from: NodeGene, to: NodeGene) {
-        return new ConnectionGene(from, to, this.weight, this.enabled, this.innovation)
+    public copyWithNodes(from: NodeGene, to: NodeGene): ConnectionGene {
+        return new ConnectionGene(from, to, this.weight, this.enabled, this.innovation, this.recurrent)
     }
 
     get from(): NodeGene {
@@ -75,13 +77,21 @@ export class ConnectionGene {
         ConnectionGene.innovationCounter = 0;
     }
 
+    get recurrent(): boolean {
+        return this._recurrent;
+    }
+
+    set recurrent(value: boolean) {
+        this._recurrent = value;
+    }
+
     /**
      * Check equality by comparing both the in and output Nodes
      * @param other the other Gene to compare this ConnectionGene to
      */
     public equalsByNodes(other: unknown): boolean {
         if (!(other instanceof ConnectionGene)) return false;
-        return this.from.equals(other.from) && this.to.equals(other.to);
+        return this.from.equals(other.from) && this.to.equals(other.to) && (this.recurrent === other.recurrent);
     }
 
     /**

@@ -33,8 +33,6 @@ export class NeatPopulation<C extends NeatChromosome> {
 
     /**
      * Generates a new Population
-     * @param sample a sample to set the type of the Chromosomes the population holds
-     * @param size the size of the population
      * @private
      */
     private generatePopulation(): void {
@@ -76,7 +74,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Calculate the total average fitness value of all chromosomes in the generation
         let fitnessSum = 0.0;
         for (const chromosome of this.chromosomes) {
-            fitnessSum += chromosome.fitness;
+            fitnessSum += chromosome.networkFitness;
         }
         const numberOrganisms = this.chromosomes.size();
         const averageFitness = fitnessSum / numberOrganisms;
@@ -84,7 +82,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Compute the expected number of offspring for each chromosome which depends on its fitness value
         // in comparison to the averageFitness of the population
         for (const chromosome of this.chromosomes) {
-            chromosome.expectedOffspring = chromosome.fitness / averageFitness;
+            chromosome.expectedOffspring = chromosome.networkFitness / averageFitness;
         }
 
         console.log("Average Fitness: " + averageFitness)
@@ -127,8 +125,13 @@ export class NeatPopulation<C extends NeatChromosome> {
 
         if (totalOffspringExpected > this._startSize) {
             console.error("Pruning Size")
+            let pruneFactor = 0.7;
+
+            // If population gets really out of hand prune it even more
+            if (totalOffspringExpected > 2 * this._startSize)
+                pruneFactor = 0.5;
             for (const specie of this.species) {
-                specie.expectedOffspring = (specie.expectedOffspring * 0.7) + 1 // +1 for not killing a species
+                specie.expectedOffspring = (specie.expectedOffspring * pruneFactor) // +1 for not killing a species
             }
         }
 
@@ -142,6 +145,7 @@ export class NeatPopulation<C extends NeatChromosome> {
 
         const currentSpecie = this.species.get(0);
         const bestSpeciesId = currentSpecie.id;
+        currentSpecie.sortChromosomes();
         this._populationChampion = currentSpecie.chromosomes.get(0);
         this._populationChampion.populationChampion = true;
         this._populationChampion.numberOffspringPopulationChamp = 3;
