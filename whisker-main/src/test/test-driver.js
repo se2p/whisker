@@ -49,6 +49,7 @@ class TestDriver {
         this.resetMouse = vmWrapper.inputs.resetMouse.bind(vmWrapper.inputs);
         this.resetKeyboard = vmWrapper.inputs.resetKeyboard.bind(vmWrapper.inputs);
         this.clickStage = vmWrapper.inputs.clickStage.bind(vmWrapper.inputs);
+        this.getAnswer = vmWrapper.getAnswer.bind(vmWrapper);
 
         this.getMousePos = vmWrapper.inputs.getMousePos.bind(vmWrapper.inputs);
         this.isMouseDown = vmWrapper.inputs.isMouseDown.bind(vmWrapper.inputs);

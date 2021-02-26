@@ -385,6 +385,13 @@ class VMWrapper {
     }
 
     /**
+     * @return {string} .
+     */
+    getAnswer () {
+        return this.vm.runtime._primitives.sensing_answer();
+    }
+
+    /**
      * @return {DOMRect} .
      */
     getCanvasRect () {
