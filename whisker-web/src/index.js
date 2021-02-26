@@ -128,7 +128,7 @@ const runTests = async function (tests) {
 
 const runAllTests = async function () {
     if (Whisker.tests === undefined || Whisker.tests.length === 0) {
-        showModal('Test Execution', 'No tests loaded.');
+        showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         return;
     }
 

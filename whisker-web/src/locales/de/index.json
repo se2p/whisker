@@ -46,5 +46,7 @@
     "mail" : "Teile per E-Mail",
     "whatsApp" : "Teile auf WhatsApp",
     "no-file" : "Keine Datei ausgewählt.",
-    "browse" : "Durchsuchen..."
+    "browse" : "Durchsuchen...",
+    "no-tests" : "Keine Tests geladen",
+    "test-execution" : "Testausführung"
 }
