@@ -28,7 +28,6 @@ import {NodeType} from "./NodeType";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {NeatParameter} from "./NeatParameter";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
-import {ActivationFunctions} from "./ActivationFunctions";
 import {Species} from "./Species";
 
 /**
@@ -158,96 +157,150 @@ export class NeatChromosome extends Chromosome {
                 this._allNodes.add(connection.to);
             }
             // add the connection to the list of input connections of the node
-            if (!connection.to.incomingConnections.contains(connection))
+            if (!connection.to.incomingConnections.contains(connection) && connection.enabled)
                 connection.to.incomingConnections.add(connection)
         }
     }
 
-    activateNetwork(inputs: number[]): number[] {
-        const output = []
+    public stabilizedCounter(period: number, verifyMode:boolean): number {
+        this.generateNetwork();
+        this.flushNodeValues();
+
+        if (period === 0)
+            period = 30;
+
+        // First activate input Nodes
+        for (const iNode of this.allNodes) {
+            if (iNode.type === NodeType.INPUT) {
+                iNode.lastActivationValue = iNode.activationValue;
+                iNode.activationCount++;
+                iNode.activationValue = 1;
+                iNode.nodeValue = 1;
+            }
+        }
+
+        // activate the network
+        let done = false;
+        let rounds = 0;
+        let stableCounter = 0;
+        let level = 0;
+        const limit = period + 90;
+
+        while (!done) {
+
+            if (rounds >= limit) {
+                if(!verifyMode) {
+                    console.error("Network is unstable");
+                }
+                return -1;
+            }
+
+            this.activateNetwork(verifyMode);
+
+            if (!this.outputsOff()) {
+
+                let hasChanged = false;
+                for (const oNode of this.outputNodes) {
+                    if (oNode.lastActivationValue !== oNode.activationValue) {
+                        hasChanged = true;
+                        break;
+                    }
+                }
+                if (!hasChanged) {
+                    stableCounter++;
+                    if (stableCounter >= period) {
+                        done = true;
+                        level = rounds;
+                        break;
+                    }
+                } else {
+                    stableCounter = 0;
+                }
+            }
+            rounds++;
+        }
+        return (level - period + 1);
+    }
+
+    activateNetwork(verifyMode:boolean): boolean {
         let activatedOnce = false;
         this.generateNetwork();
+        let abortCount = 0;
+        let incomingValue = 0;
 
-        for (let i = 0; i < inputs.length; i++) {
-            // Input Nodes have no activation function -> the activationValue is the same as the nodeValue
-            const inputNode = this.inputNodes.get(i);
-            inputNode.activationValue = inputs[i];
-            inputNode.nodeValue = inputs[i];
-        }
-        const bias = this.inputNodes.get(this.inputNodes.size() - 1);
-        bias.nodeValue = 1;
-        bias.activationValue = 1;
+        while (this.outputsOff() || !activatedOnce) {
 
-        while (!activatedOnce || !this.isOutputActivated()) {
+            abortCount++;
+            if (abortCount >= 30) {
+                if(!verifyMode) {
+                    console.error("Inputs Disconnected from output!")
+                    console.log(this)
+                }
+                return false
+            }
 
-            // For each node, compute the sum of its incoming activation
-            for (const layer of this._layerMap.keys()) {
-                for (const node of this._layerMap.get(layer)) {
-                    if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
-                        // reset activation value and activation flag
-                        node.nodeValue = 0;
-                        node.activatedFlag = false;
+            // For each node compute the sum of its incoming connections
+            for (const node of this.allNodes) {
 
-                        for (const connection of node.incomingConnections) {
-                            if (connection.enabled)
-                                node.nodeValue += connection.weight * connection.from.getActivationValue();
-                            if (connection.from.activatedFlag || connection.from.type === NodeType.INPUT || connection.from.type === NodeType.BIAS)
-                                node.activatedFlag = true;
+                if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
+
+                    // Reset the activation Flag and the activation value
+                    node.nodeValue = 0.0
+                    node.activatedFlag = false;
+
+                    for (const connection of node.incomingConnections) {
+                        incomingValue = connection.weight * connection.from.activationValue;
+                        if (connection.from.activatedFlag || connection.from.type === NodeType.INPUT) {
+                            node.activatedFlag = true;
                         }
+                        node.nodeValue += incomingValue;
                     }
                 }
             }
 
-            for (const layer of this._layerMap.keys()) {
-                for (const node of this._layerMap.get(layer)) {
-                    if (node.type === NodeType.HIDDEN) {
-                        // Only activate the node if it received an input from the layer before
-                        if (node.activatedFlag) {
-                            node.activationValue = ActivationFunctions.sigmoid(node.nodeValue);
-                            node.activationCount++;
-                        }
-                    } else if (node.type === NodeType.OUTPUT) {
-                        const softMaxVector: number[] = []
-                        for (const outputNode of this.outputNodes)
-                            softMaxVector.push(outputNode.nodeValue)
-                        // Only activate the node if it received an input from the layer before
-                        if (node.activatedFlag) {
-                            node.activationValue = ActivationFunctions.softmax(node.nodeValue, softMaxVector);
-                            node.activationCount++;
-                            output.push(node.activationValue)
-                        } else {
-                            node.nodeValue = 0;
-                            node.activationValue = ActivationFunctions.softmax(node.nodeValue, softMaxVector)
-                            node.activationCount++;
-                            output.push(node.activationValue);
-                        }
+            // Activate all the non-sensor nodes by their incoming activation
+            for (const node of this.allNodes) {
+                if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
+                    // Only activate if we received some input
+                    if (node.activatedFlag) {
+                        node.lastActivationValue = node.activationValue;
+                        node.activationValue = node.getActivationValue();
+                        node.activationCount++;
+
                     }
                 }
             }
             activatedOnce = true;
         }
+        return true;
+    }
 
-        return output;
+    public setUpInputs(inputs: number[]): void {
+        for (let i = 0; i < inputs.length; i++) {
+            const iNode = this.inputNodes.get(i);
+            if (iNode.type === NodeType.INPUT) {
+                iNode.activationCount++;
+                iNode.nodeValue = inputs[i];
+                iNode.activationValue = inputs[i];
+            }
+        }
     }
 
     /**
-     * Checks if each output Node has been activated at least once
+     * Checks if at least one output has been activated
      */
-    isOutputActivated(): boolean {
+    outputsOff(): boolean {
+        let activatedOnce = true
         for (const outputNode of this.outputNodes) {
-            if (outputNode.activationCount == 0)
-                return false;
+            if (!(outputNode.activationCount == 0))
+                activatedOnce = false;
         }
-        return true;
+        return activatedOnce;
     }
 
     flushNodeValues(): void {
         for (const node of this.allNodes) {
-            if (node.type === NodeType.HIDDEN || node.type === NodeType.OUTPUT) {
-                node.activationValue = 0;
-                node.activationCount = 0;
-                node.activatedFlag = false;
-            }
+            node.reset();
         }
     }
 

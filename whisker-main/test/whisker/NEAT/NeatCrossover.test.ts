@@ -6,6 +6,7 @@ import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
 import {NodeType} from "../../../src/whisker/NEAT/NodeType";
 import {Pair} from "../../../src/whisker/utils/Pair";
+import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
 
 describe("NeatCrossover", () => {
 
@@ -23,18 +24,18 @@ describe("NeatCrossover", () => {
         crossoverOp = new NeatCrossover();
 
         // Create Nodes of first network
-        const iNode1 = new NodeGene(0, NodeType.INPUT)
-        const iNode2 = new NodeGene(1, NodeType.INPUT)
-        const iNode3 = new NodeGene(2, NodeType.BIAS)
+        const iNode1 = new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE)
+        const iNode2 = new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE)
+        const iNode3 = new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE)
         inputNodes1 = new List<NodeGene>();
         inputNodes1.add(iNode1)
         inputNodes1.add(iNode2)
         inputNodes1.add(iNode3)
 
         outputNodes1 = new List<NodeGene>();
-        const oNode1 = new NodeGene(4, NodeType.OUTPUT)
+        const oNode1 = new NodeGene(4, NodeType.OUTPUT, ActivationFunctions.NONE)
         outputNodes1.add(oNode1)
-        const hiddenNode1 = new NodeGene(3, NodeType.HIDDEN)
+        const hiddenNode1 = new NodeGene(3, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
 
 
         // Create Connections of first parent
@@ -61,7 +62,7 @@ describe("NeatCrossover", () => {
 
 
         const hiddenNode2 = hiddenNode1.clone()
-        const hiddenNode3 = new NodeGene(5, NodeType.HIDDEN)
+        const hiddenNode3 = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
 
 
         // Create Connections of second parent

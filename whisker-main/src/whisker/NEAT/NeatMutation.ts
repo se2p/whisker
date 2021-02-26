@@ -6,6 +6,7 @@ import {NodeGene} from "./NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
 import {NodeType} from "./NodeType";
 import {Randomness} from "../utils/Randomness";
+import {ActivationFunctions} from "./ActivationFunctions";
 
 
 export class NeatMutation implements Mutation<NeatChromosome> {
@@ -84,18 +85,13 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const connections = chromosome.connections;
         // Select a random Connection to split => the new node is placed in between the connection
         const splitConnection = this._random.pickRandomElementFromList(connections);
-        if (splitConnection === undefined) {
-            console.error("Undefined connection")
-            console.log(chromosome)
-            return;
-        }
         // Disable the old connection
         splitConnection.enabled = false;
 
         // Rewire the Network with the new Node
         const fromNode = splitConnection.from;
         const toNode = splitConnection.to;
-        const newNode = new NodeGene(chromosome.allNodes.size(), NodeType.HIDDEN);
+        const newNode = new NodeGene(chromosome.allNodes.size(), NodeType.HIDDEN, ActivationFunctions.SIGMOID);
 
         // Restrict the network to mutate over MAX_HIDDEN_LAYERS layers
         const fromNodeLayer = chromosome.findLayerOfNode(chromosome.layerMap, fromNode)
@@ -171,19 +167,12 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const connections = chromosome.connections;
         // Pick random connection
         const connection = this._random.pickRandomElementFromList(connections);
-        if (connection === undefined) {
-            console.error("Undefined connection")
-            console.log(chromosome)
-            return;
-        }
         // Flip the state
         connection.enabled = !connection.enabled;
 
         //Check the network and re-enable the connection if by chance we destroyed the network
-        chromosome.generateNetwork();
-        const testInput = [];
-        for (let i = 0; i < chromosome.inputNodes.size(); i++) {
-            testInput.push(i);
+        if(chromosome.stabilizedCounter(30, true) < 0){
+            connection.enabled = true;
         }
     }
 

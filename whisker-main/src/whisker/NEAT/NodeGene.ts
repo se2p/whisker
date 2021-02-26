@@ -4,6 +4,8 @@
 import {NodeType} from "./NodeType";
 import {ConnectionGene} from "./ConnectionGene";
 import {List} from "../utils/List";
+import {ActivationFunctions} from "./ActivationFunctions";
+import {NeatUtil} from "./NeatUtil";
 
 export class NodeGene {
 
@@ -14,40 +16,57 @@ export class NodeGene {
     private _activationCount: number // counts how often this node has been activated -> used for activating entire network
     private _activatedFlag: boolean  // checks if the node has been activated in the current network activation run
     private _incomingConnections = new List<ConnectionGene>() // list of incoming connections -> used for calculating the activation value
+    private _activationFunction: number;    // Defines the activation function
+    private _lastActivationValue: number;
 
     public static _idCounter = 0;
 
-    constructor(id: number, type: NodeType) {
+    constructor(id: number, type: NodeType, activationFunction: number) {
         this._id = id;
         this._type = type
-        if(type === NodeType.BIAS){
+        this._activationFunction = activationFunction;
+        this._activatedFlag = false;
+        this._activationCount = 0;
+        this._activationValue = 0;
+
+        if (type === NodeType.BIAS) {
             this._nodeValue = 1;
+            this._lastActivationValue = 1;
             this._activationValue = 1;
-        }
-        else {
-            this._activationValue = 0;
+        } else {
             this._nodeValue = 0;
+            this._lastActivationValue = 0;
         }
 
-        if(type === NodeType.OUTPUT || type === NodeType.HIDDEN) {
-            this._activatedFlag = false;
-            this._activationCount = 0;
-        }
-        else {
-            this.activatedFlag = true;
-            this._activationCount = 1;
-        }
+        this._activationFunction = activationFunction;
     }
 
     public clone(): NodeGene {
-        return new NodeGene(this._id, this._type)
+        return new NodeGene(this._id, this._type, this._activationFunction)
     }
 
-    public getActivationValue() {
-        if (this.activationCount > 0)
+    public getActivationValue(): number {
+        if (this.activationCount > 0) {
+            switch (this._activationFunction) {
+                case ActivationFunctions.NONE:
+                    this.activationValue = this.nodeValue;
+                    break;
+                case ActivationFunctions.SIGMOID:
+                    this.activationValue = NeatUtil.sigmoid(this.nodeValue);
+                    break
+            }
             return this.activationValue;
-        else
+        } else
             return 0.0;
+    }
+
+    public reset():void{
+        this.activationCount = 0;
+        if(this.type !== NodeType.BIAS){
+            this.activationValue = 0;
+            this.nodeValue = 0;
+            this.lastActivationValue = 0;
+        }
     }
 
     get id(): number {
@@ -98,10 +117,27 @@ export class NodeGene {
         this._incomingConnections = value;
     }
 
+    get activationFunction(): number {
+        return this._activationFunction;
+    }
+
+    set activationFunction(value: number) {
+        this._activationFunction = value;
+    }
+
+    get lastActivationValue(): number {
+        return this._lastActivationValue;
+    }
+
+    set lastActivationValue(value: number) {
+        this._lastActivationValue = value;
+    }
+
     public equals(other: unknown): boolean {
         if (!(other instanceof NodeGene)) return false;
         return this.id === other.id
     }
+
 
     toString(): string {
         return " NodeGene{ID: " + this._id + ", Value: " + this.activationValue + ", Type: " + NodeType[this.type] +

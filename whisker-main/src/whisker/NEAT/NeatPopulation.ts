@@ -125,10 +125,10 @@ export class NeatPopulation<C extends NeatChromosome> {
             }
         }
 
-        else if(totalOffspringExpected > this._startSize){
+        if (totalOffspringExpected > this._startSize) {
             console.error("Pruning Size")
-            for(const specie of this.species){
-                specie.expectedOffspring *= 0.70
+            for (const specie of this.species) {
+                specie.expectedOffspring = (specie.expectedOffspring * 0.7) + 1 // +1 for not killing a species
             }
         }
 
@@ -191,17 +191,21 @@ export class NeatPopulation<C extends NeatChromosome> {
             //TODO: Baby Stolen
         }
 
-        // Now eliminate chromosomes which are marked for dead
-        for (const specie of this.species)
-            for (const chromosome of specie.chromosomes)
-                if (chromosome.eliminate)
-                    specie.removeChromosome(chromosome);
 
+        const eliminateList = new List<C>();
         for (const chromosome of this._chromosomes) {
             if (chromosome.eliminate) {
+                const specie = chromosome.species;
+                specie.removeChromosome(chromosome);
                 this.chromosomes.remove(chromosome);
+                eliminateList.add(chromosome);
             }
         }
+        for (let i = 0; i < eliminateList.size(); i++) {
+            const chromToDelete = eliminateList.get(i)
+            this.chromosomes.remove(chromToDelete);
+        }
+        eliminateList.clear();
 
 
         // Now let the reproduction start

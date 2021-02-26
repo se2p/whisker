@@ -6,6 +6,7 @@ import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
 import {NodeType} from "../../../src/whisker/NEAT/NodeType";
 import {NeatParameter} from "../../../src/whisker/NEAT/NeatParameter";
+import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
 
 
 describe("NeatMutation", () => {
@@ -52,11 +53,11 @@ describe("NeatMutation", () => {
     test("MutateAddConnection with hidden Layer", () => {
         const inputNodes = neatChromosome.inputNodes
         const outputNodes = neatChromosome.outputNodes;
-        const hiddenLayerNode = new NodeGene(8, NodeType.HIDDEN);
-        const hiddenLayerNode2 = new NodeGene(9, NodeType.HIDDEN);
-        const hiddenLayerNode3 = new NodeGene(10, NodeType.HIDDEN);
-        const hiddenLayerNode4 = new NodeGene(11, NodeType.HIDDEN);
-        const deepHiddenLayerNode = new NodeGene(12, NodeType.HIDDEN);
+        const hiddenLayerNode = new NodeGene(8, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
+        const hiddenLayerNode2 = new NodeGene(9, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
+        const hiddenLayerNode3 = new NodeGene(10, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
+        const hiddenLayerNode4 = new NodeGene(11, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
+        const deepHiddenLayerNode = new NodeGene(12, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
         neatChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1,

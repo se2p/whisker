@@ -6,11 +6,12 @@ export class NeatParameter {
     public static INPUT_NEURONS = 6;
     public static MAX_HIDDEN_LAYERS = 20;
     public static OUTPUT_NEURONS = 3;
+    public static STARTING_CONNECTION_RATE = 0.3;
 
     // Compatibility Distance
-    public static EXCESS_COEFFICIENT = 1
-    public static DISJOINT_COEFFICIENT = 1
-    public static WEIGHT_COEFFICIENT = 0.4
+    public static EXCESS_COEFFICIENT = 0.5;
+    public static DISJOINT_COEFFICIENT = 0.5;
+    public static WEIGHT_COEFFICIENT = 0.4;
     public static DISTANCE_THRESHOLD = 5.0;
 
     // Population Management
@@ -27,9 +28,9 @@ export class NeatParameter {
 
     // Mutation Rates
     public static MUTATE_WEIGHT_NETWORK_LEVEL = 0.9;
-    public static MUTATE_WEIGHT_POWER = 2.5;
-    public static MUTATE_ADD_CONNECTION = 0.05;
+    public static MUTATE_WEIGHT_POWER = 1.5;
+    public static MUTATE_ADD_CONNECTION = 0.03;
     public static MUTATE_CONNECTION_STATE = 0.1;
-    public static MUTATE_ADD_NODE = 0.03;
+    public static MUTATE_ADD_NODE = 0.01;
     public static POPULATION_CHAMPION_CONNECTION_MUTATION = 0.2;
 }

@@ -2,6 +2,8 @@ import {Species} from "./Species";
 import {NeatPopulation} from "./NeatPopulation";
 import {NeatChromosome} from "./NeatChromosome";
 import {NeatParameter} from "./NeatParameter";
+import {List} from "../utils/List";
+import {NodeGene} from "./NodeGene";
 
 export class NeatUtil {
 
@@ -46,7 +48,7 @@ export class NeatUtil {
 
     static compatibilityDistance(chromosome1: NeatChromosome, chromosome2: NeatChromosome): number {
 
-        if(chromosome1 === undefined || chromosome2 === undefined)
+        if (chromosome1 === undefined || chromosome2 === undefined)
             return NeatParameter.DISTANCE_THRESHOLD + 1;
 
         // counters for excess, disjoint ,matching innovations and the weight difference
@@ -98,11 +100,39 @@ export class NeatUtil {
             }
         }
 
-        if(matching === 0)
+        if (matching === 0)
             return (NeatParameter.DISJOINT_COEFFICIENT * disjoint + NeatParameter.EXCESS_COEFFICIENT * excess);
 
         return (NeatParameter.DISJOINT_COEFFICIENT * disjoint + NeatParameter.EXCESS_COEFFICIENT * excess
             + NeatParameter.WEIGHT_COEFFICIENT * (weight_diff / matching));
 
+    }
+
+    /**
+     * Modified Sigmoid function proposed by the paper
+     * @param x the value the sigmoid function should be applied to
+     * @private
+     */
+    public static sigmoid(x: number): number {
+        return (1 / (1 + Math.exp(-4.9 * x)));
+    }
+
+    public static softmaxValue(x: number, v: number[]): number {
+        let denominator = 0;
+        for (const num of v) {
+            denominator += Math.exp(num);
+        }
+        return Math.exp(x) / denominator;
+    }
+
+    public static softmax(outputNodes: List<NodeGene>): number[] {
+        const result = []
+        let denominator = 0;
+        for (const oNode of outputNodes)
+            denominator += Math.exp(oNode.nodeValue);
+        for (const oNode of outputNodes) {
+            result.push(Math.exp(oNode.nodeValue) / denominator)
+        }
+        return result;
     }
 }

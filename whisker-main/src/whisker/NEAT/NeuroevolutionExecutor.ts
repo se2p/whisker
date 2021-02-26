@@ -13,6 +13,7 @@ import {NeatChromosome} from "./NeatChromosome";
 import {KeyDownEvent} from "../testcase/events/KeyDownEvent";
 import {Container} from "../utils/Container";
 import {NeatParameter} from "./NeatParameter";
+import {NeatUtil} from "./NeatUtil";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -41,9 +42,10 @@ export class NeuroevolutionExecutor {
 
     async execute(network: NeatChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
-        network.generateNetwork();
-        network.flushNodeValues();
-        seedScratch("KingBaileys")
+        let args = [];
+
+        const stabilizeCounter = network.stabilizedCounter(30, false)
+        seedScratch(String(Randomness.getInitialSeed()))
 
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
@@ -57,16 +59,25 @@ export class NeuroevolutionExecutor {
                 continue;
             }
 
+            // Load the inputs into the Network
             let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
-            for (let i = 0; i < NeatParameter.MAX_HIDDEN_LAYERS; i++) {
-                network.activateNetwork(inputs);
+            network.flushNodeValues();
+            network.setUpInputs(inputs);
+
+            // Activate the network stabilizeCounter + 1 times to stabilise it for classification
+            for (let i = 0; i < stabilizeCounter + 1; i++) {
+                network.activateNetwork(false);
             }
-            const output = network.activateNetwork(inputs);
+
+            // Get the classification results by using the softmax function over the outputNode values
+            const output = NeatUtil.softmax(network.outputNodes);
+
+            // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             let nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
-            let args = [1];
+
             if (nextEvent instanceof KeyDownEvent) {
                 args = [+true];
             } else if (nextEvent instanceof WaitEvent) {

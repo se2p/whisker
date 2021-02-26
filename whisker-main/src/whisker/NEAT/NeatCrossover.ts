@@ -52,6 +52,10 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         const inputNodes = new List<NodeGene>();
         const outputNodes = new List<NodeGene>();
 
+        // Create another List for saving disabled connections to check if we accidentally destroyed the
+        // network by disabling some connections.
+        const disabledConnections = new List<ConnectionGene>();
+
         // Search through all input/output nodes and add them to the newNodes List
         // This is necessary since we would otherwise loose nodes without a connection
         for (const node of parent1.allNodes) {
@@ -118,10 +122,10 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
                     else
                         currentConnection = parent2Connection;
 
-                    if(avgWeights)
+                    if (avgWeights)
                         avgWeight = (parent1Connection.weight + parent2Connection.weight) / 2.0;
 
-                    // If one of both is disabled the new Connection is likely to be disabled aswell
+                    // If one of both is disabled the new Connection is likely to be disabled as well
                     if (!parent1Connection.enabled || !parent2Connection.enabled) {
                         if (this.random.nextDouble() < 0.75) {
                             disable = true;
@@ -174,7 +178,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
                 }
 
                 if (!found) {
-                    newFromNode = new NodeGene(fromNode.id, fromNode.type)
+                    newFromNode = new NodeGene(fromNode.id, fromNode.type, fromNode.activationFunction)
                     newNodes.add(newFromNode);
                 }
 
@@ -189,14 +193,21 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
                 }
 
                 if (!found) {
-                    newOutNode = new NodeGene(toNode.id, toNode.type)
+                    newOutNode = new NodeGene(toNode.id, toNode.type, toNode.activationFunction)
                     newNodes.add(newOutNode);
                 }
 
                 // Now add the new Connection
                 const newConnection = new ConnectionGene(newFromNode, newOutNode, currentConnection.weight, !disable, currentConnection.innovation)
-                if(avgWeights)
+
+                // Collect the disabled Connections
+                if(disable)
+                    disabledConnections.add(newConnection);
+
+                // Average the weight if we set the flag
+                if (avgWeights)
                     newConnection.weight = avgWeight;
+
                 disable = false;
                 newConnections.add(newConnection);
             }
@@ -204,8 +215,16 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
 
         // Finally create the child with the selected Connections and Nodes
         const child = new NeatChromosome(newConnections, inputNodes, outputNodes, parent1.getCrossoverOperator(), parent1.getMutationOperator())
-        //child.allNodes = newNodes;
         child.generateNetwork();
+
+        let i = 0;
+        // Check if everything went fine and enable some connections to fix a defect network if necessary
+        while (child.stabilizedCounter(30, true) < 0){
+            disabledConnections.get(i).enabled = true;
+            child.generateNetwork();
+            i++;
+        }
+
         return child;
 
     }
