@@ -178,10 +178,6 @@ p {
     margin-bottom: 50px;
 }
 
-.center {
-    text-align:center;
-}
-
 .hide {
     display: none;
 }
@@ -252,6 +248,10 @@ p {
 .acc-input {
     text-align: right;
     border: 1px solid lightgrey;
+}
+
+#gender {
+    margin-top: 5px;
 }
 
 @media (max-width: 1400px) {
