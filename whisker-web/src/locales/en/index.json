@@ -3,6 +3,8 @@
     "faq" : "FAQ",
     "de" : "German",
     "en" : "English",
+    "h2" : "Welcome to Whisker",
+    "h4" : "Test your Scratch projects",
     "test-generation" : "Generate tests",
     "start" : "Start the program",
     "stop" : "Stop the program",
