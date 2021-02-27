@@ -49,5 +49,7 @@
     "browse" : "Durchsuchen...",
     "no-tests" : "Keine Tests geladen",
     "test-execution" : "Testausführung",
-    "uploaded-tests": "Hochgeladene Tests"
+    "uploaded-tests": "Hochgeladene Tests",
+    "description" : "Beschreibung",
+    "categories" : "Kategorien"
 }

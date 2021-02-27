@@ -127,11 +127,11 @@ class TestTable {
 `<table class="child-table">
     <tbody>
         <tr>
-            <td>Description:</td>
+            <td data-i18n="index:description"></td>
             <td>${test.description}</td>
         </tr>
         <tr>
-            <td>Categories:</td>
+            <td data-i18n="index:categories"></td>
             <td>${test.categories.length === 0 ? 'N/A' : test.categories.join(', ')}</td>
         </tr>
     </tbody>
