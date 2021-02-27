@@ -48,5 +48,6 @@
     "no-file" : "No file selected.",
     "browse" : "Browse...",
     "no-tests" : "No tests loaded",
-    "test-execution" : "Test Execution"
+    "test-execution" : "Test Execution",
+    "uploaded-tests": "Uploaded Tests"
 }

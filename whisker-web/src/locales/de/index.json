@@ -48,5 +48,6 @@
     "no-file" : "Keine Datei ausgewählt.",
     "browse" : "Durchsuchen...",
     "no-tests" : "Keine Tests geladen",
-    "test-execution" : "Testausführung"
+    "test-execution" : "Testausführung",
+    "uploaded-tests": "Hochgeladene Tests"
 }
