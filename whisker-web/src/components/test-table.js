@@ -90,10 +90,11 @@ class TestTable {
             search: {
                 smart: true
             },
-
             language: {
-                emptyTable: 'No tests loaded'
+                search: '&#x1F50E;',
+                emptyTable: '-'
             }
+
         });
     }
 
