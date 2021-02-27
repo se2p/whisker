@@ -46,6 +46,7 @@
     "mail" : "Teile per E-Mail",
     "whatsApp" : "Teile auf WhatsApp",
     "no-file" : "Keine Datei ausgewählt.",
+    "default" : "default.json",
     "browse" : "Durchsuchen...",
     "no-tests" : "Keine Tests geladen",
     "test-execution" : "Testausführung",

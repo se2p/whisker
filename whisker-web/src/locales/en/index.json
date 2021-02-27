@@ -46,6 +46,7 @@
     "mail" : "Share by E-Mail",
     "whatsApp" : "Share on WhatsApp",
     "no-file" : "No file selected.",
+    "default" : "default.json",
     "browse" : "Browse...",
     "no-tests" : "No tests loaded",
     "test-execution" : "Test Execution",
