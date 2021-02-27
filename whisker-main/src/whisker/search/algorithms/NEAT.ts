@@ -73,7 +73,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
-            await this.getNetworkFitnessFunction().getFitness(network);
+            await this.getNetworkFitnessFunction().getFitness(network, this._properties.timeout);
         }
     }
 

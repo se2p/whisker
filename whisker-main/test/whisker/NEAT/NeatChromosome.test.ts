@@ -23,7 +23,9 @@ describe('NeatChromosome', () => {
 
     beforeEach(() => {
         crossoverOp = new NeatCrossover(0.4);
-        mutationOp = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
+        mutationOp = new NeatMutation(0.03, 0.1,
+            30, 0.2, 0.01, 0.8,
+            1.5, 0.1, 3, 0.1);
         inputSize = 3;
         outputSize = 2;
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize, 0.4)
@@ -335,6 +337,47 @@ describe('NeatChromosome', () => {
         expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
         expect(clone.timePlayed).toBe(chromosome.timePlayed)
         expect(clone.fitness).toBe(chromosome.fitness)
+    })
+
+    test("Test the recurrent Network check",() =>{
+        // Create input Nodes
+        const nodes = new List<NodeGene>()
+        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
+        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
+        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+
+        // Create output Nodes
+        nodes.add(new NodeGene(3, NodeType.OUTPUT, ActivationFunctions.SIGMOID))
+        nodes.add(new NodeGene(4, NodeType.OUTPUT, ActivationFunctions.SIGMOID))
+
+        const hiddenNode = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        nodes.add(hiddenNode);
+        nodes.add(deepHiddenNode);
+
+        // Create Connections
+        const connections = new List<ConnectionGene>();
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.2, true, 1, false))
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.5, false, 2, false))
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.2, false, 3, false))
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 1, true, 4, false))
+        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.2, true, 5, false))
+        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true, 6, false))
+        connections.add(new ConnectionGene(nodes.get(0), hiddenNode, 0.3, true, 7, false));
+        connections.add(new ConnectionGene(hiddenNode, nodes.get(3), 0.7, true, 8, false));
+        connections.add(new ConnectionGene(hiddenNode, deepHiddenNode, 0.3, true, 9, false));
+        connections.add(new ConnectionGene(deepHiddenNode, hiddenNode, 1, true, 10, true));
+        connections.add(new ConnectionGene(deepHiddenNode, nodes.get(4), 1, true, 11, false))
+        connections.add(new ConnectionGene(deepHiddenNode, deepHiddenNode, 1, true, 10, true));
+
+
+        chromosome = new NeatChromosome(connections, nodes, mutationOp, crossoverOp);
+        expect(chromosome.isRecurrentNetwork(deepHiddenNode, hiddenNode,0,nodes.size() * nodes.size())).toBe(true)
+        expect(chromosome.recurrent).toBe(true)
+        expect(chromosome.isRecurrentNetwork(deepHiddenNode, deepHiddenNode, 0, nodes.size() * nodes.size())).toBe(true)
+        expect(chromosome.recurrent).toBe(true)
+        expect(chromosome.isRecurrentNetwork(hiddenNode, deepHiddenNode, 0, nodes.size() * nodes.size())).toBe(false)
+        expect(chromosome.recurrent).toBe(false)
     })
 
 })

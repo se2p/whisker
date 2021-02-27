@@ -90,6 +90,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
 
         // Here we save the chosen connection for each iteration of the while loop
         let currentConnection: ConnectionGene
+        let recurrent = false;
 
         while (i1 < parent1Size || i2 < parent2Size) {
 
@@ -210,6 +211,10 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
                 const newConnection = new ConnectionGene(newFromNode, newOutNode, currentConnection.weight, !disable, currentConnection.innovation,
                     currentConnection.recurrent)
 
+                // Set the recurrent flag if we added a recurrent connection
+                if(currentConnection.recurrent)
+                    recurrent = true;
+
                 // Collect the disabled Connections
                 if (disable)
                     disabledConnections.add(newConnection);
@@ -239,6 +244,9 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
             child = parent1.clone();
             child.eliminate = true;
         }
+
+        if(recurrent)
+            child.recurrent = true;
 
         return child;
     }

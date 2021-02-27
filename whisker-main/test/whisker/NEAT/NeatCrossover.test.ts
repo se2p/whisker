@@ -19,7 +19,9 @@ describe("NeatCrossover", () => {
 
     beforeEach(() => {
         crossoverOp = new NeatCrossover(0.4);
-        mutationOp = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
+        mutationOp = new NeatMutation(0.03, 0.1, 30,
+            0.2, 0.01, 0.8, 1.5,
+            0.1, 3,0.1);
 
         // Create Nodes of first network
         nodes1 = new List<NodeGene>();

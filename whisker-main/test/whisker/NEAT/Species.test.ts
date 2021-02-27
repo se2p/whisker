@@ -24,7 +24,9 @@ describe("Species Test", () => {
 
     beforeEach(() => {
         crossOver = new NeatCrossover(0.4);
-        mutation = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
+        mutation = new NeatMutation(0.03, 0.1, 30,
+            0.2, 0.01, 0.8,
+            1.5, 0.1, 3, 0.1);
         numberInputs = 6;
         numberOutputs = 3;
         generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4)

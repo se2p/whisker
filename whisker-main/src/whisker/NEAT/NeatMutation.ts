@@ -21,11 +21,13 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     private readonly _mutateWeights;
     private readonly _perturbationPower;
     private readonly _mutateToggleEnableConnection;
+    private readonly _toggleEnableConnectionTimes;
     private readonly _mutateEnableConnection;
 
     constructor(mutationAddConnection: number, recurrentConnection: number, addConnectionTries: number,
                 populationChampionConnectionMutation: number, mutationAddNode: number, mutateWeights: number,
-                perturbationPower: number, mutateToggleEnableConnection: number, mutateEnableConnection: number) {
+                perturbationPower: number, mutateToggleEnableConnection: number, toggleEnableConnectionTimes: number,
+                mutateEnableConnection: number) {
         this._mutationAddConnection = mutationAddConnection;
         this._recurrentConnection = recurrentConnection;
         this._addConnectionTries = addConnectionTries;
@@ -34,6 +36,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         this._mutateWeights = mutateWeights;
         this._perturbationPower = perturbationPower;
         this._mutateToggleEnableConnection = mutateToggleEnableConnection;
+        this._toggleEnableConnectionTimes = toggleEnableConnectionTimes;
         this._mutateEnableConnection = mutateEnableConnection;
     }
 
@@ -61,7 +64,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
                 if (this._random.nextDouble() < this._mutateWeights)
                     this.mutateWeight(chromosome, this._perturbationPower, 1);
                 if (this._random.nextDouble() < this._mutateToggleEnableConnection)
-                    this.mutateConnectionState(chromosome, 1);
+                    this.mutateToggleEnableConnection(chromosome, this._toggleEnableConnectionTimes);
                 if (this._random.nextDouble() < this._mutateEnableConnection)
                     this.mutateConnectionReenable(chromosome);
             }
@@ -203,6 +206,11 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         chromosome.connections.add(newConnection1);
         chromosome.connections.add(newConnection2);
         chromosome.allNodes.add(newNode);
+
+        const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
+        chromosome.isRecurrentNetwork(fromNode, newNode, 0, threshold)
+        chromosome.isRecurrentNetwork(newNode, toNode, 0, threshold)
+
     }
 
     public mutateWeight(chromosome: NeatChromosome, power: number, rate: number): void {
@@ -252,7 +260,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     }
 
 
-    mutateConnectionState(chromosome: NeatChromosome, times: number): void {
+    mutateToggleEnableConnection(chromosome: NeatChromosome, times: number): void {
         for (let count = 0; count <= times; count++) {
             // Pick a random connection
             const chosenConnection = this._random.pickRandomElementFromList(chromosome.connections);
@@ -272,17 +280,9 @@ export class NeatMutation implements Mutation<NeatChromosome> {
                     chosenConnection.enabled = false;
             } else
                 chosenConnection.enabled = true;
-        }
-        chromosome.generateNetwork();
-        const connections = chromosome.connections;
-        // Pick random connection
-        const connection = this._random.pickRandomElementFromList(connections);
-        // Flip the state
-        connection.enabled = !connection.enabled;
 
-        //Check the network and re-enable the connection if by chance we destroyed the network
-        while (chromosome.stabilizedCounter(30, true) < 0) {
-            connection.enabled = true;
+            const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
+            chromosome.isRecurrentNetwork(chosenConnection.from, chosenConnection.to, 0, threshold)
         }
     }
 
@@ -290,6 +290,8 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         for (const connection of chromosome.connections) {
             if (!connection.enabled) {
                 connection.enabled = true;
+                const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
+                chromosome.isRecurrentNetwork(connection.from, connection.to, 0, threshold)
                 break;
             }
         }

@@ -154,6 +154,11 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
     private _stoppingCondition: StoppingCondition<C>;
 
     /**
+     * Timout for the execution of a scratch game during the evaluation of the network
+     */
+    private _timeout: number
+
+    /**
      * Constructs an object that stores all relevant properties of a Neuroevolution Algorithm.
      * @param populationSize the size of the population
      */
@@ -345,5 +350,13 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
 
     set stoppingCondition(value: StoppingCondition<C>) {
         this._stoppingCondition = value;
+    }
+
+    get timeout(): number {
+        return this._timeout;
+    }
+
+    set timeout(value: number) {
+        this._timeout = value;
     }
 }

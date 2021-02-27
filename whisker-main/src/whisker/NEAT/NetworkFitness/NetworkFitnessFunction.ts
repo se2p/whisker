@@ -30,9 +30,10 @@ export interface NetworkFitnessFunction<C extends NeatChromosome> {
     /**
      * Computes and returns the fitness value for the given network.
      * @param network the network to evaluate
+     * @param timeout the timeout after which a scratch game during evaluation is terminated.
      * @returns the fitness value of the specified network
      */
-    getFitness(network: C): Promise<number>;
+    getFitness(network: C, timeout: number): Promise<number>;
 
 
     /**

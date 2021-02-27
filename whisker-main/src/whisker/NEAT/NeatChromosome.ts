@@ -53,6 +53,7 @@ export class NeatChromosome extends Chromosome {
     private _loop: boolean
     private _networkFitness: number
     private _codons: List<number>       // Saves the codons to later transform the NeatChromosome into a TestChromosome
+    private _recurrent: boolean
 
     /**
      * Constructs a new NeatChromosome
@@ -82,6 +83,7 @@ export class NeatChromosome extends Chromosome {
         this._loop = false;
         this._networkFitness = 0;
         this._codons = new List<number>();
+        this._recurrent = false;
         this.generateNetwork();
     }
 
@@ -285,22 +287,28 @@ export class NeatChromosome extends Chromosome {
 
         if (level > threshold) {
             this.loop = true;
+            this.recurrent = false;
             return false;
         }
 
-        if (node1 === node2)
+        if (node1 === node2) {
+            this.recurrent = true;
             return true;
+        }
 
         for (const inConnection of node1.incomingConnections) {
             if (!inConnection.recurrent) {
                 if (!inConnection.from.traversed) {
                     inConnection.from.traversed = true;
-                    if (this.isRecurrentNetwork(inConnection.from, node2, level, threshold))
+                    if (this.isRecurrentNetwork(inConnection.from, node2, level, threshold)) {
+                        this._recurrent = true;
                         return true;
+                    }
                 }
             }
         }
         node1.traversed = true;
+        this.recurrent = false;
         return false;
     }
 
@@ -525,6 +533,14 @@ export class NeatChromosome extends Chromosome {
 
     set codons(value: List<number>) {
         this._codons = value;
+    }
+
+    get recurrent(): boolean {
+        return this._recurrent;
+    }
+
+    set recurrent(value: boolean) {
+        this._recurrent = value;
     }
 
     toString(): string {

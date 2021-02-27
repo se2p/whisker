@@ -21,7 +21,9 @@ describe("NeatMutation", () => {
 
     beforeEach(() => {
         crossOver = new NeatCrossover(0.4);
-        mutation = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
+        mutation = new NeatMutation(0.03, 0.1, 30,
+            0.2, 0.01, 0.8, 1.5,
+            0.1, 3, 0.1);
         inputSize = 6;
         outputSize = 3;
         properties = new NeuroevolutionProperties<NeatChromosome>(50);
@@ -86,7 +88,7 @@ describe("NeatMutation", () => {
         for (const connection of neatChromosome.connections)
             connectionStates.push(connection.enabled)
 
-        mutation.mutateConnectionState(neatChromosome, 1)
+        mutation.mutateToggleEnableConnection(neatChromosome,3)
         const mutatedStates = []
         for (const connection of neatChromosome.connections)
             mutatedStates.push(connection.enabled)

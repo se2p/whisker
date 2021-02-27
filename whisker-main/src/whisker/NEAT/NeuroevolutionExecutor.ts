@@ -1,4 +1,4 @@
-import VMWrapper = require("../../vm/vm-wrapper.js")
+import VMWrapper = require("../../vm/vm-wrapper.js");
 import {List} from "../utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "../testcase/ScratchEvent";
@@ -23,11 +23,13 @@ export class NeuroevolutionExecutor {
     private availableEvents: List<ScratchEvent>;
     private eventObservers: EventObserver[] = [];
     private _initialState = {};
-    private _projectRunning
+    private _projectRunning : boolean
+    private _timeout: number;
 
-    constructor(vmWrapper: VMWrapper) {
+    constructor(vmWrapper: VMWrapper, timeout: number) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
+        this._timeout = timeout;
         this.recordInitialState();
     }
 
@@ -46,8 +48,8 @@ export class NeuroevolutionExecutor {
         this._vmWrapper.start();
         const start = Date.now();
         let timer = Date.now();
-        const timeout = start + 10000;
-        while (this._projectRunning && timer < timeout) {
+        this._timeout += start;
+        while (this._projectRunning && timer < this._timeout) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -58,12 +60,21 @@ export class NeuroevolutionExecutor {
             let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
-            //network.flushNodeValues();
-            network.setUpInputs(inputs);
 
-            // Activate the network stabilizeCounter + 1 times to stabilise it for classification
-            for (let i = 0; i < stabilizeCounter + 1; i++) {
-                workingNetwork = network.activateNetwork(false);
+            // If we have a recurrent network we do not flush the nodes and only activate it once
+            if (network.recurrent) {
+                network.setUpInputs(inputs)
+                workingNetwork = network.activateNetwork(false)
+            }
+
+            // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
+            else {
+                network.flushNodeValues();
+                network.setUpInputs(inputs);
+                // Activate the network stabilizeCounter + 1 times to stabilise it for classification
+                for (let i = 0; i < stabilizeCounter + 1; i++) {
+                    workingNetwork = network.activateNetwork(false);
+                }
             }
 
             // Get the classification results by using the softmax function over the outputNode values
@@ -91,15 +102,21 @@ export class NeuroevolutionExecutor {
             timer = Date.now();
         }
         // round due to small variances in runtime
-        const end = Math.round((Date.now() - start) / 100);
-        network.timePlayed = end;
+        network.timePlayed = Math.round((Date.now() - start) / 100);
 
-        this._vmWrapper.end();
+        // Save the executed Trace
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+
+        // End and reset the VM.
+        this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this.resetState();
+
+        // If we found a defect network let it go extinct!
         if (!workingNetwork)
             network.eliminate = true;
+
+        // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
         return network.trace;
     }

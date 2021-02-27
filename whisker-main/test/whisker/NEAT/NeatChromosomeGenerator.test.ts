@@ -14,7 +14,9 @@ describe('NeatChromosomeGenerator', () => {
 
     beforeEach(() => {
         crossoverOp = new NeatCrossover(0.4);
-        mutationOp = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
+        mutationOp = new NeatMutation(0.03, 0.1, 30,
+            0.2, 0.01, 0.8, 1.5,
+            0.1, 3,0.1);
         inputSize = 6;
         outputSize = 3;
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize, 0.4);

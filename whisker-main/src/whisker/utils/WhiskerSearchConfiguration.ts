@@ -114,6 +114,8 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this.dict['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this.dict['compatibility']['weightCoefficient'] as number;
 
+        const timeout = this.dict['network-fitness']['timeout']
+
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
         properties.ageSignificance = ageSignificance;
@@ -138,6 +140,8 @@ export class WhiskerSearchConfiguration {
         properties.disjointCoefficient = disjointCoefficient;
         properties.excessCoefficient = excessCoefficient;
         properties.weightCoefficient = weightCoefficient;
+
+        properties.timeout = timeout;
 
         properties.stoppingCondition = this._getStoppingCondition(this.dict['stopping-condition']);
         return properties;
@@ -180,6 +184,7 @@ export class WhiskerSearchConfiguration {
                     this.dict['mutation']['mutateWeights'] as number,
                     this.dict['mutation']['perturbationPower'] as number,
                     this.dict['mutation']['mutateToggleEnableConnection'] as number,
+                    this.dict['mutation']['toggleEnableConnectionTimes'] as number,
                     this.dict['mutation']['mutateEnableConnection'] as number)
             case 'integerlist':
             default:

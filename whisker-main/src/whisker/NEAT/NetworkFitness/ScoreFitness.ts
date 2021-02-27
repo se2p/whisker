@@ -7,11 +7,10 @@ import {NeatChromosome} from "../NeatChromosome";
 
 export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
 
-    async getFitness(network: NeatChromosome): Promise<number> {
-        const executor = new NeuroevolutionExecutor(Container.vmWrapper);
+    async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
+        const executor = new NeuroevolutionExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
         const score = this.gatherPoints(Container.vm);
-        console.log(score)
         network.networkFitness = score + 0.01;
         return network.networkFitness;
     }
