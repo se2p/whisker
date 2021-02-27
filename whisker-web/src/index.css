@@ -235,7 +235,11 @@ p {
 }
 
 .img {
-    max-height:40px;
+    max-height: 40px;
+}
+
+.img-padding {
+    padding-bottom: 8px;
 }
 
 .btn-group-toggle {
