@@ -2,26 +2,31 @@ import {TestGenerator} from "./TestGenerator";
 import {ScratchProject} from "../scratch/ScratchProject";
 import {WhiskerTest} from "./WhiskerTest";
 import {List} from "../utils/List";
-import {TestChromosome} from "../testcase/TestChromosome";
+import {SearchAlgorithm} from "../search/SearchAlgorithm";
+import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
+import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 
 export class NeuroevolutionTestGenerator extends TestGenerator{
     async generateTests(project: ScratchProject): Promise<List<WhiskerTest>>{
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const networkChromosomes = await searchAlgorithm.findSolution();
 
-        const testChromosomes = new List<TestChromosome>()
-
-        // TODO: This is a bit of a nasty cast in order to feed the getTestSuite() method with testChromosomes
-        for(const network of networkChromosomes){
-            const codons = network.trace.events;
-            const testChromosome = new TestChromosome(codons, network.getMutationOperator(), network.getCrossoverOperator())
-            testChromosome.trace = network.trace;
-            testChromosomes.add(testChromosome)
-        }
-
-        const testSuite = await this.getTestSuite(testChromosomes);
+        const testSuite = await this.getTestSuite(networkChromosomes);
 
         await this.collectStatistics(testSuite);
         return testSuite;
+    }
+
+    protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
+        const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
+            .addProperties(this._config.getNeuroevolutionProperties() as unknown as SearchAlgorithmProperties<any>);
+        if (initializeFitnessFunction) {
+            builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),
+                null, this._config.getFitnessFunctionTargets());
+            this._fitnessFunctions = builder.fitnessFunctions;
+        }
+        builder.initializeNetworkFitnessFunction(this._config.getNetworkFitnessType())
+        builder.addChromosomeGenerator(this._config.getChromosomeGenerator());
+        return builder.buildSearchAlgorithm();
     }
 }

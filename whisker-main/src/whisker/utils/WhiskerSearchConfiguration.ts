@@ -32,7 +32,10 @@ import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGe
 import {NeatChromosomeGenerator} from "../NEAT/NeatChromosomeGenerator";
 import {NeatMutation} from "../NEAT/NeatMutation";
 import {NeatCrossover} from "../NEAT/NeatCrossover";
-import {NeatParameter} from "../NEAT/NeatParameter";
+import {Container} from "./Container";
+import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {NeuroevolutionProperties} from "../NEAT/NeuroevolutionProperties";
+import {NetworkFitnessType} from "../NEAT/NetworkFitnessType";
 
 class ConfigException implements Error {
     message: string;
@@ -82,6 +85,64 @@ export class WhiskerSearchConfiguration {
         return properties;
     }
 
+    public getNeuroevolutionProperties(): NeuroevolutionProperties<any> {
+        const populationSize = this.dict['population-size'] as number;
+        const properties = new NeuroevolutionProperties(populationSize);
+
+        const parentsPerSpecies = this.dict['parentsPerSpecies'] as number;
+        const penalizingAge = this.dict['penalizingAge'] as number;
+        const ageSignificance = this.dict['ageSignificance'] as number;
+        const creationConnectionRate = this.dict['creationConnectionRate'] as number
+
+        const crossoverWithoutMutation = this.dict['crossover']['crossoverWithoutMutation'] as number
+        const interspeciesMating = this.dict['crossover']['interspeciesRate'] as number
+        const weightAverageRate = this.dict['crossover']['weightAverageRate'] as number
+
+        const mutationWithoutCrossover = this.dict['mutation']['mutationWithoutCrossover'] as number
+        const mutationAddConnection = this.dict['mutation']['mutationAddConnection'] as number
+        const recurrentConnection = this.dict['mutation']['recurrentConnection'] as number
+        const addConnectionTries = this.dict['mutation']['addConnectionTries'] as number
+        const populationChampionConnectionMutation = this.dict['mutation']['populationChampionConnectionMutation'] as number;
+        const mutationAddNode = this.dict['mutation']['mutationAddNode'] as number;
+        const mutateWeights = this.dict['mutation']['mutateWeights'] as number;
+        const perturbationPower = this.dict['mutation']['perturbationPower'] as number;
+        const mutateToggleEnableConnection = this.dict['mutation']['mutateToggleEnableConnection'] as number;
+        const mutateEnableConnection = this.dict['mutation']['mutateEnableConnection'] as number;
+
+        const distanceThreshold = this.dict['compatibility']['distanceThreshold'] as number
+        const disjointCoefficient = this.dict['compatibility']['disjointCoefficient'] as number
+        const excessCoefficient = this.dict['compatibility']['excessCoefficient'] as number;
+        const weightCoefficient = this.dict['compatibility']['weightCoefficient'] as number;
+
+        properties.parentsPerSpecies = parentsPerSpecies;
+        properties.penalizingAge = penalizingAge;
+        properties.ageSignificance = ageSignificance;
+        properties.creationConnectionRate = creationConnectionRate;
+
+        properties.crossoverWithoutMutation = crossoverWithoutMutation;
+        properties.interspeciesMating = interspeciesMating;
+        properties.crossoverAverageWeights = weightAverageRate;
+
+        properties.mutationWithoutCrossover = mutationWithoutCrossover;
+        properties.mutationAddConnection = mutationAddConnection;
+        properties.recurrentConnection = recurrentConnection;
+        properties.addConnectionTries = addConnectionTries;
+        properties.populationChampionConnectionMutation = populationChampionConnectionMutation;
+        properties.mutationAddNode = mutationAddNode;
+        properties.mutateWeights = mutateWeights;
+        properties.perturbationPower = perturbationPower;
+        properties.mutateToggleEnableConnection = mutateToggleEnableConnection;
+        properties.mutateEnableConnection = mutateEnableConnection;
+
+        properties.distanceThreshold = distanceThreshold;
+        properties.disjointCoefficient = disjointCoefficient;
+        properties.excessCoefficient = excessCoefficient;
+        properties.weightCoefficient = weightCoefficient;
+
+        properties.stoppingCondition = this._getStoppingCondition(this.dict['stopping-condition']);
+        return properties;
+    }
+
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
         const stoppingCond = stoppingCondition["type"];
         if (stoppingCond == "fixed-iteration") {
@@ -110,7 +171,16 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['alpha']);
             case'neatMutation':
-                return new NeatMutation();
+                return new NeatMutation(
+                    this.dict['mutation']['mutationAddConnection'] as number,
+                    this.dict['mutation']['recurrentConnection'] as number,
+                    this.dict['mutation']['addConnectionTries'] as number,
+                    this.dict['mutation']['populationChampionConnectionMutation'] as number,
+                    this.dict['mutation']['mutationAddNode'] as number,
+                    this.dict['mutation']['mutateWeights'] as number,
+                    this.dict['mutation']['perturbationPower'] as number,
+                    this.dict['mutation']['mutateToggleEnableConnection'] as number,
+                    this.dict['mutation']['mutateEnableConnection'] as number)
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
@@ -122,7 +192,7 @@ export class WhiskerSearchConfiguration {
             case 'singlepointrelative':
                 return new SinglePointRelativeCrossover();
             case 'neatCrossover':
-                return new NeatCrossover();
+                return new NeatCrossover(this.dict['crossover']['weightAverageRate'] as number);
             case 'singlepoint':
             default:
                 return new SinglePointCrossover();
@@ -155,8 +225,10 @@ export class WhiskerSearchConfiguration {
                     this._getCrossoverOperator(),
                     this.dict['init-var-length']);
             case 'neatChromosome':
-                return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(), NeatParameter.INPUT_NEURONS,
-                    NeatParameter.OUTPUT_NEURONS)
+                const connectionRate = this.dict['creationConnectionRate'];
+                return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
+                    ScratchEventExtractor.extractSpriteInfo(Container.vm).length * 2,
+                    ScratchEventExtractor.extractEvents(Container.vm).size(), connectionRate)
 
             case 'test':
             default:
@@ -173,13 +245,19 @@ export class WhiskerSearchConfiguration {
                 return FitnessFunctionType.STATEMENT;
             case 'one-max':
                 return FitnessFunctionType.ONE_MAX;
-            case 'time-played':
-                return FitnessFunctionType.TIME_PLAYED;
-            case 'score':
-                return FitnessFunctionType.SCORE;
             case 'single-bit':
             default:
                 return FitnessFunctionType.SINGLE_BIT;
+        }
+    }
+
+    public getNetworkFitnessType(): NetworkFitnessType {
+        const networkFitnessDef = this.dict['network-fitness'];
+        switch (networkFitnessDef["type"]) {
+            case 'score':
+                return NetworkFitnessType.SCORE;
+            default:
+                return NetworkFitnessType.SURVIVE;
         }
     }
 

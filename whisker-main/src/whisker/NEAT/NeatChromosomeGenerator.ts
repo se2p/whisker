@@ -8,7 +8,6 @@ import {NodeType} from "./NodeType";
 import {ConnectionGene} from "./ConnectionGene";
 import {NeatMutation} from "./NeatMutation";
 import {Randomness} from "../utils/Randomness";
-import {NeatParameter} from "./NeatParameter";
 import {ActivationFunctions} from "./ActivationFunctions";
 
 export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
@@ -25,12 +24,15 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private _random = Randomness.getInstance();
 
+    private readonly _connectionRate : number;
+
     constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, numInputNodes: number,
-                numOutputNodes: number) {
+                numOutputNodes: number, connectionRate: number) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
-        this.inputSize = numInputNodes;
-        this.outputSize = numOutputNodes;
+        this._inputSize = numInputNodes;
+        this._outputSize = numOutputNodes;
+        this._connectionRate = connectionRate;
     }
 
     /**
@@ -82,7 +84,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         let newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
         this.assignInnovationNumber(newConnection);
         connections.add(newConnection)
-        while (this._random.nextDouble() < NeatParameter.STARTING_CONNECTION_RATE) {
+        const maxConnections = inputNodes.size() * outputNodes.size();
+        while (this._random.nextDouble() < this._connectionRate && connections.size() < maxConnections) {
             inputNode = this._random.pickRandomElementFromList(inputNodes);
             outputNode = this._random.pickRandomElementFromList(outputNodes);
             newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)

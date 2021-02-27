@@ -26,7 +26,6 @@ import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 import {NodeType} from "./NodeType";
 import {FitnessFunction} from "../search/FitnessFunction";
-import {NeatParameter} from "./NeatParameter";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Species} from "./Species";
 
@@ -53,6 +52,7 @@ export class NeatChromosome extends Chromosome {
     private _species: Species<NeatChromosome> // Points to the species of this Chromosome
     private _loop: boolean
     private _networkFitness: number
+    private _codons: List<number>       // Saves the codons to later transform the NeatChromosome into a TestChromosome
 
     /**
      * Constructs a new NeatChromosome
@@ -81,6 +81,7 @@ export class NeatChromosome extends Chromosome {
         this._outputNodes = new List<NodeGene>();
         this._loop = false;
         this._networkFitness = 0;
+        this._codons = new List<number>();
         this.generateNetwork();
     }
 
@@ -115,11 +116,9 @@ export class NeatChromosome extends Chromosome {
         return new NeatChromosome(connectionsClone, nodesClone, this.getMutationOperator(), this.getCrossoverOperator());
     }
 
-    /**
-     * Returns the length of the NeatChromosome defined by the number of connections
-     */
+
     getLength(): number {
-        return this._connections.size()
+        return this._codons.size();
     }
 
     getCrossoverOperator(): Crossover<this> {
@@ -265,7 +264,7 @@ export class NeatChromosome extends Chromosome {
     }
 
     public setUpInputs(inputs: number[]): void {
-        for (let i = 0; i < inputs.length; i++) {
+        for (let i = 0; i < this.inputNodes.size(); i++) {
             const iNode = this.inputNodes.get(i);
             if (iNode.type === NodeType.INPUT) {
                 iNode.activationCount++;
@@ -380,8 +379,9 @@ export class NeatChromosome extends Chromosome {
      * @param fitnessFunction
      */
     getFitness(fitnessFunction: FitnessFunction<this>): number {
-        return this.fitness;
+        return fitnessFunction.getFitness(this);
     }
+
 
     get inputNodes(): List<NodeGene> {
         return this._inputNodes;
@@ -431,10 +431,6 @@ export class NeatChromosome extends Chromosome {
 
     set connections(value: List<ConnectionGene>) {
         this._connections = value;
-    }
-
-    get fitness(): number {
-        return this._fitness;
     }
 
     set fitness(value: number) {
@@ -521,6 +517,14 @@ export class NeatChromosome extends Chromosome {
 
     set loop(value: boolean) {
         this._loop = value;
+    }
+
+    get codons(): List<number> {
+        return this._codons;
+    }
+
+    set codons(value: List<number>) {
+        this._codons = value;
     }
 
     toString(): string {

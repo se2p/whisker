@@ -6,12 +6,17 @@ import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
 import {NodeType} from "./NodeType";
 import {Randomness} from "../utils/Randomness";
-import {NeatParameter} from "./NeatParameter";
 
 
 export class NeatCrossover implements Crossover<NeatChromosome> {
 
     private readonly random = Randomness.getInstance();
+
+    private readonly crossoverAverageWeights: number;
+
+    constructor(crossoverAverageWeights: number) {
+        this.crossoverAverageWeights = crossoverAverageWeights;
+    }
 
     apply(parent1: NeatChromosome, parent2: NeatChromosome): Pair<NeatChromosome> {
         parent1.generateNetwork();
@@ -19,7 +24,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
 
         // Decide if we want to inherit the weight of one parent or
         // the average of both parents when we have a matching connection
-        const avgWeights = this.random.nextDouble() < NeatParameter.CROSSOVER_WEIGHT_AVERAGES_RATE;
+        const avgWeights = this.random.nextDouble() < this.crossoverAverageWeights;
         const child = this.multipointCrossover(parent1, parent2, avgWeights);
         return new Pair<NeatChromosome>(child, undefined);
     }

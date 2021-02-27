@@ -1,18 +1,19 @@
 import {Species} from "./Species";
 import {NeatPopulation} from "./NeatPopulation";
 import {NeatChromosome} from "./NeatChromosome";
-import {NeatParameter} from "./NeatParameter";
 import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
+import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 
 export class NeatUtil {
 
 
-    static speciate(chromosome: NeatChromosome, population: NeatPopulation<NeatChromosome>): void {
+    static speciate(chromosome: NeatChromosome, population: NeatPopulation<NeatChromosome>,
+                    properties: NeuroevolutionProperties<any>): void {
 
         // If we have no species at all so far create the first one
         if (population.species.isEmpty()) {
-            const newSpecies = new Species(population.speciesCount, true);
+            const newSpecies = new Species(population.speciesCount, true, properties);
             population.speciesCount++;
             population.species.add(newSpecies);
             newSpecies.addChromosome(chromosome);
@@ -24,10 +25,11 @@ export class NeatUtil {
             for (const specie of population.species) {
                 // Get a representative of the specie and calculate the compatibility distance
                 const representative = specie.chromosomes.get(0);
-                const compatDistance = NeatUtil.compatibilityDistance(chromosome, representative);
+                const compatDistance = NeatUtil.compatibilityDistance(chromosome, representative, properties.excessCoefficient,
+                    properties.disjointCoefficient, properties.weightCoefficient);
 
                 // If they are compatible enough add the chromosome to the species
-                if (compatDistance < NeatParameter.DISTANCE_THRESHOLD) {
+                if (compatDistance < properties.distanceThreshold) {
                     specie.addChromosome(chromosome);
                     chromosome.species = specie;
                     foundSpecies = true;
@@ -37,7 +39,7 @@ export class NeatUtil {
 
             // If the chromosome fits into no species create one for it
             if (!foundSpecies) {
-                const newSpecies = new Species(population.speciesCount, true);
+                const newSpecies = new Species(population.speciesCount, true, properties);
                 population.speciesCount++;
                 population.species.add(newSpecies)
                 newSpecies.addChromosome(chromosome);
@@ -46,10 +48,8 @@ export class NeatUtil {
         }
     }
 
-    static compatibilityDistance(chromosome1: NeatChromosome, chromosome2: NeatChromosome): number {
-
-        if (chromosome1 === undefined || chromosome2 === undefined)
-            return NeatParameter.DISTANCE_THRESHOLD + 1;
+    static compatibilityDistance(chromosome1: NeatChromosome, chromosome2: NeatChromosome, excessCoefficient: number,
+                                 disjointCoefficient: number, weightCoefficient: number): number {
 
         // counters for excess, disjoint ,matching innovations and the weight difference
         let excess = 0;
@@ -101,10 +101,10 @@ export class NeatUtil {
         }
 
         if (matching === 0)
-            return (NeatParameter.DISJOINT_COEFFICIENT * disjoint + NeatParameter.EXCESS_COEFFICIENT * excess);
+            return (disjointCoefficient * disjoint + excessCoefficient * excess);
 
-        return (NeatParameter.DISJOINT_COEFFICIENT * disjoint + NeatParameter.EXCESS_COEFFICIENT * excess
-            + NeatParameter.WEIGHT_COEFFICIENT * (weight_diff / matching));
+        return (disjointCoefficient * disjoint + excessCoefficient * excess
+            + weightCoefficient * (weight_diff / matching));
 
     }
 

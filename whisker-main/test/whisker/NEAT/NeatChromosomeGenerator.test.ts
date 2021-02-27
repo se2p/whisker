@@ -13,11 +13,11 @@ describe('NeatChromosomeGenerator', () => {
     let outputSize: number
 
     beforeEach(() => {
-        mutationOp = new NeatMutation();
-        crossoverOp = new NeatCrossover();
+        crossoverOp = new NeatCrossover(0.4);
+        mutationOp = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
         inputSize = 6;
         outputSize = 3;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize);
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize, 0.4);
     })
 
     test('Create initial random Chromosome', () => {
@@ -33,7 +33,7 @@ describe('NeatChromosomeGenerator', () => {
         const chromosomes : NeatChromosome[] = []
         const inputs = [1,2,3];
         let stabCount = 0;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize);
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize, 0.4);
         for (let i = 0; i < 100; i++) {
             const chrom = generator.get();
             chromosomes.push(chrom)

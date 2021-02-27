@@ -3,41 +3,55 @@
     "algorithm": "neat",
     "chromosome": "neatChromosome",
     "population-size": 10,
-    "chromosome-length": 20,
+    "parentsPerSpecies": 0.2,
+    "penalizingAge": 15,
+    "ageSignificance": 1.0,
+    "creationConnectionRate": 0.4,
     "crossover": {
         "operator": "neatCrossover",
-        "probability": 0.8
+        "crossoverWithoutMutation": 0.2,
+        "interspeciesRate": 0.001,
+        "weightAverageRate": 0.4
     },
     "mutation": {
         "operator": "neatMutation",
-        "probability": 1,
-        "maxMutationCountStart": null,
-        "maxMutationCountFocusedPhase": null
+        "mutationWithoutCrossover": 0.25,
+        "mutationAddConnection": 0.03,
+        "recurrentConnection": 0.1,
+        "addConnectionTries": 30,
+        "populationChampionConnectionMutation": 0.2,
+        "mutationAddNode": 0.01,
+        "mutateWeights": 0.8,
+        "perturbationPower": 1.5,
+        "mutateToggleEnableConnection": 0.1,
+        "mutateEnableConnection": 0.1
     },
-    "selection": {
-        "operator": "rank",
-        "size": 2,
-        "randomSelectionProbabilityStart": null,
-        "randomSelectionProbabilityFocusedPhase": null
+    "compatibility": {
+        "distanceThreshold": 2.0,
+        "disjointCoefficient": 1,
+        "excessCoefficient": 1,
+        "weightCoefficient": 0.2
     },
     "fitness-function": {
         "type": "statement",
         "targets": []
     },
+    "network-fitness": {
+        "type": "time-played"
+    },
     "stopping-condition": {
-        "type": "fixed-iteration",
-        "iterations": 500
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "fixed-iteration",
+                "iterations": 1000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
     },
-    "archive": {
-        "maxArchiveSizeStart": null,
-        "maxArchiveSizeFocusedPhase": null
-    },
-    "startOfFocusedPhase": null,
-    "integerRange": {
-        "min": 0,
-        "max": 480
-    },
-    "wait-duration": 50,
-    "click-duration": 20,
-    "press-duration": 20
+    "wait-duration": 500,
+    "click-duration": 500,
+    "press-duration": 500
 }

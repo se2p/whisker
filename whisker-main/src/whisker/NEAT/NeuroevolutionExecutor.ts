@@ -43,8 +43,8 @@ export class NeuroevolutionExecutor {
         const events = new List<[ScratchEvent, number[]]>();
         let args = [];
         let workingNetwork = false;
+        const codons = new List<number>()
 
-        const stabilizeCounter = network.stabilizedCounter(100, false)
         seedScratch(String(Randomness.getInitialSeed()))
 
         const _onRunStop = this.projectStopped.bind(this);
@@ -53,7 +53,7 @@ export class NeuroevolutionExecutor {
         this._vmWrapper.start();
         const start = Date.now();
         let timer = Date.now();
-        const timeout = start + 10000;
+        const timeout = start + 1000;
         while (this._projectRunning && timer < timeout) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
@@ -69,6 +69,7 @@ export class NeuroevolutionExecutor {
             network.setUpInputs(inputs);
 
             // Activate the network stabilizeCounter + 1 times to stabilise it for classification
+            const stabilizeCounter = network.stabilizedCounter(100, false)
             for (let i = 0; i < stabilizeCounter + 1; i++) {
                 workingNetwork = network.activateNetwork(false);
             }
@@ -78,6 +79,7 @@ export class NeuroevolutionExecutor {
 
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+            codons.add(indexOfMaxValue);
             let nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
 
             if (nextEvent instanceof KeyDownEvent) {
@@ -102,13 +104,13 @@ export class NeuroevolutionExecutor {
 
         let points = 0;
         for (const target of this._vm.runtime.targets) {
-            if (target.sprite.name === 'Stage')
-                for (const [key, value] of Object.entries(target.variables)) {
+            for (const [key, value] of Object.entries(target.variables)) {
+                // @ts-ignore
+                if (value.name === 'Punkte' || value.name === 'score' || value.name === 'coins' || value.name === 'room') {
                     // @ts-ignore
-                    if (value.name === 'Punkte') { // @ts-ignore
-                        points = value.value
-                    }
+                    points += Number(value.value)
                 }
+            }
         }
 
         network.points = points
@@ -118,21 +120,12 @@ export class NeuroevolutionExecutor {
         this.resetState();
         if (!workingNetwork)
             network.eliminate = true;
+        network.codons = codons;
         return network.trace;
     }
 
     private projectStopped() {
         return this._projectRunning = false;
-    }
-
-    private _getArgs(event: ScratchEvent, outputs: List<number>, paramCount: number): number[] {
-        const args = [];
-        for (let i = 0; i < event.getNumParameters(); i++) {
-            // Get next codon, but wrap around if length exceeded
-            const arg = outputs.get(++paramCount % outputs.size());
-            args.push(arg)
-        }
-        return args;
     }
 
     public attach(observer: EventObserver): void {

@@ -44,9 +44,9 @@ import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
-import {NeatChromosome} from "../NEAT/NeatChromosome";
 import {TimePlayedFitness} from "../NEAT/TimePlayedFitness";
 import {ScoreFitness} from "../NEAT/ScoreFitness";
+import {NetworkFitnessType} from "../NEAT/NetworkFitnessType";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -70,6 +70,11 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * The fitness function for a search algorithm.
      */
     private _fitnessFunction: FitnessFunction<C>;
+
+    /**
+     * The fitness function for measuring the network's Fitness
+     */
+    private _networkFitnessFunction: FitnessFunction<C>;
 
     /**
      * The map for the heuristic function of chromsomes.
@@ -169,11 +174,17 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case FitnessFunctionType.STATEMENT:
                 this._initializeStatementFitness(length, targets);
                 break;
-            case FitnessFunctionType.TIME_PLAYED:
-                this._initializeTimePlayedFitness();
-                break;
-            case FitnessFunctionType.SCORE:
-                this._initializeScoreFitness();
+        }
+        return this as unknown as SearchAlgorithmBuilder<C>;
+    }
+
+    public initializeNetworkFitnessFunction(networkFitnessType: NetworkFitnessType) : SearchAlgorithmBuilder<C>{
+        switch (networkFitnessType){
+            case NetworkFitnessType.SCORE:
+                this._initializeScoreNetworkFitness();
+                break
+            default:
+                this._initializeTimePlayedNetworkFitness();
         }
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
@@ -187,7 +198,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         this._properties = properties;
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
-
     /**
      * Adds the selection operation to use.
      * @param selection the selection operator to use
@@ -291,6 +301,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildNEAT() {
         const searchAlgorithm: SearchAlgorithm<C> = new NEAT() as unknown as SearchAlgorithm<C>;
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        // @ts-ignore
+        searchAlgorithm.setNetworkFitnessFunction(this._networkFitnessFunction)
         return searchAlgorithm;
     }
 
@@ -333,12 +345,12 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         }
     }
 
-    private _initializeTimePlayedFitness() {
-        this._fitnessFunction = new TimePlayedFitness() as unknown as FitnessFunction<C>;
+    private _initializeTimePlayedNetworkFitness() {
+        this._networkFitnessFunction = new TimePlayedFitness() as unknown as FitnessFunction<C>;
     }
 
-    private _initializeScoreFitness() {
-        this._fitnessFunction = new ScoreFitness() as unknown as FitnessFunction<C>;
+    private _initializeScoreNetworkFitness() {
+        this._networkFitnessFunction = new ScoreFitness() as unknown as FitnessFunction<C>;
     }
 
 

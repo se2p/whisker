@@ -3,13 +3,13 @@ import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
-import {NeatParameter} from "../../../src/whisker/NEAT/NeatParameter";
 import {NeatUtil} from "../../../src/whisker/NEAT/NeatUtil";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
 import {NodeType} from "../../../src/whisker/NEAT/NodeType";
 import {List} from "../../../src/whisker/utils/List";
 import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
+import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
 
 describe("NeatUtil Tests", () => {
 
@@ -20,25 +20,27 @@ describe("NeatUtil Tests", () => {
     let numberInputs: number;
     let numberOutputs: number;
     let generator: NeatChromosomeGenerator
+    let properties: NeuroevolutionProperties<NeatChromosome>
 
 
     beforeEach(() => {
-        crossOver = new NeatCrossover();
-        mutation = new NeatMutation();
+        crossOver = new NeatCrossover(0.4);
+        mutation = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
         numberInputs = 6;
         numberOutputs = 3;
-        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs)
         populationSize = 50;
+        properties = new NeuroevolutionProperties<NeatChromosome>(populationSize);
+        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4)
     })
 
     test("Speciation when a new Population gets created", () => {
-        population = new NeatPopulation<NeatChromosome>(populationSize, 2, generator);
+        population = new NeatPopulation<NeatChromosome>(populationSize, 2, generator, properties);
         expect(population.speciesCount).toBe(1);
         expect(population.species.size()).toBe(1);
     })
 
     test("Speciation when a new Population gets created and a low speciation Threshold", () => {
-        population = new NeatPopulation<NeatChromosome>(populationSize, 2, generator);
+        population = new NeatPopulation<NeatChromosome>(populationSize, 2, generator, properties);
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.size()).toBeGreaterThanOrEqual(1);
         // With this low threshold every unique connection leads to compatDistance above the Threshold
@@ -47,13 +49,12 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Speciation with a chromosome mutated several times", () => {
-        NeatParameter.DISTANCE_THRESHOLD = 0.1;
-        population = new NeatPopulation<NeatChromosome>(populationSize, 2, generator)
+        population = new NeatPopulation<NeatChromosome>(populationSize, 2, generator, properties)
         const chromosome = generator.get();
         const mutant = chromosome.clone();
         for (let i = 0; i < 100; i++) {
             mutant.mutate();
-            NeatUtil.speciate(mutant, population)
+            NeatUtil.speciate(mutant, population, properties)
         }
         expect(population.speciesCount).toBeGreaterThan(1)
     })
@@ -61,7 +62,7 @@ describe("NeatUtil Tests", () => {
     test("Compatibility Distance of clones", () => {
         const chromosome1 = generator.get();
         const chromosome2 = chromosome1.clone();
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2)
+        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         expect(compatDistance).toBe(0)
     })
 
@@ -88,9 +89,9 @@ describe("NeatUtil Tests", () => {
         const chromosome1 = new NeatChromosome(connections1, nodes, mutation, crossOver)
         const chromosome2 = new NeatChromosome(connections2, nodes, mutation, crossOver)
 
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2)
+        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(NeatParameter.DISJOINT_COEFFICIENT)
+        expect(compatDistance).toBe(1)
     })
 
     test("Compatibility Distance of Chromosomes with excess connections", () => {
@@ -100,17 +101,17 @@ describe("NeatUtil Tests", () => {
         const node1 = chromosome1.inputNodes.get(0);
         const node2 = chromosome1.outputNodes.get(1);
         chromosome2.connections.add(new ConnectionGene(node1, node2, 1, true, 1000, false));
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2)
+        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(NeatParameter.EXCESS_COEFFICIENT)
+        expect(compatDistance).toBe(1)
     })
 
     test("Compatibility Distance of Chromosomes with same connections but different weights", () => {
         const chromosome1 = generator.get();
         const chromosome2 = chromosome1.clone();
         chromosome2.connections.get(0).weight = chromosome1.connections.get(0).weight + 1;
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2)
+        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(NeatParameter.WEIGHT_COEFFICIENT)
+        expect(compatDistance).toBe(0.4)
     })
 })

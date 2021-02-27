@@ -5,8 +5,8 @@ import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeG
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {NeatParameter} from "../../../src/whisker/NEAT/NeatParameter";
 import {NeatPopulation} from "../../../src/whisker/NEAT/NeatPopulation";
+import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
 
 describe("Species Test", () => {
 
@@ -20,16 +20,18 @@ describe("Species Test", () => {
     let populationSize: number;
     let random: Randomness;
     let champion: NeatChromosome;
+    let properties: NeuroevolutionProperties<NeatChromosome>
 
     beforeEach(() => {
-        crossOver = new NeatCrossover();
-        mutation = new NeatMutation();
+        crossOver = new NeatCrossover(0.4);
+        mutation = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
         numberInputs = 6;
         numberOutputs = 3;
-        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs)
+        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4)
         population = new List<NeatChromosome>();
         populationSize = 50;
-        species = new Species(0, false);
+        properties = new NeuroevolutionProperties(populationSize);
+        species = new Species(0, false, properties);
         while (population.size() < populationSize)
             population.add(generator.get())
         species.chromosomes.addList(population);
@@ -55,7 +57,7 @@ describe("Species Test", () => {
         expect(species.chromosomes.get(0).eliminate).toBe(false);
         expect(species.allTimeBestFitness).toBe(10);
         expect(species.ageOfLastImprovement).toBe(species.age);
-        expect(eliminateList.size()).toBeGreaterThanOrEqual(species.chromosomes.size() - (Math.floor(NeatParameter.SPECIES_PARENTS * species.chromosomes.size()) + 1))
+        expect(eliminateList.size()).toBeGreaterThanOrEqual(species.chromosomes.size() - (Math.floor(properties.parentsPerSpecies * species.chromosomes.size()) + 1))
     })
 
     test("Test assignAdjustFitness()", () => {
@@ -63,9 +65,9 @@ describe("Species Test", () => {
 
         expect(champion.fitness).toBeGreaterThan(species.chromosomes.get(1).fitness);
         expect(champion.fitness).toBe(
-            champion.nonAdjustedFitness * NeatParameter.AGE_SIGNIFICANCE / species.chromosomes.size())
+            champion.nonAdjustedFitness * properties.ageSignificance / species.chromosomes.size())
         expect(species.chromosomes.get(1).fitness).toBe(
-            species.chromosomes.get(1).nonAdjustedFitness * NeatParameter.AGE_SIGNIFICANCE / species.chromosomes.size())
+            species.chromosomes.get(1).nonAdjustedFitness * properties.ageSignificance / species.chromosomes.size())
         expect(champion.fitness).not.toBe(champion.nonAdjustedFitness)
     })
 
@@ -118,7 +120,7 @@ describe("Species Test", () => {
     })
 
     test("Breed new Chromosomes in Species", () => {
-        const neatPopulation = new NeatPopulation(50, 1, generator)
+        const neatPopulation = new NeatPopulation(50, 1, generator, properties)
         const speciesList = new List<Species<NeatChromosome>>();
         const popSpecie = neatPopulation.species.get(0);
 
@@ -132,7 +134,7 @@ describe("Species Test", () => {
         champion.numberOffspringPopulationChamp = 3;
 
         speciesList.add(popSpecie);
-        speciesList.add(new Species<NeatChromosome>(1, true))
+        speciesList.add(new Species<NeatChromosome>(1, true, properties))
         popSpecie.assignAdjustFitness();
 
         let avgFitness = 0;

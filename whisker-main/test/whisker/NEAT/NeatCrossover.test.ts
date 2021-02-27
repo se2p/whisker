@@ -18,8 +18,8 @@ describe("NeatCrossover", () => {
     let nodes2: List<NodeGene>
 
     beforeEach(() => {
-        mutationOp = new NeatMutation();
-        crossoverOp = new NeatCrossover();
+        crossoverOp = new NeatCrossover(0.4);
+        mutationOp = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
 
         // Create Nodes of first network
         nodes1 = new List<NodeGene>();
@@ -38,8 +38,8 @@ describe("NeatCrossover", () => {
 
         // Create Connections of first parent
         parent1Connections = new List<ConnectionGene>();
-        parent1Connections.add(new ConnectionGene(iNode1, hiddenNode1, 1, true, 1,false));
-        parent1Connections.add(new ConnectionGene(iNode2, hiddenNode1, 2, true, 2,false));
+        parent1Connections.add(new ConnectionGene(iNode1, hiddenNode1, 1, true, 1, false));
+        parent1Connections.add(new ConnectionGene(iNode2, hiddenNode1, 2, true, 2, false));
         parent1Connections.add(new ConnectionGene(iNode2, oNode1, 3, false, 4, false));
         parent1Connections.add(new ConnectionGene(iNode3, oNode1, 4, true, 5, false));
         parent1Connections.add(new ConnectionGene(hiddenNode1, oNode1, 5, true, 6, false));

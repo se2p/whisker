@@ -7,8 +7,8 @@ export class ScoreFitness implements FitnessFunction<NeatChromosome> {
     }
 
     getFitness(chromosome: NeatChromosome): number {
-        chromosome.nonAdjustedFitness = chromosome.points + 9;
-        return chromosome.nonAdjustedFitness;
+        chromosome.networkFitness = chromosome.points + 0.01;
+        return chromosome.networkFitness;
     }
 
     isCovered(chromosome: NeatChromosome): boolean {

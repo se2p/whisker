@@ -5,25 +5,27 @@ import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
 import {NodeType} from "../../../src/whisker/NEAT/NodeType";
-import {NeatParameter} from "../../../src/whisker/NEAT/NeatParameter";
 import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
+import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
 
 
 describe("NeatMutation", () => {
 
     let neatChromosome: NeatChromosome;
     let neatChromosomeGenerator: NeatChromosomeGenerator
-    let neatMutation: NeatMutation;
-    let neatCrossover: NeatCrossover;
+    let mutation: NeatMutation;
+    let crossOver: NeatCrossover;
     let inputSize: number;
     let outputSize: number;
+    let properties: NeuroevolutionProperties<NeatChromosome>
 
     beforeEach(() => {
-        neatMutation = new NeatMutation();
-        neatCrossover = new NeatCrossover();
+        crossOver = new NeatCrossover(0.4);
+        mutation = new NeatMutation(0.03, 0.1, 30, 0.2, 0.01, 0.8, 1.5, 0.1, 0.1);
         inputSize = 6;
         outputSize = 3;
-        neatChromosomeGenerator = new NeatChromosomeGenerator(neatMutation, neatCrossover, inputSize, outputSize)
+        properties = new NeuroevolutionProperties<NeatChromosome>(50);
+        neatChromosomeGenerator = new NeatChromosomeGenerator(mutation, crossOver, inputSize, outputSize, 0.4)
         neatChromosome = neatChromosomeGenerator.get();
     })
 
@@ -33,7 +35,7 @@ describe("NeatMutation", () => {
             originalWeights.push(connection.weight)
 
         const mutatedWeights = [];
-        neatMutation.mutateWeight(neatChromosome, NeatParameter.MUTATE_WEIGHT_POWER, 1)
+        mutation.mutateWeight(neatChromosome, 1.5, 1)
         for (const connection of neatChromosome.connections)
             mutatedWeights.push(connection.weight)
         originalWeights.sort();
@@ -44,7 +46,7 @@ describe("NeatMutation", () => {
     test("MutateAddConnection without hidden Layer", () => {
         const originalConnectionsSize = neatChromosome.connections.size();
         neatChromosome.generateNetwork();
-        neatMutation.mutateAddConnection(neatChromosome, 30)
+        mutation.mutateAddConnection(neatChromosome, 30)
         // Equal if by chance an already established connection is chosen
         expect(originalConnectionsSize).toBeLessThanOrEqual(neatChromosome.connections.size())
     })
@@ -54,18 +56,18 @@ describe("NeatMutation", () => {
         const inputNodes = neatChromosome.inputNodes
         const outputNodes = neatChromosome.outputNodes;
         const hiddenLayerNode = new NodeGene(8, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
-        const hiddenLayerNode2 = new NodeGene(9, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
-        const hiddenLayerNode3 = new NodeGene(10, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
-        const hiddenLayerNode4 = new NodeGene(11, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
-        const deepHiddenLayerNode = new NodeGene(12, NodeType.HIDDEN,ActivationFunctions.SIGMOID);
+        const hiddenLayerNode2 = new NodeGene(9, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
+        const hiddenLayerNode3 = new NodeGene(10, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
+        const hiddenLayerNode4 = new NodeGene(11, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
+        const deepHiddenLayerNode = new NodeGene(12, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
-        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1,true, 50,false))
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1, true, 50, false))
         neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1, true, 51, false))
         neatChromosome.connections.add(new ConnectionGene(deepHiddenLayerNode, outputNodes.get(0), 1, true, 52, false))
         neatChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode2, 1, true, 53, false))
         neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode2, outputNodes.get(1), 1, true, 54, false))
-        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode3, 1, true,56, false))
+        neatChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode3, 1, true, 56, false))
         neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode3, outputNodes.get(1), 1, true, 57, false))
         neatChromosome.connections.add(new ConnectionGene(inputNodes.get(2), hiddenLayerNode4, 1, true, 58, false))
         neatChromosome.connections.add(new ConnectionGene(hiddenLayerNode4, outputNodes.get(0), 1, true, 59, false))
@@ -73,7 +75,7 @@ describe("NeatMutation", () => {
         const originalConnections = neatChromosome.connections.size();
         // Make some rounds of mutations to ensure a mutation eventually happens
         for (let i = 0; i < 20; i++) {
-            neatMutation.mutateAddConnection(neatChromosome, 50)
+            mutation.mutateAddConnection(neatChromosome, 50)
         }
         neatChromosome.generateNetwork();
         expect(originalConnections).not.toEqual(neatChromosome.connections.size())
@@ -84,7 +86,7 @@ describe("NeatMutation", () => {
         for (const connection of neatChromosome.connections)
             connectionStates.push(connection.enabled)
 
-        neatMutation.mutateConnectionState(neatChromosome, 1)
+        mutation.mutateConnectionState(neatChromosome, 1)
         const mutatedStates = []
         for (const connection of neatChromosome.connections)
             mutatedStates.push(connection.enabled)
@@ -104,7 +106,7 @@ describe("NeatMutation", () => {
             oldInnovationNumbers.push(connection.innovation)
         }
 
-        neatMutation.mutateAddNode(neatChromosome);
+        mutation.mutateAddNode(neatChromosome);
         neatChromosome.generateNetwork();
         const mutantNodes = []
         const mutantConnections = []

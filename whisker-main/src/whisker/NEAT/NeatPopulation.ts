@@ -1,9 +1,9 @@
 import {List} from "../utils/List";
 import {NeatChromosome} from "./NeatChromosome";
 import {Species} from "./Species";
-import {NeatParameter} from "./NeatParameter";
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {NeatUtil} from "./NeatUtil";
+import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 
 export class NeatPopulation<C extends NeatChromosome> {
 
@@ -17,8 +17,11 @@ export class NeatPopulation<C extends NeatChromosome> {
     private _populationChampion: C;
     private readonly _generator: ChromosomeGenerator<C>
     private readonly _startSize: number;
+    private readonly _properties: NeuroevolutionProperties<C>;
+    private _distThreshold: number;
 
-    constructor(size: number, numberOfSpecies: number, generator: ChromosomeGenerator<C>) {
+    constructor(size: number, numberOfSpecies: number, generator: ChromosomeGenerator<C>,
+                properties: NeuroevolutionProperties<C>) {
         this._speciesCount = 0;
         this._highestFitness = 0;
         this._highestFitnessLastChanged = 0;
@@ -28,6 +31,9 @@ export class NeatPopulation<C extends NeatChromosome> {
         this._generation = 0;
         this._species = new List<Species<C>>();
         this._chromosomes = new List<C>();
+        this._properties = properties;
+        this._distThreshold = properties.distanceThreshold;
+
         this.generatePopulation();
     }
 
@@ -39,7 +45,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         while (this.populationSize() < this._startSize) {
             const chromosome = this._generator.get();
             this.chromosomes.add(chromosome)
-            NeatUtil.speciate(chromosome, this);
+            NeatUtil.speciate(chromosome, this, this._properties);
         }
         console.log(this.species);
     }
@@ -49,7 +55,6 @@ export class NeatPopulation<C extends NeatChromosome> {
      * Applies evolution to the current population -> generate the next generation from the current one
      */
     public evolution(): void {
-
         let bestSpecie: Species<C>;
         const currentSpeciesSize: number = this._species.size();
         const compatibilityModifier = 0.3;
@@ -57,13 +62,13 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Adjust the Distance Threshold to aim for the targeted number of Species
         if (this.generation > 1) {
             if (currentSpeciesSize < this._numberOfSpeciesTargeted)
-                NeatParameter.DISTANCE_THRESHOLD -= compatibilityModifier;
+                this._distThreshold -= compatibilityModifier;
             else if (currentSpeciesSize > this._numberOfSpeciesTargeted)
-                NeatParameter.DISTANCE_THRESHOLD += compatibilityModifier;
+                this._distThreshold += compatibilityModifier;
 
-            if (NeatParameter.DISTANCE_THRESHOLD < 0.3) NeatParameter.DISTANCE_THRESHOLD = 0.3;
+            if (this._distThreshold < 0.3) this._distThreshold = 0.3;
         }
-        console.log("Current Threshold: " + NeatParameter.DISTANCE_THRESHOLD)
+        console.log("Current Threshold: " + this._distThreshold)
 
         // First calculate the shared fitness value of each chromosome in each Specie and mark the chromosomes
         // which will not survive this generation
@@ -119,7 +124,7 @@ export class NeatPopulation<C extends NeatChromosome> {
                 for (const specie of this.species) {
                     specie.expectedOffspring = 0;
                 }
-                bestSpecie.expectedOffspring = NeatParameter.POPULATION_SIZE;
+                bestSpecie.expectedOffspring = this._startSize;
             }
         }
 
@@ -163,7 +168,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         console.log(this.populationChampion)
 
         // If there is a stagnation in fitness perform delta-coding
-        if (this._highestFitnessLastChanged > NeatParameter.PENALIZING_AGE + 5) {
+        if (this._highestFitnessLastChanged > this._properties.penalizingAge + 5) {
             console.info("Perform delta-coding")
             this._highestFitnessLastChanged = 0;
             const halfPopulation = this.populationSize() / 2;
@@ -322,5 +327,9 @@ export class NeatPopulation<C extends NeatChromosome> {
 
     set populationChampion(value: C) {
         this._populationChampion = value;
+    }
+
+    get startSize(): number {
+        return this._startSize;
     }
 }

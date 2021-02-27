@@ -9,15 +9,16 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeuroevolutionExecutor} from "../../NEAT/NeuroevolutionExecutor";
 import {Container} from "../../utils/Container";
 import {NeatPopulation} from "../../NEAT/NeatPopulation";
-import {TimePlayedFitness} from "../../NEAT/TimePlayedFitness";
 import {TestChromosome} from "../../testcase/TestChromosome";
-import {NeatMutation} from "../../NEAT/NeatMutation";
+import {IntegerListMutation} from "../../integerlist/IntegerListMutation";
+import {SinglePointCrossover} from "../operators/SinglePointCrossover";
+import {NeuroevolutionProperties} from "../../NEAT/NeuroevolutionProperties";
 
 
 export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {
     private _chromosomeGenerator: ChromosomeGenerator<C>;
 
-    private _properties: SearchAlgorithmProperties<C>;
+    private _properties: NeuroevolutionProperties<C>;
 
     private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
@@ -27,23 +28,21 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     private _bestIndividuals = new List<C>();
 
-    private _archive = new Map<number, C>();
+    private _archive = new Map<number, TestChromosome>();
 
     private _startTime: number;
 
-    private _topChromosome: C;
-
-    private _networkFitness = new TimePlayedFitness();
-
     private _fullCoverageReached = false;
+
+    private _networkFitnessFunction: FitnessFunction<NeatChromosome>;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
-        this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._properties = properties as unknown as NeuroevolutionProperties<C>;
+        this._stoppingCondition = this._properties.stoppingCondition
     }
 
     getNumberOfIterations(): number {
@@ -63,6 +62,14 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
+    getNetworkFitnessFunction(): FitnessFunction<NeatChromosome> {
+        return this._networkFitnessFunction;
+    }
+
+    setNetworkFitnessFunction(value: FitnessFunction<NeatChromosome>) {
+        this._networkFitnessFunction = value;
+    }
+
     async evaluateNetworks(networks: List<C>): Promise<void> {
         const executor = new NeuroevolutionExecutor(Container.vmWrapper);
         for (const network of networks) {
@@ -77,14 +84,15 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
      */
     async findSolution(): Promise<List<C>> {
         const speciesNumber = 4;
-        const population = new NeatPopulation(this._properties.getPopulationSize(), speciesNumber, this._chromosomeGenerator);
+        const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
+            this._properties);
         this._iterations = 0;
         this._startTime = Date.now();
-        console.log(this._stoppingCondition)
 
         while (!(this._stoppingCondition.isFinished(this))) {
             console.log("-----------------------------------------------------")
             console.log("Iteration: " + this._iterations + " Network Fitness: " + population.highestFitness)
+            console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             await this.evaluateNetworks(population.chromosomes);
             this.calculateNetworkFitness(population.chromosomes);
             this.updateArchive(population.chromosomes)
@@ -100,7 +108,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     private calculateNetworkFitness(population: List<NeatChromosome>): void {
         for (const chromosome of population) {
-            chromosome.networkFitness = this._networkFitness.getFitness(chromosome);
+            chromosome.networkFitness = this._networkFitnessFunction.getFitness(chromosome);
         }
     }
 
@@ -114,20 +122,23 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
      * @param chromosomes The candidate chromosomes for the archive.
      */
     private updateArchive(chromosomes: List<C>): void {
-        for (const candidateChromosome of chromosomes) {
+        for (const network of chromosomes) {
+            // Convert the network into a test Chromosome
+            const testChromosome = new TestChromosome(network.codons, new IntegerListMutation(0, 1), new SinglePointCrossover())
+            testChromosome.trace = network.trace;
             for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 let bestLength = this._archive.has(fitnessFunctionKey)
                     ? this._archive.get(fitnessFunctionKey).getLength()
                     : Number.MAX_SAFE_INTEGER;
-                const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
-                const candidateLength = candidateChromosome.getLength();
+                const candidateFitness = fitnessFunction.getFitness(testChromosome as unknown as C);
+                const candidateLength = testChromosome.getLength();
                 if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                     bestLength = candidateLength;
                     if (!this._archive.has(fitnessFunctionKey)) {
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     }
-                    this._archive.set(fitnessFunctionKey, candidateChromosome);
+                    this._archive.set(fitnessFunctionKey, testChromosome);
                     //console.log("Found test for goal: " + fitnessFunction);
                 }
             }
@@ -142,7 +153,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                (this._iterations + 1) * this._properties.getPopulationSize();
+                (this._iterations + 1) * this._properties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }
