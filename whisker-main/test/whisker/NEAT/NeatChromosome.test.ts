@@ -226,6 +226,8 @@ describe('NeatChromosome', () => {
         for (let i = 0; i < stabilizeCount + 1; i++) {
             chromosome.activateNetwork(false)
         }
+        chromosome.setUpInputs([3,4])
+        chromosome.activateNetwork(false)
         const outputSum = NeatUtil.softmax(chromosome.outputNodes)
         expect(Math.round(outputSum.reduce((a, b) => a + b))).toBe(1);
     })

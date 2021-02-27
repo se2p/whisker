@@ -44,9 +44,11 @@ import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
-import {TimePlayedFitness} from "../NEAT/TimePlayedFitness";
-import {ScoreFitness} from "../NEAT/ScoreFitness";
 import {NetworkFitnessType} from "../NEAT/NetworkFitnessType";
+import {NetworkFitnessFunction} from "../NEAT/NetworkFitness/NetworkFitnessFunction";
+import {NeatChromosome} from "../NEAT/NeatChromosome";
+import {ScoreFitness} from "../NEAT/NetworkFitness/ScoreFitness";
+import {SurviveFitness} from "../NEAT/NetworkFitness/SurviveFitness";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -74,7 +76,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * The fitness function for measuring the network's Fitness
      */
-    private _networkFitnessFunction: FitnessFunction<C>;
+    private _networkFitnessFunction: NetworkFitnessFunction<NeatChromosome>;
 
     /**
      * The map for the heuristic function of chromsomes.
@@ -184,7 +186,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 this._initializeScoreNetworkFitness();
                 break
             default:
-                this._initializeTimePlayedNetworkFitness();
+                this._initializeSurviveNetworkFitness();
         }
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
@@ -345,12 +347,12 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         }
     }
 
-    private _initializeTimePlayedNetworkFitness() {
-        this._networkFitnessFunction = new TimePlayedFitness() as unknown as FitnessFunction<C>;
+    private _initializeSurviveNetworkFitness() {
+        this._networkFitnessFunction = new SurviveFitness() as unknown as NetworkFitnessFunction<NeatChromosome>;
     }
 
     private _initializeScoreNetworkFitness() {
-        this._networkFitnessFunction = new ScoreFitness() as unknown as FitnessFunction<C>;
+        this._networkFitnessFunction = new ScoreFitness() as unknown as NetworkFitnessFunction<NeatChromosome>;
     }
 
 

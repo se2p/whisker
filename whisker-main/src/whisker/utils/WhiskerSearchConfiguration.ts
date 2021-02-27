@@ -256,6 +256,7 @@ export class WhiskerSearchConfiguration {
         switch (networkFitnessDef["type"]) {
             case 'score':
                 return NetworkFitnessType.SCORE;
+            case 'survive':
             default:
                 return NetworkFitnessType.SURVIVE;
         }

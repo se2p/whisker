@@ -31,20 +31,13 @@ export class NeuroevolutionExecutor {
         this.recordInitialState();
     }
 
-    async executeTests(networks: List<NeatChromosome>): Promise<void> {
-        for (const network of networks) {
-            if (network.trace == null) {
-                await this.execute(network);
-            }
-        }
-    }
-
     async execute(network: NeatChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         let args = [];
         let workingNetwork = false;
         const codons = new List<number>()
 
+        const stabilizeCounter = network.stabilizedCounter(100, false)
         seedScratch(String(Randomness.getInitialSeed()))
 
         const _onRunStop = this.projectStopped.bind(this);
@@ -53,7 +46,7 @@ export class NeuroevolutionExecutor {
         this._vmWrapper.start();
         const start = Date.now();
         let timer = Date.now();
-        const timeout = start + 1000;
+        const timeout = start + 10000;
         while (this._projectRunning && timer < timeout) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
@@ -65,11 +58,10 @@ export class NeuroevolutionExecutor {
             let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
             inputs = [].concat.apply([], inputs);
-            network.flushNodeValues();
+            //network.flushNodeValues();
             network.setUpInputs(inputs);
 
             // Activate the network stabilizeCounter + 1 times to stabilise it for classification
-            const stabilizeCounter = network.stabilizedCounter(100, false)
             for (let i = 0; i < stabilizeCounter + 1; i++) {
                 workingNetwork = network.activateNetwork(false);
             }
@@ -102,18 +94,6 @@ export class NeuroevolutionExecutor {
         const end = Math.round((Date.now() - start) / 100);
         network.timePlayed = end;
 
-        let points = 0;
-        for (const target of this._vm.runtime.targets) {
-            for (const [key, value] of Object.entries(target.variables)) {
-                // @ts-ignore
-                if (value.name === 'Punkte' || value.name === 'score' || value.name === 'coins' || value.name === 'room') {
-                    // @ts-ignore
-                    points += Number(value.value)
-                }
-            }
-        }
-
-        network.points = points
         this._vmWrapper.end();
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
