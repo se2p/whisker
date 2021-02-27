@@ -61,7 +61,6 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
