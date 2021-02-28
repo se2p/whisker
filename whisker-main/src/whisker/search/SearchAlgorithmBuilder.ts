@@ -44,11 +44,12 @@ import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
-import {NetworkFitnessType} from "../NEAT/NetworkFitnessType";
+import {NetworkFitnessType} from "../NEAT/NetworkFitness/NetworkFitnessType";
 import {NetworkFitnessFunction} from "../NEAT/NetworkFitness/NetworkFitnessFunction";
 import {NeatChromosome} from "../NEAT/NeatChromosome";
 import {ScoreFitness} from "../NEAT/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../NEAT/NetworkFitness/SurviveFitness";
+import {StatementNetworkFitness} from "../NEAT/NetworkFitness/StatementNetworkFitness";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -185,6 +186,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case NetworkFitnessType.SCORE:
                 this._initializeScoreNetworkFitness();
                 break
+            case NetworkFitnessType.STATEMENT:
+                this._initializeStatementNetworkFitness();
+                break
+            case NetworkFitnessType.SURVIVE:
             default:
                 this._initializeSurviveNetworkFitness();
         }
@@ -353,6 +358,10 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
 
     private _initializeScoreNetworkFitness() {
         this._networkFitnessFunction = new ScoreFitness() as unknown as NetworkFitnessFunction<NeatChromosome>;
+    }
+
+    private _initializeStatementNetworkFitness(){
+        this._networkFitnessFunction = new StatementNetworkFitness() as unknown as NetworkFitnessFunction<NeatChromosome>;
     }
 
 

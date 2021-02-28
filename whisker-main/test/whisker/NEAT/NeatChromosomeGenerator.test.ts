@@ -31,7 +31,7 @@ describe('NeatChromosomeGenerator', () => {
     test('Create initial random Chromosome with regression', () => {
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize, 0.4, true);
         const neatChromosome = generator.get();
-        expect(neatChromosome.allNodes.size()).toBe(inputSize + 1 + outputSize) // +1 for Bias
+        expect(neatChromosome.allNodes.size()).toBe(inputSize + 1 + outputSize + 2) // +1 for Bias
         expect(neatChromosome.connections.size()).toBeGreaterThan(0)
     })
 

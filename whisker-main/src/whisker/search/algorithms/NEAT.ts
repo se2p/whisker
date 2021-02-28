@@ -72,6 +72,10 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
     async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
             await this.getNetworkFitnessFunction().getFitness(network, this._properties.timeout);
+            this.updateArchive(network);
+            if((this._stoppingCondition.isFinished(this))){
+                return ;
+            }
         }
     }
 
@@ -92,7 +96,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             console.log("Iteration: " + this._iterations + " Network Fitness: " + population.highestFitness)
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             await this.evaluateNetworks(population.chromosomes);
-            this.updateArchive(population.chromosomes)
+            //this.updateArchive(population.chromosomes)
             population.evolution();
             console.log("Size of Population: " + population.chromosomes.size())
             console.log("Number of Species: " + population.species.size())
@@ -108,12 +112,11 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
     }
 
     /**
-     * Updates the archive of best chromosomes.
+     * Updates the archive by casting the network into a Testchromosome.
      *
-     * @param chromosomes The candidate chromosomes for the archive.
+     * @param network The candidate network the archive may gets updated with.
      */
-    private updateArchive(chromosomes: List<C>): void {
-        for (const network of chromosomes) {
+    private updateArchive(network: NeatChromosome): void {
             // Convert the network into a test Chromosome
             const testChromosome = new TestChromosome(network.codons, new IntegerListMutation(0, 1), new SinglePointCrossover())
             testChromosome.trace = network.trace;
@@ -136,7 +139,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
                     console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
                 }*/
             }
-        }
+        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
     }
 
     private updateBestIndividualAndStatistics() {

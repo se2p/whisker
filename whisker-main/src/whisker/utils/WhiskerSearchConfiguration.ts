@@ -35,7 +35,7 @@ import {NeatCrossover} from "../NEAT/NeatCrossover";
 import {Container} from "./Container";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {NeuroevolutionProperties} from "../NEAT/NeuroevolutionProperties";
-import {NetworkFitnessType} from "../NEAT/NetworkFitnessType";
+import {NetworkFitnessType} from "../NEAT/NetworkFitness/NetworkFitnessType";
 
 class ConfigException implements Error {
     message: string;
@@ -261,6 +261,8 @@ export class WhiskerSearchConfiguration {
         switch (networkFitnessDef["type"]) {
             case 'score':
                 return NetworkFitnessType.SCORE;
+            case 'statement':
+                return NetworkFitnessType.STATEMENT;
             case 'survive':
             default:
                 return NetworkFitnessType.SURVIVE;

@@ -8,5 +8,10 @@ export enum NetworkFitnessType {
     /**
      * Network fitness measured by a score extracted from the game
      */
-    SCORE
+    SCORE,
+
+    /**
+     * Network fitness measured by the amount of reached statements.
+     */
+    STATEMENT
 }
