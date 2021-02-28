@@ -91,7 +91,6 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         const mutationOp = generatedChromosome.getMutationOperator() as NeatMutation;
         mutationOp.mutateWeight(generatedChromosome, 1, 1);
 
-        console.log(generatedChromosome)
         return generatedChromosome;
     }
 

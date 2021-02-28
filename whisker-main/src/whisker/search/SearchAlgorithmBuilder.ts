@@ -44,12 +44,8 @@ import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
-import {NetworkFitnessType} from "../NEAT/NetworkFitness/NetworkFitnessType";
 import {NetworkFitnessFunction} from "../NEAT/NetworkFitness/NetworkFitnessFunction";
 import {NeatChromosome} from "../NEAT/NeatChromosome";
-import {ScoreFitness} from "../NEAT/NetworkFitness/ScoreFitness";
-import {SurviveFitness} from "../NEAT/NetworkFitness/SurviveFitness";
-import {StatementNetworkFitness} from "../NEAT/NetworkFitness/StatementNetworkFitness";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -181,21 +177,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
 
-    public initializeNetworkFitnessFunction(networkFitnessType: NetworkFitnessType) : SearchAlgorithmBuilder<C>{
-        switch (networkFitnessType){
-            case NetworkFitnessType.SCORE:
-                this._initializeScoreNetworkFitness();
-                break
-            case NetworkFitnessType.STATEMENT:
-                this._initializeStatementNetworkFitness();
-                break
-            case NetworkFitnessType.SURVIVE:
-            default:
-                this._initializeSurviveNetworkFitness();
-        }
-        return this as unknown as SearchAlgorithmBuilder<C>;
-    }
-
     /**
      * Adds the properties needed by the search algorithm.
      * @param properties the properties to use
@@ -308,8 +289,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildNEAT() {
         const searchAlgorithm: SearchAlgorithm<C> = new NEAT() as unknown as SearchAlgorithm<C>;
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
-        // @ts-ignore
-        searchAlgorithm.setNetworkFitnessFunction(this._networkFitnessFunction)
         return searchAlgorithm;
     }
 
@@ -350,18 +329,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }
-    }
-
-    private _initializeSurviveNetworkFitness() {
-        this._networkFitnessFunction = new SurviveFitness() as unknown as NetworkFitnessFunction<NeatChromosome>;
-    }
-
-    private _initializeScoreNetworkFitness() {
-        this._networkFitnessFunction = new ScoreFitness() as unknown as NetworkFitnessFunction<NeatChromosome>;
-    }
-
-    private _initializeStatementNetworkFitness(){
-        this._networkFitnessFunction = new StatementNetworkFitness() as unknown as NetworkFitnessFunction<NeatChromosome>;
     }
 
 

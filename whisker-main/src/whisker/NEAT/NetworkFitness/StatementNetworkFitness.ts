@@ -37,4 +37,20 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NeatChrom
         network.networkFitness = statementScore;
         return Promise.resolve(statementScore);
     }
+
+    getFitnessWithoutPlaying(network: NeatChromosome): number {
+        // Cast to a TestChromosome
+        const testChromosome = new TestChromosome(network.codons, new IntegerListMutation(0, 1), new SinglePointCrossover())
+        testChromosome.trace = network.trace;
+
+        // Step through each statement and check if we reached it.
+        const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
+        const statemenCoverage: List<StatementCoverageFitness> = factory.extractFitnessFunctions(Container.vm, new List<string>());
+        let statementScore = 0;
+        for(const statement of statemenCoverage){
+            if(statement.isCovered(testChromosome))
+                statementScore++;
+        }
+        return statementScore;
+    }
 }

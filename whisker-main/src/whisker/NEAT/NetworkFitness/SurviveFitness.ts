@@ -13,8 +13,12 @@ export class SurviveFitness implements NetworkFitnessFunction<NeatChromosome> {
         return network.networkFitness;
     }
 
+
+    getFitnessWithoutPlaying(network: NeatChromosome): number {
+        return network.timePlayed;
+    }
+
     compare(value1: number, value2: number): number {
         return value2 - value1;
     }
-
 }

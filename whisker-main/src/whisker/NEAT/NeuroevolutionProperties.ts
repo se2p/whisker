@@ -21,6 +21,7 @@
 
 import {NeatChromosome} from "./NeatChromosome";
 import {StoppingCondition} from "../search/StoppingCondition";
+import {NetworkFitnessFunction} from "./NetworkFitness/NetworkFitnessFunction";
 
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.
@@ -152,6 +153,11 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
      * The stopping condition for the corresponding search algorithm.
      */
     private _stoppingCondition: StoppingCondition<C>;
+
+    /**
+     * The fitness function with which the network fitness is measured
+     */
+    private _networkFitness: NetworkFitnessFunction<C>;
 
     /**
      * Timout for the execution of a scratch game during the evaluation of the network
@@ -350,6 +356,14 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
 
     set stoppingCondition(value: StoppingCondition<C>) {
         this._stoppingCondition = value;
+    }
+
+    get networkFitness(): NetworkFitnessFunction<C> {
+        return this._networkFitness;
+    }
+
+    set networkFitness(value: NetworkFitnessFunction<C>) {
+        this._networkFitness = value;
     }
 
     get timeout(): number {

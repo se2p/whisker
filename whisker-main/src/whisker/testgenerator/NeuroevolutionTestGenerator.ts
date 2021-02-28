@@ -25,7 +25,6 @@ export class NeuroevolutionTestGenerator extends TestGenerator{
                 null, this._config.getFitnessFunctionTargets());
             this._fitnessFunctions = builder.fitnessFunctions;
         }
-        builder.initializeNetworkFitnessFunction(this._config.getNetworkFitnessType())
         builder.addChromosomeGenerator(this._config.getChromosomeGenerator());
         return builder.buildSearchAlgorithm();
     }

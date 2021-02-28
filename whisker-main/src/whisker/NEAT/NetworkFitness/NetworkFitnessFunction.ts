@@ -35,6 +35,13 @@ export interface NetworkFitnessFunction<C extends NeatChromosome> {
      */
     getFitness(network: C, timeout: number): Promise<number>;
 
+    /**
+     * Computes and returns the fitness value for the given network without playing the game.
+     * @param network the network to evaluate
+     * @returns the fitness value of the specified network.
+     */
+    getFitnessWithoutPlaying(network: C): number;
+
 
     /**
      * Comparator for two fitness values:

@@ -35,7 +35,12 @@ import {NeatCrossover} from "../NEAT/NeatCrossover";
 import {Container} from "./Container";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {NeuroevolutionProperties} from "../NEAT/NeuroevolutionProperties";
-import {NetworkFitnessType} from "../NEAT/NetworkFitness/NetworkFitnessType";
+import {StatementNetworkFitness} from "../NEAT/NetworkFitness/StatementNetworkFitness";
+import {NetworkFitnessFunction} from "../NEAT/NetworkFitness/NetworkFitnessFunction";
+import {NeatChromosome} from "../NEAT/NeatChromosome";
+import {ScoreFitness} from "../NEAT/NetworkFitness/ScoreFitness";
+import {SurviveFitness} from "../NEAT/NetworkFitness/SurviveFitness";
+import {CombinedNetworkFitness} from "../NEAT/NetworkFitness/CombinedNetworkFitness";
 
 class ConfigException implements Error {
     message: string;
@@ -144,6 +149,7 @@ export class WhiskerSearchConfiguration {
         properties.timeout = timeout;
 
         properties.stoppingCondition = this._getStoppingCondition(this.dict['stopping-condition']);
+        properties.networkFitness = this.getNetworkFitnessFunction(this.dict['network-fitness'])
         return properties;
     }
 
@@ -256,18 +262,25 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getNetworkFitnessType(): NetworkFitnessType {
-        const networkFitnessDef = this.dict['network-fitness'];
-        switch (networkFitnessDef["type"]) {
-            case 'score':
-                return NetworkFitnessType.SCORE;
-            case 'statement':
-                return NetworkFitnessType.STATEMENT;
-            case 'survive':
-            default:
-                return NetworkFitnessType.SURVIVE;
+    public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NeatChromosome> {
+        const networkFitnessDef = fitnessFunction['type'];
+        if (networkFitnessDef === 'score')
+            return new ScoreFitness(fitnessFunction['offset']);
+        else if (networkFitnessDef === 'statement')
+            return new StatementNetworkFitness();
+        else if (networkFitnessDef === 'survive')
+            return new SurviveFitness();
+        else if (networkFitnessDef === 'combined') {
+            const fitnessFunctions = fitnessFunction["functions"];
+            const comb: NetworkFitnessFunction<NeatChromosome>[] = [];
+            for (const functions of fitnessFunctions) {
+                comb.push(this.getNetworkFitnessFunction(functions));
+            }
+            return new CombinedNetworkFitness(...comb)
         }
+        throw new ConfigException("No Network Fitness specified in the config file!")
     }
+
 
     public getFitnessFunctionTargets(): List<string> {
         const fitnessFunctionDef = this.dict['fitness-function'];

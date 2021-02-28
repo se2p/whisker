@@ -7,19 +7,31 @@ import {NetworkExecutor} from "../NetworkExecutor";
 
 export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
 
+    private readonly offset: number;
+
+    constructor(offset: number) {
+        this.offset = offset;
+    }
+
     async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
         const score = this.gatherPoints(Container.vm);
-        network.networkFitness = score + 0.01;
+        network.networkFitness = score + this.offset;
         return network.networkFitness;
+    }
+
+
+    getFitnessWithoutPlaying(network: NeatChromosome): number {
+        const score = this.gatherPoints(Container.vm) + this.offset;
+        return score
     }
 
     compare(value1: number, value2: number): number {
         return value2 - value1;
     }
 
-    private gatherPoints(vm: VirtualMachine) : number{
+    private gatherPoints(vm: VirtualMachine): number {
         let points = 0;
         for (const target of vm.runtime.targets) {
             for (const value of Object.values(target.variables)) {
