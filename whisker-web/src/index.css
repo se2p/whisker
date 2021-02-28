@@ -225,6 +225,11 @@ p {
     margin-left: 35%;
 }
 
+.btn-wrapper {
+    width: 300px;
+    float: right;
+}
+
 .userData {
     margin:10px;
 }
