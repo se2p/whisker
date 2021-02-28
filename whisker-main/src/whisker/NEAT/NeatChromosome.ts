@@ -139,7 +139,7 @@ export class NeatChromosome extends Chromosome {
             if ((!this.inputNodes.contains(node)) && (node.type === NodeType.INPUT || node.type === NodeType.BIAS)) {
                 this.inputNodes.add(node);
             }
-            if ((!this.outputNodes.contains(node)) && (node.type === NodeType.CLASSIFICATION_OUTPUT) || (
+            if ((!this.outputNodes.contains(node)) && (node.type === NodeType.CLASSIFICATION_OUTPUT ||
                 node.type === NodeType.REGRESSION_OUTPUT))
                 this.outputNodes.add(node);
         }

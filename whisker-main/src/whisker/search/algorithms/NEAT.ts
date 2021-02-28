@@ -132,9 +132,9 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
                     this._archive.set(fitnessFunctionKey, testChromosome);
                     //console.log("Found test for goal: " + fitnessFunction);
                 }
-                if (!this._archive.has(fitnessFunctionKey)) {
+                /*if (!this._archive.has(fitnessFunctionKey)) {
                     console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
-                }
+                }*/
             }
         }
     }

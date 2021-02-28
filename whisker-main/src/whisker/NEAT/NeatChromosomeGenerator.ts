@@ -129,10 +129,12 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         const maxConnections = this._inputSize;
         chromosome.regression = true;
 
-        const mouseX = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.NONE);
+        // Create the regression Nodes
+        const mouseX = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.SIGMOID);
         nodeId++;
-        const mouseY = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.NONE);
+        const mouseY = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.SIGMOID);
 
+        // Add both regression nodes to the node and outputNode List
         chromosome.outputNodes.add(mouseX);
         chromosome.outputNodes.add(mouseY);
         chromosome.allNodes.add(mouseX);

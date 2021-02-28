@@ -134,4 +134,39 @@ describe("NeatUtil Tests", () => {
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
         expect(compatDistance).toBe(0.4 * 0.5)
     })
+
+    test("Regression Nodes Output", () =>{
+        const noRegressionNetwork = generator.get();
+        const regGenerator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4, true);
+        const regressionNetwork1 = regGenerator.get();
+        const regressionNetwork2 = regGenerator.get();
+
+        const inputs = [1,2,3,4,5,6];
+        const stabValue1 = noRegressionNetwork.stabilizedCounter(20, false);
+        const stabValue2 = regressionNetwork1.stabilizedCounter(20, false);
+        const stabValue3 = regressionNetwork2.stabilizedCounter(20, false);
+
+        noRegressionNetwork.setUpInputs(inputs)
+        for (let i = 0; i < stabValue1+1; i++) {
+            noRegressionNetwork.activateNetwork(false)
+        }
+
+        regressionNetwork1.setUpInputs(inputs)
+        for (let i = 0; i < stabValue2+1; i++) {
+            regressionNetwork1.activateNetwork(false)
+        }
+
+        regressionNetwork2.setUpInputs(inputs)
+        for (let i = 0; i < stabValue3+1; i++) {
+            regressionNetwork2.activateNetwork(false)
+        }
+
+        const outputSum1 = NeatUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).reduce((a,b) => a + b, 0);
+        const outputSum2 = NeatUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).reduce((a,b) => a + b, 0);
+
+        expect(NeatUtil.evaluateRegressionNodes(noRegressionNetwork.outputNodes).length).toBe(0);
+        expect(NeatUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).length).toBe(2);
+        expect(NeatUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).length).toBe(2);
+        expect(outputSum1).not.toBe(outputSum2)
+    })
 })

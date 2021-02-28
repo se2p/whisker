@@ -146,4 +146,14 @@ export class NeatUtil {
         }
         return result;
     }
+
+    public static evaluateRegressionNodes(outputNodes: List<NodeGene>): number[] {
+        const regressionValues = [];
+        for (const oNode of outputNodes) {
+            if (oNode.type === NodeType.REGRESSION_OUTPUT) {
+                regressionValues.push(oNode.nodeValue);
+            }
+        }
+        return regressionValues;
+    }
 }
