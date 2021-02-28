@@ -1,14 +1,14 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NeuroevolutionExecutor} from "../NeuroevolutionExecutor";
 import {Container} from "../../utils/Container";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {NeatChromosome} from "../NeatChromosome";
+import {NetworkExecutor} from "../NetworkExecutor";
 
 
 export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
 
     async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
-        const executor = new NeuroevolutionExecutor(Container.vmWrapper, timeout);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
         const score = this.gatherPoints(Container.vm);
         network.networkFitness = score + 0.01;
@@ -25,7 +25,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
             for (const value of Object.values(target.variables)) {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                if (value.name === 'Punkte' || value.name === 'score' || value.name === 'coins' || value.name === 'room') {
+                if (value.name === 'Punkte' || value.name === 'score' || value.name === 'coins' || value.name === 'room' || value.name === 'high score') {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     points += Number(value.value)

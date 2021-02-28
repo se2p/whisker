@@ -4,6 +4,7 @@ import {NeatChromosome} from "./NeatChromosome";
 import {List} from "../utils/List";
 import {NodeGene} from "./NodeGene";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
+import {NodeType} from "./NodeType";
 
 export class NeatUtil {
 
@@ -50,6 +51,11 @@ export class NeatUtil {
 
     static compatibilityDistance(chromosome1: NeatChromosome, chromosome2: NeatChromosome, excessCoefficient: number,
                                  disjointCoefficient: number, weightCoefficient: number): number {
+
+        if (chromosome1 === undefined || chromosome2 === undefined) {
+            console.error("Undefined Chromosome in compatDistance Calculation")
+            return Number.MAX_SAFE_INTEGER;
+        }
 
         // counters for excess, disjoint ,matching innovations and the weight difference
         let excess = 0;
@@ -128,10 +134,15 @@ export class NeatUtil {
     public static softmax(outputNodes: List<NodeGene>): number[] {
         const result = []
         let denominator = 0;
-        for (const oNode of outputNodes)
-            denominator += Math.exp(oNode.nodeValue);
         for (const oNode of outputNodes) {
-            result.push(Math.exp(oNode.nodeValue) / denominator)
+            if (oNode.type === NodeType.CLASSIFICATION_OUTPUT) {
+                denominator += Math.exp(oNode.nodeValue);
+            }
+        }
+        for (const oNode of outputNodes) {
+            if (oNode.type === NodeType.CLASSIFICATION_OUTPUT) {
+                result.push(Math.exp(oNode.nodeValue) / denominator)
+            }
         }
         return result;
     }

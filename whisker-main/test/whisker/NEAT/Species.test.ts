@@ -29,7 +29,7 @@ describe("Species Test", () => {
             1.5, 0.1, 3, 0.1);
         numberInputs = 6;
         numberOutputs = 3;
-        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4)
+        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4, false)
         population = new List<NeatChromosome>();
         populationSize = 50;
         properties = new NeuroevolutionProperties(populationSize);
@@ -39,10 +39,10 @@ describe("Species Test", () => {
         species.chromosomes.addList(population);
         random = Randomness.getInstance();
         for (let i = 0; i < species.chromosomes.size(); i++) {
-            species.chromosomes.get(i).fitness = (i % 5) + 1;
+            species.chromosomes.get(i).networkFitness = (i % 5) + 1;
         }
         champion = random.pickRandomElementFromList(species.chromosomes)
-        champion.fitness = 10;
+        champion.networkFitness = 10;
         champion.nonAdjustedFitness = 10;
     })
 
@@ -54,12 +54,11 @@ describe("Species Test", () => {
             if (c.eliminate)
                 eliminateList.add(c);
 
-        expect(species.chromosomes.get(0).fitness).toBe(10);
+        expect(species.chromosomes.get(0).networkFitness).toBe(10);
         expect(species.chromosomes.get(0).champion).toBe(true);
         expect(species.chromosomes.get(0).eliminate).toBe(false);
         expect(species.allTimeBestFitness).toBe(10);
         expect(species.ageOfLastImprovement).toBe(species.age);
-        expect(eliminateList.size()).toBeGreaterThanOrEqual(species.chromosomes.size() - (Math.floor(properties.parentsPerSpecies * species.chromosomes.size()) + 1))
     })
 
     test("Test assignAdjustFitness()", () => {

@@ -55,6 +55,18 @@ export class ScratchEventExtractor {
         return !this.availableWaitDurations.isEmpty();
     }
 
+    static hasMouseEvent(vm: VirtualMachine):boolean {
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    if(this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
+                        return true;
+                }
+            }
+        }
+            return false;
+    }
+
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         for (const target of vm.runtime.targets) {
@@ -181,6 +193,22 @@ export class ScratchEventExtractor {
         }
         return eventList;
     }
+
+    // TODO: Search through the fields if they have the 'mouse' value
+    static _searchForMouseEvent(target, block): boolean {
+        if (typeof block.opcode === 'undefined') {
+            return false;
+        }
+
+        switch (target.blocks.getOpcode(block)) {
+            case 'motion_pointtowards_menu':
+            case 'motion_pointtowards':
+                return true;
+            default:
+                return false;
+        }
+    }
+
 
     static _hasEvents(target, block): boolean {
         const fields = target.blocks.getFields(block);

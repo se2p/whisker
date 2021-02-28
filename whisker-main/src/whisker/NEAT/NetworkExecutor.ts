@@ -13,17 +13,19 @@ import {NeatChromosome} from "./NeatChromosome";
 import {KeyDownEvent} from "../testcase/events/KeyDownEvent";
 import {Container} from "../utils/Container";
 import {NeatUtil} from "./NeatUtil";
+import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
+import {NodeType} from "./NodeType";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
-export class NeuroevolutionExecutor {
+export class NetworkExecutor {
 
     private readonly _vm: VirtualMachine;
     private _vmWrapper: VMWrapper
     private availableEvents: List<ScratchEvent>;
     private eventObservers: EventObserver[] = [];
     private _initialState = {};
-    private _projectRunning : boolean
+    private _projectRunning: boolean
     private _timeout: number;
 
     constructor(vmWrapper: VMWrapper, timeout: number) {
@@ -96,6 +98,16 @@ export class NeuroevolutionExecutor {
             await nextEvent.apply(this._vm, args)
             StatisticsCollector.getInstance().incrementEventsCount();
 
+            // If we have a regression Node evaluate it.
+            if (network.regression) {
+                const mouseCoords = this.getMouseCoordinates(network);
+                const mouseMoveEvent = new MouseMoveEvent();
+                events.add([mouseMoveEvent, mouseCoords]);
+                this.notify(mouseMoveEvent, mouseCoords);
+                await mouseMoveEvent.apply(this._vm, mouseCoords)
+                StatisticsCollector.getInstance().incrementEventsCount();
+            }
+
             const waitEvent = new WaitEvent();
             events.add([waitEvent, []])
             await waitEvent.apply(this._vm);
@@ -123,6 +135,16 @@ export class NeuroevolutionExecutor {
 
     private projectStopped() {
         return this._projectRunning = false;
+    }
+
+    private getMouseCoordinates(network: NeatChromosome): number[] {
+        const coords = new List<number>();
+        for (const node of network.outputNodes) {
+            if (node.type === NodeType.REGRESSION_OUTPUT && !coords.contains(node.nodeValue)) {
+                coords.add(node.nodeValue)
+            }
+        }
+        return coords.getElements();
     }
 
     public attach(observer: EventObserver): void {

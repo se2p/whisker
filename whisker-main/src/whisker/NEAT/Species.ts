@@ -69,7 +69,7 @@ export class Species<C extends NeatChromosome> {
         const speciesSize = this.chromosomes.size();
 
         for (const chromosome of this.chromosomes) {
-            // Save the original networkfitness value from the networkfitness function
+            // Save the original networkFitness value from the networkFitness function
             chromosome.nonAdjustedFitness = chromosome.networkFitness;
 
             // Penalize fitness if it has not improved since NeatConfig.PENALIZING_AGEs

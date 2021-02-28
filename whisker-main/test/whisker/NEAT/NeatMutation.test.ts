@@ -27,7 +27,7 @@ describe("NeatMutation", () => {
         inputSize = 6;
         outputSize = 3;
         properties = new NeuroevolutionProperties<NeatChromosome>(50);
-        neatChromosomeGenerator = new NeatChromosomeGenerator(mutation, crossOver, inputSize, outputSize, 0.4)
+        neatChromosomeGenerator = new NeatChromosomeGenerator(mutation, crossOver, inputSize, outputSize, 0.4, false)
         neatChromosome = neatChromosomeGenerator.get();
     })
 

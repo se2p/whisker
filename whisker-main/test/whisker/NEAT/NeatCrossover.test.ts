@@ -32,7 +32,7 @@ describe("NeatCrossover", () => {
         nodes1.add(iNode2)
         nodes1.add(iNode3)
 
-        const oNode1 = new NodeGene(4, NodeType.OUTPUT, ActivationFunctions.NONE)
+        const oNode1 = new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE)
         nodes1.add(oNode1)
         const hiddenNode1 = new NodeGene(3, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
         nodes1.add(hiddenNode1)

@@ -19,23 +19,29 @@ describe('NeatChromosomeGenerator', () => {
             0.1, 3,0.1);
         inputSize = 6;
         outputSize = 3;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize, 0.4);
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize, 0.4, false);
     })
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
-        const counter = neatChromosome.stabilizedCounter(20, true);
         expect(neatChromosome.allNodes.size()).toBe(inputSize + 1 + outputSize) // +1 for Bias
-        expect(neatChromosome.connections.size()).toBeGreaterThanOrEqual(1)
+        expect(neatChromosome.connections.size()).toBeGreaterThan(0)
+    })
+
+    test('Create initial random Chromosome with regression', () => {
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,inputSize, outputSize, 0.4, true);
+        const neatChromosome = generator.get();
+        expect(neatChromosome.allNodes.size()).toBe(inputSize + 1 + outputSize) // +1 for Bias
+        expect(neatChromosome.connections.size()).toBeGreaterThan(0)
     })
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
         inputSize = 3;
-        outputSize = 1;
+        outputSize = 2;
         const chromosomes : NeatChromosome[] = []
         const inputs = [1,2,3];
         let stabCount = 0;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize, 0.4);
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize, 0.4, false);
         for (let i = 0; i < 100; i++) {
             const chrom = generator.get();
             chromosomes.push(chrom)
@@ -48,7 +54,7 @@ describe('NeatChromosomeGenerator', () => {
             for (let i = 0; i < stabCount + 1; i++) {
                 chromosome.activateNetwork(true);
             }
-            expect(NeatUtil.softmax(chromosome.outputNodes).reduce((a, b) => a + b, 0)).toBe(1);
+            expect(Math.round(NeatUtil.softmax(chromosome.outputNodes).reduce((a, b) => a + b, 0))).toBe(1);
         }
     })
 })

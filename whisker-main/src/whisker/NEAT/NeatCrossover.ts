@@ -65,13 +65,14 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         // This is necessary since we would otherwise loose nodes without a connection
         for (const node of parent1.allNodes) {
             const currentNode = node.clone();
-            if (node.type === NodeType.INPUT || node.type === NodeType.BIAS || node.type === NodeType.OUTPUT) {
+            if (node.type === NodeType.INPUT || node.type === NodeType.BIAS || node.type === NodeType.CLASSIFICATION_OUTPUT
+                || node.type === NodeType.REGRESSION_OUTPUT) {
                 newNodes.add(currentNode);
             }
             if (node.type === NodeType.INPUT || node.type === NodeType.BIAS) {
                 inputNodes.add(currentNode)
             }
-            if (node.type === NodeType.OUTPUT) {
+            if (node.type === NodeType.CLASSIFICATION_OUTPUT || node.type === NodeType.REGRESSION_OUTPUT) {
                 outputNodes.add(currentNode);
             }
 

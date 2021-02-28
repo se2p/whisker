@@ -230,10 +230,10 @@ export class WhiskerSearchConfiguration {
                     this._getCrossoverOperator(),
                     this.dict['init-var-length']);
             case 'neatChromosome':
-                const connectionRate = this.dict['creationConnectionRate'];
                 return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
                     ScratchEventExtractor.extractSpriteInfo(Container.vm).length * 2,
-                    ScratchEventExtractor.extractEvents(Container.vm).size(), connectionRate)
+                    ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['creationConnectionRate'],
+                    ScratchEventExtractor.hasMouseEvent(Container.vm))
 
             case 'test':
             default:

@@ -24,15 +24,18 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private _random = Randomness.getInstance();
 
-    private readonly _connectionRate : number;
+    private readonly _connectionRate: number;
+
+    private readonly _regressionNode: boolean
 
     constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, numInputNodes: number,
-                numOutputNodes: number, connectionRate: number) {
+                numOutputNodes: number, connectionRate: number, regressionNode: boolean) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
         this._inputSize = numInputNodes;
         this._outputSize = numOutputNodes;
         this._connectionRate = connectionRate;
+        this._regressionNode = regressionNode;
     }
 
     /**
@@ -60,13 +63,21 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         // Create the Output Nodes and add them to the nodes list
         const outputList = new List<NodeGene>()
         while (outputList.size() < this.outputSize) {
-            const oNode = new NodeGene(nodeId, NodeType.OUTPUT, ActivationFunctions.SIGMOID);
+            const oNode = new NodeGene(nodeId, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.SIGMOID);
             outputList.add(oNode);
             allNodes.add(oNode);
             nodeId++;
         }
 
         const generatedChromosome = this.createConnections(inputList, outputList, allNodes);
+
+
+        if (this._regressionNode) {
+            console.log("Regression")
+            this.addRegressionNode(generatedChromosome, nodeId);
+        }
+
+        // Perturb the weights
         const mutationOp = generatedChromosome.getMutationOperator() as NeatMutation;
         mutationOp.mutateWeight(generatedChromosome, 1, 1);
 
@@ -75,27 +86,102 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private createConnections(inputNodes: List<NodeGene>, outputNodes: List<NodeGene>, allNodes: List<NodeGene>): NeatChromosome {
         const connections = new List<ConnectionGene>();
-        let inputNode = this._random.pickRandomElementFromList(inputNodes);
-        // We dont want the Bias as a first connection of the Network; only input nodes
-        while (inputNode.type === NodeType.BIAS) {
-            inputNode = this._random.pickRandomElementFromList(inputNodes);
-        }
-        let outputNode = this._random.pickRandomElementFromList(outputNodes);
-        let newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
-        this.assignInnovationNumber(newConnection);
-        connections.add(newConnection)
         const maxConnections = inputNodes.size() * outputNodes.size();
-        while (this._random.nextDouble() < this._connectionRate && connections.size() < maxConnections) {
-            inputNode = this._random.pickRandomElementFromList(inputNodes);
-            outputNode = this._random.pickRandomElementFromList(outputNodes);
-            newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
-            // Only add the connection if its a new one
-            if (this.findConnection(connections, newConnection) === null) {
+
+        // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
+        do {
+
+            // Choose a random Sprite to add its input to the network; Exclude the Bias
+            let inputSprite = this._random.nextInt(0, inputNodes.size() - 1)
+
+            // Get to the Start of the input values of the Sprite, since we currently only look at the position in terms of
+            // x- and y-Coordinates each sprite as an inputSize of 2.
+            if (inputSprite % 2 === 1)
+                inputSprite--;
+
+            // Get Both Nodes
+            const inputNodeX = inputNodes.get(inputSprite);
+            const inputNodeY = inputNodes.get(++inputSprite);
+
+            // Add the connection from the x-Coordinate if it doesnt exist yet.
+            let outputNode = this._random.pickRandomElementFromList(outputNodes);
+            let newConnection = new ConnectionGene(inputNodeX, outputNode, 0, true, 0, false)
+
+            if (!this.findConnection(connections, newConnection)) {
                 this.assignInnovationNumber(newConnection);
-                connections.add(newConnection);
+                connections.add(newConnection)
+            }
+
+            // Add the connection from the y-Coordinate if it doesnt exist yet.
+            outputNode = this._random.pickRandomElementFromList(outputNodes);
+            newConnection = new ConnectionGene(inputNodeY, outputNode, 0, true, 0, false)
+            if (!this.findConnection(connections, newConnection)) {
+                this.assignInnovationNumber(newConnection);
+                connections.add(newConnection)
             }
         }
+        while (this._random.nextDouble() < this._connectionRate && connections.size() < maxConnections)
         return new NeatChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
+    }
+
+    private addRegressionNode(chromosome: NeatChromosome, nodeId: number) {
+
+        const maxConnections = this._inputSize;
+        chromosome.regression = true;
+
+        const mouseX = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.NONE);
+        nodeId++;
+        const mouseY = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.NONE);
+
+        chromosome.outputNodes.add(mouseX);
+        chromosome.outputNodes.add(mouseY);
+        chromosome.allNodes.add(mouseX);
+        chromosome.allNodes.add(mouseY);
+
+        // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
+        do {
+
+            // Choose a random Sprite to add its input to the network; Exclude the Bias
+            let inputSprite = this._random.nextInt(0, chromosome.inputNodes.size() - 1)
+
+            // Get to the Start of the input values of the Sprite, since we currently only look at the position in terms of
+            // x- and y-Coordinates each sprite as an inputSize of 2.
+            if (inputSprite % 2 === 1)
+                inputSprite--;
+
+            // Get Both Nodes
+            const inputNodeX = chromosome.inputNodes.get(inputSprite);
+            const inputNodeY = chromosome.inputNodes.get(++inputSprite);
+
+            // Add the connection from the x-Coordinate if it doesnt exist yet to the position of the mouse in the x dimension.
+            let newConnection = new ConnectionGene(inputNodeX, mouseX, 0, true, 0, false)
+            if (!this.findConnection(chromosome.connections, newConnection)) {
+                this.assignInnovationNumber(newConnection);
+                chromosome.connections.add(newConnection)
+            }
+
+            // Add the connection from the x-Coordinate if it doesnt exist yet to the position of the mouse in the y dimension.
+            newConnection = new ConnectionGene(inputNodeX, mouseY, 0, true, 0, false)
+            if (!this.findConnection(chromosome.connections, newConnection)) {
+                this.assignInnovationNumber(newConnection);
+                chromosome.connections.add(newConnection)
+            }
+
+            // Add the connection from the y-Coordinate if it doesnt exist yet to the position of the mouse in the x dimension
+            newConnection = new ConnectionGene(inputNodeY, mouseX, 0, true, 0, false)
+            if (!this.findConnection(chromosome.connections, newConnection)) {
+                this.assignInnovationNumber(newConnection);
+                chromosome.connections.add(newConnection)
+            }
+
+            // Add the connection from the y-Coordinate if it doesnt exist yet to the position of the mouse in the y dimension.
+            newConnection = new ConnectionGene(inputNodeY, mouseY, 0, true, 0, false)
+            if (!this.findConnection(chromosome.connections, newConnection)) {
+                this.assignInnovationNumber(newConnection);
+                chromosome.connections.add(newConnection)
+            }
+        }
+        while (this._random.nextDouble() < this._connectionRate && chromosome.connections.size() < maxConnections)
     }
 
     private findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {

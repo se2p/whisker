@@ -1,13 +1,13 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {NeatChromosome} from "../NeatChromosome";
-import {NeuroevolutionExecutor} from "../NeuroevolutionExecutor";
 import {Container} from "../../utils/Container";
+import {NetworkExecutor} from "../NetworkExecutor";
 
 
 export class SurviveFitness implements NetworkFitnessFunction<NeatChromosome> {
 
     async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
-        const executor = new NeuroevolutionExecutor(Container.vmWrapper, timeout);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
         network.networkFitness = network.timePlayed;
         return network.networkFitness;

@@ -115,6 +115,7 @@ export class Search {
         Container.acceleration = accelerationFactor;
         ScratchEventExtractor.extractAvailableTextSnippets(this.vm);
         ScratchEventExtractor.extractAvailableDurations(this.vm);
+        console.log(this.vm)
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }

@@ -6,8 +6,6 @@ import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {NeuroevolutionExecutor} from "../../NEAT/NeuroevolutionExecutor";
-import {Container} from "../../utils/Container";
 import {NeatPopulation} from "../../NEAT/NeatPopulation";
 import {TestChromosome} from "../../testcase/TestChromosome";
 import {IntegerListMutation} from "../../integerlist/IntegerListMutation";
@@ -133,6 +131,9 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
                     }
                     this._archive.set(fitnessFunctionKey, testChromosome);
                     //console.log("Found test for goal: " + fitnessFunction);
+                }
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
                 }
             }
         }

@@ -54,6 +54,7 @@ export class NeatChromosome extends Chromosome {
     private _networkFitness: number
     private _codons: List<number>       // Saves the codons to later transform the NeatChromosome into a TestChromosome
     private _recurrent: boolean
+    private _regression: boolean;
 
     /**
      * Constructs a new NeatChromosome
@@ -84,6 +85,7 @@ export class NeatChromosome extends Chromosome {
         this._networkFitness = 0;
         this._codons = new List<number>();
         this._recurrent = false;
+        this._regression = false;
         this.generateNetwork();
     }
 
@@ -137,7 +139,8 @@ export class NeatChromosome extends Chromosome {
             if ((!this.inputNodes.contains(node)) && (node.type === NodeType.INPUT || node.type === NodeType.BIAS)) {
                 this.inputNodes.add(node);
             }
-            if ((!this.outputNodes.contains(node)) && (node.type === NodeType.OUTPUT))
+            if ((!this.outputNodes.contains(node)) && (node.type === NodeType.CLASSIFICATION_OUTPUT) || (
+                node.type === NodeType.REGRESSION_OUTPUT))
                 this.outputNodes.add(node);
         }
 
@@ -541,6 +544,14 @@ export class NeatChromosome extends Chromosome {
 
     set recurrent(value: boolean) {
         this._recurrent = value;
+    }
+
+    get regression(): boolean {
+        return this._regression;
+    }
+
+    set regression(value: boolean) {
+        this._regression = value;
     }
 
     toString(): string {
