@@ -1,4 +1,6 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
+const Scratch3LooksBlocks = require('scratch-vm/src/blocks/scratch3_looks');
+
 const Stepper = require('./stepper');
 
 const log = require('minilog')('vm-wrapper');
@@ -385,10 +387,24 @@ class VMWrapper {
     }
 
     /**
+     * Gets the answer given to the ask-and-wait block.
+     *
      * @return {string} .
      */
     getAnswer () {
         return this.vm.runtime._primitives.sensing_answer();
+    }
+
+    /**
+     * Tests whether the ask block is currently active for a given target (a sprite or the stage).
+     *
+     * @param target
+     * @return {boolean}
+     */
+    isQuestionAsked (target) {
+        // TODO: investigate: might also return true if an ordinary SAY block is active!
+        const bubbleState = target.getCustomState(Scratch3LooksBlocks.STATE_KEY);
+        return !!bubbleState;
     }
 
     /**
