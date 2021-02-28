@@ -15,7 +15,7 @@ describe("NeatMutation", () => {
     let neatChromosomeGenerator: NeatChromosomeGenerator
     let mutation: NeatMutation;
     let crossOver: NeatCrossover;
-    let inputSize: number;
+    let genInputs: number[][];
     let outputSize: number;
     let properties: NeuroevolutionProperties<NeatChromosome>
 
@@ -24,10 +24,10 @@ describe("NeatMutation", () => {
         mutation = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1, 3, 0.1);
-        inputSize = 6;
+        genInputs = [[1,2,3,4,5,6]];
         outputSize = 3;
         properties = new NeuroevolutionProperties<NeatChromosome>(50);
-        neatChromosomeGenerator = new NeatChromosomeGenerator(mutation, crossOver, inputSize, outputSize, 0.4, false)
+        neatChromosomeGenerator = new NeatChromosomeGenerator(mutation, crossOver, genInputs, outputSize, 0.4, false)
         neatChromosome = neatChromosomeGenerator.get();
     })
 

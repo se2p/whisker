@@ -15,7 +15,7 @@ describe('NeatChromosome', () => {
 
     let mutationOp: Mutation<NeatChromosome>;
     let crossoverOp: Crossover<NeatChromosome>;
-    let inputSize: number;
+    let genInputs: number[][];
     let outputSize: number;
     let generator: NeatChromosomeGenerator;
     let chromosome: NeatChromosome;
@@ -26,16 +26,16 @@ describe('NeatChromosome', () => {
         mutationOp = new NeatMutation(0.03, 0.1,
             30, 0.2, 0.01, 0.8,
             1.5, 0.1, 3, 0.1);
-        inputSize = 3;
+        genInputs = [[1,2,3,4,5,6]]
         outputSize = 2;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, inputSize, outputSize, 0.4, false)
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false)
         chromosome = generator.get();
     })
 
     test('Create Network without hidden layer', () => {
         chromosome = generator.get();
         // add +1 to the input Nodes due to the Bias Node
-        expect(chromosome.allNodes.size()).toBe(inputSize + 1 + outputSize)
+        expect(chromosome.allNodes.size()).toBe(6 + 1 + outputSize)
     })
 
 
@@ -52,7 +52,7 @@ describe('NeatChromosome', () => {
         chromosome.connections.add(new ConnectionGene(deepHiddenNode, outputNode, 0.2, true, 10, false))
         chromosome.generateNetwork()
         // add +1 to the input Nodes due to the Bias Node
-        expect(chromosome.allNodes.size()).toBe(inputSize + 1 + outputSize + 2)
+        expect(chromosome.allNodes.size()).toBe(6 + 1 + outputSize + 2)
     })
 
     test('Test stabilizedCounter without hidden Layer', () => {

@@ -18,7 +18,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private _crossoverOp: Crossover<NeatChromosome>;
 
-    private _inputSize: number;
+    private _inputs: number[][];
 
     private _outputSize: number;
 
@@ -28,11 +28,11 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private readonly _regressionNode: boolean
 
-    constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, numInputNodes: number,
+    constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, inputs: number[][],
                 numOutputNodes: number, connectionRate: number, regressionNode: boolean) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
-        this._inputSize = numInputNodes;
+        this._inputs = inputs;
         this._outputSize = numOutputNodes;
         this._connectionRate = connectionRate;
         this._regressionNode = regressionNode;
@@ -46,17 +46,27 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
     get(): NeatChromosome {
         let nodeId = 0;
         const allNodes = new List<NodeGene>();
+        const flattenedInputNodes = new List<NodeGene>();
 
-        // Create the Input Nodes and add them to the nodes list
-        const inputList = new List<NodeGene>()
-        while (inputList.size() < this.inputSize) {
-            const iNode = new NodeGene(nodeId, NodeType.INPUT, ActivationFunctions.NONE);
-            inputList.add(iNode);
-            allNodes.add(iNode);
-            nodeId++;
+        // Create the Input Nodes and add them to the nodes list; Each row of the inputArray represents
+        // one Sprite. Sprites can have a different amount of infos i.e different amount of columns.
+        const inputList = new List<List<NodeGene>>()
+        for (let i = 0; i < this.inputs.length; i++) {
+            const spriteList = new List<NodeGene>();
+            const spriteInput = this.inputs[i];
+            spriteInput.forEach(() => {
+                const iNode = new NodeGene(nodeId, NodeType.INPUT, ActivationFunctions.NONE);
+                spriteList.add(iNode)
+                flattenedInputNodes.add(iNode);
+                allNodes.add(iNode);
+                nodeId++;
+            })
+            inputList.add(spriteList)
         }
+
+        // Add the Bias only to the flattenedList which is later given to the Chromosome
         const biasNode = new NodeGene(nodeId, NodeType.BIAS, ActivationFunctions.NONE);
-        inputList.add(biasNode);
+        flattenedInputNodes.add(biasNode);
         allNodes.add(biasNode);
         nodeId++;
 
@@ -81,43 +91,31 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         const mutationOp = generatedChromosome.getMutationOperator() as NeatMutation;
         mutationOp.mutateWeight(generatedChromosome, 1, 1);
 
+        console.log(generatedChromosome)
         return generatedChromosome;
     }
 
-    private createConnections(inputNodes: List<NodeGene>, outputNodes: List<NodeGene>, allNodes: List<NodeGene>): NeatChromosome {
+    private createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>, allNodes: List<NodeGene>): NeatChromosome {
         const connections = new List<ConnectionGene>();
         const maxConnections = inputNodes.size() * outputNodes.size();
 
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
+            // Choose a random Sprite to add its input to the network;
+            const sprite = this._random.pickRandomElementFromList(inputNodes);
 
-            // Choose a random Sprite to add its input to the network; Exclude the Bias
-            let inputSprite = this._random.nextInt(0, inputNodes.size() - 1)
+            // For each input of the Sprite create a connection to a random output Node
+            for(const inputNode of sprite){
+                // Pick a random output Node and create the new Connection between the input and output Node
+                const outputNode = this._random.pickRandomElementFromList(outputNodes);
+                const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
 
-            // Get to the Start of the input values of the Sprite, since we currently only look at the position in terms of
-            // x- and y-Coordinates each sprite as an inputSize of 2.
-            if (inputSprite % 2 === 1)
-                inputSprite--;
+                // Check if the connection does not exist yet.
+                if (!this.findConnection(connections, newConnection)) {
+                    this.assignInnovationNumber(newConnection);
+                    connections.add(newConnection)
+                }
 
-            // Get Both Nodes
-            const inputNodeX = inputNodes.get(inputSprite);
-            const inputNodeY = inputNodes.get(++inputSprite);
-
-            // Add the connection from the x-Coordinate if it doesnt exist yet.
-            let outputNode = this._random.pickRandomElementFromList(outputNodes);
-            let newConnection = new ConnectionGene(inputNodeX, outputNode, 0, true, 0, false)
-
-            if (!this.findConnection(connections, newConnection)) {
-                this.assignInnovationNumber(newConnection);
-                connections.add(newConnection)
-            }
-
-            // Add the connection from the y-Coordinate if it doesnt exist yet.
-            outputNode = this._random.pickRandomElementFromList(outputNodes);
-            newConnection = new ConnectionGene(inputNodeY, outputNode, 0, true, 0, false)
-            if (!this.findConnection(connections, newConnection)) {
-                this.assignInnovationNumber(newConnection);
-                connections.add(newConnection)
             }
         }
         while (this._random.nextDouble() < this._connectionRate && connections.size() < maxConnections)
@@ -126,7 +124,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private addRegressionNode(chromosome: NeatChromosome, nodeId: number) {
 
-        const maxConnections = this._inputSize;
+        const maxConnections = chromosome.inputNodes.size();
         chromosome.regression = true;
 
         // Create the regression Nodes
@@ -215,15 +213,15 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
 
     // Used for Testing
-    set inputSize(value: number) {
-        this._inputSize = value;
+    get inputs(): number[][] {
+        return this._inputs;
     }
 
-    get inputSize(): number {
-        return this._inputSize;
+    set inputs(value: number[][]) {
+        this._inputs = value;
     }
 
-    // Used for Testing
+// Used for Testing
     set outputSize(value: number) {
         this._outputSize = value;
     }

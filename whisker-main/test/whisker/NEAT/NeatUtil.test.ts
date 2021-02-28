@@ -17,7 +17,7 @@ describe("NeatUtil Tests", () => {
     let populationSize: number;
     let crossOver: NeatCrossover;
     let mutation: NeatMutation;
-    let numberInputs: number;
+    let genInputs: number[][];
     let numberOutputs: number;
     let generator: NeatChromosomeGenerator
     let properties: NeuroevolutionProperties<NeatChromosome>
@@ -28,11 +28,11 @@ describe("NeatUtil Tests", () => {
         mutation = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1,3, 0.1);
-        numberInputs = 6;
+        genInputs = [[1,2,3,4,5,6]]
         numberOutputs = 3;
         populationSize = 50;
         properties = new NeuroevolutionProperties<NeatChromosome>(populationSize);
-        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4, false)
+        generator = new NeatChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, false)
     })
 
     test("Speciation when a new Population gets created", () => {
@@ -137,7 +137,7 @@ describe("NeatUtil Tests", () => {
 
     test("Regression Nodes Output", () =>{
         const noRegressionNetwork = generator.get();
-        const regGenerator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4, true);
+        const regGenerator = new NeatChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, true);
         const regressionNetwork1 = regGenerator.get();
         const regressionNetwork2 = regGenerator.get();
 

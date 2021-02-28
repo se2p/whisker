@@ -52,6 +52,7 @@ export class NetworkExecutor {
         let timer = Date.now();
         this._timeout += start;
         while (this._projectRunning && timer < this._timeout) {
+            console.log(this._vm)
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -59,9 +60,10 @@ export class NetworkExecutor {
             }
 
             // Load the inputs into the Network
-            let inputs = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
+            const spriteInfo = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
-            inputs = [].concat.apply([], inputs);
+            const inputs = [].concat.apply([], spriteInfo);
+            console.log(inputs)
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
             if (network.recurrent) {
@@ -81,6 +83,7 @@ export class NetworkExecutor {
 
             // Get the classification results by using the softmax function over the outputNode values
             const output = NeatUtil.softmax(network.outputNodes);
+            console.log(output)
 
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);

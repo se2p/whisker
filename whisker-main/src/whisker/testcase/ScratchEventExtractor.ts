@@ -90,11 +90,14 @@ export class ScratchEventExtractor {
      * @param vm the Scratch VM
      * @return Returns a 2-dim Matrix where each row presents a Sprite and the columns the information of the Sprite
      */
-    static extractSpriteInfo(vm: VirtualMachine): number[] {
-        const spriteInfos = [];
+    static extractSpriteInfo(vm: VirtualMachine): number[][] {
+        const spriteInfos : number[][] = [];
+        let i = 0;
         for (const target of vm.runtime.targets) {
             if (target.sprite.name !== "Stage" && target.hasOwnProperty('sprite')) {
-                spriteInfos.push(this._extractInfoFromSprite(target));
+                //spriteInfos.push(this._extractInfoFromSprite(target));
+                spriteInfos[i] = this._extractInfoFromSprite(target);
+                i++;
             }
         }
         return spriteInfos;
@@ -295,7 +298,7 @@ export class ScratchEventExtractor {
     /**
      * Extracts the critical information of the given sprite and normalises in the range [-1, 1]
      * @param sprite the sprite from which information is gathered
-     * @return 1-dim vector containing the information of the sprite
+     * @param spriteInputs
      */
     static _extractInfoFromSprite(sprite: RenderedTarget): number[] {
         const spriteInfo = []
@@ -304,7 +307,11 @@ export class ScratchEventExtractor {
         const stageWidth = sprite.renderer._nativeSize[0] / 2.;
         const stageHeight = sprite.renderer._nativeSize[1] / 2.;
         spriteInfo.push(sprite.x / stageWidth);
-        spriteInfo.push(sprite.y / stageHeight);
+        spriteInfo.push(sprite.y / stageHeight)
+
+        if(sprite.sprite.costumes_.length > 1){
+            spriteInfo.push(sprite.currentCostume)
+        }
         //spriteInfo[1] = sprite.y / stageHeight;
         //spriteInfo[2] = sprite.getBounds().width / stageWidth;
         //spriteInfo[3] = sprite.getBounds().height / stageHeight;

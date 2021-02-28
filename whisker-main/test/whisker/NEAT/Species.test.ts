@@ -12,7 +12,7 @@ describe("Species Test", () => {
 
     let crossOver: NeatCrossover;
     let mutation: NeatMutation;
-    let numberInputs: number;
+    let inputs: number[][];
     let numberOutputs: number;
     let generator: NeatChromosomeGenerator
     let species: Species<NeatChromosome>;
@@ -27,9 +27,9 @@ describe("Species Test", () => {
         mutation = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8,
             1.5, 0.1, 3, 0.1);
-        numberInputs = 6;
+        inputs = [[1,2,3,4,5,6]]
         numberOutputs = 3;
-        generator = new NeatChromosomeGenerator(mutation, crossOver, numberInputs, numberOutputs, 0.4, false)
+        generator = new NeatChromosomeGenerator(mutation, crossOver, inputs, numberOutputs, 0.4, false)
         population = new List<NeatChromosome>();
         populationSize = 50;
         properties = new NeuroevolutionProperties(populationSize);

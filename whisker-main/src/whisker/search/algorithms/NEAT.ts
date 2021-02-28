@@ -71,7 +71,11 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
+            // Evaluate the networks by letting them play the game.
             await this.getNetworkFitnessFunction().getFitness(network, this._properties.timeout);
+
+            // Update the archive and stop if during the evaluation of the population if we already cover all
+            // statements.
             this.updateArchive(network);
             if((this._stoppingCondition.isFinished(this))){
                 return ;
@@ -96,7 +100,6 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             console.log("Iteration: " + this._iterations + " Network Fitness: " + population.highestFitness)
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             await this.evaluateNetworks(population.chromosomes);
-            //this.updateArchive(population.chromosomes)
             population.evolution();
             console.log("Size of Population: " + population.chromosomes.size())
             console.log("Number of Species: " + population.species.size())

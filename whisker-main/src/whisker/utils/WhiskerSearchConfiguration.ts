@@ -231,7 +231,7 @@ export class WhiskerSearchConfiguration {
                     this.dict['init-var-length']);
             case 'neatChromosome':
                 return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
-                    ScratchEventExtractor.extractSpriteInfo(Container.vm).length * 2,
+                    ScratchEventExtractor.extractSpriteInfo(Container.vm),
                     ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['creationConnectionRate'],
                     ScratchEventExtractor.hasMouseEvent(Container.vm))
 
