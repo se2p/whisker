@@ -52,5 +52,7 @@
     "test-execution" : "Test Execution",
     "uploaded-tests": "Uploaded Tests",
     "description" : "Description",
-    "categories" : "Categories"
+    "categories" : "Categories",
+    "inputs" : "Input Recorder",
+    "inputs-error" : "In order to record inputs, manual inputs must be enabled by clicking the checkbox."
 }

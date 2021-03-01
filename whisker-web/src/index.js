@@ -236,7 +236,7 @@ const initEvents = function () {
                 Whisker.inputRecorder.startRecording();
             }
         } else {
-            showModal('Input Recorder', 'In order to record inputs, inputs must be enabled.');
+            showModal(i18next.t("inputs"), i18next.t("inputs-error") );
         }
     });
 
