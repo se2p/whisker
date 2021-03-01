@@ -230,6 +230,10 @@ p {
     float: right;
 }
 
+.header-padding {
+    padding-left: 10px;
+}
+
 .userData {
     margin:10px;
 }
