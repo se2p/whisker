@@ -1,5 +1,4 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
-const Scratch3LooksBlocks = require('scratch-vm/src/blocks/scratch3_looks');
 
 const Stepper = require('./stepper');
 
@@ -91,12 +90,21 @@ class VMWrapper {
          */
         this.projectRunning = false;
 
+        /**
+         * @type {string}
+         */
+        this.question = null;
+
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
+        this._onQuestion = this.onQuestion.bind(this);
+        this._onAnswer   = this.onAnswer.bind(this);
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
         this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
         this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
+        this.vm.runtime.on('QUESTION', this._onQuestion);
+        this.vm.runtime.on('ANSWER', this._onAnswer);
     }
 
     /**
@@ -401,10 +409,16 @@ class VMWrapper {
      * @param target
      * @return {boolean}
      */
-    isQuestionAsked (target) {
-        // TODO: investigate: might also return true if an ordinary SAY block is active!
-        const bubbleState = target.getCustomState(Scratch3LooksBlocks.STATE_KEY);
-        return !!bubbleState;
+    isQuestionAsked () {
+        return this.question !== null;
+    }
+
+    onQuestion (question) {
+        this.question = question;
+    }
+
+    onAnswer (answer) {
+        this.question = null;
     }
 
     /**
@@ -429,6 +443,7 @@ class VMWrapper {
     onRunStop () {
         this.projectRunning = false;
     }
+
 
     /**
      * @returns {string} .
