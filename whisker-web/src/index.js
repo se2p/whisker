@@ -203,7 +203,7 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
-    document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
+    //document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };
 
 const initEvents = function () {
@@ -345,11 +345,11 @@ const hideAdvanced = function () {
 
 $(document)
     .ready(() => {
+        hideAdvanced();
         initScratch();
         initComponents();
         initEvents();
         toggleComponents();
-        hideAdvanced();
     });
 
 window.onbeforeunload = function () {

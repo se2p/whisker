@@ -170,6 +170,11 @@ p {
     margin-top: 50px;
 }
 
+.grey-spacer {
+    padding-bottom: 20px;
+    background-color: #f1f1f1;
+}
+
 .spacer10 {
     margin-bottom: 10px;
 }
@@ -204,10 +209,24 @@ p {
     min-height: 120px;
 }
 
+.chooseFile-light {
+    background-color: #f1f1f1;
+    margin-left: 10px;
+    margin-right: 10px;
+    min-height: 120px;
+}
+
 .search-form {
     background-color: #f1f1f1;
     border-radius: 5px;
     margin: 10px;
+    min-height: 120px;
+}
+
+.search-form-light {
+    background-color: #f1f1f1;
+    margin-left: 10px;
+    margin-right: 10px;
     min-height: 120px;
 }
 
