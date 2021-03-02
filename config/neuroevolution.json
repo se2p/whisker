@@ -2,9 +2,9 @@
     "test-generator": "neuroevolution",
     "algorithm": "neat",
     "chromosome": "neatChromosome",
-    "population-size": 10,
-    "parentsPerSpecies": 0.2,
-    "penalizingAge": 15,
+    "population-size": 150,
+    "parentsPerSpecies": 0.20,
+    "penalizingAge": 10,
     "ageSignificance": 1.0,
     "creationConnectionRate": 0.4,
     "crossover": {
@@ -16,20 +16,21 @@
     "mutation": {
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
-        "mutationAddConnection": 0.03,
+        "mutationAddConnection": 0.08,
         "recurrentConnection": 0.1,
-        "addConnectionTries": 30,
-        "populationChampionConnectionMutation": 0.2,
-        "mutationAddNode": 0.01,
-        "mutateWeights": 0.8,
+        "addConnectionTries": 50,
+        "populationChampionConnectionMutation": 0.4,
+        "mutationAddNode": 0.05,
+        "mutateWeights": 0.9,
         "perturbationPower": 1.5,
-        "mutateToggleEnableConnection": 0.1,
-        "mutateEnableConnection": 0.1
+        "mutateToggleEnableConnection": 0.3,
+        "toggleEnableConnectionTimes": 2,
+        "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 2.0,
-        "disjointCoefficient": 1,
-        "excessCoefficient": 1,
+        "distanceThreshold": 4.0,
+        "disjointCoefficient": 0.5,
+        "excessCoefficient": 0.5,
         "weightCoefficient": 0.2
     },
     "fitness-function": {
@@ -37,7 +38,17 @@
         "targets": []
     },
     "network-fitness": {
-        "type": "time-played"
+        "type": "combined",
+        "timeout": 30000,
+        "functions": [
+            {
+                "type": "score",
+                "offset": 0.01
+            },
+            {
+                "type": "statement"
+            }
+        ]
     },
     "stopping-condition": {
         "type": "one-of",
@@ -51,7 +62,7 @@
             }
         ]
     },
-    "wait-duration": 500,
-    "click-duration": 500,
-    "press-duration": 500
+    "wait-duration": 50,
+    "click-duration": 50,
+    "press-duration": 50
 }
