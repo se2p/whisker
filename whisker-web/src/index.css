@@ -221,7 +221,7 @@ p {
     margin-left: 35%;
 }
 
-.button-padding {
+.btn-padding {
     margin-left: 35%;
 }
 
@@ -680,6 +680,7 @@ img {vertical-align: middle;}
     padding: 8px 12px;
     height: 50px!important;
     width:calc(100% - 26px);
+    white-space: nowrap;
 }
 
 .upload-btn-wrapper .btnr {
