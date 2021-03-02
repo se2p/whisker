@@ -253,16 +253,12 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#advanced-upload').show();
             $('#scratch-controls').show();
-            $('#run-search').show();
         } else {
             $(event.target)
                 .parent()
                 .removeClass('active');
-            $('#advanced-upload').hide();
             $('#scratch-controls').hide();
-            $('#run-search').hide();
         }
     });
 
@@ -338,9 +334,7 @@ const toggleComponents = function () {
 };
 
 const hideAdvanced = function () {
-    $('#advanced-upload').hide();
     $('#scratch-controls').hide();
-    $('#run-search').hide();
 }
 
 $(document)
