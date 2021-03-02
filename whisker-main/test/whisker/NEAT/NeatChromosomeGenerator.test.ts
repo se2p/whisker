@@ -40,7 +40,8 @@ describe('NeatChromosomeGenerator', () => {
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
         outputSize = 2;
         const chromosomes : NeatChromosome[] = []
-        const inputs = [1,2,3];
+        // eslint-disable-next-line prefer-spread
+        const inputs = [].concat.apply([], genInputs);
         let stabCount = 0;
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false);
         for (let i = 0; i < 100; i++) {

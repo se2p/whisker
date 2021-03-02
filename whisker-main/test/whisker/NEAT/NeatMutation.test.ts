@@ -76,8 +76,8 @@ describe("NeatMutation", () => {
         neatChromosome.generateNetwork();
         const originalConnections = neatChromosome.connections.size();
         // Make some rounds of mutations to ensure a mutation eventually happens
-        for (let i = 0; i < 20; i++) {
-            mutation.mutateAddConnection(neatChromosome, 50)
+        for (let i = 0; i < 5; i++) {
+            mutation.mutateAddConnection(neatChromosome, 5)
         }
         neatChromosome.generateNetwork();
         expect(originalConnections).not.toEqual(neatChromosome.connections.size())
