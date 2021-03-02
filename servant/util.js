@@ -15,6 +15,11 @@ const logger = {
 };
 
 const validateCommandLineArguments = args => {
+    const noOptionsGiven = args.rawArgs.length < 3;
+    if (noOptionsGiven) {
+        args.help();
+    }
+
     if (!args.scratchPath) {
         logger.error('No path to a Scratch file was given, please use the -s option');
         process.exit(1);
@@ -26,7 +31,7 @@ const validateCommandLineArguments = args => {
     }
 
     if (args.numberOfTabs > os.cpus().length) {
-        logger.error(`You selcted to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
+        logger.error(`You selected to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
             `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
             `otherwise tests might fail and will need longer to initialize.`);
         process.exit(1);
@@ -41,7 +46,7 @@ const cli = {
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
-            .option('-v, --csvFile <Path>', 'Name of CSV File to put output into', false)
+            .option('-v, --csvFile <Path>', 'Name of CSV File to put output into (scratchPath must be a directory)', false)
             .option('-c, --configPath <Path>', 'Path to a configuration file', '../whisker-main/config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', 1)
