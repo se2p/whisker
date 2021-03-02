@@ -139,11 +139,9 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                const bubbleState = target.getCustomState(Scratch3LooksBlocks.STATE_KEY);
-                if (bubbleState) {
+                if (Container.vmWrapper.isQuestionAsked()) {
                     eventList.addList(this._getTypeTextEvents());
                 }
-
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite

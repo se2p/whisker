@@ -1,4 +1,5 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
+
 const Stepper = require('./stepper');
 
 const log = require('minilog')('vm-wrapper');
@@ -89,12 +90,21 @@ class VMWrapper {
          */
         this.projectRunning = false;
 
+        /**
+         * @type {string}
+         */
+        this.question = null;
+
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
+        this._onQuestion = this.onQuestion.bind(this);
+        this._onAnswer   = this.onAnswer.bind(this);
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
         this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
         this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
+        this.vm.runtime.on('QUESTION', this._onQuestion);
+        this.vm.runtime.on('ANSWER', this._onAnswer);
     }
 
     /**
@@ -385,6 +395,33 @@ class VMWrapper {
     }
 
     /**
+     * Gets the answer given to the ask-and-wait block.
+     *
+     * @return {string} .
+     */
+    getAnswer () {
+        return this.vm.runtime._primitives.sensing_answer();
+    }
+
+    /**
+     * Tests whether the ask block is currently active for a given target (a sprite or the stage).
+     *
+     * @param target
+     * @return {boolean}
+     */
+    isQuestionAsked () {
+        return this.question !== null;
+    }
+
+    onQuestion (question) {
+        this.question = question;
+    }
+
+    onAnswer (answer) {
+        this.question = null;
+    }
+
+    /**
      * @return {DOMRect} .
      */
     getCanvasRect () {
@@ -406,6 +443,7 @@ class VMWrapper {
     onRunStop () {
         this.projectRunning = false;
     }
+
 
     /**
      * @returns {string} .
