@@ -130,7 +130,7 @@ export class NeatPopulation<C extends NeatChromosome> {
 
         if (totalOffspringExpected > this._startSize) {
             console.error("Pruning Size")
-            let pruneFactor = 0.7;
+            let pruneFactor = 0.8;
 
             // If population gets really out of hand prune it even more
             if (totalOffspringExpected > 2 * this._startSize)

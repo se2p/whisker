@@ -51,9 +51,9 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
     private _ageSignificance: number
 
     /**
-     * The probability of adding an input node to the network during the generation of the network population
+     * The probability of adding a Sprite as Input to the network during the generation of the network population
      */
-    private _creationConnectionRate: number
+    private _inputRate: number
 
 
     // ----------------- Mutation -------------------
@@ -206,12 +206,12 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
         this._ageSignificance = value;
     }
 
-    get creationConnectionRate(): number {
-        return this._creationConnectionRate;
+    get inputRate(): number {
+        return this._inputRate;
     }
 
-    set creationConnectionRate(value: number) {
-        this._creationConnectionRate = value;
+    set inputRate(value: number) {
+        this._inputRate = value;
     }
 
     get mutationWithoutCrossover(): number {
@@ -270,7 +270,7 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
         this._mutateWeights = value;
     }
 
-    get perturbationPower() : number {
+    get perturbationPower(): number {
         return this._perturbationPower;
     }
 
@@ -326,7 +326,7 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
         this._distanceThreshold = value;
     }
 
-    get disjointCoefficient() : number {
+    get disjointCoefficient(): number {
         return this._disjointCoefficient;
     }
 

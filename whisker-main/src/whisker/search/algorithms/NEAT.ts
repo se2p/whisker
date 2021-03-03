@@ -104,15 +104,8 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
                     console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
                 }
             }
-            console.log(this._fitnessFunctions)
-            console.log(this._archive)
         }
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            if (!this._archive.has(fitnessFunctionKey)) {
-                console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
-            }
-        }
-            console.log("Final Time: " + (Date.now() - this.getStartTime()))
+            StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.populationSize;
             return this._bestIndividuals;
     }
 

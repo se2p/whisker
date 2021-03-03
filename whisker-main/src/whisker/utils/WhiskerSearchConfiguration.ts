@@ -97,7 +97,7 @@ export class WhiskerSearchConfiguration {
         const parentsPerSpecies = this.dict['parentsPerSpecies'] as number;
         const penalizingAge = this.dict['penalizingAge'] as number;
         const ageSignificance = this.dict['ageSignificance'] as number;
-        const creationConnectionRate = this.dict['creationConnectionRate'] as number
+        const inputRate = this.dict['inputRate'] as number
 
         const crossoverWithoutMutation = this.dict['crossover']['crossoverWithoutMutation'] as number
         const interspeciesMating = this.dict['crossover']['interspeciesRate'] as number
@@ -124,7 +124,7 @@ export class WhiskerSearchConfiguration {
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
         properties.ageSignificance = ageSignificance;
-        properties.creationConnectionRate = creationConnectionRate;
+        properties.inputRate = inputRate;
 
         properties.crossoverWithoutMutation = crossoverWithoutMutation;
         properties.interspeciesMating = interspeciesMating;
@@ -238,7 +238,7 @@ export class WhiskerSearchConfiguration {
             case 'neatChromosome':
                 return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
                     ScratchEventExtractor.extractSpriteInfo(Container.vm),
-                    ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['creationConnectionRate'],
+                    ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
                     ScratchEventExtractor.hasMouseEvent(Container.vm))
 
             case 'test':

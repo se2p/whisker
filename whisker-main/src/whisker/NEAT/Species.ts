@@ -108,7 +108,7 @@ export class Species<C extends NeatChromosome> {
         }
 
         // Determines which members of this species are allowed to reproduce
-        // based on the NeatConfig.SPECIES_PARENTS factor
+        // based on the parentsPerSpecies config factor
         // +1 ensures that the species will not go extinct -> at least one member survives
         const numberOfParents = Math.floor((this._properties.parentsPerSpecies * this.chromosomes.size())) + 1;
 

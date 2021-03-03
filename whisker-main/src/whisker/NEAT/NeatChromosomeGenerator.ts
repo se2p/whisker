@@ -24,17 +24,17 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private _random = Randomness.getInstance();
 
-    private readonly _connectionRate: number;
+    private readonly _inputRate: number;
 
     private readonly _regressionNode: boolean
 
     constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, inputs: number[][],
-                numOutputNodes: number, connectionRate: number, regressionNode: boolean) {
+                numOutputNodes: number, inputRate: number, regressionNode: boolean) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
         this._inputs = inputs;
         this._outputSize = numOutputNodes;
-        this._connectionRate = connectionRate;
+        this._inputRate = inputRate;
         this._regressionNode = regressionNode;
     }
 
@@ -45,6 +45,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      */
     get(): NeatChromosome {
         let nodeId = 0;
+        console.log(this._inputRate)
         const allNodes = new List<NodeGene>();
         const flattenedInputNodes = new List<NodeGene>();
 
@@ -79,57 +80,57 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
             nodeId++;
         }
 
-        const generatedChromosome = this.createConnections(inputList, outputList, allNodes);
+        const connections = this.createConnections(inputList, outputList);
+        const chromosome = new NeatChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
 
-
+        // Add regression if we have mouse Input
         if (this._regressionNode) {
             console.log("Regression")
-            this.addRegressionNode(generatedChromosome, nodeId);
+            this.addRegressionNode(chromosome, inputList, nodeId);
         }
 
         // Perturb the weights
-        const mutationOp = generatedChromosome.getMutationOperator() as NeatMutation;
-        mutationOp.mutateWeight(generatedChromosome, 1, 1);
+        const mutationOp = chromosome.getMutationOperator() as NeatMutation;
+        mutationOp.mutateWeight(chromosome, 1, 1);
 
-        return generatedChromosome;
+        return chromosome;
     }
 
-    private createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>, allNodes: List<NodeGene>): NeatChromosome {
+    private createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene> {
         const connections = new List<ConnectionGene>();
-        const maxConnections = inputNodes.size() * outputNodes.size();
-
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
             // Choose a random Sprite to add its input to the network;
             const sprite = this._random.pickRandomElementFromList(inputNodes);
 
-            // For each input of the Sprite create a connection to a random output Node
+            // For each input of the Sprite create a connection to each Output-Node
             for(const inputNode of sprite){
-                // Pick a random output Node and create the new Connection between the input and output Node
-                const outputNode = this._random.pickRandomElementFromList(outputNodes);
-                const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false);
-
-                // Check if the connection does not exist yet.
-                if (!this.findConnection(connections, newConnection)) {
-                    this.assignInnovationNumber(newConnection);
-                    connections.add(newConnection)
+                for(const outputNode of outputNodes) {
+                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
+                    // Check if the connection does not exist yet.
+                    if (!NeatChromosomeGenerator.findConnection(connections, newConnection)) {
+                        NeatChromosomeGenerator.assignInnovationNumber(newConnection);
+                        connections.add(newConnection)
+                        outputNode.incomingConnections.add(newConnection);
+                    }
                 }
-
             }
         }
-        while (this._random.nextDouble() < this._connectionRate && connections.size() < maxConnections)
-        return new NeatChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
+        while (this._random.nextDouble() < this._inputRate)
+        return connections;
     }
 
-    private addRegressionNode(chromosome: NeatChromosome, nodeId: number) {
+    private addRegressionNode(chromosome: NeatChromosome, inputNodes: List<List<NodeGene>>, nodeId: number) {
 
-        const maxConnections = chromosome.inputNodes.size();
         chromosome.regression = true;
+        const regressionNodes = new List<NodeGene>();
 
-        // Create the regression Nodes
+        // Create the regression Nodes and add them to a List
         const mouseX = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.SIGMOID);
+        regressionNodes.add(mouseX)
         nodeId++;
         const mouseY = new NodeGene(nodeId, NodeType.REGRESSION_OUTPUT, ActivationFunctions.SIGMOID);
+        regressionNodes.add(mouseY)
 
         // Add both regression nodes to the node and outputNode List
         chromosome.outputNodes.add(mouseX);
@@ -139,60 +140,35 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
-
             // Choose a random Sprite to add its input to the network; Exclude the Bias
-            let inputSprite = this._random.nextInt(0, chromosome.inputNodes.size() - 1)
+            const spriteInputs = this._random.pickRandomElementFromList(inputNodes);
 
-            // Get to the Start of the input values of the Sprite, since we currently only look at the position in terms of
-            // x- and y-Coordinates each sprite as an inputSize of 2.
-            if (inputSprite % 2 === 1)
-                inputSprite--;
-
-            // Get Both Nodes
-            const inputNodeX = chromosome.inputNodes.get(inputSprite);
-            const inputNodeY = chromosome.inputNodes.get(++inputSprite);
-
-            // Add the connection from the x-Coordinate if it doesnt exist yet to the position of the mouse in the x dimension.
-            let newConnection = new ConnectionGene(inputNodeX, mouseX, 0, true, 0, false)
-            if (!this.findConnection(chromosome.connections, newConnection)) {
-                this.assignInnovationNumber(newConnection);
-                chromosome.connections.add(newConnection)
-            }
-
-            // Add the connection from the x-Coordinate if it doesnt exist yet to the position of the mouse in the y dimension.
-            newConnection = new ConnectionGene(inputNodeX, mouseY, 0, true, 0, false)
-            if (!this.findConnection(chromosome.connections, newConnection)) {
-                this.assignInnovationNumber(newConnection);
-                chromosome.connections.add(newConnection)
-            }
-
-            // Add the connection from the y-Coordinate if it doesnt exist yet to the position of the mouse in the x dimension
-            newConnection = new ConnectionGene(inputNodeY, mouseX, 0, true, 0, false)
-            if (!this.findConnection(chromosome.connections, newConnection)) {
-                this.assignInnovationNumber(newConnection);
-                chromosome.connections.add(newConnection)
-            }
-
-            // Add the connection from the y-Coordinate if it doesnt exist yet to the position of the mouse in the y dimension.
-            newConnection = new ConnectionGene(inputNodeY, mouseY, 0, true, 0, false)
-            if (!this.findConnection(chromosome.connections, newConnection)) {
-                this.assignInnovationNumber(newConnection);
-                chromosome.connections.add(newConnection)
+            // For each input of the Sprite create a connection to both RegressionNodes
+            for(const inputNode of spriteInputs){
+                for(const regNode of regressionNodes) {
+                    const newConnection = new ConnectionGene(inputNode, regNode, 0, true, 0, false)
+                    // Check if the connection does not exist yet.
+                    if (!NeatChromosomeGenerator.findConnection(chromosome.connections, newConnection)) {
+                        NeatChromosomeGenerator.assignInnovationNumber(newConnection);
+                        chromosome.connections.add(newConnection)
+                        regNode.incomingConnections.add(newConnection);
+                    }
+                }
             }
         }
-        while (this._random.nextDouble() < this._connectionRate && chromosome.connections.size() < maxConnections)
+        while (this._random.nextDouble() < this._inputRate)
     }
 
-    private findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
+    private static findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
         for (const con of connections) {
             if (con.equalsByNodes(connection)) return con;
         }
         return null;
     }
 
-    private assignInnovationNumber(newInnovation: ConnectionGene): void {
+    private static assignInnovationNumber(newInnovation: ConnectionGene): void {
         // Check if innovation already happened in this generation if Yes assign the same innovation number
-        const oldInnovation = this.findConnection(NeatMutation._innovations, newInnovation)
+        const oldInnovation = NeatChromosomeGenerator.findConnection(NeatMutation._innovations, newInnovation)
         if (oldInnovation !== null)
             newInnovation.innovation = oldInnovation.innovation;
         // If No assign a new one
@@ -220,7 +196,6 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         this._inputs = value;
     }
 
-// Used for Testing
     set outputSize(value: number) {
         this._outputSize = value;
     }

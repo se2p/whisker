@@ -19,7 +19,7 @@ describe('NeatChromosomeGenerator', () => {
             0.1, 3,0.1);
         genInputs = [[1,2,3],[4,5,6], [7,8], [9]];
         outputSize = 3;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.7, false);
+        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
     })
 
     test('Create initial random Chromosome', () => {
