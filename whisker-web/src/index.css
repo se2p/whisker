@@ -158,10 +158,13 @@ p {
     padding-left:30px;
 }
 
+#form_lang {
+
+}
+
 #form_lang select {
     font-size:12px;
     padding:4px;
-    margin:9px;
 }
 
 /* ==== Basic Body Structure ==== */
