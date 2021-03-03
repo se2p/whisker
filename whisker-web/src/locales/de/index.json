@@ -50,6 +50,7 @@
     "browse" : "Durchsuchen...",
     "no-tests" : "Keine Tests geladen",
     "test-execution" : "Testausführung",
+    "no-project" : "Kein Scratch Projekt geladen",
     "uploaded-tests": "Hochgeladene Tests",
     "description" : "Beschreibung",
     "categories" : "Kategorien",
