@@ -163,12 +163,12 @@ async function runGeneticSearch (browser) {
         await (await page.$('#run-search')).click();
     }
 
-    async function downloadTests() {
+    async function downloadTests () {
         await page._client.send('Page.setDownloadBehavior', {
             behavior: 'allow',
             downloadPath: './'
         });
-        await (await page.$('#test-editor .editor-save')).click();
+        await (await page.$('.editor-save')).click();
         await page.waitForTimeout(5000);
     }
 
