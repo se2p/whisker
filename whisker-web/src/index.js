@@ -267,6 +267,8 @@ const initEvents = function () {
                 .parent()
                 .addClass('active');
             $('#scratch-controls').show();
+            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+            location.href = '#scratch-controls'
         } else {
             $(event.target)
                 .parent()
@@ -280,6 +282,8 @@ const initEvents = function () {
                 .parent()
                 .addClass('active');
             $('#output-run').show();
+            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+            location.href = '#output-run'
         } else {
             $(event.target)
                 .parent()
@@ -293,6 +297,8 @@ const initEvents = function () {
                 .parent()
                 .addClass('active');
             $('#output-log').show();
+            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+            location.href = '#output-log'
         } else {
             $(event.target)
                 .parent()
