@@ -517,6 +517,11 @@ p {
 
 /* ===== DataTables Style ===== */
 
+.sub-header {
+    text-align: center;
+    color: var(--subheadingColor)
+}
+
 .table > tbody > tr > td {
     vertical-align: middle;
 }
@@ -730,9 +735,3 @@ img {vertical-align: middle;}
 .upload-btn-wrapper input[type=file]:hover {
     cursor: pointer;
 }
-
-.sub-header {
-    text-align: center;
-    color: var(--subheadingColor)
-}
-
