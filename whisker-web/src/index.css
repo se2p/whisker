@@ -731,3 +731,8 @@ img {vertical-align: middle;}
     cursor: pointer;
 }
 
+.sub-header {
+    text-align: center;
+    color: var(--subheadingColor)
+}
+
