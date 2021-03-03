@@ -129,6 +129,9 @@ const runAllTests = async function () {
     if (Whisker.tests === undefined || Whisker.tests.length === 0) {
         showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         return;
+    } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+        showModal(i18next.t("test-execution"), i18next.t("no-project"));
+        return;
     }
 
     Whisker.scratch.stop();
@@ -207,14 +210,27 @@ const initComponents = function () {
 };
 
 const initEvents = function () {
-    $('#green-flag').on('click', () => Whisker.scratch.greenFlag());
+    $('#green-flag').on('click', () => {
+        if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+            showModal(i18next.t("test-generation"), i18next.t("no-project"));
+        } else {
+            Whisker.scratch.greenFlag();
+        }
+    });
     $('#stop').on('click', () => {
         Whisker.testRunner.abort();
         Whisker.scratch.stop();
     });
-    $('#reset').on('click', () => Whisker.scratch.reset());
+    $('#reset').on('click', () => {
+        if (Whisker.tests === undefined || Whisker.tests.length === 0) {
+            showModal(i18next.t("test-execution"), i18next.t("no-tests"));
+        } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+            showModal(i18next.t("test-execution"), i18next.t("no-project"));
+        }  else {
+            Whisker.scratch.reset().then();
+        }
+    });
     $('#run-all-tests').on('click', runAllTests);
-
     Whisker.inputRecorder.on('startRecording', () => {
         $('#record')
             .removeClass('btn-outline-danger')
@@ -227,7 +243,6 @@ const initEvents = function () {
             .addClass('btn-outline-danger')
             .text('Record Inputs');
     });
-
     $('#record').on('click', () => {
         if (Whisker.scratch.isInputEnabled()) {
             if (Whisker.inputRecorder.isRecording()) {
@@ -239,7 +254,6 @@ const initEvents = function () {
             showModal(i18next.t("inputs"), i18next.t("inputs-error") );
         }
     });
-
     $('#toggle-input').on('change', event => {
         if ($(event.target).is(':checked')) {
             Whisker.scratch.enableInput();
@@ -247,7 +261,6 @@ const initEvents = function () {
             Whisker.scratch.disableInput();
         }
     });
-
     $('#toggle-advanced').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
@@ -261,7 +274,6 @@ const initEvents = function () {
             $('#scratch-controls').hide();
         }
     });
-
     $('#toggle-tap').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
@@ -275,7 +287,6 @@ const initEvents = function () {
             $('#output-run').hide();
         }
     });
-
     $('#toggle-log').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
@@ -289,32 +300,32 @@ const initEvents = function () {
             $('#output-log').hide();
         }
     });
-
     $('#run-search')
         .click('click', () => {
-            const tests = runSearch();
-            tests.then(
-                result => {
-                    loadTestsFromString(result);
-                    // TODO: This text is used as a marker to tell servant
-                    //       when the search is done. There must be a nicer way...
-                    Whisker.outputRun.println('summary');
-                },
-            );
+            if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+                showModal(i18next.t("test-generation"), i18next.t("no-project"));
+            } else {
+                const tests = runSearch();
+                tests.then(
+                    result => {
+                        loadTestsFromString(result);
+                        // TODO: This text is used as a marker to tell servant
+                        //       when the search is done. There must be a nicer way...
+                        Whisker.outputRun.println('summary');
+                    },
+                );
+            }
         });
-
     $('#fileselect-config').on('change', event => {
         $(event.target).parent().removeAttr('data-i18n');
         const fileName = $(this).val();
         $(this).next('.config-label').html(fileName);
     });
-
     $('#fileselect-project').on('change', event => {
         $(event.target).parent().removeAttr('data-i18n');
         const fileName = $(this).val();
         $(this).next('.project-label').html(fileName);
     });
-
     $('#fileselect-tests').on('change', event => {
         $(event.target).parent().removeAttr('data-i18n');
         const fileName = $(this).val();
