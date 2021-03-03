@@ -158,13 +158,11 @@ p {
     padding-left:30px;
 }
 
-#form_lang {
-
-}
-
 #form_lang select {
-    font-size:12px;
+    font-size: 14px;
     padding:4px;
+    color: var(--textColor);
+    font-family: Verdana, sans-serif;
 }
 
 /* ==== Basic Body Structure ==== */
