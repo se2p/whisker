@@ -705,12 +705,11 @@ img {vertical-align: middle;}
 
 .upload-btn-wrapper .btnr {
     border: 1px solid gray;
-    color: gray;
+    color: var(--textColor);
     background-color: white;
     padding: 5px 5px;
     border-radius: 4px;
     font-size: 14px;
-    font-weight: bold;
     position: relative;
     width: 150px;
 }
