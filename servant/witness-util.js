@@ -141,7 +141,14 @@ function codeForWitnessReplay(errorWitness) {
             case 'EPSILON': break;
             case 'WAIT': code += `await t.runForTime(${step.waitMicros / 1000});\n`; break;
             case 'MOUSE_MOVE': code += `t.inputImmediate({device: 'mouse', x: ${step.mousePosition.x}, y: ${step.mousePosition.y}});\n`; break;
-            case 'ANSWER': code += `t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
+
+            // When inputs are fed to the test driver using t.inputImmediate(..) the Whisker test might not behave as
+            // intended. It appears there is some problem when it comes to the order in which inputs, callbacks and
+            // step functions are executed within Whisker. The effect is that given answers might get "lost".
+            // For now, we use t.addInput(0, ...) instead of t.inputImmediate(...), which seems to resolve this problem.
+            // case 'ANSWER': code += `t.inputImmediate({device: 'text', answer: '${step.answer}'});\n`; break;
+            case 'ANSWER': code += `t.addInput(0, {device: 'text', answer: '${step.answer}'});\n`; break;
+
             case 'KEY_DOWN': code += `t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: true});\n`; break;
             case 'KEY_UP': code += `t.inputImmediate({device: 'keyboard', key: '${keyCodeToKeyString(step.keyPressed)}', isDown: false});\n`; break;
             case 'MOUSE_DOWN': code += `t.inputImmediate({device: 'mouse', isDown: true});\n`; break;
