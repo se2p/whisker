@@ -318,6 +318,8 @@ const initEvents = function () {
                         // TODO: This text is used as a marker to tell servant
                         //       when the search is done. There must be a nicer way...
                         Whisker.outputRun.println('summary');
+                        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+                        location.href = '#test-table'
                     },
                 );
             }
