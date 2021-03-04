@@ -235,13 +235,13 @@ const initEvents = function () {
         $('#record')
             .removeClass('btn-outline-danger')
             .addClass('btn-danger')
-            .text('Stop Recording');
+            .text(i18next.t("stop-record"));
     });
     Whisker.inputRecorder.on('stopRecording', () => {
         $('#record')
             .removeClass('btn-danger')
             .addClass('btn-outline-danger')
-            .text('Record Inputs');
+            .text(i18next.t("start-record"));
     });
     $('#record').on('click', () => {
         if (Whisker.scratch.isInputEnabled()) {
