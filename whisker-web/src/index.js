@@ -323,19 +323,16 @@ const initEvents = function () {
             }
         });
     $('#fileselect-config').on('change', event => {
-        $(event.target).parent().removeAttr('data-i18n');
-        const fileName = $(this).val();
-        $(this).next('.config-label').html(fileName);
+        const fileName = Whisker.configFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
     });
     $('#fileselect-project').on('change', event => {
-        $(event.target).parent().removeAttr('data-i18n');
-        const fileName = $(this).val();
-        $(this).next('.project-label').html(fileName);
+        const fileName = Whisker.projectFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
     });
     $('#fileselect-tests').on('change', event => {
-        $(event.target).parent().removeAttr('data-i18n');
-        const fileName = $(this).val();
-        $(this).next('.tests-label').html(fileName);
+        const fileName = Whisker.testFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
     });
 };
 
