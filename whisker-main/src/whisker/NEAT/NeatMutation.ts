@@ -146,24 +146,25 @@ export class NeatMutation implements Mutation<NeatChromosome> {
                 const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
                 const recurrentNetwork = chromosome.isRecurrentNetwork(node1, node2, 0, threshold)
                 if (chromosome.loop) {
-                    console.error("Loop Detected during add link Mutation")
                     return;
                 }
                 if ((!recurrentNetwork && recurrentConnection) || (recurrentNetwork && !recurrentConnection)) {
-                    tries++;
+                    rounds++;
                 } else {
                     rounds = tries;
                     foundConnection = true;
                 }
+            } else {
+                rounds++;
             }
+        }
 
-            if (foundConnection) {
-                const posNeg = this._random.randomBoolean() ? +1 : -1;
-                const weight = posNeg * this._random.nextDouble() * 10.0;
-                const newConnection = new ConnectionGene(node1, node2, weight, true, 0, recurrentConnection);
-                this.assignInnovationNumber(newConnection);
-                chromosome.connections.add(newConnection);
-            }
+        if (foundConnection) {
+            const posNeg = this._random.randomBoolean() ? +1 : -1;
+            const weight = posNeg * this._random.nextDouble() * 10.0;
+            const newConnection = new ConnectionGene(node1, node2, weight, true, 0, recurrentConnection);
+            NeatMutation.assignInnovationNumber(newConnection);
+            chromosome.connections.add(newConnection);
         }
     }
 
@@ -196,11 +197,11 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const newNode = new NodeGene(chromosome.allNodes.size(), NodeType.HIDDEN, ActivationFunctions.SIGMOID)
 
         const newConnection1 = new ConnectionGene(fromNode, newNode, 1, true, 0, splitConnection.recurrent)
-        this.assignInnovationNumber(newConnection1);
+        NeatMutation.assignInnovationNumber(newConnection1);
         newNode.incomingConnections.add(newConnection1);
 
         const newConnection2 = new ConnectionGene(newNode, toNode, oldWeight, true, 0, false)
-        this.assignInnovationNumber(newConnection2);
+        NeatMutation.assignInnovationNumber(newConnection2);
         toNode.incomingConnections.add(newConnection2);
 
         chromosome.connections.add(newConnection1);
@@ -297,16 +298,16 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         }
     }
 
-    private findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
+    private static findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
         for (const con of connections) {
             if (con.equalsByNodes(connection)) return con;
         }
         return null;
     }
 
-    private assignInnovationNumber(newInnovation: ConnectionGene): void {
+    private static assignInnovationNumber(newInnovation: ConnectionGene): void {
         // Check if innovation already happened in this generation if Yes assign the same innovation number
-        const oldInnovation = this.findConnection(NeatMutation._innovations, newInnovation)
+        const oldInnovation = NeatMutation.findConnection(NeatMutation._innovations, newInnovation)
         if (oldInnovation !== null)
             newInnovation.innovation = oldInnovation.innovation;
         // If No assign a new one
