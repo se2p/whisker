@@ -128,9 +128,11 @@ describe("Species Test", () => {
             chromosome.networkFitness = 0;
             species.addChromosome(chromosome)
         }
+        species.assignAdjustFitness();
         const sizeBeforeSieve = species.size();
-        species.sieveWeakChromosomes(10);
+        const sievedChromosomes = species.sieveWeakChromosomes(10);
         expect(species.size()).toBe(sizeBeforeSieve - 10);
+        expect(sievedChromosomes.size()).toBe(10)
     })
 
     test("Breed new Chromosomes in Species", () => {
