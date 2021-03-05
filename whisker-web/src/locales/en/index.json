@@ -12,7 +12,7 @@
     "t-record" : "Record for use in tests",
     "start-record" : "Record Inputs",
     "stop-record" : "Stop Recording",
-    "acceleration" : "Acceleration",
+    "acceleration" : "Acceleration:",
     "search" : "Start Search",
     "advanced" : "Test Generation",
     "show-advanced" : "Show test generation function",

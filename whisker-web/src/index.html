@@ -56,7 +56,7 @@
                     <form>
                         <div class="row">
                             <div class="col-lg-6">
-                                <div id="file-upload" class="row chooseFile">
+                                <div id="file-upload" class="row form">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10 label-padding">
@@ -86,7 +86,7 @@
                                 </div>
                             </div>
                             <div class="col-lg-6">
-                                <div id="test-upload" class="row chooseFile">
+                                <div id="test-upload" class="row form">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10 label-padding">
@@ -150,13 +150,19 @@
                 <div class="col-lg-6">
                     <!-- Use tabindex to make the canvas focusable. -->
                     <canvas id="scratch-stage" tabindex="1"></canvas>
+                    <div class="advanced-input acceleration-form">
+                        <label class="acc-label" for="acceleration-factor"
+                               data-i18n="acceleration"></label>
+                        <input class="acc-input" id="acceleration-factor" type="number"
+                               autocomplete="off"/>
+                    </div>
                     <div id="startTests" class="spacer20"></div>
                 </div>
                 <div class="col-lg-6">
                     <div id="scratch-controls">
                         <form class="row">
                             <div class="col-lg-12">
-                                <div id="config-upload" class="row chooseFile-light grey-spacer">
+                                <div id="config-upload" class="row form-light grey-spacer">
                                     <div class="col-lg-12">
                                         <div class="row">
                                             <div class="col-lg-10 label-padding">
@@ -186,7 +192,7 @@
                                 </div>
                             </div>
                         </form>
-                        <form class="row search-form-light">
+                        <form class="row form-light">
                             <div class="col-lg-12">
                                 <div class="row">
                                     <div class="col-lg-12 label-padding">
@@ -213,12 +219,6 @@
                                 </div>
                             </div>
                             <div class="form-group col-lg-12">
-                                <div class="spacer10 advanced-input">
-                                    <label class="acc-label hide" for="acceleration-factor"
-                                           data-i18n="acceleration"></label>
-                                    <input class="acc-input hide" id="acceleration-factor" type="number"
-                                           autocomplete="off"/>
-                                </div>
                                 <div class="row spacer10">
                                     <button id="run-search" type="button" class="btn btn-main btn-sm search-button"
                                             data-i18n="[title]search;search;"></button>

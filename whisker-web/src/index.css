@@ -204,28 +204,14 @@ p {
     margin: auto;
 }
 
-.chooseFile {
+.form {
     background-color: #f1f1f1;
     border-radius: 5px;
     margin: 10px;
     min-height: 120px;
 }
 
-.chooseFile-light {
-    background-color: #f1f1f1;
-    margin-left: 10px;
-    margin-right: 10px;
-    min-height: 120px;
-}
-
-.search-form {
-    background-color: #f1f1f1;
-    border-radius: 5px;
-    margin: 10px;
-    min-height: 120px;
-}
-
-.search-form-light {
+.form-light {
     background-color: #f1f1f1;
     margin-left: 10px;
     margin-right: 10px;
@@ -281,6 +267,11 @@ p {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.acceleration-form {
+    background-color: #f1f1f1;
+    padding: 10px;
 }
 
 .acc-label {
