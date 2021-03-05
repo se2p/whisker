@@ -47,7 +47,7 @@ export class NeatPopulation<C extends NeatChromosome> {
             this.chromosomes.add(chromosome)
             NeatUtil.speciate(chromosome, this, this._properties);
         }
-        console.log(this.species);
+        console.log("Starting Species: ", this.species);
     }
 
 
@@ -55,10 +55,8 @@ export class NeatPopulation<C extends NeatChromosome> {
      * Applies evolution to the current population -> generate the next generation from the current one
      */
     public evolution(): void {
-        let bestSpecie: Species<C>;
         const currentSpeciesSize: number = this._species.size();
-        const compatibilityModifier = 0.3;
-
+        const compatibilityModifier = 0.5;
         // Adjust the Distance Threshold to aim for the targeted number of Species
         if (this.generation > 1) {
             if (currentSpeciesSize < this._numberOfSpeciesTargeted)
@@ -68,7 +66,6 @@ export class NeatPopulation<C extends NeatChromosome> {
 
             if (this._distThreshold < 0.3) this._distThreshold = 0.3;
         }
-        console.log("Current Threshold: " + this._distThreshold)
 
         // First calculate the shared fitness value of each chromosome in each Specie and mark the chromosomes
         // which will not survive this generation
@@ -76,6 +73,8 @@ export class NeatPopulation<C extends NeatChromosome> {
             specie.assignAdjustFitness();
         }
 
+        // Original Offspring calculation
+        /*
         // Calculate the total average fitness value of all chromosomes in the generation
         let fitnessSum = 0.0;
         for (const chromosome of this.chromosomes) {
@@ -98,60 +97,61 @@ export class NeatPopulation<C extends NeatChromosome> {
             leftOver = specie.getNumberOfOffsprings(leftOver);
             totalOffspringExpected += specie.expectedOffspring;
         }
+         */
+
+        // Calculate the total Average Species Fitness
+        let totalAverageSpeciesFitness = 0;
+        for (const specie of this.species) {
+            totalAverageSpeciesFitness += specie.averageSpeciesFitness();
+        }
+
+        let leftOver = 0;
+        let totalOffspringExpected = 0;
+        for (const specie of this.species) {
+            leftOver = specie.getNumberOffspringsAvg(leftOver, totalAverageSpeciesFitness, this.startSize)
+            totalOffspringExpected += specie.expectedOffspring;
+        }
 
         // Handle lost children due to rounding precision
-        if (totalOffspringExpected < numberOrganisms) {
+        if (totalOffspringExpected < this.startSize) {
             // Find the species which expects the most children and simultaneously is the best specie
             let maxExpectedOffspring = 0;
             let finalExpectedOffspring = 0;
-            for (const specie of this._species) {
+            let biggestSpecie: Species<C>;
+            const lostChildren = this.startSize - totalOffspringExpected;
+            for (const specie of this.species) {
                 if (specie.expectedOffspring >= maxExpectedOffspring) {
                     maxExpectedOffspring = specie.expectedOffspring;
-                    bestSpecie = specie;
+                    biggestSpecie = specie;
                 }
                 finalExpectedOffspring += specie.expectedOffspring;
             }
-
             // Give extra offspring to the best specie
-            bestSpecie.expectedOffspring++;
-            finalExpectedOffspring++;
+            biggestSpecie.expectedOffspring += lostChildren;
+            finalExpectedOffspring += lostChildren;
 
             // If we still dont reach the size of the current Population, something went wrong
             // This might happen when a stagnant species dominates the population and then gets killed due to its age
             // We handle this problem by only allowing the best specie to reproduce
-            if (finalExpectedOffspring < numberOrganisms) {
-                console.info("The population has died!")
+            if (finalExpectedOffspring < this.startSize) {
+                console.error("The population has died!")
                 for (const specie of this.species) {
                     specie.expectedOffspring = 0;
                 }
-                bestSpecie.expectedOffspring = this._startSize;
-            }
-        }
-
-        if (totalOffspringExpected > this._startSize) {
-            console.error("Pruning Size")
-            let pruneFactor = 0.8;
-
-            // If population gets really out of hand prune it even more
-            if (totalOffspringExpected > 2 * this._startSize)
-                pruneFactor = 0.5;
-            for (const specie of this.species) {
-                specie.expectedOffspring = (specie.expectedOffspring * pruneFactor) // +1 for not killing a species
+                biggestSpecie.expectedOffspring = this._startSize;
             }
         }
 
 
-        // Copy the current species into a new List for sorting the species in descending order according to the
-        // non adjusted fitness value of the best chromosome in the species.
-
-
+        // Find the species with the best chromosome -> population Champion
+        for (const specie of this.species)
+            specie.sortChromosomes();
         this.species.sort((a, b) =>
             a.chromosomes.get(0).nonAdjustedFitness < b.chromosomes.get(0).nonAdjustedFitness ? +1 : -1);
 
-        const currentSpecie = this.species.get(0);
-        const bestSpeciesId = currentSpecie.id;
-        currentSpecie.sortChromosomes();
-        this._populationChampion = currentSpecie.chromosomes.get(0);
+        // Assign the population Champion its earned offsprings.
+        const popChampSpecie = this.species.get(0);
+        this._populationChampion = popChampSpecie.chromosomes.get(0);
         this._populationChampion.populationChampion = true;
         this._populationChampion.numberOffspringPopulationChamp = 3;
 
@@ -163,29 +163,26 @@ export class NeatPopulation<C extends NeatChromosome> {
             this._highestFitnessLastChanged++;
         }
 
-        console.log("Highest fitness last changed: " + this.highestFitnessLastChanged)
-        console.log("Population Champion: ")
-        console.log(this.populationChampion)
-
         // If there is a stagnation in fitness perform delta-coding
         if (this._highestFitnessLastChanged > this._properties.penalizingAge + 5) {
             console.info("Perform delta-coding")
             this._highestFitnessLastChanged = 0;
-            const halfPopulation = this.populationSize() / 2;
-            console.info("Population size is: " + this.populationSize());
+            const halfPopulation = this.startSize / 2;
+            console.info("New Species size is: " + halfPopulation);
 
             // If we only have one Specie allow only the champ to reproduce
             if (this.species.size() == 1) {
-                this.species.get(0).chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(this.populationSize() / 3);
-                this.species.get(0).expectedOffspring = this.populationSize();
+                const specie = this.species.get(0);
+                specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(this.startSize);
+                specie.expectedOffspring = this.startSize;
+                specie.ageOfLastImprovement = specie.age;
             }
 
-            // Otherwise allow the first two species only to reproduce and mark the others dead.
+            // Otherwise, allow only the first two species to reproduce and mark the others dead.
             for (let i = 0; i < this.species.size(); i++) {
                 const specie = this.species.get(i);
-                // The first two species are allowed to reproduce the whole population
                 if (i <= 1) {
-                    specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(halfPopulation / 3);
+                    specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(halfPopulation);
                     specie.expectedOffspring = halfPopulation;
                     specie.ageOfLastImprovement = specie.age;
                 }
@@ -194,13 +191,12 @@ export class NeatPopulation<C extends NeatChromosome> {
                     specie.expectedOffspring = 0;
                 }
             }
-            console.log("After Delta: ")
-            console.log(this.species)
 
-            //TODO: Baby Stolen
+            //TODO: Babies Stolen
         }
 
 
+        // Remove the Chromosomes with a death mark on them.
         const eliminateList = new List<C>();
         for (const chromosome of this._chromosomes) {
             if (chromosome.eliminate) {
@@ -210,19 +206,13 @@ export class NeatPopulation<C extends NeatChromosome> {
                 eliminateList.add(chromosome);
             }
         }
-        for (let i = 0; i < eliminateList.size(); i++) {
-            const chromToDelete = eliminateList.get(i)
-            this.chromosomes.remove(chromToDelete);
-        }
-        eliminateList.clear();
-
 
         // Now let the reproduction start
         for (const specie of this._species) {
             specie.breed(this, this._species);
         }
 
-        // Remove the old chromosomes from the population and the species. The new ones are saved in the species
+        // Remove the old chromosomes from the population and the species. The new ones are already speciated
         for (const chromosome of this.chromosomes) {
             const specie = chromosome.species;
             specie.removeChromosome(chromosome);
@@ -250,22 +240,36 @@ export class NeatPopulation<C extends NeatChromosome> {
                 }
             }
         }
-
         for (const specie of doomedSpecies) {
             this._species.remove(specie);
         }
 
-        // To be sure check if the best specie survived. If it died something went terribly wrong!
-        let foundBest = false;
-        for (const specie of this.species)
-            if (specie.id === bestSpeciesId) {
-                foundBest = true;
-                break;
+        // Pruning the Size if population gets out of hand! This might happen when we have a huge fitness increase
+        // within one generation.
+        if (this.populationSize() > this.startSize * 1.5) {
+            let tries = 0;
+            console.error("PRUNING")
+            while (this.populationSize() > this.startSize && tries < 50) {
+                for (const specie of this.species) {
+                    // Only remove Chromosomes from species which have a lot of them.
+                    if (specie.size() > 10) {
+                        // Remove Chromosomes from species and then remove the eliminated ones from the whole population.
+                        const removedChromosomes = specie.sieveWeakChromosomes(5);
+                        for (const chromosome of removedChromosomes)
+                            this.chromosomes.remove(chromosome);
+                    } else
+                        tries++;
+                }
             }
-        if (!foundBest)
-            console.error("Lost best Species :(")
+            console.log(" Population Size after Pruning: " + this.populationSize())
+        }
+
         this.generation++;
-        console.log(this.species)
+        console.log("All Species: ", this.species)
+        console.log("Population Size: " + this.populationSize())
+        console.log("Average Fitness: " + totalAverageSpeciesFitness)
+        console.log("Highest fitness last changed: " + this.highestFitnessLastChanged)
+        console.log("Population Champion: ", this.populationChampion)
     }
 
     populationSize(): number {

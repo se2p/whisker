@@ -127,33 +127,49 @@ export class Species<C extends NeatChromosome> {
     /**
      * Computes the number of offsprings for this generation including leftOvers from previous generations.
      * Those leftOvers are carried on from generation to generation until they add up to one.
+     * Implementation following the NEAT approach
      * @param leftOver
      */
-    public getNumberOfOffsprings(leftOver: number): number {
-        this._expectedOffspring = 0;
+    public getNumberOfOffspringsOriginal(leftOver: number): number {
+        this.expectedOffspring = 0;
 
-        let x1 = 0.0;
-        let r1 = 0.0;
-        let r2 = leftOver;
-        let n1 = 0;
-        let n2 = 0;
+        let intPart = 0;
+        let fractionPart = 0.0;
+        let leftOverInt = 0.0
 
         for (const chromosome of this.chromosomes) {
-            x1 = chromosome.expectedOffspring;
+            intPart = Math.floor(chromosome.expectedOffspring);
+            fractionPart = chromosome.expectedOffspring % 1;
 
-            n1 = Math.floor(x1);
-            r1 = x1 - Math.floor(x1);
-            n2 = n2 + n1;
-            r2 = r2 + r1;
 
-            if (r2 >= 1.0) {
-                n2 = n2 + 1;
-                r2 = r2 - 1.0;
+            this.expectedOffspring += intPart;
+            leftOver += fractionPart;
+
+            if (leftOver > 1) {
+                leftOverInt = Math.floor(leftOver);
+                this.expectedOffspring += leftOverInt;
+                leftOver -= leftOverInt;
             }
         }
 
-        this._expectedOffspring = n2;
-        return r2;
+        return leftOver;
+    }
+
+    public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
+
+        const expectedOffspring = (this.averageSpeciesFitness() / totalAvgSpeciesFitness) * populationSize;
+        const intExpectedOffspring = Math.floor(expectedOffspring);
+        const fractionExpectedOffspring = expectedOffspring % 1;
+
+        this.expectedOffspring = intExpectedOffspring;
+        leftOver += fractionExpectedOffspring;
+
+        if (leftOver < 1) {
+            const intLeftOver = Math.floor(leftOver);
+            this.expectedOffspring += intLeftOver;
+            leftOver -= intLeftOver;
+        }
+        return leftOver;
     }
 
     /**
@@ -194,7 +210,7 @@ export class Species<C extends NeatChromosome> {
 
                 // In some cases we only mutate and do no crossover
             // Furthermore, if we have only one member in the species we cannot apply crossover
-            else if ((Math.random() <= this._properties.mutationWithoutCrossover) || (this.size() == 1)) {
+            else if ((this._randomness.nextDouble() <= this._properties.mutationWithoutCrossover) || (this.size() == 1)) {
                 child = this.breedMutationOnly();
             }
 
@@ -215,7 +231,7 @@ export class Species<C extends NeatChromosome> {
 
         // If we have some offsprings left to generate allow mutation of the population champion to happen
         if (populationChampion.numberOffspringPopulationChamp > 1) {
-            // We want the popChamp clone to be treated like a popChamp during mutation but to not keep afterwards.
+            // We want the popChamp clone to be treated like a popChamp during mutation but not afterwards.
             parent.populationChampion = true;
             parent.mutate();
             parent.populationChampion = false;
@@ -273,7 +289,42 @@ export class Species<C extends NeatChromosome> {
      * @private
      */
     public sortChromosomes(): void {
-        this._chromosomes.sort((a, b) => a.networkFitness < b.networkFitness ? +1 : -1);
+        this._chromosomes.sort((a, b) => a.nonAdjustedFitness < b.nonAdjustedFitness ? +1 : -1);
+    }
+
+    public averageSpeciesFitness(): number {
+        let sum = 0;
+        for (const chromosome of this.chromosomes)
+            sum += chromosome.networkFitness;
+        return (sum / this.size());
+    }
+
+    public sieveWeakChromosomes(amount: number): List<C> {
+        this.sortChromosomes()
+        this.chromosomes.reverse();
+        const removedChromosomes = new List<C>()
+        let removed = 0;
+        let tries = 0;
+        let finished = false;
+        while (tries < this.size() && !finished) {
+            for (let i = 0; i < this.chromosomes.size(); i++) {
+                const chromosome = this.chromosomes.get(i);
+
+                if (chromosome.nonAdjustedFitness > 0 && !chromosome.populationChampion && !chromosome.champion) {
+                    this.chromosomes.remove(chromosome);
+                    removedChromosomes.add(chromosome);
+                    removed++;
+                    if(removed >= amount) {
+                        finished = true;
+                        break
+                    }
+                }
+            }
+                tries++;
+        }
+        // Bring chromosomes back into order
+        this.sortChromosomes();
+        return removedChromosomes;
     }
 
 

@@ -57,6 +57,9 @@ export class NeatUtil {
             return Number.MAX_SAFE_INTEGER;
         }
 
+        chromosome1.generateNetwork();
+        chromosome2.generateNetwork();
+
         // counters for excess, disjoint ,matching innovations and the weight difference
         let excess = 0;
         let disjoint = 0;

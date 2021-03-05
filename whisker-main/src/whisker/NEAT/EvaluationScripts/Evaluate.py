@@ -4,6 +4,9 @@ import pandas as pd
 
 
 def evaluate(projects, config_file, runs):
+
+    os.chdir("../../../../../")
+
     for p in projects:
 
         # Set up Names
@@ -20,11 +23,10 @@ def evaluate(projects, config_file, runs):
             cmd += "-s ./testProjects/" + p + " "
             cmd += "-c ./config/" + config_file + " "
             cmd += "-u ./whisker-web/dist/index.html "
-            cmd += "-a 15 -g -l -k -d"
+            cmd += "-a 20 -g -l -k"
             print(cmd)
             output = str(subprocess.run(cmd, capture_output=True, shell=True).stdout)
             output = output.replace('\\n', "\n")
-
 
             # Extract the required information
             csv_output = ""
@@ -61,10 +63,10 @@ def evaluate(projects, config_file, runs):
 
 
 score_projects = ["Archery.sb3", "Balloons.sb3", "BeatTheGoalie.sb3", "ChatBot.sb3", "GreenYourCity.sb3"]
+create_your_own_word = ["CreateYourOwnWorld.sb3"]
+survive_projects = ["SpaceJunk.sb3", "FruitCatcher.sb3"]
+
+survive_config = "surviveNeuroevolution.json"
 score_config = "scoreNeuroevolution.json"
 
-survive_projects = ["SpaceJunk.sb3", "FruitCatcher.sb3"]
-survive_config = "surviveNeuroevolution.json"
-
-evaluate(score_projects, score_config, 3)
-
+evaluate(create_your_own_word, score_config, 1)

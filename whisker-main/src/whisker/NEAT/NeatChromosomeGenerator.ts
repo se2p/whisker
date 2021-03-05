@@ -45,7 +45,6 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      */
     get(): NeatChromosome {
         let nodeId = 0;
-        console.log(this._inputRate)
         const allNodes = new List<NodeGene>();
         const flattenedInputNodes = new List<NodeGene>();
 
@@ -85,7 +84,6 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
         // Add regression if we have mouse Input
         if (this._regressionNode) {
-            console.log("Regression")
             this.addRegressionNode(chromosome, inputList, nodeId);
         }
 

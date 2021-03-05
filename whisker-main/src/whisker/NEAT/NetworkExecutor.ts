@@ -44,6 +44,18 @@ export class NetworkExecutor {
         const stabilizeCounter = network.stabilizedCounter(100, false)
         seedScratch(String(Randomness.getInitialSeed()))
 
+        // Load the inputs into the Network
+        const spriteInfo = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
+        // eslint-disable-next-line prefer-spread
+        const inputs = [].concat.apply([], spriteInfo);
+
+        network.flushNodeValues();
+        network.setUpInputs(inputs);
+        // Activate the network stabilizeCounter + 1 times to stabilise it for classification
+        for (let i = 0; i < stabilizeCounter + 1; i++) {
+            workingNetwork = network.activateNetwork(false);
+        }
+
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -64,7 +76,7 @@ export class NetworkExecutor {
             const inputs = [].concat.apply([], spriteInfo);
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
-            if (network.recurrent) {
+            if (network.isRecurrent) {
                 network.setUpInputs(inputs)
                 workingNetwork = network.activateNetwork(false)
             }

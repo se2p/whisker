@@ -66,13 +66,13 @@ describe("NeatCrossover", () => {
 
         // Create Connections of second parent
         parent2Connections = new List<ConnectionGene>();
+        parent2Connections.add(new ConnectionGene(iNode5, oNode2, 9, false, 4, false));
+        parent2Connections.add(new ConnectionGene(hiddenNode3, hiddenNode2, 12, true, 8, false));
         parent2Connections.add(new ConnectionGene(iNode4, hiddenNode2, 6, false, 1, false));
         parent2Connections.add(new ConnectionGene(iNode5, hiddenNode2, 7, true, 2, false));
         parent2Connections.add(new ConnectionGene(iNode6, hiddenNode2, 8, true, 3, false));
-        parent2Connections.add(new ConnectionGene(iNode5, oNode2, 9, false, 4, false));
         parent2Connections.add(new ConnectionGene(hiddenNode2, oNode2, 10, true, 6, false));
         parent2Connections.add(new ConnectionGene(iNode4, hiddenNode3, 11, true, 7, false));
-        parent2Connections.add(new ConnectionGene(hiddenNode3, hiddenNode2, 12, true, 8, false));
     })
 
 

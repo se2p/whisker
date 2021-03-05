@@ -55,6 +55,17 @@ describe('NeatChromosome', () => {
         expect(chromosome.allNodes.size()).toBe(6 + 1 + outputSize + 2)
     })
 
+    test("Sort Connections of Chromosomes", () =>{
+        const hiddenNode = new NodeGene(7, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        chromosome.connections.add(new ConnectionGene(chromosome.inputNodes.get(0), hiddenNode, 0.5, true, 50, false))
+        chromosome.connections.add(new ConnectionGene(chromosome.outputNodes.get(0), hiddenNode, 1, true, 0, false))
+        const connectionsBefore = chromosome.connections.clone();
+        chromosome.sortConnections();
+        expect(connectionsBefore.get(0)).not.toBe(chromosome.connections.get(0))
+        expect(chromosome.connections.get(0).innovation).toBe(0)
+        expect(chromosome.connections.get(chromosome.connections.size()-1).innovation).toBe(50);
+    })
+
     test('Test stabilizedCounter without hidden Layer', () => {
 
         // Create input Nodes
@@ -184,14 +195,16 @@ describe('NeatChromosome', () => {
         connections.add(new ConnectionGene(hiddenNode, nodes.get(3), 0.7, true, 8, false));
         connections.add(new ConnectionGene(hiddenNode, deepHiddenNode, 0.3, true, 9, false));
         connections.add(new ConnectionGene(deepHiddenNode, nodes.get(4), 1, true, 10, false))
+        connections.add(new ConnectionGene(nodes.get(4), nodes.get(4), 1, true, 11, true))
+
 
 
         chromosome = new NeatChromosome(connections, nodes, mutationOp, crossoverOp)
-        const stabilizeCount = chromosome.stabilizedCounter(10, true);
+        const stabilizeCount = chromosome.stabilizedCounter(10, false);
         chromosome.flushNodeValues();
         chromosome.setUpInputs([1, 2])
-        for (let i = 0; i < stabilizeCount + 1; i++) {
-            chromosome.activateNetwork(true);
+        for (let i = 0; i < 5; i++) {
+            chromosome.activateNetwork(false);
         }
         const output = NeatUtil.softmax(chromosome.outputNodes)
         expect(Math.round(output.reduce((a, b) => a + b))).toBe(1);
@@ -381,11 +394,11 @@ describe('NeatChromosome', () => {
 
         chromosome = new NeatChromosome(connections, nodes, mutationOp, crossoverOp);
         expect(chromosome.isRecurrentNetwork(deepHiddenNode, hiddenNode,0,nodes.size() * nodes.size())).toBe(true)
-        expect(chromosome.recurrent).toBe(true)
+        expect(chromosome.isRecurrent).toBe(true)
         expect(chromosome.isRecurrentNetwork(deepHiddenNode, deepHiddenNode, 0, nodes.size() * nodes.size())).toBe(true)
-        expect(chromosome.recurrent).toBe(true)
+        expect(chromosome.isRecurrent).toBe(true)
         expect(chromosome.isRecurrentNetwork(hiddenNode, deepHiddenNode, 0, nodes.size() * nodes.size())).toBe(false)
-        expect(chromosome.recurrent).toBe(false)
+        expect(chromosome.isRecurrent).toBe(false)
     })
 
 })

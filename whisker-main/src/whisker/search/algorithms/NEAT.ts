@@ -91,19 +91,17 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes);
             population.evolution();
-            console.log("Size of Population: " + population.chromosomes.size())
-            console.log("Number of Species: " + population.species.size())
             this._iterations++;
             this.updateBestIndividualAndStatistics();
-            console.log("-----------------------------------------------------")
             console.log("Iteration: " + this._iterations + " Network Fitness: " + population.highestFitness)
             console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
-            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            console.log("-----------------------------------------------------")
+            /*for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
                 if (!this._archive.has(fitnessFunctionKey)) {
                     console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
                 }
-            }
+            }*/
         }
             StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.populationSize;
             return this._bestIndividuals;
@@ -135,7 +133,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                 }
                 this._archive.set(fitnessFunctionKey, testChromosome);
-                console.log("Found test for goal: " + fitnessFunction);
+                //console.log("Found test for goal: " + fitnessFunction);
             }
         }
         this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();

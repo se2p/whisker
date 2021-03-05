@@ -247,7 +247,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         }
 
         if(recurrent)
-            child.recurrent = true;
+            child.isRecurrent = true;
 
         return child;
     }

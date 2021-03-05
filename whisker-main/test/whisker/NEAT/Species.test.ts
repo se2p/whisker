@@ -87,7 +87,7 @@ describe("Species Test", () => {
             c.expectedOffspring = c.networkFitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
         }
-        const leftOver = species.getNumberOfOffsprings(0);
+        const leftOver = species.getNumberOfOffspringsOriginal(0);
         expect(Math.floor(totalOffsprings)).toBeLessThanOrEqual(species.expectedOffspring + 1)
         expect(leftOver).toBeLessThan(1)
     })
@@ -105,7 +105,7 @@ describe("Species Test", () => {
             c.expectedOffspring = c.networkFitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
         }
-        const leftOver = species.getNumberOfOffsprings(0.99);
+        const leftOver = species.getNumberOfOffspringsOriginal(0.99);
         expect(Math.floor(totalOffsprings)).toBeLessThanOrEqual(species.expectedOffspring + 1)
         expect(leftOver).toBeGreaterThan(0.98)
     })
@@ -120,6 +120,17 @@ describe("Species Test", () => {
 
         expect(speciesSizeAdded).toBe(speciesSizeBefore + 1);
         expect(speciesSizeRemoved).toBe(speciesSizeBefore)
+    })
+
+    test("Sieve Weak Chromosomes", () =>{
+        for (let i = 0; i < 10; i++) {
+            const chromosome = generator.get()
+            chromosome.networkFitness = 0;
+            species.addChromosome(chromosome)
+        }
+        const sizeBeforeSieve = species.size();
+        species.sieveWeakChromosomes(10);
+        expect(species.size()).toBe(sizeBeforeSieve - 10);
     })
 
     test("Breed new Chromosomes in Species", () => {
@@ -152,7 +163,7 @@ describe("Species Test", () => {
         for (const c of popSpecie.chromosomes) {
             c.expectedOffspring = c.networkFitness / avgFitness;
         }
-        popSpecie.getNumberOfOffsprings(0);
+        popSpecie.getNumberOfOffspringsOriginal(0);
         const sizeBeforeBreed = popSpecie.size();
 
         popSpecie.breed(neatPopulation, speciesList)

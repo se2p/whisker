@@ -53,7 +53,7 @@ export class NeatChromosome extends Chromosome {
     private _loop: boolean
     private _networkFitness: number
     private _codons: List<number>       // Saves the codons to later transform the NeatChromosome into a TestChromosome
-    private _recurrent: boolean
+    private _isRecurrent: boolean
     private _regression: boolean;
 
     /**
@@ -84,7 +84,7 @@ export class NeatChromosome extends Chromosome {
         this._loop = false;
         this._networkFitness = 0;
         this._codons = new List<number>();
-        this._recurrent = false;
+        this._isRecurrent = false;
         this._regression = false;
         this.generateNetwork();
     }
@@ -134,6 +134,7 @@ export class NeatChromosome extends Chromosome {
     }
 
     generateNetwork(): void {
+        this.sortConnections();
         // Place the input and output nodes into their lists
         for (const node of this.allNodes) {
             if ((!this.inputNodes.contains(node)) && (node.type === NodeType.INPUT || node.type === NodeType.BIAS)) {
@@ -157,6 +158,11 @@ export class NeatChromosome extends Chromosome {
     public stabilizedCounter(period: number, verifyMode: boolean): number {
         this.generateNetwork();
         this.flushNodeValues();
+
+        // Recurrent Networks are by definition unstable; 50 iterations however, should be enough to let them
+        // stabilize enough.
+        if(this.isRecurrent)
+            return 50;
 
         if (period === 0)
             period = 30;
@@ -290,12 +296,12 @@ export class NeatChromosome extends Chromosome {
 
         if (level > threshold) {
             this.loop = true;
-            this.recurrent = false;
+            this.isRecurrent = false;
             return false;
         }
 
         if (node1 === node2) {
-            this.recurrent = true;
+            this.isRecurrent = true;
             return true;
         }
 
@@ -304,14 +310,14 @@ export class NeatChromosome extends Chromosome {
                 if (!inConnection.from.traversed) {
                     inConnection.from.traversed = true;
                     if (this.isRecurrentNetwork(inConnection.from, node2, level, threshold)) {
-                        this._recurrent = true;
+                        this._isRecurrent = true;
                         return true;
                     }
                 }
             }
         }
         node1.traversed = true;
-        this.recurrent = false;
+        this.isRecurrent = false;
         return false;
     }
 
@@ -382,6 +388,10 @@ export class NeatChromosome extends Chromosome {
             }
         }
         return -1;
+    }
+
+    sortConnections():void{
+        this.connections.sort((a,b) => a.innovation - b.innovation);
     }
 
     /**
@@ -538,12 +548,12 @@ export class NeatChromosome extends Chromosome {
         this._codons = value;
     }
 
-    get recurrent(): boolean {
-        return this._recurrent;
+    get isRecurrent(): boolean {
+        return this._isRecurrent;
     }
 
-    set recurrent(value: boolean) {
-        this._recurrent = value;
+    set isRecurrent(value: boolean) {
+        this._isRecurrent = value;
     }
 
     get regression(): boolean {
