@@ -28,6 +28,7 @@ import {NodeType} from "./NodeType";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Species} from "./Species";
+import assert from "assert";
 
 /**
  * A NeatChromosome representing a Chromosome in the NEAT-Algorithm
@@ -401,6 +402,11 @@ export class NeatChromosome extends Chromosome {
      */
     getFitness(fitnessFunction: FitnessFunction<this>): number {
         return fitnessFunction.getFitness(this);
+    }
+
+    public getNumEvents(): number {
+        assert (this._trace != null);
+        return this._trace.events.size();
     }
 
 

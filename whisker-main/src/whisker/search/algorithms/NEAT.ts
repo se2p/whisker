@@ -7,9 +7,6 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../../NEAT/NeatPopulation";
-import {TestChromosome} from "../../testcase/TestChromosome";
-import {IntegerListMutation} from "../../integerlist/IntegerListMutation";
-import {SinglePointCrossover} from "../operators/SinglePointCrossover";
 import {NeuroevolutionProperties} from "../../NEAT/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../../NEAT/NetworkFitness/NetworkFitnessFunction";
 
@@ -27,7 +24,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
 
     private _bestIndividuals = new List<C>();
 
-    private _archive = new Map<number, TestChromosome>();
+    private _archive = new Map<number, C>();
 
     private _startTime: number;
 
@@ -116,23 +113,20 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
      *
      * @param network The candidate network the archive may gets updated with.
      */
-    private updateArchive(network: NeatChromosome): void {
-        // Convert the network into a test Chromosome
-        const testChromosome = new TestChromosome(network.codons, new IntegerListMutation(0, 1), new SinglePointCrossover())
-        testChromosome.trace = network.trace;
+    private updateArchive(network: C): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(testChromosome as unknown as C);
-            const candidateLength = testChromosome.getLength();
+            const candidateFitness = fitnessFunction.getFitness(network);
+            const candidateLength = network.getLength();
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                 }
-                this._archive.set(fitnessFunctionKey, testChromosome);
+                this._archive.set(fitnessFunctionKey, network);
                 //console.log("Found test for goal: " + fitnessFunction);
             }
         }

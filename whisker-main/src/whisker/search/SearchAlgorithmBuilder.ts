@@ -44,8 +44,6 @@ import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
-import {NetworkFitnessFunction} from "../NEAT/NetworkFitness/NetworkFitnessFunction";
-import {NeatChromosome} from "../NEAT/NeatChromosome";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -69,11 +67,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * The fitness function for a search algorithm.
      */
     private _fitnessFunction: FitnessFunction<C>;
-
-    /**
-     * The fitness function for measuring the network's Fitness
-     */
-    private _networkFitnessFunction: NetworkFitnessFunction<NeatChromosome>;
 
     /**
      * The map for the heuristic function of chromsomes.
