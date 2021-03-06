@@ -23,7 +23,7 @@ def evaluate(projects, config_file, runs):
             cmd += "-s ./testProjects/" + p + " "
             cmd += "-c ./config/" + config_file + " "
             cmd += "-u ./whisker-web/dist/index.html "
-            cmd += "-a 1 -g -l -k"
+            cmd += "-a 3 -g -l -k"
             print(cmd)
             output = str(subprocess.run(cmd, capture_output=True, shell=True).stdout)
             output = output.replace('\\n', "\n")

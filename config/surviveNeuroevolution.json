@@ -16,50 +16,34 @@
     "mutation": {
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
-        "mutationAddConnection": 0.08,
+        "mutationAddConnection": 0.03,
         "recurrentConnection": 0.1,
         "addConnectionTries": 50,
         "populationChampionConnectionMutation": 0.4,
-        "mutationAddNode": 0.05,
-        "mutateWeights": 0.9,
+        "mutationAddNode": 0.01,
+        "mutateWeights": 0.1,
         "perturbationPower": 1.5,
-        "mutateToggleEnableConnection": 0.3,
+        "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 2,
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 4.0,
-        "disjointCoefficient": 0.5,
-        "excessCoefficient": 0.5,
-        "weightCoefficient": 0.2
+        "distanceThreshold": 5.0,
+        "disjointCoefficient": 1.5,
+        "excessCoefficient": 1.5,
+        "weightCoefficient": 0.5
     },
     "fitness-function": {
         "type": "statement",
         "targets": []
     },
     "network-fitness": {
-        "type": "combined",
-        "timeout": 1000000,
-        "functions": [
-            {
-                "type": "survive"
-            },
-            {
-                "type": "statement"
-            }
-        ]
+        "type": "survive",
+        "timeout": 1000000
     },
     "stopping-condition": {
-        "type": "one-of",
-        "conditions": [
-            {
-                "type": "fixed-iteration",
-                "iterations": 1000
-            },
-            {
-                "type": "optimal"
-            }
-        ]
+        "type": "fixed-iteration",
+        "iterations": 1000
     },
     "wait-duration": 50,
     "click-duration": 50,
