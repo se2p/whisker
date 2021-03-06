@@ -398,7 +398,7 @@ describe('NeatChromosome', () => {
         expect(chromosome.isRecurrentNetwork(deepHiddenNode, deepHiddenNode, 0, nodes.size() * nodes.size())).toBe(true)
         expect(chromosome.isRecurrent).toBe(true)
         expect(chromosome.isRecurrentNetwork(hiddenNode, deepHiddenNode, 0, nodes.size() * nodes.size())).toBe(false)
-        expect(chromosome.isRecurrent).toBe(false)
+        expect(chromosome.isRecurrent).toBe(true)   // True since we have other recurrent connections in the network
     })
 
 })
