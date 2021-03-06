@@ -318,7 +318,14 @@ export class NeatChromosome extends Chromosome {
             }
         }
         node1.traversed = true;
+
+        // The selected path is not a recurrent one.
+        // However we have to check if the network does not have other recurrent connections
         this.isRecurrent = false;
+        for(const connection of this.connections){
+            if(connection.recurrent)
+                this.isRecurrent = true;
+        }
         return false;
     }
 

@@ -56,7 +56,7 @@ export class NeatPopulation<C extends NeatChromosome> {
      */
     public evolution(): void {
         const currentSpeciesSize: number = this._species.size();
-        const compatibilityModifier = 0.5;
+        const compatibilityModifier = 0.3;
         // Adjust the Distance Threshold to aim for the targeted number of Species
         if (this.generation > 1) {
             if (currentSpeciesSize < this._numberOfSpeciesTargeted)
@@ -248,7 +248,6 @@ export class NeatPopulation<C extends NeatChromosome> {
         // within one generation.
         if (this.populationSize() > this.startSize * 1.5) {
             let tries = 0;
-            console.error("PRUNING")
             while (this.populationSize() > this.startSize && tries < 50) {
                 for (const specie of this.species) {
                     // Only remove Chromosomes from species which have a lot of them.
@@ -267,7 +266,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         this.generation++;
         console.log("All Species: ", this.species)
         console.log("Population Size: " + this.populationSize())
-        console.log("Average Fitness: " + totalAverageSpeciesFitness)
+        console.log("Average Fitness: " + totalAverageSpeciesFitness / this.species.size())
         console.log("Highest fitness last changed: " + this.highestFitnessLastChanged)
         console.log("Population Champion: ", this.populationChampion)
     }
