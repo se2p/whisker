@@ -160,9 +160,18 @@ export class NeatChromosome extends Chromosome {
         this.generateNetwork();
         this.flushNodeValues();
 
+        // Double Check if we have a recurrent network;
+        if (!this.isRecurrent) {
+            for (const connection of this.connections) {
+                if (connection.recurrent) {
+                    this.isRecurrent = true;
+                }
+            }
+        }
+
         // Recurrent Networks are by definition unstable; 50 iterations however, should be enough to let them
         // stabilize enough.
-        if(this.isRecurrent)
+        if (this.isRecurrent)
             return 50;
 
         if (period === 0)
@@ -322,8 +331,8 @@ export class NeatChromosome extends Chromosome {
         // The selected path is not a recurrent one.
         // However we have to check if the network does not have other recurrent connections
         this.isRecurrent = false;
-        for(const connection of this.connections){
-            if(connection.recurrent)
+        for (const connection of this.connections) {
+            if (connection.recurrent)
                 this.isRecurrent = true;
         }
         return false;
@@ -398,8 +407,8 @@ export class NeatChromosome extends Chromosome {
         return -1;
     }
 
-    sortConnections():void{
-        this.connections.sort((a,b) => a.innovation - b.innovation);
+    sortConnections(): void {
+        this.connections.sort((a, b) => a.innovation - b.innovation);
     }
 
     /**
@@ -412,7 +421,7 @@ export class NeatChromosome extends Chromosome {
     }
 
     public getNumEvents(): number {
-        assert (this._trace != null);
+        assert(this._trace != null);
         return this._trace.events.size();
     }
 

@@ -243,20 +243,20 @@ export class Species<C extends NeatChromosome> {
 
     private breedMutationOnly(): C {
         // Choose random parent and apply mutation
-        const parent = this._randomness.pickRandomElementFromList(this.chromosomes);
+        const parent = this._randomness.pickRandomElementFromList(this.chromosomes).clone() as C;
         parent.mutate();
         return parent;
     }
 
     private breedCrossover(sortedSpecies: List<Species<C>>): C {
         // Pick first parent
-        const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes);
+        const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes).clone() as C;
         let parent2: C
 
         // Pick second parent either from within the species or from another species (interspecies mating)
         if (this._randomness.nextDouble() > this._properties.interspeciesMating) {
             // Second parent picked from the same species (= this species)
-            parent2 = this._randomness.pickRandomElementFromList(this.chromosomes)
+            parent2 = this._randomness.pickRandomElementFromList(this.chromosomes).clone() as C
         }
         // Mate outside of the species
         else {
@@ -267,7 +267,7 @@ export class Species<C extends NeatChromosome> {
                 randomSpecies = this._randomness.pickRandomElementFromList(sortedSpecies) as Species<C>;
                 giveUp++;
             }
-            parent2 = randomSpecies.chromosomes.get(0);
+            parent2 = randomSpecies.chromosomes.get(0).clone() as C;
         }
 
         // Apply the Crossover Operation
