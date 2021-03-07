@@ -1,5 +1,6 @@
+// FIXME: Attention! This is a hack! Must not be merged into master!
+// const Random = require('../util/random');
 const Random = require('../../dist/src/whisker/utils/Randomness').Randomness;
-// const Random = require('../../dist/src/whisker/utils/Randomness').Randomness; // TODO: If necessary import
 
 /**
  * {
@@ -63,7 +64,14 @@ class RandomInput {
                 answer += chars.charAt(Random.getInstance().nextInt(0, chars.length - 1));
             }
 
-            randomData.answer = answer;
+            // FIXME: Attention! This is a hack. Must not be merged into master!
+            // randomData.answer = answer;
+            const getRandomIntInclusive = function (min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
+            }
+            randomData.answer = getRandomIntInclusive(2, 200);
         }
 
         this.input = inputs.inputImmediate(randomData);
