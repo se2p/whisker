@@ -66,12 +66,7 @@ class RandomInput {
 
             // FIXME: Attention! This is a hack. Must not be merged into master!
             // randomData.answer = answer;
-            const getRandomIntInclusive = function (min, max) {
-                min = Math.ceil(min);
-                max = Math.floor(max);
-                return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
-            }
-            randomData.answer = getRandomIntInclusive(2, 200);
+            randomData.answer = Random.getInstance().nextInt(2, 200);
         }
 
         this.input = inputs.inputImmediate(randomData);
