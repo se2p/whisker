@@ -299,6 +299,14 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
         this._mutateToggleEnableConnection = value;
     }
 
+    get toggleEnableConnectionTimes(): number {
+        return this._toggleEnableConnectionTimes;
+    }
+
+    set toggleEnableConnectionTimes(value: number) {
+        this._toggleEnableConnectionTimes = value;
+    }
+
     get mutateEnableConnection(): number {
         return this._mutateEnableConnection;
     }
