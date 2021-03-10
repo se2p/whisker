@@ -2,6 +2,7 @@ const {$} = require('./web-libs');
 
 import i18next from 'i18next';
 import locI18next from "loc-i18next";
+
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
 const faqDE = require('./locales/de/faq.json');
@@ -32,12 +33,15 @@ const Whisker = window.Whisker = {};
 window.$ = $;
 
 const DEFAULT_ACCELERATION_FACTOR = 1;
+const params = new URLSearchParams(window.location.search);
+const lng = params.get("lng");
 
 const loadTestsFromString = function (string) {
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
-        tests = eval(`${string}; module.exports;`);
+        tests = eval(`${string};
+        module.exports;`);
     } catch (err) {
         console.error(err);
         const message = `${err.name}: ${err.message}`;
@@ -226,7 +230,7 @@ const initEvents = function () {
             showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t("test-execution"), i18next.t("no-project"));
-        }  else {
+        } else {
             Whisker.scratch.reset().then();
         }
     });
@@ -251,7 +255,7 @@ const initEvents = function () {
                 Whisker.inputRecorder.startRecording();
             }
         } else {
-            showModal(i18next.t("inputs"), i18next.t("inputs-error") );
+            showModal(i18next.t("inputs"), i18next.t("inputs-error"));
         }
     });
     $('#toggle-input').on('change', event => {
@@ -353,8 +357,24 @@ const hideAdvanced = function () {
     $('#scratch-controls').hide();
 }
 
+const initLangSelect = function () {
+    const newLabel = document.createElement('label');
+    let html = '<select id="lang-select">', lngs = ["de", "en"], i;
+    for (i = 0; i < lngs.length; i++) {
+        html += "<option value='" + lngs[i] + "' ";
+        if ((lng != null && lngs[i] === lng) || lngs[i] === 'de') {
+            html += "selected";
+        }
+        html += " data-i18n=\"" + lngs[i] + "\">" + i18next.t(lngs[i]) + "</option>";
+    }
+    html += '</select>';
+    newLabel.innerHTML = html;
+    document.querySelector('#form-lang').appendChild(newLabel);
+}
+
 $(document)
     .ready(() => {
+        initLangSelect();
         hideAdvanced();
         initScratch();
         initComponents();
@@ -382,41 +402,57 @@ const localize = locI18next.init(i18next, {
 
 i18next
     .init({
-    lng: 'de',
-    fallbackLng: 'de',
-    debug: true,
-    ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
-    defaultNS: 'index',
-    interpolation: {
-        escapeValue: false,
-    },
-    resources: {
-        de: {
-            index: indexDE,
-            faq: faqDE,
-            contact: contactDE,
-            imprint: imprintDE,
-            privacy: privacyDE
+        whitelist: ['de', 'en'],
+        nonExplicitWhitelist: true,
+        lng: lng,
+        fallbackLng: 'de',
+        debug: true,
+        ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
+        defaultNS: 'index',
+        interpolation: {
+            escapeValue: false,
         },
-        en: {
-            index: indexEN,
-            faq: faqEN,
-            contact: contactEN,
-            imprint: imprintEN,
-            privacy: privacyEN
+        resources: {
+            de: {
+                index: indexDE,
+                faq: faqDE,
+                contact: contactDE,
+                imprint: imprintDE,
+                privacy: privacyDE
+            },
+            en: {
+                index: indexEN,
+                faq: faqEN,
+                contact: contactEN,
+                imprint: imprintEN,
+                privacy: privacyEN
+            }
         }
-    }
-}, function () {
-    updateContent();
-}).then();
+    }, function () {
+        updateContent();
+    }).then();
 
 function updateContent() {
     localize('#body');
 }
 
-$('.lang-select').on('change', () => {
-    const lng = $('.lang-select').val();
+$('#form-lang').on('change', () => {
+    const lng = $('#lang-select').val();
+    const href = window.location.href;
+    if (href.endsWith('de') || href.endsWith('en')) {
+        const str = href.substr(0, href - 7);
+        window.location.href = str + '?lng=' + lng;
+    }
     i18next.changeLanguage(lng).then(updateContent());
+});
+
+$('.nav-link').on('click', event => {
+    const lng = $('#lang-select').val();
+    const href = event.target.getAttribute('href');
+    if (href) {
+        location.href = href + '?lng=' + lng;
+        event.preventDefault();
+    }
 });
 
 

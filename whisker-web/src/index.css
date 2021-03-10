@@ -159,7 +159,7 @@ p {
     padding-left:30px;
 }
 
-#form_lang select {
+#form-lang select {
     font-size: 14px;
     padding:4px;
     color: var(--textColor);
