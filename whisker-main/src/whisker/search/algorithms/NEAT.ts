@@ -79,7 +79,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        const speciesNumber = 4;
+        const speciesNumber = 6;
         const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
             this._properties);
         this._iterations = 0;

@@ -33,7 +33,7 @@ describe('NeatChromosomeGenerator', () => {
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.4, true);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(13 + 2) // +1 for Bias
+        expect(neatChromosome.allNodes.size()).toBe(13 + 2) // +1 for Bias + 2 for Regression Nodes
         expect(neatChromosome.connections.size()).toBeGreaterThan(0)
     })
 
