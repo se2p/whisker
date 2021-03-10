@@ -105,6 +105,7 @@ export class NeatPopulation<C extends NeatChromosome> {
             totalAverageSpeciesFitness += specie.averageSpeciesFitness();
         }
 
+        // Calculate expected children per species and total expectedOffspring
         let leftOver = 0;
         let totalOffspringExpected = 0;
         for (const specie of this.species) {
@@ -234,9 +235,6 @@ export class NeatPopulation<C extends NeatChromosome> {
                     specie.age++;
                 for (const chromosome of specie.chromosomes) {
                     this.chromosomes.add(chromosome);
-                    chromosome.champion = false;
-                    chromosome.populationChampion = false;
-                    chromosome.numberOffspringPopulationChamp = 0;
                 }
             }
         }

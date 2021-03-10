@@ -66,15 +66,13 @@ export class Species<C extends NeatChromosome> {
         if (ageDept == 0)
             ageDept = 1;
 
-        const speciesSize = this.chromosomes.size();
-
         for (const chromosome of this.chromosomes) {
             // Save the original networkFitness value from the networkFitness function
             chromosome.nonAdjustedFitness = chromosome.networkFitness;
 
-            // Penalize fitness if it has not improved since NeatConfig.PENALIZING_AGEs
-            if (ageDept >= 1)
-                chromosome.networkFitness = chromosome.networkFitness * 0.01;
+            // Penalize fitness if it has not improved for a certain amount of ages
+            //if (ageDept >= 1)
+                //chromosome.networkFitness = chromosome.networkFitness * 0.01;
 
             // Boost fitness for young generations to give them a chance to evolve for some generations
             if (this._age <= 10)
@@ -85,7 +83,7 @@ export class Species<C extends NeatChromosome> {
                 chromosome.networkFitness = 0.0001;
 
             // Share fitness with the entire species
-            chromosome.networkFitness = chromosome.networkFitness / speciesSize;
+            chromosome.networkFitness = chromosome.networkFitness / this.size();
 
         }
         this.markKillCandidates();
@@ -296,7 +294,8 @@ export class Species<C extends NeatChromosome> {
         let sum = 0;
         for (const chromosome of this.chromosomes)
             sum += chromosome.networkFitness;
-        return (sum / this.size());
+        this.averageFitness = sum / this.size();
+        return this.averageFitness;
     }
 
     public sieveWeakChromosomes(amount: number): List<C> {
