@@ -156,7 +156,7 @@ export class Species<C extends NeatChromosome> {
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
 
         const expectedOffspring = (this.averageSpeciesFitness() / totalAvgSpeciesFitness) * populationSize;
-        const intExpectedOffspring = Math.floor(expectedOffspring);
+        const intExpectedOffspring = Math.round(expectedOffspring);
         const fractionExpectedOffspring = expectedOffspring % 1;
 
         this.expectedOffspring = intExpectedOffspring;
@@ -203,7 +203,7 @@ export class Species<C extends NeatChromosome> {
             }
 
             // Species champions are cloned only -> Elitism
-            else if ((!champCloned) && (this.expectedOffspring > 5)) {
+            else if (!champCloned) {
                 child = champion.clone() as C;
                 champCloned = true;
             }
