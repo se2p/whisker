@@ -112,6 +112,7 @@ export class WhiskerSearchConfiguration {
         const mutateWeights = this.dict['mutation']['mutateWeights'] as number;
         const perturbationPower = this.dict['mutation']['perturbationPower'] as number;
         const mutateToggleEnableConnection = this.dict['mutation']['mutateToggleEnableConnection'] as number;
+        const toggleEnableConnectionTimes = this.dict['mutation']['toggleEnableConnectionTimes'] as number;
         const mutateEnableConnection = this.dict['mutation']['mutateEnableConnection'] as number;
 
         const distanceThreshold = this.dict['compatibility']['distanceThreshold'] as number
@@ -139,6 +140,7 @@ export class WhiskerSearchConfiguration {
         properties.mutateWeights = mutateWeights;
         properties.perturbationPower = perturbationPower;
         properties.mutateToggleEnableConnection = mutateToggleEnableConnection;
+        properties.toggleEnableConnectionTimes = toggleEnableConnectionTimes;
         properties.mutateEnableConnection = mutateEnableConnection;
 
         properties.distanceThreshold = distanceThreshold;

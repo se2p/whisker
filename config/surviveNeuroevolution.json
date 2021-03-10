@@ -24,7 +24,7 @@
         "mutateWeights": 0.1,
         "perturbationPower": 1.5,
         "mutateToggleEnableConnection": 0.1,
-        "toggleEnableConnectionTimes": 2,
+        "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
     },
     "compatibility": {

@@ -104,6 +104,11 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
     private _mutateToggleEnableConnection: number
 
     /**
+     * Defines how many connections are toggled during a toggleEnableConnection mutation
+     */
+    private _toggleEnableConnectionTimes: number
+
+    /**
      * The probability for enabling a connection between nodes
      */
     private _mutateEnableConnection: number
@@ -280,6 +285,14 @@ export class NeuroevolutionProperties<C extends NeatChromosome> {
 
     get mutateToggleEnableConnection(): number {
         return this._mutateToggleEnableConnection;
+    }
+
+    get toggleEnableConnectionTimes(): number {
+        return this._toggleEnableConnectionTimes;
+    }
+
+    set toggleEnableConnectionTimes(value: number) {
+        this._toggleEnableConnectionTimes = value;
     }
 
     set mutateToggleEnableConnection(value: number) {
