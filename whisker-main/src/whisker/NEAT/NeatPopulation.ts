@@ -209,8 +209,14 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
 
         // Now let the reproduction start
+        const offspring = new List<NeatChromosome>()
         for (const specie of this._species) {
-            specie.breed(this, this._species);
+            offspring.addList(specie.breed(this, this._species));
+        }
+
+        // Speciate the produced offspring
+        for (const child of offspring) {
+            NeatUtil.speciate(child, this, this._properties)
         }
 
         // Remove the old chromosomes from the population and the species. The new ones are already speciated

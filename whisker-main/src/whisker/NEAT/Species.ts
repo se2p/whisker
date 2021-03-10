@@ -174,12 +174,14 @@ export class Species<C extends NeatChromosome> {
      * Breed the children of this Species.
      * @param population The total current population
      * @param sortedSpecies a sorted List of all existing species
-     * @return returns true if everything went fine and false otherwise
+     * @return returns the generated children
      */
-    public breed(population: NeatPopulation<C>, sortedSpecies: List<Species<C>>): boolean {
+    public breed(population: NeatPopulation<C>, sortedSpecies: List<Species<C>>): List<NeatChromosome> {
         if (this.expectedOffspring > 0 && this.chromosomes.size() == 0) {
-            return false;
+            return new List<NeatChromosome>();
         }
+
+        const children = new List<NeatChromosome>();
 
         this.sortChromosomes();
         const champion = this.chromosomes.get(0);
@@ -217,11 +219,9 @@ export class Species<C extends NeatChromosome> {
                 child = this.breedCrossover(sortedSpecies);
             }
 
-            // Now add the child to the proper species
-            NeatUtil.speciate(child, population, this._properties);
+            children.add(child);
         }
-        // Return true if everything went fine.
-        return true;
+        return children;
     }
 
     private breedPopulationChampion(populationChampion: C): C {
