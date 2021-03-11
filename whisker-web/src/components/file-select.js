@@ -1,5 +1,7 @@
 const {$} = require('../web-libs');
 
+const standardConfig = require('../../../config/default.json');
+
 /**
  * <label></label>
  * <input type="file">
@@ -38,6 +40,18 @@ class FileSelect {
         return this.files[index].name;
     }
 
+    async loadDefault() {
+        return await new Promise((resolve, reject) => {
+            let json = JSON.stringify(standardConfig);
+            const blob = new Blob([json], {type:"application/json"});
+
+            const reader = new FileReader();
+            reader.onload = event => resolve(event.target.result);
+            reader.onerror = event => reject(event);
+            reader.readAsArrayBuffer(blob);
+        });
+    }
+
     async loadAsArrayBuffer (index = 0) {
         return await new Promise((resolve, reject) => {
             const file = this.files[index];
@@ -49,7 +63,13 @@ class FileSelect {
     }
 
     async loadAsString (index = 0) {
-        const arrayBuffer = await this.loadAsArrayBuffer(index);
+        let arrayBuffer;
+        if (this.files[0] == null) {
+            arrayBuffer = await this.loadDefault();
+        } else {
+            arrayBuffer = await this.loadAsArrayBuffer(index);
+        }
+
         return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
     }
 }
