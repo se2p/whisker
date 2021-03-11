@@ -42,12 +42,12 @@ After building Whisker, simply open 'whisker-web/dist/index.html' in your browse
 firefox whisker-web/dist/index.html
 ```
 
-The Servant is a wrapper around the web client, allowing to run tests automatically in a headless environment (via chrome-headless / (puppeteer)[https://github.com/puppeteer/puppeteer]). It is called the Servant as in "Cats don't have owners they have servants".
+The Servant is a wrapper around the web client, allowing to run tests automatically in a headless environment (via chrome-headless / [puppeteer](https://github.com/puppeteer/puppeteer)). It is called the Servant as in "Cats don't have owners they have servants".
 
 To use Whisker on the command line, you can use the Servant node frontend as follows:
 
 ```bash
-node servant/servant.js -s <Scratch project file> -t <test file>
+cd servant && node servant.js -s <Scratch project file> -t <test file>
 ```
 
 The full list of options is provided using `node servant/servant.js -h`:
@@ -62,7 +62,8 @@ Options:
                                       false)
   -t, --testPath <Path>               Tests to run (default: false)
   -a, --accelerationFactor <Integer>  Acceleration factor (default: 1)
-  -v, --csvFile <Path>                Name of CSV File to put output into (default: false)
+  -v, --csvFile <Path>                Name of CSV File to put output into, requires scratchPath to point to
+                                      a directory (default: false)
   -c, --configPath <Path>             Path to a configuration file (default:
                                       "../whisker-main/config/default.json")
   -d, --isHeadless                    If should run headless (d like in decapitated)
