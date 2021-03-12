@@ -289,7 +289,7 @@ export class Species<C extends NeatChromosome> {
      * @private
      */
     public sortChromosomes(): void {
-        this._chromosomes.sort((a, b) => a.nonAdjustedFitness < b.nonAdjustedFitness ? +1 : -1);
+        this.chromosomes.sort((a, b) => b.nonAdjustedFitness - a.nonAdjustedFitness)
     }
 
     public averageSpeciesFitness(): number {
