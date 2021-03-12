@@ -19,6 +19,7 @@ export class NeatPopulation<C extends NeatChromosome> {
     private readonly _startSize: number;
     private readonly _properties: NeuroevolutionProperties<C>;
     private _distThreshold: number;
+    private _averageFitness: number;
 
     constructor(size: number, numberOfSpecies: number, generator: ChromosomeGenerator<C>,
                 properties: NeuroevolutionProperties<C>) {
@@ -33,6 +34,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         this._chromosomes = new List<C>();
         this._properties = properties;
         this._distThreshold = properties.distanceThreshold;
+        this._averageFitness = 0;
 
         this.generatePopulation();
     }
@@ -148,22 +150,19 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
 
 
-        // Find the species with the best chromosome -> population Champion
-        for (const specie of this.species)
-            specie.sortChromosomes();
-        this.species.sort((a, b) =>
-            a.chromosomes.get(0).nonAdjustedFitness < b.chromosomes.get(0).nonAdjustedFitness ? +1 : -1);
+        // Find the population champion, and give him his earned offsprings
+        this.sortPopulation();
+        this.populationChampion = this.chromosomes.get(0);
+        this.populationChampion.populationChampion = true;
+        this.populationChampion.numberOffspringPopulationChamp = 3;
 
-        // Assign the population Champion its earned offsprings.
-        const popChampSpecie = this.species.get(0);
-        this._populationChampion = popChampSpecie.chromosomes.get(0);
-        this._populationChampion.populationChampion = true;
-        this._populationChampion.numberOffspringPopulationChamp = 3;
+        // Calculate average fitness for logging
+        this.calculateAverageFitness();
 
         // Check for fitness stagnation
-        if (this._populationChampion.nonAdjustedFitness > this._highestFitness) {
-            this._highestFitness = this._populationChampion.nonAdjustedFitness;
-            this._highestFitnessLastChanged = 0;
+        if (this.populationChampion.nonAdjustedFitness > this._highestFitness) {
+            this.highestFitness = this.populationChampion.nonAdjustedFitness;
+            this.highestFitnessLastChanged = 0;
         } else {
             this._highestFitnessLastChanged++;
         }
@@ -271,15 +270,21 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
 
         this.generation++;
-        console.log("All Species: ", this.species)
-        console.log("Population Size: " + this.populationSize())
-        console.log("Average Fitness: " + totalAverageSpeciesFitness / this.species.size())
-        console.log("Highest fitness last changed: " + this.highestFitnessLastChanged)
-        console.log("Population Champion: ", this.populationChampion)
     }
 
     populationSize(): number {
         return this.chromosomes.size();
+    }
+
+    sortPopulation():void{
+        this.chromosomes.sort((a, b) => b.nonAdjustedFitness - a.nonAdjustedFitness)
+    }
+
+    calculateAverageFitness():void{
+        let sum = 0;
+        for(const chromosome of this.chromosomes)
+            sum += chromosome.nonAdjustedFitness;
+        this.averageFitness = sum / this.populationSize();
     }
 
 
@@ -341,5 +346,13 @@ export class NeatPopulation<C extends NeatChromosome> {
 
     get startSize(): number {
         return this._startSize;
+    }
+
+    get averageFitness(): number {
+        return this._averageFitness;
+    }
+
+    set averageFitness(value: number) {
+        this._averageFitness = value;
     }
 }
