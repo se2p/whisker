@@ -11,7 +11,7 @@ def evaluate(projects, config_file, runs):
 
         # Set up Names
         project_name = p.replace(".sb3", "")
-        target_directory = "./whisker-main/src/whisker/NEAT/EvaluationScripts/" + project_name + "Results"
+        target_directory = "./whisker-main/src/whisker/NEAT/EvaluationScripts/" + project_name + "Coverage"
 
         # Create the directory for the project to store the results in.
         if not os.path.isdir(target_directory):
@@ -23,7 +23,7 @@ def evaluate(projects, config_file, runs):
             cmd += "-s ./testProjects/" + p + " "
             cmd += "-c ./config/" + config_file + " "
             cmd += "-u ./whisker-web/dist/index.html "
-            cmd += "-a 20 -g -l -k"
+            cmd += "-a 20 -g -l -k -d"
             print(cmd)
             output = str(subprocess.run(cmd, capture_output=True, shell=True).stdout)
             output = output.replace('\\n', "\n")

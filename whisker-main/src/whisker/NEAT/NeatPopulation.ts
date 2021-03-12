@@ -99,10 +99,14 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
          */
 
-        // Calculate the total Average Species Fitness
+        // Calculate the total Average Species Fitness; used for assigning the amount of offspring per species
         let totalAverageSpeciesFitness = 0;
+        let totalNonAdjustedFitness = 0;        // This value is only used for monitoring.
         for (const specie of this.species) {
             totalAverageSpeciesFitness += specie.averageSpeciesFitness();
+            for(const chromosome of specie.chromosomes){
+                totalNonAdjustedFitness += chromosome.nonAdjustedFitness;
+            }
         }
 
         // Calculate expected children per species and total expectedOffspring
@@ -230,7 +234,6 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Furthermore, add the members of the surviving species to the population List
         const doomedSpecies = new List<Species<C>>();
         for (const specie of this._species) {
-            console.log("Specie " + specie.id + " has a size of: " + specie.chromosomes.size())
             if (specie.chromosomes.size() === 0) {
                 doomedSpecies.add(specie);
             } else {

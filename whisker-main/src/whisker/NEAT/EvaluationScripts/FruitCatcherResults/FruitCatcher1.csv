@@ -1,0 +1,2 @@
+fitnessFunctionCount,iterationCount,coveredFitnessFunctionCount,bestCoverage,testsuiteEventCount,executedEventsCount,bestTestSuiteSize,createdTestsCount,createdTestsToReachFullCoverage,timeToReachFullCoverage,0,1000,2000
+54,2,54,1,266,611,2,15,10,2766,0,43,54
