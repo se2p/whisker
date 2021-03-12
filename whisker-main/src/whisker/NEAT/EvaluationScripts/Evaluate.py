@@ -12,9 +12,9 @@ def evaluate(projects, config_file, runs):
 
         # Set up Names
         project_name = p.replace(".sb3", "")
-        target_directory_project = "./whisker-main/src/whisker/NEAT/EvaluationScripts/" + project_name + "Results"
+        target_directory_project = "./whisker-main/src/whisker/NEAT/EvaluationScripts/ResultsNEAT/" + project_name
         target_directory_coverage = target_directory_project + "/Coverage"
-        target_directory_tests = target_directory_project + "/Tests"
+        #target_directory_tests = target_directory_project + "/Tests"
         target_directory_network_fitness = target_directory_project + "/NetworkFitness"
 
         # Create the directory for the project to store the results in
@@ -22,8 +22,8 @@ def evaluate(projects, config_file, runs):
             os.mkdir(target_directory_project)
         if not os.path.isdir(target_directory_coverage):
             os.mkdir(target_directory_coverage)
-        if not os.path.isdir(target_directory_tests):
-            os.mkdir(target_directory_tests)
+        #if not os.path.isdir(target_directory_tests):
+            #os.mkdir(target_directory_tests)
         if not os.path.isdir(target_directory_network_fitness):
             os.mkdir(target_directory_network_fitness)
 
@@ -33,7 +33,7 @@ def evaluate(projects, config_file, runs):
             cmd += "-s ./testProjects/" + p + " "
             cmd += "-c ./config/" + config_file + " "
             cmd += "-u ./whisker-web/dist/index.html "
-            cmd += "-a 10 -g -l -k -d"
+            cmd += "-g -l -k -a 3 -d"
             print(cmd)
             output = str(subprocess.run(cmd, capture_output=True, shell=True).stdout)
             output = output.replace('\\n', "\n")
@@ -82,7 +82,7 @@ def evaluate(projects, config_file, runs):
             dataframe.to_csv(target_path_csv)
 
             # Save the Generated test file
-            os.rename("tests.js", target_directory_tests + "/TestsRun" + str(x) + ".js")
+            #os.rename("tests.js", target_directory_tests + "/Test" + str(x) + ".js")
 
             print("Finished: " + project_name + " Round " + str(x))
 
@@ -102,14 +102,19 @@ def evaluate(projects, config_file, runs):
             os.remove(starting_csv_path)
 
 
-score_projects = ["Archery.sb3", "Balloons.sb3", "BeatTheGoalie.sb3", "ChatBot.sb3", "GreenYourCity.sb3"]
+#score_projects = ["Archery.sb3", "Balloons.sb3", "BeatTheGoalie.sb3", "ChatBot.sb3", "GreenYourCity.sb3", "BrainGame.sb3"]
+score_projects_acc = ["Archery.sb3", "Balloons.sb3", "BeatTheGoalie.sb3", "BoatRace.sb3", "BrainGame.sb3",
+                      "ChatBot.sb3", "CloneWars.sb3", "Dodgeball.sb3", "Ghostbusters.sb3", "GreenYourCity.sb3",
+                       "LostInSpace.sb3", "MoonhackScratch2017.sb3", "RockBand.sb3", "Sprint.sb3", "SynchronisedSwimming.sb3",
+                       "TechToys.sb3", "UsernameGenerator.sb3"]
+score_projects = ["CatchTheDots.sb3"] #, "Memory.sb3", "PoetryGenerator.sb3"]
 create_your_own_word = ["CreateYourOwnWorld.sb3"]
 fruit_catcher = ["FruitCatcher.sb3"]
-survive_projects = ["SpaceJunk.sb3", "FruitCatcher.sb3"]
+survive_projects = []
 space_junk = ["SpaceJunk.sb3"]
 memory = ["Memory.sb3"]
 
 survive_config = "surviveNeuroevolution.json"
 score_config = "scoreNeuroevolution.json"
 
-evaluate(fruit_catcher, survive_config, 10)
+evaluate(score_projects_acc, score_config, 3)

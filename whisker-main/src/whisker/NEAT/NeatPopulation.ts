@@ -58,7 +58,7 @@ export class NeatPopulation<C extends NeatChromosome> {
      */
     public evolution(): void {
         const currentSpeciesSize: number = this._species.size();
-        const compatibilityModifier = 0.3;
+        const compatibilityModifier = 0.5;
         // Adjust the Distance Threshold to aim for the targeted number of Species
         if (this.generation > 1) {
             if (currentSpeciesSize < this._numberOfSpeciesTargeted)

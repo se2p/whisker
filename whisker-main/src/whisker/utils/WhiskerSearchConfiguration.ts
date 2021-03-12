@@ -311,6 +311,8 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.MIO;
             case'neat':
                 return SearchAlgorithmType.NEAT;
+            case'randomNeuroevolution':
+                return SearchAlgorithmType.RANDOM_NEUROEVOLUTION;
             default:
                 throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this.dict['algorithm']);
         }
