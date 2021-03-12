@@ -71,8 +71,10 @@ export class Species<C extends NeatChromosome> {
             chromosome.nonAdjustedFitness = chromosome.networkFitness;
 
             // Penalize fitness if it has not improved for a certain amount of ages
-            if (ageDept >= 1)
-                chromosome.networkFitness = chromosome.networkFitness * 0.9;
+            if (ageDept >= 1) {
+                chromosome.networkFitness = chromosome.networkFitness * 0.3;
+                console.log("Penalizing stagnant species: " + this.id)
+            }
 
             // Boost fitness for young generations to give them a chance to evolve for some generations
             if (this._age <= 10)

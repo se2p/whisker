@@ -90,7 +90,8 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             population.evolution();
             this._iterations++;
             this.updateBestIndividualAndStatistics();
-            console.log("Iteration: " + this._iterations + " Network Fitness: " + population.highestFitness)
+            console.log("Iteration: " + this._iterations)
+            console.log("Highest Network Fitness: " + population.highestFitness)
             console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             console.log("-----------------------------------------------------")
