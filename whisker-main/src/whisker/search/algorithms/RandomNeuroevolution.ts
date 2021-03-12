@@ -11,7 +11,7 @@ import {NeuroevolutionProperties} from "../../NEAT/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../../NEAT/NetworkFitness/NetworkFitnessFunction";
 
 
-export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {
+export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {
     private _chromosomeGenerator: ChromosomeGenerator<C>;
 
     private _properties: NeuroevolutionProperties<C>;
@@ -79,15 +79,17 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        const speciesNumber = 6;
-        const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
-            this._properties);
+        const speciesNumber = 4;
         this._iterations = 0;
         this._startTime = Date.now();
+        console.log("Random NEURO")
 
         while (!(this._stoppingCondition.isFinished(this))) {
+            // Randomised through generating a new population each round.
+            const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
+                this._properties);
             await this.evaluateNetworks(population.chromosomes);
-            population.evolution();
+            population.evolution()  // Evolved only to get the required stats for logging such as the population Champion
             this._iterations++;
             this.updateBestIndividualAndStatistics();
             console.log("Iteration: " + this._iterations)
@@ -101,14 +103,14 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             console.log("-----------------------------------------------------")
-            /*for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
                 if (!this._archive.has(fitnessFunctionKey)) {
                     console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
                 }
-            }*/
+            }
         }
-            StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.populationSize;
-            return this._bestIndividuals;
+        StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.populationSize;
+        return this._bestIndividuals;
     }
 
     getStartTime(): number {

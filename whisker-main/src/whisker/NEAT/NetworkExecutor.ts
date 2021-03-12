@@ -27,7 +27,7 @@ export class NetworkExecutor {
     private _initialState = {};
     private _projectRunning: boolean
     private _timeout: number;
-    private _random : Randomness;
+    private _random: Randomness;
 
     constructor(vmWrapper: VMWrapper, timeout: number) {
         this._vmWrapper = vmWrapper;
@@ -141,72 +141,6 @@ export class NetworkExecutor {
         // If we found a defect network let it go extinct!
         if (!workingNetwork)
             network.eliminate = true;
-
-        // Save the codons in order to transform the network into a TestChromosome later
-        network.codons = codons;
-        return network.trace;
-    }
-
-    async executeRandom(network: NeatChromosome): Promise<ExecutionTrace> {
-        const events = new List<[ScratchEvent, number[]]>();
-        const codons = new List<number>()
-        let args = []
-
-        const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._projectRunning = true;
-        this._vmWrapper.start();
-        const start = Date.now();
-        let timer = Date.now();
-        this._timeout += start;
-        while (this._projectRunning && timer < this._timeout) {
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
-            if (this.availableEvents.isEmpty()) {
-                console.log("Whisker-Main: No events available for project.");
-                continue;
-            }
-
-
-            const randomIndex = this._random.nextInt(0, this.availableEvents.size())
-            codons.add(randomIndex);
-            let nextEvent: ScratchEvent = this.availableEvents.get(randomIndex)
-
-            if (nextEvent instanceof KeyDownEvent) {
-                args = [+true];
-            } else if (nextEvent instanceof WaitEvent) {
-                nextEvent = new WaitEvent()
-                args = [Container.config.getWaitDuration()];
-            }
-            events.add([nextEvent, args]);
-            this.notify(nextEvent, args);
-            await nextEvent.apply(this._vm, args)
-            StatisticsCollector.getInstance().incrementEventsCount();
-
-            // If we have a regression Node randomise this output as well
-            if (network.regression) {
-                const mouseCoords = [this._random.nextInt(-240, 240), this._random.nextInt(-180, 180)]
-                const mouseMoveEvent = new MouseMoveEvent();
-                events.add([mouseMoveEvent, mouseCoords]);
-                this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply(this._vm, mouseCoords)
-                StatisticsCollector.getInstance().incrementEventsCount();
-            }
-
-            const waitEvent = new WaitEvent();
-            events.add([waitEvent, []])
-            await waitEvent.apply(this._vm);
-            timer = Date.now();
-        }
-        // round due to small variances in runtime
-        network.timePlayed = Math.round((Date.now() - start) / 100);
-
-        // Save the executed Trace
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
-
-        // End and reset the VM.
-        this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this.resetState();
 
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
