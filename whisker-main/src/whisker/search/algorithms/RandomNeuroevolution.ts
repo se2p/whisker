@@ -62,7 +62,7 @@ export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgori
     async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
-            await this._networkFitnessFunction.getFitness(network, this._properties.timeout);
+            await this._networkFitnessFunction.getRandomFitness(network, this._properties.timeout);
 
             // Update the archive and stop if during the evaluation of the population if we already cover all
             // statements.
@@ -82,7 +82,6 @@ export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgori
         const speciesNumber = 4;
         this._iterations = 0;
         this._startTime = Date.now();
-        console.log("Random NEURO")
 
         while (!(this._stoppingCondition.isFinished(this))) {
             // Randomised through generating a new population each round.
@@ -103,11 +102,13 @@ export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgori
             console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             console.log("-----------------------------------------------------")
-            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            /*for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
                 if (!this._archive.has(fitnessFunctionKey)) {
                     console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
-                }
+              }
             }
+
+             */
         }
         StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.populationSize;
         return this._bestIndividuals;

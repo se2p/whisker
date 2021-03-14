@@ -21,6 +21,13 @@ export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
         return network.networkFitness;
     }
 
+    async getRandomFitness(network: NeatChromosome, timeout: number): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
+        await executor.executeRandom(network);
+        const score = this.gatherPoints(Container.vm);
+        network.networkFitness = score + this.offset;
+        return network.networkFitness;
+    }
 
     getFitnessWithoutPlaying(network: NeatChromosome): number {
         const score = this.gatherPoints(Container.vm) + this.offset;

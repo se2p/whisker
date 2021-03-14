@@ -72,7 +72,7 @@ export class Species<C extends NeatChromosome> {
 
             // Penalize fitness if it has not improved for a certain amount of ages
             if (ageDept >= 1) {
-                chromosome.networkFitness = chromosome.networkFitness * 0.3;
+                chromosome.networkFitness = chromosome.networkFitness * 0.01;
                 console.log("Penalizing stagnant species: " + this.id)
             }
 
@@ -158,7 +158,7 @@ export class Species<C extends NeatChromosome> {
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
 
         const expectedOffspring = (this.averageSpeciesFitness() / totalAvgSpeciesFitness) * populationSize;
-        const intExpectedOffspring = Math.round(expectedOffspring);
+        const intExpectedOffspring = Math.floor(expectedOffspring);
         const fractionExpectedOffspring = expectedOffspring % 1;
 
         this.expectedOffspring = intExpectedOffspring;
