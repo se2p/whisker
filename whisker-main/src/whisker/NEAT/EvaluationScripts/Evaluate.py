@@ -12,7 +12,7 @@ def evaluate(projects, config_file, runs):
 
         # Set up Names
         project_name = p.replace(".sb3", "")
-        target_directory_project = "./whisker-main/src/whisker/NEAT/EvaluationScripts/ResultsNEAT/" + project_name
+        target_directory_project = "./whisker-main/src/whisker/NEAT/EvaluationScripts/ResultsRandom/" + project_name
         target_directory_coverage = target_directory_project + "/Coverage"
         #target_directory_tests = target_directory_project + "/Tests"
         target_directory_network_fitness = target_directory_project + "/NetworkFitness"
@@ -33,7 +33,7 @@ def evaluate(projects, config_file, runs):
             cmd += "-s ./testProjects/" + p + " "
             cmd += "-c ./config/" + config_file + " "
             cmd += "-u ./whisker-web/dist/index.html "
-            cmd += "-g -l -k -a 3 -d"
+            cmd += "-g -l -k -d -a 3"
             print(cmd)
             output = str(subprocess.run(cmd, capture_output=True, shell=True).stdout)
             output = output.replace('\\n', "\n")
@@ -107,14 +107,23 @@ score_projects_acc = ["Archery.sb3", "Balloons.sb3", "BeatTheGoalie.sb3", "BoatR
                       "ChatBot.sb3", "CloneWars.sb3", "Dodgeball.sb3", "Ghostbusters.sb3", "GreenYourCity.sb3",
                        "LostInSpace.sb3", "MoonhackScratch2017.sb3", "RockBand.sb3", "Sprint.sb3", "SynchronisedSwimming.sb3",
                        "TechToys.sb3", "UsernameGenerator.sb3"]
-score_projects = ["CatchTheDots.sb3"] #, "Memory.sb3", "PoetryGenerator.sb3"]
+score_projects = ["PoetryGenerator.sb3"]
 create_your_own_word = ["CreateYourOwnWorld.sb3"]
 fruit_catcher = ["FruitCatcher.sb3"]
 survive_projects = []
 space_junk = ["SpaceJunk.sb3"]
 memory = ["Memory.sb3"]
+snowball = ["SnowballFight.sb3"]
 
 survive_config = "surviveNeuroevolution.json"
 score_config = "scoreNeuroevolution.json"
+random_config = "randomScoreNeuroevolution.json"
+random_survive_config = "randomSurvive.json"
+random_survive_config2 = "randomSurvive2.json"
+catch_dots_config = "CatchDots.json"
+create_your_own_world_config = "CreateYourOwnWorld.json"
+create_your_own_world_long_config = "CreateYourOwnWorldLong.json"
+create_your_own_world_random_config = "CreateYourOwnWorldRandom.json"
 
-evaluate(score_projects_acc, score_config, 3)
+
+evaluate(score_projects_acc, score_config, 1)

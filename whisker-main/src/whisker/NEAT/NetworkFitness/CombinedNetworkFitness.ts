@@ -29,6 +29,19 @@ export class CombinedNetworkFitness implements NetworkFitnessFunction<NeatChromo
         return Promise.resolve(fitness);
     }
 
+
+    async getRandomFitness(network: NeatChromosome, timeout: number): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
+        await executor.executeRandom(network);
+
+        let fitness = 0.00;
+        for(const fitnessFunction of this._fitnessFunctions){
+            fitness += fitnessFunction.getFitnessWithoutPlaying(network);
+        }
+        network.networkFitness = fitness;
+        return Promise.resolve(fitness);
+    }
+
     // No sense to use this in this way; but needed to satisfy interface implementation.
     getFitnessWithoutPlaying(network: NeatChromosome): number {
         throw new NotSupportedFunctionException();

@@ -101,11 +101,11 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             console.log("-----------------------------------------------------")
-            /*for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
                 if (!this._archive.has(fitnessFunctionKey)) {
                     console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
                 }
-            }*/
+            }
         }
             StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.populationSize;
             return this._bestIndividuals;

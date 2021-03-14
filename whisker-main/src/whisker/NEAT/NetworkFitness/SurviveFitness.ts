@@ -13,6 +13,12 @@ export class SurviveFitness implements NetworkFitnessFunction<NeatChromosome> {
         return network.networkFitness;
     }
 
+    async getRandomFitness(network: NeatChromosome, timeout: number): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
+        await executor.executeRandom(network);
+        network.networkFitness = network.timePlayed;
+        return network.networkFitness;
+    }
 
     getFitnessWithoutPlaying(network: NeatChromosome): number {
         return network.timePlayed;
