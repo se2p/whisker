@@ -100,6 +100,8 @@ class InputRecorder extends EventEmitter {
         const inputs = this.inputs.map(input => `        ${JSON.stringify(input)}`);
         let inputCode = `    t.addInputs([\n${inputs.join(',\n')}\n    ]);`;
         Whisker.testEditor.setValue(this.testBegin + inputCode + this.testEnd + this.export);
+        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+        location.href = '#test-editor'
     }
 }
 
