@@ -11,7 +11,7 @@ def evaluate(projects, config_file, runs):
 
         # Set up Names
         project_name = p.replace(".sb3", "")
-        target_directory_project = "./whisker-main/src/whisker/NEAT/EvaluationScripts/ResultsRandom/" + project_name + "Survive"
+        target_directory_project = "./whisker-main/src/whisker/NEAT/EvaluationScripts/ResultsFullyConnected/" + project_name
         target_directory_coverage = target_directory_project + "/Coverage"
         # target_directory_tests = target_directory_project + "/Tests"
         target_directory_network_fitness = target_directory_project + "/NetworkFitness"
@@ -129,4 +129,4 @@ space_config = "spaceJunk.json"
 fruit_catcher_survive_config = "fruitCatcherSurvive.json"
 fruit_catcher_survive_random_config = "fruitCatcherSurviveRandom.json"
 
-evaluate(fruit_catcher, fruit_catcher_survive_random_config, 1)
+evaluate(space_junk, space_config, 3)

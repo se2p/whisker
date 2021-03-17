@@ -69,7 +69,6 @@ export class NetworkExecutor {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
-            console.log(this.availableEvents)
 
             // Load the inputs into the Network
             const spriteInfo = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
