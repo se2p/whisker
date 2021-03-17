@@ -159,7 +159,7 @@ export class Species<C extends NeatChromosome> {
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
 
         const expectedOffspring = (this.averageSpeciesFitness() / totalAvgSpeciesFitness) * populationSize;
-        const intExpectedOffspring = Math.round(expectedOffspring);
+        const intExpectedOffspring = Math.floor(expectedOffspring);
         const fractionExpectedOffspring = expectedOffspring % 1;
 
         this.expectedOffspring = intExpectedOffspring;
