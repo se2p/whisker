@@ -10,8 +10,6 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NeatChromosome} from "./NeatChromosome";
-import {KeyDownEvent} from "../testcase/events/KeyDownEvent";
-import {Container} from "../utils/Container";
 import {NeatUtil} from "./NeatUtil";
 import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
 import {NodeType} from "./NodeType";
@@ -39,7 +37,7 @@ export class NetworkExecutor {
 
     async execute(network: NeatChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
-        let args = [];
+        const args = [];
         let workingNetwork = false;
         const codons = new List<number>()
 
@@ -71,6 +69,7 @@ export class NetworkExecutor {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
+            console.log(this.availableEvents)
 
             // Load the inputs into the Network
             const spriteInfo = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
@@ -99,14 +98,8 @@ export class NetworkExecutor {
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.add(indexOfMaxValue);
-            let nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
+            const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
 
-            if (nextEvent instanceof KeyDownEvent) {
-                args = [+true];
-            } else if (nextEvent instanceof WaitEvent) {
-                nextEvent = new WaitEvent()
-                args = [Container.config.getWaitDuration()];
-            }
             events.add([nextEvent, args]);
             this.notify(nextEvent, args);
             await nextEvent.apply(this._vm, args)
@@ -167,17 +160,9 @@ export class NetworkExecutor {
                 continue;
             }
 
-
             const randomIndex = this._random.nextInt(0, this.availableEvents.size())
             codons.add(randomIndex);
-            let nextEvent: ScratchEvent = this.availableEvents.get(randomIndex)
-
-            if (nextEvent instanceof KeyDownEvent) {
-                args = [+true];
-            } else if (nextEvent instanceof WaitEvent) {
-                nextEvent = new WaitEvent()
-                args = [Container.config.getWaitDuration()];
-            }
+            const nextEvent: ScratchEvent = this.availableEvents.get(randomIndex)
             events.add([nextEvent, args]);
             this.notify(nextEvent, args);
             await nextEvent.apply(this._vm, args)

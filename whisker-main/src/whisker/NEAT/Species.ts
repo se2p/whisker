@@ -15,6 +15,7 @@ export class Species<C extends NeatChromosome> {
     private _chromosomes: List<C>
     private _novel: boolean;
     private _ageOfLastImprovement: number;
+    private _champion: C
     private _randomness: Randomness;
     private readonly _properties: NeuroevolutionProperties<C>;
 
@@ -158,7 +159,7 @@ export class Species<C extends NeatChromosome> {
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
 
         const expectedOffspring = (this.averageSpeciesFitness() / totalAvgSpeciesFitness) * populationSize;
-        const intExpectedOffspring = Math.floor(expectedOffspring);
+        const intExpectedOffspring = Math.round(expectedOffspring);
         const fractionExpectedOffspring = expectedOffspring % 1;
 
         this.expectedOffspring = intExpectedOffspring;
@@ -186,11 +187,10 @@ export class Species<C extends NeatChromosome> {
         const children = new List<NeatChromosome>();
 
         this.sortChromosomes();
-        const champion = this.chromosomes.get(0);
+        this.champion = this.chromosomes.get(0);
 
         if (this.expectedOffspring > population.startSize) {
             console.error("Attempt to produce more offsprings than the size of the population")
-            this.expectedOffspring = Math.floor(population.startSize * 0.75);
         }
 
         // Create the calculated number of offspring of this species; one at a time
@@ -199,18 +199,24 @@ export class Species<C extends NeatChromosome> {
 
             let child: C;
 
-            // If we have a population Champion in this species
-            if (champion.numberOffspringPopulationChamp > 0 && champion.populationChampion) {
-                child = this.breedPopulationChampion(champion)
+            // If we have a population Champion in this species apply slight mutation or clone it
+            if (this.champion.populationChampion && this.champion.numberOffspringPopulationChamp > 0) {
+                if (!champCloned) {
+                    child = this.champion.clone() as C;
+                    champCloned = true;
+                    this.champion.numberOffspringPopulationChamp--;
+                } else {
+                    child = this.breedPopulationChampion()
+                }
             }
 
-            // Species champions are cloned only -> Elitism
+            // Species champions are cloned only
             else if (!champCloned) {
-                child = champion.clone() as C;
+                child = this.champion.clone() as C;
                 champCloned = true;
             }
 
-                // In some cases we only mutate and do no crossover
+            // In some cases we only mutate and do no crossover
             // Furthermore, if we have only one member in the species we cannot apply crossover
             else if ((this._randomness.nextDouble() <= this._properties.mutationWithoutCrossover) || (this.size() == 1)) {
                 child = this.breedMutationOnly();
@@ -226,18 +232,13 @@ export class Species<C extends NeatChromosome> {
         return children;
     }
 
-    private breedPopulationChampion(populationChampion: C): C {
-        const parent = populationChampion.clone() as C;
-
-        // If we have some offsprings left to generate allow mutation of the population champion to happen
-        if (populationChampion.numberOffspringPopulationChamp > 1) {
-            // We want the popChamp clone to be treated like a popChamp during mutation but not afterwards.
-            parent.populationChampion = true;
-            parent.mutate();
-            parent.populationChampion = false;
-        }
-        // Otherwise just clone the champion -> Elitism
-        populationChampion.numberOffspringPopulationChamp--;
+    private breedPopulationChampion(): C {
+        const parent = this.champion.clone() as C;
+        // We want the popChamp clone to be treated like a popChamp during mutation but not afterwards.
+        parent.populationChampion = true;
+        parent.mutate();
+        parent.populationChampion = false;
+        this.champion.numberOffspringPopulationChamp--;
         return parent;
     }
 
@@ -315,13 +316,13 @@ export class Species<C extends NeatChromosome> {
                     this.chromosomes.remove(chromosome);
                     removedChromosomes.add(chromosome);
                     removed++;
-                    if(removed >= amount) {
+                    if (removed >= amount) {
                         finished = true;
                         break
                     }
                 }
             }
-                tries++;
+            tries++;
         }
         // Bring chromosomes back into order
         this.sortChromosomes();
@@ -399,5 +400,13 @@ export class Species<C extends NeatChromosome> {
 
     set ageOfLastImprovement(value: number) {
         this._ageOfLastImprovement = value;
+    }
+
+    get champion(): C {
+        return this._champion;
+    }
+
+    set champion(value: C) {
+        this._champion = value;
     }
 }

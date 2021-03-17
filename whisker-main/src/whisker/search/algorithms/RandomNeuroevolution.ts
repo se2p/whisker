@@ -82,11 +82,10 @@ export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgori
         const speciesNumber = 4;
         this._iterations = 0;
         this._startTime = Date.now();
+        const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
+                this._properties);
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            // Randomised through generating a new population each round.
-            const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
-                this._properties);
             await this.evaluateNetworks(population.chromosomes);
             population.evolution()  // Evolved only to get the required stats for logging such as the population Champion
             this._iterations++;

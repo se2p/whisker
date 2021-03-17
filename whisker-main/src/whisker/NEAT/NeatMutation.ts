@@ -43,10 +43,10 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     apply(chromosome: NeatChromosome): NeatChromosome {
         // Special treatment for population Champions => either add a Connection or change the weights
         if (chromosome.populationChampion) {
-            if (this._random.nextDouble() <= 0.8) {
-                this.mutateWeight(chromosome, this._perturbationPower, 1);
-            } else {
+            if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
                 this.mutateAddConnection(chromosome, this._addConnectionTries);
+            } else {
+                this.mutateWeight(chromosome, this._perturbationPower, 1);
             }
         }
 
