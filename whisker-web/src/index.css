@@ -476,6 +476,34 @@ p {
     border: 1px solid lightgray;
 }
 
+.pass {
+    color: darkgreen;
+}
+
+.pass .toggle-details {
+    background: lightgreen !important;
+    color: inherit;
+    border-color: darkgreen;
+}
+.fail {
+    color: darkred;
+}
+
+.fail .toggle-details {
+    background: lightcoral !important;
+    color: inherit;
+    border-color: darkred;
+}
+.skip {
+    color: var(--mainColor);
+}
+
+.skip .toggle-details{
+    background-color: lightyellow;
+    color: inherit;
+    border-color: var(--mainColor);
+}
+
 .output-content {
     width: 100%;
     min-height: 100px;

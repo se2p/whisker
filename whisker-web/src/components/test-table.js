@@ -43,6 +43,9 @@ class TestTable {
         }
 
         this.dataTable = this.table.DataTable({
+            createdRow: function (row, data, dataIndex) {
+                $(row).addClass(data.testResult);
+            },
             data: TestTable.prepareTests(tests),
             columns: [
                 {
@@ -93,7 +96,7 @@ class TestTable {
             language: {
                 search: '&#x1F50E;',
                 emptyTable: '-'
-            }
+            },
 
         });
     }

@@ -69,6 +69,15 @@ const runSearch = async function () {
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
 
+function visualizeSummary(summary) {
+    let tests = [];
+    for (let i = 0; i < summary.length; i++) {
+        summary[i].test.testResult = summary[i].status;
+        tests[i] = summary[i].test;
+    }
+    Whisker.testTable.setTests(tests);
+}
+
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
@@ -85,6 +94,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         CoverageGenerator.prepareVM(vm);
 
         summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
+        visualizeSummary(summary);
         coverage = CoverageGenerator.getCoverage();
 
         if (typeof window.messageServantCallback === 'function') {
