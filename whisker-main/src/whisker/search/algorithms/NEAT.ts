@@ -99,8 +99,7 @@ export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatC
             console.log("Population Champion: ", population.populationChampion)
             console.log("All Species: ", population.species)
             for (const specie of population.species)
-                console.log("Species: " + specie.id + " has a size of " + specie.size() + " and expects "
-                    + specie.expectedOffspring + " children")
+                console.log("Species: " + specie.id + " has a size of " + specie.size())
             console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
             console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
             console.log("-----------------------------------------------------")
