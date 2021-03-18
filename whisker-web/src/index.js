@@ -71,9 +71,24 @@ const runSearch = async function () {
 
 function visualizeSummary(summary) {
     let tests = [];
+    const failSign = '\u274C';
+    const skipSign = '\u26A0';
+    const passSign = '\u2713';
     for (let i = 0; i < summary.length; i++) {
-        summary[i].test.testResult = summary[i].status;
-        tests[i] = summary[i].test;
+        let test = summary[i].test;
+        test.testResult = summary[i].status;
+        switch (test.testResult) {
+            case 'fail':
+                test.testResultSign = failSign;
+                break;
+            case 'skip':
+                test.testResultSign = skipSign;
+                break;
+            case 'pass':
+                test.testResultSign = passSign;
+                break;
+        }
+        tests[i] = test;
     }
     Whisker.testTable.setTests(tests);
 }

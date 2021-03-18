@@ -25,6 +25,7 @@
     "test" : "Your Test File",
     "url" : "Url of your Scratch programs",
     "configuration" : "Your Configuration File",
+    "table-test-result" : "Result",
     "table-name" : "Name",
     "table-categories" : "Categories",
     "load" : "Load Tests",

@@ -63,11 +63,16 @@ class TestTable {
                 },
                 {
                     data: 'name',
-                    width: '60%'
+                    width: '50%'
                 },
                 {
                     data: data => data.categories.join(', '),
                     width: '30%'
+                },
+                {
+                    data: 'testResultSign',
+                    defaultContent: '-',
+                    width: "15%"
                 },
                 {
                     orderable: false,
