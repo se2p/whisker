@@ -492,6 +492,12 @@ tr td:nth-child(5) {
     padding: 0;
 }
 
+.error td:nth-child(5) {
+    color: #ff0000;
+    font-size: 27px;
+    padding: 0;
+}
+
 .output-content {
     width: 100%;
     min-height: 100px;

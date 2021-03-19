@@ -20,6 +20,7 @@ const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = r
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
 
+const Test = require('whisker-main/src/test-runner/test')
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
@@ -73,20 +74,23 @@ function visualizeSummary(summary) {
     let tests = [];
     const failSign = '\u274C';
     const skipSign = '\u26A0';
+    const errorSign = '\u26A0'; // same as skip, is just colored differently
     const passSign = '\u2713';
     for (let i = 0; i < summary.length; i++) {
         let test = summary[i].test;
         test.testResult = summary[i].status;
         switch (test.testResult) {
-            case 'fail':
+            case Test.FAIL:
                 test.testResultSign = failSign;
                 break;
-            case 'skip':
+            case Test.SKIP:
                 test.testResultSign = skipSign;
                 break;
-            case 'pass':
+            case Test.PASS:
                 test.testResultSign = passSign;
                 break;
+            case Test.ERROR:
+                test.testResultSign = errorSign;
         }
         tests[i] = test;
     }
