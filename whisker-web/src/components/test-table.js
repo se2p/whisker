@@ -44,7 +44,7 @@ class TestTable {
 
         this.dataTable = this.table.DataTable({
             createdRow: function (row, data, dataIndex) {
-                $(row).addClass(data.testResult);
+                $(row).addClass(data.testResultClass);
             },
             data: TestTable.prepareTests(tests),
             columns: [
@@ -70,7 +70,14 @@ class TestTable {
                     width: '30%'
                 },
                 {
-                    data: 'testResultSign',
+                    data: data => data,
+                    render: function (data, type, full, meta) {
+                        if (data.testResult && data.testResultSign) {
+                            return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.testResult + '</span></div>';
+                        } else {
+                            return '-';
+                        }
+                    },
                     defaultContent: '-',
                     width: "15%"
                 },

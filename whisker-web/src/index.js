@@ -72,14 +72,16 @@ const runSearch = async function () {
 
 function visualizeSummary(summary) {
     let tests = [];
-    const failSign = '\u274C';
+    const failSign = '\u2717';
     const skipSign = '\u26A0';
     const errorSign = '\u26A0'; // same as skip, is just colored differently
     const passSign = '\u2713';
     for (let i = 0; i < summary.length; i++) {
         let test = summary[i].test;
-        test.testResult = summary[i].status;
-        switch (test.testResult) {
+        let status = summary[i].status;
+        test.testResultClass = status;
+        test.testResult = i18next.t(status);
+        switch (status) {
             case Test.FAIL:
                 test.testResultSign = failSign;
                 break;

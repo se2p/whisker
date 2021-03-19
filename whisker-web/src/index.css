@@ -480,6 +480,45 @@ tr td:nth-child(5) {
     text-align: center;
 }
 
+/* Tooltip container */
+.tooltip-sign {
+    position: relative;
+    display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip-sign .tooltip-sign-text {
+    font-size: 14px;
+    visibility: hidden;
+    width: max-content;
+    background-color: var(--subColor);
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding-left: 5px;
+    padding-right: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 40px;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+.tooltip-sign .tooltip-sign-text::after {
+    content: " ";
+    position: absolute;
+    top: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--subColor) transparent transparent transparent;
+}
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip-sign:hover .tooltip-sign-text {
+    visibility: visible;
+}
+
 .pass td:nth-child(5) {
     color: green;
     font-size: 27px;
@@ -488,6 +527,12 @@ tr td:nth-child(5) {
 
 .skip td:nth-child(5) {
     color: #FFA700;
+    font-size: 27px;
+    padding: 0;
+}
+
+.fail td:nth-child(5) {
+    color: red;
     font-size: 27px;
     padding: 0;
 }
