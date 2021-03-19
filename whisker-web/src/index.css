@@ -55,13 +55,16 @@ h2::after {
 }
 
 h3 {
-    border-left: 3px solid var(--mainColor);
+    border-left: 3px solid var(--subColor);
     font-size:22px;
-    color: #fff;
+    color: var(--subheadingColor);
     margin-bottom: 30px;
     padding-left: 20px;
 }
 
+.canvas {
+    padding-bottom: 5%;
+}
 
 .thumbs {
     padding:5px;
@@ -86,7 +89,7 @@ h3 {
 }
 
 h3::first-letter {
-    color: var(--mainColor);
+    color: var(--subColor);
 }
 
 p {
@@ -130,6 +133,11 @@ p {
 .custom-file-input:focus ~ .custom-file-label, .form-control:focus {
     border-color: var(--mainColor);
     box-shadow: 0 0 0 .2rem var(--mainColorAlpha);
+}
+
+.btn-outline-secondary {
+    color: var(--subColor);
+    border-color: var(--subColor);
 }
 
 /* ==== Header Structure ==== */
@@ -580,6 +588,15 @@ tr td:nth-child(5) {
     vertical-align: middle;
 }
 
+.thead-white {
+    border-top: none;
+    background: white;
+    color: var(--subheadingColor);
+}
+
+.table {
+    border: none;
+}
 .child-table > tbody > tr {
     border-left: none;
     border-right: none;
@@ -610,7 +627,7 @@ tr td:nth-child(5) {
     background: transparent;
 }
 .table-striped > tbody > .even:nth-of-type(n) {
-    background-color: rgba(0,0,0,.03);
+    background-color: var(--lightSubColor);
 }
 
 /* Color child table rows the same color as their leading row. */
@@ -618,7 +635,7 @@ tr td:nth-child(5) {
     background: transparent;
 }
 .table-striped > tbody > .even:nth-of-type(n) + tr:not(.odd):not(.even) {
-    background-color: rgba(0,0,0,.03);
+    background-color: var(--lightSubColor);
 }
 
 /* ==== Text Styling ==== */

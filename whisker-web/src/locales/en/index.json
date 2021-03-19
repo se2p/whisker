@@ -61,5 +61,7 @@
     "fail" : "Test failed",
     "skip" : "Test skipped",
     "pass" : "Test passed",
-    "error" : "Test threw an error"
+    "error" : "Test threw an error",
+    "test-editor" : "Test editor",
+    "project" : "Your project"
 }

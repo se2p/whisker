@@ -61,5 +61,7 @@
     "fail" : "Test fehlgeschlagen",
     "skip" : "Test übersprungen",
     "pass" : "Test erfolgreich",
-    "error" : "Test fehlerhaft"
+    "error" : "Test fehlerhaft",
+    "test-editor" : "Test Editor",
+    "project" : "Dein Projekt"
 }
