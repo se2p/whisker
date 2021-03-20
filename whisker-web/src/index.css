@@ -263,19 +263,42 @@ p {
     display: inline-block;
 }
 
-.advanced-input {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.slidecontainer {
+    width: 100%;
 }
 
-.acc-label {
-    margin: 0;
+.slider:hover {
+    opacity: 1;
 }
 
-.acc-input {
-    text-align: right;
-    border: 1px solid lightgrey;
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #BABABA;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: dodgerblue;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: dodgerblue;
+    cursor: pointer;
 }
 
 #gender {
