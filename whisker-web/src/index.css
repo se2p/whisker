@@ -55,11 +55,9 @@ h2::after {
 }
 
 h3 {
-    border-left: 3px solid var(--subColor);
     font-size:22px;
     color: var(--subheadingColor);
     margin-bottom: 30px;
-    padding-left: 20px;
 }
 
 .canvas {
@@ -86,10 +84,6 @@ h3 {
 .thumbs:hover a {
     text-decoration: none !important;
     color: var(--mainColor);
-}
-
-h3::first-letter {
-    color: var(--subColor);
 }
 
 p {
@@ -475,13 +469,20 @@ p {
 
 /* ===== Components ===== */
 
+#test-editor {
+    padding: 15px;
+}
+
 #scratch-stage {
-    width: 100%;
+    width: 90%;
+    margin-left: 15px;
+    margin-right: 15px;
     border: 1px solid gray;
 }
 
 .dataTable {
     border: 1px solid lightgray;
+    padding: 15px;
 }
 
 tr td:nth-child(5) {
@@ -570,6 +571,12 @@ tr td:nth-child(5) {
 
 .custom-file-label {
     overflow: hidden;
+}
+
+
+#tests-header {
+    margin-top: 40px;
+    margin-bottom: -20px;
 }
 
 
