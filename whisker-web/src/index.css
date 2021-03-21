@@ -263,7 +263,19 @@ p {
     display: inline-block;
 }
 
-.slidecontainer {
+#viewer{
+    position: relative;
+}
+
+.but {
+    height: 40px;
+    width: 100px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.slide-container {
     width: 100%;
 }
 
