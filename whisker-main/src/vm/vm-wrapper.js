@@ -118,24 +118,34 @@ class VMWrapper {
         return this.actionOnConstraintFailure;
     }
 
-    step () {
+    async step () {
         this.callbacks.callCallbacks(false);
+        await new Promise(resolve => setImmediate(() => resolve()));
 
         if (!this.isRunning()) return;
 
         this.randomInputs.performRandomInput();
+        await new Promise(resolve => setImmediate(() => resolve()));
+
         this.inputs.performInputs();
+        await new Promise(resolve => setImmediate(() => resolve()));
 
         this.sprites.update();
+        await new Promise(resolve => setImmediate(() => resolve()));
+
         this.vm.runtime._step();
+        await new Promise(resolve => setImmediate(() => resolve()));
 
         if (!this.isRunning()) return;
 
         this.callbacks.callCallbacks(true);
+        await new Promise(resolve => setImmediate(() => resolve()));
 
         if (!this.isRunning()) return;
 
-        return this.constraints.checkConstraints();
+        const returnValue = this.constraints.checkConstraints();
+        await new Promise(resolve => setImmediate(() => resolve()));
+        return returnValue;
     }
 
     /**
@@ -288,7 +298,9 @@ class VMWrapper {
 
         this.instrumentDevice('clock', 'projectTimer');
 
-        return await this.vm.loadProject(project);
+        const returnValue = await this.vm.loadProject(project);
+        await new Promise(resolve => setImmediate(() => resolve()));
+        return returnValue;
     }
 
     instrumentDevice (deviceName, method) {
