@@ -414,7 +414,7 @@ class VMWrapper {
     }
 
     onQuestion (question) {
-        this.question = question;
+        this.question = question; // question can be null when questions are cleared
     }
 
     onAnswer (answer) {
