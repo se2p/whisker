@@ -348,6 +348,8 @@ class VMWrapper {
         this.vm.removeListener(Runtime.PROJECT_RUN_START, this._onRunStart);
         this.vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this.vm.runtime.removeListener('targetWasCreated', this._onTargetCreated);
+        this.vm.runtime.removeListener('QUESTION', this._onQuestion);
+        this.vm.runtime.removeListener('ANSWER', this._onAnswer);
     }
 
     // TODO: reset sprites on green flag?
