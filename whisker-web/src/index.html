@@ -63,11 +63,12 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
+                                                    <button class="btnr" data-i18n="browse"></button>
                                                     <input type="file" id="fileselect-project" accept=".sb3"
                                                            name="program-file"/>
                                                     <label class="project-label" for="fileselect-project"
-                                                           data-i18n="no-file"></label>
+                                                           data-i18n="no-file"
+                                                           data-toggle="tooltip" data-placement="top"></label>
                                                 </div>
                                                 <div class="form-group">
                                                     <small id="help-text" class="form-text text-muted"
@@ -93,7 +94,7 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
+                                                    <button class="btnr" data-i18n="browse"></button>
                                                     <input type="file" id="fileselect-tests" accept=".js"
                                                            name="test-file"/>
                                                     <label class="tests-label" for="fileselect-tests"
@@ -146,8 +147,10 @@
                         <canvas id="scratch-stage" tabindex="1"></canvas>
                         <div class="spacer10 but">
                             <button id="green-flag" class="btn btn-outline-success" type="button"
+                                    data-toggle="tooltip" data-placement="top"
                                     data-i18n="[title]start"><i class="fas fa-flag"></i></button>
                             <button id="stop" class="btn btn-danger" type="button"
+                                    data-toggle="tooltip" data-placement="top"
                                     data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
                         </div>
                     </div>
@@ -175,7 +178,7 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
+                                                    <button class="btnr" data-i18n="browse"></button>
                                                     <input type="file" id="fileselect-config" accept=".json"
                                                            name="config-file"/>
                                                     <label class="config-label" for="fileselect-config"
@@ -190,6 +193,7 @@
                                         <div class="row">
                                             <button id="run-search" type="button"
                                                     class="btn btn-main btn-sm search-button"
+                                                    data-toggle="tooltip" data-placement="top"
                                                     data-i18n="[title]search;search;"></button>
                                         </div>
                                     </div>
@@ -206,8 +210,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group col-lg-12">
-                                        <div class="custom-control custom-checkbox inline spacer10"
-                                             data-i18n="[title]input">
+                                        <div class="custom-control custom-checkbox inline spacer10">
                                             <input id="toggle-input" type="checkbox" class="custom-control-input"
                                                    autocomplete="off">
                                             <label class="custom-control-label" for="toggle-input"
@@ -215,6 +218,7 @@
                                         </div>
                                         <div class="row spacer10">
                                             <button id="record" type="button" class="btn btn-main btn-sm search-button"
+                                                    data-toggle="tooltip" data-placement="top"
                                                     data-i18n="[title]t-record;start-record;"></button>
                                         </div>
                                     </div>
@@ -242,21 +246,26 @@
                         </table>
                         <div class="btn-group-toggle" data-toggle="buttons">
                             <button id="run-all-tests" class="btn btn-main" type="button"
+                                    data-toggle="tooltip" data-placement="top"
                                     data-i18n="[title]t-tests;tests;"></button>
                             <button id="reset" class="btn btn-main" type="button"
+                                    data-toggle="tooltip" data-placement="top"
                                     data-i18n="[title]t-reset;reset;"></button>
                             <div class="btn-group-toggle btn-wrapper" data-toggle="buttons">
-                                <label class="btn btn-main" data-i18n="[title]t-tap">
+                                <label class="btn btn-main" data-i18n="[title]t-tap"
+                                       data-toggle="tooltip" data-placement="top">
                                     <input id="toggle-tap" class="checkbox-button" type="checkbox"
                                            autocomplete="off">
                                     <div data-i18n="tap"></div>
                                 </label>
-                                <label class="btn btn-main" data-i18n="[title]t-log">
+                                <label class="btn btn-main" data-i18n="[title]t-log"
+                                       data-toggle="tooltip" data-placement="top">
                                     <input id="toggle-log" class="checkbox-button" type="checkbox"
                                            autocomplete="off">
                                     <div data-i18n="log"></div>
                                 </label>
-                                <label class="btn btn-main" data-i18n="[title]show-advanced">
+                                <label class="btn btn-main" data-i18n="[title]show-advanced"
+                                       data-toggle="tooltip" data-placement="top">
                                     <input id="toggle-advanced" class="checkbox-button" type="checkbox"
                                            autocomplete="off">
                                     <div data-i18n="advanced"></div>
@@ -272,8 +281,10 @@
                                 <div class="form-row">
                                     <div class="col">
                                         <button class="output-clear btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-clear;clear;"></button>
                                         <button class="output-save btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-save;save;"></button>
                                     </div>
                                 </div>
@@ -288,8 +299,10 @@
                                 <div class="form-row">
                                     <div class="col">
                                         <button class="output-clear btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-clear;clear;"></button>
                                         <button class="output-save btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-save;save;"></button>
                                     </div>
                                 </div>
@@ -299,8 +312,10 @@
                     <div id="test-editor" class="mt-4 spacer10 hide"></div>
                     <div class="col-lg-12 spacer50">
                         <button class="editor-apply btn btn-sm btn-main" type="button"
+                                data-toggle="tooltip" data-placement="top"
                                 data-i18n="[title]t-load;load;"></button>
                         <button class="editor-save btn btn-sm btn-main" type="button"
+                                data-toggle="tooltip" data-placement="top"
                                 data-i18n="[title]t-save;save;"></button>
                     </div>
                 </div>
