@@ -465,7 +465,6 @@ i18next
 
 function updateContent() {
     localize('#body');
-    runAllTests();
 }
 
 $('#form-lang').on('change', () => {
