@@ -505,6 +505,8 @@ tr td:nth-child(5) {
     text-align: center;
     border-radius: 6px;
     padding-left: 5px;
+    padding-bottom: 4px;
+    padding-top: 2px;
     padding-right: 5px;
     position: absolute;
     z-index: 1;
