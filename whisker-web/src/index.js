@@ -96,7 +96,11 @@ function visualizeSummary(summary) {
         }
         tests[i] = test;
     }
-    Whisker.testTable.setTests(tests);
+    if (tests.length === 1) {
+        Whisker.testTable.updateTest(tests[0]);
+    } else {
+        Whisker.testTable.setTests(tests)
+    }
 }
 
 const _runTestsWithCoverage = async function (vm, project, tests) {

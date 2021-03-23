@@ -37,6 +37,12 @@ class TestTable {
         });
     }
 
+    updateTest (test) {
+        let tests = this.dataTable.data();
+        tests[test.index - 1] = test;
+        this.setTests(tests);
+    }
+
     setTests (tests) {
         if (this.dataTable) {
             this.dataTable.destroy();
