@@ -353,7 +353,6 @@ const toggleComponents = function () {
             if (input) $('#toggle-input').click();
             if (accelerationFactor) document.querySelector('#acceleration-factor').value = accelerationFactor;
         }
-        $('[data-toggle="tooltip"]').tooltip();
     }
 };
 
@@ -438,9 +437,11 @@ i18next
 
 function updateContent() {
     localize('#body');
+    $('[data-toggle="tooltip"]').tooltip();
 }
 
 $('#form-lang').on('change', () => {
+    $('[data-toggle="tooltip"]').tooltip('dispose');
     const lng = $('#lang-select').val();
     const href = window.location.href;
     if (href.endsWith('de') || href.endsWith('en')) {
