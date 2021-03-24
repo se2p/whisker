@@ -749,3 +749,21 @@ img {vertical-align: middle;}
 .upload-btn-wrapper input[type=file]:hover {
     cursor: pointer;
 }
+
+/* ==== Tooltips ==== */
+
+.tooltip.bs-tooltip-auto[x-placement^=top] .arrow::before, .tooltip.bs-tooltip-top .arrow::before {
+    margin-left: -3px;
+    content: "";
+    border-width: 5px 5px 0;
+    border-top-color: var(--subColor);
+}
+
+.tooltip-inner {
+    color: #fff;
+    background: var(--subColor);
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
