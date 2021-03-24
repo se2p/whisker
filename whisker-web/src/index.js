@@ -331,14 +331,17 @@ const initEvents = function () {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        $(event.target).parent().tooltip();
     });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        $(event.target).parent().tooltip();
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        $(event.target).parent().tooltip();
     });
 };
 
@@ -434,9 +437,11 @@ i18next
 
 function updateContent() {
     localize('#body');
+    $('[data-toggle="tooltip"]').tooltip();
 }
 
 $('#form-lang').on('change', () => {
+    $('[data-toggle="tooltip"]').tooltip('dispose');
     const lng = $('#lang-select').val();
     const href = window.location.href;
     if (href.endsWith('de') || href.endsWith('en')) {
@@ -454,9 +459,6 @@ $('.nav-link').on('click', event => {
         event.preventDefault();
     }
 });
-
-
-
 
 
 

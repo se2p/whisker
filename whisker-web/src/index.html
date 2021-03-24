@@ -63,11 +63,12 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
+                                                    <button class="btnr" data-i18n="browse"></button>
                                                     <input type="file" id="fileselect-project" accept=".sb3"
-                                                           name="program-file"/>
+                                                           name="program-file" title=""/>
                                                     <label class="project-label" for="fileselect-project"
-                                                           data-i18n="no-file"></label>
+                                                           data-i18n="no-file"
+                                                           data-toggle="tooltip" data-placement="top"></label>
                                                 </div>
                                                 <div class="form-group">
                                                     <small id="help-text" class="form-text text-muted"
@@ -93,9 +94,9 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
+                                                    <button class="btnr" data-i18n="browse"></button>
                                                     <input type="file" id="fileselect-tests" accept=".js"
-                                                           name="test-file"/>
+                                                           name="test-file" title=""/>
                                                     <label class="tests-label" for="fileselect-tests"
                                                            data-i18n="no-file"></label>
                                                 </div>
@@ -142,15 +143,29 @@
                 </div>
                 <div class="col-lg-6">
                     <!-- Use tabindex to make the canvas focusable. -->
-                    <canvas id="scratch-stage" tabindex="1"></canvas>
-                    <div id="startTests" class="spacer20"></div>
+                    <div id="viewer">
+                        <canvas id="scratch-stage" tabindex="1"></canvas>
+                        <div class="spacer10 but">
+                            <button id="green-flag" class="btn btn-outline-success" type="button"
+                                    data-toggle="tooltip" data-placement="top"
+                                    data-i18n="[title]start"><i class="fas fa-flag"></i></button>
+                            <button id="stop" class="btn btn-danger" type="button"
+                                    data-toggle="tooltip" data-placement="top"
+                                    data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
+                        </div>
+                    </div>
+                    <div class="slide-container spacer50">
+                        <label for="acceleration-factor" data-i18n="acceleration"></label>
+                        <input type="range" min="0" max="10" step="0.5" value="1" class="slider"
+                               id="acceleration-factor">
+                    </div>
                 </div>
                 <div class="col-lg-6">
                     <div id="scratch-controls">
                         <form class="row">
-                            <div class="col-lg-12">
-                                <div id="config-upload" class="row form-light grey-spacer">
-                                    <div class="col-lg-12">
+                            <div class="col-lg-12 spacer20">
+                                <div id="config-upload" class="row form">
+                                    <div class="col-lg-12 spacer20">
                                         <div class="row">
                                             <div class="col-lg-10 label-padding">
                                                 <label id="fileselect-config-label" for="fileselect-config"
@@ -163,9 +178,9 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="upload-btn-wrapper">
-                                                    <button class="btnr" title="browse" data-i18n="browse"></button>
+                                                    <button class="btnr" data-i18n="browse"></button>
                                                     <input type="file" id="fileselect-config" accept=".json"
-                                                           name="config-file"/>
+                                                           name="config-file" title=""/>
                                                     <label class="config-label" for="fileselect-config"
                                                            data-i18n="default"></label>
                                                 </div>
@@ -175,11 +190,17 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="row">
+                                            <button id="run-search" type="button"
+                                                    class="btn btn-main btn-sm search-button"
+                                                    data-toggle="tooltip" data-placement="top"
+                                                    data-i18n="[title]search;search;"></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </form>
-                        <form class="row form-light">
+                        <form class="row form">
                             <div class="col-lg-12">
                                 <div class="row">
                                     <div class="col-lg-12 label-padding">
@@ -189,30 +210,18 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group col-lg-12">
-                                        <button id="green-flag" class="btn btn-outline-success" type="button"
-                                                data-i18n="[title]start"><i class="fas fa-flag"></i></button>
-                                        <button id="stop" class="btn btn-danger" type="button"
-                                                data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
-                                        <div class="custom-control custom-checkbox inline btn-padding"
-                                             data-i18n="[title]input">
+                                        <div class="custom-control custom-checkbox inline spacer10">
                                             <input id="toggle-input" type="checkbox" class="custom-control-input"
                                                    autocomplete="off">
-                                            <label class="custom-control-label" for="toggle-input"></label>
+                                            <label class="custom-control-label" for="toggle-input"
+                                                   data-i18n="input"></label>
                                         </div>
-                                        <button id="record" class="btn btn-sm btn-outline-danger" type="button"
-                                                data-i18n="[title]t-record;start-record;">
-                                        </button>
+                                        <div class="row spacer10">
+                                            <button id="record" type="button" class="btn btn-main btn-sm search-button"
+                                                    data-toggle="tooltip" data-placement="top"
+                                                    data-i18n="[title]t-record;start-record;"></button>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="form-group col-lg-12">
-                                <div class="spacer10 advanced-input">
-                                    <label class="acc-label" for="acceleration-factor" data-i18n="acceleration"></label>
-                                    <input class="acc-input" id="acceleration-factor" type="number" autocomplete="off"/>
-                                </div>
-                                <div class="row spacer10">
-                                    <button id="run-search" type="button" class="btn btn-main btn-sm search-button"
-                                            data-i18n="[title]search;search;"></button>
                                 </div>
                             </div>
                         </form>
@@ -237,21 +246,26 @@
                         </table>
                         <div class="btn-group-toggle" data-toggle="buttons">
                             <button id="run-all-tests" class="btn btn-main" type="button"
+                                    data-toggle="tooltip" data-placement="top"
                                     data-i18n="[title]t-tests;tests;"></button>
                             <button id="reset" class="btn btn-main" type="button"
+                                    data-toggle="tooltip" data-placement="top"
                                     data-i18n="[title]t-reset;reset;"></button>
                             <div class="btn-group-toggle btn-wrapper" data-toggle="buttons">
-                                <label class="btn btn-main" data-i18n="[title]t-tap">
+                                <label class="btn btn-main" data-i18n="[title]t-tap"
+                                       data-toggle="tooltip" data-placement="top">
                                     <input id="toggle-tap" class="checkbox-button" type="checkbox"
                                            autocomplete="off">
                                     <div data-i18n="tap"></div>
                                 </label>
-                                <label class="btn btn-main" data-i18n="[title]t-log">
+                                <label class="btn btn-main" data-i18n="[title]t-log"
+                                       data-toggle="tooltip" data-placement="top">
                                     <input id="toggle-log" class="checkbox-button" type="checkbox"
                                            autocomplete="off">
                                     <div data-i18n="log"></div>
                                 </label>
-                                <label class="btn btn-main" data-i18n="[title]show-advanced">
+                                <label class="btn btn-main" data-i18n="[title]show-advanced"
+                                       data-toggle="tooltip" data-placement="top">
                                     <input id="toggle-advanced" class="checkbox-button" type="checkbox"
                                            autocomplete="off">
                                     <div data-i18n="advanced"></div>
@@ -267,8 +281,10 @@
                                 <div class="form-row">
                                     <div class="col">
                                         <button class="output-clear btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-clear;clear;"></button>
                                         <button class="output-save btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-save;save;"></button>
                                     </div>
                                 </div>
@@ -283,8 +299,10 @@
                                 <div class="form-row">
                                     <div class="col">
                                         <button class="output-clear btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-clear;clear;"></button>
                                         <button class="output-save btn btn-sm btn-main" type="button"
+                                                data-toggle="tooltip" data-placement="top"
                                                 data-i18n="[title]t-save;save;"></button>
                                     </div>
                                 </div>
@@ -294,8 +312,10 @@
                     <div id="test-editor" class="mt-4 spacer10 hide"></div>
                     <div class="col-lg-12 spacer50">
                         <button class="editor-apply btn btn-sm btn-main" type="button"
+                                data-toggle="tooltip" data-placement="top"
                                 data-i18n="[title]t-load;load;"></button>
                         <button class="editor-save btn btn-sm btn-main" type="button"
+                                data-toggle="tooltip" data-placement="top"
                                 data-i18n="[title]t-save;save;"></button>
                     </div>
                 </div>

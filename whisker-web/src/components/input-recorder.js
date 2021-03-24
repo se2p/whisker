@@ -1,8 +1,8 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
-const {showModal, escapeHtml} = require('../utils.js');
 
 class InputRecorder extends EventEmitter {
+
     constructor (scratch) {
         super();
 
@@ -12,6 +12,18 @@ class InputRecorder extends EventEmitter {
         this.startTime = null;
 
         this._onInput = this.onInput.bind(this);
+
+        this.testBegin = 'const test = async function (t) {\n';
+        this.testEnd = '\n    await t.runForTime(5000);\n    t.end();\n}';
+        this.export =  '\n\n\n' +
+`module.exports = [
+    {
+        test: test,
+        name: 'Recorded Test',
+        description: '',
+        categories: []
+    }
+];`;
     }
 
     startRecording () {
@@ -85,9 +97,11 @@ class InputRecorder extends EventEmitter {
     }
 
     showInputs () {
-        const inputs = this.inputs.map(input => `    ${JSON.stringify(input)}`);
-        let inputCode = `t.addInputs([\n${inputs.join(',\n')}\n]);`;
-        showModal('Code For Recorded Inputs', `<pre>${escapeHtml(inputCode)}</pre>`);
+        const inputs = this.inputs.map(input => `        ${JSON.stringify(input)}`);
+        let inputCode = `    t.addInputs([\n${inputs.join(',\n')}\n    ]);`;
+        Whisker.testEditor.setValue(this.testBegin + inputCode + this.testEnd + this.export);
+        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+        location.href = '#test-editor'
     }
 }
 
