@@ -505,9 +505,7 @@ p {
 }
 
 #scratch-stage {
-    width: 90%;
-    margin-left: 15px;
-    margin-right: 15px;
+    width: 100%;
     border: 1px solid gray;
 }
 
