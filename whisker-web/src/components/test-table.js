@@ -143,15 +143,16 @@ class TestTable {
      * @param {Test} test .
      * @return {string} .
      */
-    static prepareDescription (test) {
-        return '' +
-`<table class="child-table">
-    <tbody>
-        <tr>
-            <td>${test.description}</td>
-        </tr>
-    </tbody>
-</table>`;
+    static prepareDescription(test) {
+        let result = `<table class="child-table"> <tbody> <tr> <td colspan="2">${test.description}</td> </tr>`;
+
+        if (test.error) {
+            for (let prop in test.error) {
+                result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
+            }
+        }
+        result += `</tbody> </table>`;
+        return result;
     }
 }
 

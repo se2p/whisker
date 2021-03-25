@@ -81,6 +81,8 @@ function visualizeSummary(summary) {
         let status = summary[i].status;
         test.testResultClass = status;
         test.testResult = i18next.t(status);
+        test.error = summary[i].error;
+        test.log = summary[i].log;
         switch (status) {
             case Test.FAIL:
                 test.testResultSign = failSign;
