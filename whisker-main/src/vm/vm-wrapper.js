@@ -120,31 +120,31 @@ class VMWrapper {
 
     async step () {
         this.callbacks.callCallbacks(false);
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
 
         if (!this.isRunning()) return;
 
         this.randomInputs.performRandomInput();
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
 
         this.inputs.performInputs();
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
 
         this.sprites.update();
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
 
         this.vm.runtime._step();
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
 
         if (!this.isRunning()) return;
 
         this.callbacks.callCallbacks(true);
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
 
         if (!this.isRunning()) return;
 
         const returnValue = this.constraints.checkConstraints();
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
         return returnValue;
     }
 
@@ -299,7 +299,7 @@ class VMWrapper {
         this.instrumentDevice('clock', 'projectTimer');
 
         const returnValue = await this.vm.loadProject(project);
-        await new Promise(resolve => setImmediate(() => resolve()));
+        await this._yield();
         return returnValue;
     }
 
@@ -458,6 +458,13 @@ class VMWrapper {
         this.projectRunning = false;
     }
 
+    /**
+     * "Yield the thread" to give other awaits that might be unresolved a chance to resolve
+     * before the next action is taken.
+     */
+    async _yield() {
+        await new Promise(resolve => setImmediate(() => resolve()));
+    }
 
     /**
      * @returns {string} .
