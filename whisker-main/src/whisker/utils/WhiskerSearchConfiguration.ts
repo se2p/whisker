@@ -41,6 +41,7 @@ import {NeatChromosome} from "../whiskerNet/NeatChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
 import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";
+import {InputExtraction} from "../whiskerNet/InputExtraction";
 
 class ConfigException implements Error {
     message: string;
@@ -239,7 +240,7 @@ export class WhiskerSearchConfiguration {
                     this.dict['init-var-length']);
             case 'neatChromosome':
                 return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
-                    ScratchEventExtractor.extractSpriteInfo(Container.vm),
+                    InputExtraction.extractSpriteInfo(Container.vm),
                     ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
                     ScratchEventExtractor.hasMouseEvent(Container.vm))
 

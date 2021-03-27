@@ -14,6 +14,7 @@ import {NeatUtil} from "./NeatUtil";
 import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
 import {NodeType} from "./NetworkNodes/NodeType";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
+import {InputExtraction} from "./InputExtraction";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -46,7 +47,7 @@ export class NetworkExecutor {
         seedScratch(String(Randomness.getInitialSeed()))
 
         // Load the inputs into the Network
-        const spriteInfo = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
+        const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
         // eslint-disable-next-line prefer-spread
         const inputs = [].concat.apply([], spriteInfo);
 
@@ -72,7 +73,7 @@ export class NetworkExecutor {
             }
 
             // Load the inputs into the Network
-            const spriteInfo = ScratchEventExtractor.extractSpriteInfo(this._vmWrapper.vm)
+            const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
             // eslint-disable-next-line prefer-spread
             const inputs = [].concat.apply([], spriteInfo);
 
