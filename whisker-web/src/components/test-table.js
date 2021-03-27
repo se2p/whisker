@@ -145,10 +145,12 @@ class TestTable {
      */
     static prepareDescription(test) {
         let result = `<table class="child-table"> <tbody> <tr> <td colspan="2">${test.description}</td> </tr>`;
-
+        let irrelevantProperties = ["generatedMessage", "stack"];
         if (test.error) {
             for (let prop in test.error) {
-                result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
+                if (!(irrelevantProperties.includes(prop))) {
+                    result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
+                }
             }
         }
         result += `</tbody> </table>`;
