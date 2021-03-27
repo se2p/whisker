@@ -145,10 +145,28 @@ class TestTable {
      */
     static prepareDescription(test) {
         let result = `<table class="child-table"> <tbody> <tr> <td colspan="2">${test.description}</td> </tr>`;
-        let irrelevantProperties = ["generatedMessage", "stack"];
+        let name = "name";
+        let msg = "message";
+        let expected = "expected";
+        let operator = "operator";
+        let actual = "actual";
+        let excludedProperties = ["generatedMessage", "stack", msg, name, expected, operator, actual];
+
+        function addRowIfPropertyPresent(prop) {
+            if (test.error.hasOwnProperty(prop)) {
+                result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
+            }
+        }
+
         if (test.error) {
+            addRowIfPropertyPresent(name);
+            addRowIfPropertyPresent(msg);
+            addRowIfPropertyPresent(expected);
+            addRowIfPropertyPresent(operator);
+            addRowIfPropertyPresent(actual);
+
             for (let prop in test.error) {
-                if (!(irrelevantProperties.includes(prop))) {
+                if (!(excludedProperties.includes(prop))) {
                     result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
                 }
             }
