@@ -171,6 +171,11 @@ class TestTable {
                 }
             }
         }
+
+        if (test.log.length) {
+            result += `<td>${"log"}</td><td>${test.log}</td>\n</tr>`;
+        }
+
         result += `</tbody> </table>`;
         return result;
     }
