@@ -3,10 +3,11 @@ import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
 import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
-import {NodeType} from "../../../src/whisker/NEAT/NodeType";
-import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
+import {NodeGene} from "../../../src/whisker/NEAT/NetworkNodes/NodeGene";
+import {NodeType} from "../../../src/whisker/NEAT/NetworkNodes/NodeType";
+import {ActivationFunction} from "../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
 import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
+import {HiddenNode} from "../../../src/whisker/NEAT/NetworkNodes/HiddenNode";
 
 
 describe("NeatMutation", () => {
@@ -57,11 +58,11 @@ describe("NeatMutation", () => {
     test("MutateAddConnection with hidden Layer", () => {
         const inputNodes = neatChromosome.inputNodes
         const outputNodes = neatChromosome.outputNodes;
-        const hiddenLayerNode = new NodeGene(8, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
-        const hiddenLayerNode2 = new NodeGene(9, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
-        const hiddenLayerNode3 = new NodeGene(10, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
-        const hiddenLayerNode4 = new NodeGene(11, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
-        const deepHiddenLayerNode = new NodeGene(12, NodeType.HIDDEN, ActivationFunctions.SIGMOID);
+        const hiddenLayerNode = new HiddenNode(8, ActivationFunction.SIGMOID);
+        const hiddenLayerNode2 = new HiddenNode(9,  ActivationFunction.SIGMOID);
+        const hiddenLayerNode3 = new HiddenNode(10, ActivationFunction.SIGMOID);
+        const hiddenLayerNode4 = new HiddenNode(11, ActivationFunction.SIGMOID);
+        const deepHiddenLayerNode = new HiddenNode(12, ActivationFunction.SIGMOID);
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
         neatChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1, true, 50, false))

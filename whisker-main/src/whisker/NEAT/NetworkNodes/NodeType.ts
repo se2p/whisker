@@ -13,19 +13,12 @@ export enum NodeType {
     HIDDEN,
 
     /**
-     * Value for a classification output node
+     * Value for an output node
      */
-    CLASSIFICATION_OUTPUT,
-
-    /**
-     * Value for a regression output node
-     */
-    REGRESSION_OUTPUT,
+    OUTPUT,
 
     /**
      * Value for a Bias Node
      */
-    BIAS,
-
-
+    BIAS
 }

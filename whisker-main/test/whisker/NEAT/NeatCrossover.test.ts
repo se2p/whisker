@@ -3,10 +3,14 @@ import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {List} from "../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
-import {NodeType} from "../../../src/whisker/NEAT/NodeType";
+import {NodeGene} from "../../../src/whisker/NEAT/NetworkNodes/NodeGene";
+import {NodeType} from "../../../src/whisker/NEAT/NetworkNodes/NodeType";
 import {Pair} from "../../../src/whisker/utils/Pair";
-import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
+import {ActivationFunction} from "../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
+import {HiddenNode} from "../../../src/whisker/NEAT/NetworkNodes/HiddenNode";
+import {ClassificationNode} from "../../../src/whisker/NEAT/NetworkNodes/ClassificationNode";
+import {InputNode} from "../../../src/whisker/NEAT/NetworkNodes/InputNode";
+import {BiasNode} from "../../../src/whisker/NEAT/NetworkNodes/BiasNode";
 
 describe("NeatCrossover", () => {
 
@@ -21,20 +25,20 @@ describe("NeatCrossover", () => {
         crossoverOp = new NeatCrossover(0.4);
         mutationOp = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
-            0.1, 3,0.1);
+            0.1, 3, 0.1);
 
         // Create Nodes of first network
         nodes1 = new List<NodeGene>();
-        const iNode1 = new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE)
-        const iNode2 = new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE)
-        const iNode3 = new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE)
+        const iNode1 = new InputNode(0)
+        const iNode2 = new InputNode(1)
+        const iNode3 = new BiasNode(2)
         nodes1.add(iNode1)
         nodes1.add(iNode2)
         nodes1.add(iNode3)
 
-        const oNode1 = new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE)
+        const oNode1 = new ClassificationNode(4, ActivationFunction.SIGMOID)
         nodes1.add(oNode1)
-        const hiddenNode1 = new NodeGene(3, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode1 = new HiddenNode(3, ActivationFunction.SIGMOID)
         nodes1.add(hiddenNode1)
 
 
@@ -61,7 +65,7 @@ describe("NeatCrossover", () => {
 
 
         const hiddenNode2 = hiddenNode1.clone()
-        const hiddenNode3 = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode3 = new HiddenNode(5, ActivationFunction.SIGMOID)
 
 
         // Create Connections of second parent

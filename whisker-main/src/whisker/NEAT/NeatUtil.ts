@@ -2,9 +2,10 @@ import {Species} from "./Species";
 import {NeatPopulation} from "./NeatPopulation";
 import {NeatChromosome} from "./NeatChromosome";
 import {List} from "../utils/List";
-import {NodeGene} from "./NodeGene";
+import {NodeGene} from "./NetworkNodes/NodeGene";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
-import {NodeType} from "./NodeType";
+import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
+import {RegressionNode} from "./NetworkNodes/RegressionNode";
 
 export class NeatUtil {
 
@@ -138,12 +139,12 @@ export class NeatUtil {
         const result = []
         let denominator = 0;
         for (const oNode of outputNodes) {
-            if (oNode.type === NodeType.CLASSIFICATION_OUTPUT) {
+            if (oNode instanceof ClassificationNode) {
                 denominator += Math.exp(oNode.nodeValue);
             }
         }
         for (const oNode of outputNodes) {
-            if (oNode.type === NodeType.CLASSIFICATION_OUTPUT) {
+            if (oNode instanceof ClassificationNode) {
                 result.push(Math.exp(oNode.nodeValue) / denominator)
             }
         }
@@ -153,7 +154,7 @@ export class NeatUtil {
     public static evaluateRegressionNodes(outputNodes: List<NodeGene>): number[] {
         const regressionValues = [];
         for (const oNode of outputNodes) {
-            if (oNode.type === NodeType.REGRESSION_OUTPUT) {
+            if (oNode instanceof RegressionNode) {
                 regressionValues.push(oNode.nodeValue);
             }
         }

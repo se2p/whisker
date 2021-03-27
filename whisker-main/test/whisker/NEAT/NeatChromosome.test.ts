@@ -2,14 +2,18 @@ import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeG
 import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
-import {NodeType} from "../../../src/whisker/NEAT/NodeType";
+import {NodeGene} from "../../../src/whisker/NEAT/NetworkNodes/NodeGene";
 import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
 import {Mutation} from "../../../src/whisker/search/Mutation";
 import {Crossover} from "../../../src/whisker/search/Crossover";
 import {List} from "../../../src/whisker/utils/List";
-import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
+import {ActivationFunction} from "../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
 import {NeatUtil} from "../../../src/whisker/NEAT/NeatUtil";
+import {HiddenNode} from "../../../src/whisker/NEAT/NetworkNodes/HiddenNode";
+import {InputNode} from "../../../src/whisker/NEAT/NetworkNodes/InputNode";
+import {BiasNode} from "../../../src/whisker/NEAT/NetworkNodes/BiasNode";
+import {ClassificationNode} from "../../../src/whisker/NEAT/NetworkNodes/ClassificationNode";
+import {RegressionNode} from "../../../src/whisker/NEAT/NetworkNodes/RegressionNode";
 
 describe('NeatChromosome', () => {
 
@@ -26,7 +30,7 @@ describe('NeatChromosome', () => {
         mutationOp = new NeatMutation(0.03, 0.1,
             30, 0.2, 0.01, 0.8,
             1.5, 0.1, 3, 0.1);
-        genInputs = [[1,2,3,4,5,6]]
+        genInputs = [[1, 2, 3, 4, 5, 6]]
         outputSize = 2;
         generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false)
         chromosome = generator.get();
@@ -42,8 +46,8 @@ describe('NeatChromosome', () => {
     test('Create Network with hidden layer', () => {
         const inputNode = chromosome.inputNodes.get(0)
         const outputNode = chromosome.outputNodes.get(0)
-        const hiddenNode = new NodeGene(7, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
-        const deepHiddenNode = new NodeGene(8, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID)
+        const deepHiddenNode = new HiddenNode(8, ActivationFunction.SIGMOID)
         chromosome.allNodes.add(hiddenNode);
         chromosome.allNodes.add(deepHiddenNode);
         chromosome.connections.add(new ConnectionGene(inputNode, hiddenNode, 0.5, true, 7, false))
@@ -55,28 +59,28 @@ describe('NeatChromosome', () => {
         expect(chromosome.allNodes.size()).toBe(6 + 1 + outputSize + 2)
     })
 
-    test("Sort Connections of Chromosomes", () =>{
-        const hiddenNode = new NodeGene(7, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+    test("Sort Connections of Chromosomes", () => {
+        const hiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID)
         chromosome.connections.add(new ConnectionGene(chromosome.inputNodes.get(0), hiddenNode, 0.5, true, 50, false))
         chromosome.connections.add(new ConnectionGene(chromosome.outputNodes.get(0), hiddenNode, 1, true, 0, false))
         const connectionsBefore = chromosome.connections.clone();
         chromosome.sortConnections();
         expect(connectionsBefore.get(0)).not.toBe(chromosome.connections.get(0))
         expect(chromosome.connections.get(0).innovation).toBe(0)
-        expect(chromosome.connections.get(chromosome.connections.size()-1).innovation).toBe(50);
+        expect(chromosome.connections.get(chromosome.connections.size() - 1).innovation).toBe(50);
     })
 
     test('Test stabilizedCounter without hidden Layer', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
 
         // Create Connections
         const connections = new List<ConnectionGene>();
@@ -96,16 +100,16 @@ describe('NeatChromosome', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
 
-        const hiddenNode = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
-        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode = new HiddenNode(5, ActivationFunction.SIGMOID)
+        const deepHiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID)
         nodes.add(hiddenNode);
         nodes.add(deepHiddenNode);
 
@@ -133,15 +137,15 @@ describe('NeatChromosome', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.SIGMOID))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.SIGMOID))
-        nodes.add(new NodeGene(5, NodeType.REGRESSION_OUTPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(6, NodeType.REGRESSION_OUTPUT, ActivationFunctions.NONE))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
+        nodes.add(new RegressionNode(5))
+        nodes.add(new RegressionNode(6))
 
 
         // Create Connections
@@ -170,16 +174,16 @@ describe('NeatChromosome', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
 
-        const hiddenNode = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
-        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode = new HiddenNode(5, ActivationFunction.SIGMOID)
+        const deepHiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID)
         nodes.add(hiddenNode);
         nodes.add(deepHiddenNode);
 
@@ -198,9 +202,7 @@ describe('NeatChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(4), nodes.get(4), 1, true, 11, true))
 
 
-
         chromosome = new NeatChromosome(connections, nodes, mutationOp, crossoverOp)
-        const stabilizeCount = chromosome.stabilizedCounter(10, false);
         chromosome.flushNodeValues();
         chromosome.setUpInputs([1, 2])
         for (let i = 0; i < 5; i++) {
@@ -214,16 +216,16 @@ describe('NeatChromosome', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.SIGMOID))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.SIGMOID))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
 
-        const hiddenNode = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
-        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode = new HiddenNode(5, ActivationFunction.SIGMOID)
+        const deepHiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID)
         nodes.add(hiddenNode);
         nodes.add(deepHiddenNode);
 
@@ -249,7 +251,7 @@ describe('NeatChromosome', () => {
         for (let i = 0; i < stabilizeCount + 1; i++) {
             chromosome.activateNetwork(false)
         }
-        chromosome.setUpInputs([3,4])
+        chromosome.setUpInputs([3, 4])
         chromosome.activateNetwork(false)
         const outputSum = NeatUtil.softmax(chromosome.outputNodes)
         expect(Math.round(outputSum.reduce((a, b) => a + b))).toBe(1);
@@ -269,16 +271,16 @@ describe('NeatChromosome', () => {
     test("Clone Test with hidden Layer", () => {
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
 
-        const hiddenNode = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
-        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode = new HiddenNode(5, ActivationFunction.SIGMOID)
+        const deepHiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID)
         nodes.add(hiddenNode);
         nodes.add(deepHiddenNode);
 
@@ -321,16 +323,16 @@ describe('NeatChromosome', () => {
     test("Clone with gene Test with hidden Layer", () => {
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
 
-        const hiddenNode = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
-        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode = new HiddenNode(5, ActivationFunction.SIGMOID)
+        const deepHiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID)
         nodes.add(hiddenNode);
         nodes.add(deepHiddenNode);
 
@@ -360,19 +362,19 @@ describe('NeatChromosome', () => {
         expect(clone.fitness).toBe(chromosome.fitness)
     })
 
-    test("Test the recurrent Network check",() =>{
+    test("Test the recurrent Network check", () => {
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE))
-        nodes.add(new NodeGene(2, NodeType.BIAS, ActivationFunctions.NONE))
+        nodes.add(new InputNode(0))
+        nodes.add(new InputNode(1))
+        nodes.add(new BiasNode(2))
 
-        // Create output Nodes
-        nodes.add(new NodeGene(3, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.SIGMOID))
-        nodes.add(new NodeGene(4, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.SIGMOID))
+        // Create classification Output Nodes
+        nodes.add(new ClassificationNode(3, ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, ActivationFunction.SIGMOID))
 
-        const hiddenNode = new NodeGene(5, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
-        const deepHiddenNode = new NodeGene(6, NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const hiddenNode = new HiddenNode(5, ActivationFunction.SIGMOID)
+        const deepHiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID)
         nodes.add(hiddenNode);
         nodes.add(deepHiddenNode);
 
@@ -393,7 +395,7 @@ describe('NeatChromosome', () => {
 
 
         chromosome = new NeatChromosome(connections, nodes, mutationOp, crossoverOp);
-        expect(chromosome.isRecurrentNetwork(deepHiddenNode, hiddenNode,0,nodes.size() * nodes.size())).toBe(true)
+        expect(chromosome.isRecurrentNetwork(deepHiddenNode, hiddenNode, 0, nodes.size() * nodes.size())).toBe(true)
         expect(chromosome.isRecurrent).toBe(true)
         expect(chromosome.isRecurrentNetwork(deepHiddenNode, deepHiddenNode, 0, nodes.size() * nodes.size())).toBe(true)
         expect(chromosome.isRecurrent).toBe(true)

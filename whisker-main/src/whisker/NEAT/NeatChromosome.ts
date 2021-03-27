@@ -20,11 +20,11 @@
 
 import {Chromosome} from "../search/Chromosome";
 import {List} from "../utils/List";
-import {NodeGene} from "./NodeGene";
+import {NodeGene} from "./NetworkNodes/NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
-import {NodeType} from "./NodeType";
+import {NodeType} from "./NetworkNodes/NodeType";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Species} from "./Species";
@@ -141,8 +141,7 @@ export class NeatChromosome extends Chromosome {
             if ((!this.inputNodes.contains(node)) && (node.type === NodeType.INPUT || node.type === NodeType.BIAS)) {
                 this.inputNodes.add(node);
             }
-            if ((!this.outputNodes.contains(node)) && (node.type === NodeType.CLASSIFICATION_OUTPUT ||
-                node.type === NodeType.REGRESSION_OUTPUT))
+            if ((!this.outputNodes.contains(node)) && (node.type === NodeType.OUTPUT))
                 this.outputNodes.add(node);
         }
 

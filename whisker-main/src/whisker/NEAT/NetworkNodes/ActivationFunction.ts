@@ -1,5 +1,4 @@
-export enum ActivationFunctions {
-
+export enum ActivationFunction {
     NONE,
 
     SIGMOID,

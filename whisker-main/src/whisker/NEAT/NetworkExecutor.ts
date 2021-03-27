@@ -12,7 +12,8 @@ import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NeatChromosome} from "./NeatChromosome";
 import {NeatUtil} from "./NeatUtil";
 import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
-import {NodeType} from "./NodeType";
+import {NodeType} from "./NetworkNodes/NodeType";
+import {RegressionNode} from "./NetworkNodes/RegressionNode";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -205,7 +206,7 @@ export class NetworkExecutor {
     private static getMouseCoordinates(network: NeatChromosome): number[] {
         const coords = new List<number>();
         for (const node of network.outputNodes) {
-            if (node.type === NodeType.REGRESSION_OUTPUT && !coords.contains(node.nodeValue)) {
+            if (node instanceof RegressionNode && !coords.contains(node.nodeValue)) {
                 coords.add(node.nodeValue)
             }
         }

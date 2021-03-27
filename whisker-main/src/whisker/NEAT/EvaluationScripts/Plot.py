@@ -55,7 +55,11 @@ def plot_coverage():
     print()
     print("NEAT: " + str(np.average(cov_neat)))
 
-    x = np.arange(len(projects))  # the label locations
+    labels = ["Archery", "Boat Race", "Brain Game", "Chat Bot", "Create Your Own World",
+                "Dodgeball", "Fruit Catcher", "Memory", "Poetry Generator", "Rock Band",
+                "Snowball Fight", "Space Junk"]
+
+    x = np.arange(len(labels))  # the label locations
     width = 0.35  # the width of the bars
 
     fig, ax = plt.subplots()
@@ -66,10 +70,11 @@ def plot_coverage():
     ax.set_ylabel('Coverage in %')
     ax.set_title('Projects')
     ax.set_xticks(x)
-    ax.set_xticklabels(projects)
-    ax.legend()
+    ax.set_xticklabels(labels)
+    ax.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower right",
+                borderaxespad=0, ncol=1)
 
-    plt.xticks(rotation=75)
+    plt.xticks(rotation=90)
     plt.grid(axis='y')
     fig.tight_layout()
 
@@ -109,7 +114,7 @@ def plot_fitness():
     plt.plot(iteration, avg_fitness_fruit_catcher_whiskernet, "royalblue", linestyle='dotted', label="WhiskerNet Avg Fitness")
     plt.plot(iteration, avg_fitness_fruit_catcher_random, "darkorange", linestyle='dotted', label="Random Avg Fitness")
     plt.legend()
-    plt.title("Score Fitness: WhiskerNet vs. Random")
+    plt.title("Score Fitness: WhiskerNet vs Random")
     plt.xlabel("Iterations")
     plt.ylabel("Achieved Score")
     plt.savefig('./Plots/FruitCatcherWhiskerNetVsRandom.pdf')
@@ -122,7 +127,7 @@ def plot_fitness():
              label="WhiskerNet Avg Fitness")
     plt.plot(iteration, avg_fitness_fruit_catcher_neat, "darkorange", linestyle='dotted', label="NEAT Avg Fitness")
     plt.legend()
-    plt.title("Score Fitness: WhiskerNet vs. NEAT")
+    plt.title("Score Fitness: WhiskerNet vs NEAT")
     plt.xlabel("Iterations")
     plt.ylabel("Achieved Score")
     plt.savefig('./Plots/FruitCatcherWhiskerNetVsNEAT.pdf')
@@ -172,7 +177,7 @@ def plot_fitness():
     plt.plot(iteration, avg_fitness_space_junk_neat, "darkorange", linestyle='dotted', label="NEAT Avg Fitness")
     plt.xticks(iteration)
     plt.legend()
-    plt.title("Survive Fitness: WhiskerNet vs. NEAT")
+    plt.title("Survive Fitness: WhiskerNet vs NEAT")
     plt.xlabel("Iterations")
     plt.ylabel("Survived Time in seconds")
     plt.savefig('./Plots/SpaceJunkWhiskerNetVsNEAT.pdf')
@@ -202,7 +207,7 @@ def plot_fitness():
     plt.plot(iteration, avg_fitness_space_junk_random, "darkorange", linestyle='dotted', label="Random Avg Fitness")
     plt.xticks(iteration)
     plt.legend()
-    plt.title("Survive Fitness: WhiskerNet vs. Random")
+    plt.title("Survive Fitness: WhiskerNet vs Random")
     plt.xlabel("Iterations")
     plt.ylabel("Survived Time in seconds")
     plt.savefig('./Plots/SpaceJunkWhiskerNetVsRandom.pdf')
@@ -210,5 +215,5 @@ def plot_fitness():
     plt.clf()
 
 
-#plot_fitness()
-plot_coverage()
+plot_fitness()
+#plot_coverage()

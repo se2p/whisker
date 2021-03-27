@@ -1,3 +1,4 @@
+
 import {NeatPopulation} from "../../../src/whisker/NEAT/NeatPopulation";
 import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
 import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
@@ -5,11 +6,12 @@ import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
 import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
 import {NeatUtil} from "../../../src/whisker/NEAT/NeatUtil";
 import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/NEAT/NodeGene";
-import {NodeType} from "../../../src/whisker/NEAT/NodeType";
+import {NodeGene} from "../../../src/whisker/NEAT/NetworkNodes/NodeGene";
 import {List} from "../../../src/whisker/utils/List";
-import {ActivationFunctions} from "../../../src/whisker/NEAT/ActivationFunctions";
+import {ActivationFunction} from "../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
 import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
+import {InputNode} from "../../../src/whisker/NEAT/NetworkNodes/InputNode";
+import {ClassificationNode} from "../../../src/whisker/NEAT/NetworkNodes/ClassificationNode";
 
 describe("NeatUtil Tests", () => {
 
@@ -69,9 +71,9 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Compatibility Distance of Chromosomes with disjoint connections", () => {
-        const inputNode1 = new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE);
-        const inputNode2 = new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE);
-        const outputNode = new NodeGene(2, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE);
+        const inputNode1 = new InputNode(0);
+        const inputNode2 = new InputNode(1);
+        const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
         nodes.add(inputNode1);
@@ -109,9 +111,9 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Compatibility Distance of Chromosomes with same connections but different weights", () => {
-        const inputNode1 = new NodeGene(0, NodeType.INPUT, ActivationFunctions.NONE);
-        const inputNode2 = new NodeGene(1, NodeType.INPUT, ActivationFunctions.NONE);
-        const outputNode = new NodeGene(2, NodeType.CLASSIFICATION_OUTPUT, ActivationFunctions.NONE);
+        const inputNode1 = new InputNode(0);
+        const inputNode2 = new InputNode(1);
+        const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
         nodes.add(inputNode1);

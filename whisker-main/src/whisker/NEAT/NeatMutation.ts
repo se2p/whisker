@@ -1,11 +1,12 @@
 import {Mutation} from "../search/Mutation";
 import {NeatChromosome} from "./NeatChromosome";
 import {List} from "../utils/List";
-import {NodeGene} from "./NodeGene";
+import {NodeGene} from "./NetworkNodes/NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
-import {NodeType} from "./NodeType";
+import {NodeType} from "./NetworkNodes/NodeType";
 import {Randomness} from "../utils/Randomness";
-import {ActivationFunctions} from "./ActivationFunctions";
+import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
+import {HiddenNode} from "./NetworkNodes/HiddenNode";
 
 
 export class NeatMutation implements Mutation<NeatChromosome> {
@@ -194,7 +195,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         const fromNode = splitConnection.from;
         const toNode = splitConnection.to;
 
-        const newNode = new NodeGene(chromosome.allNodes.size(), NodeType.HIDDEN, ActivationFunctions.SIGMOID)
+        const newNode = new HiddenNode(chromosome.allNodes.size(), ActivationFunction.SIGMOID)
 
         const newConnection1 = new ConnectionGene(fromNode, newNode, 1, true, 0, splitConnection.recurrent)
         NeatMutation.assignInnovationNumber(newConnection1);
