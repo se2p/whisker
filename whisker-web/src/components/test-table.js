@@ -172,7 +172,7 @@ class TestTable {
             }
         }
 
-        if (test.log.length) {
+        if (test.hasOwnProperty("log") && test.log.length) {
             result += `<td>${"log"}</td><td>${test.log}</td>\n</tr>`;
         }
 
