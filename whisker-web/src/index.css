@@ -514,6 +514,11 @@ p {
     padding: 15px;
 }
 
+/* Forward clicks to button underneath */
+.fa-plus, .fa-minus {
+    pointer-events: none;
+}
+
 tr td:nth-child(5) {
     text-align: center;
 }
