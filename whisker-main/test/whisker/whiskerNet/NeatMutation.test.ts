@@ -1,13 +1,13 @@
-import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
-import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
-import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
-import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
-import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/NEAT/NetworkNodes/NodeGene";
-import {NodeType} from "../../../src/whisker/NEAT/NetworkNodes/NodeType";
-import {ActivationFunction} from "../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
-import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
-import {HiddenNode} from "../../../src/whisker/NEAT/NetworkNodes/HiddenNode";
+import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
+import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
+import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
+import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
+import {NodeType} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
+import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
+import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
+import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
 
 
 describe("NeatMutation", () => {

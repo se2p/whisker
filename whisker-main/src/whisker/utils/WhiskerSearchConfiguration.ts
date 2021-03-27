@@ -29,18 +29,18 @@ import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStopping
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
-import {NeatChromosomeGenerator} from "../NEAT/NeatChromosomeGenerator";
-import {NeatMutation} from "../NEAT/NeatMutation";
-import {NeatCrossover} from "../NEAT/NeatCrossover";
+import {NeatChromosomeGenerator} from "../whiskerNet/NeatChromosomeGenerator";
+import {NeatMutation} from "../whiskerNet/NeatMutation";
+import {NeatCrossover} from "../whiskerNet/NeatCrossover";
 import {Container} from "./Container";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import {NeuroevolutionProperties} from "../NEAT/NeuroevolutionProperties";
-import {StatementNetworkFitness} from "../NEAT/NetworkFitness/StatementNetworkFitness";
-import {NetworkFitnessFunction} from "../NEAT/NetworkFitness/NetworkFitnessFunction";
-import {NeatChromosome} from "../NEAT/NeatChromosome";
-import {ScoreFitness} from "../NEAT/NetworkFitness/ScoreFitness";
-import {SurviveFitness} from "../NEAT/NetworkFitness/SurviveFitness";
-import {CombinedNetworkFitness} from "../NEAT/NetworkFitness/CombinedNetworkFitness";
+import {NeuroevolutionProperties} from "../whiskerNet/NeuroevolutionProperties";
+import {StatementNetworkFitness} from "../whiskerNet/NetworkFitness/StatementNetworkFitness";
+import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
+import {NeatChromosome} from "../whiskerNet/NeatChromosome";
+import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
+import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
+import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";
 
 class ConfigException implements Error {
     message: string;

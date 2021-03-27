@@ -1,11 +1,11 @@
-import {RegressionNode} from "../../../../src/whisker/NEAT/NetworkNodes/RegressionNode";
-import {ActivationFunction} from "../../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
-import {NodeType} from "../../../../src/whisker/NEAT/NetworkNodes/NodeType";
-import {ConnectionGene} from "../../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../../src/whisker/NEAT/NetworkNodes/NodeGene";
-import {InputNode} from "../../../../src/whisker/NEAT/NetworkNodes/InputNode";
+import {RegressionNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/RegressionNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
+import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {List} from "../../../../src/whisker/utils/List";
-import {BiasNode} from "../../../../src/whisker/NEAT/NetworkNodes/BiasNode";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 
 
 describe("regressionNode Tests", () => {
@@ -55,7 +55,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNode3.equals(regressionNode)).toBe(false)
 
         const biasNode = new BiasNode(1);
-        expect(biasNode.equals(regressionNode)).toBe(false)
+        expect(regressionNode.equals(biasNode)).toBe(false)
     })
 
     test("Clone Test", () => {

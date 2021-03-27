@@ -1,8 +1,8 @@
-import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
-import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
-import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
-import {NeatUtil} from "../../../src/whisker/NEAT/NeatUtil";
-import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
+import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
+import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
+import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
 
 describe('NeatChromosomeGenerator', () => {
 

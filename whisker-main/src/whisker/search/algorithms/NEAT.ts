@@ -1,14 +1,14 @@
 import {List} from '../../utils/List';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {NeatChromosome} from "../../NEAT/NeatChromosome";
+import {NeatChromosome} from "../../whiskerNet/NeatChromosome";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {NeatPopulation} from "../../NEAT/NeatPopulation";
-import {NeuroevolutionProperties} from "../../NEAT/NeuroevolutionProperties";
-import {NetworkFitnessFunction} from "../../NEAT/NetworkFitness/NetworkFitnessFunction";
+import {NeatPopulation} from "../../whiskerNet/NeatPopulation";
+import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionProperties";
+import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 
 
 export class NEAT<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {

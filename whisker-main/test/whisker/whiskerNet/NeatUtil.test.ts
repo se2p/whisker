@@ -1,17 +1,17 @@
 
-import {NeatPopulation} from "../../../src/whisker/NEAT/NeatPopulation";
-import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
-import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
-import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
-import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
-import {NeatUtil} from "../../../src/whisker/NEAT/NeatUtil";
-import {ConnectionGene} from "../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/NEAT/NetworkNodes/NodeGene";
+import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
+import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
+import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
+import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
+import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
+import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {List} from "../../../src/whisker/utils/List";
-import {ActivationFunction} from "../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
-import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
-import {InputNode} from "../../../src/whisker/NEAT/NetworkNodes/InputNode";
-import {ClassificationNode} from "../../../src/whisker/NEAT/NetworkNodes/ClassificationNode";
+import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
+import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
+import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
+import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 
 describe("NeatUtil Tests", () => {
 

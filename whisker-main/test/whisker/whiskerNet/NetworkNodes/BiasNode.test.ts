@@ -1,10 +1,10 @@
-import {BiasNode} from "../../../../src/whisker/NEAT/NetworkNodes/BiasNode";
-import {ActivationFunction} from "../../../../src/whisker/NEAT/NetworkNodes/ActivationFunction";
-import {NodeType} from "../../../../src/whisker/NEAT/NetworkNodes/NodeType";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
+import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
 import {List} from "../../../../src/whisker/utils/List";
-import {ConnectionGene} from "../../../../src/whisker/NEAT/ConnectionGene";
-import {NodeGene} from "../../../../src/whisker/NEAT/NetworkNodes/NodeGene";
-import {InputNode} from "../../../../src/whisker/NEAT/NetworkNodes/InputNode";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 
 
 describe("BiasNode Tests", () => {

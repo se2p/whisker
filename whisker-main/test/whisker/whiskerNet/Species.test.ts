@@ -1,12 +1,12 @@
-import {Species} from "../../../src/whisker/NEAT/Species";
-import {NeatChromosome} from "../../../src/whisker/NEAT/NeatChromosome";
+import {Species} from "../../../src/whisker/whiskerNet/Species";
+import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
 import {List} from "../../../src/whisker/utils/List";
-import {NeatChromosomeGenerator} from "../../../src/whisker/NEAT/NeatChromosomeGenerator";
-import {NeatCrossover} from "../../../src/whisker/NEAT/NeatCrossover";
-import {NeatMutation} from "../../../src/whisker/NEAT/NeatMutation";
+import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
+import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {NeatPopulation} from "../../../src/whisker/NEAT/NeatPopulation";
-import {NeuroevolutionProperties} from "../../../src/whisker/NEAT/NeuroevolutionProperties";
+import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
+import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 
 describe("Species Test", () => {
 
