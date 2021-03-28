@@ -2,7 +2,7 @@ import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
 import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
@@ -20,7 +20,7 @@ describe("NeatUtil Tests", () => {
     let mutation: NeatMutation;
     let genInputs: number[][];
     let numberOutputs: number;
-    let generator: NeatChromosomeGenerator
+    let generator: NetworkChromosomeGenerator
     let properties: NeuroevolutionProperties<NetworkChromosome>
 
 
@@ -33,7 +33,7 @@ describe("NeatUtil Tests", () => {
         numberOutputs = 3;
         populationSize = 50;
         properties = new NeuroevolutionProperties<NetworkChromosome>(populationSize);
-        generator = new NeatChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, false)
+        generator = new NetworkChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, false)
     })
 
     test("Speciation when a new Population gets created", () => {
@@ -138,7 +138,7 @@ describe("NeatUtil Tests", () => {
 
     test("Regression Nodes Output", () =>{
         const noRegressionNetwork = generator.get();
-        const regGenerator = new NeatChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, true);
+        const regGenerator = new NetworkChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, true);
         const regressionNetwork1 = regGenerator.get();
         const regressionNetwork2 = regGenerator.get();
 

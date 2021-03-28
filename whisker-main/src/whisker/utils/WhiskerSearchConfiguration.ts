@@ -29,7 +29,7 @@ import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStopping
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
-import {NeatChromosomeGenerator} from "../whiskerNet/NeatChromosomeGenerator";
+import {NetworkChromosomeGenerator} from "../whiskerNet/NetworkChromosomeGenerator";
 import {NeatMutation} from "../whiskerNet/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/NeatCrossover";
 import {Container} from "./Container";
@@ -239,7 +239,7 @@ export class WhiskerSearchConfiguration {
                     this._getCrossoverOperator(),
                     this.dict['init-var-length']);
             case 'neatChromosome':
-                return new NeatChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
+                return new NetworkChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
                     ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
                     ScratchEventExtractor.hasMouseEvent(Container.vm))

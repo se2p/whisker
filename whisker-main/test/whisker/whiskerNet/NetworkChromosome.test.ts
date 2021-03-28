@@ -1,4 +1,4 @@
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
@@ -21,7 +21,7 @@ describe('NeatChromosome', () => {
     let crossoverOp: Crossover<NetworkChromosome>;
     let genInputs: number[][];
     let outputSize: number;
-    let generator: NeatChromosomeGenerator;
+    let generator: NetworkChromosomeGenerator;
     let chromosome: NetworkChromosome;
 
     beforeEach(() => {
@@ -31,7 +31,7 @@ describe('NeatChromosome', () => {
             1.5, 0.1, 3, 0.1);
         genInputs = [[1, 2, 3, 4, 5, 6]]
         outputSize = 2;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false)
+        generator = new NetworkChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false)
         chromosome = generator.get();
     })
 

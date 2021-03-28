@@ -1,7 +1,7 @@
 import {Species} from "../../../src/whisker/whiskerNet/Species";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {List} from "../../../src/whisker/utils/List";
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
@@ -14,7 +14,7 @@ describe("Species Test", () => {
     let mutation: NeatMutation;
     let inputs: number[][];
     let numberOutputs: number;
-    let generator: NeatChromosomeGenerator
+    let generator: NetworkChromosomeGenerator
     let species: Species<NetworkChromosome>;
     let population: List<NetworkChromosome>;
     let populationSize: number;
@@ -29,7 +29,7 @@ describe("Species Test", () => {
             1.5, 0.1, 3, 0.1);
         inputs = [[1,2,3,4,5,6]]
         numberOutputs = 3;
-        generator = new NeatChromosomeGenerator(mutation, crossOver, inputs, numberOutputs, 0.4, false)
+        generator = new NetworkChromosomeGenerator(mutation, crossOver, inputs, numberOutputs, 0.4, false)
         population = new List<NetworkChromosome>();
         populationSize = 50;
         properties = new NeuroevolutionProperties(populationSize);

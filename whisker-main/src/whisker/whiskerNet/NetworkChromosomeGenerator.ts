@@ -13,46 +13,75 @@ import {BiasNode} from "./NetworkNodes/BiasNode";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 
-export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
+export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
 
-    public static _innovations = new List<ConnectionGene>();
-
+    /**
+     * The mutation operator of the NetworkChromosomes
+     */
     private _mutationOp: Mutation<NetworkChromosome>;
 
+    /**
+     * The crossover operator of th NetworkChromosomes
+     * @private
+     */
     private _crossoverOp: Crossover<NetworkChromosome>;
 
-    private _inputs: number[][];
+    /**
+     * All potential input features for the network
+     */
+    private readonly _inputs: number[][];
 
-    private _outputSize: number;
+    /**
+     * Number of available events -> number of output nodes
+     */
+    private readonly _outputSize: number;
 
+    /**
+     * Random generator
+     */
     private _random = Randomness.getInstance();
 
+    /**
+     * The probability multiple input features are connected to the network
+     */
     private readonly _inputRate: number;
 
-    private readonly _regressionNode: boolean
+    /**
+     * Defines whether the networks get a regressionNode
+     */
+    private readonly _hasRegressionNode: boolean
 
+    /**
+     * Constructs a new NetworkGenerator
+     * @param mutationOp the used mutation operator
+     * @param crossoverOp the used crossover operator
+     * @param inputs all potential input features
+     * @param numOutputNodes number of needed output nodes
+     * @param inputRate the probability multiple input features are connected to the network
+     * @param hasRegressionNode defines whether the networks get a regressionNode
+     */
     constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>, inputs: number[][],
-                numOutputNodes: number, inputRate: number, regressionNode: boolean) {
+                numOutputNodes: number, inputRate: number, hasRegressionNode: boolean) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
         this._inputs = inputs;
         this._outputSize = numOutputNodes;
         this._inputRate = inputRate;
-        this._regressionNode = regressionNode;
+        this._hasRegressionNode = hasRegressionNode;
     }
 
     /**
-     * Creates and returns a random NeatChromosome with the specified number of input and output nodes and a random set
-     * of connections in between them.
-     * @ returns: A random initial Neat Phenotype
+     * Creates and returns a random NetworkChromosome with the specified number of input and output nodes
+     * and a random set of connections in between them.
+     * @return: generated NetworkChromosome
      */
     get(): NetworkChromosome {
         let nodeId = 0;
         const allNodes = new List<NodeGene>();
         const flattenedInputNodes = new List<NodeGene>();
 
-        // Create the Input Nodes and add them to the nodes list; Each row of the inputArray represents
-        // one Sprite. Sprites can have a different amount of infos i.e different amount of columns.
+        // Create the Input Nodes and add them to the nodes list; Each row of the inputArray represents one Sprite.
+        // Sprites can have a different amount of infos i.e different amount of columns.
         const inputList = new List<List<NodeGene>>()
         for (let i = 0; i < this.inputs.length; i++) {
             const spriteList = new List<NodeGene>();
@@ -67,13 +96,13 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
             inputList.add(spriteList)
         }
 
-        // Add the Bias only to the flattenedList which is later given to the Chromosome
+        // Add the Bias
         const biasNode = new BiasNode(nodeId);
         nodeId++;
         flattenedInputNodes.add(biasNode);
         allNodes.add(biasNode);
 
-        // Create the classification Output Nodes and add them to the nodes list
+        // Create the classification output nodes and add them to the nodes list
         const outputList = new List<NodeGene>()
         while (outputList.size() < this.outputSize) {
             const oNode = new ClassificationNode(nodeId, ActivationFunction.SIGMOID);
@@ -82,11 +111,12 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
             allNodes.add(oNode);
         }
 
+        // Create connections between input and output nodes
         const connections = this.createConnections(inputList, outputList);
         const chromosome = new NetworkChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
 
         // Add regression if we have mouse Input
-        if (this._regressionNode) {
+        if (this._hasRegressionNode) {
             this.addRegressionNode(chromosome, inputList, nodeId);
         }
 
@@ -97,6 +127,12 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
         return chromosome;
     }
 
+    /**
+     * Creates connections between input and output nodes according to the inputRate
+     * @param inputNodes all inputNodes of the network sorted according to the sprites they represent
+     * @param outputNodes all outputNodes of the network
+     * @return the connectionGene List
+     */
     private createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene> {
         const connections = new List<ConnectionGene>();
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
@@ -109,8 +145,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
                 for (const outputNode of outputNodes) {
                     const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
                     // Check if the connection does not exist yet.
-                    if (!NeatChromosomeGenerator.findConnection(connections, newConnection)) {
-                        NeatChromosomeGenerator.assignInnovationNumber(newConnection);
+                    if (!NetworkChromosomeGenerator.findConnection(connections, newConnection)) {
+                        NetworkChromosomeGenerator.assignInnovationNumber(newConnection);
                         connections.add(newConnection)
                         outputNode.incomingConnections.add(newConnection);
                     }
@@ -121,6 +157,13 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
         return connections;
     }
 
+    /**
+     * Adds two regression Nodes (x and y) for the mouseMove event
+     * @param chromosome the network to which the regression nodes should be added
+     * @param inputNodes all inputNodes of the network sorted according to the sprites they represent
+     * @param nodeId counter to assign id's to the new regression nodes
+     * @private
+     */
     private addRegressionNode(chromosome: NetworkChromosome, inputNodes: List<List<NodeGene>>, nodeId: number) {
 
         chromosome.hasRegression = true;
@@ -149,8 +192,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
                 for (const regNode of regressionNodes) {
                     const newConnection = new ConnectionGene(inputNode, regNode, 0, true, 0, false)
                     // Check if the connection does not exist yet.
-                    if (!NeatChromosomeGenerator.findConnection(chromosome.connections, newConnection)) {
-                        NeatChromosomeGenerator.assignInnovationNumber(newConnection);
+                    if (!NetworkChromosomeGenerator.findConnection(chromosome.connections, newConnection)) {
+                        NetworkChromosomeGenerator.assignInnovationNumber(newConnection);
                         chromosome.connections.add(newConnection)
                         regNode.incomingConnections.add(newConnection);
                     }
@@ -160,6 +203,12 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
         while (this._random.nextDouble() < this._inputRate)
     }
 
+    /**
+     * Checks if the network already contains a given connection
+     * @param connections the list of connections
+     * @param connection the connection which should be searched in the list of all connections
+     * @return the found connection of the connection list
+     */
     private static findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
         for (const con of connections) {
             if (con.equalsByNodes(connection)) return con;
@@ -167,9 +216,13 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
         return null;
     }
 
+    /**
+     * Assigns the next valid innovation number to a given connection gene
+     * @param newInnovation the connection gene to which the innovation number should be assigned to
+     */
     private static assignInnovationNumber(newInnovation: ConnectionGene): void {
         // Check if innovation already happened in this generation if Yes assign the same innovation number
-        const oldInnovation = NeatChromosomeGenerator.findConnection(NeatMutation._innovations, newInnovation)
+        const oldInnovation = NetworkChromosomeGenerator.findConnection(NeatMutation._innovations, newInnovation)
         if (oldInnovation !== null)
             newInnovation.innovation = oldInnovation.innovation;
         // If No assign a new one
@@ -187,18 +240,8 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChrom
         this._mutationOp = mutationOp;
     }
 
-
-    // Used for Testing
     get inputs(): number[][] {
         return this._inputs;
-    }
-
-    set inputs(value: number[][]) {
-        this._inputs = value;
-    }
-
-    set outputSize(value: number) {
-        this._outputSize = value;
     }
 
     get outputSize(): number {

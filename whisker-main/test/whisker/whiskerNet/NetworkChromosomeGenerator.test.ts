@@ -1,4 +1,4 @@
-import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
+import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
@@ -8,7 +8,7 @@ describe('NeatChromosomeGenerator', () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
-    let generator: NeatChromosomeGenerator
+    let generator: NetworkChromosomeGenerator
     let genInputs: number[][]
     let outputSize: number
 
@@ -19,7 +19,7 @@ describe('NeatChromosomeGenerator', () => {
             0.1, 3,0.1);
         genInputs = [[1,2,3],[4,5,6], [7,8], [9]];
         outputSize = 3;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
+        generator = new NetworkChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
     })
 
     test('Create initial random Chromosome', () => {
@@ -30,7 +30,7 @@ describe('NeatChromosomeGenerator', () => {
     })
 
     test('Create initial random Chromosome with regression', () => {
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.4, true);
+        generator = new NetworkChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.4, true);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
         expect(neatChromosome.allNodes.size()).toBe(13 + 2) // +1 for Bias + 2 for Regression Nodes
@@ -43,7 +43,7 @@ describe('NeatChromosomeGenerator', () => {
         // eslint-disable-next-line prefer-spread
         const inputs = [].concat.apply([], genInputs);
         let stabCount = 0;
-        generator = new NeatChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false);
+        generator = new NetworkChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false);
         for (let i = 0; i < 100; i++) {
             const chrom = generator.get();
             chromosomes.push(chrom)
