@@ -85,12 +85,12 @@ describe("NeatMutation", () => {
     test("MutateConnectionState", () => {
         const connectionStates = []
         for (const connection of neatChromosome.connections)
-            connectionStates.push(connection.enabled)
+            connectionStates.push(connection.isEnabled)
 
         mutation.mutateToggleEnableConnection(neatChromosome,3)
         const mutatedStates = []
         for (const connection of neatChromosome.connections)
-            mutatedStates.push(connection.enabled)
+            mutatedStates.push(connection.isEnabled)
         expect(connectionStates.length).toBe(mutatedStates.length)
         expect(connectionStates).not.toContainEqual(mutatedStates)
 

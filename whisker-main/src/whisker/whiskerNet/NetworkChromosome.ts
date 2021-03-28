@@ -164,9 +164,9 @@ export class NetworkChromosome extends Chromosome {
 
         // duplicate connections
         for (const connection of newGenes) {
-            const fromNode = this.searchNode(connection.from, nodesClone)
-            const toNode = this.searchNode(connection.to, nodesClone)
-            const connectionClone = connection.copyWithNodes(fromNode, toNode);
+            const fromNode = this.searchNode(connection.source, nodesClone)
+            const toNode = this.searchNode(connection.target, nodesClone)
+            const connectionClone = connection.cloneWithNodes(fromNode, toNode);
             connectionsClone.add(connectionClone);
         }
 
@@ -190,9 +190,9 @@ export class NetworkChromosome extends Chromosome {
 
         // Go through each connection and set up the incoming connections of each Node
         for (const connection of this.connections) {
-            const toNode = connection.to;
-            // Add the connection to the incoming connections of the toNode if it is not present yet and enabled
-            if (!toNode.incomingConnections.contains(connection) && connection.enabled) {
+            const toNode = connection.target;
+            // Add the connection to the incoming connections of the toNode if it is not present yet and isEnabled
+            if (!toNode.incomingConnections.contains(connection) && connection.isEnabled) {
                 toNode.incomingConnections.add(connection);
             }
         }
@@ -299,8 +299,8 @@ export class NetworkChromosome extends Chromosome {
                     node.activatedFlag = false;
 
                     for (const connection of node.incomingConnections) {
-                        incomingValue = connection.weight * connection.from.activationValue;
-                        if (connection.from.activatedFlag) {
+                        incomingValue = connection.weight * connection.source.activationValue;
+                        if (connection.source.activatedFlag) {
                             node.activatedFlag = true;
                         }
                         node.nodeValue += incomingValue;
@@ -384,9 +384,9 @@ export class NetworkChromosome extends Chromosome {
 
         for (const inConnection of node1.incomingConnections) {
             if (!inConnection.recurrent) {
-                if (!inConnection.from.traversed) {
-                    inConnection.from.traversed = true;
-                    if (this.isRecurrentNetwork(inConnection.from, node2)) {
+                if (!inConnection.source.traversed) {
+                    inConnection.source.traversed = true;
+                    if (this.isRecurrentNetwork(inConnection.source, node2)) {
                         this.isRecurrent = true;
                         return true;
                     }

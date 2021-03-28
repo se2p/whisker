@@ -132,7 +132,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
                         avgWeight = (parent1Connection.weight + parent2Connection.weight) / 2.0;
 
                     // If one of both is disabled the new Connection is likely to be disabled as well
-                    if (!parent1Connection.enabled || !parent2Connection.enabled) {
+                    if (!parent1Connection.isEnabled || !parent2Connection.isEnabled) {
                         if (this.random.nextDouble() < 0.75) {
                             disable = true;
                         }
@@ -158,12 +158,12 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
             // At this point we found a potential new Connection now set up everything for the mating process
             // First Check if the new Connection does not conflict with an already chosen connection
             for (const c of newConnections) {
-                if ((c.from.equals(currentConnection.from)) && c.to.equals(currentConnection.to) &&
+                if ((c.source.equals(currentConnection.source)) && c.target.equals(currentConnection.target) &&
                     (c.recurrent === currentConnection.recurrent)) {
                     skip = true;
                     break;
                 }
-                if (c.from.equals(currentConnection.to) && c.to.equals(currentConnection.from) && (!c.recurrent) && (!currentConnection.recurrent)) {
+                if (c.source.equals(currentConnection.target) && c.target.equals(currentConnection.source) && (!c.recurrent) && (!currentConnection.recurrent)) {
                     skip = true;
                     break;
                 }
@@ -173,8 +173,8 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
             if (!skip) {
 
                 // Check for the nodes and add them if they are not already in the new Nodes List
-                const fromNode = currentConnection.from;
-                const toNode = currentConnection.to;
+                const fromNode = currentConnection.source;
+                const toNode = currentConnection.target;
                 let found: boolean;
                 let newFromNode: NodeGene;
                 let newOutNode: NodeGene;
@@ -236,7 +236,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
         // Check if everything went fine and enable some connections to fix a defect network if necessary
         let i = 0;
         while (child.stabilizedCounter(100, true) < 0 && i < disabledConnections.size()) {
-            disabledConnections.get(i).enabled = true;
+            disabledConnections.get(i).isEnabled = true;
             child.generateNetwork();
             i++;
         }

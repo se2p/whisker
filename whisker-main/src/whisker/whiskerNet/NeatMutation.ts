@@ -131,12 +131,12 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
                     break;
                 }
 
-                if (connection.from === node1 && connection.to === node2 && connection.recurrent && recurrentConnection) {
+                if (connection.source === node1 && connection.target === node2 && connection.recurrent && recurrentConnection) {
                     skip = true;
                     break;
                 }
 
-                if (connection.from === node1 && connection.to === node2 && !connection.recurrent && !recurrentConnection) {
+                if (connection.source === node1 && connection.target === node2 && !connection.recurrent && !recurrentConnection) {
                     skip = true;
                     break;
                 }
@@ -172,10 +172,10 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         let found = false;
         let splitConnection: ConnectionGene;
 
-        // Find a connection which is enabled and not a bias
+        // Find a connection which is isEnabled and not a bias
         while ((count < 20) && (!found)) {
             splitConnection = this._random.pickRandomElementFromList(chromosome.connections);
-            if (splitConnection.enabled && (splitConnection.from.type !== NodeType.BIAS))
+            if (splitConnection.isEnabled && (splitConnection.source.type !== NodeType.BIAS))
                 found = true;
             count++;
         }
@@ -185,12 +185,12 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
             return;
 
         // Disable the old connection
-        splitConnection.enabled = false;
+        splitConnection.isEnabled = false;
 
         // Save the old weight and the nodes of the connection
         const oldWeight = splitConnection.weight;
-        const fromNode = splitConnection.from;
-        const toNode = splitConnection.to;
+        const fromNode = splitConnection.source;
+        const toNode = splitConnection.target;
 
         const newNode = new HiddenNode(chromosome.allNodes.size(), ActivationFunction.SIGMOID)
 
@@ -266,31 +266,31 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
 
             // If we disable a connection, we have to make sure that another connection links out of the in-node
             // in order to not loose a bigger section of the network
-            if (chosenConnection.enabled) {
+            if (chosenConnection.isEnabled) {
                 let save = false;
                 for (const otherConnection of chromosome.connections) {
-                    if ((otherConnection.from.equals(chosenConnection.from)) && (otherConnection.enabled) &&
+                    if ((otherConnection.source.equals(chosenConnection.source)) && (otherConnection.isEnabled) &&
                         (chosenConnection.innovation !== otherConnection.innovation)) {
                         save = true;
                         break;
                     }
                 }
                 if (save)
-                    chosenConnection.enabled = false;
+                    chosenConnection.isEnabled = false;
             } else
-                chosenConnection.enabled = true;
+                chosenConnection.isEnabled = true;
 
             const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
-            chromosome.isRecurrentNetwork(chosenConnection.from, chosenConnection.to)
+            chromosome.isRecurrentNetwork(chosenConnection.source, chosenConnection.target)
         }
     }
 
     mutateConnectionReenable(chromosome: NetworkChromosome): void {
         for (const connection of chromosome.connections) {
-            if (!connection.enabled) {
-                connection.enabled = true;
+            if (!connection.isEnabled) {
+                connection.isEnabled = true;
                 const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
-                chromosome.isRecurrentNetwork(connection.from, connection.to)
+                chromosome.isRecurrentNetwork(connection.source, connection.target)
                 break;
             }
         }
