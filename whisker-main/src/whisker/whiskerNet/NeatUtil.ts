@@ -1,6 +1,6 @@
 import {Species} from "./Species";
 import {NeatPopulation} from "./NeatPopulation";
-import {NeatChromosome} from "./NeatChromosome";
+import {NetworkChromosome} from "./NetworkChromosome";
 import {List} from "../utils/List";
 import {NodeGene} from "./NetworkNodes/NodeGene";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
@@ -10,7 +10,7 @@ import {RegressionNode} from "./NetworkNodes/RegressionNode";
 export class NeatUtil {
 
 
-    static speciate(chromosome: NeatChromosome, population: NeatPopulation<NeatChromosome>,
+    static speciate(chromosome: NetworkChromosome, population: NeatPopulation<NetworkChromosome>,
                     properties: NeuroevolutionProperties<any>): void {
 
         // If we have no species at all so far create the first one
@@ -50,7 +50,7 @@ export class NeatUtil {
         }
     }
 
-    static compatibilityDistance(chromosome1: NeatChromosome, chromosome2: NeatChromosome, excessCoefficient: number,
+    static compatibilityDistance(chromosome1: NetworkChromosome, chromosome2: NetworkChromosome, excessCoefficient: number,
                                  disjointCoefficient: number, weightCoefficient: number): number {
 
         if (chromosome1 === undefined || chromosome2 === undefined) {

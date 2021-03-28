@@ -1,10 +1,9 @@
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
+import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {List} from "../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
-import {NodeType} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
 import {Pair} from "../../../src/whisker/utils/Pair";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
@@ -81,34 +80,34 @@ describe("NeatCrossover", () => {
 
 
     test("CrossoverTest with first parent being fitter than second parent", () => {
-        const parent1 = new NeatChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
-        parent1.fitness = 1;
-        const parent2 = new NeatChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
-        parent2.fitness = 0;
+        const parent1 = new NetworkChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
+        parent1.sharedFitness = 1;
+        const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
+        parent2.sharedFitness = 0;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
-        const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
+        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst()
         expect(child1.connections.size()).toBe(5)
         expect(child1.connections.size()).toEqual(child2.connections.size())
     })
 
     test("CrossoverTest with second parent being fitter than first parent", () => {
-        const parent1 = new NeatChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
-        parent1.nonAdjustedFitness = 0;
-        const parent2 = new NeatChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
-        parent2.nonAdjustedFitness = 1;
+        const parent1 = new NetworkChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
+        parent1.networkFitness = 0;
+        const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
+        parent2.networkFitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
-        const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
+        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst()
         expect(child1.connections.size()).toBe(7)
         expect(child2.connections.size()).toEqual(child1.connections.size())
     })
 
     test("CrossoverTest with both parents being equivalently fit", () => {
-        const parent1 = new NeatChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
-        parent1.fitness = 1;
-        const parent2 = new NeatChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
-        parent2.fitness = 1;
+        const parent1 = new NetworkChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
+        parent1.sharedFitness = 1;
+        const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
+        parent2.sharedFitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
-        const child2 = crossoverOp.applyFromPair(new Pair<NeatChromosome>(parent1, parent2)).getFirst()
+        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst()
         expect(child1.connections.size()).toBeGreaterThanOrEqual(4)
         expect(child2.connections.size()).toBeGreaterThanOrEqual(4)
     })

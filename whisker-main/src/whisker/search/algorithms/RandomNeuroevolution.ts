@@ -1,6 +1,6 @@
 import {List} from '../../utils/List';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {NeatChromosome} from "../../whiskerNet/NeatChromosome";
+import {NetworkChromosome} from "../../whiskerNet/NetworkChromosome";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
@@ -11,7 +11,7 @@ import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionPropertie
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 
 
-export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgorithmDefault<NeatChromosome> {
+export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
     private _chromosomeGenerator: ChromosomeGenerator<C>;
 
     private _properties: NeuroevolutionProperties<C>;
@@ -30,7 +30,7 @@ export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgori
 
     private _fullCoverageReached = false;
 
-    private _networkFitnessFunction: NetworkFitnessFunction<NeatChromosome>;
+    private _networkFitnessFunction: NetworkFitnessFunction<NetworkChromosome>;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -93,7 +93,7 @@ export class RandomNeuroevolution<C extends NeatChromosome> extends SearchAlgori
             console.log("Iteration: " + this._iterations)
             console.log("Highest fitness last changed: " + population.highestFitnessLastChanged)
             console.log("Highest Network Fitness: " + population.highestFitness)
-            console.log("Current Iteration Highest Network Fitness: " + population.populationChampion.nonAdjustedFitness)
+            console.log("Current Iteration Highest Network Fitness: " + population.populationChampion.networkFitness)
             console.log("Average Fitness: " + population.averageFitness)
             console.log("Population Size: " + population.populationSize())
             console.log("Population Champion: ", population.populationChampion)

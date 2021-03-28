@@ -9,10 +9,9 @@ import {seedScratch} from "../../util/random"
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
-import {NeatChromosome} from "./NeatChromosome";
+import {NetworkChromosome} from "./NetworkChromosome";
 import {NeatUtil} from "./NeatUtil";
 import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
-import {NodeType} from "./NetworkNodes/NodeType";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {InputExtraction} from "./InputExtraction";
 
@@ -37,7 +36,7 @@ export class NetworkExecutor {
         this.recordInitialState();
     }
 
-    async execute(network: NeatChromosome): Promise<ExecutionTrace> {
+    async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         const args = [];
         let workingNetwork = false;
@@ -52,19 +51,17 @@ export class NetworkExecutor {
         const inputs = [].concat.apply([], spriteInfo);
 
         network.flushNodeValues();
-        network.setUpInputs(inputs);
         // Activate the network stabilizeCounter + 1 times to stabilise it for classification
         for (let i = 0; i < stabilizeCounter + 1; i++) {
-            workingNetwork = network.activateNetwork(false);
+            workingNetwork = network.activateNetwork(inputs);
         }
 
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
-        const start = Date.now();
         let timer = Date.now();
-        this._timeout += start;
+        this._timeout += Date.now();
         while (this._projectRunning && timer < this._timeout) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
@@ -79,17 +76,15 @@ export class NetworkExecutor {
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
             if (network.isRecurrent) {
-                network.setUpInputs(inputs)
-                workingNetwork = network.activateNetwork(false)
+                workingNetwork = network.activateNetwork(inputs)
             }
 
             // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
             else {
                 network.flushNodeValues();
-                network.setUpInputs(inputs);
                 // Activate the network stabilizeCounter + 1 times to stabilise it for classification
                 for (let i = 0; i < stabilizeCounter + 1; i++) {
-                    workingNetwork = network.activateNetwork(false);
+                    workingNetwork = network.activateNetwork(inputs);
                 }
             }
 
@@ -107,7 +102,7 @@ export class NetworkExecutor {
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // If we have a regression Node evaluate it.
-            if (network.regression) {
+            if (network.hasRegression) {
                 const mouseCoords = NetworkExecutor.getMouseCoordinates(network);
                 const mouseMoveEvent = new MouseMoveEvent();
                 events.add([mouseMoveEvent, mouseCoords]);
@@ -121,8 +116,6 @@ export class NetworkExecutor {
             await waitEvent.apply(this._vm);
             timer = Date.now();
         }
-        // round due to small variances in runtime
-        network.timePlayed = Math.round((Date.now() - start) / 100);
 
         // Save the executed Trace
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
@@ -134,26 +127,24 @@ export class NetworkExecutor {
 
         // If we found a defect network let it go extinct!
         if (!workingNetwork)
-            network.eliminate = true;
+            network.hasDeathMark = true;
 
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
         return network.trace;
     }
 
-    async executeRandom(network: NeatChromosome): Promise<ExecutionTrace> {
+    async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         const codons = new List<number>()
-        let args = []
+        const args = []
 
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
-        const start = Date.now();
         let timer = Date.now();
-        this._timeout += start;
-        console.log("RANDOM")
+        this._timeout += Date.now();
         while (this._projectRunning && timer < this._timeout) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
@@ -170,7 +161,7 @@ export class NetworkExecutor {
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // If we have a regression Node randomise this output as well
-            if (network.regression) {
+            if (network.hasRegression) {
                 const mouseCoords = [this._random.nextInt(-240, 240), this._random.nextInt(-180, 180)]
                 const mouseMoveEvent = new MouseMoveEvent();
                 events.add([mouseMoveEvent, mouseCoords]);
@@ -184,8 +175,6 @@ export class NetworkExecutor {
             await waitEvent.apply(this._vm);
             timer = Date.now();
         }
-        // round due to small variances in runtime
-        network.timePlayed = Math.round((Date.now() - start) / 100);
 
         // Save the executed Trace
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
@@ -204,7 +193,7 @@ export class NetworkExecutor {
         return this._projectRunning = false;
     }
 
-    private static getMouseCoordinates(network: NeatChromosome): number[] {
+    private static getMouseCoordinates(network: NetworkChromosome): number[] {
         const coords = new List<number>();
         for (const node of network.outputNodes) {
             if (node instanceof RegressionNode && !coords.contains(node.nodeValue)) {

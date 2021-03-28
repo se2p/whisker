@@ -2,7 +2,7 @@ import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChrom
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
+import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 
 describe('NeatChromosomeGenerator', () => {
 
@@ -39,7 +39,7 @@ describe('NeatChromosomeGenerator', () => {
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
         outputSize = 2;
-        const chromosomes : NeatChromosome[] = []
+        const chromosomes : NetworkChromosome[] = []
         // eslint-disable-next-line prefer-spread
         const inputs = [].concat.apply([], genInputs);
         let stabCount = 0;
@@ -52,9 +52,8 @@ describe('NeatChromosomeGenerator', () => {
         for(const chromosome of chromosomes){
             chromosome.generateNetwork();
             chromosome.flushNodeValues();
-            chromosome.setUpInputs(inputs)
             for (let i = 0; i < stabCount + 1; i++) {
-                chromosome.activateNetwork(true);
+                chromosome.activateNetwork(inputs);
             }
             expect(Math.round(NeatUtil.softmax(chromosome.outputNodes).reduce((a, b) => a + b, 0))).toBe(1);
         }

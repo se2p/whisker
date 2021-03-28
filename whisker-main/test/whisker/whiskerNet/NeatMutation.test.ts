@@ -1,10 +1,8 @@
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
+import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
-import {NodeType} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
@@ -12,13 +10,13 @@ import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNod
 
 describe("NeatMutation", () => {
 
-    let neatChromosome: NeatChromosome;
+    let neatChromosome: NetworkChromosome;
     let neatChromosomeGenerator: NeatChromosomeGenerator
     let mutation: NeatMutation;
     let crossOver: NeatCrossover;
     let genInputs: number[][];
     let outputSize: number;
-    let properties: NeuroevolutionProperties<NeatChromosome>
+    let properties: NeuroevolutionProperties<NetworkChromosome>
 
     beforeEach(() => {
         crossOver = new NeatCrossover(0.4);
@@ -27,7 +25,7 @@ describe("NeatMutation", () => {
             0.1, 3, 0.1);
         genInputs = [[1,2,3,4,5,6]];
         outputSize = 3;
-        properties = new NeuroevolutionProperties<NeatChromosome>(50);
+        properties = new NeuroevolutionProperties<NetworkChromosome>(50);
         neatChromosomeGenerator = new NeatChromosomeGenerator(mutation, crossOver, genInputs, outputSize, 0.4, false)
         neatChromosome = neatChromosomeGenerator.get();
     })

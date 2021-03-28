@@ -1,5 +1,5 @@
 import {Mutation} from "../search/Mutation";
-import {NeatChromosome} from "./NeatChromosome";
+import {NetworkChromosome} from "./NetworkChromosome";
 import {List} from "../utils/List";
 import {NodeGene} from "./NetworkNodes/NodeGene";
 import {ConnectionGene} from "./ConnectionGene";
@@ -9,7 +9,7 @@ import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
 import {HiddenNode} from "./NetworkNodes/HiddenNode";
 
 
-export class NeatMutation implements Mutation<NeatChromosome> {
+export class NeatMutation implements Mutation<NetworkChromosome> {
 
     public static _innovations = new List<ConnectionGene>();
     private _random = Randomness.getInstance();
@@ -41,9 +41,9 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         this._mutateEnableConnection = mutateEnableConnection;
     }
 
-    apply(chromosome: NeatChromosome): NeatChromosome {
+    apply(chromosome: NetworkChromosome): NetworkChromosome {
         // Special treatment for population Champions => either add a Connection or change the weights
-        if (chromosome.populationChampion) {
+        if (chromosome.isPopulationChampion) {
             if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
                 this.mutateAddConnection(chromosome, this._addConnectionTries);
             } else {
@@ -73,7 +73,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         return chromosome;
     }
 
-    mutateAddConnection(chromosome: NeatChromosome, tries: number): void {
+    mutateAddConnection(chromosome: NetworkChromosome, tries: number): void {
 
         let rounds = 0;
         let node1: NodeGene;
@@ -145,10 +145,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
             // We found a valid connection to add
             if (!skip) {
                 const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
-                const recurrentNetwork = chromosome.isRecurrentNetwork(node1, node2, 0, threshold)
-                if (chromosome.loop) {
-                    return;
-                }
+                const recurrentNetwork = chromosome.isRecurrentNetwork(node1, node2)
                 if ((!recurrentNetwork && recurrentConnection) || (recurrentNetwork && !recurrentConnection)) {
                     rounds++;
                 } else {
@@ -169,7 +166,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         }
     }
 
-    mutateAddNode(chromosome: NeatChromosome): void {
+    mutateAddNode(chromosome: NetworkChromosome): void {
 
         let count = 0;
         let found = false;
@@ -210,12 +207,12 @@ export class NeatMutation implements Mutation<NeatChromosome> {
         chromosome.allNodes.add(newNode);
 
         const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
-        chromosome.isRecurrentNetwork(fromNode, newNode, 0, threshold)
-        chromosome.isRecurrentNetwork(newNode, toNode, 0, threshold)
+        chromosome.isRecurrentNetwork(fromNode, newNode)
+        chromosome.isRecurrentNetwork(newNode, toNode)
 
     }
 
-    public mutateWeight(chromosome: NeatChromosome, power: number, rate: number): void {
+    public mutateWeight(chromosome: NetworkChromosome, power: number, rate: number): void {
         let gaussPoint = 0;
         let coldGaussPoint = 0;
 
@@ -262,7 +259,7 @@ export class NeatMutation implements Mutation<NeatChromosome> {
     }
 
 
-    mutateToggleEnableConnection(chromosome: NeatChromosome, times: number): void {
+    mutateToggleEnableConnection(chromosome: NetworkChromosome, times: number): void {
         for (let count = 0; count <= times; count++) {
             // Pick a random connection
             const chosenConnection = this._random.pickRandomElementFromList(chromosome.connections);
@@ -284,16 +281,16 @@ export class NeatMutation implements Mutation<NeatChromosome> {
                 chosenConnection.enabled = true;
 
             const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
-            chromosome.isRecurrentNetwork(chosenConnection.from, chosenConnection.to, 0, threshold)
+            chromosome.isRecurrentNetwork(chosenConnection.from, chosenConnection.to)
         }
     }
 
-    mutateConnectionReenable(chromosome: NeatChromosome): void {
+    mutateConnectionReenable(chromosome: NetworkChromosome): void {
         for (const connection of chromosome.connections) {
             if (!connection.enabled) {
                 connection.enabled = true;
                 const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
-                chromosome.isRecurrentNetwork(connection.from, connection.to, 0, threshold)
+                chromosome.isRecurrentNetwork(connection.from, connection.to)
                 break;
             }
         }

@@ -1,27 +1,36 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NeatChromosome} from "../NeatChromosome";
+import {NetworkChromosome} from "../NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {NetworkExecutor} from "../NetworkExecutor";
 
 
-export class SurviveFitness implements NetworkFitnessFunction<NeatChromosome> {
+export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
-    async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
+        const start = Date.now();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
-        network.networkFitness = network.timePlayed;
-        return network.networkFitness;
+        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
+        network.networkFitness = surviveTime;
+        return surviveTime;
     }
 
-    async getRandomFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
+        const start = Date.now();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.executeRandom(network);
-        network.networkFitness = network.timePlayed;
-        return network.networkFitness;
+        // Round due to small variances in runtime
+        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
+        network.networkFitness = surviveTime;
+        return surviveTime;
     }
 
-    getFitnessWithoutPlaying(network: NeatChromosome): number {
-        return network.timePlayed;
+    /**
+     * Used for CombinedNetworkFitness.
+     * Value is calculated within CombinedNetworkFitness, hence returns 0.0
+     */
+    getFitnessWithoutPlaying(network: NetworkChromosome): number {
+        return 0.0;
     }
 
     compare(value1: number, value2: number): number {

@@ -1,5 +1,5 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NeatChromosome} from "../NeatChromosome";
+import {NetworkChromosome} from "../NetworkChromosome";
 import {StatementCoverageFitness} from "../../testcase/fitness/StatementFitnessFunction";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import {List} from "../../utils/List";
@@ -9,14 +9,14 @@ import {IntegerListMutation} from "../../integerlist/IntegerListMutation";
 import {SinglePointCrossover} from "../../search/operators/SinglePointCrossover";
 import {NetworkExecutor} from "../NetworkExecutor";
 
-export class StatementNetworkFitness implements NetworkFitnessFunction<NeatChromosome>{
+export class StatementNetworkFitness implements NetworkFitnessFunction<NetworkChromosome>{
 
 
     compare(value1: number, value2: number): number {
         return value2 - value1;
     }
 
-    async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
 
         // Get the execution Trace
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
@@ -38,7 +38,7 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NeatChrom
         return Promise.resolve(statementScore);
     }
 
-    async getRandomFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         // Get the execution Trace
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.executeRandom(network);
@@ -61,7 +61,7 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NeatChrom
 
 
 
-    getFitnessWithoutPlaying(network: NeatChromosome): number {
+    getFitnessWithoutPlaying(network: NetworkChromosome): number {
         // Cast to a TestChromosome
         const testChromosome = new TestChromosome(network.codons, new IntegerListMutation(0, 1), new SinglePointCrossover())
         testChromosome.trace = network.trace;

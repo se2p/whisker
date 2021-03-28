@@ -1,11 +1,11 @@
 import {List} from "../utils/List";
-import {NeatChromosome} from "./NeatChromosome";
+import {NetworkChromosome} from "./NetworkChromosome";
 import {NeatUtil} from "./NeatUtil";
 import {Randomness} from "../utils/Randomness";
 import {NeatPopulation} from "./NeatPopulation";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 
-export class Species<C extends NeatChromosome> {
+export class Species<C extends NetworkChromosome> {
     private _id: number;
     private _age: number;
     private _averageFitness: number;
@@ -68,25 +68,23 @@ export class Species<C extends NeatChromosome> {
             ageDept = 1;
 
         for (const chromosome of this.chromosomes) {
-            // Save the original networkFitness value from the networkFitness function
-            chromosome.nonAdjustedFitness = chromosome.networkFitness;
-
+            chromosome.sharedFitness = chromosome.networkFitness;
             // Penalize fitness if it has not improved for a certain amount of ages
             if (ageDept >= 1) {
-                chromosome.networkFitness = chromosome.networkFitness * 0.01;
+                chromosome.sharedFitness = chromosome.sharedFitness * 0.01;
                 console.log("Penalizing stagnant species: " + this.id)
             }
 
             // Boost fitness for young generations to give them a chance to evolve for some generations
             if (this._age <= 10)
-                chromosome.networkFitness = chromosome.networkFitness * this._properties.ageSignificance;
+                chromosome.sharedFitness = chromosome.sharedFitness * this._properties.ageSignificance;
 
             // Do not allow negative fitness values
-            if (chromosome.networkFitness < 0.0)
-                chromosome.networkFitness = 0.0001;
+            if (chromosome.sharedFitness < 0.0)
+                chromosome.sharedFitness = 0.0001;
 
             // Share fitness with the entire species
-            chromosome.networkFitness = chromosome.networkFitness / this.size();
+            chromosome.sharedFitness = chromosome.sharedFitness / this.size();
 
         }
         this.markKillCandidates();
@@ -102,10 +100,10 @@ export class Species<C extends NeatChromosome> {
         this.sortChromosomes();
         const champion = this.chromosomes.get(0);
 
-        // Update the age of last improvement based on the non AdjustedFitness value
-        if (champion.nonAdjustedFitness > this._allTimeBestFitness) {
+        // Update the age of last improvement based on the non-shared Fitness value
+        if (champion.networkFitness > this._allTimeBestFitness) {
             this._ageOfLastImprovement = this._age;
-            this._allTimeBestFitness = champion.nonAdjustedFitness;
+            this._allTimeBestFitness = champion.networkFitness;
         }
 
         // Determines which members of this species are allowed to reproduce
@@ -113,13 +111,13 @@ export class Species<C extends NeatChromosome> {
         // +1 ensures that the species will not go extinct -> at least one member survives
         const numberOfParents = Math.floor((this._properties.parentsPerSpecies * this.chromosomes.size())) + 1;
 
-        this.chromosomes.get(0).champion = true;
+        this.chromosomes.get(0).isSpeciesChampion = true;
 
         // Assign the death mark to the chromosomes which are not within the numberOfParents
         let position = 1;
         for (const chromosome of this.chromosomes) {
             if (position > numberOfParents) {
-                chromosome.eliminate = true;
+                chromosome.hasDeathMark = true;
             }
             position++;
         }
@@ -179,12 +177,12 @@ export class Species<C extends NeatChromosome> {
      * @param sortedSpecies a sorted List of all existing species
      * @return returns the generated children
      */
-    public breed(population: NeatPopulation<C>, sortedSpecies: List<Species<C>>): List<NeatChromosome> {
+    public breed(population: NeatPopulation<C>, sortedSpecies: List<Species<C>>): List<NetworkChromosome> {
         if (this.expectedOffspring > 0 && this.chromosomes.size() == 0) {
-            return new List<NeatChromosome>();
+            return new List<NetworkChromosome>();
         }
 
-        const children = new List<NeatChromosome>();
+        const children = new List<NetworkChromosome>();
 
         this.sortChromosomes();
         this.champion = this.chromosomes.get(0);
@@ -200,7 +198,7 @@ export class Species<C extends NeatChromosome> {
             let child: C;
 
             // If we have a population Champion in this species apply slight mutation or clone it
-            if (this.champion.populationChampion && this.champion.numberOffspringPopulationChamp > 0) {
+            if (this.champion.isPopulationChampion && this.champion.numberOffspringPopulationChamp > 0) {
                 if (!champCloned) {
                     child = this.champion.clone() as C;
                     champCloned = true;
@@ -235,9 +233,9 @@ export class Species<C extends NeatChromosome> {
     private breedPopulationChampion(): C {
         const parent = this.champion.clone() as C;
         // We want the popChamp clone to be treated like a popChamp during mutation but not afterwards.
-        parent.populationChampion = true;
+        parent.isPopulationChampion = true;
         parent.mutate();
-        parent.populationChampion = false;
+        parent.isPopulationChampion = false;
         this.champion.numberOffspringPopulationChamp--;
         return parent;
     }
@@ -278,7 +276,7 @@ export class Species<C extends NeatChromosome> {
         // if both parents have a compatibility distance of 0 which means they have the same structure and weights
         const distance = NeatUtil.compatibilityDistance(parent1, parent2, this._properties.excessCoefficient, this._properties.disjointCoefficient,
             this._properties.weightCoefficient)
-        if (this._randomness.nextDouble() > this._properties.crossoverWithoutMutation || parent1.equals(parent2) ||
+        if (this._randomness.nextDouble() > this._properties.crossoverWithoutMutation ||
             distance === 0) {
             child.mutate();
         }
@@ -290,13 +288,13 @@ export class Species<C extends NeatChromosome> {
      * @private
      */
     public sortChromosomes(): void {
-        this.chromosomes.sort((a, b) => b.nonAdjustedFitness - a.nonAdjustedFitness)
+        this.chromosomes.sort((a, b) => b.networkFitness - a.networkFitness)
     }
 
     public averageSpeciesFitness(): number {
         let sum = 0;
         for (const chromosome of this.chromosomes)
-            sum += chromosome.networkFitness;
+            sum += chromosome.sharedFitness;
         this.averageFitness = sum / this.size();
         return this.averageFitness;
     }
@@ -312,7 +310,7 @@ export class Species<C extends NeatChromosome> {
             for (let i = 0; i < this.chromosomes.size(); i++) {
                 const chromosome = this.chromosomes.get(i);
 
-                if (chromosome.nonAdjustedFitness > 0 && !chromosome.populationChampion && !chromosome.champion) {
+                if (chromosome.networkFitness > 0 && !chromosome.isPopulationChampion && !chromosome.isSpeciesChampion) {
                     this.chromosomes.remove(chromosome);
                     removedChromosomes.add(chromosome);
                     removed++;

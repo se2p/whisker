@@ -1,15 +1,16 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NeatChromosome} from "../NeatChromosome";
+import {NetworkChromosome} from "../NetworkChromosome";
 import {List} from "../../utils/List";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {Container} from "../../utils/Container";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {SurviveFitness} from "./SurviveFitness";
 
-export class CombinedNetworkFitness implements NetworkFitnessFunction<NeatChromosome>{
+export class CombinedNetworkFitness implements NetworkFitnessFunction<NetworkChromosome>{
 
-    private readonly _fitnessFunctions = new List<NetworkFitnessFunction<NeatChromosome>>();
+    private readonly _fitnessFunctions = new List<NetworkFitnessFunction<NetworkChromosome>>();
 
-    constructor(...fitnessFunctions: NetworkFitnessFunction<NeatChromosome>[]) {
+    constructor(...fitnessFunctions: NetworkFitnessFunction<NetworkChromosome>[]) {
         this._fitnessFunctions.addAll(fitnessFunctions);
     }
 
@@ -17,20 +18,25 @@ export class CombinedNetworkFitness implements NetworkFitnessFunction<NeatChromo
         return value2 - value1;
     }
 
-    async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
+        const start = Date.now();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
-
+        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
         let fitness = 0.00;
         for(const fitnessFunction of this._fitnessFunctions){
-            fitness += fitnessFunction.getFitnessWithoutPlaying(network);
+            if(fitnessFunction instanceof SurviveFitness)
+                fitness += surviveTime;
+            else {
+                fitness += fitnessFunction.getFitnessWithoutPlaying(network);
+            }
         }
         network.networkFitness = fitness;
         return Promise.resolve(fitness);
     }
 
 
-    async getRandomFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.executeRandom(network);
 
@@ -43,7 +49,7 @@ export class CombinedNetworkFitness implements NetworkFitnessFunction<NeatChromo
     }
 
     // No sense to use this in this way; but needed to satisfy interface implementation.
-    getFitnessWithoutPlaying(network: NeatChromosome): number {
+    getFitnessWithoutPlaying(network: NetworkChromosome): number {
         throw new NotSupportedFunctionException();
     }
 

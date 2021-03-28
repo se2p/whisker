@@ -1,5 +1,5 @@
 import {Crossover} from "../search/Crossover";
-import {NeatChromosome} from "./NeatChromosome";
+import {NetworkChromosome} from "./NetworkChromosome";
 import {Pair} from "../utils/Pair";
 import {ConnectionGene} from "./ConnectionGene";
 import {List} from "../utils/List";
@@ -8,7 +8,7 @@ import {NodeType} from "./NetworkNodes/NodeType";
 import {Randomness} from "../utils/Randomness";
 
 
-export class NeatCrossover implements Crossover<NeatChromosome> {
+export class NeatCrossover implements Crossover<NetworkChromosome> {
 
     private readonly random = Randomness.getInstance();
 
@@ -18,7 +18,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         this.crossoverAverageWeights = crossoverAverageWeights;
     }
 
-    apply(parent1: NeatChromosome, parent2: NeatChromosome): Pair<NeatChromosome> {
+    apply(parent1: NetworkChromosome, parent2: NetworkChromosome): Pair<NetworkChromosome> {
         parent1.generateNetwork();
         parent2.generateNetwork();
 
@@ -26,14 +26,14 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         // the average of both parents when we have a matching connection
         const avgWeights = this.random.nextDouble() < this.crossoverAverageWeights;
         const child = this.multipointCrossover(parent1, parent2, avgWeights);
-        return new Pair<NeatChromosome>(child, undefined);
+        return new Pair<NetworkChromosome>(child, undefined);
     }
 
-    applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {
+    applyFromPair(parents: Pair<NetworkChromosome>): Pair<NetworkChromosome> {
         return this.apply(parents.getFirst(), parents.getSecond());
     }
 
-    private multipointCrossover(parent1: NeatChromosome, parent2: NeatChromosome, avgWeights) {
+    private multipointCrossover(parent1: NetworkChromosome, parent2: NetworkChromosome, avgWeights) {
 
         // Check which parent has the higher non-adjusted fitness value
         // The worse parent should not add additional connections
@@ -43,9 +43,9 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         const parent1Size = parent1.connections.size();
         const parent2Size = parent2.connections.size();
 
-        if (parent1.nonAdjustedFitness > parent2.nonAdjustedFitness)
+        if (parent1.networkFitness > parent2.networkFitness)
             p1Better = true;
-        else if (parent1.nonAdjustedFitness === parent2.nonAdjustedFitness) {
+        else if (parent1.networkFitness === parent2.networkFitness) {
             if (parent1Size < parent2Size) {
                 p1Better = true;
             }
@@ -230,7 +230,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         }
 
         // Finally create the child with the selected Connections and Nodes
-        let child = new NeatChromosome(newConnections, newNodes, parent1.getMutationOperator(), parent1.getCrossoverOperator())
+        let child = new NetworkChromosome(newConnections, newNodes, parent1.getMutationOperator(), parent1.getCrossoverOperator())
         child.generateNetwork();
 
         // Check if everything went fine and enable some connections to fix a defect network if necessary
@@ -244,7 +244,7 @@ export class NeatCrossover implements Crossover<NeatChromosome> {
         // If we still have a defect network, just clone the parent but set the eliminate flag, to kill the network.
         if (child.stabilizedCounter(100, true) < 0) {
             child = parent1.clone();
-            child.eliminate = true;
+            child.hasDeathMark = true;
         }
 
         if (recurrent)

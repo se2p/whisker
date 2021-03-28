@@ -1,5 +1,5 @@
 import {Species} from "../../../src/whisker/whiskerNet/Species";
-import {NeatChromosome} from "../../../src/whisker/whiskerNet/NeatChromosome";
+import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {List} from "../../../src/whisker/utils/List";
 import {NeatChromosomeGenerator} from "../../../src/whisker/whiskerNet/NeatChromosomeGenerator";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
@@ -15,12 +15,12 @@ describe("Species Test", () => {
     let inputs: number[][];
     let numberOutputs: number;
     let generator: NeatChromosomeGenerator
-    let species: Species<NeatChromosome>;
-    let population: List<NeatChromosome>;
+    let species: Species<NetworkChromosome>;
+    let population: List<NetworkChromosome>;
     let populationSize: number;
     let random: Randomness;
-    let champion: NeatChromosome;
-    let properties: NeuroevolutionProperties<NeatChromosome>
+    let champion: NetworkChromosome;
+    let properties: NeuroevolutionProperties<NetworkChromosome>
 
     beforeEach(() => {
         crossOver = new NeatCrossover(0.4);
@@ -30,7 +30,7 @@ describe("Species Test", () => {
         inputs = [[1,2,3,4,5,6]]
         numberOutputs = 3;
         generator = new NeatChromosomeGenerator(mutation, crossOver, inputs, numberOutputs, 0.4, false)
-        population = new List<NeatChromosome>();
+        population = new List<NetworkChromosome>();
         populationSize = 50;
         properties = new NeuroevolutionProperties(populationSize);
         properties.ageSignificance = 1.0
@@ -45,20 +45,19 @@ describe("Species Test", () => {
         }
         champion = random.pickRandomElementFromList(species.chromosomes)
         champion.networkFitness = 10;
-        champion.nonAdjustedFitness = 10;
     })
 
     test("Test markKillCandidates()", () => {
         species.markKillCandidates();
 
-        const eliminateList = new List<NeatChromosome>();
+        const eliminateList = new List<NetworkChromosome>();
         for (const c of species.chromosomes)
-            if (c.eliminate)
+            if (c.hasDeathMark)
                 eliminateList.add(c);
 
         expect(species.chromosomes.get(0).networkFitness).toBe(10);
-        expect(species.chromosomes.get(0).champion).toBe(true);
-        expect(species.chromosomes.get(0).eliminate).toBe(false);
+        expect(species.chromosomes.get(0).isSpeciesChampion).toBe(true);
+        expect(species.chromosomes.get(0).hasDeathMark).toBe(false);
         expect(species.allTimeBestFitness).toBe(10);
         expect(species.ageOfLastImprovement).toBe(species.age);
     })
@@ -67,11 +66,9 @@ describe("Species Test", () => {
         species.assignAdjustFitness();
 
         expect(champion.networkFitness).toBeGreaterThan(species.chromosomes.get(1).networkFitness);
-        expect(champion.networkFitness).toBe(
-            champion.nonAdjustedFitness * properties.ageSignificance / species.chromosomes.size())
-        expect(species.chromosomes.get(1).networkFitness).toBe(
-            species.chromosomes.get(1).nonAdjustedFitness * properties.ageSignificance / species.chromosomes.size())
-        expect(champion.networkFitness).not.toBe(champion.nonAdjustedFitness)
+        expect(champion.networkFitness).toBe(10)
+        expect(champion.sharedFitness).toBe(
+            champion.networkFitness * properties.ageSignificance / species.chromosomes.size())
     })
 
     test("Calculate the number of Offspring with leftOver of 0", () => {
@@ -141,7 +138,7 @@ describe("Species Test", () => {
         properties.disjointCoefficient = 0.1
         properties.excessCoefficient = 0.1;
         const neatPopulation = new NeatPopulation(50, 1, generator, properties)
-        const speciesList = new List<Species<NeatChromosome>>();
+        const speciesList = new List<Species<NetworkChromosome>>();
         const popSpecie = neatPopulation.species.get(0);
 
         for (let i = 0; i < popSpecie.chromosomes.size(); i++) {
@@ -149,12 +146,11 @@ describe("Species Test", () => {
         }
         champion = random.pickRandomElementFromList(popSpecie.chromosomes)
         champion.networkFitness = 10;
-        champion.nonAdjustedFitness = 10;
-        champion.populationChampion = true;
+        champion.isPopulationChampion = true;
         champion.numberOffspringPopulationChamp = 3;
 
         speciesList.add(popSpecie);
-        speciesList.add(new Species<NeatChromosome>(1, true, properties))
+        speciesList.add(new Species<NetworkChromosome>(1, true, properties))
         popSpecie.assignAdjustFitness();
 
         let avgFitness = 0;

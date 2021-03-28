@@ -37,7 +37,7 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {NeuroevolutionProperties} from "../whiskerNet/NeuroevolutionProperties";
 import {StatementNetworkFitness} from "../whiskerNet/NetworkFitness/StatementNetworkFitness";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
-import {NeatChromosome} from "../whiskerNet/NeatChromosome";
+import {NetworkChromosome} from "../whiskerNet/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
 import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";
@@ -265,7 +265,7 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NeatChromosome> {
+    public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NetworkChromosome> {
         const networkFitnessDef = fitnessFunction['type'];
         if (networkFitnessDef === 'score')
             return new ScoreFitness(fitnessFunction['offset']);
@@ -275,7 +275,7 @@ export class WhiskerSearchConfiguration {
             return new SurviveFitness();
         else if (networkFitnessDef === 'combined') {
             const fitnessFunctions = fitnessFunction["functions"];
-            const comb: NetworkFitnessFunction<NeatChromosome>[] = [];
+            const comb: NetworkFitnessFunction<NetworkChromosome>[] = [];
             for (const functions of fitnessFunctions) {
                 comb.push(this.getNetworkFitnessFunction(functions));
             }

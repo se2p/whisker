@@ -1,11 +1,11 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
-import {NeatChromosome} from "../NeatChromosome";
+import {NetworkChromosome} from "../NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
 
 
-export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
+export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     private readonly offset: number;
 
@@ -13,7 +13,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
         this.offset = offset;
     }
 
-    async getFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
         const score = this.gatherPoints(Container.vm);
@@ -21,7 +21,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
         return network.networkFitness;
     }
 
-    async getRandomFitness(network: NeatChromosome, timeout: number): Promise<number> {
+    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.executeRandom(network);
         const score = this.gatherPoints(Container.vm);
@@ -29,7 +29,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NeatChromosome> {
         return network.networkFitness;
     }
 
-    getFitnessWithoutPlaying(network: NeatChromosome): number {
+    getFitnessWithoutPlaying(network: NetworkChromosome): number {
         const score = this.gatherPoints(Container.vm) + this.offset;
         return score
     }

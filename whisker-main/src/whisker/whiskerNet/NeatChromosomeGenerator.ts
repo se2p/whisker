@@ -1,5 +1,5 @@
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
-import {NeatChromosome} from "./NeatChromosome";
+import {NetworkChromosome} from "./NetworkChromosome";
 import {Mutation} from "../search/Mutation";
 import {Crossover} from "../search/Crossover";
 import {List} from "../utils/List";
@@ -13,13 +13,13 @@ import {BiasNode} from "./NetworkNodes/BiasNode";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 
-export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
+export class NeatChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
 
     public static _innovations = new List<ConnectionGene>();
 
-    private _mutationOp: Mutation<NeatChromosome>;
+    private _mutationOp: Mutation<NetworkChromosome>;
 
-    private _crossoverOp: Crossover<NeatChromosome>;
+    private _crossoverOp: Crossover<NetworkChromosome>;
 
     private _inputs: number[][];
 
@@ -31,7 +31,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
 
     private readonly _regressionNode: boolean
 
-    constructor(mutationOp: Mutation<NeatChromosome>, crossoverOp: Crossover<NeatChromosome>, inputs: number[][],
+    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>, inputs: number[][],
                 numOutputNodes: number, inputRate: number, regressionNode: boolean) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
@@ -46,7 +46,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
      * of connections in between them.
      * @ returns: A random initial Neat Phenotype
      */
-    get(): NeatChromosome {
+    get(): NetworkChromosome {
         let nodeId = 0;
         const allNodes = new List<NodeGene>();
         const flattenedInputNodes = new List<NodeGene>();
@@ -83,7 +83,7 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         }
 
         const connections = this.createConnections(inputList, outputList);
-        const chromosome = new NeatChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
+        const chromosome = new NetworkChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
 
         // Add regression if we have mouse Input
         if (this._regressionNode) {
@@ -121,9 +121,9 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         return connections;
     }
 
-    private addRegressionNode(chromosome: NeatChromosome, inputNodes: List<List<NodeGene>>, nodeId: number) {
+    private addRegressionNode(chromosome: NetworkChromosome, inputNodes: List<List<NodeGene>>, nodeId: number) {
 
-        chromosome.regression = true;
+        chromosome.hasRegression = true;
         const regressionNodes = new List<NodeGene>();
 
         // Create the regression Nodes and add them to a List
@@ -179,11 +179,11 @@ export class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromoso
         }
     }
 
-    setCrossoverOperator(crossoverOp: Crossover<NeatChromosome>): void {
+    setCrossoverOperator(crossoverOp: Crossover<NetworkChromosome>): void {
         this._crossoverOp = crossoverOp;
     }
 
-    setMutationOperator(mutationOp: Mutation<NeatChromosome>): void {
+    setMutationOperator(mutationOp: Mutation<NetworkChromosome>): void {
         this._mutationOp = mutationOp;
     }
 

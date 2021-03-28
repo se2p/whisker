@@ -1,11 +1,11 @@
 import {List} from "../utils/List";
-import {NeatChromosome} from "./NeatChromosome";
+import {NetworkChromosome} from "./NetworkChromosome";
 import {Species} from "./Species";
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {NeatUtil} from "./NeatUtil";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 
-export class NeatPopulation<C extends NeatChromosome> {
+export class NeatPopulation<C extends NetworkChromosome> {
 
     private _chromosomes: List<C>;
     private _species: List<Species<C>>;
@@ -116,7 +116,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Find the population champion and reward him with additional children
         this.sortPopulation();
         this.populationChampion = this.chromosomes.get(0);
-        this.populationChampion.populationChampion = true;
+        this.populationChampion.isPopulationChampion = true;
         this.populationChampion.numberOffspringPopulationChamp = 3;
 
         // Handle lost children due to rounding precision
@@ -134,8 +134,8 @@ export class NeatPopulation<C extends NeatChromosome> {
         this.calculateAverageFitness();
 
         // Check for fitness stagnation
-        if (this.populationChampion.nonAdjustedFitness > this._highestFitness) {
-            this.highestFitness = this.populationChampion.nonAdjustedFitness;
+        if (this.populationChampion.networkFitness > this._highestFitness) {
+            this.highestFitness = this.populationChampion.networkFitness;
             this.highestFitnessLastChanged = 0;
         } else {
             this._highestFitnessLastChanged++;
@@ -176,7 +176,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         // Remove the Chromosomes with a death mark on them.
         const eliminateList = new List<C>();
         for (const chromosome of this._chromosomes) {
-            if (chromosome.eliminate) {
+            if (chromosome.hasDeathMark) {
                 const specie = chromosome.species;
                 specie.removeChromosome(chromosome);
                 this.chromosomes.remove(chromosome);
@@ -185,7 +185,7 @@ export class NeatPopulation<C extends NeatChromosome> {
         }
 
         // Now let the reproduction start
-        const offspring = new List<NeatChromosome>()
+        const offspring = new List<NetworkChromosome>()
         for (const specie of this._species) {
             offspring.addList(specie.breed(this, this._species));
         }
@@ -250,13 +250,13 @@ export class NeatPopulation<C extends NeatChromosome> {
     }
 
     sortPopulation():void{
-        this.chromosomes.sort((a, b) => b.nonAdjustedFitness - a.nonAdjustedFitness)
+        this.chromosomes.sort((a, b) => b.networkFitness - a.networkFitness)
     }
 
     calculateAverageFitness():void{
         let sum = 0;
         for(const chromosome of this.chromosomes)
-            sum += chromosome.nonAdjustedFitness;
+            sum += chromosome.networkFitness;
         this.averageFitness = sum / this.populationSize();
     }
 
