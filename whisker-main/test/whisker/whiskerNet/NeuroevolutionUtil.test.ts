@@ -33,6 +33,9 @@ describe("NeatUtil Tests", () => {
         numberOutputs = 3;
         populationSize = 50;
         properties = new NeuroevolutionProperties<NetworkChromosome>(populationSize);
+        properties.weightCoefficient = 0.4;
+        properties.excessCoefficient = 1;
+        properties.disjointCoefficient = 1;
         generator = new NetworkChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, false)
     })
 
@@ -43,6 +46,17 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Speciation when a new Population gets created and a low speciation Threshold", () => {
+        properties.distanceThreshold = 0.01;
+        population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
+        expect(population.speciesCount).toBeGreaterThanOrEqual(1);
+        expect(population.species.size()).toBeGreaterThanOrEqual(1);
+        // With this low threshold every unique connection leads to compatDistance above the Threshold
+        // Therefore, we cannot have more than inputNodes * outputNodes connections
+        expect(population.species.size()).toBeLessThanOrEqual(populationSize)
+    })
+
+    test("Speciation when a new Population gets created and a high speciation Threshold", () => {
+        properties.distanceThreshold = 1000;
         population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.size()).toBeGreaterThanOrEqual(1);
@@ -97,6 +111,34 @@ describe("NeatUtil Tests", () => {
         expect(compatDistance).toBe(1)
     })
 
+    test("Compatibility Distance of Chromosomes with disjoint connections switched", () => {
+        const inputNode1 = new InputNode(0);
+        const inputNode2 = new InputNode(1);
+        const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
+
+        const nodes = new List<NodeGene>();
+        nodes.add(inputNode1);
+        nodes.add(inputNode2);
+        nodes.add(outputNode);
+
+
+        const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
+        const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1, false);
+
+        const connections1 = new List<ConnectionGene>()
+        connections1.add(connection1);
+
+        const connections2 = new List<ConnectionGene>()
+        connections2.add(connection2);
+
+        const chromosome1 = new NetworkChromosome(connections2, nodes, mutation, crossOver)
+        const chromosome2 = new NetworkChromosome(connections1, nodes, mutation, crossOver)
+
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
+        // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
+        expect(compatDistance).toBe(1)
+    })
+
     test("Compatibility Distance of Chromosomes with excess connections", () => {
         const chromosome1 = generator.get();
         const chromosome2 = chromosome1.clone();
@@ -134,6 +176,17 @@ describe("NeatUtil Tests", () => {
         const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
         expect(compatDistance).toBe(0.4 * 0.5)
+    })
+
+    test("Test Softmax calculation", () =>{
+        const chromosome = generator.get();
+        const stabiliseCount = chromosome.stabilizedCounter(30, true);
+        for (let i = 0; i < stabiliseCount + 1; i++) {
+            chromosome.activateNetwork([1,2,3,4,5,6])
+        }
+        const softmaxOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes);
+        expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
+
     })
 
     test("Regression Nodes Output", () =>{
