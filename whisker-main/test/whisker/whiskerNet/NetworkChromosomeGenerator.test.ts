@@ -1,8 +1,8 @@
 import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
-import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
+import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 
 describe('NeatChromosomeGenerator', () => {
 
@@ -55,7 +55,7 @@ describe('NeatChromosomeGenerator', () => {
             for (let i = 0; i < stabCount + 1; i++) {
                 chromosome.activateNetwork(inputs);
             }
-            expect(Math.round(NeatUtil.softmax(chromosome.outputNodes).reduce((a, b) => a + b, 0))).toBe(1);
+            expect(Math.round(NeuroevolutionUtil.softmax(chromosome.outputNodes).reduce((a, b) => a + b, 0))).toBe(1);
         }
     })
 })

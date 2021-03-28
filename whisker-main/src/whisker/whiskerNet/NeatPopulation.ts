@@ -2,8 +2,8 @@ import {List} from "../utils/List";
 import {NetworkChromosome} from "./NetworkChromosome";
 import {Species} from "./Species";
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
-import {NeatUtil} from "./NeatUtil";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
+import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 
 export class NeatPopulation<C extends NetworkChromosome> {
 
@@ -45,7 +45,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
         while (this.populationSize() < this._startSize) {
             const chromosome = this._generator.get();
             this.chromosomes.add(chromosome)
-            NeatUtil.speciate(chromosome, this, this._properties);
+            NeuroevolutionUtil.speciate(chromosome, this, this._properties);
         }
         console.log("Starting Species: ", this.species);
     }
@@ -192,7 +192,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
 
         // Speciate the produced offspring
         for (const child of offspring) {
-            NeatUtil.speciate(child, this, this._properties)
+            NeuroevolutionUtil.speciate(child, this, this._properties)
         }
 
         // Remove the parents from the population and the species. The new ones still exist in their species

@@ -1,6 +1,6 @@
 import {List} from "../utils/List";
 import {NetworkChromosome} from "./NetworkChromosome";
-import {NeatUtil} from "./NeatUtil";
+import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {Randomness} from "../utils/Randomness";
 import {NeatPopulation} from "./NeatPopulation";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
@@ -274,7 +274,7 @@ export class Species<C extends NetworkChromosome> {
 
         // Decide if we additionally apply mutation -> done randomly or
         // if both parents have a compatibility distance of 0 which means they have the same structure and weights
-        const distance = NeatUtil.compatibilityDistance(parent1, parent2, this._properties.excessCoefficient, this._properties.disjointCoefficient,
+        const distance = NeuroevolutionUtil.compatibilityDistance(parent1, parent2, this._properties.excessCoefficient, this._properties.disjointCoefficient,
             this._properties.weightCoefficient)
         if (this._randomness.nextDouble() > this._properties.crossoverWithoutMutation ||
             distance === 0) {

@@ -8,12 +8,12 @@ import {Mutation} from "../../../src/whisker/search/Mutation";
 import {Crossover} from "../../../src/whisker/search/Crossover";
 import {List} from "../../../src/whisker/utils/List";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
-import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
 import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {RegressionNode} from "../../../src/whisker/whiskerNet/NetworkNodes/RegressionNode";
+import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 
 describe('NeatChromosome', () => {
 
@@ -282,7 +282,7 @@ describe('NeatChromosome', () => {
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
         chromosome.activateNetwork([1, 2])
-        const softmaxOutput: number[] = NeatUtil.softmax(chromosome.outputNodes)
+        const softmaxOutput: number[] = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         for (let i = 0; i < softmaxOutput.length; i++) {
             softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
         }
@@ -323,7 +323,7 @@ describe('NeatChromosome', () => {
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
         chromosome.activateNetwork([1, 2])
-        const softmaxOutput: number[] = NeatUtil.softmax(chromosome.outputNodes)
+        const softmaxOutput: number[] = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         for (let i = 0; i < softmaxOutput.length; i++) {
             softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
         }
@@ -370,7 +370,7 @@ describe('NeatChromosome', () => {
         for (let i = 0; i < 5; i++) {
             chromosome.activateNetwork([1, 2]);
         }
-        const softmaxOutput: number[] = NeatUtil.softmax(chromosome.outputNodes)
+        const softmaxOutput: number[] = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         for (let i = 0; i < softmaxOutput.length; i++) {
             softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
         }
@@ -421,13 +421,13 @@ describe('NeatChromosome', () => {
         for (let i = 0; i < stabilizeCount + 1; i++) {
             chromosome.activateNetwork([1, 2])
         }
-        const firstOutput = NeatUtil.softmax(chromosome.outputNodes)
+        const firstOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         // New input has to propagate through network.
         chromosome.activateNetwork([1, 4])
-        const secondOutput = NeatUtil.softmax(chromosome.outputNodes)
+        const secondOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         chromosome.activateNetwork([1, 4])
         chromosome.activateNetwork([1, 4])
-        const thirdOutput = NeatUtil.softmax(chromosome.outputNodes)
+        const thirdOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         expect(firstOutput).toEqual(secondOutput)
         expect(firstOutput).not.toEqual(thirdOutput)
         expect(Math.round(firstOutput.reduce((a, b) => a + b))).toBe(1);

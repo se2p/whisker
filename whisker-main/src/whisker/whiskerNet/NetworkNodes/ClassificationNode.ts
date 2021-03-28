@@ -1,7 +1,7 @@
 import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {NeatUtil} from "../NeatUtil";
+import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 
 export class ClassificationNode extends NodeGene {
 
@@ -32,7 +32,7 @@ export class ClassificationNode extends NodeGene {
             if (this.activationCount > 0) {
                 switch (this.activationFunction) {
                     case ActivationFunction.SIGMOID:
-                        this.activationValue = NeatUtil.sigmoid(this.nodeValue);
+                        this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue);
                         break;
                     default:
                         this.activationValue = this.nodeValue;

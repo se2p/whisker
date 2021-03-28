@@ -4,8 +4,8 @@ import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType
 import {List} from "../../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
-import {NeatUtil} from "../../../../src/whisker/whiskerNet/NeatUtil";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 
 
 describe("classificationNode Tests", () => {
@@ -72,7 +72,7 @@ describe("classificationNode Tests", () => {
     test("getActivationValue Test", () => {
         classificationNode.nodeValue = 10;
         classificationNode.activationCount = 1;
-        const sigmoidResult = NeatUtil.sigmoid(10);
+        const sigmoidResult = NeuroevolutionUtil.sigmoid(10);
         expect(classificationNode.getActivationValue()).toBe(sigmoidResult);
         expect(classificationNode.activationValue).toBe(sigmoidResult)
         classificationNode.reset()

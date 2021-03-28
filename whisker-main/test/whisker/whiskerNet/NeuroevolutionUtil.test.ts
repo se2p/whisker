@@ -3,7 +3,7 @@ import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromoso
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
-import {NeatUtil} from "../../../src/whisker/whiskerNet/NeatUtil";
+import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {List} from "../../../src/whisker/utils/List";
@@ -57,7 +57,7 @@ describe("NeatUtil Tests", () => {
         const mutant = chromosome.clone();
         for (let i = 0; i < 100; i++) {
             mutant.mutate();
-            NeatUtil.speciate(mutant, population, properties)
+            NeuroevolutionUtil.speciate(mutant, population, properties)
         }
         expect(population.speciesCount).toBeGreaterThan(1)
     })
@@ -65,7 +65,7 @@ describe("NeatUtil Tests", () => {
     test("Compatibility Distance of clones", () => {
         const chromosome1 = generator.get();
         const chromosome2 = chromosome1.clone();
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         expect(compatDistance).toBe(0)
     })
 
@@ -92,7 +92,7 @@ describe("NeatUtil Tests", () => {
         const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver)
         const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver)
 
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
         expect(compatDistance).toBe(1)
     })
@@ -104,7 +104,7 @@ describe("NeatUtil Tests", () => {
         const node1 = chromosome1.inputNodes.get(0);
         const node2 = chromosome1.outputNodes.get(1);
         chromosome2.connections.add(new ConnectionGene(node1, node2, 1, true, 1000, false));
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
         expect(compatDistance).toBe(1)
     })
@@ -131,7 +131,7 @@ describe("NeatUtil Tests", () => {
 
         const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver)
         const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver)
-        const compatDistance = NeatUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
         // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
         expect(compatDistance).toBe(0.4 * 0.5)
     })
@@ -159,12 +159,12 @@ describe("NeatUtil Tests", () => {
             regressionNetwork2.activateNetwork(inputs)
         }
 
-        const outputSum1 = NeatUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).reduce((a,b) => a + b, 0);
-        const outputSum2 = NeatUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).reduce((a,b) => a + b, 0);
+        const outputSum1 = NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).reduce((a, b) => a + b, 0);
+        const outputSum2 = NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).reduce((a, b) => a + b, 0);
 
-        expect(NeatUtil.evaluateRegressionNodes(noRegressionNetwork.outputNodes).length).toBe(0);
-        expect(NeatUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).length).toBe(2);
-        expect(NeatUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).length).toBe(2);
+        expect(NeuroevolutionUtil.evaluateRegressionNodes(noRegressionNetwork.outputNodes).length).toBe(0);
+        expect(NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).length).toBe(2);
+        expect(NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).length).toBe(2);
         expect(outputSum1).not.toBe(outputSum2)
     })
 })

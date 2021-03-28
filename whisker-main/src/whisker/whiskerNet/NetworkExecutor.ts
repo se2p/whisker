@@ -10,10 +10,10 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NetworkChromosome} from "./NetworkChromosome";
-import {NeatUtil} from "./NeatUtil";
 import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {InputExtraction} from "./InputExtraction";
+import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -89,7 +89,7 @@ export class NetworkExecutor {
             }
 
             // Get the classification results by using the softmax function over the outputNode values
-            const output = NeatUtil.softmax(network.outputNodes);
+            const output = NeuroevolutionUtil.softmax(network.outputNodes);
 
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);

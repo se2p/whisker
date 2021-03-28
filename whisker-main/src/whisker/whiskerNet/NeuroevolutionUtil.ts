@@ -7,11 +7,16 @@ import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 
-export class NeatUtil {
+export class NeuroevolutionUtil {
 
-
+    /**
+     * Assigns the given chromosome to a species
+     * @param chromosome the network which should be assigned to a species
+     * @param population the whole population of NetworkChromosomes
+     * @param properties the defined search-properties
+     */
     static speciate(chromosome: NetworkChromosome, population: NeatPopulation<NetworkChromosome>,
-                    properties: NeuroevolutionProperties<any>): void {
+                    properties: NeuroevolutionProperties<NetworkChromosome>): void {
 
         // If we have no species at all so far create the first one
         if (population.species.isEmpty()) {
@@ -20,6 +25,7 @@ export class NeatUtil {
             population.species.add(newSpecies);
             newSpecies.addChromosome(chromosome);
             chromosome.species = newSpecies;
+
         } else {
             // If we already have some species find the correct one or create a new one for the chromosome if it
             // fits in none of them
@@ -27,7 +33,7 @@ export class NeatUtil {
             for (const specie of population.species) {
                 // Get a representative of the specie and calculate the compatibility distance
                 const representative = specie.chromosomes.get(0);
-                const compatDistance = NeatUtil.compatibilityDistance(chromosome, representative, properties.excessCoefficient,
+                const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome, representative, properties.excessCoefficient,
                     properties.disjointCoefficient, properties.weightCoefficient);
 
                 // If they are compatible enough add the chromosome to the species
@@ -50,9 +56,18 @@ export class NeatUtil {
         }
     }
 
+    /**
+     * Calculates the compatibility distance of two NetworkChromosomes
+     * @param chromosome1 the first NetworkChromosome
+     * @param chromosome2 the second NetworkChromosome
+     * @param excessCoefficient the defined excess coefficient
+     * @param disjointCoefficient the defined disjoint coefficient
+     * @param weightCoefficient the defined weight coefficient
+     */
     static compatibilityDistance(chromosome1: NetworkChromosome, chromosome2: NetworkChromosome, excessCoefficient: number,
                                  disjointCoefficient: number, weightCoefficient: number): number {
 
+        // This should never happen!
         if (chromosome1 === undefined || chromosome2 === undefined) {
             console.error("Undefined Chromosome in compatDistance Calculation")
             return Number.MAX_SAFE_INTEGER;
@@ -92,24 +107,25 @@ export class NeatUtil {
                 const connection2 = chromosome2.connections.get(i2);
 
                 // Extract the innovation numbers
-                const innvoation1 = connection1.innovation;
+                const innovation1 = connection1.innovation;
                 const innovation2 = connection2.innovation;
 
-                if (innvoation1 === innovation2) {
+                if (innovation1 === innovation2) {
                     matching++;
                     weight_diff += Math.abs(connection1.weight - connection2.weight);
                     i1++;
                     i2++;
-                } else if (innvoation1 < innovation2) {
+                } else if (innovation1 < innovation2) {
                     i1++;
                     disjoint++;
-                } else if (innovation2 < innvoation1) {
+                } else if (innovation2 < innovation1) {
                     i2++;
                     disjoint++;
                 }
             }
         }
 
+        // Calculate the compatibility distance according to the number of matching, excess and disjoint genes
         if (matching === 0)
             return (disjointCoefficient * disjoint + excessCoefficient * excess);
 
@@ -119,22 +135,17 @@ export class NeatUtil {
     }
 
     /**
-     * Modified Sigmoid function proposed by the paper
-     * @param x the value the sigmoid function should be applied to
-     * @private
+     * Modified Sigmoid function as proposed in the original NEAT paper
+     * @param x the value to which the sigmoid function should be applied to
      */
     public static sigmoid(x: number): number {
         return (1 / (1 + Math.exp(-4.9 * x)));
     }
 
-    public static softmaxValue(x: number, v: number[]): number {
-        let denominator = 0;
-        for (const num of v) {
-            denominator += Math.exp(num);
-        }
-        return Math.exp(x) / denominator;
-    }
-
+    /**
+     * Calculates the softmax function over all classification-outputNode values
+     * @param outputNodes all outputNodes of a network
+     */
     public static softmax(outputNodes: List<NodeGene>): number[] {
         const result = []
         let denominator = 0;
@@ -151,6 +162,10 @@ export class NeatUtil {
         return result;
     }
 
+    /**
+     * Evaluates the regression nodes of a network
+     * @param outputNodes all output nodes of a network
+     */
     public static evaluateRegressionNodes(outputNodes: List<NodeGene>): number[] {
         const regressionValues = [];
         for (const oNode of outputNodes) {

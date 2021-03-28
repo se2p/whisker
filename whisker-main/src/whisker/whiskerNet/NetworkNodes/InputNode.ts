@@ -1,7 +1,6 @@
 import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {HiddenNode} from "./HiddenNode";
 
 export class InputNode extends NodeGene {
 
