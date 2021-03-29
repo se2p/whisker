@@ -6,6 +6,8 @@ import {NodeGene} from "./NetworkNodes/NodeGene";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
+import {ConnectionGene} from "./ConnectionGene";
+import {NeatMutation} from "./NeatMutation";
 
 export class NeuroevolutionUtil {
 
@@ -15,7 +17,7 @@ export class NeuroevolutionUtil {
      * @param population the whole population of NetworkChromosomes
      * @param properties the defined search-properties
      */
-    static speciate(chromosome: NetworkChromosome, population: NeatPopulation<NetworkChromosome>,
+    public static speciate(chromosome: NetworkChromosome, population: NeatPopulation<NetworkChromosome>,
                     properties: NeuroevolutionProperties<NetworkChromosome>): void {
 
         // If we have no species at all so far create the first one
@@ -64,7 +66,7 @@ export class NeuroevolutionUtil {
      * @param disjointCoefficient the defined disjoint coefficient
      * @param weightCoefficient the defined weight coefficient
      */
-    static compatibilityDistance(chromosome1: NetworkChromosome, chromosome2: NetworkChromosome, excessCoefficient: number,
+    public static compatibilityDistance(chromosome1: NetworkChromosome, chromosome2: NetworkChromosome, excessCoefficient: number,
                                  disjointCoefficient: number, weightCoefficient: number): number {
 
         // This should never happen!
@@ -174,5 +176,34 @@ export class NeuroevolutionUtil {
             }
         }
         return regressionValues;
+    }
+
+    /**
+     * Checks if the network already contains a given connection
+     * @param connections the list of connections
+     * @param connection the connection which should be searched in the list of all connections
+     * @return the found connection of the connection list
+     */
+    public static findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
+        for (const con of connections) {
+            if (con.equalsByNodes(connection)) return con;
+        }
+        return null;
+    }
+
+    /**
+     * Assigns the next valid innovation number to a given connection gene
+     * @param newInnovation the connection gene to which the innovation number should be assigned to
+     */
+    public static assignInnovationNumber(newInnovation: ConnectionGene): void {
+        // Check if innovation already happened in this generation if Yes assign the same innovation number
+        const oldInnovation = NeuroevolutionUtil.findConnection(NeatMutation._innovations, newInnovation)
+        if (oldInnovation !== null)
+            newInnovation.innovation = oldInnovation.innovation;
+        // If No assign a new one
+        else {
+            newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
+            NeatMutation._innovations.add(newInnovation);
+        }
     }
 }

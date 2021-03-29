@@ -10,14 +10,29 @@ import {Randomness} from "../utils/Randomness";
 
 export class NeatCrossover implements Crossover<NetworkChromosome> {
 
+    /**
+     * Random generator
+     */
     private readonly random = Randomness.getInstance();
 
+    /**
+     * Probability of applying weight averaging during crossover
+     */
     private readonly crossoverAverageWeights: number;
 
+    /**
+     * Constructs a new NeatCrossover object
+     * @param crossoverAverageWeights probability of applying weight averaging during crossover
+     */
     constructor(crossoverAverageWeights: number) {
         this.crossoverAverageWeights = crossoverAverageWeights;
     }
 
+    /**
+     * Applies the crossover operator
+     * @param parent1 the first parent of the crossover
+     * @param parent2 the second parent of the crossover
+     */
     apply(parent1: NetworkChromosome, parent2: NetworkChromosome): Pair<NetworkChromosome> {
         parent1.generateNetwork();
         parent2.generateNetwork();
@@ -29,16 +44,27 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
         return new Pair<NetworkChromosome>(child, undefined);
     }
 
+    /**
+     * Applies the crossover operator
+     * @param parents the parents to mate with each other
+     */
     applyFromPair(parents: Pair<NetworkChromosome>): Pair<NetworkChromosome> {
         return this.apply(parents.getFirst(), parents.getSecond());
     }
 
+    /**
+     * Applies crossover by aligning the connection gene lists of both parents;
+     * Matching genes are inherited randomly or by averaging the weight of both parents
+     * Disjoint and Excess genes are inherited from the more fit parent
+     * @param parent1 the first parent of the crossover
+     * @param parent2 the second parent of the crossover
+     * @param avgWeights decided if we inherit matching genes randomly or by averaging the weight of both parent connections
+     */
     private multipointCrossover(parent1: NetworkChromosome, parent2: NetworkChromosome, avgWeights) {
 
         // Check which parent has the higher non-adjusted fitness value
         // The worse parent should not add additional connections
         // If they have the same fitness value, take the smaller ones excess and disjoint connections only
-
         let p1Better = false;
         const parent1Size = parent1.connections.size();
         const parent2Size = parent2.connections.size();
@@ -155,20 +181,6 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
                 }
             }
 
-            // At this point we found a potential new Connection now set up everything for the mating process
-            // First Check if the new Connection does not conflict with an already chosen connection
-            for (const c of newConnections) {
-                if ((c.source.equals(currentConnection.source)) && c.target.equals(currentConnection.target) &&
-                    (c.recurrent === currentConnection.recurrent)) {
-                    skip = true;
-                    break;
-                }
-                if (c.source.equals(currentConnection.target) && c.target.equals(currentConnection.source) && (!c.recurrent) && (!currentConnection.recurrent)) {
-                    skip = true;
-                    break;
-                }
-            }
-
             // Now add the new Connection if we found a valid one.
             if (!skip) {
 
@@ -230,22 +242,8 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
         }
 
         // Finally create the child with the selected Connections and Nodes
-        let child = new NetworkChromosome(newConnections, newNodes, parent1.getMutationOperator(), parent1.getCrossoverOperator())
+        const child = new NetworkChromosome(newConnections, newNodes, parent1.getMutationOperator(), parent1.getCrossoverOperator())
         child.generateNetwork();
-
-        // Check if everything went fine and enable some connections to fix a defect network if necessary
-        let i = 0;
-        while (child.stabilizedCounter(100, true) < 0 && i < disabledConnections.size()) {
-            disabledConnections.get(i).isEnabled = true;
-            child.generateNetwork();
-            i++;
-        }
-
-        // If we still have a defect network, just clone the parent but set the eliminate flag, to kill the network.
-        if (child.stabilizedCounter(100, true) < 0) {
-            child = parent1.clone();
-            child.hasDeathMark = true;
-        }
 
         if (recurrent)
             child.isRecurrent = true;

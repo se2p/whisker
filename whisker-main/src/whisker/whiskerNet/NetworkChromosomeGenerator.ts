@@ -12,6 +12,7 @@ import {InputNode} from "./NetworkNodes/InputNode";
 import {BiasNode} from "./NetworkNodes/BiasNode";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
+import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 
 export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
 
@@ -145,8 +146,8 @@ export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkCh
                 for (const outputNode of outputNodes) {
                     const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
                     // Check if the connection does not exist yet.
-                    if (!NetworkChromosomeGenerator.findConnection(connections, newConnection)) {
-                        NetworkChromosomeGenerator.assignInnovationNumber(newConnection);
+                    if (NeuroevolutionUtil.findConnection(connections, newConnection) === null) {
+                        NeuroevolutionUtil.assignInnovationNumber(newConnection);
                         connections.add(newConnection)
                         outputNode.incomingConnections.add(newConnection);
                     }
@@ -192,8 +193,8 @@ export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkCh
                 for (const regNode of regressionNodes) {
                     const newConnection = new ConnectionGene(inputNode, regNode, 0, true, 0, false)
                     // Check if the connection does not exist yet.
-                    if (!NetworkChromosomeGenerator.findConnection(chromosome.connections, newConnection)) {
-                        NetworkChromosomeGenerator.assignInnovationNumber(newConnection);
+                    if (NeuroevolutionUtil.findConnection(chromosome.connections, newConnection) === null) {
+                        NeuroevolutionUtil.assignInnovationNumber(newConnection);
                         chromosome.connections.add(newConnection)
                         regNode.incomingConnections.add(newConnection);
                     }
@@ -201,35 +202,6 @@ export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkCh
             }
         }
         while (this._random.nextDouble() < this._inputRate)
-    }
-
-    /**
-     * Checks if the network already contains a given connection
-     * @param connections the list of connections
-     * @param connection the connection which should be searched in the list of all connections
-     * @return the found connection of the connection list
-     */
-    private static findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
-        for (const con of connections) {
-            if (con.equalsByNodes(connection)) return con;
-        }
-        return null;
-    }
-
-    /**
-     * Assigns the next valid innovation number to a given connection gene
-     * @param newInnovation the connection gene to which the innovation number should be assigned to
-     */
-    private static assignInnovationNumber(newInnovation: ConnectionGene): void {
-        // Check if innovation already happened in this generation if Yes assign the same innovation number
-        const oldInnovation = NetworkChromosomeGenerator.findConnection(NeatMutation._innovations, newInnovation)
-        if (oldInnovation !== null)
-            newInnovation.innovation = oldInnovation.innovation;
-        // If No assign a new one
-        else {
-            newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
-            NeatMutation._innovations.add(newInnovation);
-        }
     }
 
     setCrossoverOperator(crossoverOp: Crossover<NetworkChromosome>): void {
