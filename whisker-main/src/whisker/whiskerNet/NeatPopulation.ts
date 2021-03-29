@@ -7,19 +7,74 @@ import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 
 export class NeatPopulation<C extends NetworkChromosome> {
 
-    private _chromosomes: List<C>;
-    private _species: List<Species<C>>;
-    private _speciesCount: number;
-    private _highestFitness: number;
-    private _highestFitnessLastChanged: number
-    private _generation: number;
-    private readonly _numberOfSpeciesTargeted: number;
-    private _populationChampion: C;
-    private readonly _generator: ChromosomeGenerator<C>
-    private readonly _startSize: number;
+    /**
+     * The defined search parameters.
+     */
     private readonly _properties: NeuroevolutionProperties<C>;
+
+    /**
+     * The NetworkGenerator used for creating an initial population.
+     */
+    private readonly _generator: ChromosomeGenerator<C>
+
+    /**
+     * The starting size of the population. Should be maintained through all generations!
+     */
+    private readonly _startSize: number;
+
+    /**
+     * Saves all networks of the current population.
+     */
+    private readonly _chromosomes: List<C>;
+
+    /**
+     * Saves all species which are currently existent.
+     */
+    private readonly _species: List<Species<C>>;
+
+    /**
+     * Number of species we want to maintain through the generations.
+     * To ensure this, the distanceThreshold is adjusted appropriately in each generation.
+     */
+    private readonly _numberOfSpeciesTargeted: number;
+
+    /**
+     * The number of encountered species through all generations.
+     */
+    private _speciesCount: number;
+
+    /**
+     * The average fitness of the current generation. Used for reporting purposes.
+     */
     private _averageFitness: number;
 
+    /**
+     * The highest fitness value ever achieved through all generations.
+     */
+    private _highestFitness: number;
+
+    /**
+     * Number of iterations since the highest network fitness has improved.
+     */
+    private _highestFitnessLastChanged: number
+
+    /**
+     * Saves the number of the current generation.
+     */
+    private _generation: number;
+
+    /**
+     * Points to the populationChampion.
+     */
+    private _populationChampion: C;
+
+    /**
+     * Constructs a new NEATPopulation
+     * @param size the size of the population
+     * @param numberOfSpecies the number of species we want to maintain through the generations.
+     * @param generator the chromosomeGenerator used for creating the initial population.
+     * @param properties the defined search parameters
+     */
     constructor(size: number, numberOfSpecies: number, generator: ChromosomeGenerator<C>,
                 properties: NeuroevolutionProperties<C>) {
         this._speciesCount = 0;
@@ -38,14 +93,13 @@ export class NeatPopulation<C extends NetworkChromosome> {
     }
 
     /**
-     * Generates a new Population
-     * @private
+     * Generates an initial population of networks.
      */
     private generatePopulation(): void {
-        while (this.populationSize() < this._startSize) {
-            const chromosome = this._generator.get();
+        while (this.populationSize() < this.startSize) {
+            const chromosome = this.generator.get();
             this.chromosomes.add(chromosome)
-            NeuroevolutionUtil.speciate(chromosome, this, this._properties);
+            NeuroevolutionUtil.speciate(chromosome, this, this.properties);
         }
         console.log("Starting Species: ", this.species);
     }
@@ -55,16 +109,16 @@ export class NeatPopulation<C extends NetworkChromosome> {
      * Applies evolution to the current population -> generate the next generation from the current one
      */
     public evolution(): void {
-        const currentSpeciesSize: number = this._species.size();
+        // Adjust the Distance Threshold accordingly to eventually reach the targeted number of Species
         const compatibilityModifier = 0.3;
-        // Adjust the Distance Threshold to aim for the targeted number of Species
         if (this.generation > 1) {
-            if (currentSpeciesSize < this._numberOfSpeciesTargeted)
-                this._properties.distanceThreshold -= compatibilityModifier;
-            else if (currentSpeciesSize > this._numberOfSpeciesTargeted)
-                this._properties.distanceThreshold += compatibilityModifier;
+            if (this.species.size() < this.numberOfSpeciesTargeted)
+                this.properties.distanceThreshold -= compatibilityModifier;
+            else if (this.species.size() > this.numberOfSpeciesTargeted)
+                this.properties.distanceThreshold += compatibilityModifier;
 
-            if (this._properties.distanceThreshold < 0.3) this._properties.distanceThreshold = 0.3;
+            if (this.properties.distanceThreshold < 0.3)
+                this.properties.distanceThreshold = 0.3;
         }
 
         // First calculate the shared fitness value of each chromosome in each Specie and mark the chromosomes
@@ -115,11 +169,12 @@ export class NeatPopulation<C extends NetworkChromosome> {
 
         // Find the population champion and reward him with additional children
         this.sortPopulation();
+        this.sortSpecies();
         this.populationChampion = this.chromosomes.get(0);
         this.populationChampion.isPopulationChampion = true;
         this.populationChampion.numberOffspringPopulationChamp = 3;
 
-        // Handle lost children due to rounding precision
+        // Handle lost children due to rounding errors
         if (totalOffspringExpected < this.startSize) {
             // Assign the lost children to the population champion's species
             const lostChildren = this.startSize - totalOffspringExpected;
@@ -127,24 +182,24 @@ export class NeatPopulation<C extends NetworkChromosome> {
         }
 
         // Make sure we do not loose the population champion; could happen through fitness sharing
-        if(this.populationChampion.species.expectedOffspring < 1)
+        if (this.populationChampion.species.expectedOffspring < 1)
             this.populationChampion.species.expectedOffspring = 1;
 
-        // Calculate average fitness for logging
+        // Calculate average fitness for logging purposes
         this.calculateAverageFitness();
 
         // Check for fitness stagnation
-        if (this.populationChampion.networkFitness > this._highestFitness) {
+        if (this.populationChampion.networkFitness > this.highestFitness) {
             this.highestFitness = this.populationChampion.networkFitness;
             this.highestFitnessLastChanged = 0;
         } else {
-            this._highestFitnessLastChanged++;
+            this.highestFitnessLastChanged++;
         }
 
         // If there is a stagnation in fitness refocus the search
-        if (this._highestFitnessLastChanged > this._properties.penalizingAge + 5) {
+        if (this.highestFitnessLastChanged > this.properties.penalizingAge + 5) {
             console.info("Refocusing the search on the two most promising species")
-            this._highestFitnessLastChanged = 0;
+            this.highestFitnessLastChanged = 0;
             const halfPopulation = this.startSize / 2;
 
             // If we only have one Specie allow only the champ to reproduce
@@ -156,46 +211,45 @@ export class NeatPopulation<C extends NetworkChromosome> {
             }
 
             // Otherwise, allow only the first two species to reproduce and mark the others dead.
-            for (let i = 0; i < this.species.size(); i++) {
-                const specie = this.species.get(i);
-                if (i <= 1) {
-                    specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(halfPopulation);
-                    specie.expectedOffspring = halfPopulation;
-                    specie.ageOfLastImprovement = specie.age;
-                }
-                // The other species are terminated.
-                else {
-                    specie.expectedOffspring = 0;
+            else {
+                for (let i = 0; i < this.species.size(); i++) {
+                    const specie = this.species.get(i);
+                    if (i <= 1) {
+                        specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(halfPopulation);
+                        specie.expectedOffspring = halfPopulation;
+                        specie.ageOfLastImprovement = specie.age;
+                    }
+                    // The other species are terminated.
+                    else {
+                        specie.expectedOffspring = 0;
+                    }
                 }
             }
 
             //TODO: Babies Stolen
         }
 
-
         // Remove the Chromosomes with a death mark on them.
-        const eliminateList = new List<C>();
-        for (const chromosome of this._chromosomes) {
+        for (const chromosome of this.chromosomes) {
             if (chromosome.hasDeathMark) {
                 const specie = chromosome.species;
                 specie.removeChromosome(chromosome);
                 this.chromosomes.remove(chromosome);
-                eliminateList.add(chromosome);
             }
         }
 
         // Now let the reproduction start
         const offspring = new List<NetworkChromosome>()
-        for (const specie of this._species) {
-            offspring.addList(specie.breed(this, this._species));
+        for (const specie of this.species) {
+            offspring.addList(specie.breed(this, this.species));
         }
 
         // Speciate the produced offspring
         for (const child of offspring) {
-            NeuroevolutionUtil.speciate(child, this, this._properties)
+            NeuroevolutionUtil.speciate(child, this, this.properties)
         }
 
-        // Remove the parents from the population and the species. The new ones still exist in their species
+        // Remove the parents from the population and the species. The new ones still exist within their species
         for (const chromosome of this.chromosomes) {
             const specie = chromosome.species;
             specie.removeChromosome(chromosome);
@@ -210,8 +264,8 @@ export class NeatPopulation<C extends NetworkChromosome> {
                 doomedSpecies.add(specie);
             } else {
                 // Give the new species an age bonus!
-                if (specie.novel)
-                    specie.novel = false;
+                if (specie.isNovel)
+                    specie.isNovel = false;
                 else
                     specie.age++;
                 for (const chromosome of specie.chromosomes) {
@@ -220,61 +274,49 @@ export class NeatPopulation<C extends NetworkChromosome> {
             }
         }
         for (const specie of doomedSpecies) {
-            this._species.remove(specie);
+            this.species.remove(specie);
         }
-
-        // Pruning the Size if population gets out of hand! This might happen when we have a huge fitness increase
-        // within one generation.
-        if (this.populationSize() > this.startSize * 1.5) {
-            let tries = 0;
-            while (this.populationSize() > this.startSize && tries < 50) {
-                for (const specie of this.species) {
-                    // Only remove Chromosomes from species which have a lot of them.
-                    if (specie.size() > 10) {
-                        // Remove Chromosomes from species and then remove the eliminated ones from the whole population.
-                        const removedChromosomes = specie.sieveWeakChromosomes(5);
-                        for (const chromosome of removedChromosomes)
-                            this.chromosomes.remove(chromosome);
-                    } else
-                        tries++;
-                }
-            }
-            console.log(" Population Size after Pruning: " + this.populationSize())
-        }
-
         this.generation++;
     }
 
-    populationSize(): number {
+    /**
+     * Returns the size of the population
+     * @return population Size
+     */
+    public populationSize(): number {
         return this.chromosomes.size();
     }
 
-    sortPopulation():void{
+    /**
+     * Sorts the population according to the networkFitness in decreasing order.
+     */
+    private sortPopulation(): void {
         this.chromosomes.sort((a, b) => b.networkFitness - a.networkFitness)
     }
 
-    calculateAverageFitness():void{
+    /**
+     * Sorts the species List according to their champion's networkFitness in decreasing order.
+     */
+    private sortSpecies(): void {
+        this.species.sort((a, b) => b.champion.networkFitness - a.champion.networkFitness)
+    }
+
+    /**
+     * Calculates the average fitness of the whole population. Used for reporting.
+     */
+    private calculateAverageFitness(): void {
         let sum = 0;
-        for(const chromosome of this.chromosomes)
+        for (const chromosome of this.chromosomes)
             sum += chromosome.networkFitness;
         this.averageFitness = sum / this.populationSize();
     }
-
 
     get chromosomes(): List<C> {
         return this._chromosomes;
     }
 
-    set chromosomes(value: List<C>) {
-        this._chromosomes = value;
-    }
-
     get species(): List<Species<C>> {
         return this._species;
-    }
-
-    set species(value: List<Species<C>>) {
-        this._species = value;
     }
 
     get speciesCount(): number {
@@ -327,5 +369,17 @@ export class NeatPopulation<C extends NetworkChromosome> {
 
     set averageFitness(value: number) {
         this._averageFitness = value;
+    }
+
+    get properties(): NeuroevolutionProperties<C> {
+        return this._properties;
+    }
+
+    get numberOfSpeciesTargeted(): number {
+        return this._numberOfSpeciesTargeted;
+    }
+
+    get generator(): ChromosomeGenerator<C> {
+        return this._generator;
     }
 }
