@@ -75,7 +75,7 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     /**
      * Defines how strong the weights are perturbed during weight mutation
      */
-    private _perturbationPower
+    private _perturbationPower: number
 
     /**
      * The probability for enabling/disabling a connection between nodes
@@ -277,7 +277,6 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     set toggleEnableConnectionTimes(value: number) {
         this._toggleEnableConnectionTimes = value;
     }
-
 
     get mutateEnableConnection(): number {
         return this._mutateEnableConnection;

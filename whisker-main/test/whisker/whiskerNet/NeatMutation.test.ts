@@ -47,7 +47,7 @@ describe("NeatMutation", () => {
         for (const connection of networkChromosome.connections)
             oldEnableStates.push(connection.isEnabled);
 
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < 500; i++) {
             networkChromosome.mutate();
         }
         const mutatedEnableStates = []
