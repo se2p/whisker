@@ -118,24 +118,34 @@ class VMWrapper {
         return this.actionOnConstraintFailure;
     }
 
-    step () {
+    async step () {
         this.callbacks.callCallbacks(false);
+        await this._yield();
 
         if (!this.isRunning()) return;
 
         this.randomInputs.performRandomInput();
+        await this._yield();
+
         this.inputs.performInputs();
+        await this._yield();
 
         this.sprites.update();
+        await this._yield();
+
         this.vm.runtime._step();
+        await this._yield();
 
         if (!this.isRunning()) return;
 
         this.callbacks.callCallbacks(true);
+        await this._yield();
 
         if (!this.isRunning()) return;
 
-        return this.constraints.checkConstraints();
+        const returnValue = this.constraints.checkConstraints();
+        await this._yield();
+        return returnValue;
     }
 
     /**
@@ -288,7 +298,9 @@ class VMWrapper {
 
         this.instrumentDevice('clock', 'projectTimer');
 
-        return await this.vm.loadProject(project);
+        const returnValue = await this.vm.loadProject(project);
+        await this._yield();
+        return returnValue;
     }
 
     instrumentDevice (deviceName, method) {
@@ -348,6 +360,8 @@ class VMWrapper {
         this.vm.removeListener(Runtime.PROJECT_RUN_START, this._onRunStart);
         this.vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this.vm.runtime.removeListener('targetWasCreated', this._onTargetCreated);
+        this.vm.runtime.removeListener('QUESTION', this._onQuestion);
+        this.vm.runtime.removeListener('ANSWER', this._onAnswer);
     }
 
     // TODO: reset sprites on green flag?
@@ -414,7 +428,7 @@ class VMWrapper {
     }
 
     onQuestion (question) {
-        this.question = question;
+        this.question = question; // question can be null when questions are cleared
     }
 
     onAnswer (answer) {
@@ -444,6 +458,13 @@ class VMWrapper {
         this.projectRunning = false;
     }
 
+    /**
+     * "Yield the thread" to give other awaits that might be unresolved a chance to resolve
+     * before the next action is taken.
+     */
+    async _yield() {
+        await new Promise(resolve => setImmediate(() => resolve()));
+    }
 
     /**
      * @returns {string} .
