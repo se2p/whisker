@@ -23,6 +23,8 @@ describe('NeatChromosomeGenerator', () => {
     })
 
     test('Create initial random Chromosome', () => {
+        generator.setCrossoverOperator(crossoverOp)
+        generator.setMutationOperator(mutationOp)
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
         expect(neatChromosome.allNodes.size()).toBe(13) // +1 for Bias

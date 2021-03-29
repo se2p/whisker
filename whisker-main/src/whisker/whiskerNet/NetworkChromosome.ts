@@ -164,8 +164,8 @@ export class NetworkChromosome extends Chromosome {
 
         // duplicate connections
         for (const connection of newGenes) {
-            const fromNode = this.searchNode(connection.source, nodesClone)
-            const toNode = this.searchNode(connection.target, nodesClone)
+            const fromNode = NetworkChromosome.searchNode(connection.source, nodesClone)
+            const toNode = NetworkChromosome.searchNode(connection.target, nodesClone)
             const connectionClone = connection.cloneWithNodes(fromNode, toNode);
             connectionsClone.add(connectionClone);
         }
@@ -411,7 +411,7 @@ export class NetworkChromosome extends Chromosome {
      * @param allNodes the List in which we search the given node
      * @return the equal node of the node List
      */
-    private searchNode(node: NodeGene, allNodes: List<NodeGene>): NodeGene {
+    private static searchNode(node: NodeGene, allNodes: List<NodeGene>): NodeGene {
         for (const n of allNodes)
             if (n.equals(node))
                 return n;

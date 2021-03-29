@@ -281,7 +281,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     }
 
     /**
-     * A helper method that builds the 'NEAT' search algorithm with all necessary properties.
+     * A helper method that builds the 'NEAT' Neuroevolution search algorithm with all necessary properties.
      */
     private _buildNEAT() {
         const searchAlgorithm: SearchAlgorithm<C> = new NEAT() as unknown as SearchAlgorithm<C>;

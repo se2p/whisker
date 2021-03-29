@@ -1,7 +1,7 @@
 import {NetworkChromosome} from "../NetworkChromosome";
 
 /**
- * A fitness function maps a given network onto a numeric value that represents how good the network is in playing
+ * A NetworkFitness function maps a given network onto a numeric value that represents how good the network is in playing
  * a game.
  *
  * @param <C> the type of the networks rated by this fitness function
@@ -22,7 +22,7 @@ export interface NetworkFitnessFunction<C extends NetworkChromosome> {
      * @param timeout the timeout after which a scratch game during evaluation is terminated.
      * @returns the fitness value of the specified network choosing random events
      */
-    getRandomFitness(network: C, timeout: number):Promise<number>;
+    getRandomFitness(network: C, timeout: number): Promise<number>;
 
     /**
      * Computes and returns the fitness value for the given network without playing the game.
@@ -31,15 +31,9 @@ export interface NetworkFitnessFunction<C extends NetworkChromosome> {
      */
     getFitnessWithoutPlaying(network: C): number;
 
-
     /**
      * Comparator for two fitness values:
-     *
-     * We are sorting ascending, from bad fitness to better fitness
-     *
-     * Return greater than 0 if value2 is better than value1
-     * Return 0 if value1 equals value2
-     * Return less than 0 if value2 is worse than value1
+     * Sorted in descending order
      *
      * @param value1 first fitness value
      * @param value2 second fitness value

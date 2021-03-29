@@ -7,38 +7,67 @@ import {NetworkExecutor} from "../NetworkExecutor";
 
 export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
+    /**
+     * The offset which should be added to each score.
+     */
     private readonly offset: number;
 
+    /**
+     * Constructs a new ScoreFitness object.
+     * @param offset the offset which should be added to each score.
+     */
     constructor(offset: number) {
         this.offset = offset;
     }
 
+    /**
+     * Calculates the reached score
+     * @param network the network to evaluate
+     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
+     */
     async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
-        const score = this.gatherPoints(Container.vm);
+        const score = ScoreFitness.gatherPoints(Container.vm);
         network.networkFitness = score + this.offset;
         return network.networkFitness;
     }
 
+    /**
+     * Calculates the reached score of a random event selection playthrough
+     * @param network the network to evaluate
+     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
+     */
     async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.executeRandom(network);
-        const score = this.gatherPoints(Container.vm);
+        const score = ScoreFitness.gatherPoints(Container.vm);
         network.networkFitness = score + this.offset;
         return network.networkFitness;
     }
 
-    getFitnessWithoutPlaying(network: NetworkChromosome): number {
-        const score = this.gatherPoints(Container.vm) + this.offset;
-        return score
+    /**
+     * Calculates the reached score without starting a new playthrough.
+     * Used for CombinedNetworkFitness.
+     */
+    getFitnessWithoutPlaying(): number {
+        return ScoreFitness.gatherPoints(Container.vm) + this.offset
     }
 
+    /**
+     * Compares two fitness values -> Higher values are better.
+     * @param value1 first fitness value
+     * @param value2 second fitness value
+     */
     compare(value1: number, value2: number): number {
         return value2 - value1;
     }
 
-    private gatherPoints(vm: VirtualMachine): number {
+    /**
+     * Calculates the reached score by crawling through various variables of the stage and sprites.
+     * @param vm the Scratch-VM after the playthrough.
+     */
+    private static gatherPoints(vm: VirtualMachine): number {
         let points = 0;
         for (const target of vm.runtime.targets) {
             for (const value of Object.values(target.variables)) {

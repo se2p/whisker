@@ -14,6 +14,8 @@ import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {RegressionNode} from "../../../src/whisker/whiskerNet/NetworkNodes/RegressionNode";
 import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
+import {Species} from "../../../src/whisker/whiskerNet/Species";
+import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 
 describe('NeatChromosome', () => {
 
@@ -23,6 +25,7 @@ describe('NeatChromosome', () => {
     let outputSize: number;
     let generator: NetworkChromosomeGenerator;
     let chromosome: NetworkChromosome;
+    let properties: NeuroevolutionProperties<NetworkChromosome>;
 
     beforeEach(() => {
         crossoverOp = new NeatCrossover(0.4);
@@ -33,6 +36,7 @@ describe('NeatChromosome', () => {
         outputSize = 2;
         generator = new NetworkChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false)
         chromosome = generator.get();
+        properties = new NeuroevolutionProperties<NetworkChromosome>(10)
     })
 
     test('Constructor Test', () => {
@@ -56,6 +60,37 @@ describe('NeatChromosome', () => {
         expect(chromosome.hasRegression).toBe(false);
 
         expect(chromosome.outputNodes.get(0).incomingConnections.size()).toBe(genInputs[0].length)
+    })
+
+    test("Test getter and setter", () =>{
+        const species = new Species(1,true,properties)
+
+        chromosome.networkFitness = 4;
+        chromosome.sharedFitness = 2;
+        chromosome.species = species
+        chromosome.isSpeciesChampion = true;
+        chromosome.isPopulationChampion = true;
+        chromosome.hasDeathMark = true;
+        chromosome.expectedOffspring = 1;
+        chromosome.numberOffspringPopulationChamp = 2;
+        chromosome.trace = undefined;
+        chromosome.codons.add(1);
+        chromosome.isRecurrent = true;
+        chromosome.hasRegression = true;
+
+        expect(chromosome.networkFitness).toBe(4)
+        expect(chromosome.sharedFitness).toBe(2)
+        expect(chromosome.species).toBe(species)
+        expect(chromosome.isSpeciesChampion).toBeTruthy()
+        expect(chromosome.isPopulationChampion).toBeTruthy()
+        expect(chromosome.hasDeathMark).toBeTruthy()
+        expect(chromosome.expectedOffspring).toBe(1)
+        expect(chromosome.numberOffspringPopulationChamp).toBe(2)
+        expect(chromosome.trace).toBe(undefined)
+        expect(chromosome.codons.size()).toBe(1)
+        expect(chromosome.isRecurrent).toBeTruthy()
+        expect(chromosome.hasRegression).toBeTruthy()
+        expect(chromosome.getLength()).toBe(1)
     })
 
     test("Clone Test without hidden Layer", () => {
