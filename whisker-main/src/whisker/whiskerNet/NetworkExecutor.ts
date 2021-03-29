@@ -19,15 +19,51 @@ const Runtime = require('scratch-vm/src/engine/runtime');
 
 export class NetworkExecutor {
 
+    /**
+     * The Scratch-VM of the project which will we executed.
+     */
     private readonly _vm: VirtualMachine;
+
+    /**
+     * The wrapper of the Scratch-VM
+     */
     private _vmWrapper: VMWrapper
+
+    /**
+     * Collects the available events at the current state of the Scratch-VM
+     */
     private availableEvents: List<ScratchEvent>;
+
+    /**
+     * Monitors the execution of the Scratch-VM
+     */
     private eventObservers: EventObserver[] = [];
+
+    /**
+     * The initial sate of the Scratch-VM
+     */
     private _initialState = {};
+
+    /**
+     * True if the project is currently running.
+     */
     private _projectRunning: boolean
+
+    /**
+     * Timeout after which each playthrough is halted
+     */
     private _timeout: number;
+
+    /**
+     * Random generator
+     */
     private _random: Randomness;
 
+    /**
+     * Constructs a new NetworkExecutor object.
+     * @param vmWrapper the wrapper of the Scratch-VM.
+     * @param timeout timeout after which each playthrough is halted.
+     */
     constructor(vmWrapper: VMWrapper, timeout: number) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
@@ -36,13 +72,18 @@ export class NetworkExecutor {
         this.recordInitialState();
     }
 
+    /**
+     * Lets a neural network play the given Scratch game.
+     * @param network the network which should play the given game.
+     */
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
-        const args = [];
         let workingNetwork = false;
         const codons = new List<number>()
 
+        // Check how many activations a network needs to stabilise
         const stabilizeCounter = network.stabilizedCounter(100, false)
+
         seedScratch(String(Randomness.getInitialSeed()))
 
         // Load the inputs into the Network
@@ -50,19 +91,25 @@ export class NetworkExecutor {
         // eslint-disable-next-line prefer-spread
         const inputs = [].concat.apply([], spriteInfo);
 
+        // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
         network.flushNodeValues();
-        // Activate the network stabilizeCounter + 1 times to stabilise it for classification
         for (let i = 0; i < stabilizeCounter + 1; i++) {
             workingNetwork = network.activateNetwork(inputs);
         }
 
+        // Set up the Scratch-VM and start the game
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
+
+        // Initialise Timer for the timeout
         let timer = Date.now();
         this._timeout += Date.now();
+
+        // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
+            // Collect the currently available events
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -82,7 +129,6 @@ export class NetworkExecutor {
             // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
             else {
                 network.flushNodeValues();
-                // Activate the network stabilizeCounter + 1 times to stabilise it for classification
                 for (let i = 0; i < stabilizeCounter + 1; i++) {
                     workingNetwork = network.activateNetwork(inputs);
                 }
@@ -92,13 +138,15 @@ export class NetworkExecutor {
             const output = NeuroevolutionUtil.softmax(network.outputNodes);
 
             // Choose the event with the highest probability according to the softmax values
-            const indexOfMaxValue = output.reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+            const indexOfMaxValue = output.reduce(
+                (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.add(indexOfMaxValue);
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
 
-            events.add([nextEvent, args]);
-            this.notify(nextEvent, args);
-            await nextEvent.apply(this._vm, args)
+            // Update the VM with the given event. No args given since only MouseMove events take params currently.
+            events.add([nextEvent, []]);
+            this.notify(nextEvent, []);
+            await nextEvent.apply(this._vm, [])
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // If we have a regression Node evaluate it.
@@ -111,6 +159,7 @@ export class NetworkExecutor {
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
+            // Add a waitEvent in the end of each round.
             const waitEvent = new WaitEvent();
             events.add([waitEvent, []])
             await waitEvent.apply(this._vm);
@@ -125,7 +174,7 @@ export class NetworkExecutor {
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this.resetState();
 
-        // If we found a defect network let it go extinct!
+        // If we found a defect network let it go extinct! (Should not happen!)
         if (!workingNetwork)
             network.hasDeathMark = true;
 
@@ -134,17 +183,25 @@ export class NetworkExecutor {
         return network.trace;
     }
 
+    /**
+     * Plays a Scratch-Game by choosing an event randomly in each iteration
+     * @param network the network to evaluate
+     */
     async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         const codons = new List<number>()
-        const args = []
 
+        // Set up the Scratch-VM and start the game
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
+
+        // Initialise Timer for the timeout
         let timer = Date.now();
         this._timeout += Date.now();
+
+        // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
@@ -152,15 +209,16 @@ export class NetworkExecutor {
                 continue;
             }
 
+            // Select a random event from the list of available events and update the Scratch-VM with it.
             const randomIndex = this._random.nextInt(0, this.availableEvents.size())
             codons.add(randomIndex);
             const nextEvent: ScratchEvent = this.availableEvents.get(randomIndex)
-            events.add([nextEvent, args]);
-            this.notify(nextEvent, args);
-            await nextEvent.apply(this._vm, args)
+            events.add([nextEvent, []]);
+            this.notify(nextEvent, []);
+            await nextEvent.apply(this._vm, [])
             StatisticsCollector.getInstance().incrementEventsCount();
 
-            // If we have a regression Node randomise this output as well
+            // If we have a regression Node randomise this output as-well
             if (network.hasRegression) {
                 const mouseCoords = [this._random.nextInt(-240, 240), this._random.nextInt(-180, 180)]
                 const mouseMoveEvent = new MouseMoveEvent();
@@ -170,6 +228,7 @@ export class NetworkExecutor {
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
+            // Add a wait event in the end of each iteration.
             const waitEvent = new WaitEvent();
             events.add([waitEvent, []])
             await waitEvent.apply(this._vm);
@@ -189,10 +248,18 @@ export class NetworkExecutor {
         return network.trace;
     }
 
+    /**
+     * Event listener which checks if the project is still running, i.e no GameOver state was reached.
+     */
     private projectStopped() {
         return this._projectRunning = false;
     }
 
+    /**
+     * Extracts the Mouse coordinates from the regression nodes
+     * @param network the network which we ask for mouse coordinates
+     * @private
+     */
     private static getMouseCoordinates(network: NetworkChromosome): number[] {
         const coords = new List<number>();
         for (const node of network.outputNodes) {
@@ -223,6 +290,9 @@ export class NetworkExecutor {
         }
     }
 
+    /**
+     * Saves the initial state of the Scratch-VM
+     */
     private recordInitialState(): void {
         for (const targetsKey in this._vm.runtime.targets) {
             this._initialState[targetsKey] = {
@@ -241,6 +311,9 @@ export class NetworkExecutor {
         }
     }
 
+    /**
+     * Resets the Scratch-VM to the initial state
+     */
     private resetState() {
         // Delete clones
         const clones = [];
