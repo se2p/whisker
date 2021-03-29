@@ -39,7 +39,7 @@
     },
     "network-fitness": {
         "type": "combined",
-        "timeout": 25000,
+        "timeout": 20000,
         "functions": [
             {
                 "type": "score",

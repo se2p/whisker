@@ -17,7 +17,7 @@
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
         "mutationAddConnection": 0.05,
-        "recurrentConnection": 0.05,
+        "recurrentConnection": 0.1,
         "addConnectionTries": 20,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
@@ -43,7 +43,7 @@
     },
     "stopping-condition": {
         "type": "fixed-iteration",
-        "iterations": 50
+        "iterations": 100
     },
     "wait-duration": 50,
     "click-duration": 50,

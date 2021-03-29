@@ -1,8 +1,8 @@
 {
     "test-generator": "neuroevolution",
-    "algorithm": "neat",
+    "algorithm": "randomNeuroevolution",
     "chromosome": "neatChromosome",
-    "population-size": 10,
+    "population-size": 100,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 20,
     "ageSignificance": 1.0,
@@ -39,7 +39,7 @@
     },
     "network-fitness": {
         "type": "combined",
-        "timeout": 5000,
+        "timeout": 20000,
         "functions": [
             {
                 "type": "score",
