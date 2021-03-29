@@ -82,7 +82,7 @@ describe("Test NeatPopulation", () =>{
 
     test("Test evolution", () =>{
         const oldGeneration = population.chromosomes;
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 50; i++) {
             for(const c of population.chromosomes)
                 c.networkFitness = random.nextInt(1, 50);
             population.evolution();
@@ -91,7 +91,7 @@ describe("Test NeatPopulation", () =>{
 
         expect(oldGeneration).not.toContainEqual(newGeneration)
         expect(population.speciesCount).toBeGreaterThan(0)
-        expect(population.generation).toBe(100)
+        expect(population.generation).toBe(50)
         expect(population.species.size()).toBeGreaterThan(0)
         expect(population.chromosomes.size()).toBe(size)
     })
