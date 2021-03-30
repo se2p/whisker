@@ -63,5 +63,10 @@
     "pass" : "Test passed",
     "error" : "Test threw an error",
     "test-editor" : "Test editor",
-    "project" : "Your project"
+    "project" : "Your project",
+    "error-name": "Error",
+    "error-message" : "Error message",
+    "error-expected" : "Expected value",
+    "error-operator" : "Operator",
+    "error-actual" : "Actual value"
 }

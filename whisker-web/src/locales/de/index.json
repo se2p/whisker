@@ -63,5 +63,10 @@
     "pass" : "Test erfolgreich",
     "error" : "Test fehlerhaft",
     "test-editor" : "Test Editor",
-    "project" : "Dein Projekt"
+    "project" : "Dein Projekt",
+    "error-name": "Fehler",
+    "error-message" : "Fehlermeldung",
+    "error-expected" : "Erwarteter Wert",
+    "error-operator" : "Operator",
+    "error-actual" : "Tatsächlicher Wert"
 }

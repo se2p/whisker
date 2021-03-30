@@ -1,5 +1,5 @@
 const {$} = require('../web-libs');
-
+const index = require('../index');
 /**
  * <div>
  *     <table></table>
@@ -151,10 +151,17 @@ class TestTable {
         let operator = "operator";
         let actual = "actual";
         let excludedProperties = ["generatedMessage", "stack", msg, name, expected, operator, actual];
+        let translatedProperties = [msg, name, expected, operator, actual];
 
         function addRowIfPropertyPresent(prop) {
             if (test.error.hasOwnProperty(prop)) {
-                result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
+                if (translatedProperties.includes(prop)) {
+                    let translatedProp = index.i18n.t("error-" + prop);
+                    result += `<td>${translatedProp}</td><td>${test.error[prop]}</td>\n</tr>`;
+
+                } else {
+                    result += `<td>${prop}</td><td>${test.error[prop]}</td>\n</tr>`;
+                }
             }
         }
 

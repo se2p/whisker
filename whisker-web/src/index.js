@@ -497,7 +497,7 @@ $('.nav-link').on('click', event => {
     }
 });
 
-
+export {i18next as i18n};
 
 
 
