@@ -475,6 +475,9 @@ i18next
 function updateContent() {
     localize('#body');
     $('[data-toggle="tooltip"]').tooltip();
+    if (Whisker.testTable) {
+        Whisker.testTable.hideTestDetails();
+    }
 }
 
 $('#form-lang').on('change', () => {

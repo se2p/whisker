@@ -187,6 +187,20 @@ class TestTable {
         result += `</tbody> </table>`;
         return result;
     }
+
+    hideTestDetails() {
+        if (this.dataTable) {
+            this.dataTable.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                if (this.child.isShown()) {
+                    this.child.hide();
+                }
+            });
+            [...document.querySelectorAll('.toggle-details-icon')].forEach(function(icon) {
+                icon.classList.remove('fa-minus');
+                icon.classList.add('fa-plus');
+            });
+        }
+    }
 }
 
 module.exports = TestTable;
