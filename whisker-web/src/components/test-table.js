@@ -181,7 +181,8 @@ class TestTable {
         }
 
         if (test.hasOwnProperty("log") && test.log.length) {
-            result += `<td>${"log"}</td><td>${test.log}</td>\n</tr>`;
+            let log = index.i18n.t("log");
+            result += `<td>${log}</td><td>${test.log}</td>\n</tr>`;
         }
 
         result += `</tbody> </table>`;
