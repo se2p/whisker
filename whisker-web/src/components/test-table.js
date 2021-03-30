@@ -144,7 +144,8 @@ class TestTable {
      * @return {string} .
      */
     static prepareDescription(test) {
-        let result = `<table class="child-table"> <tbody> <tr> <td colspan="2">${test.description}</td> </tr>`;
+        let description = index.i18n.t("description");
+        let result = `<table class="child-table"> <tbody> <tr> <td>${description}</td><td>${test.description}</td> </tr>`;
         let name = "name";
         let msg = "message";
         let expected = "expected";
