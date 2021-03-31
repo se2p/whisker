@@ -19,6 +19,8 @@
         "mutationAddConnection": 0.1,
         "recurrentConnection": 0.1,
         "addConnectionTries": 20,
+        "populationChampionNumberOffspring": 10,
+        "populationChampionNumberClones": 5,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
         "mutateWeights": 0.8,
