@@ -248,16 +248,16 @@ export class Species<C extends NetworkChromosome> {
         this.champion = this.chromosomes.get(0);
 
         // Create the calculated number of offspring of this species; one at a time
-        let champCloned = false;
+        let champCloned = 0;
         for (let count = 0; count < this.expectedOffspring; count++) {
 
             let child: C;
 
             // If we have a population Champion in this species apply slight mutation or clone it
             if (this.champion.isPopulationChampion && this.champion.numberOffspringPopulationChamp > 0) {
-                if (!champCloned) {
+                if (champCloned < this.properties.populationChampionNumberClones) {
                     child = this.champion.clone() as C;
-                    champCloned = true;
+                    champCloned++;
                     this.champion.numberOffspringPopulationChamp--;
                 } else {
                     child = this.breedPopulationChampion()
@@ -265,9 +265,9 @@ export class Species<C extends NetworkChromosome> {
             }
 
             // Species champions are cloned only
-            else if (!champCloned) {
+            else if (champCloned < 1) {
                 child = this.champion.clone() as C;
-                champCloned = true;
+                champCloned++;
             }
 
                 // In some cases we only mutate and do no crossover

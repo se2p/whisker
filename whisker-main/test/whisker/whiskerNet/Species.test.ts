@@ -37,6 +37,8 @@ describe("Species Test", () => {
         properties.parentsPerSpecies = 0.2
         properties.mutationWithoutCrossover = 0.3
         properties.interspeciesMating = 0.1;
+        properties.populationChampionNumberOffspring = 5;
+        properties.populationChampionNumberClones = 3;
         species = new Species(0, false, properties);
         while (population.size() < populationSize)
             population.add(generator.get())
@@ -194,7 +196,7 @@ describe("Species Test", () => {
         const popChampion = random.pickRandomElementFromList(popSpecie.chromosomes)
         popChampion.networkFitness = 10;
         popChampion.isPopulationChampion = true;
-        popChampion.numberOffspringPopulationChamp = 3;
+        popChampion.numberOffspringPopulationChamp = 5;
 
         const champion = random.pickRandomElementFromList(popSpecie.chromosomes)
         champion.isSpeciesChampion = true;

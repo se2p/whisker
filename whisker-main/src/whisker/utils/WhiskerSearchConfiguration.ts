@@ -109,6 +109,8 @@ export class WhiskerSearchConfiguration {
         const mutationAddConnection = this.dict['mutation']['mutationAddConnection'] as number
         const recurrentConnection = this.dict['mutation']['recurrentConnection'] as number
         const addConnectionTries = this.dict['mutation']['addConnectionTries'] as number
+        const populationChampionNumberOffspring = this.dict['mutation']['populationChampionNumberOffspring'] as number;
+        const populationChampionNumberClones = this.dict['mutation']['populationChampionNumberClones'] as number;
         const populationChampionConnectionMutation = this.dict['mutation']['populationChampionConnectionMutation'] as number;
         const mutationAddNode = this.dict['mutation']['mutationAddNode'] as number;
         const mutateWeights = this.dict['mutation']['mutateWeights'] as number;
@@ -137,6 +139,8 @@ export class WhiskerSearchConfiguration {
         properties.mutationAddConnection = mutationAddConnection;
         properties.recurrentConnection = recurrentConnection;
         properties.addConnectionTries = addConnectionTries;
+        properties.populationChampionNumberOffspring = populationChampionNumberOffspring;
+        properties.populationChampionNumberClones = populationChampionNumberClones;
         properties.populationChampionConnectionMutation = populationChampionConnectionMutation;
         properties.mutationAddNode = mutationAddNode;
         properties.mutateWeights = mutateWeights;

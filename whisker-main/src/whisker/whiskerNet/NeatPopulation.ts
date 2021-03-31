@@ -172,7 +172,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
         this.sortSpecies();
         this.populationChampion = this.chromosomes.get(0);
         this.populationChampion.isPopulationChampion = true;
-        this.populationChampion.numberOffspringPopulationChamp = 3;
+        this.populationChampion.numberOffspringPopulationChamp = this.properties.populationChampionNumberOffspring;
 
         // Handle lost children due to rounding errors
         if (totalOffspringExpected < this.startSize) {
