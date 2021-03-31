@@ -200,7 +200,7 @@ export class NeuroevolutionUtil {
         const oldInnovation = NeuroevolutionUtil.findConnection(NeatMutation._innovations, newInnovation)
         if (oldInnovation !== null)
             newInnovation.innovation = oldInnovation.innovation;
-        // If No assign a new one
+        // If Not assign a new one
         else {
             newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
             NeatMutation._innovations.add(newInnovation);

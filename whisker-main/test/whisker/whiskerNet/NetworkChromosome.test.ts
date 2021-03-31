@@ -1,4 +1,4 @@
-import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
+import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
@@ -23,7 +23,7 @@ describe('NeatChromosome', () => {
     let crossoverOp: Crossover<NetworkChromosome>;
     let genInputs: number[][];
     let outputSize: number;
-    let generator: NetworkChromosomeGenerator;
+    let generator: NetworkChromosomeGeneratorSparse;
     let chromosome: NetworkChromosome;
     let properties: NeuroevolutionProperties<NetworkChromosome>;
 
@@ -34,7 +34,7 @@ describe('NeatChromosome', () => {
             1.5, 0.1, 3, 0.1);
         genInputs = [[1, 2, 3, 4, 5, 6]]
         outputSize = 2;
-        generator = new NetworkChromosomeGenerator(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false)
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false)
         chromosome = generator.get();
         properties = new NeuroevolutionProperties<NetworkChromosome>(10)
     })

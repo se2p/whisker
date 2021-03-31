@@ -29,7 +29,8 @@ import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStopping
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
-import {NetworkChromosomeGenerator} from "../whiskerNet/NetworkChromosomeGenerator";
+import {NetworkChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
+import {NetworkChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
 import {NeatMutation} from "../whiskerNet/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/NeatCrossover";
 import {Container} from "./Container";
@@ -238,12 +239,16 @@ export class WhiskerSearchConfiguration {
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
                     this.dict['init-var-length']);
-            case 'neatChromosome':
-                return new NetworkChromosomeGenerator(this._getMutationOperator(), this._getCrossoverOperator(),
+            case 'sparseNetwork':
+                return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
                     ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
                     ScratchEventExtractor.hasMouseEvent(Container.vm))
-
+            case 'fullyConnectedNetwork':
+                return new NetworkChromosomeGeneratorFullyConnected(this._getMutationOperator(), this._getCrossoverOperator(),
+                    InputExtraction.extractSpriteInfo(Container.vm),
+                    ScratchEventExtractor.extractEvents(Container.vm).size(),
+                    ScratchEventExtractor.hasMouseEvent(Container.vm))
             case 'test':
             default:
                 return new TestChromosomeGenerator(this.getSearchAlgorithmProperties(),

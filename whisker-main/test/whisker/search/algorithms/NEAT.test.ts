@@ -9,7 +9,7 @@ import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAl
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/NeatCrossover";
-import {NetworkChromosomeGenerator} from "../../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
+import {NetworkChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
@@ -26,7 +26,7 @@ describe('Test NEAT', () => {
     let populationSize: number
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
-    let generator: NetworkChromosomeGenerator
+    let generator: NetworkChromosomeGeneratorSparse
     let genInputs: number[][]
     let outputSize: number
     let random : Randomness
@@ -43,7 +43,7 @@ describe('Test NEAT', () => {
             0.1, 3,0.1);
         genInputs = [[1,2,3],[4,5,6], [7,8], [9]];
         outputSize = 3;
-        generator = new NetworkChromosomeGenerator(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
 
         builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         iterations = 20;

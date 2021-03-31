@@ -2,7 +2,7 @@ import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
-import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
+import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
@@ -20,7 +20,7 @@ describe("NeatUtil Tests", () => {
     let mutation: NeatMutation;
     let genInputs: number[][];
     let numberOutputs: number;
-    let generator: NetworkChromosomeGenerator
+    let generator: NetworkChromosomeGeneratorSparse
     let properties: NeuroevolutionProperties<NetworkChromosome>
 
 
@@ -36,7 +36,7 @@ describe("NeatUtil Tests", () => {
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
-        generator = new NetworkChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, false)
+        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, numberOutputs, 0.4, false)
     })
 
     test("Test Speciation when a new Population gets created", () => {
@@ -198,7 +198,7 @@ describe("NeatUtil Tests", () => {
 
     test("Test Regression Nodes Output", () =>{
         const noRegressionNetwork = generator.get();
-        const regGenerator = new NetworkChromosomeGenerator(mutation, crossOver, genInputs, numberOutputs, 0.4, true);
+        const regGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, numberOutputs, 0.4, true);
         const regressionNetwork1 = regGenerator.get();
         const regressionNetwork2 = regGenerator.get();
 

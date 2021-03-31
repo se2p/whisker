@@ -1,20 +1,20 @@
-import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
-import {NetworkChromosome} from "./NetworkChromosome";
-import {Mutation} from "../search/Mutation";
-import {Crossover} from "../search/Crossover";
-import {List} from "../utils/List";
-import {NodeGene} from "./NetworkNodes/NodeGene";
-import {ConnectionGene} from "./ConnectionGene";
-import {NeatMutation} from "./NeatMutation";
-import {Randomness} from "../utils/Randomness";
-import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
-import {InputNode} from "./NetworkNodes/InputNode";
-import {BiasNode} from "./NetworkNodes/BiasNode";
-import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
-import {RegressionNode} from "./NetworkNodes/RegressionNode";
-import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
+import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
+import {NetworkChromosome} from "../NetworkChromosome";
+import {Mutation} from "../../search/Mutation";
+import {Crossover} from "../../search/Crossover";
+import {List} from "../../utils/List";
+import {NodeGene} from "../NetworkNodes/NodeGene";
+import {ConnectionGene} from "../ConnectionGene";
+import {NeatMutation} from "../NeatMutation";
+import {Randomness} from "../../utils/Randomness";
+import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
+import {InputNode} from "../NetworkNodes/InputNode";
+import {BiasNode} from "../NetworkNodes/BiasNode";
+import {ClassificationNode} from "../NetworkNodes/ClassificationNode";
+import {RegressionNode} from "../NetworkNodes/RegressionNode";
+import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 
-export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
+export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<NetworkChromosome> {
 
     /**
      * The mutation operator of the NetworkChromosomes

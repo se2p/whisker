@@ -1,6 +1,6 @@
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
-import {NetworkChromosomeGenerator} from "../../../src/whisker/whiskerNet/NetworkChromosomeGenerator";
+import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
@@ -10,7 +10,7 @@ describe("Test NeatPopulation", () =>{
 
     let size: number;
     let numberOfSpecies: number;
-    let chromosomeGenerator: NetworkChromosomeGenerator;
+    let chromosomeGenerator: NetworkChromosomeGeneratorSparse;
     let crossOver: NeatCrossover;
     let mutation: NeatMutation;
     let inputs: number[][];
@@ -29,7 +29,7 @@ describe("Test NeatPopulation", () =>{
             1.5, 0.1, 3, 0.1);
         inputs = [[1,2,3,4,5,6]]
         numberOutputs = 3;
-        chromosomeGenerator = new NetworkChromosomeGenerator(
+        chromosomeGenerator = new NetworkChromosomeGeneratorSparse(
             mutation, crossOver, inputs, numberOutputs, 0.4, false)
         properties = new NeuroevolutionProperties<NetworkChromosome>(size)
         properties.disjointCoefficient = 1;
@@ -52,7 +52,7 @@ describe("Test NeatPopulation", () =>{
         expect(population.highestFitness).toBe(0)
         expect(population.highestFitnessLastChanged).toBe(0)
         expect(population.numberOfSpeciesTargeted).toBe(numberOfSpecies)
-        expect(population.generator).toBeInstanceOf(NetworkChromosomeGenerator)
+        expect(population.generator).toBeInstanceOf(NetworkChromosomeGeneratorSparse)
         expect(population.startSize).toBe(size)
         expect(population.generation).toBe(0)
         expect(population.species.size()).toBeGreaterThan(0)
