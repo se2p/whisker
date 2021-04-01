@@ -53,7 +53,7 @@ async function init () {
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
                     logger.info("Not a Scratch project: "+file);
-                    next;
+                    continue;
                 }
                 logger.info("Testing project "+file);
                 csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
@@ -65,6 +65,10 @@ async function init () {
             }
         } else {
             await runTestsOnFile(browser, scratchPath);
+
+            if (csvFile != false) {
+                logger.warn(`Scratch path ${scratchPath} is not a directory, skipping CSV file creation`);
+            }
         }
         await browser.close();
     }
@@ -111,8 +115,9 @@ async function runGeneticSearch (browser) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
-        await (await page.$('#toggle-output')).click();
-        await (await page.$('#toggle-editor')).click();
+        await (await page.$('#toggle-advanced')).click();
+        await (await page.$('#toggle-tap')).click();
+        await (await page.$('#toggle-log')).click();
         await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
@@ -162,12 +167,12 @@ async function runGeneticSearch (browser) {
         await (await page.$('#run-search')).click();
     }
 
-    async function downloadTests() {
+    async function downloadTests () {
         await page._client.send('Page.setDownloadBehavior', {
             behavior: 'allow',
             downloadPath: './'
         });
-        await (await page.$('#test-editor .editor-save')).click();
+        await (await page.$('.editor-save')).click();
         await page.waitForTimeout(5000);
     }
 
@@ -215,7 +220,9 @@ async function runTests (path, browser, index, targetProject) {
         await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         await (await page.$('#fileselect-tests')).uploadFile(path);
-        await (await page.$('#toggle-output')).click();
+        await (await page.$('#toggle-advanced')).click();
+        await (await page.$('#toggle-tap')).click();
+        await (await page.$('#toggle-log')).click();
     }
 
     /**

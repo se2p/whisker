@@ -1,0 +1,18 @@
+{
+    "h2" : "Contact",
+    "h4" : "Talk to the people behind Whisker",
+    "mail" : "Your mail address",
+    "age" : "Your age",
+    "op1" : "under 10 years",
+    "op2" : "between 10 and 14 years",
+    "op3" : "between 15 and 18 years",
+    "op4" : "over 18 years",
+    "gender" : "Your gender",
+    "male" : "male",
+    "female" : "female",
+    "diverse" : "other",
+    "noInfo" : "no information",
+    "sbj" : "Subject",
+    "msg" : "Message",
+    "submit" : "Send message"
+}

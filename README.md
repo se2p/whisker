@@ -62,9 +62,10 @@ Options:
                                       false)
   -t, --testPath <Path>               Tests to run (default: false)
   -a, --accelerationFactor <Integer>  Acceleration factor (default: 1)
-  -v, --csvFile <Path>                Name of CSV File to put output into (default: false)
+  -v, --csvFile <Path>                Name of CSV File to put output into, requires scratchPath to point to
+                                      a directory (default: false)
   -c, --configPath <Path>             Path to a configuration file (default:
-                                      "../whisker-main/config/default.json")
+                                      "../config/default.json")
   -d, --isHeadless                    If should run headless (d like in decapitated)
   -p, --numberOfTabs <Integer>        The number of tabs to execute the tests in (default: 1)
   -k, --isConsoleForwarded            If the browser's console output should be forwarded (default: false)
@@ -91,7 +92,7 @@ Details on writing Whisker tests in JavaScript can be found
 
 ## Generating Tests Automatically
 
-The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate search configuration (examples can be found in the `config` directory), and click `Run Search`. Warning: This may take a while! Once the search has completed, the generated tests are loaded into the editor window.
+The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate search configuration (examples can be found in the `config` directory), and click `Test Generation`. Warning: This may take a while! Once the search has completed, the generated tests are loaded into the editor window.
 
 If you run test generation with Servant (command line option `-g`), at the end of the search a file called `tests.js`
 is created in the current directory which contains the tests. These can now be loaded into Whisker.

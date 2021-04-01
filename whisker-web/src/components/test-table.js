@@ -90,10 +90,11 @@ class TestTable {
             search: {
                 smart: true
             },
-
             language: {
-                emptyTable: 'No tests loaded'
+                search: '&#x1F50E;',
+                emptyTable: '-'
             }
+
         });
     }
 
@@ -126,12 +127,7 @@ class TestTable {
 `<table class="child-table">
     <tbody>
         <tr>
-            <td>Description:</td>
             <td>${test.description}</td>
-        </tr>
-        <tr>
-            <td>Categories:</td>
-            <td>${test.categories.length === 0 ? 'N/A' : test.categories.join(', ')}</td>
         </tr>
     </tbody>
 </table>`;

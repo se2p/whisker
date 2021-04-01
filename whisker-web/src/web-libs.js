@@ -3,7 +3,9 @@ const $ = require('jquery');
 require('datatables.net')(window, $);
 
 /* Bootstrap */
+window.Popper = require('popper.js/dist/umd/popper.js').default;
 require('bootstrap/js/src/modal');
+require('bootstrap/js/src/tooltip');
 
 /* CodeMirror */
 const CodeMirror = require('codemirror');

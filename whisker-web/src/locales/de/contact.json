@@ -1,0 +1,18 @@
+{
+    "h2" : "Kontakt",
+    "h4" : "Trete mit den Leuten hinter Whisker in Kontakt",
+    "mail" : "Deine E-Mail-Adresse",
+    "age" : "Dein Alter",
+    "op1" : "unter 10 Jahren",
+    "op2" : "zwischen 10 und 14 Jahren",
+    "op3" : "zwischen 15 und 18 Jahren",
+    "op4" : "über 18 Jahren",
+    "gender" : "Dein Geschlecht",
+    "male" : "männlich",
+    "female" : "weiblich",
+    "diverse" : "divers",
+    "noInfo" : "keine Angabe",
+    "sbj" : "Betreff",
+    "msg" : "Nachricht",
+    "submit" : "Nachricht absenden"
+}
