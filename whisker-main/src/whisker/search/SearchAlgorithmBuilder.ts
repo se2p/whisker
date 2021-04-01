@@ -43,6 +43,8 @@ import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitn
 import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
+import {NEAT} from "./algorithms/NEAT";
+import {RandomNeuroevolution} from "./algorithms/RandomNeuroevolution";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -178,7 +180,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         this._properties = properties;
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
-
     /**
      * Adds the selection operation to use.
      * @param selection the selection operator to use
@@ -208,6 +209,12 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
                 break;
             case SearchAlgorithmType.SIMPLEGA:
                 searchAlgorithm = this._buildSimpleGA();
+                break;
+            case SearchAlgorithmType.NEAT:
+                searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>
+                break;
+            case SearchAlgorithmType.RANDOM_NEUROEVOLUTION:
+                searchAlgorithm = this._buildRandomNeuroevolution() as unknown as SearchAlgorithm<C>
                 break;
             case SearchAlgorithmType.RANDOM:
             default:
@@ -270,6 +277,24 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
         searchAlgorithm.setSelectionOperator(this._selectionOperator);
 
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the 'NEAT' Neuroevolution search algorithm with all necessary properties.
+     */
+    private _buildNEAT() {
+        const searchAlgorithm: SearchAlgorithm<C> = new NEAT() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the a randomised Neuroevolution algorithm.
+     */
+    private _buildRandomNeuroevolution() {
+        const searchAlgorithm: SearchAlgorithm<C> = new RandomNeuroevolution() as unknown as SearchAlgorithm<C>;
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         return searchAlgorithm;
     }
 
