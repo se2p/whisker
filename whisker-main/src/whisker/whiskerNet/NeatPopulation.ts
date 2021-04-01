@@ -128,7 +128,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
         }
 
         // Original Offspring calculation
-        /*
+
         // Calculate the total average fitness value of all chromosomes in the generation
         let fitnessSum = 0.0;
         for (const chromosome of this.chromosomes) {
@@ -148,11 +148,11 @@ export class NeatPopulation<C extends NetworkChromosome> {
         let leftOver = 0.0;
         let totalOffspringExpected = 0;
         for (const specie of this.species) {
-            leftOver = specie.getNumberOfOffsprings(leftOver);
+            leftOver = specie.getNumberOfOffspringsNEAT(leftOver);
             totalOffspringExpected += specie.expectedOffspring;
         }
-         */
 
+        /*
         // Calculate the total Average Species Fitness; used for assigning the amount of offspring per species
         let totalAverageSpeciesFitness = 0;
         for (const specie of this.species) {
@@ -166,6 +166,8 @@ export class NeatPopulation<C extends NetworkChromosome> {
             leftOver = specie.getNumberOffspringsAvg(leftOver, totalAverageSpeciesFitness, this.startSize)
             totalOffspringExpected += specie.expectedOffspring;
         }
+
+         */
 
         // Find the population champion and reward him with additional children
         this.sortPopulation();
