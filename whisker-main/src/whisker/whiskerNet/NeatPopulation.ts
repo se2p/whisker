@@ -127,32 +127,6 @@ export class NeatPopulation<C extends NetworkChromosome> {
             specie.assignAdjustFitness();
         }
 
-        // Original Offspring calculation
-        /*
-        // Calculate the total average fitness value of all chromosomes in the generation
-        let fitnessSum = 0.0;
-        for (const chromosome of this.chromosomes) {
-            fitnessSum += chromosome.networkFitness;
-        }
-        const numberOrganisms = this.chromosomes.size();
-        const averageFitness = fitnessSum / numberOrganisms;
-
-        // Compute the expected number of offspring for each chromosome which depends on its fitness value
-        // in comparison to the averageFitness of the population
-        for (const chromosome of this.chromosomes) {
-            chromosome.expectedOffspring = chromosome.networkFitness / averageFitness;
-        }
-
-        console.log("Average Fitness: " + averageFitness)
-        // Now calculate the number of offspring in each Species
-        let leftOver = 0.0;
-        let totalOffspringExpected = 0;
-        for (const specie of this.species) {
-            leftOver = specie.getNumberOfOffsprings(leftOver);
-            totalOffspringExpected += specie.expectedOffspring;
-        }
-         */
-
         // Calculate the total Average Species Fitness; used for assigning the amount of offspring per species
         let totalAverageSpeciesFitness = 0;
         for (const specie of this.species) {
