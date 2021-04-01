@@ -39,10 +39,6 @@ export class InputExtraction {
         if (sprite.sprite.costumes_.length > 1) {
             spriteInfo.push(sprite.currentCostume / sprite.sprite.costumes_.length)
         }
-        //spriteInfo[1] = sprite.y / stageHeight;
-        //spriteInfo[2] = sprite.getBounds().width / stageWidth;
-        //spriteInfo[3] = sprite.getBounds().height / stageHeight;
-        //spriteInfo[4] = sprite.visible ? 1: -1;
         return spriteInfo;
     }
 }
