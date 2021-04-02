@@ -127,8 +127,6 @@ export class NeatPopulation<C extends NetworkChromosome> {
             specie.assignAdjustFitness();
         }
 
-        // Original Offspring calculation
-
         // Calculate the total average fitness value of all chromosomes in the generation
         let fitnessSum = 0.0;
         for (const chromosome of this.chromosomes) {

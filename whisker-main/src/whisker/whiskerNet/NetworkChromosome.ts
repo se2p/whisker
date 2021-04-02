@@ -369,12 +369,26 @@ export class NetworkChromosome extends Chromosome {
      * @param node2 the target node of the path
      * @return true if the path is a recurrent one.
      */
-    public isRecurrentNetwork(node1: NodeGene, node2: NodeGene): boolean {
+    public isRecurrentPath(node1: NodeGene, node2: NodeGene, level:number, threshold:number): boolean {
         this.generateNetwork();
 
-        // Reset the traverse flag
-        for (const node of this.allNodes)
-            node.traversed = false;
+        if(level === 0){
+            // Reset the traverse flag
+            for (const node of this.allNodes)
+                node.traversed = false;
+        }
+
+        // if the source node is in the output layer it has to be a recurrent connection!
+        if(node1.type === NodeType.OUTPUT){
+            this.isRecurrent = true;
+            return true;
+        }
+
+        level++;
+
+        if(level > threshold){
+            return false;
+        }
 
         // If we end up in node1 again we found a recurrent path.
         if (node1 === node2) {
@@ -386,7 +400,7 @@ export class NetworkChromosome extends Chromosome {
             if (!inConnection.recurrent) {
                 if (!inConnection.source.traversed) {
                     inConnection.source.traversed = true;
-                    if (this.isRecurrentNetwork(inConnection.source, node2)) {
+                    if (this.isRecurrentPath(inConnection.source, node2, level, threshold)) {
                         this.isRecurrent = true;
                         return true;
                     }
@@ -394,14 +408,6 @@ export class NetworkChromosome extends Chromosome {
             }
         }
         node1.traversed = true;
-
-        // The selected path is not a recurrent one.
-        // However, we have to check if the network does not have other recurrent connections
-        this.isRecurrent = false;
-        for (const connection of this.connections) {
-            if (connection.recurrent)
-                this.isRecurrent = true;
-        }
         return false;
     }
 

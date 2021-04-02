@@ -17,7 +17,7 @@ import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/Neuroevolution
 import {Species} from "../../../src/whisker/whiskerNet/Species";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 
-describe('NeatChromosome', () => {
+describe('Test NetworkChromosome', () => {
 
     let mutationOp: Mutation<NetworkChromosome>;
     let crossoverOp: Crossover<NetworkChromosome>;
@@ -62,8 +62,8 @@ describe('NeatChromosome', () => {
         expect(chromosome.outputNodes.get(0).incomingConnections.size()).toBe(genInputs[0].length)
     })
 
-    test("Test getter and setter", () =>{
-        const species = new Species(1,true,properties)
+    test("Test getter and setter", () => {
+        const species = new Species(1, true, properties)
 
         chromosome.networkFitness = 4;
         chromosome.sharedFitness = 2;
@@ -500,15 +500,18 @@ describe('NeatChromosome', () => {
         connections.add(new ConnectionGene(deepHiddenNode, hiddenNode, 1, true, 10, true));
         connections.add(new ConnectionGene(deepHiddenNode, nodes.get(4), 1, true, 11, false))
         connections.add(new ConnectionGene(deepHiddenNode, deepHiddenNode, 1, true, 10, true));
+        connections.add(new ConnectionGene(nodes.get(3), nodes.get(4), 1, true, 11, true))
 
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp);
-        expect(chromosome.isRecurrentNetwork(deepHiddenNode, hiddenNode)).toBe(true)
-        expect(chromosome.isRecurrent).toBe(true)
-        expect(chromosome.isRecurrentNetwork(deepHiddenNode, deepHiddenNode)).toBe(true)
-        expect(chromosome.isRecurrent).toBe(true)
-        expect(chromosome.isRecurrentNetwork(hiddenNode, deepHiddenNode)).toBe(false)
-        expect(chromosome.isRecurrent).toBe(true)   // True since we have other recurrent connections in the network
+        const threshold = chromosome.allNodes.size() * chromosome.allNodes.size()
+        expect(chromosome.isRecurrentPath(deepHiddenNode, hiddenNode, 0, threshold)).toBeTruthy()
+        expect(chromosome.isRecurrent).toBeTruthy()
+        expect(chromosome.isRecurrentPath(deepHiddenNode, deepHiddenNode, 0, threshold)).toBeTruthy()
+        expect(chromosome.isRecurrent).toBeTruthy()
+        expect(chromosome.isRecurrentPath(hiddenNode, deepHiddenNode, 0, threshold)).not.toBeTruthy()
+        expect(chromosome.isRecurrent).toBeTruthy() // True since we have other recurrent connections in the network
+        expect(chromosome.isRecurrentPath(nodes.get(3), nodes.get(4), 0, threshold)).toBeTruthy();
     })
 
     test("Test toString", () => {

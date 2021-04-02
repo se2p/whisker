@@ -247,8 +247,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
 
         // Check if everything went fine and enable some connections to fix a defect network if necessary
         let i = 0;
-        const inputSize = child.inputNodes.size();
-        while (!child.activateNetwork(Array(inputSize).fill(1)) && i < disabledConnections.size()) {
+        while (child.stabilizedCounter(10, true) < 0 && i < disabledConnections.size()) {
             disabledConnections.get(i).isEnabled = true;
             child.generateNetwork();
             i++;
