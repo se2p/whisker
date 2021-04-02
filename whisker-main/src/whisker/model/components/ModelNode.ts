@@ -1,14 +1,17 @@
 import {ModelEdge} from "./ModelEdge";
 
 /**
- * Node structure for a model todo
+ * Node structure for a model.
  */
 export class ModelNode {
 
-    private id: number;
-    private outgoing: ModelEdge[];
+    private id: string;
+    private outgoing: ModelEdge[] = [];
 
-    constructor(id: number) {
+    isStartNode = false;
+    isStopNode = false;
+
+    constructor(id: string) {
         this.id = id;
     }
 
@@ -17,7 +20,7 @@ export class ModelNode {
     }
 
     addOutgoingEdge(edge: ModelEdge): void {
-        this.outgoing.push(edge); // todo is the order important?
+        this.outgoing.push(edge);
     }
 
     /**

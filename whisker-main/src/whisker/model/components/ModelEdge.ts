@@ -7,6 +7,7 @@ import {ModelNode} from "./ModelNode";
  */
 export class ModelEdge {
 
+    private id: string;
     private startNode: ModelNode; // redundant?
     private endNode: ModelNode;
 
@@ -15,10 +16,12 @@ export class ModelEdge {
 
     /**
      * Create a new edge.
+     * @param id ID of the edge.
      * @param startNode Start node of the edge
      * @param endNode End node of the edge
      */
-    constructor(startNode: ModelNode, endNode: ModelNode) {
+    constructor(id: string, startNode: ModelNode, endNode: ModelNode) {
+        this.id = id;
         this.startNode = startNode;
         this.endNode = endNode;
     }

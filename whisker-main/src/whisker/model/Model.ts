@@ -1,4 +1,5 @@
 import {ModelNode} from "./components/ModelNode";
+import {ModelEdge} from "./components/ModelEdge";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -12,12 +13,34 @@ import {ModelNode} from "./components/ModelNode";
  */
 export class Model {
 
-    public startNode: ModelNode;
-    public currentState: ModelNode;
+    private id: string;
+    private modelType: ModelType;
 
-    constructor(startNode: ModelNode) {
+    private startNode: ModelNode;
+    private currentState: ModelNode;
+
+    private stopNodes: { [key: string]: ModelNode };
+    private nodes: { [key: string]: ModelNode };
+    private edges: { [key: string]: ModelEdge };
+
+    /**
+     * todo
+     * @param id
+     * @param modelType
+     * @param startNode
+     * @param stopNodes
+     * @param nodes
+     * @param edges
+     */
+    constructor(id: string, modelType: ModelType, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
+                nodes: { [key: string]: ModelNode }, edges: { [key: string]: ModelEdge }) {
+        this.id = id;
+        this.modelType = modelType;
         this.currentState = startNode;
         this.startNode = startNode;
+        this.stopNodes = stopNodes;
+        this.nodes = nodes;
+        this.edges = edges;
     }
 
 
@@ -40,4 +63,9 @@ export class Model {
     reset(): void {
         this.currentState = this.startNode;
     }
+}
+
+export enum ModelType {
+    programModel,
+    userModel
 }
