@@ -98,7 +98,7 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _toggleEnableConnectionTimes: number
 
     /**
-     * The probability for enabling a connection between nodes
+     * The probability for enabling a previously disabled connection between nodes
      */
     private _mutateEnableConnection: number
 

@@ -187,7 +187,7 @@ describe("NeatUtil Tests", () => {
 
     test("Test Softmax calculation", () =>{
         const chromosome = generator.get();
-        const stabiliseCount = chromosome.stabilizedCounter(30, true);
+        const stabiliseCount = chromosome.stabilizedCounter(30);
         for (let i = 0; i < stabiliseCount + 1; i++) {
             chromosome.activateNetwork([1,2,3,4,5,6])
         }
@@ -203,9 +203,9 @@ describe("NeatUtil Tests", () => {
         const regressionNetwork2 = regGenerator.get();
 
         const inputs = [1,2,3,4,5,6];
-        const stabValue1 = noRegressionNetwork.stabilizedCounter(20, false);
-        const stabValue2 = regressionNetwork1.stabilizedCounter(20, false);
-        const stabValue3 = regressionNetwork2.stabilizedCounter(20, false);
+        const stabValue1 = noRegressionNetwork.stabilizedCounter(20);
+        const stabValue2 = regressionNetwork1.stabilizedCounter(20);
+        const stabValue3 = regressionNetwork2.stabilizedCounter(20);
 
         for (let i = 0; i < stabValue1+1; i++) {
             noRegressionNetwork.activateNetwork(inputs)

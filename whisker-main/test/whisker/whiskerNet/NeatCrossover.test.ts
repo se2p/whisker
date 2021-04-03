@@ -11,7 +11,7 @@ import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/C
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 
-describe("NeatCrossover", () => {
+describe("Test NeatCrossover", () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;

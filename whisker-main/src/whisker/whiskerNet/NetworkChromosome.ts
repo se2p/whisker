@@ -201,17 +201,16 @@ export class NetworkChromosome extends Chromosome {
     /**
      * Calculates the number of activations this networks needs in order to produce a stabilised output.
      * @param period the number of iterations each outputNode has to be stable until this network is treated stabilised
-     * @param verifyMode true if this method is used to check if we have a defect network (false during evaluation)
      * @return the number of activations needed to stabilise this network.
      */
-    public stabilizedCounter(period: number, verifyMode: boolean): number {
+    public stabilizedCounter(period: number): number {
         this.generateNetwork();
         this.flushNodeValues();
 
         // Double Check if we really don't have a recurrent network
         if (!this.isRecurrent) {
             for (const connection of this.connections) {
-                if (connection.recurrent) {
+                if (connection.recurrent && connection.isEnabled) {
                     this.isRecurrent = true;
                 }
             }
@@ -232,11 +231,6 @@ export class NetworkChromosome extends Chromosome {
 
             // Network is unstable!
             if (rounds >= limit) {
-                if (!verifyMode) {
-                    // If we have a unstable network during evaluation something went really wrong!
-                    console.error("Network is unstable");
-                    console.log(this)
-                }
                 return -1;
             }
 
@@ -380,7 +374,6 @@ export class NetworkChromosome extends Chromosome {
 
         // if the source node is in the output layer it has to be a recurrent connection!
         if(node1.type === NodeType.OUTPUT){
-            this.isRecurrent = true;
             return true;
         }
 
@@ -392,7 +385,6 @@ export class NetworkChromosome extends Chromosome {
 
         // If we end up in node1 again we found a recurrent path.
         if (node1 === node2) {
-            this.isRecurrent = true;
             return true;
         }
 
@@ -401,7 +393,6 @@ export class NetworkChromosome extends Chromosome {
                 if (!inConnection.source.traversed) {
                     inConnection.source.traversed = true;
                     if (this.isRecurrentPath(inConnection.source, node2, level, threshold)) {
-                        this.isRecurrent = true;
                         return true;
                     }
                 }

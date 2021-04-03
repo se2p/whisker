@@ -224,7 +224,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
                     currentConnection.recurrent)
 
                 // Set the recurrent flag if we added a recurrent connection
-                if (currentConnection.recurrent)
+                if (newConnection.recurrent)
                     recurrent = true;
 
                 // Collect the disabled Connections -> if we produce a defect network we sequentially enable the
@@ -247,15 +247,15 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
 
         // Check if everything went fine and enable some connections to fix a defect network if necessary
         let i = 0;
-        while (child.stabilizedCounter(10, true) < 0 && i < disabledConnections.size()) {
+        while (child.stabilizedCounter(10) < 0 && i < disabledConnections.size()) {
             disabledConnections.get(i).isEnabled = true;
             child.generateNetwork();
             i++;
         }
 
-        if (recurrent)
+        if (recurrent) {
             child.isRecurrent = true;
-
+        }
         return child;
     }
 }

@@ -232,7 +232,7 @@ describe('Test NetworkChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true, 6, false))
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        const counter = chromosome.stabilizedCounter(5, true);
+        const counter = chromosome.stabilizedCounter(5);
         expect(counter).toBe(2);
     })
 
@@ -266,7 +266,7 @@ describe('Test NetworkChromosome', () => {
 
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        const counter = chromosome.stabilizedCounter(5, true);
+        const counter = chromosome.stabilizedCounter(5);
         expect(counter).toBe(4);
     })
 
@@ -290,7 +290,7 @@ describe('Test NetworkChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, false, 6, false))
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        const counter = chromosome.stabilizedCounter(5, false);
+        const counter = chromosome.stabilizedCounter(5);
         expect(counter).toBe(-1);
     })
 
@@ -452,7 +452,7 @@ describe('Test NetworkChromosome', () => {
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
         chromosome.activateNetwork([1, 2])
-        const stabilizeCount = chromosome.stabilizedCounter(30, false);
+        const stabilizeCount = chromosome.stabilizedCounter(30);
         for (let i = 0; i < stabilizeCount + 1; i++) {
             chromosome.activateNetwork([1, 2])
         }
@@ -499,19 +499,19 @@ describe('Test NetworkChromosome', () => {
         connections.add(new ConnectionGene(hiddenNode, deepHiddenNode, 0.3, true, 9, false));
         connections.add(new ConnectionGene(deepHiddenNode, hiddenNode, 1, true, 10, true));
         connections.add(new ConnectionGene(deepHiddenNode, nodes.get(4), 1, true, 11, false))
-        connections.add(new ConnectionGene(deepHiddenNode, deepHiddenNode, 1, true, 10, true));
-        connections.add(new ConnectionGene(nodes.get(3), nodes.get(4), 1, true, 11, true))
+        connections.add(new ConnectionGene(deepHiddenNode, deepHiddenNode, 1, true, 12, true));
+        connections.add(new ConnectionGene(nodes.get(4), deepHiddenNode, 1, true, 13, true))
 
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp);
         const threshold = chromosome.allNodes.size() * chromosome.allNodes.size()
         expect(chromosome.isRecurrentPath(deepHiddenNode, hiddenNode, 0, threshold)).toBeTruthy()
-        expect(chromosome.isRecurrent).toBeTruthy()
         expect(chromosome.isRecurrentPath(deepHiddenNode, deepHiddenNode, 0, threshold)).toBeTruthy()
-        expect(chromosome.isRecurrent).toBeTruthy()
-        expect(chromosome.isRecurrentPath(hiddenNode, deepHiddenNode, 0, threshold)).not.toBeTruthy()
-        expect(chromosome.isRecurrent).toBeTruthy() // True since we have other recurrent connections in the network
-        expect(chromosome.isRecurrentPath(nodes.get(3), nodes.get(4), 0, threshold)).toBeTruthy();
+        expect(chromosome.isRecurrentPath(hiddenNode, deepHiddenNode, 0, threshold)).toBeFalsy()
+        expect(chromosome.isRecurrentPath(nodes.get(4), deepHiddenNode, 0, threshold)).toBeTruthy();
+        expect(chromosome.isRecurrentPath(nodes.get(0), nodes.get(3), 0, threshold)).toBeFalsy();
+        expect(chromosome.isRecurrentPath(nodes.get(3), nodes.get(0), 0, threshold)).toBeTruthy();
+        expect(chromosome.isRecurrentPath(nodes.get(0), nodes.get(1), 0, threshold)).toBeFalsy()
     })
 
     test("Test toString", () => {

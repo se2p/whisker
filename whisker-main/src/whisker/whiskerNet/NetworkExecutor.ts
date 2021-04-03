@@ -82,7 +82,7 @@ export class NetworkExecutor {
         const codons = new List<number>()
 
         // Check how many activations a network needs to stabilise
-        const stabilizeCounter = network.stabilizedCounter(100, false)
+        const stabilizeCounter = network.stabilizedCounter(100)
 
         seedScratch(String(Randomness.getInitialSeed()))
 
@@ -175,7 +175,7 @@ export class NetworkExecutor {
 
         // If we found a defect network let it go extinct!
         if (!workingNetwork) {
-            console.error("Found defect Network", this)
+            console.error("Found defect Network", network)
             network.hasDeathMark = true;
         }
 
