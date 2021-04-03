@@ -138,7 +138,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
         // Compute the expected number of offspring for each chromosome which depends on its fitness value
         // in comparison to the averageFitness of the population
         for (const chromosome of this.chromosomes) {
-            chromosome.expectedOffspring = chromosome.networkFitness / averageFitness;
+            chromosome.expectedOffspring = chromosome.sharedFitness / averageFitness;
         }
         // Now calculate the number of offspring in each Species
         let leftOver = 0.0;
