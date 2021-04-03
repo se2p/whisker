@@ -118,8 +118,7 @@ export class NetworkExecutor {
 
             // Load the inputs into the Network
             const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
-            // eslint-disable-next-line prefer-spread
-            const inputs = [].concat.apply([], spriteInfo);
+            const inputs = [].concat(...spriteInfo);
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
             if (network.isRecurrent) {
@@ -174,9 +173,11 @@ export class NetworkExecutor {
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this.resetState();
 
-        // If we found a defect network let it go extinct! (Should not happen!)
-        if (!workingNetwork)
+        // If we found a defect network let it go extinct!
+        if (!workingNetwork) {
+            console.error("Found defect Network", this)
             network.hasDeathMark = true;
+        }
 
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;

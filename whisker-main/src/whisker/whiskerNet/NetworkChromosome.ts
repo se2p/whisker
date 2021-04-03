@@ -284,8 +284,6 @@ export class NetworkChromosome extends Chromosome {
         while (this.outputsOff() || !activatedOnce) {
             abortCount++;
             if (abortCount >= 30) {
-                console.error("Inputs Disconnected from output!")
-                console.log(this)
                 return false
             }
 
@@ -367,6 +365,8 @@ export class NetworkChromosome extends Chromosome {
      * Checks if the network is a recurrent network and if the given path has some recurrency in it.
      * @param node1 the source node of the path
      * @param node2 the target node of the path
+     * @param level the depth of the recursion
+     * @param threshold after which depth we exit the recursion
      * @return true if the path is a recurrent one.
      */
     public isRecurrentPath(node1: NodeGene, node2: NodeGene, level:number, threshold:number): boolean {
