@@ -130,7 +130,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
         // Calculate the total average fitness value of all chromosomes in the generation
         let fitnessSum = 0.0;
         for (const chromosome of this.chromosomes) {
-            fitnessSum += chromosome.networkFitness;
+            fitnessSum += chromosome.sharedFitness;
         }
         const numberOrganisms = this.chromosomes.size();
         const averageFitness = fitnessSum / numberOrganisms;
