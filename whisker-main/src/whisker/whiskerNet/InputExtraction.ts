@@ -17,13 +17,14 @@ export class InputExtraction {
         if (this.sprites.isEmpty())
             this._collectSprites(vm);
 
-        // Go through each sprite and collect inputs from them.
+        // Go through each sprite and collect input features from them.
         const spriteInfos: number[][] = [];
-        let i = 0;
         for (const sprite of this.sprites) {
-            if (sprite.sprite.name !== "Stage" && sprite.hasOwnProperty('sprite')) {
-                spriteInfos[i] = this._extractInfoFromSprite(sprite);
-                i++;
+            if (sprite.sprite.name !== "Stage") {
+                const spriteInfo = this._extractInfoFromSprite(sprite)
+                if (spriteInfo.length !== 0) {
+                    spriteInfos.push(spriteInfo)
+                }
             }
         }
         return spriteInfos;
@@ -44,7 +45,7 @@ export class InputExtraction {
      * @param sprite the sprite from which information is gathered
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    static _extractInfoFromSprite(sprite: RenderedTarget): number[] {
+    private static _extractInfoFromSprite(sprite: RenderedTarget): number[] {
         const spriteInfo = []
 
         // stageWidth and stageHeight used for normalisation
