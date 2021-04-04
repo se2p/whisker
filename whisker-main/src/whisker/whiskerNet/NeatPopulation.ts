@@ -162,10 +162,6 @@ export class NeatPopulation<C extends NetworkChromosome> {
             this.populationChampion.species.expectedOffspring += lostChildren;
         }
 
-        // Make sure we do not loose the population champion; could happen through fitness sharing
-        if (this.populationChampion.species.expectedOffspring < 1)
-            this.populationChampion.species.expectedOffspring = 1;
-
         // Calculate average fitness for logging purposes
         this.calculateAverageFitness();
 
