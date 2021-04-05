@@ -36,7 +36,9 @@ export class InputExtraction {
      */
     private static _collectSprites(vm: VirtualMachine): void {
         for (const target of vm.runtime.targets) {
-            this.sprites.add(target);
+            if (target.hasOwnProperty('blocks')) {
+                this.sprites.add(target);
+            }
         }
     }
 
@@ -67,7 +69,10 @@ export class InputExtraction {
             switch (sprite.blocks.getOpcode(block)) {
                 // Sprite checks if it touches another sprite
                 case "sensing_touchingobjectmenu":
-                    spriteInfo.push(this._calculateDistanceBetweenSprites(sprite, block.fields.TOUCHINGOBJECTMENU.value))
+                    for (const target of this.sprites) {
+                        if (sprite.sprite.name === block.fields.TOUCHINGOBJECTMENU.value)
+                            spriteInfo.push(this._calculateDistanceBetweenSprites(sprite, target))
+                    }
             }
         }
         return spriteInfo;
@@ -76,22 +81,15 @@ export class InputExtraction {
     /**
      * Calculates the distance between two sprites
      * @param sprite1 the source sprite
-     * @param target2 the name of the target sprite
+     * @param sprite2 the name of the target sprite
      */
-    private static _calculateDistanceBetweenSprites(sprite1: RenderedTarget, target2: string): number {
-        // Search the object in the Sprite List
-        let sprite2: RenderedTarget
-        for (const sprite of this.sprites) {
-            if (sprite.sprite.name === target2)
-                sprite2 = sprite;
-        }
-
-        // Calculate the distance between the two sprites.
+    private static _calculateDistanceBetweenSprites(sprite1: RenderedTarget, sprite2: RenderedTarget): number {
         const normFactor = Math.sqrt(
             Math.pow(sprite1.renderer._nativeSize[0], 2) + Math.pow(sprite1.renderer._nativeSize[1], 2));
         const dx = sprite1.x - sprite2.x;
         const dy = sprite1.y - sprite2.y;
         return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) / normFactor;
+
     }
 }
 

@@ -277,7 +277,7 @@ export class NetworkChromosome extends Chromosome {
 
         while (this.outputsOff() || !activatedOnce) {
             abortCount++;
-            if (abortCount >= 30) {
+            if (abortCount >= 100) {
                 return false
             }
 
