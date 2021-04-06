@@ -1,6 +1,4 @@
-// FIXME: Attention! This is a hack! Must not be merged into master!
-// const Random = require('../util/random');
-const Random = require('../../dist/src/whisker/utils/Randomness').Randomness;
+const Random = require('../util/random');
 
 /**
  * {
@@ -45,7 +43,7 @@ class RandomInput {
         const randomData = {...this.data};
 
         if (randomData.isDown === 'random') {
-            randomData.isDown = Random.getInstance().randomBoolean();
+            randomData.isDown = Random.randomBoolean();
         }
 
         for (const prop of ['duration', 'x', 'y', 'xOffset', 'yOffset', 'length']) {
@@ -61,12 +59,10 @@ class RandomInput {
                 '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
 
             for (let i = 0; i < length; i++) {
-                answer += chars.charAt(Random.getInstance().nextInt(0, chars.length - 1));
+                answer += chars.charAt(Random.nextInt(0, chars.length - 1));
             }
 
-            // FIXME: Attention! This is a hack. Must not be merged into master!
-            // randomData.answer = answer;
-            randomData.answer = Random.getInstance().nextInt(2, 200);
+            randomData.answer = answer;
         }
 
         this.input = inputs.inputImmediate(randomData);
@@ -91,7 +87,7 @@ class RandomInput {
                 return prop[0];
             } else if (prop.length >= 2) {
                 const [min, max] = prop;
-                return Random.getInstance().nextInt(min, max);
+                return Random.nextInt(min, max);
             }
         }
     }
@@ -146,7 +142,7 @@ class RandomInputs {
             return;
         }
 
-        let randomWeight = Random.getInstance().nextDoubleMinMax(0, sumOfWeights);
+        let randomWeight = Random.randomFloat(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
                 this.lastInputTime = timeElapsed;
