@@ -1,5 +1,19 @@
 const {$} = require('./web-libs');
 
+import i18next from 'i18next';
+import locI18next from "loc-i18next";
+
+const indexDE = require('./locales/de/index.json');
+const indexEN = require('./locales/en/index.json');
+const faqDE = require('./locales/de/faq.json');
+const faqEN = require('./locales/en/faq.json');
+const contactDE = require('./locales/de/contact.json');
+const contactEN = require('./locales/en/contact.json');
+const imprintDE = require('./locales/de/imprint.json');
+const imprintEN = require('./locales/en/imprint.json');
+const privacyDE = require('./locales/de/privacy.json');
+const privacyEN = require('./locales/en/privacy.json');
+
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
 
@@ -12,18 +26,22 @@ const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
+
 const {showModal, escapeHtml} = require('./utils.js');
 
 const Whisker = window.Whisker = {};
 window.$ = $;
 
 const DEFAULT_ACCELERATION_FACTOR = 1;
+const params = new URLSearchParams(window.location.search);
+const lng = params.get("lng");
 
 const loadTestsFromString = function (string) {
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
-        tests = eval(`${string}; module.exports;`);
+        tests = eval(`${string};
+        module.exports;`);
     } catch (err) {
         console.error(err);
         const message = `${err.name}: ${err.message}`;
@@ -47,7 +65,6 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
@@ -114,7 +131,10 @@ const runTests = async function (tests) {
 
 const runAllTests = async function () {
     if (Whisker.tests === undefined || Whisker.tests.length === 0) {
-        showModal('Test Execution', 'No tests loaded.');
+        showModal(i18next.t("test-execution"), i18next.t("no-tests"));
+        return;
+    } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+        showModal(i18next.t("test-execution"), i18next.t("no-project"));
         return;
     }
 
@@ -159,12 +179,16 @@ const initScratch = function () {
 const initComponents = function () {
     Whisker.testTable = new TestTable($('#test-table')[0], runTests);
     Whisker.testTable.setTests([]);
+    Whisker.testTable.show();
 
     Whisker.outputRun = new Output($('#output-run')[0]);
+    Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
+    Whisker.outputLog.hide();
 
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
+    Whisker.testEditor.show();
 
     Whisker.projectFileSelect = new FileSelect($('#fileselect-project')[0],
         fileSelect => fileSelect.loadAsArrayBuffer()
@@ -190,28 +214,40 @@ const initComponents = function () {
 };
 
 const initEvents = function () {
-    $('#green-flag').on('click', () => Whisker.scratch.greenFlag());
+    $('#green-flag').on('click', () => {
+        if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+            showModal(i18next.t("test-generation"), i18next.t("no-project"));
+        } else {
+            Whisker.scratch.greenFlag();
+        }
+    });
     $('#stop').on('click', () => {
         Whisker.testRunner.abort();
         Whisker.scratch.stop();
     });
-    $('#reset').on('click', () => Whisker.scratch.reset());
+    $('#reset').on('click', () => {
+        if (Whisker.tests === undefined || Whisker.tests.length === 0) {
+            showModal(i18next.t("test-execution"), i18next.t("no-tests"));
+        } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+            showModal(i18next.t("test-execution"), i18next.t("no-project"));
+        } else {
+            Whisker.scratch.reset().then();
+        }
+    });
     $('#run-all-tests').on('click', runAllTests);
-
     Whisker.inputRecorder.on('startRecording', () => {
         $('#record')
             .removeClass('btn-outline-danger')
             .addClass('btn-danger')
-            .text('Stop Recording');
+            .text(i18next.t("stop-record"));
     });
     Whisker.inputRecorder.on('stopRecording', () => {
         $('#record')
             .removeClass('btn-danger')
             .addClass('btn-outline-danger')
-            .text('Record Inputs');
+            .text(i18next.t("start-record"));
     });
-
-    $('#record').on('click', event => {
+    $('#record').on('click', () => {
         if (Whisker.scratch.isInputEnabled()) {
             if (Whisker.inputRecorder.isRecording()) {
                 Whisker.inputRecorder.stopRecording();
@@ -219,10 +255,9 @@ const initEvents = function () {
                 Whisker.inputRecorder.startRecording();
             }
         } else {
-            showModal('Input Recorder', 'In order to record inputs, inputs must be enabled.');
+            showModal(i18next.t("inputs"), i18next.t("inputs-error"));
         }
     });
-
     $('#toggle-input').on('change', event => {
         if ($(event.target).is(':checked')) {
             Whisker.scratch.enableInput();
@@ -230,81 +265,120 @@ const initEvents = function () {
             Whisker.scratch.disableInput();
         }
     });
-
-    $('#toggle-tests').on('change', event => {
+    $('#toggle-advanced').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
                 .parent()
                 .addClass('active');
-            Whisker.testTable.show();
+            $('#scratch-controls').show();
+            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+            location.href = '#scratch-controls'
         } else {
             $(event.target)
                 .parent()
                 .removeClass('active');
-            Whisker.testTable.hide();
+            $('#scratch-controls').hide();
         }
     });
-
-    $('#toggle-editor').on('change', event => {
+    $('#toggle-tap').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
                 .parent()
                 .addClass('active');
-            Whisker.testEditor.show();
+            $('#output-run').show();
+            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+            location.href = '#output-run'
         } else {
             $(event.target)
                 .parent()
                 .removeClass('active');
-            Whisker.testEditor.hide();
+            $('#output-run').hide();
         }
     });
-
-    $('#toggle-output').on('change', event => {
+    $('#toggle-log').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
                 .parent()
                 .addClass('active');
-            Whisker.outputRun.show();
-            Whisker.outputLog.show();
+            $('#output-log').show();
+            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+            location.href = '#output-log'
         } else {
             $(event.target)
                 .parent()
                 .removeClass('active');
-            Whisker.outputRun.hide();
-            Whisker.outputLog.hide();
+            $('#output-log').hide();
         }
     });
-
     $('#run-search')
         .click('click', () => {
-            const tests = runSearch();
-            tests.then(
-                result => {
-                    loadTestsFromString(result);
-                    // TODO: This text is used as a marker to tell servant
-                    //       when the search is done. There must be a nicer way...
-                    Whisker.outputRun.println('summary');
-                },
-            );
+            if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+                showModal(i18next.t("test-generation"), i18next.t("no-project"));
+            } else {
+                const tests = runSearch();
+                tests.then(
+                    result => {
+                        loadTestsFromString(result);
+                        // TODO: This text is used as a marker to tell servant
+                        //       when the search is done. There must be a nicer way...
+                        Whisker.outputRun.println('summary');
+                        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+                        location.href = '#test-table'
+                    },
+                );
+            }
         });
+    $('#fileselect-config').on('change', event => {
+        const fileName = Whisker.configFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        $(event.target).parent().tooltip();
+    });
+    $('#fileselect-project').on('change', event => {
+        const fileName = Whisker.projectFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        $(event.target).parent().tooltip();
+    });
+    $('#fileselect-tests').on('change', event => {
+        const fileName = Whisker.testFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        $(event.target).parent().tooltip();
+    });
 };
 
 const toggleComponents = function () {
     if (window.localStorage) {
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
-            const [input, tests, editor, output, accelerationFactor] = JSON.parse(componentStates);
+            const [input, accelerationFactor] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
-            if (tests) $('#toggle-tests').click();
-            if (editor) $('#toggle-editor').click();
-            if (output) $('#toggle-output').click();
             if (accelerationFactor) document.querySelector('#acceleration-factor').value = accelerationFactor;
         }
     }
 };
 
+const hideAdvanced = function () {
+    $('#scratch-controls').hide();
+}
+
+const initLangSelect = function () {
+    const newLabel = document.createElement('label');
+    let html = '<select id="lang-select">', lngs = ["de", "en"], i;
+    for (i = 0; i < lngs.length; i++) {
+        html += "<option value='" + lngs[i] + "' ";
+        if ((lng != null && lngs[i] === lng) || lngs[i] === 'de') {
+            html += "selected";
+        }
+        html += " data-i18n=\"" + lngs[i] + "\">" + i18next.t(lngs[i]) + "</option>";
+    }
+    html += '</select>';
+    newLabel.innerHTML = html;
+    document.querySelector('#form-lang').appendChild(newLabel);
+}
+
 $(document)
     .ready(() => {
+        initLangSelect();
+        hideAdvanced();
         initScratch();
         initComponents();
         initEvents();
@@ -315,11 +389,89 @@ window.onbeforeunload = function () {
     if (window.localStorage) {
         const componentStates = [
             $('#toggle-input').is(':checked'),
-            $('#toggle-tests').is(':checked'),
-            $('#toggle-editor').is(':checked'),
-            $('#toggle-output').is(':checked'),
             document.querySelector('#acceleration-factor').value
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
 };
+
+const localize = locI18next.init(i18next, {
+    selectorAttr: 'data-i18n', // selector for translating elements
+    targetAttr: 'i18n-target',
+    optionsAttr: 'i18n-options',
+    useOptionsAttr: false,
+    parseDefaultValueFromContent: true
+});
+
+i18next
+    .init({
+        whitelist: ['de', 'en'],
+        nonExplicitWhitelist: true,
+        lng: lng,
+        fallbackLng: 'de',
+        debug: true,
+        ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
+        defaultNS: 'index',
+        interpolation: {
+            escapeValue: false,
+        },
+        resources: {
+            de: {
+                index: indexDE,
+                faq: faqDE,
+                contact: contactDE,
+                imprint: imprintDE,
+                privacy: privacyDE
+            },
+            en: {
+                index: indexEN,
+                faq: faqEN,
+                contact: contactEN,
+                imprint: imprintEN,
+                privacy: privacyEN
+            }
+        }
+    }, function () {
+        updateContent();
+    }).then();
+
+function updateContent() {
+    localize('#body');
+    $('[data-toggle="tooltip"]').tooltip();
+}
+
+$('#form-lang').on('change', () => {
+    $('[data-toggle="tooltip"]').tooltip('dispose');
+    const lng = $('#lang-select').val();
+    const href = window.location.href;
+    if (href.endsWith('de') || href.endsWith('en')) {
+        const str = href.substr(0, href - 7);
+        window.location.href = str + '?lng=' + lng;
+    }
+    i18next.changeLanguage(lng).then(updateContent());
+});
+
+$('.nav-link').on('click', event => {
+    const lng = $('#lang-select').val();
+    const href = event.target.getAttribute('href');
+    if (href) {
+        location.href = href + '?lng=' + lng;
+        event.preventDefault();
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

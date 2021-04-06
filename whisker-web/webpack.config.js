@@ -29,6 +29,19 @@ module.exports = [
                         MiniCssExtractPlugin.loader,
                         'css-loader'
                     ]
+                },
+                {
+                    test: /\.(gif|png|jpe?g|svg)$/i,
+                    use: [
+                        'file-loader',
+                        {
+                            loader: 'image-webpack-loader',
+                            options: {
+                                bypassOnDebug: true, // webpack@1.x
+                                disable: true, // webpack@2.x and newer
+                            },
+                        },
+                    ],
                 }
             ]
         },
@@ -38,7 +51,21 @@ module.exports = [
             }),
             new CopyWebpackPlugin({
                 patterns: [
-                    { from: path.resolve('src', 'index.html') }
+                    {
+                        from: 'src/index.html',
+                    },
+                    {
+                        from: 'src/html',
+                        to: 'html'
+                    },
+                    {
+                        from: 'src/assets',
+                        to: 'assets'
+                    },
+                    {
+                        from: 'src/locales',
+                        to: 'locales'
+                    }
                 ]
             })
         ],

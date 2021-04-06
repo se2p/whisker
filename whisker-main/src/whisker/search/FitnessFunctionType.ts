@@ -35,5 +35,5 @@ export enum FitnessFunctionType {
     /**
      * Value for 'Statement' fitness.
      */
-    STATEMENT
+    STATEMENT,
 }

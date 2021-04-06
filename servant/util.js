@@ -15,6 +15,11 @@ const logger = {
 };
 
 const validateCommandLineArguments = args => {
+    const noOptionsGiven = args.rawArgs.length < 3;
+    if (noOptionsGiven) {
+        args.help();
+    }
+
     if (!args.scratchPath && !args.isGenerateWitnessTestOnly) {
         logger.error('No path to a Scratch file was given, please use the -s option');
         process.exit(1);
@@ -43,9 +48,9 @@ const cli = {
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
-            .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', "1")
-            .option('-v, --csvFile <Path>', 'Name of CSV File to put output into', false)
-            .option('-c, --configPath <Path>', 'Path to a configuration file', '../whisker-main/config/default.json')
+            .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', 1)
+            .option('-v, --csvFile <Path>', 'Name of CSV File to put output into (scratchPath must be a directory)', false)
+            .option('-c, --configPath <Path>', 'Path to a configuration file', '../config/default.json')
             .option('-d, --isHeadless', 'If should run headless (d like in decapitated)')
             .option('-p, --numberOfTabs <Integer>', 'The number of tabs to execute the tests in', "1")
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)

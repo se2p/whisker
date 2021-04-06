@@ -19,14 +19,12 @@ class TestEditor {
             extraKeys: {Tab: 'insertSoftTab'}
         });
 
-        $(div)
-            .find('.editor-apply')
+        $('.editor-apply')
             .on('click', () => {
                 loadTests(this.getValue());
             });
 
-        $(div)
-            .find('.editor-save')
+        $('.editor-save')
             .on('click', () => {
                 this.save();
             });
