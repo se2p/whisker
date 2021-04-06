@@ -56,5 +56,6 @@
     "description" : "Description",
     "categories" : "Categories",
     "inputs" : "Input Recorder",
-    "inputs-error" : "In order to record inputs, manual inputs must be enabled by clicking the checkbox."
+    "inputs-error" : "In order to record inputs, manual inputs must be enabled by clicking the checkbox.",
+    "model": "Your Model"
 }

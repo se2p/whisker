@@ -56,5 +56,6 @@
     "description" : "Beschreibung",
     "categories" : "Kategorien",
     "inputs" : "Manuelle Eingaben",
-    "inputs-error" : "Um Eingaben aufzeichnen zu können, bitte Checkbox für manuelle Eingaben auswählen."
+    "inputs-error" : "Um Eingaben aufzeichnen zu können, bitte Checkbox für manuelle Eingaben auswählen.",
+    "model": "Dein Modell"
 }

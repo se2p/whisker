@@ -15,7 +15,7 @@ const privacyDE = require('./locales/de/privacy.json');
 const privacyEN = require('./locales/en/privacy.json');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, Model} = require('whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
@@ -35,6 +35,10 @@ window.$ = $;
 const DEFAULT_ACCELERATION_FACTOR = 1;
 const params = new URLSearchParams(window.location.search);
 const lng = params.get("lng");
+
+const loadModelFromString = function (string) {
+    Whisker.programModels = Model.loadModels(string); // todo later on filter for user model before
+}
 
 const loadTestsFromString = function (string) {
     let tests;
@@ -196,6 +200,8 @@ const initComponents = function () {
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
         fileSelect => fileSelect.loadAsString()
             .then(string => loadTestsFromString(string)));
+    Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
+        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string)));
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
@@ -340,6 +346,11 @@ const initEvents = function () {
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        $(event.target).parent().tooltip();
+    });
+    $('#fileselect-models').on('change', event => {
+        const fileName = Whisker.modelFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
         $(event.target).parent().tooltip();
     });

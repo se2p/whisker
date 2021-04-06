@@ -1,5 +1,6 @@
 import {ModelNode} from "./components/ModelNode";
 import {ModelEdge} from "./components/ModelEdge";
+import {ModelLoaderXML} from "./util/ModelLoaderXML";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -68,6 +69,11 @@ export class Model {
     }
 
     // todo callback function (?) that compares the state of the model and program
+}
+
+export function loadModels(string) {
+    const modelLoader = new ModelLoaderXML();
+    return modelLoader.loadModels(string);
 }
 
 export enum ModelType {
