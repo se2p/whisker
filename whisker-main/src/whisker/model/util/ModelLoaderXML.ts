@@ -41,12 +41,12 @@ export class ModelLoaderXML {
      */
     loadModels(xmlText: string): Model[] {
         const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].graph;
+        this.graphMap = {}
         graphs.forEach(graph => {
             this.startNode = undefined;
             this.stopNodes = {};
             this.nodesMap = {};
             this.edgesMap = {};
-            this.graphMap = {}
             this._loadModel(graph);
         })
         return Object.values(this.graphMap);
@@ -86,7 +86,7 @@ export class ModelLoaderXML {
      */
     _loadNode(nodeAttr: { [key: string]: string }): void {
         if ((this.nodesMap)[nodeAttr.id]) {
-            throw new Error("ID '" + nodeAttr.id + "' already defined!");
+            throw new Error("Node id '" + nodeAttr.id + "' already defined.");
         }
 
         (this.nodesMap)[nodeAttr.id] = new ModelNode(nodeAttr.id);
@@ -121,10 +121,10 @@ export class ModelLoaderXML {
         }
 
         if (!(this.nodesMap)[startID]) {
-            throw new Error("Unknown node '" + startID + "' in edge '" + edgeID + "'.");
+            throw new Error("Unknown node id '" + startID + "' in edge '" + edgeID + "'.");
         }
         if (!(this.nodesMap)[endID]) {
-            throw new Error("Unknown node '" + endID + "' in edge '" + edgeID + "'.");
+            throw new Error("Unknown node id '" + endID + "' in edge '" + edgeID + "'.");
         }
 
         const newEdge = new ModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);

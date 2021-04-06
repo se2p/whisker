@@ -37,7 +37,14 @@ const params = new URLSearchParams(window.location.search);
 const lng = params.get("lng");
 
 const loadModelFromString = function (string) {
-    Whisker.programModels = Model.loadModels(string); // todo later on filter for user model before
+    try {
+        Whisker.programModels = Model.loadModels(string); // todo later on filter for user model before
+    } catch (err) {
+        const message = `${err.name}: ${err.message}`;
+        showModal('Modal Loading', `An error occurred while parsing the modal:<br>
+            <div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
+        throw err;
+    }
 }
 
 const loadTestsFromString = function (string) {
