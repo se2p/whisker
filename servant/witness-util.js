@@ -185,13 +185,14 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath, tmpDi
  *
  * @param constraintsPath The path to the test file.
  * @param tmpDir The path to the tmp directory.
- * @param waitTime The time in milliseconds to wait for the test to complete
+ * @param waitTime How many seconds to wait for the test to complete
  * @returns {string} The path to the generated test.
  */
 function attachRandomInputsToTest(constraintsPath, tmpDir, waitTime) {
+    const waitTimeMillis = waitTime * 1_000; // needs to be converted from seconds into milliseconds
     const randomInputs = `${indentation}t.setRandomInputInterval(150);\n` +
         `${indentation}t.detectRandomInputs({duration: [50, 100]});\n` +
-        `${indentation}await t.runForTime(${waitTime});`;
+        `${indentation}await t.runForTime(${waitTimeMillis});`;
 
     return replaceInFile(constraintsPath, "// RANDOM_INPUTS", randomInputs, "_random_inputs.js", tmpDir);
 }
