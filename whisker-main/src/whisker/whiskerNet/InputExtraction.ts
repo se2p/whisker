@@ -70,7 +70,7 @@ export class InputExtraction {
                 // Sprite checks if it touches another sprite
                 case "sensing_touchingobjectmenu":
                     for (const target of this.sprites) {
-                        if (sprite.sprite.name === block.fields.TOUCHINGOBJECTMENU.value)
+                        if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value)
                             spriteInfo.push(this._calculateDistanceBetweenSprites(sprite, target))
                     }
             }
