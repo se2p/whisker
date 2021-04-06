@@ -28,8 +28,8 @@ describe("Test NeatCrossover", () => {
 
         // Create Nodes of first network
         nodes1 = new List<NodeGene>();
-        const iNode1 = new InputNode(0)
-        const iNode2 = new InputNode(1)
+        const iNode1 = new InputNode(0,0)
+        const iNode2 = new InputNode(1,0)
         const iNode3 = new BiasNode(2)
         nodes1.add(iNode1)
         nodes1.add(iNode2)
@@ -126,7 +126,7 @@ describe("Test NeatCrossover", () => {
     })
 
     test("CrossoverTest with deactivated connections", () => {
-        const inNode = new InputNode(0);
+        const inNode = new InputNode(0,0);
         const outNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
 
         parent1Connections.clear();
@@ -142,8 +142,8 @@ describe("Test NeatCrossover", () => {
         const child1 = crossoverOp.apply(parent1, parent2).getFirst()
         const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst()
 
-        const inSize1 = child1.inputNodes.size();
-        const inSize2 = child1.inputNodes.size();
+        const inSize1 = child1.inputNodes.size;
+        const inSize2 = child1.inputNodes.size;
         // Execute 10 times. Due to randomness the connection may get activated during crossover
         for (let i = 0; i < 10; i++) {
         expect(child1.activateNetwork(Array(inSize1).fill(1))).toBeTruthy()

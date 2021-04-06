@@ -71,16 +71,17 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
         // Create the Input Nodes and add them to the nodes list.
         // Sprites can have a different amount of feature set i.e different amount of columns.
         const inputNodes = new List<NodeGene>()
-        const flattenedInputs = [].concat(...this.inputs);
-        for (let i = 0; i < flattenedInputs.length; i++) {
-            const inputNode = new InputNode(nodeId++);
-            inputNodes.add(inputNode);
-            allNodes.add(inputNode);
+        for (let i = 0; i < this._inputs.length; i++) {
+            this._inputs[i].forEach(() => {
+                const iNode = new InputNode(nodeId, i);
+                nodeId++;
+                inputNodes.add(iNode)
+                allNodes.add(iNode);
+            });
         }
 
         // Add the Bias
         const biasNode = new BiasNode(nodeId++);
-        inputNodes.add(biasNode);
         allNodes.add(biasNode);
 
         // Create the classification output nodes and add them to the nodes list
@@ -122,12 +123,10 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
         // For each inputNode create a connection to each outputNode.
         for (const inputNode of inputNodes) {
             for (const outputNode of outputNodes) {
-                if (inputNode.type !== NodeType.BIAS) {
                     const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
                     NeuroevolutionUtil.assignInnovationNumber(newConnection);
                     connections.add(newConnection)
                     outputNode.incomingConnections.add(newConnection);
-                }
             }
         }
         return connections;
@@ -139,10 +138,6 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
 
     setMutationOperator(mutationOp: Mutation<NetworkChromosome>): void {
         this._mutationOp = mutationOp;
-    }
-
-    get inputs(): number[][] {
-        return this._inputs;
     }
 
     get outputSize(): number {

@@ -13,18 +13,17 @@ export class InputExtraction {
      *         and the columns the extracted information of the Sprite
      */
     static extractSpriteInfo(vm: VirtualMachine): number[][] {
-        // Collect all available sprites in the first round.
-        if (this.sprites.isEmpty())
-            this._collectSprites(vm);
+        // Collect all available sprites. Note, that the number of sprites can change during the game!
+        this.sprites.clear();
+        this._collectSprites(vm);
 
         // Go through each sprite and collect input features from them.
         const spriteInfos: number[][] = [];
         for (const sprite of this.sprites) {
-            if (sprite.sprite.name !== "Stage") {
-                const spriteInfo = this._extractInfoFromSprite(sprite)
-                if (spriteInfo.length !== 0) {
-                    spriteInfos.push(spriteInfo)
-                }
+            const spriteInfo = this._extractInfoFromSprite(sprite)
+            if (spriteInfo.length !== 0) {
+                spriteInfos.push(spriteInfo)
+
             }
         }
         return spriteInfos;
@@ -36,7 +35,7 @@ export class InputExtraction {
      */
     private static _collectSprites(vm: VirtualMachine): void {
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
+            if (!target.isStage && target.hasOwnProperty('blocks')) {
                 this.sprites.add(target);
             }
         }

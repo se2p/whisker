@@ -41,7 +41,7 @@ describe('Test NetworkChromosome', () => {
 
     test('Constructor Test', () => {
         expect(chromosome.allNodes.size()).toBe(genInputs[0].length + 1 + outputSize);
-        expect(chromosome.inputNodes.size()).toBe(genInputs[0].length + 1);
+        expect(chromosome.inputNodesSize()).toBe(genInputs[0].length);
         expect(chromosome.outputNodes.size()).toBe(2);
         expect(chromosome.connections.size()).toBe(12);
         expect(chromosome.getCrossoverOperator()).toBe(crossoverOp);
@@ -98,7 +98,7 @@ describe('Test NetworkChromosome', () => {
         const clone = chromosome.clone();
         expect(clone.connections.size()).toBe(chromosome.connections.size())
         expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
-        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.inputNodes.size).toBe(chromosome.inputNodes.size)
         expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
         expect(clone.sharedFitness).toBe(chromosome.sharedFitness)
     })
@@ -107,7 +107,7 @@ describe('Test NetworkChromosome', () => {
         const clone = chromosome.cloneWith(chromosome.connections);
         expect(clone.connections.size()).toBe(chromosome.connections.size())
         expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
-        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.inputNodes.size).toBe(chromosome.inputNodes.size)
         expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
         expect(clone.sharedFitness).toBe(chromosome.sharedFitness)
     })
@@ -115,8 +115,8 @@ describe('Test NetworkChromosome', () => {
     test("Clone Test with hidden Layer", () => {
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -148,7 +148,7 @@ describe('Test NetworkChromosome', () => {
         const clone = chromosome.clone();
         expect(clone.connections.size()).toBe(chromosome.connections.size())
         expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
-        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.inputNodes.size).toBe(chromosome.inputNodes.size)
         expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
         expect(clone.sharedFitness).toBe(chromosome.sharedFitness)
     })
@@ -156,8 +156,8 @@ describe('Test NetworkChromosome', () => {
     test("Clone Test with given gene and hidden Layer", () => {
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -190,12 +190,25 @@ describe('Test NetworkChromosome', () => {
         expect(clone.connections.size()).toBe(chromosome.connections.size())
         expect(clone.allNodes.size()).toBe(chromosome.allNodes.size())
         expect(clone.outputNodes.size()).toBe(chromosome.outputNodes.size())
-        expect(clone.inputNodes.size()).toBe(chromosome.inputNodes.size())
+        expect(clone.inputNodes.size).toBe(chromosome.inputNodes.size)
         expect(clone.sharedFitness).toBe(chromosome.sharedFitness)
     })
 
+    test("Test add inputNode with new Sprite", () =>{
+        genInputs.push([1,2,3])
+        chromosome.addInputNode(genInputs)
+        chromosome.activateNetwork([[1,2],[3]])
+        expect(chromosome.inputNodesSize()).toBe(9)
+    })
+
+    test("Test add inputNode with additional information gathered from an already existing sprite", () =>{
+        genInputs[0].push(11)
+        chromosome.addInputNode(genInputs)
+        expect(chromosome.inputNodesSize()).toBe(7)
+    })
+
     test('Test generateNetwork with hidden Layer', () => {
-        const inputNode = chromosome.inputNodes.get(0)
+        const inputNode = chromosome.inputNodes.get(0).get(0)
         const outputNode = chromosome.outputNodes.get(0)
         const hiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID)
         const deepHiddenNode = new HiddenNode(8, ActivationFunction.SIGMOID)
@@ -214,8 +227,8 @@ describe('Test NetworkChromosome', () => {
 
     test('Test stabilizedCounter without hidden Layer', () => {
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -238,8 +251,8 @@ describe('Test NetworkChromosome', () => {
 
     test('Test stabilizedCounter with hidden Layer', () => {
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -272,8 +285,8 @@ describe('Test NetworkChromosome', () => {
 
     test('Test stabilizedCounter with unstable network', () => {
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -297,8 +310,8 @@ describe('Test NetworkChromosome', () => {
     test('Network activation without hidden layer', () => {
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -316,7 +329,7 @@ describe('Test NetworkChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.6, false, 1, false))
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        chromosome.activateNetwork([1, 2])
+        chromosome.activateNetwork([[1, 2]])
         const softmaxOutput: number[] = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         for (let i = 0; i < softmaxOutput.length; i++) {
             softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
@@ -331,8 +344,8 @@ describe('Test NetworkChromosome', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -357,7 +370,7 @@ describe('Test NetworkChromosome', () => {
 
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        chromosome.activateNetwork([1, 2])
+        chromosome.activateNetwork([[1, 2]])
         const softmaxOutput: number[] = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         for (let i = 0; i < softmaxOutput.length; i++) {
             softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
@@ -374,8 +387,8 @@ describe('Test NetworkChromosome', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,1))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -403,7 +416,7 @@ describe('Test NetworkChromosome', () => {
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
         chromosome.flushNodeValues();
         for (let i = 0; i < 5; i++) {
-            chromosome.activateNetwork([1, 2]);
+            chromosome.activateNetwork([[1], [2]]);
         }
         const softmaxOutput: number[] = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         for (let i = 0; i < softmaxOutput.length; i++) {
@@ -423,8 +436,8 @@ describe('Test NetworkChromosome', () => {
 
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes
@@ -451,17 +464,17 @@ describe('Test NetworkChromosome', () => {
 
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        chromosome.activateNetwork([1, 2])
+        chromosome.activateNetwork([[1, 2]])
         const stabilizeCount = chromosome.stabilizedCounter(30);
         for (let i = 0; i < stabilizeCount + 1; i++) {
-            chromosome.activateNetwork([1, 2])
+            chromosome.activateNetwork([[1, 2]])
         }
         const firstOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         // New input has to propagate through network.
-        chromosome.activateNetwork([1, 4])
+        chromosome.activateNetwork([[1, 4]])
         const secondOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes)
-        chromosome.activateNetwork([1, 4])
-        chromosome.activateNetwork([1, 4])
+        chromosome.activateNetwork([[1, 4]])
+        chromosome.activateNetwork([[1, 4]])
         const thirdOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes)
         expect(firstOutput).toEqual(secondOutput)
         expect(firstOutput).not.toEqual(thirdOutput)
@@ -473,8 +486,8 @@ describe('Test NetworkChromosome', () => {
     test("Test the recurrent Network check", () => {
         // Create input Nodes
         const nodes = new List<NodeGene>()
-        nodes.add(new InputNode(0))
-        nodes.add(new InputNode(1))
+        nodes.add(new InputNode(0,0))
+        nodes.add(new InputNode(1,0))
         nodes.add(new BiasNode(2))
 
         // Create classification Output Nodes

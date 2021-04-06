@@ -42,7 +42,6 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         outputSize = 2;
         const chromosomes: NetworkChromosome[] = []
         // eslint-disable-next-line prefer-spread
-        const inputs = [].concat.apply([], genInputs);
         let stabCount = 0;
         for (let i = 0; i < 100; i++) {
             const chrom = generator.get();
@@ -53,9 +52,9 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
             chromosome.generateNetwork();
             chromosome.flushNodeValues();
             for (let i = 0; i < stabCount + 1; i++) {
-                chromosome.activateNetwork(inputs);
+                chromosome.activateNetwork(genInputs);
             }
-            expect(chromosome.activateNetwork(inputs)).toBeTruthy();
+            expect(chromosome.activateNetwork(genInputs)).toBeTruthy();
         }
     })
 })

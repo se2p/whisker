@@ -86,7 +86,7 @@ describe("Test NeatMutation", () => {
 
     test("Test MutateAddConnection with recurrent connection between output Nodes", () => {
         const allNodes = new List<NodeGene>();
-        const iNode = new InputNode(0);
+        const iNode = new InputNode(0,0);
         allNodes.add(iNode);
         const oNode1 = new ClassificationNode(1, ActivationFunction.SIGMOID);
         allNodes.add(oNode1);
@@ -127,14 +127,14 @@ describe("Test NeatMutation", () => {
         networkChromosome.allNodes.add(deepHiddenLayerNode)
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0), hiddenLayerNode, 1, true, 50, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(0), hiddenLayerNode, 1, true, 50, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1, true, 51, false))
         networkChromosome.connections.add(new ConnectionGene(deepHiddenLayerNode, outputNodes.get(0), 1, true, 52, false))
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode2, 1, true, 53, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(1), hiddenLayerNode2, 1, true, 53, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode2, outputNodes.get(1), 1, true, 54, false))
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(1), hiddenLayerNode3, 1, true, 56, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(1), hiddenLayerNode3, 1, true, 56, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode3, outputNodes.get(1), 1, true, 57, false))
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(2), hiddenLayerNode4, 1, true, 58, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(2), hiddenLayerNode4, 1, true, 58, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode4, outputNodes.get(0), 1, true, 59, false))
         networkChromosome.generateNetwork();
         const originalConnections = networkChromosome.connections.size();

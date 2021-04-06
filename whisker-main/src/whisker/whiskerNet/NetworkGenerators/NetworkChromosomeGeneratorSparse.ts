@@ -79,7 +79,6 @@ export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<Net
     get(): NetworkChromosome {
         let nodeId = 0;
         const allNodes = new List<NodeGene>();
-        const flattenedInputNodes = new List<NodeGene>();
 
         // Create the Input Nodes and add them to the nodes list; Each row of the inputArray represents one Sprite.
         // Sprites can have a different amount of infos i.e different amount of columns.
@@ -88,10 +87,9 @@ export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<Net
             const spriteList = new List<NodeGene>();
             const spriteInput = this.inputs[i];
             spriteInput.forEach(() => {
-                const iNode = new InputNode(nodeId);
+                const iNode = new InputNode(nodeId, i);
                 nodeId++;
                 spriteList.add(iNode)
-                flattenedInputNodes.add(iNode);
                 allNodes.add(iNode);
             })
             inputList.add(spriteList)
@@ -100,7 +98,6 @@ export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<Net
         // Add the Bias
         const biasNode = new BiasNode(nodeId);
         nodeId++;
-        flattenedInputNodes.add(biasNode);
         allNodes.add(biasNode);
 
         // Create the classification output nodes and add them to the nodes list

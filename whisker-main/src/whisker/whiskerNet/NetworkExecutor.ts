@@ -86,15 +86,17 @@ export class NetworkExecutor {
 
         seedScratch(String(Randomness.getInitialSeed()))
 
-        // Load the inputs into the Network
+        // Extract the inputs form the current state of the VM and check if we have to add additional InputNodes.
         const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
-        // eslint-disable-next-line prefer-spread
-        const inputs = [].concat.apply([], spriteInfo);
+        const inputSize = [].concat(...spriteInfo).length;
+        if(inputSize > network.inputNodesSize())
+            network.addInputNode(spriteInfo);
+
 
         // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
         network.flushNodeValues();
         for (let i = 0; i < stabilizeCounter + 1; i++) {
-            workingNetwork = network.activateNetwork(inputs);
+            workingNetwork = network.activateNetwork(spriteInfo);
         }
 
         // Set up the Scratch-VM and start the game
@@ -118,18 +120,23 @@ export class NetworkExecutor {
 
             // Load the inputs into the Network
             const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
-            const inputs = [].concat(...spriteInfo);
+
+            // Check if we encountered additional input features during the playthrough.
+            // If we did so add InputNodes to the network.
+            const inputSize = [].concat(...spriteInfo).length;
+            if(inputSize > network.inputNodesSize())
+                network.addInputNode(spriteInfo);
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
             if (network.isRecurrent) {
-                workingNetwork = network.activateNetwork(inputs)
+                workingNetwork = network.activateNetwork(spriteInfo)
             }
 
             // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
             else {
                 network.flushNodeValues();
                 for (let i = 0; i < stabilizeCounter + 1; i++) {
-                    workingNetwork = network.activateNetwork(inputs);
+                    workingNetwork = network.activateNetwork(spriteInfo);
                 }
             }
 
@@ -178,7 +185,6 @@ export class NetworkExecutor {
             console.error("Found defect Network", network)
             network.hasDeathMark = true;
         }
-
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
         return network.trace;
