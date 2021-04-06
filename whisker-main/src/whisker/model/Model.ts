@@ -13,24 +13,26 @@ import {ModelEdge} from "./components/ModelEdge";
  */
 export class Model {
 
-    private id: string;
-    private modelType: ModelType;
+    readonly id: string;
+    modelType: ModelType;
 
-    private startNode: ModelNode;
+    private readonly startNode: ModelNode;
     private currentState: ModelNode;
 
-    private stopNodes: { [key: string]: ModelNode };
-    private nodes: { [key: string]: ModelNode };
-    private edges: { [key: string]: ModelEdge };
+    private readonly stopNodes: { [key: string]: ModelNode };
+    private readonly nodes: { [key: string]: ModelNode };
+    private readonly edges: { [key: string]: ModelEdge };
 
     /**
-     * todo
-     * @param id
-     * @param modelType
-     * @param startNode
-     * @param stopNodes
-     * @param nodes
-     * @param edges
+     * Construct a model (graph) with a string identifier and model type (program or user model). Sets up the start
+     * node and stopping nodes for simulating transitions on the graph.
+     *
+     * @param id ID of the model.
+     * @param modelType Enum type of the model.
+     * @param startNode Start node for traversing the graph.
+     * @param stopNodes Nodes stopping the graph walkthrough.
+     * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
+     * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
      */
     constructor(id: string, modelType: ModelType, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
                 nodes: { [key: string]: ModelNode }, edges: { [key: string]: ModelEdge }) {
@@ -43,18 +45,19 @@ export class Model {
         this.edges = edges;
     }
 
+    /**
+     * Simulate one transition on the graph. todo Add as callback function
+     */
+    makeOneTransition() {
 
-    step(condition) { // todo param is a ioEvent of scratch
-
-        // ask the currentNode for a transition for the input event and get effect of the edge if its condition is
-        // fulfilled
-        const edge = this.currentState.getEdgeForInputEvent(condition);
+        // ask the current node for a valid transition
+        const edge = this.currentState.testEdgeConditions();
         if (edge != null) {
             const fun = edge.getEffect();
             fun();
         }
 
-        // todo give out the result?
+
     }
 
     /**
@@ -63,6 +66,8 @@ export class Model {
     reset(): void {
         this.currentState = this.startNode;
     }
+
+    // todo callback function (?) that compares the state of the model and program
 }
 
 export enum ModelType {

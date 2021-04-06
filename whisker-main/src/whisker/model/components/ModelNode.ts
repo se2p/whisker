@@ -5,34 +5,42 @@ import {ModelEdge} from "./ModelEdge";
  */
 export class ModelNode {
 
-    private id: string;
+    private readonly id: string;
     private outgoing: ModelEdge[] = [];
 
     isStartNode = false;
     isStopNode = false;
 
+    /**
+     * Node of a graph with an unique id identifier.
+     * @param id
+     */
     constructor(id: string) {
         this.id = id;
     }
 
-    setOutgoingEdges(outgoing: ModelEdge[]): void {
-        this.outgoing = outgoing;
-    }
-
+    /**
+     * Add an outgoing edge from this model node.
+     * @param edge Edge to add.
+     */
     addOutgoingEdge(edge: ModelEdge): void {
         this.outgoing.push(edge);
     }
 
     /**
-     * Return all
-     * @param event
+     * Returns an model edge if one has its condition for traversing the edge fulfilled or null.
      */
-    getEdgeForInputEvent(event): ModelEdge { // todo type for input event
+    testEdgeConditions(): ModelEdge {
         if (this.outgoing.length == 0) {
             return null;
         }
 
-        // todo find edge in edge list that has the event as condition
-        return this.outgoing[0];
+        for (let i = 0; i < this.outgoing.length; i++) {
+            if (this.outgoing[i].testCondition()) {
+                return this.outgoing[i];
+            }
+        }
+
+        return null;
     }
 }

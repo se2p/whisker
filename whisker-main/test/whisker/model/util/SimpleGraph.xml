@@ -1,4 +1,4 @@
-<graphs>
+<models>
     <graph id="g0" usage="program">
         <node id="n0" startNode="true"/>
         <node id="n1" stopNode="true"/>
@@ -10,4 +10,4 @@
         <node id="n1" stopNode="true"/>
         <edge id="e0" source="n0" target="n1" condition="Key:KeyUP" effect="print('Yes')"/>
     </graph>
-</graphs>
+</models>

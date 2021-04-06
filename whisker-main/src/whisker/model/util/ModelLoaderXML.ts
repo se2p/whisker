@@ -4,9 +4,7 @@ import {ModelEdge} from "../components/ModelEdge";
 import {Model, ModelType} from "../Model";
 
 /**
- * Load a model from a xml or graphml file.
- *
- *
+ * Load models from a xml file.
  *
  * ########### Example XML FILE ###########
  * <graphs>
@@ -35,49 +33,51 @@ export class ModelLoaderXML {
     private stopNodes: { [key: string]: ModelNode };
     private nodesMap: { [key: string]: ModelNode };
     private edgesMap: { [key: string]: ModelEdge };
+    private graphMap: { [key: string]: Model };
 
+    /**
+     * Load the models from a string file content.
+     * @param xmlText Content of a xml file containing the models.
+     */
     loadModels(xmlText: string): Model[] {
-        // todo emit loading message?
-
-        const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).graphs[0].graph;
-        const models: Model[] = [];
-
+        const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].graph;
         graphs.forEach(graph => {
             this.startNode = undefined;
             this.stopNodes = {};
             this.nodesMap = {};
             this.edgesMap = {};
-            models.push(this._loadModel(graph));
+            this.graphMap = {}
+            this._loadModel(graph);
         })
-        return models;
+        return Object.values(this.graphMap);
     }
 
     /**
      * Load a model.
      * @param graph Contains a node array, an edge array and attributes.
      */
-    _loadModel(graph: { [key: string]: any }): Model {
+    _loadModel(graph: { [key: string]: any }): void {
         // Get the nodes and edges..
         const graphEdges = graph.edge;
         const graphNodes = graph.node;
 
-        // todo catch errors?
         graphNodes.forEach(node => this._loadNode(node['_attributes']));
         graphEdges.forEach(edge => this._loadEdge(edge['_attributes']));
 
         if (!this.startNode) {
-            // todo throw new error
-            console.error("Start node not marked.");
-            return null;
+            throw new Error("Start node not marked.");
         }
         if (Object.keys(this.stopNodes).length == 0) {
-            // todo throw new error
-            console.error("Stop nodes not marked.");
-            return null;
+            throw new Error("Stop nodes not marked.");
         }
 
         const modelType = graph._attributes.usage == "program" ? ModelType.programModel : ModelType.userModel;
-        return new Model(graph._attributes.id, modelType, this.startNode, this.stopNodes, this.nodesMap, this.edgesMap);
+        const model = new Model(graph._attributes.id, modelType, this.startNode, this.stopNodes, this.nodesMap,
+            this.edgesMap);
+        if (this.graphMap[model.id]) {
+            throw new Error("Model id '" + model.id + "' already defined.");
+        }
+        this.graphMap[model.id] = model;
     }
 
     /**
@@ -86,9 +86,7 @@ export class ModelLoaderXML {
      */
     _loadNode(nodeAttr: { [key: string]: string }): void {
         if ((this.nodesMap)[nodeAttr.id]) {
-            // todo throw new error
-            console.error("ID '" + nodeAttr.id + "' already defined!");
-            return
+            throw new Error("ID '" + nodeAttr.id + "' already defined!");
         }
 
         (this.nodesMap)[nodeAttr.id] = new ModelNode(nodeAttr.id);
@@ -96,9 +94,7 @@ export class ModelLoaderXML {
         if (nodeAttr.startNode && nodeAttr.startNode == "true") {
             // already defined start node
             if (this.startNode) {
-                // todo throw new error
-                console.error("More than one start node!")
-                return
+                throw new Error("More than one start node!")
             }
             this.startNode = this.nodesMap[nodeAttr.id];
             this.nodesMap[nodeAttr.id].isStartNode = true;
@@ -121,32 +117,28 @@ export class ModelLoaderXML {
         const endID = edgeAttr.target;
 
         if ((this.edgesMap)[edgeID]) {
-            // todo throw new error
-            console.error("ID '" + edgeAttr.id + "' already defined!");
-            return
-        } else if (!(this.nodesMap)[startID] || !(this.nodesMap)[endID]) {
-            // todo throw new error
-            console.error("Unknown node '" + startID + "' or '" + endID + "' in edge '" + edgeID + "'!");
-            return
+            throw new Error("ID '" + edgeAttr.id + "' already defined.");
+        }
+
+        if (!(this.nodesMap)[startID]) {
+            throw new Error("Unknown node '" + startID + "' in edge '" + edgeID + "'.");
+        }
+        if (!(this.nodesMap)[endID]) {
+            throw new Error("Unknown node '" + endID + "' in edge '" + edgeID + "'.");
         }
 
         const newEdge = new ModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
 
         if (!edgeAttr.condition || !edgeAttr.effect) {
-            // todo throw new error
-            console.error("Condition or effect not given for edge '" + edgeID + "'.");
-            return
+            throw new Error("Condition or effect not given for edge '" + edgeID + "'.");
         }
 
         // Set the condition for the edge
-        newEdge.setCondition(function (event) {
-            // todo eval the condition
-            return event == edgeAttr.condition;
-        });
+        newEdge.condition = edgeAttr.condition; //todo
 
         // Set the effect of the edge
         newEdge.setEffect(function () {
-            // todo eval the effect
+            // todo eval the effect?
             console.log(edgeAttr.effect);
         });
 
@@ -154,3 +146,9 @@ export class ModelLoaderXML {
         this.edgesMap[edgeID] = newEdge;
     }
 }
+
+// import {readFileSync} from "fs";
+// const text = readFileSync('../../../test/whisker/model/util/SimpleGraph.xml', 'utf8');
+// const loader = new ModelLoaderXML();
+// const model = loader.loadModels(text);
+// console.log(model);

@@ -7,11 +7,11 @@ import {ModelNode} from "./ModelNode";
  */
 export class ModelEdge {
 
-    private id: string;
-    private startNode: ModelNode; // redundant?
-    private endNode: ModelNode;
+    private readonly id: string;
+    private readonly startNode: ModelNode;
+    private readonly endNode: ModelNode;
 
-    private condition = () => true;
+    condition: string; //todo string, eval austesten, hilfsfunctionen
     private effect = () => undefined;
 
     /**
@@ -27,11 +27,10 @@ export class ModelEdge {
     }
 
     /**
-     * Set the condition for the edge effect to occur.
-     * @param condition Function returning a boolean.
+     * Test whether the condition on this edge is fulfilled.
      */
-    setCondition(condition: { (...param): boolean }): void {
-        this.condition = condition;
+    testCondition(): boolean {
+        return eval(this.condition);
     }
 
     /**
