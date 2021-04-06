@@ -397,7 +397,12 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
  */
 function prepareTestFiles (whiskerTestPath) {
     if (addRandomInputs) {
-        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir);
+        const customTimeGiven = typeof addRandomInputs === 'string';
+        const defaultTime = 10_000; // in milliseconds, here: 10 seconds
+        const waitTime = customTimeGiven
+            ? addRandomInputs // Instead of a boolean value, this is actually a string that encodes the time to wait.
+            : defaultTime;
+        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir, waitTime);
     }
 
     if (errorWitnessPath) {

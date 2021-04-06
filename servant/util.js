@@ -26,7 +26,7 @@ const validateCommandLineArguments = args => {
     }
 
     if (args.numberOfTabs > os.cpus().length) {
-        logger.error(`You selcted to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
+        logger.error(`You selected to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
             `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
             `otherwise tests might fail and will need longer to initialize.`);
         process.exit(1);
@@ -42,7 +42,7 @@ const cli = {
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
-            .option('-r, --addRandomInputs', 'If random inputs should be added to the test', false)
+            .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how long to wait for its completion (in ms)')
             .option('-a, --accelerationFactor <Integer>', 'Acceleration factor', "1")
             .option('-v, --csvFile <Path>', 'Name of CSV File to put output into', false)
             .option('-c, --configPath <Path>', 'Path to a configuration file', '../whisker-main/config/default.json')
