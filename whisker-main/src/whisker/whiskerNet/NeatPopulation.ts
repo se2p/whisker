@@ -127,17 +127,24 @@ export class NeatPopulation<C extends NetworkChromosome> {
             specie.assignAdjustFitness();
         }
 
-        // Calculate the total Average Species Fitness; used for assigning the amount of offspring per species
-        let totalAverageSpeciesFitness = 0;
-        for (const specie of this.species) {
-            totalAverageSpeciesFitness += specie.averageSpeciesFitness();
+        // Calculate the total average fitness value of all chromosomes in the generation
+        let fitnessSum = 0.0;
+        for (const chromosome of this.chromosomes) {
+            fitnessSum += chromosome.sharedFitness;
         }
+        const numberOrganisms = this.chromosomes.size();
+        const averageFitness = fitnessSum / numberOrganisms;
 
-        // Calculate expected children per species and total expectedOffspring
-        let leftOver = 0;
+        // Compute the expected number of offspring for each chromosome which depends on its fitness value
+        // in comparison to the averageFitness of the population
+        for (const chromosome of this.chromosomes) {
+            chromosome.expectedOffspring = chromosome.sharedFitness / averageFitness;
+        }
+        // Now calculate the number of offspring in each Species
+        let leftOver = 0.0;
         let totalOffspringExpected = 0;
         for (const specie of this.species) {
-            leftOver = specie.getNumberOffspringsAvg(leftOver, totalAverageSpeciesFitness, this.startSize)
+            leftOver = specie.getNumberOfOffspringsNEAT(leftOver);
             totalOffspringExpected += specie.expectedOffspring;
         }
 
@@ -146,7 +153,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
         this.sortSpecies();
         this.populationChampion = this.chromosomes.get(0);
         this.populationChampion.isPopulationChampion = true;
-        this.populationChampion.numberOffspringPopulationChamp = 3;
+        this.populationChampion.numberOffspringPopulationChamp = this.properties.populationChampionNumberOffspring;
 
         // Handle lost children due to rounding errors
         if (totalOffspringExpected < this.startSize) {
@@ -154,10 +161,6 @@ export class NeatPopulation<C extends NetworkChromosome> {
             const lostChildren = this.startSize - totalOffspringExpected;
             this.populationChampion.species.expectedOffspring += lostChildren;
         }
-
-        // Make sure we do not loose the population champion; could happen through fitness sharing
-        if (this.populationChampion.species.expectedOffspring < 1)
-            this.populationChampion.species.expectedOffspring = 1;
 
         // Calculate average fitness for logging purposes
         this.calculateAverageFitness();

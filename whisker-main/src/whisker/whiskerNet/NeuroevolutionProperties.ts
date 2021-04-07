@@ -58,6 +58,16 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _addConnectionTries: number
 
     /**
+     * Defines how many offspring are reserved for the population Champion.
+     */
+    private _populationChampionNumberOffspring: number
+
+    /**
+     * Defines how often we clone the population Champion.
+     */
+    private _populationChampionNumberClones: number
+
+    /**
      * The Population Champion gets a unique probability of mutating the connections of his network
      */
     private _populationChampionConnectionMutation: number
@@ -88,7 +98,7 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _toggleEnableConnectionTimes: number
 
     /**
-     * The probability for enabling a connection between nodes
+     * The probability for enabling a previously disabled connection between nodes
      */
     private _mutateEnableConnection: number
 
@@ -228,6 +238,22 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     set addConnectionTries(value: number) {
         this._addConnectionTries = value;
+    }
+
+    get populationChampionNumberOffspring(): number {
+        return this._populationChampionNumberOffspring;
+    }
+
+    set populationChampionNumberOffspring(value: number) {
+        this._populationChampionNumberOffspring = value;
+    }
+
+    get populationChampionNumberClones(): number {
+        return this._populationChampionNumberClones;
+    }
+
+    set populationChampionNumberClones(value: number) {
+        this._populationChampionNumberClones = value;
     }
 
     get populationChampionConnectionMutation(): number {

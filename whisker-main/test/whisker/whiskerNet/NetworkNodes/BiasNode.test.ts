@@ -45,10 +45,10 @@ describe("BiasNode Tests", () => {
         const biasNode2 = new BiasNode(1);
         expect(biasNode2.equals(biasNode)).toBe(true)
 
-        const inputNode3 = new InputNode(2);
+        const inputNode3 = new InputNode(2,0);
         expect(inputNode3.equals(biasNode)).toBe(false)
 
-        const inputNode = new InputNode(1);
+        const inputNode = new InputNode(1,1);
         expect(inputNode.equals(biasNode)).toBe(false)
     })
 

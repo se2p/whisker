@@ -1,7 +1,7 @@
 {
     "test-generator": "neuroevolution",
     "algorithm": "neat",
-    "chromosome": "sparseNetwork",
+    "chromosome": "fullyConnectedNetwork",
     "population-size": 500,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,

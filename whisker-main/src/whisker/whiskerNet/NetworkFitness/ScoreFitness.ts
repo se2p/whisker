@@ -28,7 +28,10 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
     async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
-        const score = ScoreFitness.gatherPoints(Container.vm);
+        let score = ScoreFitness.gatherPoints(Container.vm);
+        if(score < 0){
+            score = 0.01
+        }
         network.networkFitness = score + this.offset;
         return network.networkFitness;
     }
@@ -41,7 +44,10 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
     async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.executeRandom(network);
-        const score = ScoreFitness.gatherPoints(Container.vm);
+        let score = ScoreFitness.gatherPoints(Container.vm);
+        if(score < 0){
+            score = 0.01
+        }
         network.networkFitness = score + this.offset;
         return network.networkFitness;
     }
@@ -71,10 +77,9 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
         let points = 0;
         for (const target of vm.runtime.targets) {
             for (const value of Object.values(target.variables)) {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                if (value.name === 'Punkte' || value.name === 'score' || value.name === 'coins' || value.name === 'room' || value.name === 'high score') {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                const name = value.name.toLowerCase();
+                if (name === 'punkte' || name === 'score' || name === 'high score') {
                     // @ts-ignore
                     points += Number(value.value)
                 }
