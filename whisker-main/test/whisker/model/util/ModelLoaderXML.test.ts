@@ -1,4 +1,3 @@
-
 import {readFileSync} from 'fs';
 import {ModelLoaderXML} from "../../../../src/whisker/model/util/ModelLoaderXML";
 
@@ -12,10 +11,16 @@ describe('ModelLoaderXML', () => {
         expect(loader.loadModels(text)).not.toBeNull();
     });
 
+    test('Edge with two conditions', () => {
+        const text = readFileSync('test/whisker/model/util/SimpleGraph-multiple-edge-conditions.xml', 'utf8');
+        const loader = new ModelLoaderXML();
+        expect(loader.loadModels(text)).not.toBeNull();
+    });
+
     test('Duplicated graph id', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-graph-id.xml', 'utf8');
         const loader = new ModelLoaderXML();
-        expect(function() {
+        expect(function () {
             loader.loadModels(text)
         }).toThrow();
     });
@@ -23,7 +28,7 @@ describe('ModelLoaderXML', () => {
     test('Duplicated node id', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-node-id.xml', 'utf8');
         const loader = new ModelLoaderXML();
-        expect(function() {
+        expect(function () {
             loader.loadModels(text)
         }).toThrow();
     });

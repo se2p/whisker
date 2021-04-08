@@ -7,11 +7,11 @@ import {ModelNode} from "./ModelNode";
  */
 export class ModelEdge {
 
-    private readonly id: string;
+    readonly id: string;
     private readonly startNode: ModelNode;
     private readonly endNode: ModelNode;
 
-    condition: string; //todo string, eval austesten, hilfsfunctionen
+    condition: string[] = [];
     private effect = () => undefined;
 
     /**
@@ -30,7 +30,12 @@ export class ModelEdge {
      * Test whether the condition on this edge is fulfilled.
      */
     testCondition(): boolean {
-        return eval(this.condition);
+        for (let i = 0; i < this.condition.length; i++) {
+            if (!eval(this.condition[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -45,5 +50,44 @@ export class ModelEdge {
     getEffect(): { (): void } {
         return this.effect;
     }
+
+    getStartNode(): ModelNode {
+        return this.startNode;
+    }
+
+    getEndNode(): ModelNode {
+        return this.endNode;
+    }
+
+}
+
+/**
+ * Method for checking if an edge condition is fulfilled with a key event. Todo needs duration or not?
+ * @param string Name of the key.
+ */
+export function checkKeyEvent(string) {
+    console.log("for now nothing happens with " + string)
+}
+
+/**
+ * Method for checking if an edge condition is fulfilled with a click event. Todo needs also other params?
+ *
+ * @param x X coordinate of the mouse click.
+ * @param y Y coordinate of the mouse click.
+ */
+export function checkClickEvent(x, y) {
+    console.log("for now nothing happens with the mouse click at " + x + y)
+
+}
+
+/**
+ * Method for checking if an edge condition is fulfilled for a value of a variable.
+ * Todo needs different comparision =, <,>,<=, >=
+ *
+ * @param varName Name of the variable.
+ * @param varValue Value to compare to the variable's current value.
+ */
+export function checkVarEvent(varName, varValue) {
+    console.log("for now nothing happens with " + varName + " for value " + varValue)
 
 }

@@ -25,6 +25,7 @@ export class ModelTester {
             throw new Error("Model Loader: " + e.message);
         }
     }
+
     /**
      * @param {VirtualMachine} vm .
      * @param {string} project .
@@ -50,14 +51,15 @@ export class ModelTester {
         testDriver.seedScratch(Random.INITIAL_SEED);
 
 
+        this.vmWrapper.start();
         this.programModels.forEach(model => {
             model.vmWrapper = this.vmWrapper;
-            this.vmWrapper.callbacks.addCallback(model.makeOneTransition, false, "modelstep");
+            this.vmWrapper.callbacks.addCallback(function () {
+                model.makeOneTransition();
+            }, false, "modelstep");
         })
 
-        // console.log("the test driver...", testDriver);
-        // this.vmWrapper.start();
-        // this.vmWrapper.step(); // there is no callback function when its here...
+        this.vmWrapper.step();
 
 
         // this.emit(TestRunner.RUN_END, results);

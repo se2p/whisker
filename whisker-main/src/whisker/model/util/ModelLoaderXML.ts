@@ -1,9 +1,9 @@
 import * as xmljs from 'xml-js';
 import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/ModelEdge";
-import {getCondition} from "./EdgeEvent";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
+import {evalCondition} from "./EdgeEvent";
 
 /**
  * Load models from a xml file.
@@ -146,12 +146,7 @@ export class ModelLoaderXML {
             throw new Error("Condition or effect not given for edge '" + edgeID + "'.");
         }
 
-        // Set the condition for the edge
-        try {
-            newEdge.condition = getCondition(edgeAttr.condition); //todo
-        } catch (e) {
-            throw new Error("Edge '" + edgeID + "': " + e.message);
-        }
+        evalCondition(newEdge, edgeAttr);
 
         // Set the effect of the edge
         newEdge.setEffect(function () {
@@ -163,9 +158,3 @@ export class ModelLoaderXML {
         this.edgesMap[edgeID] = newEdge;
     }
 }
-
-// import {readFileSync} from "fs";
-// const text = readFileSync('../../../test/whisker/model/util/SimpleGraph.xml', 'utf8');
-// const loader = new ModelLoaderXML();
-// const model = loader.loadModels(text);
-// console.log(model);

@@ -58,6 +58,7 @@ export class ProgramModel {
         if (edge != null) {
             const fun = edge.getEffect();
             fun();
+            this.currentState = edge.getEndNode();
         }
     }
 
