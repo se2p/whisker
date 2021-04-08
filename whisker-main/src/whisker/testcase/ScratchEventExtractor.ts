@@ -68,7 +68,7 @@ export class ScratchEventExtractor {
                 }
             }
         }
-            return false;
+        return false;
     }
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
@@ -81,11 +81,23 @@ export class ScratchEventExtractor {
             }
         }
 
-        for (const duration of this.availableWaitDurations) {
-            eventList.add(new WaitEvent(duration));
+        if (eventList.isEmpty() || this.isWaiting(vm)) {
+            for (const duration of this.availableWaitDurations) {
+                eventList.add(new WaitEvent(duration));
+            }
         }
 
-        return eventList;
+        return eventList.distinctObjects();
+    }
+
+    static isWaiting(vm: VirtualMachine): boolean {
+        for (const t of vm.runtime.threads) {
+            const currentBlock = t.target.blocks.getBlock(t.blockGlowInFrame);
+            if (currentBlock != null && currentBlock.inputs.hasOwnProperty('SECS')) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
