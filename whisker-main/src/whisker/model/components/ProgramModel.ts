@@ -1,6 +1,6 @@
-import {ModelNode} from "./components/ModelNode";
-import {ModelEdge} from "./components/ModelEdge";
-import {ModelLoaderXML} from "./util/ModelLoaderXML";
+import {ModelNode} from "./ModelNode";
+import {ModelEdge} from "./ModelEdge";
+import VMWrapper from "../../../vm/vm-wrapper";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -12,10 +12,10 @@ import {ModelLoaderXML} from "./util/ModelLoaderXML";
  * - Only one start node, unique
  * - Each edge has a condition (input event, condition for a variable,....)
  */
-export class Model {
+export class ProgramModel {
 
     readonly id: string;
-    modelType: ModelType;
+    vmWrapper: VMWrapper;
 
     private readonly startNode: ModelNode;
     private currentState: ModelNode;
@@ -29,16 +29,14 @@ export class Model {
      * node and stopping nodes for simulating transitions on the graph.
      *
      * @param id ID of the model.
-     * @param modelType Enum type of the model.
      * @param startNode Start node for traversing the graph.
      * @param stopNodes Nodes stopping the graph walkthrough.
      * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
      */
-    constructor(id: string, modelType: ModelType, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
+    constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
                 nodes: { [key: string]: ModelNode }, edges: { [key: string]: ModelEdge }) {
         this.id = id;
-        this.modelType = modelType;
         this.currentState = startNode;
         this.startNode = startNode;
         this.stopNodes = stopNodes;
@@ -47,9 +45,13 @@ export class Model {
     }
 
     /**
-     * Simulate one transition on the graph. todo Add as callback function
+     * Simulate one transition on the graph.
      */
     makeOneTransition() {
+        if (!this.vmWrapper) {
+            throw new Error("Model: no vmWrapper");
+        }
+        console.log(this.vmWrapper.inputs);
 
         // ask the current node for a valid transition
         const edge = this.currentState.testEdgeConditions();
@@ -57,8 +59,6 @@ export class Model {
             const fun = edge.getEffect();
             fun();
         }
-
-
     }
 
     /**
@@ -67,16 +67,4 @@ export class Model {
     reset(): void {
         this.currentState = this.startNode;
     }
-
-    // todo callback function (?) that compares the state of the model and program
-}
-
-export function loadModels(string) {
-    const modelLoader = new ModelLoaderXML();
-    return modelLoader.loadModels(string);
-}
-
-export enum ModelType {
-    programModel,
-    userModel
 }

@@ -1,7 +1,9 @@
 import * as xmljs from 'xml-js';
 import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/ModelEdge";
-import {Model, ModelType} from "../Model";
+import {getCondition} from "./EdgeEvent";
+import {ProgramModel} from "../components/ProgramModel";
+import {UserModel} from "../components/UserModel";
 
 /**
  * Load models from a xml file.
@@ -33,15 +35,21 @@ export class ModelLoaderXML {
     private stopNodes: { [key: string]: ModelNode };
     private nodesMap: { [key: string]: ModelNode };
     private edgesMap: { [key: string]: ModelEdge };
-    private graphMap: { [key: string]: Model };
+    private graphIDs: string[];
+
+    private programModels: ProgramModel[];
+    private userModels: UserModel[];
 
     /**
      * Load the models from a string file content.
      * @param xmlText Content of a xml file containing the models.
      */
-    loadModels(xmlText: string): Model[] {
+    loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[] } {
         const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].graph;
-        this.graphMap = {}
+        this.graphIDs = [];
+        this.programModels = [];
+        this.userModels = [];
+
         graphs.forEach(graph => {
             this.startNode = undefined;
             this.stopNodes = {};
@@ -49,7 +57,7 @@ export class ModelLoaderXML {
             this.edgesMap = {};
             this._loadModel(graph);
         })
-        return Object.values(this.graphMap);
+        return {programModels: this.programModels, userModels: this.userModels};
     }
 
     /**
@@ -71,13 +79,18 @@ export class ModelLoaderXML {
             throw new Error("Stop nodes not marked.");
         }
 
-        const modelType = graph._attributes.usage == "program" ? ModelType.programModel : ModelType.userModel;
-        const model = new Model(graph._attributes.id, modelType, this.startNode, this.stopNodes, this.nodesMap,
-            this.edgesMap);
-        if (this.graphMap[model.id]) {
-            throw new Error("Model id '" + model.id + "' already defined.");
+        const graphID = graph._attributes.id;
+        if (this.graphIDs.indexOf(graphID) != -1) { // todo test
+            throw new Error("Model id '" + graphID + "' already defined.");
         }
-        this.graphMap[model.id] = model;
+        this.graphIDs.push(graphID);
+
+        if (graph._attributes.usage == "program") {
+            this.programModels.push(new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
+                this.edgesMap))
+        } else {
+            this.userModels.push(new UserModel(graphID));// todo
+        }
     }
 
     /**
@@ -134,7 +147,11 @@ export class ModelLoaderXML {
         }
 
         // Set the condition for the edge
-        newEdge.condition = edgeAttr.condition; //todo
+        try {
+            newEdge.condition = getCondition(edgeAttr.condition); //todo
+        } catch (e) {
+            throw new Error("Edge '" + edgeID + "': " + e.message);
+        }
 
         // Set the effect of the edge
         newEdge.setEffect(function () {

@@ -6,7 +6,7 @@ const TAP13Formatter = require('./test-runner/tap13-formatter');
 const CoverageGenerator = require('./coverage/coverage');
 const Util = require('./vm/util');
 const Search = require("./whisker/Search")
-const Model = require("./whisker/model/Model")
+const ModelTester = require("./whisker/model/ModelTester")
 
 module.exports = {
     Test,
@@ -17,5 +17,5 @@ module.exports = {
     WhiskerUtil,
     CoverageGenerator,
     Util,
-    Model
+    ModelTester
 };

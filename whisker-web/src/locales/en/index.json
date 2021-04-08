@@ -57,5 +57,8 @@
     "categories" : "Categories",
     "inputs" : "Input Recorder",
     "inputs-error" : "In order to record inputs, manual inputs must be enabled by clicking the checkbox.",
-    "model": "Your Model"
+    "model": "Your Model",
+    "test-model": "Start Model Test",
+    "no-model": "No model loaded",
+    "model-test-run" : "Model Test"
 }

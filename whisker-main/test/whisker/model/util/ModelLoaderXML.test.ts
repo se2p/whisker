@@ -91,4 +91,12 @@ describe('ModelLoaderXML', () => {
             loader.loadModels(text)
         }).toThrow();
     });
+
+    test('Edge condition type wrong.', () => {
+        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-edge-condition.xml', 'utf8');
+        const loader = new ModelLoaderXML();
+        expect(function () {
+            loader.loadModels(text)
+        }).toThrow();
+    });
 });

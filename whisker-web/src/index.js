@@ -15,7 +15,7 @@ const privacyDE = require('./locales/de/privacy.json');
 const privacyEN = require('./locales/en/privacy.json');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, Model} = require('whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
@@ -36,13 +36,12 @@ const DEFAULT_ACCELERATION_FACTOR = 1;
 const params = new URLSearchParams(window.location.search);
 const lng = params.get("lng");
 
-const loadModelFromString = function (string) {
+const loadModelFromString = function (models) {
     try {
-        Whisker.programModels = Model.loadModels(string); // todo later on filter for user model before
+        Whisker.modelTester = new ModelTester.ModelTester(models);
     } catch (err) {
         const message = `${err.name}: ${err.message}`;
-        showModal('Modal Loading', `An error occurred while parsing the modal:<br>
-            <div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
+        showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
     }
 }
@@ -79,6 +78,36 @@ const runSearch = async function () {
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
+
+const _runModelTest = async function (vm, project) {
+    $('#green-flag').prop('disabled', true);
+    $('#reset').prop('disabled', true);
+    $('#run-all-tests').prop('disabled', true);
+    $('#record').prop('disabled', true);
+
+    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    let summary;
+
+    try {
+        await Whisker.scratch.vm.loadProject(project);
+        summary = await Whisker.modelTester.test(vm, project, {accelerationFactor});
+    } finally {
+        $('#green-flag').prop('disabled', false);
+        $('#reset').prop('disabled', false);
+        $('#run-all-tests').prop('disabled', false);
+        $('#record').prop('disabled', false);
+    }
+
+    if (summary === null) {
+        return;
+    }
+
+    const formattedSummary = TAP13Formatter.formatSummary(summary);
+
+    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+
+    Whisker.outputRun.println(summaryString);
+}
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
@@ -139,6 +168,22 @@ const runTests = async function (tests) {
     Whisker.outputLog.clear();
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
 };
+
+const runModelTest = async function () {
+    if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
+        showModal(i18next.t("model-test-run"), i18next.t("no-project"));
+        return;
+    } else if (Whisker.modelTester === undefined) {
+        showModal(i18next.t("model-test-run"), i18next.t("no-model"));
+        return;
+    }
+
+    Whisker.scratch.stop();
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    Whisker.outputRun.clear();
+    Whisker.outputLog.clear();
+    await _runModelTest(Whisker.scratch.vm, project);
+}
 
 const runAllTests = async function () {
     if (Whisker.tests === undefined || Whisker.tests.length === 0) {
@@ -222,6 +267,8 @@ const initComponents = function () {
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
+
+    Whisker.programModals = undefined;
 
     document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };
@@ -361,6 +408,7 @@ const initEvents = function () {
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
         $(event.target).parent().tooltip();
     });
+    $('#model-test').on('click', runModelTest);
 };
 
 const toggleComponents = function () {
