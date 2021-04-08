@@ -19,7 +19,7 @@
  */
 
 import {Randomness} from "./Randomness";
-
+import isEqual from 'lodash.isequal';
 /**
  * A class to store a list of elements of the same type.
  *
@@ -166,6 +166,17 @@ export class List<T> implements Iterable<T> {
     distinct(): List<T> {
         let distinctItems = this._items.filter((o, i, arr) =>
             arr.findIndex(t => t === o) === i);
+        return new List<T>(distinctItems);
+    }
+
+    /**
+     * Returns a list consisting of the distinct elements of this list using object comparison
+     *
+     * @returns a list consisting of the distinct elements.
+     */
+    distinctObjects(): List<T> {
+        let distinctItems = this._items.filter((o, i, arr) =>
+            arr.findIndex(t => isEqual(t, o)) === i);
         return new List<T>(distinctItems);
     }
 
