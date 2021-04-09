@@ -275,7 +275,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
      * Sorts the species List according to their champion's networkFitness in decreasing order.
      */
     private sortSpecies(): void {
-        this.species.sort((a, b) => b.champion.networkFitness - a.champion.networkFitness)
+        this.species.sort((a, b) => b.expectedOffspring - a.expectedOffspring)
     }
 
     /**
