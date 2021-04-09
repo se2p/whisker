@@ -23,3 +23,6 @@ coverage
 /servant/.tmpWorkingDir
 /servant/*.csv
 /servant/evaluation.js
+
+# WhiskerNet evaluation
+/whisker-main/src/whisker/whiskerNet/EvaluationScripts
