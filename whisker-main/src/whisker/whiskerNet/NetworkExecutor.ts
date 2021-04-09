@@ -112,6 +112,7 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
+            this._vm.haltExecution();
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -148,6 +149,7 @@ export class NetworkExecutor {
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.add(indexOfMaxValue);
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
+            this._vm.resumeExecution();
 
             // Update the VM with the given event. No args given since only MouseMove events take params currently.
             events.add([nextEvent, []]);

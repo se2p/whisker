@@ -15,6 +15,7 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeatPopulation";
 
 
 describe('Test NEAT', () => {
@@ -29,7 +30,7 @@ describe('Test NEAT', () => {
     let generator: NetworkChromosomeGeneratorSparse
     let genInputs: number[][]
     let outputSize: number
-    let random : Randomness
+    let random: Randomness
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
@@ -40,10 +41,10 @@ describe('Test NEAT', () => {
         crossoverOp = new NeatCrossover(0.4);
         mutationOp = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
-            0.1, 3,0.1);
-        genInputs = [[1,2,3],[4,5,6], [7,8], [9]];
+            0.1, 3, 0.1);
+        genInputs = [[1, 2, 3], [4, 5, 6], [7, 8], [9]];
         outputSize = 3;
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false);
 
         builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         iterations = 20;
@@ -53,10 +54,10 @@ describe('Test NEAT', () => {
 
         properties.networkFitness = new class implements NetworkFitnessFunction<NetworkChromosome> {
             compare(value1: number, value2: number): number {
-                return value2-value1;
+                return value2 - value1;
             }
 
-            getFitness(network:NetworkChromosome): Promise<number> {
+            getFitness(network: NetworkChromosome): Promise<number> {
                 const fitness = random.nextInt(1, 100)
                 network.networkFitness = fitness;
                 return Promise.resolve(fitness);
@@ -86,13 +87,61 @@ describe('Test NEAT', () => {
         properties.weightCoefficient = 1;
         properties.penalizingAge = 20;
         searchAlgorithm = builder.addProperties(properties as unknown as SearchAlgorithmProperties<Chromosome>)
-            .addChromosomeGenerator(generator).initializeFitnessFunction(FitnessFunctionType.STATEMENT, null,null)
+            .addChromosomeGenerator(generator).initializeFitnessFunction(FitnessFunctionType.STATEMENT, null, null)
             .buildSearchAlgorithm();
     })
 
-    test("Test findSolution()", () =>{
+    test("Test findSolution()", () => {
         return searchAlgorithm.findSolution().then(() => {
             expect(searchAlgorithm.getNumberOfIterations()).toBe(20);
         });
     })
+
+    /*
+    Sanity Check if NEAT works correctly. Commented out since it can lead to a high increase in testing time.
+    However, should be used for validating any changes made to the NEAT algorithm or its components.
+    test("XOR Sanity Test", () => {
+        const inputs = [[0, 0], [1, 1], [0, 1], [1, 0]];
+        const genInputs = [[0, 0]]
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, 1, 0.5, false);
+        const population = new NeatPopulation(150, 5, generator, properties)
+
+        let found = false;
+        let iteration = 0;
+        while (!found) {
+            for (const chromosome of population.chromosomes) {
+                let fitness = 0;
+                const stabCounter = chromosome.stabilizedCounter(10);
+                chromosome.flushNodeValues();
+                for (let i = 0; i < inputs.length; i++) {
+                    for (let j = 0; j < stabCounter; j++) {
+                        chromosome.activateNetwork([inputs[i]])
+                    }
+
+                    let output: number;
+                    if (chromosome.outputNodes.get(0).nodeValue > 0)
+                        output = 1;
+                    else
+                        output = 0;
+
+                    let result: number;
+                    if (i < 2)
+                        result = 0;
+                    else
+                        result = 1;
+
+                    if (output === result)
+                        fitness++;
+                }
+                chromosome.networkFitness = fitness;
+                if (fitness === 4)
+                    found = true;
+            }
+            iteration++;
+            population.evolution();
+        }
+        expect(population.populationChampion.networkFitness).toBe(4)
+    })
+
+     */
 })
