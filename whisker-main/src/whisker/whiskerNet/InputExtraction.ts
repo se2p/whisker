@@ -54,8 +54,22 @@ export class InputExtraction {
         const stageHeight = sprite.renderer._nativeSize[1] / 2.;
 
         // Collect Coordinates
-        spriteInfo.push(sprite.x / stageWidth);
-        spriteInfo.push(sprite.y / stageHeight);
+        let x = sprite.x / stageWidth;
+        let y = sprite.y / stageHeight;
+
+        // Due to the size of the Sprite we might overshoot the Stage
+        if(x < -1)
+            x = -1;
+        else if(x > 1)
+            x = 1;
+
+        if(y < -1)
+            y = -1;
+        else if(y > 1)
+            y = 1;
+
+        spriteInfo.push(x);
+        spriteInfo.push(y);
 
         // Collect the currently selected costume if the given sprite can change its costume
         if (sprite.sprite.costumes_.length > 1) {
@@ -70,7 +84,7 @@ export class InputExtraction {
                 case "sensing_touchingobjectmenu":
                     for (const target of this.sprites) {
                         if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value)
-                            spriteInfo.push(this._calculateDistanceBetweenSprites(sprite, target))
+                            this._calculateDistanceBetweenSprites(sprite, target, spriteInfo)
                     }
             }
         }
@@ -81,14 +95,47 @@ export class InputExtraction {
      * Calculates the distance between two sprites
      * @param sprite1 the source sprite
      * @param sprite2 the name of the target sprite
+     * @param spriteInfo the vector onto which the distances are saved to
      */
-    private static _calculateDistanceBetweenSprites(sprite1: RenderedTarget, sprite2: RenderedTarget): number {
-        const normFactor = Math.sqrt(
-            Math.pow(sprite1.renderer._nativeSize[0], 2) + Math.pow(sprite1.renderer._nativeSize[1], 2));
-        const dx = sprite1.x - sprite2.x;
-        const dy = sprite1.y - sprite2.y;
-        return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) / normFactor;
+    private static _calculateDistanceBetweenSprites(sprite1: RenderedTarget, sprite2: RenderedTarget,
+                                                    spriteInfo: number[]): void{
 
+        // Calculate the normalised distance vector of the x-Dimension including the sign
+        // + means sprite1 is left of sprite 2 and vice versa for the - sign
+        let dx = Math.abs(sprite1.x - sprite2.x);
+        if(sprite1.x < sprite2.x)
+            dx *= -1;
+        if(Math.sign(sprite1.x) === Math.sign(sprite2.x))
+            dx /= (sprite1.renderer._nativeSize[0] / 2.);
+        else{
+            dx /= sprite1.renderer._nativeSize[0];
+        }
+
+        // Due to the size of the Sprite we might overshoot the Stage
+        if(dx < -1)
+            dx = -1;
+        else if(dx > 1)
+            dx = 1;
+        spriteInfo.push(dx);
+
+
+        // Calculate the normalised distance vector of the y-Dimension including the sign
+        // + means sprite1 is left of sprite 2 and vice versa for the - sign
+        let dy = Math.abs(sprite1.y - sprite2.y);
+        if(sprite1.y < sprite2.y)
+            dy *= -1;
+        if(Math.sign(sprite1.y) === Math.sign(sprite2.y))
+            dy /= (sprite1.renderer._nativeSize[1] / 2.);
+        else{
+            dy /= sprite1.renderer._nativeSize[1];
+        }
+
+        // Due to the size of the Sprite we might overshoot the Stage
+        if(dy < -1)
+            dy = -1;
+        else if(dy > 1)
+            dy = 1;
+        spriteInfo.push(dy);
     }
 }
 

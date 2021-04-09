@@ -160,7 +160,8 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         console.log("Population Champion: ", population.populationChampion)
         console.log("All Species: ", population.species)
         for (const specie of population.species)
-            console.log("Species: " + specie.id + " has a size of " + specie.size())
+            console.log("Species: " + specie.id + " has a size of " + specie.size() + " and produces "
+                + specie.expectedOffspring +" offspring")
         console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
         console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
         console.log("-----------------------------------------------------")
