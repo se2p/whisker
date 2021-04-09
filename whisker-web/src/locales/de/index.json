@@ -17,6 +17,7 @@
     "advanced" : "Testgenerierung",
     "show-advanced" : "Zeige Testgenerierungsfunktion",
     "tests" : "Starte Tests",
+    "running" : "Tests laufen",
     "t-tests" : "Starte alle Tests",
     "reset" : "Zurücksetzen",
     "t-reset" : "Setze Projekt auf Initialzustand zurück",

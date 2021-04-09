@@ -18,6 +18,7 @@
     "show-advanced" : "Show test generation function",
     "tests" : "Start Tests",
     "t-tests" : "Run all tests",
+    "running" : "Running",
     "reset" : "Reset",
     "t-reset" : "Reset program to initial state",
     "program" : "Your Program File",

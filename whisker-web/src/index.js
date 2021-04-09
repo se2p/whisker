@@ -108,7 +108,9 @@ function visualizeSummary(summary) {
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
-    $('#run-all-tests').prop('disabled', true);
+    let running = i18next.t("running");
+    $('#run-all-tests').prop('disabled', true).text(running);
+    $('#running-spinner').css("visibility", "visible"); // use css to keep space
     $('#record').prop('disabled', true);
 
     let summary;
@@ -138,7 +140,9 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     } finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
-        $('#run-all-tests').prop('disabled', false);
+        let runTests = i18next.t("tests")
+        $('#run-all-tests').prop('disabled', false).text(runTests);
+        $('#running-spinner').css("visibility", "hidden"); // use css to keep space
         $('#record').prop('disabled', false);
     }
 
