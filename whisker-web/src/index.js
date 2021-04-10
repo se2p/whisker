@@ -334,17 +334,17 @@ const initEvents = function () {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        $(event.target).parent().tooltip({animation: false});
     });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        $(event.target).parent().tooltip({animation: false});
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        $(event.target).parent().tooltip({animation: false});
     });
 };
 
