@@ -1,9 +1,11 @@
 import {ModelNode} from "./ModelNode";
+import {Input} from "../../../vm/inputs";
+import VMWrapper from "../../../vm/vm-wrapper";
 
 // todo construct super type without effect?
 
 /**
- * Edge structure for a model with a condition and an effect. todo
+ * Edge structure for a model with effects that can be triggered based on its conditions.
  */
 export class ModelEdge {
 
@@ -11,8 +13,8 @@ export class ModelEdge {
     private readonly startNode: ModelNode;
     private readonly endNode: ModelNode;
 
-    condition: string[] = [];
-    private effect = () => undefined;
+    private conditions: string[] = [];
+    private effects: string[] = [];
 
     /**
      * Create a new edge.
@@ -27,46 +29,89 @@ export class ModelEdge {
     }
 
     /**
-     * Test whether the condition on this edge is fulfilled.
+     * Test whether the conditions on this edge are fulfilled.
+     * @param vmWrapper Instance of the vm wrapper.
+     * @return Promise<boolean>, if the conditions are fulfilled.
      */
-    testCondition(): boolean {
-        for (let i = 0; i < this.condition.length; i++) {
-            if (!eval(this.condition[i])) {
-                return false;
+    async testCondition(vmWrapper): Promise<boolean> {
+        let fulfilled = true;
+
+        for (let i = 0; i < this.conditions.length; i++) {
+
+            // get the check function for the condition by eval and give it the vm wrapper
+            eval(this.conditions[i]).then(function (checkEvent) {
+                fulfilled = checkEvent(vmWrapper);
+            });
+
+            // stop if one condition is not fulfilled
+            if (!fulfilled) {
+                break;
             }
         }
-        return true;
+        return fulfilled;
     }
 
     /**
-     * Set the effect of the edge if the condition is later on fulfilled.
-     * @param effect Function with no return value. todo ?
+     * Run all effects of the edge.
      */
-    setEffect(effect: { (...param): void }): void {
-        this.effect = effect;
+    runEffect(): void {
+        for (let i = 0; i < this.effects.length; i++) {
+            eval(this.effects[i]);
+        }
     }
 
-    // todo return effect function or only some result of it?
-    getEffect(): { (): void } {
-        return this.effect;
-    }
-
+    /**
+     * Get the start node of the edge.
+     */
     getStartNode(): ModelNode {
         return this.startNode;
     }
 
+    /**
+     * Get the end node of the edge
+     */
     getEndNode(): ModelNode {
         return this.endNode;
+    }
+
+    /**
+     * Add a condition to the edge. Conditions in the evaluation all need to be fulfilled for the effect to be valid.
+     * @param condition Condition function as a string.
+     */
+    addCondition(condition: string): void {
+        this.conditions.push(condition);
+    }
+
+    /**
+     * Add an effect to the edge.
+     * @param effect Effect function as a string.
+     */
+    addEffect(effect: string): void {
+        this.effects.push(effect);
     }
 
 }
 
 /**
  * Method for checking if an edge condition is fulfilled with a key event. Todo needs duration or not?
- * @param string Name of the key.
+ * @param scratchKey Name of the key.
  */
-export function checkKeyEvent(string) {
-    console.log("for now nothing happens with " + string)
+export async function checkKeyEvent(scratchKey): Promise<(VMWrapper) => boolean> {
+    return function (vmWrapper: VMWrapper): boolean {
+        if (vmWrapper.inputs.inputs.length > 0) {
+            const inputs = vmWrapper.inputs.inputs;
+
+            // try to find the input equal to the string
+            for (let i = 0; i < inputs.length; i++) {
+                console.log("current input: '" + inputs[i]._data.key + " '");
+                if (inputs[i]._data.key === Input.scratchKeyToKeyString(scratchKey)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
 }
 
 /**
@@ -75,8 +120,11 @@ export function checkKeyEvent(string) {
  * @param x X coordinate of the mouse click.
  * @param y Y coordinate of the mouse click.
  */
-export function checkClickEvent(x, y) {
-    console.log("for now nothing happens with the mouse click at " + x + y)
+export async function checkClickEvent(x, y): Promise<(VMWrapper) => boolean> {
+    return function (vmWrapper: VMWrapper): boolean {
+        console.log("for now nothing happens with the mouse click at " + x + y, vmWrapper);
+        return false;
+    }
 
 }
 
@@ -87,7 +135,25 @@ export function checkClickEvent(x, y) {
  * @param varName Name of the variable.
  * @param varValue Value to compare to the variable's current value.
  */
-export function checkVarEvent(varName, varValue) {
-    console.log("for now nothing happens with " + varName + " for value " + varValue)
+export async function checkVarEvent(varName, varValue): Promise<(VMWrapper) => boolean> {
+    return function (vmWrapper: VMWrapper): boolean {
+        console.log("for now nothing happens with " + varName + " for value " + varValue, vmWrapper);
+        return false;
+    }
+}
 
+/**
+ * Print out the output given.
+ * @param output Output to print.
+ */
+export async function outputEffect(output) {
+    console.log(output);
+}
+
+/**
+ * Print out the value of the given variable of scratch. todo implement
+ * @param varName Name of the variable.
+ */
+export async function outputVarEffect(varName: string) {
+    console.log(varName);
 }

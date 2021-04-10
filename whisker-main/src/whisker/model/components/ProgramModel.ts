@@ -18,7 +18,7 @@ export class ProgramModel {
     vmWrapper: VMWrapper;
 
     private readonly startNode: ModelNode;
-    private currentState: ModelNode;
+    currentState: ModelNode;
 
     private readonly stopNodes: { [key: string]: ModelNode };
     private readonly nodes: { [key: string]: ModelNode };
@@ -47,19 +47,28 @@ export class ProgramModel {
     /**
      * Simulate one transition on the graph.
      */
-    makeOneTransition() {
+    async makeOneTransition() {
+        if (this.stopped()) {
+            return;
+        }
+
         if (!this.vmWrapper) {
             throw new Error("Model: no vmWrapper");
         }
-        console.log(this.vmWrapper.inputs);
 
         // ask the current node for a valid transition
-        const edge = this.currentState.testEdgeConditions();
+        const edge = await this.currentState.testEdgeConditions(this.vmWrapper);
         if (edge != null) {
-            const fun = edge.getEffect();
-            fun();
+            edge.runEffect();
             this.currentState = edge.getEndNode();
         }
+    }
+
+    /**
+     * The models stops when a stop node is reached.
+     */
+    stopped() {
+        return this.currentState.isStopNode;
     }
 
     /**

@@ -1,3 +1,4 @@
+import VMWrapper from "../../../vm/vm-wrapper";
 import {ModelEdge} from "./ModelEdge";
 
 /**
@@ -28,15 +29,17 @@ export class ModelNode {
     }
 
     /**
-     * Returns an model edge if one has its condition for traversing the edge fulfilled or null.
+     * Returns an model edge if one has its conditions for traversing the edge fulfilled or else null.
      */
-    testEdgeConditions(): ModelEdge {
+    async testEdgeConditions(vmWrapper: VMWrapper): Promise<ModelEdge> {
         if (this.outgoing.length == 0) {
             return null;
         }
 
         for (let i = 0; i < this.outgoing.length; i++) {
-            if (this.outgoing[i].testCondition()) {
+            const result = await this.outgoing[i].testCondition(vmWrapper)
+
+            if (result) {
                 return this.outgoing[i];
             }
         }

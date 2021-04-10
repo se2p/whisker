@@ -1,23 +1,22 @@
-import {checkClickEvent, checkKeyEvent, checkVarEvent, ModelEdge} from "../components/ModelEdge";
+import {checkClickEvent, checkKeyEvent, checkVarEvent, ModelEdge, outputEffect} from "../components/ModelEdge";
 
 /**
- * Load and set the condition for the edge. todo
- * @param newEdge
- * @param edgeAttr
+ * Evaluate the conditions for the given edge.
+ * @param newEdge Edge with the given condition.
+ * @param condString String representing the conditions.
  */
-export function evalCondition(newEdge: ModelEdge, edgeAttr: { [p: string]: string }) {
-    const conditions = edgeAttr.condition.split(",");
+export function evalCondition(newEdge: ModelEdge, condString: string) {
+    const conditions = condString.split(",");
 
     try {
         conditions.forEach(cond => {
-            newEdge.condition.push(getCondition(cond));
+            newEdge.addCondition(getCondition(cond));
         })
     } catch (e) {
         throw new Error("Edge '" + newEdge.id + "': " + e.message);
     }
 }
 
-/* Key pressed (without duration, for the moment)*/
 /**
  * Converts a single condition for an edge into a function that can be evaluated. Single condition could be f.e.
  * 'Key:space'.
@@ -32,4 +31,32 @@ export function getCondition(condString): string {
         return checkVarEvent.name + "('" + condString.substr(4, condString.length).toLowerCase() + "');";
     }
     throw new Error("Edge condition type not recognized or missing.");
+}
+
+/**
+ * Evaluate the effects of the given edge.
+ * @param newEdge Edge with the effects.
+ * @param effectString String representing the effects.
+ */
+export function evalEffect(newEdge: ModelEdge, effectString: string) {
+    const effects = effectString.split(",");
+
+    try {
+        effects.forEach(effect => {
+            newEdge.addEffect(getEffect(effect));
+        })
+    } catch (e) {
+        throw new Error("Edge '" + newEdge.id + "': " + e.message);
+    }
+}
+
+/**
+ * Converts a single effect for an edge into a function that can be evaluated.
+ * @param effectString String defining the effect, f.e. Output:Hmm
+ */
+export function getEffect(effectString): string {
+    if (effectString.startsWith("Output:")) {
+        return outputEffect.name + "('" + effectString.substr(7, effectString.length) + "');";
+    }
+    throw new Error("Edge effect type not recognized or missing.");
 }

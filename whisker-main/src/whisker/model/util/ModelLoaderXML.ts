@@ -3,7 +3,7 @@ import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
-import {evalCondition} from "./EdgeEvent";
+import {evalCondition, evalEffect} from "./EdgeEvent";
 
 /**
  * Load models from a xml file.
@@ -22,6 +22,8 @@ import {evalCondition} from "./EdgeEvent";
  * - only one start node per graph
  * - needs to have start and stop nodes marked
  * - edge has a condition and effect noted.
+ * - multiple conditions on an edge have to all be fulfilled for the condition to be true
+ * - edges that have the same source and target but different conditions are alternatives
  */
 export class ModelLoaderXML {
 
@@ -80,7 +82,7 @@ export class ModelLoaderXML {
         }
 
         const graphID = graph._attributes.id;
-        if (this.graphIDs.indexOf(graphID) != -1) { // todo test
+        if (this.graphIDs.indexOf(graphID) != -1) {
             throw new Error("Model id '" + graphID + "' already defined.");
         }
         this.graphIDs.push(graphID);
@@ -146,13 +148,8 @@ export class ModelLoaderXML {
             throw new Error("Condition or effect not given for edge '" + edgeID + "'.");
         }
 
-        evalCondition(newEdge, edgeAttr);
-
-        // Set the effect of the edge
-        newEdge.setEffect(function () {
-            // todo eval the effect?
-            console.log(edgeAttr.effect);
-        });
+        evalCondition(newEdge, edgeAttr.condition);
+        evalEffect(newEdge, edgeAttr.effect);
 
         (this.nodesMap)[startID].addOutgoingEdge(newEdge);
         this.edgesMap[edgeID] = newEdge;
