@@ -70,47 +70,11 @@ const runSearch = async function () {
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
 
-function visualizeSummary(summary) {
-    let tests = [];
-    const failSign = '\u2717';
-    const skipSign = '\u26A0';
-    const errorSign = '\u26A0'; // same as skip, is just colored differently
-    const passSign = '\u2713';
-    for (let i = 0; i < summary.length; i++) {
-        let test = summary[i].test;
-        let status = summary[i].status;
-        test.testResultClass = status;
-        test.testResult = i18next.t(status);
-        test.error = summary[i].error;
-        test.log = summary[i].log;
-        switch (status) {
-            case Test.FAIL:
-                test.testResultSign = failSign;
-                break;
-            case Test.SKIP:
-                test.testResultSign = skipSign;
-                break;
-            case Test.PASS:
-                test.testResultSign = passSign;
-                break;
-            case Test.ERROR:
-                test.testResultSign = errorSign;
-        }
-        tests[i] = test;
-    }
-    if (tests.length === 1) {
-        Whisker.testTable.updateTest(tests[0]);
-    } else {
-        Whisker.testTable.setTests(tests)
-    }
-}
-
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
     let running = i18next.t("running");
     $('#run-all-tests').prop('disabled', true).text(running);
-    $('#running-spinner').css("visibility", "visible"); // use css to keep space
     $('#record').prop('disabled', true);
 
     let summary;
@@ -123,7 +87,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         CoverageGenerator.prepareVM(vm);
 
         summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
-        visualizeSummary(summary);
         coverage = CoverageGenerator.getCoverage();
 
         if (typeof window.messageServantCallback === 'function') {
@@ -142,7 +105,6 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#reset').prop('disabled', false);
         let runTests = i18next.t("tests")
         $('#run-all-tests').prop('disabled', false).text(runTests);
-        $('#running-spinner').css("visibility", "hidden"); // use css to keep space
         $('#record').prop('disabled', false);
     }
 
@@ -218,10 +180,6 @@ const initScratch = function () {
 };
 
 const initComponents = function () {
-    Whisker.testTable = new TestTable($('#test-table')[0], runTests);
-    Whisker.testTable.setTests([]);
-    Whisker.testTable.show();
-
     Whisker.outputRun = new Output($('#output-run')[0]);
     Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
@@ -242,6 +200,10 @@ const initComponents = function () {
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
+
+    Whisker.testTable = new TestTable($('#test-table')[0], runTests, Whisker.testRunner);
+    Whisker.testTable.setTests([]);
+    Whisker.testTable.show();
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
 

@@ -1,15 +1,30 @@
 const {$} = require('../web-libs');
 const index = require('../index');
+const Test = require('whisker-main/src/test-runner/test.js');
+const TestRunner = require('whisker-main/src/test-runner/test-runner.js');
 /**
  * <div>
  *     <table></table>
  * </div>
  */
 class TestTable {
-    constructor (div, runTests) {
+    constructor (div, runTests, testRunner) {
         this.div = div;
         this.table = $(div).find('table');
         this.dataTable = null;
+
+        this.testRunner = testRunner;
+
+        this._onRunStart = this.onRunStart.bind(this);
+        this._onTestDone = this.onTestDone.bind(this);
+        this._onRunCancel = this.onRunCancel.bind(this);
+
+        testRunner.on(TestRunner.RUN_START, this._onRunStart);
+        testRunner.on(TestRunner.RUN_CANCEL, this._onRunCancel);
+        testRunner.on(TestRunner.TEST_PASS, this._onTestDone);
+        testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
+        testRunner.on(TestRunner.TEST_ERROR, this._onTestDone);
+        testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
 
         this.table.on('click', '.toggle-details', event => {
             const row = this.dataTable.row($(event.target).closest('tr'));
@@ -37,12 +52,102 @@ class TestTable {
         });
     }
 
+    /**
+     * @param {Test[]} tests .
+     */
+    onRunStart (tests) {
+        tests.forEach(test => this.showNewRun(test));
+    }
+
+    /**
+     * @param {TestResult} result .
+     */
+    onTestDone(result) {
+        const failSign = '\u2717';
+        const skipSign = '\u26A0';
+        const errorSign = '\u26A0'; // same as skip, is just colored differently
+        const passSign = '\u2713';
+        let test = result.test;
+        let status = result.status;
+        test.isRunning = false;
+        test.testResultClass = status;
+        test.translatedTestResult = index.i18n.t(status);
+        test.error = result.error;
+        test.log = result.log;
+        switch (status) {
+            case Test.FAIL:
+                test.testResultSign = failSign;
+                break;
+            case Test.SKIP:
+                test.testResultSign = skipSign;
+                break;
+            case Test.PASS:
+                test.testResultSign = passSign;
+                break;
+            case Test.ERROR:
+                test.testResultSign = errorSign;
+        }
+        this.updateTest(test);
+    }
+
+    /**
+     * @param {Test[]} tests .
+     */
+    onRunCancel (tests) {
+        tests.forEach(test => this.resetRunDataAndShow(test));
+    }
+
+
+    /**
+     * @param {Test} test .
+     */
+    showNewRun(test) {
+        this.resetRunData(test);
+        test.isRunning = true;
+        this.updateTest(test);
+    }
+
+
+    /**
+     * @param {Test} test .
+     */
+    resetRunData(test) {
+        test.isRunning = false;
+        test.testResultClass = null;
+        test.translatedTestResult = null;
+        test.error = null;
+        test.log = null;
+    }
+
+
+    /**
+     * @param {Test} test .
+     */
+    resetRunDataAndShow(test) {
+        this.resetRunData(test);
+        this.updateTest(test);
+    }
+
+
+    /**
+     * @param {Test} test .
+     */
     updateTest (test) {
         let tests = this.dataTable.data();
         tests[test.index - 1] = test;
         this.setTests(tests);
     }
 
+
+    /**
+     * @param {Test[]} tests    In preprocessing steps the tests might get some more fields:
+     *                          - index: Unique ID to locate the test in the data table // TODO is this always deterministic?
+     *                          - isRunning: true if the test is currently running
+     *                          - testResultClass: the result status of the test run used for css styling
+     *                          - translatedTestResult: the translated tooltip hint for the test result
+     *                          - error: if the test run resulted in an error, it is stored here
+     *                          - log: if the test run resulted in log messages, they are stored here
+     */
     setTests (tests) {
         if (this.dataTable) {
             this.dataTable.destroy();
@@ -78,8 +183,10 @@ class TestTable {
                 {
                     data: data => data,
                     render: function (data, type, full, meta) {
-                        if (data.testResult && data.testResultSign) {
-                            return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.testResult + '</span></div>';
+                        if (!data.isRunning && data.translatedTestResult && data.testResultSign) {
+                            return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.translatedTestResult + '</span></div>';
+                        } else if (data.isRunning) {
+                            return '<span class="fas fa-circle-notch fa-spin result-spinner"></span>';
                         } else {
                             return '-';
                         }
