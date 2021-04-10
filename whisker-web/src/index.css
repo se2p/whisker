@@ -55,13 +55,14 @@ h2::after {
 }
 
 h3 {
-    border-left: 3px solid var(--mainColor);
     font-size:22px;
-    color: #fff;
+    color: var(--subheadingColor);
     margin-bottom: 30px;
-    padding-left: 20px;
 }
 
+.canvas {
+    padding-bottom: 5%;
+}
 
 .thumbs {
     padding:5px;
@@ -82,10 +83,6 @@ h3 {
 
 .thumbs:hover a {
     text-decoration: none !important;
-    color: var(--mainColor);
-}
-
-h3::first-letter {
     color: var(--mainColor);
 }
 
@@ -137,6 +134,11 @@ p {
 .custom-file-input:focus ~ .custom-file-label, .form-control:focus {
     border-color: var(--mainColor);
     box-shadow: 0 0 0 .2rem var(--mainColorAlpha);
+}
+
+.btn-outline-secondary {
+    color: var(--subColor);
+    border-color: var(--subColor);
 }
 
 /* ==== Header Structure ==== */
@@ -498,6 +500,10 @@ p {
 
 /* ===== Components ===== */
 
+#test-editor {
+    padding: 15px;
+}
+
 #scratch-stage {
     width: 100%;
     border: 1px solid gray;
@@ -505,6 +511,86 @@ p {
 
 .dataTable {
     border: 1px solid lightgray;
+    padding: 15px;
+}
+
+/* Forward clicks to button underneath */
+.fa-plus, .fa-minus {
+    pointer-events: none;
+}
+
+tr td:nth-child(5) {
+    text-align: center;
+}
+
+/* Tooltip container */
+.tooltip-sign {
+    position: relative;
+    display: inline-block;
+}
+
+.fa-spin {
+    color: var(--subColor);
+    font-size: 18px;
+}
+
+/* Tooltip text */
+.tooltip-sign .tooltip-sign-text {
+    font-size: 14px;
+    visibility: hidden;
+    width: max-content;
+    background-color: var(--subColor);
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding-left: 5px;
+    padding-bottom: 4px;
+    padding-top: 2px;
+    padding-right: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 40px;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+.tooltip-sign .tooltip-sign-text::after {
+    content: " ";
+    position: absolute;
+    top: 100%; /* At the bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--subColor) transparent transparent transparent;
+}
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip-sign:hover .tooltip-sign-text {
+    visibility: visible;
+}
+
+.pass td:nth-child(5) {
+    color: green;
+    font-size: 27px;
+    padding: 0;
+}
+
+.skip td:nth-child(5) {
+    color: #FFA700;
+    font-size: 27px;
+    padding: 0;
+}
+
+.fail td:nth-child(5) {
+    color: red;
+    font-size: 27px;
+    padding: 0;
+}
+
+.error td:nth-child(5) {
+    color: #ff0000;
+    font-size: 27px;
+    padding: 0;
 }
 
 .output-content {
@@ -529,6 +615,12 @@ p {
 }
 
 
+#tests-header {
+    margin-top: 40px;
+    margin-bottom: -20px;
+}
+
+
 /* ===== DataTables Style ===== */
 
 .sub-header {
@@ -544,6 +636,15 @@ p {
     vertical-align: middle;
 }
 
+.thead-white {
+    border-top: none;
+    background: white;
+    color: var(--subheadingColor);
+}
+
+.table {
+    border: none;
+}
 .child-table > tbody > tr {
     border-left: none;
     border-right: none;
@@ -574,7 +675,7 @@ p {
     background: transparent;
 }
 .table-striped > tbody > .even:nth-of-type(n) {
-    background-color: rgba(0,0,0,.03);
+    background-color: var(--lightSubColor);
 }
 
 /* Color child table rows the same color as their leading row. */
@@ -582,7 +683,7 @@ p {
     background: transparent;
 }
 .table-striped > tbody > .even:nth-of-type(n) + tr:not(.odd):not(.even) {
-    background-color: rgba(0,0,0,.03);
+    background-color: var(--lightSubColor);
 }
 
 /* ==== Text Styling ==== */

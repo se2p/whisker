@@ -17,6 +17,7 @@
     "advanced" : "Testgenerierung",
     "show-advanced" : "Zeige Testgenerierungsfunktion",
     "tests" : "Starte Tests",
+    "running" : "Tests laufen",
     "t-tests" : "Starte alle Tests",
     "reset" : "Zurücksetzen",
     "t-reset" : "Setze Projekt auf Initialzustand zurück",
@@ -25,6 +26,7 @@
     "test" : "Deine Testdatei",
     "url" : "URL deines Scratch-Programms",
     "configuration" : "Deine Konfigurationsdatei",
+    "table-test-result" : "Ergebnis",
     "table-name" : "Name",
     "table-categories" : "Kategorie",
     "load" : "Lade Tests",
@@ -56,5 +58,16 @@
     "description" : "Beschreibung",
     "categories" : "Kategorien",
     "inputs" : "Manuelle Eingaben",
-    "inputs-error" : "Um Eingaben aufzeichnen zu können, bitte Checkbox für manuelle Eingaben auswählen."
+    "inputs-error" : "Um Eingaben aufzeichnen zu können, bitte Checkbox für manuelle Eingaben auswählen.",
+    "fail" : "Test fehlgeschlagen",
+    "skip" : "Test übersprungen",
+    "pass" : "Test erfolgreich",
+    "error" : "Test fehlerhaft",
+    "test-editor" : "Test Editor",
+    "project" : "Dein Projekt",
+    "error-name": "Fehler",
+    "error-message" : "Fehlermeldung",
+    "error-expected" : "Erwarteter Wert",
+    "error-operator" : "Operator",
+    "error-actual" : "Tatsächlicher Wert"
 }
