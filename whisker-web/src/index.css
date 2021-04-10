@@ -540,6 +540,7 @@ tr td:nth-child(5) {
     visibility: hidden;
     width: max-content;
     background-color: var(--subColor);
+    opacity: 0.9;
     color: #fff;
     text-align: center;
     border-radius: 6px;
@@ -862,9 +863,8 @@ img {vertical-align: middle;}
 
 .tooltip-inner {
     color: #fff;
+    font-family: Verdana, sans-serif;
     background: var(--subColor);
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    border: none;
+    border-radius: 6px;
 }
