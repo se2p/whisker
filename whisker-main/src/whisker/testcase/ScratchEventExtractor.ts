@@ -81,23 +81,14 @@ export class ScratchEventExtractor {
             }
         }
 
-        if (eventList.isEmpty() || this.isWaiting(vm)) {
+        if (vm.runtime.threads.length > 0) {
+            // TODO: Maybe we shouldn't send _all_ delays?
             for (const duration of this.availableWaitDurations) {
                 eventList.add(new WaitEvent(duration));
             }
         }
 
         return eventList.distinctObjects();
-    }
-
-    static isWaiting(vm: VirtualMachine): boolean {
-        for (const t of vm.runtime.threads) {
-            const currentBlock = t.target.blocks.getBlock(t.blockGlowInFrame);
-            if (currentBlock != null && currentBlock.inputs.hasOwnProperty('SECS')) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
