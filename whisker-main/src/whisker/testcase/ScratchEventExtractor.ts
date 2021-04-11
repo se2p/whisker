@@ -89,6 +89,26 @@ export class ScratchEventExtractor {
     }
 
     /**
+     * Extracts the available Events of a given Scratch project.
+     * In order to keep the networks as small as possible; in NE we are only interested in one WaitEvent as multiple
+     * WaitEvents lead to more OutputNodes.
+     * @param vm the Scratch-VM of the given Scratch project
+     */
+    static extractEventsNeuroevolution(vm: VirtualMachine): List<ScratchEvent> {
+        const eventList = new List<ScratchEvent>();
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
+                }
+            }
+        }
+
+        eventList.add(new WaitEvent());
+        return eventList;
+    }
+
+    /**
      * Collects all available text snippets that can be used for generating answers.
      */
     static extractAvailableTextSnippets(vm: VirtualMachine): void {
