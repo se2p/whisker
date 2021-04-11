@@ -2,11 +2,11 @@
     "test-generator": "neuroevolution",
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
-    "population-size": 150,
+    "population-size": 200,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 20,
+    "penalizingAge": 30,
     "ageSignificance": 1.0,
-    "inputRate": 0.3,
+    "inputRate": 0.5,
     "crossover": {
         "operator": "neatCrossover",
         "crossoverWithoutMutation": 0.2,
@@ -17,12 +17,14 @@
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
         "mutationAddConnection": 0.05,
-        "recurrentConnection": 0.05,
+        "recurrentConnection": 0,
         "addConnectionTries": 20,
+        "populationChampionNumberOffspring": 10,
+        "populationChampionNumberClones": 5,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
-        "mutateWeights": 0.6,
-        "perturbationPower": 2.0,
+        "mutateWeights": 0.1,
+        "perturbationPower": 1.0,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
@@ -38,31 +40,23 @@
         "targets": []
     },
     "network-fitness": {
-        "type": "combined",
-        "timeout": 20000,
-        "functions": [
-            {
-                "type": "score",
-                "offset": 0.01
-            },
-            {
-                "type": "statement"
-            }
-        ]
+        "type": "score",
+        "timeout": 1000000,
+        "offset": 0.01
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 200
+                "iterations": 300
             },
             {
                 "type": "optimal"
             }
         ]
     },
-    "wait-duration": 50,
-    "click-duration": 50,
-    "press-duration": 50
+    "wait-duration": 20,
+    "click-duration": 15,
+    "press-duration": 15
 }
