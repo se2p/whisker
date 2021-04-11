@@ -110,10 +110,9 @@ export class NetworkExecutor {
         this._timeout += Date.now();
 
         // Play the game until we reach a GameOver state or the timeout
-        let waitDuration = 0;
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
+            this.availableEvents = ScratchEventExtractor.extractEventsNeuroevolution(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
@@ -151,7 +150,7 @@ export class NetworkExecutor {
 
             // The Nets are faster in sending Events to the VM than the VM is in executing them.
             // Thus, if a key is still pressed release the key before another event is sent to the VM
-            if(this._vmWrapper.inputs.isAnyKeyDown())
+            if (this._vmWrapper.inputs.isAnyKeyDown())
                 this._vmWrapper.inputs.resetKeyboard();
 
             // Update the VM with the given event. No args given since only MouseMove events take params currently.
@@ -215,7 +214,7 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
+            this.availableEvents = ScratchEventExtractor.extractEventsNeuroevolution(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;

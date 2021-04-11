@@ -59,11 +59,11 @@ export class ScratchEventExtractor {
      * @param vm the Scratch-VM of the project
      * @return true if the project has a mouseMove event
      */
-    static hasMouseEvent(vm: VirtualMachine):boolean {
+    static hasMouseEvent(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if(this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
+                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
                         return true;
                 }
             }
@@ -92,7 +92,7 @@ export class ScratchEventExtractor {
     }
 
     /**
-     * Extracts the available Events of a given Scratch project.
+     * Copy of the method above (extractEvents(VirtualMachine)) but includes only one WaitEvent.
      * In order to keep the networks as small as possible; in NE we are only interested in one WaitEvent as multiple
      * WaitEvents lead to more OutputNodes.
      * @param vm the Scratch-VM of the given Scratch project
@@ -106,9 +106,8 @@ export class ScratchEventExtractor {
                 }
             }
         }
-
         eventList.add(new WaitEvent());
-        return eventList;
+        return eventList.distinctObjects();
     }
 
     /**

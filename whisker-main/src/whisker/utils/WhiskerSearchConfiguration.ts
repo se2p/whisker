@@ -246,12 +246,12 @@ export class WhiskerSearchConfiguration {
             case 'sparseNetwork':
                 return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
+                    ScratchEventExtractor.extractEventsNeuroevolution(Container.vm).size(), this.dict['inputRate'],
                     ScratchEventExtractor.hasMouseEvent(Container.vm))
             case 'fullyConnectedNetwork':
                 return new NetworkChromosomeGeneratorFullyConnected(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    ScratchEventExtractor.extractEvents(Container.vm).size(),
+                    ScratchEventExtractor.extractEventsNeuroevolution(Container.vm).size(),
                     ScratchEventExtractor.hasMouseEvent(Container.vm))
             case 'test':
             default:
