@@ -58,14 +58,14 @@ export class InputExtraction {
         let y = sprite.y / stageHeight;
 
         // Due to the size of the Sprite we might overshoot the Stage
-        if(x < -1)
+        if (x < -1)
             x = -1;
-        else if(x > 1)
+        else if (x > 1)
             x = 1;
 
-        if(y < -1)
+        if (y < -1)
             y = -1;
-        else if(y > 1)
+        else if (y > 1)
             y = 1;
 
         spriteInfo.push(x);
@@ -98,23 +98,23 @@ export class InputExtraction {
      * @param spriteInfo the vector onto which the distances are saved to
      */
     private static _calculateDistanceBetweenSprites(sprite1: RenderedTarget, sprite2: RenderedTarget,
-                                                    spriteInfo: number[]): void{
+                                                    spriteInfo: number[]): void {
 
         // Calculate the normalised distance vector of the x-Dimension including the sign
         // + means sprite1 is left of sprite 2 and vice versa for the - sign
         let dx = Math.abs(sprite1.x - sprite2.x);
-        if(sprite1.x < sprite2.x)
+        if (sprite1.x < sprite2.x)
             dx *= -1;
-        if(Math.sign(sprite1.x) === Math.sign(sprite2.x))
+        if (Math.sign(sprite1.x) === Math.sign(sprite2.x))
             dx /= (sprite1.renderer._nativeSize[0] / 2.);
-        else{
+        else {
             dx /= sprite1.renderer._nativeSize[0];
         }
 
         // Due to the size of the Sprite we might overshoot the Stage
-        if(dx < -1)
+        if (dx < -1)
             dx = -1;
-        else if(dx > 1)
+        else if (dx > 1)
             dx = 1;
         spriteInfo.push(dx);
 
@@ -122,18 +122,18 @@ export class InputExtraction {
         // Calculate the normalised distance vector of the y-Dimension including the sign
         // + means sprite1 is left of sprite 2 and vice versa for the - sign
         let dy = Math.abs(sprite1.y - sprite2.y);
-        if(sprite1.y < sprite2.y)
+        if (sprite1.y < sprite2.y)
             dy *= -1;
-        if(Math.sign(sprite1.y) === Math.sign(sprite2.y))
+        if (Math.sign(sprite1.y) === Math.sign(sprite2.y))
             dy /= (sprite1.renderer._nativeSize[1] / 2.);
-        else{
+        else {
             dy /= sprite1.renderer._nativeSize[1];
         }
 
         // Due to the size of the Sprite we might overshoot the Stage
-        if(dy < -1)
+        if (dy < -1)
             dy = -1;
-        else if(dy > 1)
+        else if (dy > 1)
             dy = 1;
         spriteInfo.push(dy);
     }

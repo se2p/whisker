@@ -89,7 +89,7 @@ export class NetworkExecutor {
         // Extract the inputs form the current state of the VM and check if we have to add additional InputNodes.
         const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
         const inputSize = [].concat(...spriteInfo).length;
-        if(inputSize > network.inputNodesSize())
+        if (inputSize > network.inputNodesSize())
             network.addInputNode(spriteInfo);
 
 
@@ -110,22 +110,21 @@ export class NetworkExecutor {
         this._timeout += Date.now();
 
         // Play the game until we reach a GameOver state or the timeout
+        let waitDuration = 0;
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
-            this._vm.haltExecution();
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
-
             // Load the inputs into the Network
             const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
 
             // Check if we encountered additional input features during the playthrough.
             // If we did so add InputNodes to the network.
             const inputSize = [].concat(...spriteInfo).length;
-            if(inputSize > network.inputNodesSize())
+            if (inputSize > network.inputNodesSize())
                 network.addInputNode(spriteInfo);
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
@@ -149,7 +148,11 @@ export class NetworkExecutor {
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.add(indexOfMaxValue);
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
-            this._vm.resumeExecution();
+
+            // The Nets are faster in sending Events to the VM than the VM is in executing them.
+            // Thus, if a key is still pressed release the key before another event is sent to the VM
+            if(this._vmWrapper.inputs.isAnyKeyDown())
+                this._vmWrapper.inputs.resetKeyboard();
 
             // Update the VM with the given event. No args given since only MouseMove events take params currently.
             events.add([nextEvent, []]);

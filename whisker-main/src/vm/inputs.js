@@ -352,6 +352,23 @@ class Inputs {
     }
 
     /**
+     * Checks if any key is clicked
+     * @returns {boolean} .
+     */
+    isAnyKeyDown () {
+        const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow'];
+        let isPressed = false;
+        for(const key of keys){
+            const keyString = Input.scratchKeyToKeyString(key);
+            const scratchKey = this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
+            isPressed = this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
+            if(isPressed)
+                break;
+        }
+        return isPressed;
+    }
+
+    /**
      * Activates "when stage clicked" hats.
      */
     clickStage () {
