@@ -18,7 +18,7 @@ export class NeuroevolutionUtil {
      * @param properties the defined search-properties
      */
     public static speciate(chromosome: NetworkChromosome, population: NeatPopulation<NetworkChromosome>,
-                    properties: NeuroevolutionProperties<NetworkChromosome>): void {
+                           properties: NeuroevolutionProperties<NetworkChromosome>): void {
 
         // If we have no species at all so far create the first one
         if (population.species.isEmpty()) {
@@ -67,7 +67,7 @@ export class NeuroevolutionUtil {
      * @param weightCoefficient the defined weight coefficient
      */
     public static compatibilityDistance(chromosome1: NetworkChromosome, chromosome2: NetworkChromosome, excessCoefficient: number,
-                                 disjointCoefficient: number, weightCoefficient: number): number {
+                                        disjointCoefficient: number, weightCoefficient: number): number {
 
         // This should never happen!
         if (chromosome1 === undefined || chromosome2 === undefined) {
@@ -137,34 +137,6 @@ export class NeuroevolutionUtil {
     }
 
     /**
-     * Modified Sigmoid function as proposed in the original NEAT paper
-     * @param x the value to which the sigmoid function should be applied to
-     */
-    public static sigmoid(x: number): number {
-        return (1 / (1 + Math.exp(-4.9 * x)));
-    }
-
-    /**
-     * Calculates the softmax function over all classification-outputNode values
-     * @param outputNodes all outputNodes of a network
-     */
-    public static softmax(outputNodes: List<NodeGene>): number[] {
-        const result = []
-        let denominator = 0;
-        for (const oNode of outputNodes) {
-            if (oNode instanceof ClassificationNode) {
-                denominator += Math.exp(oNode.nodeValue);
-            }
-        }
-        for (const oNode of outputNodes) {
-            if (oNode instanceof ClassificationNode) {
-                result.push(Math.exp(oNode.nodeValue) / denominator)
-            }
-        }
-        return result;
-    }
-
-    /**
      * Evaluates the regression nodes of a network
      * @param outputNodes all output nodes of a network
      */
@@ -205,5 +177,34 @@ export class NeuroevolutionUtil {
             newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
             NeatMutation._innovations.add(newInnovation);
         }
+    }
+
+    /**
+     * Sigmoid activation function
+     * @param x the value to which the sigmoid function should be applied to
+     * @param gain the gain of the sigmoid function (set to 1 for a standard sigmoid function)
+     */
+    public static sigmoid(x: number, gain: number): number {
+        return (1 / (1 + Math.exp(gain * x)));
+    }
+
+    /**
+     * Calculates the softmax function over all classification-outputNode values
+     * @param outputNodes all outputNodes of a network
+     */
+    public static softmax(outputNodes: List<NodeGene>): number[] {
+        const result = []
+        let denominator = 0;
+        for (const oNode of outputNodes) {
+            if (oNode instanceof ClassificationNode) {
+                denominator += Math.exp(oNode.nodeValue);
+            }
+        }
+        for (const oNode of outputNodes) {
+            if (oNode instanceof ClassificationNode) {
+                result.push(Math.exp(oNode.nodeValue) / denominator)
+            }
+        }
+        return result;
     }
 }

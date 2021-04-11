@@ -31,7 +31,7 @@ export class HiddenNode extends NodeGene {
             if (this.activationCount > 0) {
                 switch (this.activationFunction) {
                     case ActivationFunction.SIGMOID:
-                        this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue);
+                        this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);
                         break;
                     default:
                         this.activationValue = this.nodeValue;
