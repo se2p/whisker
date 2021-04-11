@@ -68,7 +68,7 @@ export class ScratchEventExtractor {
                 }
             }
         }
-            return false;
+        return false;
     }
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
@@ -81,11 +81,14 @@ export class ScratchEventExtractor {
             }
         }
 
-        for (const duration of this.availableWaitDurations) {
-            eventList.add(new WaitEvent(duration));
+        if (vm.runtime.threads.length > 0) {
+            // TODO: Maybe we shouldn't send _all_ delays?
+            for (const duration of this.availableWaitDurations) {
+                eventList.add(new WaitEvent(duration));
+            }
         }
 
-        return eventList;
+        return eventList.distinctObjects();
     }
 
     /**

@@ -20,6 +20,7 @@ const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = r
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
 
+const Test = require('whisker-main/src/test-runner/test')
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
@@ -72,7 +73,8 @@ const runSearch = async function () {
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
-    $('#run-all-tests').prop('disabled', true);
+    let running = i18next.t("running");
+    $('#run-all-tests').prop('disabled', true).text(running);
     $('#record').prop('disabled', true);
 
     let summary;
@@ -101,7 +103,8 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     } finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
-        $('#run-all-tests').prop('disabled', false);
+        let runTests = i18next.t("tests")
+        $('#run-all-tests').prop('disabled', false).text(runTests);
         $('#record').prop('disabled', false);
     }
 
@@ -177,10 +180,6 @@ const initScratch = function () {
 };
 
 const initComponents = function () {
-    Whisker.testTable = new TestTable($('#test-table')[0], runTests);
-    Whisker.testTable.setTests([]);
-    Whisker.testTable.show();
-
     Whisker.outputRun = new Output($('#output-run')[0]);
     Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
@@ -201,6 +200,10 @@ const initComponents = function () {
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
+
+    Whisker.testTable = new TestTable($('#test-table')[0], runTests, Whisker.testRunner);
+    Whisker.testTable.setTests([]);
+    Whisker.testTable.show();
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
 
@@ -331,17 +334,17 @@ const initEvents = function () {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        $(event.target).parent().tooltip({animation: false});
     });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        $(event.target).parent().tooltip({animation: false});
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        $(event.target).parent().tooltip({animation: false});
     });
 };
 
@@ -438,6 +441,9 @@ i18next
 function updateContent() {
     localize('#body');
     $('[data-toggle="tooltip"]').tooltip();
+    if (Whisker.testTable) {
+        Whisker.testTable.hideTestDetails();
+    }
 }
 
 $('#form-lang').on('change', () => {
@@ -460,7 +466,7 @@ $('.nav-link').on('click', event => {
     }
 });
 
-
+export {i18next as i18n};
 
 
 
