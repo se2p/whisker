@@ -100,11 +100,6 @@ class VMWrapper {
         this._onQuestion = this.onQuestion.bind(this);
         this._onAnswer   = this.onAnswer.bind(this);
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
-        this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
-        this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
-        this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
-        this.vm.runtime.on('QUESTION', this._onQuestion);
-        this.vm.runtime.on('ANSWER', this._onAnswer);
     }
 
     /**
@@ -342,6 +337,12 @@ class VMWrapper {
 
         this.inputs.resetMouse();
         this.inputs.resetKeyboard();
+
+        this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
+        this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
+        this.vm.runtime.on('QUESTION', this._onQuestion);
+        this.vm.runtime.on('ANSWER', this._onAnswer);
 
         this.vm.greenFlag();
         this.startTime = Date.now();
