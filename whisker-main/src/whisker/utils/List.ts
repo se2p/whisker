@@ -19,7 +19,7 @@
  */
 
 import {Randomness} from "./Randomness";
-import isEqual from 'lodash.isequal';
+import isEqual from 'lodash.isEqual';
 /**
  * A class to store a list of elements of the same type.
  *
