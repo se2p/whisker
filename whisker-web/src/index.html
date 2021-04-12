@@ -3,6 +3,18 @@
 <html lang="de">
 
 <head>
+    <script> // This should be executed before anything else to prevent loading the whole page twice
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("lng")) {
+        const url = new URL(window.location.href);
+        const paramNumber = Array.from(url.search).length;
+        if (paramNumber === 0) {
+            window.location.href += '?lng=' + 'de';
+        } else {
+            window.location.href += '&lng=' + 'de';
+        }
+    }
+    </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
