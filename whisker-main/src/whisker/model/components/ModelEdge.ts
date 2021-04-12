@@ -92,7 +92,7 @@ export class ModelEdge {
  * Method for checking if an edge condition is fulfilled with a key event. Todo needs duration or not?
  * @param scratchKey Name of the key.
  */
-export function checkKeyEvent(scratchKey): (VMWrapper) => boolean {
+export function checkKeyEvent(scratchKey: string): (VMWrapper) => boolean {
     return function (vmWrapper: VMWrapper): boolean {
         if (vmWrapper.inputs.inputs.length > 0) {
             const inputs = vmWrapper.inputs.inputs;
@@ -128,14 +128,34 @@ export function checkClickEvent(x, y): (VMWrapper) => boolean {
 
 /**
  * Method for checking if an edge condition is fulfilled for a value of a variable.
- * Todo needs different comparision =, <,>,<=, >=
  *
  * @param varName Name of the variable.
+ * @param comparison Modus of comparision, e.g. =, <, >, <=, >=
  * @param varValue Value to compare to the variable's current value.
  */
-export function checkVarEvent(varName, varValue): (VMWrapper) => boolean {
+export function checkVarTestEvent(varName: string, comparison: string, varValue: string): (VMWrapper) => boolean {
     return function (vmWrapper: VMWrapper): boolean {
-        console.log("for now nothing happens with " + varName + " for value " + varValue, vmWrapper);
+        console.log("for now nothing happens with " + varName + comparison + varValue, vmWrapper);
+        return false;
+    }
+}
+
+/**
+ * Check whether the sprites with the given names are touching.
+ *
+ * @param spriteName1 Name of the first sprite.
+ * @param spriteName2 Name of the second sprite.
+ */
+export function checkSpriteTouchingEvent(spriteName1: string, spriteName2: string): (VMWrapper) => boolean {
+    return function (vmWrapper: VMWrapper): boolean {
+        console.log("for now nothing happens with sprites: " + spriteName1 + " and " + spriteName2, vmWrapper);
+        return false;
+    }
+}
+
+export function checkSpriteColorEvent(spriteName: string, colorName: string) : (VMWrapper) => boolean {
+    return function (vmWrapper: VMWrapper): boolean {
+        console.log("for now nothing happens with sprite " + spriteName + " and color " + colorName, vmWrapper);
         return false;
     }
 }
@@ -144,14 +164,23 @@ export function checkVarEvent(varName, varValue): (VMWrapper) => boolean {
  * Print out the output given.
  * @param output Output to print.
  */
-export function outputEffect(output) {
-    console.log(output);
+export function outputEffect(output: string) {
+    console.log("Effect: " + output);
 }
 
 /**
  * Print out the value of the given variable of scratch. todo implement
  * @param varName Name of the variable.
  */
-export function outputVarEffect(varName: string) {
-    console.log(varName);
+export function varOutputEffect(varName: string) {
+    console.log("Effect: " + varName);
+}
+
+/**
+ * Change the value of a integer variable. todo ?
+ * @param varName Name of the variable
+ * @param mode
+ */
+export function varChangeEffect(varName: string, mode: string) {
+    console.log("Effect: " + varName + mode);
 }

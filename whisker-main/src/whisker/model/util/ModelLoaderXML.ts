@@ -3,7 +3,7 @@ import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
-import {evalCondition, evalEffect} from "./EdgeEvent";
+import {evalConditions, evalEffect} from "./EdgeEvent";
 
 /**
  * Load models from a xml file.
@@ -70,21 +70,28 @@ export class ModelLoaderXML {
         // Get the nodes and edges..
         const graphEdges = graph.edge;
         const graphNodes = graph.node;
-
-        graphNodes.forEach(node => this._loadNode(node['_attributes']));
-        graphEdges.forEach(edge => this._loadEdge(edge['_attributes']));
-
-        if (!this.startNode) {
-            throw new Error("Start node not marked.");
-        }
-        if (Object.keys(this.stopNodes).length == 0) {
-            throw new Error("Stop nodes not marked.");
-        }
-
         const graphID = graph._attributes.id;
-        if (this.graphIDs.indexOf(graphID) != -1) {
+
+        if (graphID == undefined) {
+            throw new Error("Graph id not given.");
+        } else if (this.graphIDs.indexOf(graphID) != -1) {
             throw new Error("Model id '" + graphID + "' already defined.");
         }
+
+        try {
+            graphNodes.forEach(node => this._loadNode(node['_attributes']));
+            graphEdges.forEach(edge => this._loadEdge(edge['_attributes']));
+        } catch (e) {
+            throw new Error("Graph '" + graphID + "':\n" + e.message);
+        }
+
+        if (!this.startNode) {
+            throw new Error("Graph '" + graphID + "':\n" + "Start node not marked.");
+        }
+        if (Object.keys(this.stopNodes).length == 0) {
+            throw new Error("Graph '" + graphID + "':\n" + "Stop nodes not marked.");
+        }
+
         this.graphIDs.push(graphID);
 
         if (graph._attributes.usage == "program") {
@@ -136,20 +143,22 @@ export class ModelLoaderXML {
         }
 
         if (!(this.nodesMap)[startID]) {
-            throw new Error("Unknown node id '" + startID + "' in edge '" + edgeID + "'.");
+            throw new Error("Edge '" + edgeID + "': Unknown node id '" + startID + "'.");
         }
         if (!(this.nodesMap)[endID]) {
-            throw new Error("Unknown node id '" + endID + "' in edge '" + edgeID + "'.");
+            throw new Error("Edge '" + edgeID + "':Unknown node id '" + endID + "'.");
         }
 
         const newEdge = new ModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
 
-        if (!edgeAttr.condition || !edgeAttr.effect) {
-            throw new Error("Condition or effect not given for edge '" + edgeID + "'.");
+        if (!edgeAttr.condition) {
+            throw new Error("Edge '" + edgeID + "': Condition not given.");
         }
 
-        evalCondition(newEdge, edgeAttr.condition);
-        evalEffect(newEdge, edgeAttr.effect);
+        evalConditions(newEdge, edgeAttr.condition);
+        if (edgeAttr.effect) {
+            evalEffect(newEdge, edgeAttr.effect);
+        }
 
         (this.nodesMap)[startID].addOutgoingEdge(newEdge);
         this.edgesMap[edgeID] = newEdge;

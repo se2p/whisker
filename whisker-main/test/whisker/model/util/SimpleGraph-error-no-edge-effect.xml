@@ -2,6 +2,6 @@
     <graph id="g1" usage="program">
         <node id="n0" startNode="true"/>
         <node id="n1" stopNode="true"/>
-        <edge id="e0" source="n0" target="n1" condition="press('Yes')"/>
+        <edge id="e0" source="n0" target="n1" condition="Output:Yes"/>
     </graph>
 </models>

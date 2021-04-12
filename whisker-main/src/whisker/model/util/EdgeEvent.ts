@@ -1,11 +1,18 @@
-import {checkClickEvent, checkKeyEvent, checkVarEvent, ModelEdge, outputEffect} from "../components/ModelEdge";
+import {
+    checkClickEvent,
+    checkKeyEvent, checkSpriteColorEvent,
+    checkSpriteTouchingEvent,
+    checkVarTestEvent,
+    ModelEdge,
+    outputEffect, varOutputEffect, varChangeEffect
+} from "../components/ModelEdge";
 
 /**
  * Evaluate the conditions for the given edge.
  * @param newEdge Edge with the given condition.
  * @param condString String representing the conditions.
  */
-export function evalCondition(newEdge: ModelEdge, condString: string) {
+export function evalConditions(newEdge: ModelEdge, condString: string) {
     const conditions = condString.split(",");
 
     try {
@@ -17,20 +24,48 @@ export function evalCondition(newEdge: ModelEdge, condString: string) {
     }
 }
 
+const openBrackets = "('";
+const closeBrackets = "');";
+const commaPart = "','";
+
 /**
  * Converts a single condition for an edge into a function that can be evaluated. Single condition could be f.e.
  * 'Key:space'.
  * @param condString String part on the edge of the xml file that is the condition.
  */
 export function getCondition(condString): string {
-    if (condString.startsWith("Key:")) {
-        return checkKeyEvent.name + "('" + condString.substr(4, condString.length).toLowerCase() + "');";
-    } else if (condString.startsWith("Click:")) {
-        return checkClickEvent.name + "('" + condString.substr(5, condString.length).toLowerCase() + "');";
-    } else if (condString.startsWith("Var:")) {
-        return checkVarEvent.name + "('" + condString.substr(4, condString.length).toLowerCase() + "');";
+    console.log("Condition: ", condString)
+    const parts = condString.split(":");
+
+    if (parts.length < 2) {
+        throw new Error("Edge condition not correctly formatted. ':' missing.");
     }
-    throw new Error("Edge condition type not recognized or missing.");
+
+    switch (parts[0]) {
+        case "Key":
+            return checkKeyEvent.name + openBrackets + parts[1].toLowerCase() + closeBrackets;
+        case "Click":
+            return checkClickEvent.name + openBrackets + parts[1].toLowerCase() + closeBrackets;
+        case "VarTest":
+            if (parts.length != 4) {
+                throw new Error("Edge condition, Event Sprite Touching, not enough sprite names given.");
+            }
+
+            return checkVarTestEvent.name + openBrackets + parts[1] + commaPart + parts[2] + commaPart + parts[3]
+                + closeBrackets;
+        case "SpriteTouching":
+            if (parts.length != 3) {
+                throw new Error("Edge condition, Event Sprite Touching, not enough sprite names given.");
+            }
+            return checkSpriteTouchingEvent.name + openBrackets + parts[1] + commaPart + parts[2] + closeBrackets;
+        case "SpriteColor":
+            if (parts.length != 3) {
+                throw new Error("Edge condition, Event Sprite Touching, not enough sprite names given.");
+            }
+            return checkSpriteColorEvent.name + openBrackets + parts[1] + commaPart + parts[2] + closeBrackets;
+        default:
+            throw new Error("Edge condition type not recognized or missing.");
+    }
 }
 
 /**
@@ -55,8 +90,20 @@ export function evalEffect(newEdge: ModelEdge, effectString: string) {
  * @param effectString String defining the effect, f.e. Output:Hmm
  */
 export function getEffect(effectString): string {
-    if (effectString.startsWith("Output:")) {
-        return outputEffect.name + "('" + effectString.substr(7, effectString.length) + "');";
+    const parts = effectString.split(":");
+
+    if (parts.length < 2) {
+        throw new Error("Edge effect not correctly formatted. ':' missing.");
     }
-    throw new Error("Edge effect type not recognized or missing.");
+
+    switch (parts[0]) {
+        case "Output":
+            return outputEffect.name + openBrackets + parts[1] + closeBrackets;
+        case "VarOutput":
+            return varOutputEffect.name + openBrackets + parts[1] + commaPart + parts[2] + closeBrackets;
+        case "VarChange":
+            return varChangeEffect.name + openBrackets + parts[1] + closeBrackets;
+        default:
+            throw new Error("Edge effect type not recognized or missing.");
+    }
 }
