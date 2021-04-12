@@ -863,12 +863,18 @@ img {vertical-align: middle;}
     border-top-color: var(--subColor);
 }
 
+.bs-tooltip-bottom .arrow::before, .bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
+    border-bottom-color: var(--subColor);
+}
+
 .tooltip-inner {
     color: #fff;
     font-family: Verdana, sans-serif;
     background: var(--subColor);
     border: none;
     border-radius: 6px;
+    white-space: nowrap;
+    max-width: none;
 }
 
 .filename-label {
