@@ -47,7 +47,7 @@ export class ProgramModel {
     /**
      * Simulate one transition on the graph.
      */
-    async makeOneTransition() {
+    makeOneTransition() {
         if (this.stopped()) {
             return;
         }
@@ -57,7 +57,7 @@ export class ProgramModel {
         }
 
         // ask the current node for a valid transition
-        const edge = await this.currentState.testEdgeConditions(this.vmWrapper);
+        const edge = this.currentState.testEdgeConditions(this.vmWrapper);
         if (edge != null) {
             edge.runEffect();
             this.currentState = edge.getEndNode();

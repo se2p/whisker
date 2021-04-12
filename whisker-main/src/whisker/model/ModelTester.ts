@@ -71,8 +71,8 @@ export class ModelTester {
             model.vmWrapper = this.vmWrapper;
 
             // add the model transition to the callbacks
-            this.vmWrapper.callbacks.addCallback(async function () {
-                await model.makeOneTransition();
+            this.vmWrapper.callbacks.addCallback(function () {
+                model.makeOneTransition();
             }, false, "modelstep");
 
             this.vmWrapper.callbacks.addCallback(function () {

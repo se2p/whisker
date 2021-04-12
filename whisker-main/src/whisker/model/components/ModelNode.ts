@@ -31,13 +31,13 @@ export class ModelNode {
     /**
      * Returns an model edge if one has its conditions for traversing the edge fulfilled or else null.
      */
-    async testEdgeConditions(vmWrapper: VMWrapper): Promise<ModelEdge> {
+    testEdgeConditions(vmWrapper: VMWrapper): ModelEdge {
         if (this.outgoing.length == 0) {
             return null;
         }
 
         for (let i = 0; i < this.outgoing.length; i++) {
-            const result = await this.outgoing[i].testCondition(vmWrapper)
+            const result = this.outgoing[i].testCondition(vmWrapper)
 
             if (result) {
                 return this.outgoing[i];
