@@ -831,9 +831,11 @@ img {vertical-align: middle;}
     padding: 5px 5px;
     border-radius: 4px;
     font-size: 14px;
-    position: relative;
+    position: absolute;
     width: 150px;
+    transform: translate(0, -5px);
 }
+
 .upload-btn-wrapper .btnr + span {
     padding: 5px;
     font-weight: normal;
@@ -867,4 +869,13 @@ img {vertical-align: middle;}
     background: var(--subColor);
     border: none;
     border-radius: 6px;
+}
+
+.filename-label {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    max-width: calc(100% - 150px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 160px;
 }
