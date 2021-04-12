@@ -848,6 +848,8 @@ img {vertical-align: middle;}
     top: 0;
     opacity: 0;
     width: 150px;
+    margin-left: 11px;
+    height: 35px;
 }
 
 .upload-btn-wrapper input[type=file]:hover {
