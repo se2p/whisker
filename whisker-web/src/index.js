@@ -451,7 +451,7 @@ $('#form-lang').on('change', () => {
     const lng = $('#lang-select').val();
     const href = window.location.href;
     if (href.endsWith('de') || href.endsWith('en')) {
-        window.history.pushState("", "", '?lng=' + lng);
+        window.history.pushState('', '', '?lng=' + lng);
     }
     i18next.changeLanguage(lng).then(updateContent());
 });
