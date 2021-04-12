@@ -831,9 +831,11 @@ img {vertical-align: middle;}
     padding: 5px 5px;
     border-radius: 4px;
     font-size: 14px;
-    position: relative;
+    position: absolute;
     width: 150px;
+    transform: translate(0, -5px);
 }
+
 .upload-btn-wrapper .btnr + span {
     padding: 5px;
     font-weight: normal;
@@ -846,6 +848,8 @@ img {vertical-align: middle;}
     top: 0;
     opacity: 0;
     width: 150px;
+    margin-left: 11px;
+    height: 35px;
 }
 
 .upload-btn-wrapper input[type=file]:hover {
@@ -861,10 +865,25 @@ img {vertical-align: middle;}
     border-top-color: var(--subColor);
 }
 
+.bs-tooltip-bottom .arrow::before, .bs-tooltip-auto[x-placement^="bottom"] .arrow::before {
+    border-bottom-color: var(--subColor);
+}
+
 .tooltip-inner {
     color: #fff;
     font-family: Verdana, sans-serif;
     background: var(--subColor);
     border: none;
     border-radius: 6px;
+    white-space: nowrap;
+    max-width: none;
+}
+
+.filename-label {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    max-width: calc(100% - 150px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 160px;
 }
