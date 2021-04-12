@@ -189,7 +189,7 @@ function attachErrorWitnessReplayToTest(errorWitnessPath, constraintsPath, tmpDi
  * @returns {string} The path to the generated test.
  */
 function attachRandomInputsToTest(constraintsPath, tmpDir, waitTime) {
-    const waitTimeMillis = waitTime * 1_000; // needs to be converted from seconds into milliseconds
+    const waitTimeMillis = waitTime * 1000; // needs to be converted from seconds into milliseconds
     const randomInputs = `${indentation}t.setRandomInputInterval(150);\n` +
         `${indentation}t.detectRandomInputs({duration: [50, 100]});\n` +
         `${indentation}await t.runForTime(${waitTimeMillis});`;
