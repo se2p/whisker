@@ -3,6 +3,14 @@
 <html lang="de">
 
 <head>
+    <script> // This should be executed before anything else to prevent loading the whole page twice
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("lng")) {
+        params.set("lng", "de");
+        const base = window.location.pathname
+        window.location.href = base + '?' + params.toString();
+    }
+    </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -66,7 +74,7 @@
                                                 <button class="btnr" title="browse" data-i18n="browse"></button>
                                                 <input type="file" id="fileselect-project" accept=".sb3"
                                                        name="program-file" title=""/>
-                                                <label class="project-label" for="fileselect-project"
+                                                <label class="filename-label" for="fileselect-project"
                                                        data-i18n="no-file"
                                                        data-toggle="tooltip" data-placement="top"></label>
                                             </div>
@@ -97,7 +105,7 @@
                                                 <button class="btnr" title="browse" data-i18n="browse"></button>
                                                 <input type="file" id="fileselect-tests" accept=".js"
                                                        name="test-file" title=""/>
-                                                <label class="tests-label" for="fileselect-tests"
+                                                <label class="filename-label" for="fileselect-tests"
                                                        data-i18n="no-file" data-animation="false"></label>
                                             </div>
                                             <div class="form-group">
@@ -184,7 +192,7 @@
                                                 <button class="btnr" data-i18n="browse"></button>
                                                 <input type="file" id="fileselect-config" accept=".json"
                                                        name="config-file" title=""/>
-                                                <label class="config-label" for="fileselect-config"
+                                                <label class="filename-label" for="fileselect-config"
                                                        data-i18n="default"></label>
                                             </div>
                                             <div class="form-group">

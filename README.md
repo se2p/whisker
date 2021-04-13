@@ -61,9 +61,13 @@ Options:
   -s, --scratchPath <Path>            Scratch application to run, or directory containing results (default:
                                       false)
   -t, --testPath <Path>               Tests to run (default: false)
-  -a, --accelerationFactor <Integer>  Acceleration factor (default: 1)
-  -v, --csvFile <Path>                Name of CSV File to put output into, requires scratchPath to point to
-                                      a directory (default: false)
+  -w, --errorWitnessPath <Path>       A JSON error witness to replay (default: false)
+  -z, --isGenerateWitnessTestOnly     Generate test file with error witness replay without executing it
+                                      (default: false)
+  -r, --addRandomInputs [Integer]     If random inputs should be added to the test and if so, how many seconds
+                                      to wait for its completion (default: false)
+  -a, --accelerationFactor <Integer>  Acceleration factor (default: "1")
+  -v, --csvFile <Path>                Name of CSV File to put output into (default: false)
   -c, --configPath <Path>             Path to a configuration file (default:
                                       "../config/default.json")
   -d, --isHeadless                    If should run headless (d like in decapitated)
