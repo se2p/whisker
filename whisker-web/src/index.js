@@ -331,22 +331,39 @@ const initEvents = function () {
                 );
             }
         });
+        _addFileListeners();
+};
+
+const _addFileListeners = function() {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip({animation: false});
+        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip({animation: false});
+        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip({animation: false});
+        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
     });
-};
+}
+
+const _showTooltipIfTooLong = function (label, event) {
+    $(event.target).parent().tooltip('dispose');
+    if (label.scrollWidth > label.offsetWidth) {
+        $(event.target).parent().tooltip({animation: true});
+        setTimeout(() => {
+            $(event.target).parent().tooltip('hide')
+        }, 2000);
+    }
+}
 
 const toggleComponents = function () {
     if (window.localStorage) {
