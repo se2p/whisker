@@ -1,0 +1,15 @@
+{
+    "name": "scratch-analysis",
+    "version": "0.1.0",
+    "main": "index.js",
+    "scripts": {
+        "build": "webpack --progress --colors --bail",
+        "tap": "tap ./test/*.js",
+        "test": "npm run tap"
+    },
+    "devDependencies": {
+        "eslint": "^7.24.0",
+        "eslint-config-scratch": "^7.0.0",
+        "tap": "^15.0.2"
+    }
+}

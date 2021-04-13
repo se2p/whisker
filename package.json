@@ -11,6 +11,7 @@
     "workspaces": [
         "whisker-main",
         "whisker-web",
+        "scratch-analysis",
         "servant"
     ],
     "scripts": {
