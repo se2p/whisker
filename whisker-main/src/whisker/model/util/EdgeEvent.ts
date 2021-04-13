@@ -1,24 +1,10 @@
-import {
-    checkClickEvent,
-    checkKeyEvent,
-    checkSpriteColorEvent,
-    checkSpriteTouchingEvent,
-    checkVarTestEvent,
-    ModelEdge,
-    outputEffect,
-    varChangeEffect,
-    varOutputEffect
-} from "../components/ModelEdge";
-
-export class Condition {
-    name: ConditionName;
-    condFunc: string;
-
-    constructor(name: ConditionName, condFunc: string) {
-        this.name = name;
-        this.condFunc = condFunc;
-    }
-}
+import {ModelEdge, outputEffect, varChangeEffect, varOutputEffect} from "../components/ModelEdge";
+import {Condition} from "../edgeConditions/Condition";
+import {KeyCondition} from "../edgeConditions/KeyCondition";
+import {ClickCondition} from "../edgeConditions/ClickCondition";
+import {VarTestCondition} from "../edgeConditions/VarTestCondition";
+import {SpriteTouchingCondition} from "../edgeConditions/SpriteTouchingCondition";
+import {SpriteColorCondition} from "../edgeConditions/SpriteColorCondition";
 
 export class Effect {
     name: EffectName;
@@ -79,31 +65,28 @@ export function getCondition(condString): Condition {
 
     switch (parts[0]) {
         case ConditionName.Key:
-            return new Condition(ConditionName.Key,
-                checkKeyEvent.name + openBrackets + parts[1].toLowerCase() + closeBrackets);
+            return new KeyCondition(parts[1].toLowerCase());
         case ConditionName.Click:
-            return new Condition(ConditionName.Click,
-                checkClickEvent.name + openBrackets + parts[1].toLowerCase() + closeBrackets);
+            if (parts.length != 3) {
+                throw new Error("Edge condition, Event Click, not enough arguments");
+            }
+            return new ClickCondition(parts[1], parts[2]);
         case ConditionName.VarTest:
             if (parts.length != 4) {
                 throw new Error("Edge condition, not enough arguments, variable name, comparison mode, value");
             }
 
-            return new Condition(ConditionName.VarTest,
-                checkVarTestEvent.name + openBrackets + parts[1] + commaPart + parts[2] + commaPart + parts[3]
-                + closeBrackets);
+            return new VarTestCondition(parts[1], parts[2], parts[3]);
         case ConditionName.SpriteTouching:
             if (parts.length != 3) {
                 throw new Error("Edge condition, Event Sprite Touching, not enough sprite names given.");
             }
-            return new Condition(ConditionName.SpriteTouching,
-                checkSpriteTouchingEvent.name + openBrackets + parts[1] + commaPart + parts[2] + closeBrackets);
+            return new SpriteTouchingCondition(parts[1], parts[2]);
         case ConditionName.SpriteColor:
-            if (parts.length != 3) {
+            if (parts.length != 5) {
                 throw new Error("Edge condition, Event Sprite touching color, not enough arguments.");
             }
-            return new Condition(ConditionName.SpriteColor,
-                checkSpriteColorEvent.name + openBrackets + parts[1] + commaPart + parts[2] + closeBrackets);
+            return new SpriteColorCondition(parts[1], parts[2], parts[3], parts[4]);
         default:
             throw new Error("Edge condition type not recognized or missing.");
     }
@@ -141,10 +124,17 @@ export function getEffect(effectString): Effect {
         case EffectName.Output:
             return new Effect(EffectName.Output, outputEffect.name + openBrackets + parts[1] + closeBrackets);
         case EffectName.VarOutput:
+            if (parts.length != 3) {
+                throw new Error("Edge effect, Event Variable Output, not enough arguments.");
+            }
             return new Effect(EffectName.VarOutput,
                 varOutputEffect.name + openBrackets + parts[1] + commaPart + parts[2] + closeBrackets);
         case EffectName.VarChange:
-            return new Effect(EffectName.VarChange, varChangeEffect.name + openBrackets + parts[1] + closeBrackets);
+            if (parts.length != 3) {
+                throw new Error("Edge effect, Event Variable Change, not enough arguments.");
+            }
+            return new Effect(EffectName.VarChange,
+                varChangeEffect.name + openBrackets + parts[1] + commaPart + parts[2] + closeBrackets);
         default:
             throw new Error("Edge effect type not recognized or missing.");
     }

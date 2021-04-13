@@ -49,6 +49,7 @@ export class ProgramModel {
      */
     makeOneTransition() {
         if (this.stopped()) {
+            console.log("already stopped")
             return;
         }
 
@@ -60,7 +61,14 @@ export class ProgramModel {
         const edge = this.currentState.testEdgeConditions(this.testDriver);
         if (edge != null) {
             edge.runEffect();
-            this.currentState = edge.getEndNode();
+
+            // todo unregister old edges
+            if (this.currentState == edge.getEndNode()) {
+                this.currentState.resetConditions();
+            } else {
+                this.currentState = edge.getEndNode();
+                this.currentState.registerCondEvents(this.testDriver);
+            }
         }
     }
 

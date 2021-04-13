@@ -65,28 +65,32 @@ export class ModelTester {
         util.start();
         this.testDriver.seedScratch(Random.INITIAL_SEED);
 
+        this.setUpCallbacks();
+
+        this.testDriver.detectRandomInputs({duration: [50, 100]});
+        await this.testDriver.runForTime(3000);
+
+        // this.emit(TestRunner.RUN_END, results);
+        util.end();
+        return results;
+    }
+
+
+    setUpCallbacks() {
         // register models and callbacks
         this.programModels.forEach(model => {
             model.testDriver = this.testDriver;
+            model.currentState.registerCondEvents(this.testDriver);
 
             // add the model transition to the callbacks
             model.testDriver.addCallback(function () {
                 model.makeOneTransition();
-            }, false, "modelstep");
-
-            model.testDriver.addCallback(function () {
                 if (model.stopped()) {
                     console.log("STOP");
                     model.testDriver.clearCallbacks();
                     // testDriver.cancelRun(); todo what to do when the model is already finished
                 }
-            }, true, "ModelStopped");
+            }, true, "modelstep");
         })
-        this.testDriver.detectRandomInputs({duration: [50, 100]});
-        await this.testDriver.runForTime(2000);
-
-        // this.emit(TestRunner.RUN_END, results);
-        util.end();
-        return results;
     }
 }

@@ -1,7 +1,7 @@
 import {ModelNode} from "./ModelNode";
-import {Input} from "../../../vm/inputs";
 import TestDriver from "../../../test/test-driver";
-import {Condition, Effect} from "../util/EdgeEvent";
+import {Effect} from "../util/EdgeEvent";
+import {Condition} from "../edgeConditions/Condition";
 
 // todo construct super type without effect?
 
@@ -14,7 +14,7 @@ export class ModelEdge {
     private readonly startNode: ModelNode;
     private readonly endNode: ModelNode;
 
-    private conditions: Condition[] = [];
+    conditions: Condition[] = [];
     private effects: Effect[] = [];
 
     /**
@@ -34,11 +34,11 @@ export class ModelEdge {
      * @param testDriver Instance of the test driver.
      * @return Promise<boolean>, if the conditions are fulfilled.
      */
-    testCondition(testDriver: TestDriver): boolean {
+    testConditions(testDriver: TestDriver): boolean {
         let fulfilled = true;
 
         for (let i = 0; i < this.conditions.length; i++) {
-            fulfilled = eval(this.conditions[i].condFunc)(testDriver);
+            fulfilled = this.conditions[i].check(testDriver);
 
             // stop if one condition is not fulfilled
             if (!fulfilled) {
@@ -48,6 +48,24 @@ export class ModelEdge {
         return fulfilled;
     }
 
+    /**
+     * todo
+     * @param testDriver
+     */
+    registerConditions(testDriver: TestDriver): void {
+        this.conditions.forEach(cond => {
+            cond.register(testDriver);
+        })
+    }
+
+    /**
+     * todo
+     */
+    resetConditions() {
+        this.conditions.forEach(cond => {
+            cond.reset();
+        })
+    }
     /**
      * Run all effects of the edge.
      */
@@ -85,79 +103,6 @@ export class ModelEdge {
      */
     addEffect(effect: Effect): void {
         this.effects.push(effect);
-    }
-
-}
-
-/**
- * Method for checking if an edge condition is fulfilled with a key event. Todo needs duration or not?
- * @param scratchKey Name of the key.
- */
-export function checkKeyEvent(scratchKey: string): (TestDriver) => boolean {
-    return function (testDriver: TestDriver): boolean {
-        if (testDriver.vmWrapper.inputs.inputs.length > 0) {
-            const inputs = testDriver.vmWrapper.inputs.inputs;
-
-            // try to find the input equal to the string
-            for (let i = 0; i < inputs.length; i++) {
-                console.log("current input: '" + inputs[i]._data.key + "'");
-                if (inputs[i]._data.key === Input.scratchKeyToKeyString(scratchKey)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            console.log("inputs empty")
-        }
-        return false;
-    }
-}
-
-/**
- * Method for checking if an edge condition is fulfilled with a click event. Todo needs also other params?
- *
- * @param x X coordinate of the mouse click.
- * @param y Y coordinate of the mouse click.
- */
-export function checkClickEvent(x, y): (TestDriver) => boolean {
-    return function (testDriver: TestDriver): boolean {
-        // console.log("for now nothing happens with the mouse click at " + x + y, testDriver);
-        return false;
-    }
-
-}
-
-/**
- * Method for checking if an edge condition is fulfilled for a value of a variable.
- *
- * @param varName Name of the variable.
- * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
- * @param varValue Value to compare to the variable's current value.
- */
-export function checkVarTestEvent(varName: string, comparison: string, varValue: string): (TestDriver) => boolean {
-    return function (testDriver: TestDriver): boolean {
-        // console.log("for now nothing happens with " + varName + comparison + varValue, testDriver);
-        return false;
-    }
-}
-
-/**
- * Check whether the sprites with the given names are touching.
- *
- * @param spriteName1 Name of the first sprite.
- * @param spriteName2 Name of the second sprite.
- */
-export function checkSpriteTouchingEvent(spriteName1: string, spriteName2: string): (TestDriver) => boolean {
-    return function (testDriver: TestDriver): boolean {
-        // console.log("for now nothing happens with sprites: " + spriteName1 + " and " + spriteName2, testDriver);
-        return false;
-    }
-}
-
-export function checkSpriteColorEvent(spriteName: string, colorName: string): (TestDriver) => boolean {
-    return function (testDriver: TestDriver): boolean {
-        // console.log("for now nothing happens with sprite " + spriteName + " and color " + colorName, vmWrapper);
-        return false;
     }
 }
 
