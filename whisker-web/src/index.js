@@ -432,7 +432,7 @@ i18next
         nonExplicitWhitelist: true,
         lng: initialLanguage,
         fallbackLng: 'de',
-        debug: true,
+        debug: false,
         ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
         defaultNS: 'index',
         interpolation: {
