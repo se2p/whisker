@@ -432,7 +432,7 @@ i18next
         nonExplicitWhitelist: true,
         lng: initialLanguage,
         fallbackLng: 'de',
-        debug: true,
+        debug: false,
         ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
         defaultNS: 'index',
         interpolation: {
@@ -464,11 +464,44 @@ function updateContent() {
     if (Whisker.testTable) {
         Whisker.testTable.hideTestDetails();
     }
+    _updateFilenameLabels();
+}
+
+function _updateFilenameLabels() {
+    if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
+        $('#project-label').html(Whisker.projectFileSelect.getName());
+    }
+    if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
+        $('#tests-label').html(Whisker.testFileSelect.getName());
+    }
+    if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
+        $('#config-label').html(Whisker.configFileSelect.getName());
+    }
+}
+
+function _translateTestTableTooltips(oldLanguage, newLanguage) {
+    const oldLangData = i18next.getDataByLanguage(oldLanguage);
+    const oldIndexData = oldLangData.index;
+    const newLangData = i18next.getDataByLanguage(newLanguage);
+    const newIndexData = newLangData.index;
+    $('.tooltip-sign-text').html(function() {
+        _translateTooltip(this, oldIndexData, newIndexData);
+    });
+}
+
+function _translateTooltip(tooltipElement, oldData, newData) {
+    const key = _getKeyByValue(oldData, tooltipElement.innerHTML);
+    tooltipElement.innerHTML = newData[key];
+}
+
+function _getKeyByValue(langData, value) {
+    return Object.keys(langData).find(key => langData[key] === value);
 }
 
 $('#form-lang').on('change', () => {
     $('[data-toggle="tooltip"]').tooltip('dispose');
     const lng = $('#lang-select').val();
+    _translateTestTableTooltips(i18next.language, lng); // This has to be executed before the current language is changed
     const params = new URLSearchParams(window.location.search);
     params.set(LANGUAGE_OPTION, lng);
     window.history.pushState('', '', '?' + params.toString());
