@@ -413,6 +413,7 @@ window.onbeforeunload = function () {
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
+    return ""; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
 };
 
 const localize = locI18next.init(i18next, {
