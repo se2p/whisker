@@ -464,6 +464,20 @@ function updateContent() {
     if (Whisker.testTable) {
         Whisker.testTable.hideTestDetails();
     }
+    _updateFilenameLabels();
+}
+
+function _updateFilenameLabels() {
+    const filenameLabels = $('.filename-label');
+    if (Whisker.projectFileSelect) {
+        filenameLabels[0].innerHTML = Whisker.projectFileSelect.getName();
+    }
+    if (Whisker.testFileSelect) {
+        filenameLabels[1].innerHTML = Whisker.testFileSelect.getName();
+    }
+    if (Whisker.configFileSelect) {
+        filenameLabels[2].innerHTML = Whisker.configFileSelect.getName();
+    }
 }
 
 $('#form-lang').on('change', () => {
