@@ -1,7 +1,5 @@
 import {cloneGraph, Graph, GraphNode, reverseGraph} from '../src/graph-utils';
 
-const test = require('tap').test;
-
 const cfg = () => {
     const entry = new GraphNode('entry');
     const exit = new GraphNode('exit');
@@ -37,22 +35,16 @@ const cfg = () => {
     return graph;
 };
 
-test('Graph cloning', t => {
+
+test('Graph cloning', () => {
     const expected = cfg();
     const actual = cloneGraph(expected);
 
-    t.type(actual, Graph);
-    t.match(actual, expected);
-
-    t.end();
+    expect(actual).toStrictEqual(expected);
 });
 
-test('Graph reversing', t =>{
+test('Graph reversing', () =>{
     const expected = cfg();
     const actual = reverseGraph(reverseGraph(expected));
-
-    t.type(actual, Graph);
-    t.match(actual, expected);
-
-    t.end();
+    expect(actual).toStrictEqual(expected);
 });

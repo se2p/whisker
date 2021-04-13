@@ -15,11 +15,12 @@
         "servant"
     ],
     "scripts": {
-        "build": "yarn --cwd whisker-main build && yarn --cwd whisker-web build",
+        "build": "yarn --cwd scratch-analysis build && yarn --cwd whisker-main build && yarn --cwd whisker-web build",
         "build-main": "yarn --cwd whisker-main build",
         "build-web": "yarn --cwd whisker-web build",
+        "build-analysis": "yarn --cwd scratch-analysis build",
         "servant": "yarn --cwd servant node servant.js",
-        "test": "yarn --cwd whisker-main test",
+        "test": "yarn --cwd scratch-analysis test && yarn --cwd whisker-main test",
         "integrationtest": "yarn --cwd whisker-web test"
     },
     "devDependencies": {

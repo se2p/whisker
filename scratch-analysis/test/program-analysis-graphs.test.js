@@ -2,8 +2,6 @@ import {GraphNode, Graph} from '../src/graph-utils';
 import {computePostDominatedTree, PostDominatorTree} from '../src/post-dominator-tree';
 import {ControlDependenceGraph, generateCDG} from '../src/control-dependence-graph';
 
-const test = require('tap').test;
-
 const SumsExample = {
     cfg: () => {
         const entry = new GraphNode('entry');
@@ -197,46 +195,34 @@ const BASICExample = {
     }
 };
 
-test('Sums Example: Post dominator tree', t => {
+test('Sums Example: Post dominator tree', () => {
     const expected = SumsExample.pdt();
     const actual = computePostDominatedTree(SumsExample.cfg());
 
-    t.type(actual, PostDominatorTree);
-    t.match(actual, expected);
-    // t.equal(actual, expected);
-
-    t.end();
+    expect(actual).toBeInstanceOf(PostDominatorTree);
+    expect(actual).toEqual(expected);
 });
 
-test('Sums Example: Control dependence graph', t => {
+test('Sums Example: Control dependence graph', () => {
     const expected = SumsExample.cdg();
     const actual = generateCDG(SumsExample.cfg());
 
-    t.type(actual, ControlDependenceGraph);
-    t.match(actual, expected);
-    // t.equal(actual, expected);
-
-    t.end();
+    expect(actual).toBeInstanceOf(ControlDependenceGraph);
+    expect(actual).toEqual(expected);
 });
 
-test('BASIC Example: Post dominator tree', t => {
+test('BASIC Example: Post dominator tree', () => {
     const expected = BASICExample.pdt();
     const actual = computePostDominatedTree(BASICExample.cfg());
 
-    t.type(actual, PostDominatorTree);
-    t.match(actual, expected);
-    // t.equal(actual, expected);
-
-    t.end();
+    expect(actual).toBeInstanceOf(PostDominatorTree);
+    expect(actual).toEqual(expected);
 });
 
-test('BASIC Example: Control dependence graph', t => {
+test('BASIC Example: Control dependence graph', () => {
     const expected = BASICExample.cdg();
     const actual = generateCDG(BASICExample.cfg());
 
-    t.type(actual, ControlDependenceGraph);
-    t.match(actual, expected);
-    // t.equal(actual, expected);
-
-    t.end();
+    expect(actual).toBeInstanceOf(ControlDependenceGraph);
+    expect(actual).toEqual(expected);
 });
