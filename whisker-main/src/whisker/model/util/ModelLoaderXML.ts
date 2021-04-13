@@ -79,8 +79,8 @@ export class ModelLoaderXML {
         }
 
         try {
-            graphNodes.forEach(node => this._loadNode(node['_attributes']));
-            graphEdges.forEach(edge => this._loadEdge(edge['_attributes']));
+            graphNodes.forEach(node => this._loadNode(graphID, node['_attributes']));
+            graphEdges.forEach(edge => this._loadEdge(graphID, edge['_attributes']));
         } catch (e) {
             throw new Error("Graph '" + graphID + "':\n" + e.message);
         }
@@ -104,14 +104,15 @@ export class ModelLoaderXML {
 
     /**
      * Load a node into the node map.
+     * @param graphID ID of the graph.
      * @param nodeAttr attributes of the node: id, startNode: boolean (optional), stopNode: boolean (optional)
      */
-    _loadNode(nodeAttr: { [key: string]: string }): void {
+    _loadNode(graphID: string, nodeAttr: { [key: string]: string }): void {
         if ((this.nodesMap)[nodeAttr.id]) {
             throw new Error("Node id '" + nodeAttr.id + "' already defined.");
         }
 
-        (this.nodesMap)[nodeAttr.id] = new ModelNode(nodeAttr.id);
+        (this.nodesMap)[nodeAttr.id] = new ModelNode(graphID + "-" + nodeAttr.id);
 
         if (nodeAttr.startNode && nodeAttr.startNode == "true") {
             // already defined start node
@@ -130,10 +131,11 @@ export class ModelLoaderXML {
 
     /**
      * Load an edge and save it in the edge map.
+     * @param graphID ID of the graph.
      * @param edgeAttr attributes of the edge: id, source: (nodeid as string), target: (nodeid as string),
      * condition: string, effect: string
      */
-    _loadEdge(edgeAttr: { [key: string]: string }): void {
+    _loadEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
         const edgeID = edgeAttr.id;
         const startID = edgeAttr.source;
         const endID = edgeAttr.target;
@@ -149,7 +151,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "':Unknown node id '" + endID + "'.");
         }
 
-        const newEdge = new ModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
+        const newEdge = new ModelEdge(graphID + "-" + edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
 
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
