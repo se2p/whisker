@@ -468,15 +468,14 @@ function updateContent() {
 }
 
 function _updateFilenameLabels() {
-    const filenameLabels = $('.filename-label');
-    if (Whisker.projectFileSelect) {
-        filenameLabels[0].innerHTML = Whisker.projectFileSelect.getName();
+    if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
+        $('#project-label').html(Whisker.projectFileSelect.getName());
     }
-    if (Whisker.testFileSelect) {
-        filenameLabels[1].innerHTML = Whisker.testFileSelect.getName();
+    if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
+        $('#tests-label').html(Whisker.testFileSelect.getName());
     }
-    if (Whisker.configFileSelect) {
-        filenameLabels[2].innerHTML = Whisker.configFileSelect.getName();
+    if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
+        $('#config-label').html(Whisker.configFileSelect.getName());
     }
 }
 
