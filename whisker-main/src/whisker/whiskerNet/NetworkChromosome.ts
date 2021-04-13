@@ -10,6 +10,8 @@ import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Species} from "./Species";
 import assert from "assert";
 import {InputNode} from "./NetworkNodes/InputNode";
+import {Randomness} from "../utils/Randomness";
+import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 
 export class NetworkChromosome extends Chromosome {
     /**
@@ -20,7 +22,7 @@ export class NetworkChromosome extends Chromosome {
     /**
      * Holds all input nodes of a network mapped to the corresponding sprite.
      */
-    private readonly _inputNodes: Map<number, List<NodeGene>>;
+    private readonly _inputNodes: Map<string, List<NodeGene>>;
 
     /**
      * Holds all output nodes of a network
@@ -109,6 +111,11 @@ export class NetworkChromosome extends Chromosome {
     private _hasRegression: boolean;
 
     /**
+     * Random number generator
+     */
+    private readonly _random: Randomness
+
+    /**
      * Constructs a new NetworkChromosome
      * @param connections the connections between the Nodes
      * @param allNodes all the nodes of a Chromosome
@@ -119,7 +126,7 @@ export class NetworkChromosome extends Chromosome {
                 mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>) {
         super();
         this._allNodes = allNodes;
-        this._inputNodes = new Map<number, List<NodeGene>>();
+        this._inputNodes = new Map<string, List<NodeGene>>();
         this._outputNodes = new List<NodeGene>();
         this._connections = connections;
         this._crossoverOp = crossoverOp;
@@ -137,6 +144,7 @@ export class NetworkChromosome extends Chromosome {
         this._isRecurrent = false;
         this._hasLoop = false;
         this._hasRegression = false;
+        this._random = Randomness.getInstance();
         this.generateNetwork();
     }
 
@@ -176,30 +184,51 @@ export class NetworkChromosome extends Chromosome {
 
     /**
      * Adds additional input Nodes if we have encountered a new Sprite during the playthrough
-     * @param inputs
+     * @param sprites a map which maps each sprite to its input feature vector
      */
-    public addInputNode(inputs: number[][]): void {
-        for (let i = 0; i < inputs.length; i++) {
-            // First check if we encountered a new sprite.
-            if (this.inputNodes.get(i) === undefined) {
+    public addInputNode(sprites: Map<string, number[]>): void {
+        for (const sprite of sprites.keys()) {
+            // Check if we have encountered a new Sprite
+            if (!this.inputNodes.has(sprite)) {
                 const newInputNodes = new List<NodeGene>();
-                inputs[i].forEach(() => {
-                    const iNode = new InputNode(this.allNodes.size(), i)
+                sprites.forEach(() => {
+                    const iNode = new InputNode(this.allNodes.size(), sprite);
                     newInputNodes.add(iNode);
                     this.allNodes.add(iNode);
+                    // By Chance we connect the new Node to the network.
+                    if(this._random.nextDouble() < 0.3)
+                        this.connectInputNode(iNode);
                 })
-                this.inputNodes.set(i, newInputNodes);
+                this.inputNodes.set(sprite, newInputNodes);
             }
 
-            // Then, check if we may have gathered more information from a given sprite.
-            while(this.inputNodes.get(i).size() < inputs[i].length){
-                const iNode = new InputNode(this.allNodes.size(),i)
-                this.inputNodes.get(i).add(iNode)
+            // Check if we may have gathered more information from a given sprite.
+            while (sprites.get(sprite).length > this.inputNodes.get(sprite).size()) {
+                const iNode = new InputNode(this.allNodes.size(), sprite)
+                this.inputNodes.get(sprite).add(iNode)
                 this.allNodes.add(iNode);
+                // By Chance we connect the new Node to the network.
+                if(this._random.nextDouble() < 0.3)
+                    this.connectInputNode(iNode);
             }
+
         }
         this.generateNetwork();
     }
+
+    /**
+     * Connects an inputNode to the Network by creating a connection between the inputNode and all outputNodes
+     * @param iNode the inputNode to connect
+     */
+    private connectInputNode(iNode: NodeGene): void {
+        for (const oNode of this.outputNodes) {
+            const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1,1), true, 0, false)
+            NeuroevolutionUtil.assignInnovationNumber(newConnection);
+            this.connections.add(newConnection)
+            oNode.incomingConnections.add(newConnection);
+        }
+    }
+
 
     /**
      * Generates the network by placing the Input and Output nodes in the corresponding List.
@@ -209,13 +238,12 @@ export class NetworkChromosome extends Chromosome {
         this.sortConnections();
         // Place the input and output nodes into the corresponding List
         for (const node of this.allNodes) {
-            if (node instanceof InputNode){
-                if(this.inputNodes.get(node.sprite) === undefined){
+            if (node instanceof InputNode) {
+                if (this.inputNodes.get(node.sprite) === undefined) {
                     const newSpriteVector = new List<NodeGene>();
                     newSpriteVector.add(node);
-                    this.inputNodes.set(node.sprite,newSpriteVector);
-                }
-                else if(!this.inputNodes.get(node.sprite).contains(node))
+                    this.inputNodes.set(node.sprite, newSpriteVector);
+                } else if (!this.inputNodes.get(node.sprite).contains(node))
                     this.inputNodes.get(node.sprite).add(node);
             }
             if (node.type === NodeType.OUTPUT && !this.outputNodes.contains(node))
@@ -269,11 +297,10 @@ export class NetworkChromosome extends Chromosome {
             }
 
             // Activate network with some input values.
-            const inputs = [[], []];
-            for (let i = 0; i < this._inputNodes.size; i++) {
-                const spriteVectorSize = this._inputNodes.get(i).size();
-                inputs[i] = new Array(spriteVectorSize).fill(1);
-            }
+            const inputs = new Map<string, number[]>();
+            this.inputNodes.forEach((v, k) => {
+                inputs.set(k, new Array(v.size()).fill(1))
+            })
             this.activateNetwork(inputs);
 
             // If our output nodes got activated check if they changed their values.
@@ -304,9 +331,10 @@ export class NetworkChromosome extends Chromosome {
 
     /**
      * Activates the network in order to get an output corresponding to the fed inputs.
+     * @param inputs a map which maps each sprite to its input feature vector
      * @return returns true if everything went well.
      */
-    activateNetwork(inputs: number[][]): boolean {
+    activateNetwork(inputs: Map<string, number[]>): boolean {
         // Generate the network and load the inputs
         this.generateNetwork();
         this.setUpInputs(inputs);
@@ -358,19 +386,20 @@ export class NetworkChromosome extends Chromosome {
 
     /**
      * Load the given inputs into the inputNodes of the network
-     * @param inputs the inputs the nodes should be loaded with
+     * @param inputs a map which maps each sprite to its input feature vector
      */
-    private setUpInputs(inputs: number[][]): void {
-        for (let i = 0; i < inputs.length; i++) {
-            const spriteVector = inputs[i];
-            for (let j = 0; j < spriteVector.length; j++) {
-                const iNode = this.inputNodes.get(i).get(j);
+    private setUpInputs(inputs: Map<string, number[]>): void {
+        inputs.forEach((value, key) => {
+            // Only activate the inputNodes if there is indeed a sprite with corresponding information present.
+            let i = 0;
+            value.forEach(value => {
+                const iNode = this.inputNodes.get(key).get(i++)
                 iNode.activationCount++;
                 iNode.activatedFlag = true;
-                iNode.nodeValue = spriteVector[j];
-                iNode.activationValue = spriteVector[j];
-            }
-        }
+                iNode.nodeValue = value;
+                iNode.activationValue = value;
+            })
+        })
     }
 
     /**
@@ -459,9 +488,9 @@ export class NetworkChromosome extends Chromosome {
      * Counts the number of input Nodes
      * @return the number of input nodes
      */
-    public inputNodesSize(): number{
+    public inputNodesSize(): number {
         let counter = 0;
-        for(const nodeList of this.inputNodes.values())
+        for (const nodeList of this.inputNodes.values())
             counter += nodeList.size();
         return counter;
     }
@@ -501,7 +530,7 @@ export class NetworkChromosome extends Chromosome {
         return fitnessFunction.getFitness(this);
     }
 
-    get inputNodes(): Map<number, List<NodeGene>> {
+    get inputNodes(): Map<string, List<NodeGene>> {
         return this._inputNodes;
     }
 

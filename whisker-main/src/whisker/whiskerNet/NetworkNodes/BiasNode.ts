@@ -13,6 +13,8 @@ export class BiasNode extends NodeGene {
         this.nodeValue = 1;
         this.lastActivationValue = 1;
         this.activationValue = 1;
+        this.activatedFlag = true;
+        this.activationCount = 1;
     }
 
     equals(other: unknown): boolean {
@@ -30,11 +32,9 @@ export class BiasNode extends NodeGene {
     }
 
     public reset(): void {
-        this.activationCount = 0;
         this.nodeValue = 1;
         this.activationValue = 1;
         this.lastActivationValue = 1;
-        this.activatedFlag = false;
         this.traversed = false;
     }
 

@@ -24,19 +24,19 @@ describe("BiasNode Tests", () => {
         expect(biasNode.nodeValue).toBe(1);
         expect(biasNode.lastActivationValue).toBe(1);
         expect(biasNode.activationValue).toBe(1)
-        expect(biasNode.activatedFlag).toBe(false)
-        expect(biasNode.activationCount).toBe(0);
+        expect(biasNode.activatedFlag).toBe(true)
+        expect(biasNode.activationCount).toBe(1);
         expect(biasNode.traversed).toBe(false)
         expect(biasNode.incomingConnections.size()).toBe(0);
     })
 
     test("Reset Node", () =>{
         biasNode.reset();
-        expect(biasNode.activationCount).toBe(0)
+        expect(biasNode.activationCount).toBe(1)
         expect(biasNode.activationValue).toBe(1)
         expect(biasNode.nodeValue).toBe(1)
         expect(biasNode.lastActivationValue).toBe(1)
-        expect(biasNode.activatedFlag).toBe(false)
+        expect(biasNode.activatedFlag).toBe(true)
         expect(biasNode.traversed).toBe(false)
 
     })
@@ -45,10 +45,10 @@ describe("BiasNode Tests", () => {
         const biasNode2 = new BiasNode(1);
         expect(biasNode2.equals(biasNode)).toBe(true)
 
-        const inputNode3 = new InputNode(2,0);
+        const inputNode3 = new InputNode(2,"Test");
         expect(inputNode3.equals(biasNode)).toBe(false)
 
-        const inputNode = new InputNode(1,1);
+        const inputNode = new InputNode(1,"Test");
         expect(inputNode.equals(biasNode)).toBe(false)
     })
 

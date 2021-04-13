@@ -28,7 +28,7 @@ describe('Test NEAT', () => {
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
     let generator: NetworkChromosomeGeneratorSparse
-    let genInputs: number[][]
+    let genInputs: Map<string,number[]>
     let outputSize: number
     let random: Randomness
 
@@ -42,7 +42,11 @@ describe('Test NEAT', () => {
         mutationOp = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1, 3, 0.1);
-        genInputs = [[1, 2, 3], [4, 5, 6], [7, 8], [9]];
+        genInputs = new Map<string, number[]>();
+        genInputs.set("First", [1,2,3]);
+        genInputs.set("Second", [4,5,6]);
+        genInputs.set("Third", [7,8]);
+        genInputs.set("Fourth", [9]);
         outputSize = 3;
         generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false);
 
@@ -102,8 +106,9 @@ describe('Test NEAT', () => {
     However, should be used for validating any changes made to the NEAT algorithm or its components.
     test("XOR Sanity Test", () => {
         const inputs = [[0, 0], [1, 1], [0, 1], [1, 0]];
-        const genInputs = [[0, 0]]
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, 1, 0.5, false);
+        const inputMap = new Map<string, number[]>();
+        inputMap.set("First", [0,0])
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, inputMap, 1, 0.5, false);
         const population = new NeatPopulation(150, 5, generator, properties)
 
         let found = false;
@@ -114,8 +119,9 @@ describe('Test NEAT', () => {
                 const stabCounter = chromosome.stabilizedCounter(10);
                 chromosome.flushNodeValues();
                 for (let i = 0; i < inputs.length; i++) {
+                    inputMap.set("First", inputs[i])
                     for (let j = 0; j < stabCounter; j++) {
-                        chromosome.activateNetwork([inputs[i]])
+                        chromosome.activateNetwork(inputMap)
                     }
 
                     let output: number;

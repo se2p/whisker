@@ -1,54 +1,44 @@
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
-import {List} from "../utils/List";
 
 export class InputExtraction {
 
-    private static sprites = new List<RenderedTarget>()
+    /**
+     * The sprites map saves for each sprite the extracted information vector.
+     * Note that the size of the keys as well as the size of the information vector
+     * may change during the execution of the project (-> whenever we encounter new sprites/clones).
+     */
+    public static sprites = new Map<string, number[]>()
 
     /**
-     * Extracts pieces of information from all sprites of the given Scratch project.
-     * @param vm the Scratch VM
-     * @return Returns a 2-dim Matrix where each row presents a Sprite
-     *         and the columns the extracted information of the Sprite
+     * Extracts pieces of information from all Sprites of the given Scratch project.
+     * @param vm the Scratch VM.
+     * @return Returns a map where each sprite maps to the extracted sprite feature vector.
      */
-    static extractSpriteInfo(vm: VirtualMachine): number[][] {
-        // Collect all available sprites. Note, that the number of sprites can change during the game!
-        this.sprites.clear();
-        this._collectSprites(vm);
+    // TODO: It might be necessary to not only distinguish original sprites but also cloned sprites.
+    //  Currently if and only if two cloned sprites of the same parent Sprite occur in differing temporal orders,
+    //  the inputNodes are not correctly assigned to the corresponding clones.
+    static extractSpriteInfo(vm: VirtualMachine): Map<string, number[]> {
+        // Clear the collectedSpriteVectors
+        this.sprites.forEach((value, key) => this.sprites.set(key, []));
 
-        // Go through each sprite and collect input features from them.
-        const spriteInfos: number[][] = [];
-        for (const sprite of this.sprites) {
-            const spriteInfo = this._extractInfoFromSprite(sprite)
-            if (spriteInfo.length !== 0) {
-                spriteInfos.push(spriteInfo)
-
-            }
-        }
-        return spriteInfos;
-    }
-
-    /**
-     * Collects the available sprites of the Scratch-VM and stores them in the sprites List
-     * @param vm the Scratch-VM to collect input features from
-     */
-    private static _collectSprites(vm: VirtualMachine): void {
+        // Go through each sprite and collect input features from them; we save them in the sprites Map.
         for (const target of vm.runtime.targets) {
             if (!target.isStage && target.hasOwnProperty('blocks')) {
-                this.sprites.add(target);
+                this._extractInfoFromSprite(target, vm)
             }
         }
+        return this.sprites;
     }
 
     /**
      * Extracts the pieces of information of the given sprite and normalises in the range [-1, 1]
-     * @param sprite the sprite from which information is gathered
+     * @param sprite the RenderTarget (-> Sprite) from which information is gathered
+     * @param vm the Scratch-VM of the given project
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    private static _extractInfoFromSprite(sprite: RenderedTarget): number[] {
-        const spriteInfo = []
-
+    private static _extractInfoFromSprite(sprite: RenderedTarget, vm: VirtualMachine): void {
+        const spriteVector = []
         // stageWidth and stageHeight used for normalisation
         const stageWidth = sprite.renderer._nativeSize[0] / 2.;
         const stageHeight = sprite.renderer._nativeSize[1] / 2.;
@@ -63,42 +53,51 @@ export class InputExtraction {
         else if (x > 1)
             x = 1;
 
+        spriteVector.push(x);
+
         if (y < -1)
             y = -1;
         else if (y > 1)
             y = 1;
 
-        spriteInfo.push(x);
-        spriteInfo.push(y);
+        spriteVector.push(y);
 
         // Collect the currently selected costume if the given sprite can change its costume
         if (sprite.sprite.costumes_.length > 1) {
-            spriteInfo.push(sprite.currentCostume / sprite.sprite.costumes_.length)
+            spriteVector.push(sprite.currentCostume / sprite.sprite.costumes_.length);
         }
 
         // Collect additional information based on the behaviour of the sprite
         for (const blockId of Object.keys(sprite.blocks._blocks)) {
             const block = sprite.blocks.getBlock(blockId)
-            switch (sprite.blocks.getOpcode(block)) {
-                // Sprite checks if it touches another sprite
-                case "sensing_touchingobjectmenu":
-                    for (const target of this.sprites) {
-                        if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value)
-                            this._calculateDistanceBetweenSprites(sprite, target, spriteInfo)
+            if (sprite.blocks.getOpcode(block) === "sensing_touchingobjectmenu") {
+                for (const target of vm.runtime.targets) {
+                    if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
+                        this._calculateDistanceBetweenSprites(sprite, target, spriteVector)
                     }
+                }
             }
         }
-        return spriteInfo;
+
+        // If we do not have a copy put the sprite vector into the right place of the sprite map
+        if (sprite.isOriginal) {
+            this.sprites.set(sprite.sprite.name, spriteVector)
+        }
+        // Otherwise, if we have a clone append the spriteVector of the clone to the sprite vector of the original
+        else {
+            const cloneAddedVector = this.sprites.get(sprite.sprite.name).concat(spriteVector)
+            this.sprites.set(sprite.sprite.name, cloneAddedVector)
+        }
     }
 
     /**
      * Calculates the distance between two sprites
      * @param sprite1 the source sprite
      * @param sprite2 the name of the target sprite
-     * @param spriteInfo the vector onto which the distances are saved to
+     * @param spriteVector the vector onto which the distances are saved to
      */
     private static _calculateDistanceBetweenSprites(sprite1: RenderedTarget, sprite2: RenderedTarget,
-                                                    spriteInfo: number[]): void {
+                                                    spriteVector: number[]): void {
 
         // Calculate the normalised distance vector of the x-Dimension including the sign
         // + means sprite1 is left of sprite 2 and vice versa for the - sign
@@ -116,7 +115,8 @@ export class InputExtraction {
             dx = -1;
         else if (dx > 1)
             dx = 1;
-        spriteInfo.push(dx);
+
+        spriteVector.push(dx)
 
 
         // Calculate the normalised distance vector of the y-Dimension including the sign
@@ -135,7 +135,8 @@ export class InputExtraction {
             dy = -1;
         else if (dy > 1)
             dy = 1;
-        spriteInfo.push(dy);
+
+        spriteVector.push(dy)
     }
 }
 

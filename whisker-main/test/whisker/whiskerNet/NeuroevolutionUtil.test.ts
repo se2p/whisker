@@ -12,13 +12,13 @@ import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/Neuroevo
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 
-describe("NeatUtil Tests", () => {
+describe("NeuroevolutionUtil Tests", () => {
 
     let population: NeatPopulation<NetworkChromosome>;
     let populationSize: number;
     let crossOver: NeatCrossover;
     let mutation: NeatMutation;
-    let genInputs: number[][];
+    let genInputs: Map<string, number[]>;
     let numberOutputs: number;
     let generator: NetworkChromosomeGeneratorSparse
     let properties: NeuroevolutionProperties<NetworkChromosome>
@@ -29,7 +29,11 @@ describe("NeatUtil Tests", () => {
         mutation = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1,3, 0.1);
-        genInputs = [[1,2,3,4,5,6]]
+        genInputs = new Map<string, number[]>();
+        genInputs.set("First", [1,2,3]);
+        genInputs.set("Second", [4,5,6]);
+        genInputs.set("Third", [7,8]);
+        genInputs.set("Fourth", [9]);
         numberOutputs = 3;
         populationSize = 50;
         properties = new NeuroevolutionProperties<NetworkChromosome>(populationSize);
@@ -84,8 +88,8 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Test Compatibility Distance of Chromosomes with disjoint connections", () => {
-        const inputNode1 = new InputNode(0,0);
-        const inputNode2 = new InputNode(1,0);
+        const inputNode1 = new InputNode(0,"Test");
+        const inputNode2 = new InputNode(1,"Test");
         const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
@@ -112,8 +116,8 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Test Compatibility Distance of Chromosomes with disjoint connections switched", () => {
-        const inputNode1 = new InputNode(0,0);
-        const inputNode2 = new InputNode(1,0);
+        const inputNode1 = new InputNode(0,"Test");
+        const inputNode2 = new InputNode(1,"Test");
         const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
@@ -143,7 +147,7 @@ describe("NeatUtil Tests", () => {
         const chromosome1 = generator.get();
         const chromosome2 = chromosome1.clone();
 
-        const node1 = chromosome1.inputNodes.get(0).get(0);
+        const node1 = chromosome1.inputNodes.get("First").get(0);
         const node2 = chromosome1.outputNodes.get(1);
         chromosome2.connections.add(new ConnectionGene(node1, node2, 1, true, 1000, false));
         const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
@@ -152,8 +156,8 @@ describe("NeatUtil Tests", () => {
     })
 
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {
-        const inputNode1 = new InputNode(0,0);
-        const inputNode2 = new InputNode(1,0);
+        const inputNode1 = new InputNode(0,"Test");
+        const inputNode2 = new InputNode(1,"Test");
         const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
@@ -189,7 +193,7 @@ describe("NeatUtil Tests", () => {
         const chromosome = generator.get();
         const stabiliseCount = chromosome.stabilizedCounter(30);
         for (let i = 0; i < stabiliseCount + 1; i++) {
-            chromosome.activateNetwork([[1,2,3,4,5,6]])
+            chromosome.activateNetwork(genInputs)
         }
         const softmaxOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
@@ -202,21 +206,20 @@ describe("NeatUtil Tests", () => {
         const regressionNetwork1 = regGenerator.get();
         const regressionNetwork2 = regGenerator.get();
 
-        const inputs = [[1,2,3,4,5,6]];
         const stabValue1 = noRegressionNetwork.stabilizedCounter(20);
         const stabValue2 = regressionNetwork1.stabilizedCounter(20);
         const stabValue3 = regressionNetwork2.stabilizedCounter(20);
 
         for (let i = 0; i < stabValue1+1; i++) {
-            noRegressionNetwork.activateNetwork(inputs)
+            noRegressionNetwork.activateNetwork(genInputs)
         }
 
         for (let i = 0; i < stabValue2+1; i++) {
-            regressionNetwork1.activateNetwork(inputs)
+            regressionNetwork1.activateNetwork(genInputs)
         }
 
         for (let i = 0; i < stabValue3+1; i++) {
-            regressionNetwork2.activateNetwork(inputs)
+            regressionNetwork2.activateNetwork(genInputs)
         }
 
         const outputSum1 = NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).reduce((a, b) => a + b, 0);
@@ -241,14 +244,14 @@ describe("NeatUtil Tests", () => {
         const chromosome = generator.get();
         for(const connection of chromosome.connections)
             connectionList.add(connection);
-        const inNode = new InputNode(100,0)
+        const inNode = new InputNode(100,"Test")
         const outNode = new ClassificationNode(101, ActivationFunction.SIGMOID)
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
         expect(NeuroevolutionUtil.findConnection(connectionList, newConnection)).toBe(null)
     })
 
     test("Test Assign innovation number of a new connection", () =>{
-        const inNode = new InputNode(100,0)
+        const inNode = new InputNode(100,"Test")
         const outNode = new ClassificationNode(101, ActivationFunction.SIGMOID)
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
         NeuroevolutionUtil.assignInnovationNumber(newConnection)
@@ -258,7 +261,7 @@ describe("NeatUtil Tests", () => {
     test("Test Assign innovation number of a new connection which is similar to an existing one", () =>{
         const chromosome = generator.get();
         const existingConnection = chromosome.connections.get(0)
-        const inNode = new InputNode(existingConnection.source.id,0)
+        const inNode = new InputNode(existingConnection.source.id,"Test")
         const outNode = new ClassificationNode(existingConnection.target.id, ActivationFunction.SIGMOID)
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
         NeuroevolutionUtil.assignInnovationNumber(newConnection)

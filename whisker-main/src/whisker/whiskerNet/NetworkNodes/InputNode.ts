@@ -4,14 +4,17 @@ import {NodeType} from "./NodeType";
 
 export class InputNode extends NodeGene {
 
-    private readonly _sprite: number;
+    /**
+     * The name of the sprite this inputNode is assigned to.
+     */
+    private readonly _sprite: string;
 
     /**
      * Constructs a new InputNode
      * @param id the identification number of the node within the network
-     * @param sprite the number of the sprite this input Node handles
+     * @param sprite the name of the sprite this input Node handles
      */
-    constructor(id: number, sprite:number) {
+    constructor(id: number, sprite:string) {
         super(id, ActivationFunction.NONE, NodeType.INPUT);
         this.nodeValue = 0;
         this.lastActivationValue = 0;
@@ -42,7 +45,7 @@ export class InputNode extends NodeGene {
             ", InputConnections: " + this.incomingConnections + "}";
     }
 
-    get sprite(): number {
+    get sprite(): string {
         return this._sprite;
     }
 }

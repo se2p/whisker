@@ -11,12 +11,12 @@ describe("InputNode Tests", () => {
     let inputNode: NodeGene
 
     beforeEach(() => {
-        inputNode = new InputNode(1,0);
+        inputNode = new InputNode(1,"Test");
     })
 
     test("Constructor Test", () => {
 
-        const inputNode = new InputNode(10,2);
+        const inputNode = new InputNode(10,"Test");
 
         expect(inputNode.id).toBe(10);
         expect(inputNode.activationFunction).toBe(ActivationFunction.NONE);
@@ -28,7 +28,7 @@ describe("InputNode Tests", () => {
         expect(inputNode.activationCount).toBe(0);
         expect(inputNode.traversed).toBe(false)
         expect(inputNode.incomingConnections.size()).toBe(0);
-        expect(inputNode.sprite).toBe(2);
+        expect(inputNode.sprite).toBe("Test");
     })
 
     test("Reset Node", () =>{
@@ -56,10 +56,10 @@ describe("InputNode Tests", () => {
     })
 
     test("Equals Test", () =>{
-        const inputNode2 = new InputNode(1,0);
+        const inputNode2 = new InputNode(1,"Test");
         expect(inputNode2.equals(inputNode)).toBe(true)
 
-        const inputNode3 = new InputNode(2,1);
+        const inputNode3 = new InputNode(2,"Test");
         expect(inputNode3.equals(inputNode)).toBe(false)
 
         const biasNode = new BiasNode(1);

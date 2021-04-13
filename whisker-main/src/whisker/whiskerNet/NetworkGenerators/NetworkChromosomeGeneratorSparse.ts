@@ -28,9 +28,9 @@ export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<Net
     private _crossoverOp: Crossover<NetworkChromosome>;
 
     /**
-     * All potential input features for the network
+     * A map which maps each sprite to its input feature-vector
      */
-    private readonly _inputs: number[][];
+    private readonly _inputs: Map<string, number[]>;
 
     /**
      * Number of available events -> number of output nodes
@@ -56,13 +56,13 @@ export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<Net
      * Constructs a new NetworkGenerator
      * @param mutationOp the used mutation operator
      * @param crossoverOp the used crossover operator
-     * @param inputs all potential input features
+     * @param inputs a map which maps each sprite to its input feature-vector
      * @param numOutputNodes number of needed output nodes
      * @param inputRate the probability multiple input features are connected to the network
      * @param hasRegressionNode defines whether the networks get a regressionNode
      */
-    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>, inputs: number[][],
-                numOutputNodes: number, inputRate: number, hasRegressionNode: boolean) {
+    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
+                inputs: Map<string, number[]>, numOutputNodes: number, inputRate: number, hasRegressionNode: boolean) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
         this._inputs = inputs;
@@ -80,20 +80,20 @@ export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<Net
         let nodeId = 0;
         const allNodes = new List<NodeGene>();
 
-        // Create the Input Nodes and add them to the nodes list; Each row of the inputArray represents one Sprite.
-        // Sprites can have a different amount of infos i.e different amount of columns.
+        // Create the Input Nodes and add them to the nodes list;
+        // Sprites can have a different amount of infos i.e different amount of feature vector sizes.
         const inputList = new List<List<NodeGene>>()
-        for (let i = 0; i < this.inputs.length; i++) {
+        this._inputs.forEach((value, key) => {
             const spriteList = new List<NodeGene>();
-            const spriteInput = this.inputs[i];
-            spriteInput.forEach(() => {
-                const iNode = new InputNode(nodeId, i);
+            value.forEach(() => {
+                const iNode = new InputNode(nodeId, key);
                 nodeId++;
                 spriteList.add(iNode)
                 allNodes.add(iNode);
             })
             inputList.add(spriteList)
-        }
+        })
+
 
         // Add the Bias
         const biasNode = new BiasNode(nodeId);
@@ -209,7 +209,7 @@ export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<Net
         this._mutationOp = mutationOp;
     }
 
-    get inputs(): number[][] {
+    get inputs(): Map<string, number[]> {
         return this._inputs;
     }
 

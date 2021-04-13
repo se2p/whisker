@@ -8,7 +8,7 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
     let generator: NetworkChromosomeGeneratorFullyConnected
-    let genInputs: number[][]
+    let genInputs: Map<string, number[]>
     let outputSize: number
 
     beforeEach(() => {
@@ -16,7 +16,11 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         mutationOp = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1, 3, 0.1);
-        genInputs = [[1, 2, 3], [4, 5, 6], [7, 8], [9]];
+        genInputs = new Map<string, number[]>();
+        genInputs.set("First", [1,2,3]);
+        genInputs.set("Second", [4,5,6]);
+        genInputs.set("Third", [7,8]);
+        genInputs.set("Fourth", [9]);
         outputSize = 3;
         generator = new NetworkChromosomeGeneratorFullyConnected(mutationOp, crossoverOp, genInputs, outputSize, false);
     })

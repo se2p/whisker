@@ -17,7 +17,7 @@ describe("Test NeatMutation", () => {
     let networkChromosomeGenerator: NetworkChromosomeGeneratorSparse
     let mutation: NeatMutation;
     let crossOver: NeatCrossover;
-    let genInputs: number[][];
+    let genInputs: Map<string, number[]>;
     let outputSize: number;
 
     beforeEach(() => {
@@ -25,7 +25,8 @@ describe("Test NeatMutation", () => {
         mutation = new NeatMutation(0.1, 0.1, 30,
             0.2, 0.1, 0.8, 1.5,
             0.1, 3, 0.1);
-        genInputs = [[1, 2, 3, 4, 5, 6]];
+        genInputs = new Map<string, number[]>();
+        genInputs.set("First", [1,2,3,4,5,6]);
         outputSize = 3;
         networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, outputSize, 0.4, false)
         networkChromosome = networkChromosomeGenerator.get();
@@ -86,7 +87,7 @@ describe("Test NeatMutation", () => {
 
     test("Test MutateAddConnection with recurrent connection between output Nodes", () => {
         const allNodes = new List<NodeGene>();
-        const iNode = new InputNode(0,0);
+        const iNode = new InputNode(0,"Test");
         allNodes.add(iNode);
         const oNode1 = new ClassificationNode(1, ActivationFunction.SIGMOID);
         allNodes.add(oNode1);
@@ -127,14 +128,14 @@ describe("Test NeatMutation", () => {
         networkChromosome.allNodes.add(deepHiddenLayerNode)
         // create some new connections, those will create new nodes in createNetwork()
         // which is called by mutateAddConnection
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(0), hiddenLayerNode, 1, true, 50, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get("First").get(0), hiddenLayerNode, 1, true, 50, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode, deepHiddenLayerNode, 1, true, 51, false))
         networkChromosome.connections.add(new ConnectionGene(deepHiddenLayerNode, outputNodes.get(0), 1, true, 52, false))
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(1), hiddenLayerNode2, 1, true, 53, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get("First").get(1), hiddenLayerNode2, 1, true, 53, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode2, outputNodes.get(1), 1, true, 54, false))
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(1), hiddenLayerNode3, 1, true, 56, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get("First").get(1), hiddenLayerNode3, 1, true, 56, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode3, outputNodes.get(1), 1, true, 57, false))
-        networkChromosome.connections.add(new ConnectionGene(inputNodes.get(0).get(2), hiddenLayerNode4, 1, true, 58, false))
+        networkChromosome.connections.add(new ConnectionGene(inputNodes.get("First").get(2), hiddenLayerNode4, 1, true, 58, false))
         networkChromosome.connections.add(new ConnectionGene(hiddenLayerNode4, outputNodes.get(0), 1, true, 59, false))
         networkChromosome.generateNetwork();
         const originalConnections = networkChromosome.connections.size();

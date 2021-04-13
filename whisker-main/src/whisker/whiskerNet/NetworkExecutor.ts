@@ -122,9 +122,10 @@ export class NetworkExecutor {
 
             // Check if we encountered additional input features during the playthrough.
             // If we did so add InputNodes to the network.
-            const inputSize = [].concat(...spriteInfo).length;
-            if (inputSize > network.inputNodesSize())
-                network.addInputNode(spriteInfo);
+            spriteInfo.forEach((v, k) => {
+                if (!network.inputNodes.has(k) || network.inputNodes.get(k).size() !== v.length)
+                    network.addInputNode(spriteInfo)
+            })
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
             if (network.isRecurrent) {

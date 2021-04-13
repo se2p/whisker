@@ -28,9 +28,9 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
     private _crossoverOp: Crossover<NetworkChromosome>;
 
     /**
-     * All potential input features for the network
+     * A map which maps each sprite to its input feature-vector
      */
-    private readonly _inputs: number[][];
+    private readonly _inputs: Map<string, number[]>;
 
     /**
      * Number of available events -> number of output nodes
@@ -46,12 +46,12 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
      * Constructs a new NetworkGenerator
      * @param mutationOp the used mutation operator
      * @param crossoverOp the used crossover operator
-     * @param inputs all potential input features
+     * @param inputs a map which maps each sprite to its input feature-vector
      * @param numOutputNodes number of needed output nodes
      * @param hasRegressionNode defines whether the networks get a regressionNode
      */
-    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>, inputs: number[][],
-                numOutputNodes: number, hasRegressionNode: boolean) {
+    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
+                inputs: Map<string, number[]>, numOutputNodes: number, hasRegressionNode: boolean) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
         this._inputs = inputs;
@@ -70,15 +70,16 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
 
         // Create the Input Nodes and add them to the nodes list.
         // Sprites can have a different amount of feature set i.e different amount of columns.
-        const inputNodes = new List<NodeGene>()
-        for (let i = 0; i < this._inputs.length; i++) {
-            this._inputs[i].forEach(() => {
-                const iNode = new InputNode(nodeId, i);
+        const inputNodes = new List<NodeGene>();
+        this.inputs.forEach((value, key) => {
+            value.forEach(() => {
+                const iNode = new InputNode(nodeId, key);
                 nodeId++;
                 inputNodes.add(iNode)
                 allNodes.add(iNode);
             });
-        }
+        })
+
 
         // Add the Bias
         const biasNode = new BiasNode(nodeId++);
@@ -123,10 +124,10 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
         // For each inputNode create a connection to each outputNode.
         for (const inputNode of inputNodes) {
             for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
-                    NeuroevolutionUtil.assignInnovationNumber(newConnection);
-                    connections.add(newConnection)
-                    outputNode.incomingConnections.add(newConnection);
+                const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
+                NeuroevolutionUtil.assignInnovationNumber(newConnection);
+                connections.add(newConnection)
+                outputNode.incomingConnections.add(newConnection);
             }
         }
         return connections;
@@ -138,6 +139,10 @@ export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGener
 
     setMutationOperator(mutationOp: Mutation<NetworkChromosome>): void {
         this._mutationOp = mutationOp;
+    }
+
+    get inputs(): Map<string, number[]> {
+        return this._inputs;
     }
 
     get outputSize(): number {
