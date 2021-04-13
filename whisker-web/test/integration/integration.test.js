@@ -51,6 +51,8 @@ async function readCoverageOutput () {
 }
 
 beforeEach(async() => {
+    await jestPuppeteer.resetBrowser();
+    page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
     await (await page.$('#fileselect-config')).uploadFile("../config/integrationtest.json");
 });
@@ -63,7 +65,7 @@ describe('Corner cases handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -73,7 +75,7 @@ describe('Corner cases handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("0.00");
+        await expect(coverage).toBe("0.00");
 
     }, timeout);
 });
@@ -85,7 +87,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -95,7 +97,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -106,7 +108,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -117,7 +119,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -127,7 +129,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -137,7 +139,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -147,7 +149,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
 
     }, timeout);
 
@@ -157,7 +159,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
     }, timeout);
 
     test('Test clicking on clone', async () => {
@@ -166,7 +168,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
     }, timeout);
 
     test('Test wait', async () => {
@@ -175,7 +177,7 @@ describe('Basic event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
     }, timeout);
 });
 
@@ -186,7 +188,7 @@ describe('Multiple event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
     }, timeout);
 
 
@@ -196,7 +198,7 @@ describe('Multiple event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
     }, timeout);
 
     test('Test multiple stage clicks', async () => {
@@ -205,6 +207,6 @@ describe('Multiple event handling', () => {
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
-        expect(coverage).toBe("1.00");
+        await expect(coverage).toBe("1.00");
     }, timeout);
 });
