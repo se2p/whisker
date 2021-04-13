@@ -1,4 +1,4 @@
-import VMWrapper from "../../../vm/vm-wrapper";
+import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 
 /**
@@ -31,13 +31,13 @@ export class ModelNode {
     /**
      * Returns an model edge if one has its conditions for traversing the edge fulfilled or else null.
      */
-    testEdgeConditions(vmWrapper: VMWrapper): ModelEdge {
+    testEdgeConditions(testDriver: TestDriver): ModelEdge {
         if (this.outgoing.length == 0) {
             return null;
         }
 
         for (let i = 0; i < this.outgoing.length; i++) {
-            const result = this.outgoing[i].testCondition(vmWrapper)
+            const result = this.outgoing[i].testCondition(testDriver)
 
             if (result) {
                 return this.outgoing[i];

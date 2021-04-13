@@ -1,6 +1,6 @@
 import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
-import VMWrapper from "../../../vm/vm-wrapper";
+import TestDriver from "../../../test/test-driver";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -15,7 +15,7 @@ import VMWrapper from "../../../vm/vm-wrapper";
 export class ProgramModel {
 
     readonly id: string;
-    vmWrapper: VMWrapper;
+    testDriver: TestDriver;
 
     private readonly startNode: ModelNode;
     currentState: ModelNode;
@@ -52,12 +52,12 @@ export class ProgramModel {
             return;
         }
 
-        if (!this.vmWrapper) {
-            throw new Error("Model: no vmWrapper");
+        if (!this.testDriver) {
+            throw new Error("Model: no test driver registered");
         }
 
         // ask the current node for a valid transition
-        const edge = this.currentState.testEdgeConditions(this.vmWrapper);
+        const edge = this.currentState.testEdgeConditions(this.testDriver);
         if (edge != null) {
             edge.runEffect();
             this.currentState = edge.getEndNode();

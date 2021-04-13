@@ -3,7 +3,7 @@ import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
-import {evalConditions, evalEffect} from "./EdgeEvent";
+import {setUpCondition, setUpEffect} from "./EdgeEvent";
 
 /**
  * Load models from a xml file.
@@ -155,9 +155,9 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
         }
 
-        evalConditions(newEdge, edgeAttr.condition);
+        setUpCondition(newEdge, edgeAttr.condition);
         if (edgeAttr.effect) {
-            evalEffect(newEdge, edgeAttr.effect);
+            setUpEffect(newEdge, edgeAttr.effect);
         }
 
         (this.nodesMap)[startID].addOutgoingEdge(newEdge);

@@ -1,6 +1,7 @@
 import {ModelNode} from "./ModelNode";
 import {Input} from "../../../vm/inputs";
-import VMWrapper from "../../../vm/vm-wrapper";
+import TestDriver from "../../../test/test-driver";
+import {Condition, Effect} from "../util/EdgeEvent";
 
 // todo construct super type without effect?
 
@@ -13,8 +14,8 @@ export class ModelEdge {
     private readonly startNode: ModelNode;
     private readonly endNode: ModelNode;
 
-    private conditions: string[] = [];
-    private effects: string[] = [];
+    private conditions: Condition[] = [];
+    private effects: Effect[] = [];
 
     /**
      * Create a new edge.
@@ -30,14 +31,14 @@ export class ModelEdge {
 
     /**
      * Test whether the conditions on this edge are fulfilled.
-     * @param vmWrapper Instance of the vm wrapper.
+     * @param testDriver Instance of the test driver.
      * @return Promise<boolean>, if the conditions are fulfilled.
      */
-    testCondition(vmWrapper): boolean {
+    testCondition(testDriver: TestDriver): boolean {
         let fulfilled = true;
 
         for (let i = 0; i < this.conditions.length; i++) {
-            fulfilled = eval(this.conditions[i])(vmWrapper);
+            fulfilled = eval(this.conditions[i].condFunc)(testDriver);
 
             // stop if one condition is not fulfilled
             if (!fulfilled) {
@@ -52,7 +53,7 @@ export class ModelEdge {
      */
     runEffect(): void {
         for (let i = 0; i < this.effects.length; i++) {
-            eval(this.effects[i]);
+            eval(this.effects[i].effectFunc);
         }
     }
 
@@ -74,7 +75,7 @@ export class ModelEdge {
      * Add a condition to the edge. Conditions in the evaluation all need to be fulfilled for the effect to be valid.
      * @param condition Condition function as a string.
      */
-    addCondition(condition: string): void {
+    addCondition(condition: Condition): void {
         this.conditions.push(condition);
     }
 
@@ -82,7 +83,7 @@ export class ModelEdge {
      * Add an effect to the edge.
      * @param effect Effect function as a string.
      */
-    addEffect(effect: string): void {
+    addEffect(effect: Effect): void {
         this.effects.push(effect);
     }
 
@@ -92,10 +93,10 @@ export class ModelEdge {
  * Method for checking if an edge condition is fulfilled with a key event. Todo needs duration or not?
  * @param scratchKey Name of the key.
  */
-export function checkKeyEvent(scratchKey: string): (VMWrapper) => boolean {
-    return function (vmWrapper: VMWrapper): boolean {
-        if (vmWrapper.inputs.inputs.length > 0) {
-            const inputs = vmWrapper.inputs.inputs;
+export function checkKeyEvent(scratchKey: string): (TestDriver) => boolean {
+    return function (testDriver: TestDriver): boolean {
+        if (testDriver.vmWrapper.inputs.inputs.length > 0) {
+            const inputs = testDriver.vmWrapper.inputs.inputs;
 
             // try to find the input equal to the string
             for (let i = 0; i < inputs.length; i++) {
@@ -118,9 +119,9 @@ export function checkKeyEvent(scratchKey: string): (VMWrapper) => boolean {
  * @param x X coordinate of the mouse click.
  * @param y Y coordinate of the mouse click.
  */
-export function checkClickEvent(x, y): (VMWrapper) => boolean {
-    return function (vmWrapper: VMWrapper): boolean {
-        console.log("for now nothing happens with the mouse click at " + x + y, vmWrapper);
+export function checkClickEvent(x, y): (TestDriver) => boolean {
+    return function (testDriver: TestDriver): boolean {
+        // console.log("for now nothing happens with the mouse click at " + x + y, testDriver);
         return false;
     }
 
@@ -130,12 +131,12 @@ export function checkClickEvent(x, y): (VMWrapper) => boolean {
  * Method for checking if an edge condition is fulfilled for a value of a variable.
  *
  * @param varName Name of the variable.
- * @param comparison Modus of comparision, e.g. =, <, >, <=, >=
+ * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
  * @param varValue Value to compare to the variable's current value.
  */
-export function checkVarTestEvent(varName: string, comparison: string, varValue: string): (VMWrapper) => boolean {
-    return function (vmWrapper: VMWrapper): boolean {
-        console.log("for now nothing happens with " + varName + comparison + varValue, vmWrapper);
+export function checkVarTestEvent(varName: string, comparison: string, varValue: string): (TestDriver) => boolean {
+    return function (testDriver: TestDriver): boolean {
+        // console.log("for now nothing happens with " + varName + comparison + varValue, testDriver);
         return false;
     }
 }
@@ -146,16 +147,16 @@ export function checkVarTestEvent(varName: string, comparison: string, varValue:
  * @param spriteName1 Name of the first sprite.
  * @param spriteName2 Name of the second sprite.
  */
-export function checkSpriteTouchingEvent(spriteName1: string, spriteName2: string): (VMWrapper) => boolean {
-    return function (vmWrapper: VMWrapper): boolean {
-        console.log("for now nothing happens with sprites: " + spriteName1 + " and " + spriteName2, vmWrapper);
+export function checkSpriteTouchingEvent(spriteName1: string, spriteName2: string): (TestDriver) => boolean {
+    return function (testDriver: TestDriver): boolean {
+        // console.log("for now nothing happens with sprites: " + spriteName1 + " and " + spriteName2, testDriver);
         return false;
     }
 }
 
-export function checkSpriteColorEvent(spriteName: string, colorName: string) : (VMWrapper) => boolean {
-    return function (vmWrapper: VMWrapper): boolean {
-        console.log("for now nothing happens with sprite " + spriteName + " and color " + colorName, vmWrapper);
+export function checkSpriteColorEvent(spriteName: string, colorName: string): (TestDriver) => boolean {
+    return function (testDriver: TestDriver): boolean {
+        // console.log("for now nothing happens with sprite " + spriteName + " and color " + colorName, vmWrapper);
         return false;
     }
 }

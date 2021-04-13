@@ -2,16 +2,16 @@ import {ModelLoaderXML} from "./util/ModelLoaderXML";
 import {ProgramModel} from "./components/ProgramModel";
 import {UserModel} from "./components/UserModel";
 import WhiskerUtil from "../../test/whisker-util";
-import VMWrapper from "../../vm/vm-wrapper";
 import Random from "../../util/random";
 import {assert, assume} from "../../test-runner/assert";
+import TestDriver from "../../test/test-driver";
 
 export class ModelTester {
 
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
-    private vmWrapper: VMWrapper;
+    private testDriver: TestDriver;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -45,10 +45,9 @@ export class ModelTester {
 
         const util = new WhiskerUtil(vm, project);
         await util.prepare(props.accelerationFactor);
-        this.vmWrapper = util.getVMWrapper();
 
         // todo change functions, or not needed?
-        const testDriver = util.getTestDriver(
+        this.testDriver = util.getTestDriver(
             {
                 extend: {
                     assert: assert,
@@ -64,27 +63,27 @@ export class ModelTester {
                 }
             },);
         util.start();
-        testDriver.seedScratch(Random.INITIAL_SEED);
+        this.testDriver.seedScratch(Random.INITIAL_SEED);
 
         // register models and callbacks
         this.programModels.forEach(model => {
-            model.vmWrapper = this.vmWrapper;
+            model.testDriver = this.testDriver;
 
             // add the model transition to the callbacks
-            this.vmWrapper.callbacks.addCallback(function () {
+            model.testDriver.addCallback(function () {
                 model.makeOneTransition();
             }, false, "modelstep");
 
-            this.vmWrapper.callbacks.addCallback(function () {
+            model.testDriver.addCallback(function () {
                 if (model.stopped()) {
                     console.log("STOP");
-                    model.vmWrapper.callbacks.clearCallbacks();
+                    model.testDriver.clearCallbacks();
                     // testDriver.cancelRun(); todo what to do when the model is already finished
                 }
             }, true, "ModelStopped");
         })
-        testDriver.detectRandomInputs({duration: [50, 100]});
-        await testDriver.runForTime(2000);
+        this.testDriver.detectRandomInputs({duration: [50, 100]});
+        await this.testDriver.runForTime(2000);
 
         // this.emit(TestRunner.RUN_END, results);
         util.end();
