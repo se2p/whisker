@@ -34,8 +34,10 @@ const Whisker = window.Whisker = {};
 window.$ = $;
 
 const DEFAULT_ACCELERATION_FACTOR = 1;
-const params = new URLSearchParams(window.location.search);
-const lng = params.get("lng");
+
+const LANGUAGE_OPTION = "lng";
+const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
+const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 const loadTestsFromString = function (string) {
     let tests;
@@ -385,7 +387,7 @@ const initLangSelect = function () {
     let html = '<select id="lang-select">', lngs = ["de", "en"], i;
     for (i = 0; i < lngs.length; i++) {
         html += "<option value='" + lngs[i] + "' ";
-        if ((lng != null && lngs[i] === lng) || lngs[i] === 'de') {
+        if ((initialLanguage != null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
             html += "selected";
         }
         html += " data-i18n=\"" + lngs[i] + "\">" + i18next.t(lngs[i]) + "</option>";
@@ -413,6 +415,7 @@ window.onbeforeunload = function () {
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
+    return ""; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
 };
 
 const localize = locI18next.init(i18next, {
@@ -427,7 +430,7 @@ i18next
     .init({
         whitelist: ['de', 'en'],
         nonExplicitWhitelist: true,
-        lng: lng,
+        lng: initialLanguage,
         fallbackLng: 'de',
         debug: true,
         ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
@@ -466,11 +469,9 @@ function updateContent() {
 $('#form-lang').on('change', () => {
     $('[data-toggle="tooltip"]').tooltip('dispose');
     const lng = $('#lang-select').val();
-    const href = window.location.href;
-    if (href.endsWith('de') || href.endsWith('en')) {
-        const str = href.substr(0, href - 7);
-        window.location.href = str + '?lng=' + lng;
-    }
+    const params = new URLSearchParams(window.location.search);
+    params.set(LANGUAGE_OPTION, lng);
+    window.history.pushState('', '', '?' + params.toString());
     i18next.changeLanguage(lng).then(updateContent());
 });
 
