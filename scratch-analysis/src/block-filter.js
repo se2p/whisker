@@ -195,6 +195,11 @@ const CustomFilter = {
         block.opcode === 'procedures_definition'
 }
 
+const PenFilter = {
+    penBlock: block =>
+        block.opcode.startsWith('pen_')
+}
+
 const StatementFilter = {
     isStatementBlock: block => {
         if (block.topLevel) {
@@ -212,7 +217,8 @@ const StatementFilter = {
             ListFilter.listBlock(block) ||
             VariableFilter.variableBlock(block) ||
             MusicFilter.musicBlock(block) ||
-            CustomFilter.customBlock(block);
+            CustomFilter.customBlock(block) ||
+            PenFilter.penBlock(block);
     }
 };
 
@@ -227,5 +233,6 @@ export {
     SensingFilter,
     StatementFilter,
     MusicFilter,
-    CustomFilter
+    CustomFilter,
+    PenFilter
 };
