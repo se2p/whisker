@@ -216,9 +216,13 @@ const initComponents = function () {
         fileSelect => fileSelect.loadAsArrayBuffer());
 
     document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
+    $("#acceleration-factor").slider();
 };
 
 const initEvents = function () {
+    $("#acceleration-factor").on("slide", function(slideEvt) {
+        $("#acceleration-value").text(slideEvt.value);
+    });
     $('#green-flag').on('click', () => {
         if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t("test-generation"), i18next.t("no-project"));
