@@ -182,6 +182,24 @@ const ListFilter = {
         block.opcode === 'data_hidelist'
 }
 
+const MusicFilter = {
+    musicBlock: block =>
+        block.opcode.startsWith('music_')
+}
+
+const CustomFilter = {
+    customBlock: block =>
+        block.opcode.startsWith('procedures_'),
+
+    defineBlock: block =>
+        block.opcode === 'procedures_definition'
+}
+
+const PenFilter = {
+    penBlock: block =>
+        block.opcode.startsWith('pen_')
+}
+
 const StatementFilter = {
     isStatementBlock: block => {
         if (block.topLevel) {
@@ -197,7 +215,10 @@ const StatementFilter = {
             ControlFilter.controlBlock(block) ||
             SensingFilter.sensingBlock(block) ||
             ListFilter.listBlock(block) ||
-            VariableFilter.variableBlock(block);
+            VariableFilter.variableBlock(block) ||
+            MusicFilter.musicBlock(block) ||
+            CustomFilter.customBlock(block) ||
+            PenFilter.penBlock(block);
     }
 };
 
@@ -210,5 +231,8 @@ export {
     VariableFilter,
     ListFilter,
     SensingFilter,
-    StatementFilter
+    StatementFilter,
+    MusicFilter,
+    CustomFilter,
+    PenFilter
 };
