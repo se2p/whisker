@@ -36,6 +36,10 @@ class FileSelect {
         return this.files.length;
     }
 
+    hasName() {
+        return this.files && this.files[0];
+    }
+
     getName (index = 0) {
         return this.files[index].name;
     }

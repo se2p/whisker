@@ -81,12 +81,13 @@ export class ScratchEventExtractor {
             }
         }
 
-        if (vm.runtime.threads.length > 0) {
+        // TODO: This does not seem to capture all cases, so deactivated until we have a better solution
+        // if (vm.runtime.threads.length > 0) {
             // TODO: Maybe we shouldn't send _all_ delays?
             for (const duration of this.availableWaitDurations) {
                 eventList.add(new WaitEvent(duration));
             }
-        }
+        // }
 
         return eventList.distinctObjects();
     }
