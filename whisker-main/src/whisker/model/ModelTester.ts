@@ -80,7 +80,6 @@ export class ModelTester {
         // register models and callbacks
         this.programModels.forEach(model => {
             model.testDriver = this.testDriver;
-            model.currentState.registerCondEvents(this.testDriver);
 
             // add the model transition to the callbacks
             model.testDriver.addCallback(function () {

@@ -381,6 +381,7 @@ class Sprite {
         this._old.volume = this.volume;
         this._old.layerOrder = this.layerOrder;
         this._old.sayText = this.sayText;
+        this._old.variables = this._variables;
     }
 
     _update () {

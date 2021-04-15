@@ -62,12 +62,8 @@ export class ProgramModel {
         if (edge != null) {
             edge.runEffect();
 
-            // todo unregister old edges
-            if (this.currentState == edge.getEndNode()) {
-                this.currentState.resetConditions();
-            } else {
+            if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
-                this.currentState.registerCondEvents(this.testDriver);
             }
         }
     }

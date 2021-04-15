@@ -46,22 +46,4 @@ export class ModelNode {
 
         return null;
     }
-
-    /**
-     * Register the condition of the outgoing edges e.g. if they need a listener on the scratch sprites.
-     */
-    registerCondEvents(testDriver: TestDriver) {
-        this.outgoing.forEach(edge => {
-            edge.registerConditions(testDriver);
-        })
-    }
-
-    /**
-     * Reset the conditions of the edges.
-     */
-    resetConditions() {
-        this.outgoing.forEach(edge => {
-            edge.resetConditions();
-        })
-    }
 }

@@ -1,7 +1,7 @@
 import {ModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {Effect} from "../util/EdgeEvent";
-import {Condition} from "../edgeConditions/Condition";
+import {Condition} from "./Condition";
 
 // todo construct super type without effect?
 
@@ -48,24 +48,6 @@ export class ModelEdge {
         return fulfilled;
     }
 
-    /**
-     * todo
-     * @param testDriver
-     */
-    registerConditions(testDriver: TestDriver): void {
-        this.conditions.forEach(cond => {
-            cond.register(testDriver);
-        })
-    }
-
-    /**
-     * todo
-     */
-    resetConditions() {
-        this.conditions.forEach(cond => {
-            cond.reset();
-        })
-    }
     /**
      * Run all effects of the edge.
      */
@@ -124,9 +106,20 @@ export function varOutputEffect(varName: string) {
 
 /**
  * Change the value of a integer variable. todo ?
+ * @param spriteName Name of the sprite having the variable.
  * @param varName Name of the variable
  * @param mode
  */
-export function varChangeEffect(varName: string, mode: string) {
+export function varChangeEffect(spriteName: string, varName: string, mode: string) {
     console.log("Effect: " + varName + mode);
+}
+
+/**
+ * Change an attribute of a sprite.
+ * @param spriteName Name of the sprite
+ * @param varName Name of the variable
+ * @param varValue New value of the variable // todo only mode to compare? >,<,=
+ */
+export function spritChangeEffect(spriteName: string, varName: string, varValue: string) {
+    console.log("Effect: " + varName + " " + spriteName + " " + varValue);
 }
