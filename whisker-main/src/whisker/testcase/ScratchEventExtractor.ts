@@ -73,22 +73,31 @@ export class ScratchEventExtractor {
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
+
+        // Get all hat blocks
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
-                }
+            for (const scriptId of target.sprite.blocks.getScripts()) {
+                eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
             }
         }
 
-        // TODO: This does not seem to capture all cases, so deactivated until we have a better solution
-        // if (vm.runtime.threads.length > 0) {
-            // TODO: Maybe we shouldn't send _all_ delays?
-            for (const duration of this.availableWaitDurations) {
-                eventList.add(new WaitEvent(duration));
-            }
-        // }
+        // Check all blocks within scripts currently executing
+        for (const t of vm.runtime.threads) {
+            const target = t.target;
+            const topBlock = t.topBlock; // this is the first block of the script running in this thread?
 
+            for (const blockId of Object.keys(target.blocks._blocks)) {
+                const tb = target.blocks.getTopLevelScript(blockId);
+                if (tb === topBlock) {
+                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
+
+                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
+                    if (duration > 0) {
+                        eventList.add(new WaitEvent(duration));
+                    }
+                }
+            }
+        }
         return eventList.distinctObjects();
     }
 
