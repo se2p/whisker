@@ -86,6 +86,16 @@ export class ModelEdge {
     addEffect(effect: Effect): void {
         this.effects.push(effect);
     }
+
+    /**
+     * Check existences of sprites, existences of variables and ranges of arguments.
+     * @param testDriver Instance of the test driver.
+     */
+    testLabelsForErrors(testDriver: TestDriver) {
+        this.conditions.forEach(cond => {
+            cond.testLabelsForErrors(testDriver);
+        })
+    }
 }
 
 /**

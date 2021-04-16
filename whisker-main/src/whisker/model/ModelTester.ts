@@ -28,6 +28,7 @@ export class ModelTester {
     }
 
     /**
+     * Test a model on a project.
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {{extend: object}=} props .
@@ -65,6 +66,11 @@ export class ModelTester {
         util.start();
         this.testDriver.seedScratch(Random.INITIAL_SEED);
 
+        this.programModels.forEach(model => {
+            model.reset();
+        })
+
+        this.testLabelsForErrors();
         this.setUpCallbacks();
 
         this.testDriver.detectRandomInputs({duration: [50, 100]});
@@ -75,7 +81,9 @@ export class ModelTester {
         return results;
     }
 
-
+    /**
+     * Set up the callbacks that need to be called around a Scratch step.
+     */
     setUpCallbacks() {
         // register models and callbacks
         this.programModels.forEach(model => {
@@ -90,6 +98,16 @@ export class ModelTester {
                     // testDriver.cancelRun(); todo what to do when the model is already finished
                 }
             }, true, "modelstep");
+        })
+    }
+
+    /**
+     * Check existences of sprites, existences of variables and ranges of arguments.
+     * @private
+     */
+    private testLabelsForErrors() {
+        this.programModels.forEach(model => {
+            model.testLabelsForErrors(this.testDriver);
         })
     }
 }

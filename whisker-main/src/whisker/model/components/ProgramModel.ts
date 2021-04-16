@@ -81,4 +81,14 @@ export class ProgramModel {
     reset(): void {
         this.currentState = this.startNode;
     }
+
+    /**
+     * Check existences of sprites, existences of variables and ranges of arguments.
+     * @param testDriver Instance of the test driver.
+     */
+    testLabelsForErrors(testDriver: TestDriver) {
+        Object.values(this.nodes).forEach(node => {
+            node.testLabelsForErrors(testDriver);
+        })
+    }
 }

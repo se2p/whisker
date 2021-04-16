@@ -46,4 +46,14 @@ export class ModelNode {
 
         return null;
     }
+
+    /**
+     * Check existences of sprites, existences of variables and ranges of arguments.
+     * @param testDriver Instance of the test driver.
+     */
+    testLabelsForErrors(testDriver: TestDriver) {
+        this.outgoing.forEach(edge => {
+            edge.testLabelsForErrors(testDriver);
+        })
+    }
 }
