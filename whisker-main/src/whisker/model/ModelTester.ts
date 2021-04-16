@@ -29,12 +29,13 @@ export class ModelTester {
 
     /**
      * Test a model on a project.
-     * @param {VirtualMachine} vm .
-     * @param {string} project .
-     * @param {{extend: object}=} props .
-     * @returns {Promise<Array>} .
      */
-    async test(vm, project, props) {
+    async test(vm, project, props, duration) {
+        if (this.testDriver != undefined) {
+            this.testDriver.clearCallbacks();
+            this.testDriver.cancelRun();
+        }
+
         if (typeof props === 'undefined' || props === null) {
             props = {extend: {}};
         } else if (!props.hasOwnProperty('extend')) {
@@ -74,7 +75,7 @@ export class ModelTester {
         this.setUpCallbacks();
 
         this.testDriver.detectRandomInputs({duration: [50, 100]});
-        await this.testDriver.runForTime(3000);
+        await this.testDriver.runForTime(duration);
 
         // this.emit(TestRunner.RUN_END, results);
         util.end();

@@ -85,12 +85,18 @@ const _runModelTest = async function (vm, project) {
     $('#run-all-tests').prop('disabled', true);
     $('#record').prop('disabled', true);
 
+    let duration = Number(document.querySelector('#model-duration').value);
+    if (duration === 0) {
+        duration = 5000;
+    } else {
+        duration = duration * 1000;
+    }
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
     let summary;
 
     try {
         await Whisker.scratch.vm.loadProject(project);
-        summary = await Whisker.modelTester.test(vm, project, {accelerationFactor});
+        summary = await Whisker.modelTester.test(vm, project, {accelerationFactor}, duration);
     } finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);

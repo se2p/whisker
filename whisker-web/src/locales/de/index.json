@@ -60,5 +60,6 @@
     "model": "Dein Modell",
     "test-model": "Starte Modell Test",
     "no-model": "Kein Modell geladen",
-    "model-test-run" : "Modell Test"
+    "model-test-run": "Modell Test",
+    "model-duration": "Maximale Test-Zeit (s)"
 }
