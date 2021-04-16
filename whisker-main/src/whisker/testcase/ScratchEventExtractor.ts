@@ -68,7 +68,7 @@ export class ScratchEventExtractor {
                 }
             }
         }
-            return false;
+        return false;
     }
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
@@ -81,11 +81,15 @@ export class ScratchEventExtractor {
             }
         }
 
-        for (const duration of this.availableWaitDurations) {
-            eventList.add(new WaitEvent(duration));
-        }
+        // TODO: This does not seem to capture all cases, so deactivated until we have a better solution
+        // if (vm.runtime.threads.length > 0) {
+            // TODO: Maybe we shouldn't send _all_ delays?
+            for (const duration of this.availableWaitDurations) {
+                eventList.add(new WaitEvent(duration));
+            }
+        // }
 
-        return eventList;
+        return eventList.distinctObjects();
     }
 
     /**
@@ -156,11 +160,9 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                const bubbleState = target.getCustomState(Scratch3LooksBlocks.STATE_KEY);
-                if (bubbleState) {
+                if (Container.vmWrapper.isQuestionAsked()) {
                     eventList.addList(this._getTypeTextEvents());
                 }
-
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite

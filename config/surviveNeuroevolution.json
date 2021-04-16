@@ -1,10 +1,10 @@
 {
     "test-generator": "neuroevolution",
     "algorithm": "neat",
-    "chromosome": "neatChromosome",
-    "population-size": 100,
+    "chromosome": "sparseNetwork",
+    "population-size": 500,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 25,
+    "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "crossover": {
@@ -16,22 +16,24 @@
     "mutation": {
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
-        "mutationAddConnection": 0.05,
+        "mutationAddConnection": 0.1,
         "recurrentConnection": 0.1,
         "addConnectionTries": 20,
+        "populationChampionNumberOffspring": 10,
+        "populationChampionNumberClones": 5,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
-        "mutateWeights": 0.6,
-        "perturbationPower": 2.0,
+        "mutateWeights": 0.8,
+        "perturbationPower": 2.5,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 5.0,
+        "distanceThreshold": 3.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
-        "weightCoefficient": 0.4
+        "weightCoefficient": 1
     },
     "fitness-function": {
         "type": "statement",
@@ -43,9 +45,9 @@
     },
     "stopping-condition": {
         "type": "fixed-iteration",
-        "iterations": 100
+        "iterations": 300
     },
     "wait-duration": 50,
-    "click-duration": 50,
-    "press-duration": 50
+    "click-duration": 20,
+    "press-duration": 20
 }

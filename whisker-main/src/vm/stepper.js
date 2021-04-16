@@ -69,7 +69,7 @@ class Stepper {
                 currentStep.reject(error);
             }
         } else {
-            log.debug('Stopping stepper');
+            // log.debug('Stopping stepper');
             clearInterval(this._interval);
             this._interval = null;
         }
@@ -95,7 +95,7 @@ class Stepper {
         });
 
         if (!this._interval) {
-            log.debug('Starting stepper');
+            // log.debug('Starting stepper');
             this._interval = setInterval(this._executeNext.bind(this), this._stepTime);
             this._executeNext();
         }

@@ -85,7 +85,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      */
     async findSolution(): Promise<List<C>> {
         // The targeted number of species -> The distanceThreshold is adjusted appropriately.
-        const speciesNumber = 5;
+        const speciesNumber = 10;
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
         const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,

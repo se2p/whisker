@@ -59,7 +59,7 @@ class RandomInput {
                 '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
 
             for (let i = 0; i < length; i++) {
-                answer += chars.charAt(Random.nextInt(0, chars.length - 1));
+                answer += chars.charAt(Random.randomInt(0, chars.length - 1));
             }
 
             randomData.answer = answer;
@@ -87,7 +87,7 @@ class RandomInput {
                 return prop[0];
             } else if (prop.length >= 2) {
                 const [min, max] = prop;
-                return Random.nextInt(min, max);
+                return Random.randomInt(min, max);
             }
         }
     }
@@ -142,7 +142,7 @@ class RandomInputs {
             return;
         }
 
-        let randomWeight = Random.nextDoubleMinMax(0, sumOfWeights);
+        let randomWeight = Random.randomFloat(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
                 this.lastInputTime = timeElapsed;

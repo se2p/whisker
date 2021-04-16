@@ -19,6 +19,7 @@
  */
 
 import {List} from "../../../src/whisker/utils/List";
+import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 
 describe("List", () => {
 
@@ -122,6 +123,12 @@ describe("List", () => {
         expect(list.get(0)).toBe(3);
         expect(list.get(1)).toBe(2);
         expect(list.get(2)).toBe(1);
+    });
+
+    test("Distinct objects", () => {
+        let list = new List([new ClickStageEvent("x"), new ClickStageEvent("x"), new ClickStageEvent("x")]);
+        let distinct = list.distinctObjects();
+        expect(distinct.size()).toBe(1);
     });
 
 });

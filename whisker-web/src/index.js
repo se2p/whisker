@@ -20,6 +20,7 @@ const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, Mod
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
 
+const Test = require('whisker-main/src/test-runner/test')
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
@@ -33,8 +34,10 @@ const Whisker = window.Whisker = {};
 window.$ = $;
 
 const DEFAULT_ACCELERATION_FACTOR = 1;
-const params = new URLSearchParams(window.location.search);
-const lng = params.get("lng");
+
+const LANGUAGE_OPTION = "lng";
+const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
+const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 const loadModelFromString = function (models) {
     try {
@@ -82,7 +85,8 @@ const runSearch = async function () {
 const _runModelTest = async function (vm, project) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
-    $('#run-all-tests').prop('disabled', true);
+    let running = i18next.t("running");
+    $('#run-all-tests').prop('disabled', true).text(running);
     $('#record').prop('disabled', true);
 
     let duration = Number(document.querySelector('#model-duration').value);
@@ -100,7 +104,8 @@ const _runModelTest = async function (vm, project) {
     } finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
-        $('#run-all-tests').prop('disabled', false);
+        let runTests = i18next.t("tests")
+        $('#run-all-tests').prop('disabled', false).text(runTests);
         $('#record').prop('disabled', false);
     }
 
@@ -118,7 +123,8 @@ const _runModelTest = async function (vm, project) {
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
-    $('#run-all-tests').prop('disabled', true);
+    let running = i18next.t("running");
+    $('#run-all-tests').prop('disabled', true).text(running);
     $('#record').prop('disabled', true);
 
     let summary;
@@ -147,7 +153,8 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     } finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
-        $('#run-all-tests').prop('disabled', false);
+        let runTests = i18next.t("tests")
+        $('#run-all-tests').prop('disabled', false).text(runTests);
         $('#record').prop('disabled', false);
     }
 
@@ -239,10 +246,6 @@ const initScratch = function () {
 };
 
 const initComponents = function () {
-    Whisker.testTable = new TestTable($('#test-table')[0], runTests);
-    Whisker.testTable.setTests([]);
-    Whisker.testTable.show();
-
     Whisker.outputRun = new Output($('#output-run')[0]);
     Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
@@ -265,6 +268,10 @@ const initComponents = function () {
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
+
+    Whisker.testTable = new TestTable($('#test-table')[0], runTests, Whisker.testRunner);
+    Whisker.testTable.setTests([]);
+    Whisker.testTable.show();
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
 
@@ -394,28 +401,46 @@ const initEvents = function () {
                 );
             }
         });
+        _addFileListeners();
+};
+
+const _addFileListeners = function() {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-models').on('change', event => {
         const fileName = Whisker.modelFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        $(event.target).parent().tooltip();
+        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
     });
     $('#model-test').on('click', runModelTest);
-};
+}
+
+const _showTooltipIfTooLong = function (label, event) {
+    $(event.target).parent().tooltip('dispose');
+    if (label.scrollWidth > label.offsetWidth) {
+        $(event.target).parent().tooltip({animation: true});
+        setTimeout(() => {
+            $(event.target).parent().tooltip('hide')
+        }, 2000);
+    }
+}
 
 const toggleComponents = function () {
     if (window.localStorage) {
@@ -437,7 +462,7 @@ const initLangSelect = function () {
     let html = '<select id="lang-select">', lngs = ["de", "en"], i;
     for (i = 0; i < lngs.length; i++) {
         html += "<option value='" + lngs[i] + "' ";
-        if ((lng != null && lngs[i] === lng) || lngs[i] === 'de') {
+        if ((initialLanguage != null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
             html += "selected";
         }
         html += " data-i18n=\"" + lngs[i] + "\">" + i18next.t(lngs[i]) + "</option>";
@@ -465,6 +490,7 @@ window.onbeforeunload = function () {
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
+    return ""; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
 };
 
 const localize = locI18next.init(i18next, {
@@ -479,9 +505,9 @@ i18next
     .init({
         whitelist: ['de', 'en'],
         nonExplicitWhitelist: true,
-        lng: lng,
+        lng: initialLanguage,
         fallbackLng: 'de',
-        debug: true,
+        debug: false,
         ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
         defaultNS: 'index',
         interpolation: {
@@ -510,16 +536,53 @@ i18next
 function updateContent() {
     localize('#body');
     $('[data-toggle="tooltip"]').tooltip();
+    if (Whisker.testTable) {
+        Whisker.testTable.hideTestDetails();
+    }
+    _updateFilenameLabels();
+}
+
+function _updateFilenameLabels() {
+    if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
+        $('#project-label').html(Whisker.projectFileSelect.getName());
+    }
+    if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
+        $('#tests-label').html(Whisker.testFileSelect.getName());
+    }
+    if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
+        $('#config-label').html(Whisker.configFileSelect.getName());
+    }
+    if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
+        $('#model-label').html(Whisker.modelFileSelect.getName());
+    }
+}
+
+function _translateTestTableTooltips(oldLanguage, newLanguage) {
+    const oldLangData = i18next.getDataByLanguage(oldLanguage);
+    const oldIndexData = oldLangData.index;
+    const newLangData = i18next.getDataByLanguage(newLanguage);
+    const newIndexData = newLangData.index;
+    $('.tooltip-sign-text').html(function() {
+        _translateTooltip(this, oldIndexData, newIndexData);
+    });
+}
+
+function _translateTooltip(tooltipElement, oldData, newData) {
+    const key = _getKeyByValue(oldData, tooltipElement.innerHTML);
+    tooltipElement.innerHTML = newData[key];
+}
+
+function _getKeyByValue(langData, value) {
+    return Object.keys(langData).find(key => langData[key] === value);
 }
 
 $('#form-lang').on('change', () => {
     $('[data-toggle="tooltip"]').tooltip('dispose');
     const lng = $('#lang-select').val();
-    const href = window.location.href;
-    if (href.endsWith('de') || href.endsWith('en')) {
-        const str = href.substr(0, href - 7);
-        window.location.href = str + '?lng=' + lng;
-    }
+    _translateTestTableTooltips(i18next.language, lng); // This has to be executed before the current language is changed
+    const params = new URLSearchParams(window.location.search);
+    params.set(LANGUAGE_OPTION, lng);
+    window.history.pushState('', '', '?' + params.toString());
     i18next.changeLanguage(lng).then(updateContent());
 });
 
@@ -532,7 +595,7 @@ $('.nav-link').on('click', event => {
     }
 });
 
-
+export {i18next as i18n};
 
 
 

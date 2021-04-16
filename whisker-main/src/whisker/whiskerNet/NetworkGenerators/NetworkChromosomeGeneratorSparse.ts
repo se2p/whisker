@@ -1,20 +1,20 @@
-import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
-import {NetworkChromosome} from "./NetworkChromosome";
-import {Mutation} from "../search/Mutation";
-import {Crossover} from "../search/Crossover";
-import {List} from "../utils/List";
-import {NodeGene} from "./NetworkNodes/NodeGene";
-import {ConnectionGene} from "./ConnectionGene";
-import {NeatMutation} from "./NeatMutation";
-import {Randomness} from "../utils/Randomness";
-import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
-import {InputNode} from "./NetworkNodes/InputNode";
-import {BiasNode} from "./NetworkNodes/BiasNode";
-import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
-import {RegressionNode} from "./NetworkNodes/RegressionNode";
-import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
+import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
+import {NetworkChromosome} from "../NetworkChromosome";
+import {Mutation} from "../../search/Mutation";
+import {Crossover} from "../../search/Crossover";
+import {List} from "../../utils/List";
+import {NodeGene} from "../NetworkNodes/NodeGene";
+import {ConnectionGene} from "../ConnectionGene";
+import {NeatMutation} from "../NeatMutation";
+import {Randomness} from "../../utils/Randomness";
+import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
+import {InputNode} from "../NetworkNodes/InputNode";
+import {BiasNode} from "../NetworkNodes/BiasNode";
+import {ClassificationNode} from "../NetworkNodes/ClassificationNode";
+import {RegressionNode} from "../NetworkNodes/RegressionNode";
+import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 
-export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
+export class NetworkChromosomeGeneratorSparse implements ChromosomeGenerator<NetworkChromosome> {
 
     /**
      * The mutation operator of the NetworkChromosomes
@@ -79,7 +79,6 @@ export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkCh
     get(): NetworkChromosome {
         let nodeId = 0;
         const allNodes = new List<NodeGene>();
-        const flattenedInputNodes = new List<NodeGene>();
 
         // Create the Input Nodes and add them to the nodes list; Each row of the inputArray represents one Sprite.
         // Sprites can have a different amount of infos i.e different amount of columns.
@@ -88,10 +87,9 @@ export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkCh
             const spriteList = new List<NodeGene>();
             const spriteInput = this.inputs[i];
             spriteInput.forEach(() => {
-                const iNode = new InputNode(nodeId);
+                const iNode = new InputNode(nodeId, i);
                 nodeId++;
                 spriteList.add(iNode)
-                flattenedInputNodes.add(iNode);
                 allNodes.add(iNode);
             })
             inputList.add(spriteList)
@@ -100,7 +98,6 @@ export class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkCh
         // Add the Bias
         const biasNode = new BiasNode(nodeId);
         nodeId++;
-        flattenedInputNodes.add(biasNode);
         allNodes.add(biasNode);
 
         // Create the classification output nodes and add them to the nodes list

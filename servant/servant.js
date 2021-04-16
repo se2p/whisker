@@ -11,15 +11,20 @@ const rimraf = require("rimraf");
 const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter');
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
 const CSVConverter = require('./converter.js');
+const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, testPath, scratchPath, configPath, csvFile, accelerationFactor, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch,
+    whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
 } = cli.start();
 
-init();
+if (isGenerateWitnessTestOnly) {
+    prepareTestFiles(testPath);
+} else {
+    init();
+}
 
 /**
  * The entry point of the runners functionallity, handling the test file preperation and the browser instance.
@@ -398,6 +403,19 @@ function distributeTestSourcesOverTabs (tabs, singleTestSources) {
  * @returns {Array}            The paths of the temporary test files
  */
 function prepareTestFiles (whiskerTestPath) {
+    if (addRandomInputs) {
+        const customTimeGiven = typeof addRandomInputs === 'string';
+        const defaultTime = 10; // in seconds
+        const waitTime = customTimeGiven
+            ? addRandomInputs // Instead of a boolean value, this is actually a string that encodes the time to wait.
+            : defaultTime;
+        whiskerTestPath = attachRandomInputsToTest(whiskerTestPath, tmpDir, waitTime);
+    }
+
+    if (errorWitnessPath) {
+        whiskerTestPath = attachErrorWitnessReplayToTest(errorWitnessPath, whiskerTestPath, tmpDir);
+    }
+
     const {evaledTest, testSourceWithoutExportArray} = prepareTestSource(whiskerTestPath);
     const singleTestSources = splitTestsSourceCodeIntoSingleTestSources(evaledTest);
     const testSourcesPerTab = distributeTestSourcesOverTabs(numberOfTabs, singleTestSources);

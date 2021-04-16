@@ -12,7 +12,7 @@ describe("ConnectionGene Test", () =>{
 
 
     beforeEach(() =>{
-        sourceNode = new InputNode(0);
+        sourceNode = new InputNode(0,0);
         targetNode = new ClassificationNode(1, ActivationFunction.SIGMOID);
         connection = new ConnectionGene(sourceNode, targetNode,0.2,true,ConnectionGene.getNextInnovationNumber(),false);
     })
@@ -38,7 +38,7 @@ describe("ConnectionGene Test", () =>{
     })
 
     test("Test cloneWithNodes", () =>{
-        const inNode = new InputNode(2);
+        const inNode = new InputNode(2,0);
         const outNode = new ClassificationNode(3, ActivationFunction.SIGMOID);
         const cloneConnection = connection.cloneWithNodes(inNode, outNode);
 
@@ -51,7 +51,7 @@ describe("ConnectionGene Test", () =>{
     })
 
     test("Test equalsByNodes with equal nodes", () =>{
-        const inNode = new InputNode(1);
+        const inNode = new InputNode(1,0);
         const outNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2,true,1,false);
@@ -59,7 +59,7 @@ describe("ConnectionGene Test", () =>{
     })
 
     test("Test equalsByNodes with differing nodes", () =>{
-        const inNode = new InputNode(2);
+        const inNode = new InputNode(2,0);
         const outNode = new ClassificationNode(3, ActivationFunction.SIGMOID);
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2,true,1,false);

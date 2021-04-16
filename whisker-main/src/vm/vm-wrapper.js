@@ -1,4 +1,5 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
+
 const Stepper = require('./stepper');
 
 const log = require('minilog')('vm-wrapper');
@@ -89,12 +90,16 @@ class VMWrapper {
          */
         this.projectRunning = false;
 
+        /**
+         * @type {string}
+         */
+        this.question = null;
+
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
+        this._onQuestion = this.onQuestion.bind(this);
+        this._onAnswer   = this.onAnswer.bind(this);
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
-        this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
-        this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
-        this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
     }
 
     /**
@@ -108,24 +113,34 @@ class VMWrapper {
         return this.actionOnConstraintFailure;
     }
 
-    step () {
+    async step () {
         this.callbacks.callCallbacks(false);
+        await this._yield();
 
         if (!this.isRunning()) return;
 
         this.randomInputs.performRandomInput();
+        await this._yield();
+
         this.inputs.performInputs();
+        await this._yield();
 
         this.sprites.update();
+        await this._yield();
+
         this.vm.runtime._step();
+        await this._yield();
 
         if (!this.isRunning()) return;
 
         this.callbacks.callCallbacks(true);
+        await this._yield();
 
         if (!this.isRunning()) return;
 
-        return this.constraints.checkConstraints();
+        const returnValue = this.constraints.checkConstraints();
+        await this._yield();
+        return returnValue;
     }
 
     /**
@@ -278,7 +293,9 @@ class VMWrapper {
 
         this.instrumentDevice('clock', 'projectTimer');
 
-        return await this.vm.loadProject(project);
+        const returnValue = await this.vm.loadProject(project);
+        await this._yield();
+        return returnValue;
     }
 
     instrumentDevice (deviceName, method) {
@@ -321,6 +338,12 @@ class VMWrapper {
         this.inputs.resetMouse();
         this.inputs.resetKeyboard();
 
+        this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
+        this.vm.on(Runtime.PROJECT_RUN_STOP, this._onRunStop);
+        this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
+        this.vm.runtime.on('QUESTION', this._onQuestion);
+        this.vm.runtime.on('ANSWER', this._onAnswer);
+
         this.vm.greenFlag();
         this.startTime = Date.now();
 
@@ -338,6 +361,8 @@ class VMWrapper {
         this.vm.removeListener(Runtime.PROJECT_RUN_START, this._onRunStart);
         this.vm.removeListener(Runtime.PROJECT_RUN_STOP, this._onRunStop);
         this.vm.runtime.removeListener('targetWasCreated', this._onTargetCreated);
+        this.vm.runtime.removeListener('QUESTION', this._onQuestion);
+        this.vm.runtime.removeListener('ANSWER', this._onAnswer);
     }
 
     // TODO: reset sprites on green flag?
@@ -385,6 +410,33 @@ class VMWrapper {
     }
 
     /**
+     * Gets the answer given to the ask-and-wait block.
+     *
+     * @return {string} .
+     */
+    getAnswer () {
+        return this.vm.runtime._primitives.sensing_answer();
+    }
+
+    /**
+     * Tests whether the ask block is currently active for a given target (a sprite or the stage).
+     *
+     * @param target
+     * @return {boolean}
+     */
+    isQuestionAsked () {
+        return this.question !== null;
+    }
+
+    onQuestion (question) {
+        this.question = question; // question can be null when questions are cleared
+    }
+
+    onAnswer (answer) {
+        this.question = null;
+    }
+
+    /**
      * @return {DOMRect} .
      */
     getCanvasRect () {
@@ -405,6 +457,14 @@ class VMWrapper {
 
     onRunStop () {
         this.projectRunning = false;
+    }
+
+    /**
+     * "Yield the thread" to give other awaits that might be unresolved a chance to resolve
+     * before the next action is taken.
+     */
+    async _yield() {
+        await new Promise(resolve => setImmediate(() => resolve()));
     }
 
     /**

@@ -85,7 +85,7 @@ describe("regressionNode Tests", () => {
     })
 
     test("toString Test", () => {
-        const inputNode = new InputNode(5);
+        const inputNode = new InputNode(5, 0);
         const connection = new ConnectionGene(inputNode, regressionNode,2,true,1,false);
         const incomingList = new List<ConnectionGene>();
         incomingList.add(connection);

@@ -11,7 +11,7 @@ import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/C
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 
-describe("NeatCrossover", () => {
+describe("Test NeatCrossover", () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
@@ -28,8 +28,8 @@ describe("NeatCrossover", () => {
 
         // Create Nodes of first network
         nodes1 = new List<NodeGene>();
-        const iNode1 = new InputNode(0)
-        const iNode2 = new InputNode(1)
+        const iNode1 = new InputNode(0,0)
+        const iNode2 = new InputNode(1,0)
         const iNode3 = new BiasNode(2)
         nodes1.add(iNode1)
         nodes1.add(iNode2)
@@ -123,5 +123,31 @@ describe("NeatCrossover", () => {
         const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst()
         expect(child1.connections.size()).toBeGreaterThanOrEqual(4)
         expect(child2.connections.size()).toBeGreaterThanOrEqual(4)
+    })
+
+    test("CrossoverTest with deactivated connections", () => {
+        const inNode = new InputNode(0,0);
+        const outNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
+
+        parent1Connections.clear();
+        parent1Connections.add(new ConnectionGene(inNode,outNode,1,false,0,false))
+        const parent1 = new NetworkChromosome(parent1Connections, nodes1, mutationOp, crossoverOp)
+        parent1.networkFitness = 1;
+
+        parent2Connections.clear();
+        parent2Connections.add(new ConnectionGene(inNode,outNode,2,false,0,false))
+        const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp)
+        parent2.networkFitness = 0.1;
+
+        const child1 = crossoverOp.apply(parent1, parent2).getFirst()
+        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst()
+
+        const inSize1 = child1.inputNodes.size;
+        const inSize2 = child1.inputNodes.size;
+        // Execute 10 times. Due to randomness the connection may get activated during crossover
+        for (let i = 0; i < 10; i++) {
+        expect(child1.activateNetwork(Array(inSize1).fill(1))).toBeTruthy()
+        expect(child2.activateNetwork(Array(inSize2).fill(1))).toBeTruthy()
+        }
     })
 })
