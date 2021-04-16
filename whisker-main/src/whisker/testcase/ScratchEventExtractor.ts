@@ -87,11 +87,18 @@ export class ScratchEventExtractor {
             const topBlock = t.topBlock; // this is the first block of the script running in this thread?
 
             for (const blockId of Object.keys(target.blocks._blocks)) {
+                const block = target.blocks.getBlock(blockId)
+
+                // TODO: Find out what procedures_prototype blocks represent...
+                //  For now it seems fine to just skip the block
+                if(target.blocks.getOpcode(block) === "procedures_prototype")
+                    continue;
+
                 const tb = target.blocks.getTopLevelScript(blockId);
                 if (tb === topBlock) {
-                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
+                    eventList.addList(this._extractEventsFromBlock(target, block));
 
-                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
+                    const duration = this._extractWaitDurations(target, block);
                     if (duration > 0) {
                         eventList.add(new WaitEvent(duration));
                     }
