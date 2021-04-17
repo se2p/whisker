@@ -192,7 +192,9 @@ export class ScratchEventExtractor {
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                eventList.add(new ClickSpriteEvent(target));
+                if (target.visible === true) {
+                    eventList.add(new ClickSpriteEvent(target));
+                }
                 break;
             case 'event_whenstageclicked':
                 // Click stage
