@@ -59,11 +59,11 @@ export class ScratchEventExtractor {
      * @param vm the Scratch-VM of the project
      * @return true if the project has a mouseMove event
      */
-    static hasMouseEvent(vm: VirtualMachine):boolean {
+    static hasMouseEvent(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if(this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
+                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
                         return true;
                 }
             }
@@ -89,13 +89,13 @@ export class ScratchEventExtractor {
             for (const blockId of Object.keys(target.blocks._blocks)) {
                 const block = target.blocks.getBlock(blockId)
 
-                // TODO: Find out what procedures_prototype blocks represent...
-                //  For now it seems fine to just skip the block
-                if(target.blocks.getOpcode(block) === "procedures_prototype")
-                    continue;
-
-                const tb = target.blocks.getTopLevelScript(blockId);
-                if (tb === topBlock) {
+                let tb = block;
+                // TODO: If we encounter procedure_prototype blocks we basically skip them;
+                //  maybe there is a way to map the prototypes to their procedure_definition blocks?
+                while (!tb.topLevel && Object.hasOwnProperty.bind(tb)('parent')) {
+                    tb = target.blocks.getBlock(tb.parent)
+                }
+                if (tb.id === topBlock) {
                     eventList.addList(this._extractEventsFromBlock(target, block));
 
                     const duration = this._extractWaitDurations(target, block);
