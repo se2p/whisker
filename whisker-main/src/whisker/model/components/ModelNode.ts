@@ -7,7 +7,7 @@ import {ModelEdge} from "./ModelEdge";
 export class ModelNode {
 
     private readonly id: string;
-    private outgoing: ModelEdge[] = [];
+    outgoing: ModelEdge[] = [];
 
     isStartNode = false;
     isStopNode = false;

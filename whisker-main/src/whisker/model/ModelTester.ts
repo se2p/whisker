@@ -5,8 +5,9 @@ import WhiskerUtil from "../../test/whisker-util";
 import Random from "../../util/random";
 import {assert, assume} from "../../test-runner/assert";
 import TestDriver from "../../test/test-driver";
+import {EventEmitter} from "events";
 
-export class ModelTester {
+export class ModelTester extends EventEmitter {
 
     private programModels: ProgramModel[];
     private userModels: UserModel[];
@@ -17,10 +18,22 @@ export class ModelTester {
      * Load the models from a xml string. See ModelLoaderXML for more info.
      * @param modelsString Models as a string coded in xml.
      */
-    constructor(modelsString) {
+    load(modelsString) {
         try {
             const result = new ModelLoaderXML().loadModels(modelsString);
             this.programModels = result.programModels;
+            this.programModels.forEach(model => {
+                model.on(LogMessage.MODEL_LOG, (message) => {
+                    this.emit(LogMessage.MODEL_LOG, model, message);
+                });
+                model.on(LogMessage.MODEL_EDGE_TRACE, (edgeOutput) => {
+                    this.emit(LogMessage.MODEL_EDGE_TRACE, edgeOutput);
+                })
+                model.on(LogMessage.MODEL_STOPPED, () => {
+                    this.emit(LogMessage.MODEL_STOPPED, model);
+                    this.emit(LogMessage.MODEL_STATE, this.testDriver.getSprites(undefined, false));
+                })
+            })
             this.userModels = result.userModels;
         } catch (e) {
             throw new Error("Model Loader: " + e.message);
@@ -43,7 +56,7 @@ export class ModelTester {
         }
 
         const results = [];
-        // this.emit(TestRunner.RUN_START, model); todo change
+        this.emit(LogMessage.RUN_START);
 
         const util = new WhiskerUtil(vm, project);
         await util.prepare(props.accelerationFactor);
@@ -55,7 +68,7 @@ export class ModelTester {
                     assert: assert,
                     assume: assume,
                     log: message => {
-                        console.log(message);
+                        this.log(message);
                     },
                     getCoverage: () => {
                         const coverage = props.CoverageGenerator.getCoverage();
@@ -65,7 +78,15 @@ export class ModelTester {
                 }
             },);
         util.start();
-        this.testDriver.seedScratch(Random.INITIAL_SEED);
+        this.testDriver.seedScratch("Hallo?"); // ...
+
+        let apple = this.testDriver.getSprite("Apple");
+        apple.onMoved = () => {
+            if (apple.isTouchingSprite("Bowl")) {
+                let ms = Date.now();
+                console.log("SCRATCH: Apple Sprite touched Bowl: " + ms)
+            }
+        }
 
         this.programModels.forEach(model => {
             model.reset();
@@ -77,7 +98,8 @@ export class ModelTester {
         this.testDriver.detectRandomInputs({duration: [50, 100]});
         await this.testDriver.runForTime(duration);
 
-        // this.emit(TestRunner.RUN_END, results);
+        // todo what are the results, and update them
+        this.emit(LogMessage.RUN_END, results);
         util.end();
         return results;
     }
@@ -94,7 +116,7 @@ export class ModelTester {
             model.testDriver.addCallback(function () {
                 model.makeOneTransition();
                 if (model.stopped()) {
-                    console.log("STOP");
+                    model.emit(LogMessage.MODEL_STOPPED);
                     model.testDriver.clearCallbacks();
                     // testDriver.cancelRun(); todo what to do when the model is already finished
                 }
@@ -111,4 +133,22 @@ export class ModelTester {
             model.testLabelsForErrors(this.testDriver);
         })
     }
+
+    /**
+     * Log a message.
+     */
+    log(message) {
+        this.emit(LogMessage.LOG, message);
+    }
+}
+
+export enum LogMessage {
+    LOG = "log",
+    MODEL_LOG = "modelLog",
+    MODEL_EDGE_TRACE = "modelEdgeTrace",
+    RUN_CANCEL = "runCancel",
+    MODEL_STOPPED = "modelStopped",
+    MODEL_STATE = "modelState",
+    RUN_END = "runEnd",
+    RUN_START = "runStart",
 }

@@ -1,6 +1,8 @@
 import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
+import EventEmitter from "events";
+import {LogMessage, ModelTester} from "../ModelTester";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -12,7 +14,7 @@ import TestDriver from "../../../test/test-driver";
  * - Only one start node, unique
  * - Each edge has a condition (input event, condition for a variable,....)
  */
-export class ProgramModel {
+export class ProgramModel extends EventEmitter {
 
     readonly id: string;
     testDriver: TestDriver;
@@ -36,6 +38,7 @@ export class ProgramModel {
      */
     constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
                 nodes: { [key: string]: ModelNode }, edges: { [key: string]: ModelEdge }) {
+        super();
         this.id = id;
         this.currentState = startNode;
         this.startNode = startNode;
@@ -49,7 +52,7 @@ export class ProgramModel {
      */
     makeOneTransition() {
         if (this.stopped()) {
-            console.log("already stopped")
+            this.emit(LogMessage.MODEL_LOG, "already stopped");
             return;
         }
 
@@ -60,6 +63,21 @@ export class ProgramModel {
         // ask the current node for a valid transition
         const edge = this.currentState.testEdgeConditions(this.testDriver);
         if (edge != null) {
+
+            // For outputs, ignore bowl for now
+            if (!edge.id.startsWith("bowl")) {
+                // change edge conditions format for output
+                let conditions = [];
+                edge.conditions.forEach(cond => {
+                    conditions.push({name:cond.getConditionName(), args: cond.getArgs(), negated: cond.isANegation});
+                })
+                let edgeOutput = {edge: edge, edgeID: edge.id, conditions: conditions};
+
+
+                this.emit(LogMessage.MODEL_EDGE_TRACE, edgeOutput);
+                let ms = Date.now();
+                console.log("EDGE " + edge.id + " taken", ms, edgeOutput);
+            }
             edge.runEffect();
 
             if (this.currentState != edge.getEndNode()) {

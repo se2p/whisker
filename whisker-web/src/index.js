@@ -41,8 +41,9 @@ const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only vali
 
 const loadModelFromString = function (models) {
     try {
-        Whisker.modelTester = new ModelTester.ModelTester(models);
+        Whisker.modelTester.load(models);
     } catch (err) {
+        Whisker.outputLog.println("ERROR: " + err.message);
         const message = `${err.name}: ${err.message}`;
         showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
@@ -101,7 +102,10 @@ const _runModelTest = async function (vm, project) {
     try {
         await Whisker.scratch.vm.loadProject(project);
         summary = await Whisker.modelTester.test(vm, project, {accelerationFactor}, duration);
-    } finally {
+    } catch (e) {
+        Whisker.outputLog.println("ERROR: " + e.message);
+    }
+    finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
         let runTests = i18next.t("tests")
@@ -281,7 +285,44 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
-    Whisker.programModals = undefined;
+    Whisker.modelTester = new ModelTester.ModelTester();
+    // todo maybe an own log for the model, outsource this code?
+    Whisker.modelTester.on(ModelTester.LogMessage.RUN_START, () =>
+        Whisker.outputLog.println("====  Model tests started."));
+    Whisker.modelTester.on(ModelTester.LogMessage.RUN_CANCEL, () =>
+        Whisker.outputLog.println("====  Model tests" + " canceled!"));
+    Whisker.modelTester.on(ModelTester.LogMessage.RUN_END, (result) =>
+        Whisker.outputLog.println("====  Model tests ended.")); // todo what is the result?
+    Whisker.modelTester.on(ModelTester.LogMessage.LOG, (message) => Whisker.outputLog.println(message));
+    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_LOG, (model, message) => Whisker.outputLog.println(message));
+    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_STOPPED, (model) => Whisker.outputLog.println("Model" +
+        " stopped: " + model.id + "\n----------------"));
+    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_STATE, (sprites) => {
+        Whisker.outputLog.println("State of variables: ")
+        sprites.forEach(sprite => {
+            if (sprite.getVariables() !== []) {
+                sprite.getVariables().forEach(variable => {
+                    Whisker.outputLog.println(sprite.name + "." + variable.name + " = " + variable.value);
+                })
+            }
+        })
+    });
+    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_EDGE_TRACE, (trace) => {
+        let edge = trace.edge;
+        let edgeID = trace.edgeID;
+        let conditions = trace.conditions;
+        Whisker.outputLog.println("---- EDGE TAKEN ----");
+        Whisker.outputLog.println("Edge id: " + edgeID);
+        conditions.forEach(cond => {
+            Whisker.outputLog.print("Edge condition: " + cond.name + " " + cond.args.toString());
+            if (cond.negated) {
+                Whisker.outputLog.print("(negated)\n");
+            } else {
+                Whisker.outputLog.println("");
+            }
+        })
+        Whisker.outputLog.println("--------------------")
+    });
 
     document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };
