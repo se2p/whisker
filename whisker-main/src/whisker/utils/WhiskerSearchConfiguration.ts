@@ -43,6 +43,7 @@ import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
 import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";
 import {InputExtraction} from "../whiskerNet/InputExtraction";
+import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
 
 class ConfigException implements Error {
     message: string;
@@ -169,6 +170,8 @@ export class WhiskerSearchConfiguration {
             return new FixedTimeStoppingCondtion(stoppingCondition["duration"]);
         } else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
+        } else if (stoppingCond == 'events') {
+            return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
         } else if (stoppingCond == "one-of") {
             const conditions = stoppingCondition["conditions"];
             const l: StoppingCondition<any>[] = [];
