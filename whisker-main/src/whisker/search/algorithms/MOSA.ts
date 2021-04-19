@@ -149,7 +149,6 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
             }
         }
-        StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.getPopulationSize();
         return this._bestIndividuals;
     }
 

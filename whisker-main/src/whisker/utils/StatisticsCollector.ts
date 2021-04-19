@@ -53,6 +53,7 @@ export class StatisticsCollector {
         this._bestCoverage = 0;
         this._startTime = 0;
         this._testEventCount = 0;
+        this._createdTestsCount = 0;
         this._covOverTime = new Map<number, number>();
     }
 

@@ -2,7 +2,7 @@ import {Chromosome} from "../Chromosome";
 import {StoppingCondition} from "../StoppingCondition";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
-export class ExecutedEventsStoppingCondition<T extends Chromosome> implements StoppingCondition<T>{
+export class ExecutedEventsStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
     /**
      * The number of executed events after which the search should be stopped
