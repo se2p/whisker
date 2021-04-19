@@ -130,6 +130,6 @@ export function varChangeEffect(spriteName: string, varName: string, mode: strin
  * @param varName Name of the variable
  * @param varValue New value of the variable // todo only mode to compare? >,<,=
  */
-export function spritChangeEffect(spriteName: string, varName: string, varValue: string) {
-    console.log("Effect: " + varName + " " + spriteName + " " + varValue);
+export function spriteChangeEffect(spriteName: string, varName: string, varValue: string) {
+    // console.log("Effect: " + spriteName + "." + varName  + varValue);
 }

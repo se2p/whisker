@@ -1,4 +1,4 @@
-import {ModelEdge, outputEffect, spritChangeEffect, varChangeEffect, varOutputEffect} from "../components/ModelEdge";
+import {ModelEdge, outputEffect, spriteChangeEffect, varChangeEffect, varOutputEffect} from "../components/ModelEdge";
 import {Condition, ConditionName} from "../components/Condition";
 
 export class Effect {
@@ -45,6 +45,13 @@ const commaPart = "','";
  * @param condString String part on the edge of the xml file that is the condition.
  */
 export function getCondition(condString): Condition {
+    // negation
+    let isANegation = false;
+    if (condString.startsWith("!")) {
+        isANegation = true;
+        condString = condString.substr(1, condString.length);
+    }
+
     const parts = condString.split(":");
 
     if (parts.length < 2) {
@@ -53,15 +60,15 @@ export function getCondition(condString): Condition {
 
     switch (parts[0]) {
         case ConditionName.Key:
-            return new Condition(ConditionName.Key, parts[1].toLowerCase());
+            return new Condition(ConditionName.Key, isANegation, parts[1].toLowerCase());
         case ConditionName.Click:
-            return new Condition(ConditionName.Click, parts[1], parts[2]);
+            return new Condition(ConditionName.Click, isANegation, parts[1], parts[2]);
         case ConditionName.VarTest:
-            return new Condition(ConditionName.VarTest, parts[1], parts[2], parts[3], parts[4]);
+            return new Condition(ConditionName.VarTest, isANegation, parts[1], parts[2], parts[3], parts[4]);
         case ConditionName.SpriteTouching:
-            return new Condition(ConditionName.SpriteTouching, parts[1], parts[2]);
+            return new Condition(ConditionName.SpriteTouching, isANegation, parts[1], parts[2]);
         case ConditionName.SpriteColor:
-            return new Condition(ConditionName.SpriteColor, parts[1], parts[2], parts[3], parts[4]);
+            return new Condition(ConditionName.SpriteColor, isANegation, parts[1], parts[2], parts[3], parts[4]);
         default:
             throw new Error("Edge condition type not recognized or missing.");
     }
@@ -116,7 +123,7 @@ export function getEffect(effectString): Effect {
                 throw new Error("Edge effect, Event Sprite Change, not enough arguments.");
             }
             return new Effect(EffectName.SpriteChange,
-                spritChangeEffect.name + openBrackets + parts[1] + commaPart + parts[2] + commaPart
+                spriteChangeEffect.name + openBrackets + parts[1] + commaPart + parts[2] + commaPart
                 + parts[3] + closeBrackets);
         default:
             throw new Error("Edge effect type not recognized or missing.");

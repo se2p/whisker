@@ -19,9 +19,12 @@ export class Condition {
     private readonly condition: (state) => boolean;
     private readonly args = [];
 
-    constructor(name: ConditionName, ...args: any) {
+    readonly isANegation: boolean;
+
+    constructor(name: ConditionName, isANegation: boolean, ...args: any) {
         this.name = name;
         this.args = args;
+        this.isANegation = isANegation;
 
         // check args length
         if (this.args.length == 0
@@ -108,6 +111,13 @@ export class Condition {
     }
 
     /**
+     * Get the arguments for the condition.
+     */
+    getArgs() {
+        return this.args;
+    }
+
+    /**
      * Check the existence of a sprite.
      * @param testDriver Instance of the test driver.
      * @param spriteName Name of the sprite.
@@ -125,6 +135,7 @@ export class Condition {
      */
     _checkKeyEvent(key: string): (testDriver: TestDriver) => boolean {
         // console.log("registering condition: key test ", key);
+        let isANegation = this.isANegation;
         return function (testDriver: TestDriver): boolean {
             let inputs = testDriver.vmWrapper.inputs.inputs;
             if (inputs.length > 0) {
@@ -132,10 +143,10 @@ export class Condition {
                 // try to find the input equal to the string
                 for (let i = 0; i < inputs.length; i++) {
                     if (inputs[i]._data.key === Input.scratchKeyToKeyString(key)) {
-                        return true;
+                        return !isANegation;
                     }
                 }
-                return false;
+                return isANegation;
             } else {
                 // console.log("inputs empty") todo why
             }
@@ -165,6 +176,7 @@ export class Condition {
      */
     _checkVarTestEvent(spriteName: string, varName: string, comparison: string, varValue: string) {
         // console.log("registering condition: var test ", spriteName, varName, comparison, varValue);
+        let isANegation = this.isANegation;
         return function (testDriver: TestDriver): boolean {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             let variable = sprite.getVariable(varName);
@@ -174,7 +186,11 @@ export class Condition {
             }
 
             if (comparison == "=") {
-                return variable.value == varValue;
+                if (variable.value == varValue) {
+                    return !isANegation;
+                } else {
+                    return isANegation;
+                }
             }
             return false;
         }
@@ -188,15 +204,16 @@ export class Condition {
      */
     _checkSpriteTouchingEvent(spriteName1: string, spriteName2: string) {
         // console.log("registering condition: sprite touching test ", spriteName1, spriteName2);
+        let isANegation = this.isANegation;
         return function (testDriver: TestDriver): boolean {
             let sprite1 = testDriver.getSprites(sprite => sprite.name.includes(spriteName1))[0];
-            let result = sprite1.isTouchingSprite(spriteName2);
 
-            // sprite1._old.
-            if (result) {
-                console.log("touched");
+            if (sprite1.isTouchingSprite(spriteName2)) {
+                console.log(spriteName1 + " touched " + spriteName2);
+                return !isANegation;
+            } else {
+                return isANegation;
             }
-            return result;
         }
     }
 
@@ -209,9 +226,15 @@ export class Condition {
      */
     _checkSpriteColorEvent(spriteName: string, r: number, g: number, b: number) {
         // console.log("registering condition: sprite color test ", spriteName, r, g, b);
+        let isANegation = this.isANegation;
         return function (testDriver: TestDriver): boolean {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName))[0];
-            return sprite.isTouchingColor([r, g, b]);
+
+            if (sprite.isTouchingColor([r, g, b])) {
+                // console.log(spriteName + " touched color.")
+                return !isANegation;
+            }
+            return isANegation;
         }
     }
 }
