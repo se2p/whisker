@@ -1,5 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
+import {ConditionState} from "../util/ConditionState";
 
 /**
  * Node structure for a model.
@@ -48,12 +49,14 @@ export class ModelNode {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
+     * Check existences of sprites, existences of variables and ranges of arguments and register the conditions in
+     * the condition state.
      * @param testDriver Instance of the test driver.
+     * @param conditionState State saver of the conditions.
      */
-    testLabelsForErrors(testDriver: TestDriver) {
+    registerAndTestConditions(testDriver: TestDriver, conditionState: ConditionState) {
         this.outgoing.forEach(edge => {
-            edge.testLabelsForErrors(testDriver);
+            edge.registerAndTestConditions(testDriver, conditionState);
         })
     }
 }

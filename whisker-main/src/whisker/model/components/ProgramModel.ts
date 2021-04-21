@@ -2,7 +2,8 @@ import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import EventEmitter from "events";
-import {LogMessage, ModelTester} from "../ModelTester";
+import {LogMessage} from "../ModelTester";
+import {ConditionState} from "../util/ConditionState";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -69,14 +70,13 @@ export class ProgramModel extends EventEmitter {
                 // change edge conditions format for output
                 let conditions = [];
                 edge.conditions.forEach(cond => {
-                    conditions.push({name:cond.getConditionName(), args: cond.getArgs(), negated: cond.isANegation});
+                    conditions.push({name: cond.getConditionName(), args: cond.getArgs(), negated: cond.isANegation});
                 })
                 let edgeOutput = {edge: edge, edgeID: edge.id, conditions: conditions};
 
 
                 this.emit(LogMessage.MODEL_EDGE_TRACE, edgeOutput);
-                let ms = Date.now();
-                console.log("EDGE " + edge.id + " taken", ms, edgeOutput);
+                console.log("EDGE " + edge.id + " taken", conditions);
             }
             edge.runEffect();
 
@@ -101,12 +101,14 @@ export class ProgramModel extends EventEmitter {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
+     * Check existences of sprites, existences of variables and ranges of arguments and register the conditions in
+     * the condition state.
      * @param testDriver Instance of the test driver.
+     * @param conditionState State saver for the conditions.
      */
-    testLabelsForErrors(testDriver: TestDriver) {
+    registerAndTestConditions(testDriver: TestDriver, conditionState: ConditionState) {
         Object.values(this.nodes).forEach(node => {
-            node.testLabelsForErrors(testDriver);
+            node.registerAndTestConditions(testDriver, conditionState);
         })
     }
 }

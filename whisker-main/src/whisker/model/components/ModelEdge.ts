@@ -2,6 +2,7 @@ import {ModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {Effect} from "../util/EdgeEvent";
 import {Condition} from "./Condition";
+import {ConditionState} from "../util/ConditionState";
 
 // todo construct super type without effect?
 
@@ -90,10 +91,11 @@ export class ModelEdge {
     /**
      * Check existences of sprites, existences of variables and ranges of arguments.
      * @param testDriver Instance of the test driver.
+     * @param conditionState State saver of the conditions.
      */
-    testLabelsForErrors(testDriver: TestDriver) {
+    registerAndTestConditions(testDriver: TestDriver, conditionState: ConditionState) {
         this.conditions.forEach(cond => {
-            cond.testLabelsForErrors(testDriver);
+            cond.registerAndTestConditions(testDriver, conditionState);
         })
     }
 }

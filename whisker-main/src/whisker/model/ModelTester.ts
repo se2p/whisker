@@ -2,10 +2,11 @@ import {ModelLoaderXML} from "./util/ModelLoaderXML";
 import {ProgramModel} from "./components/ProgramModel";
 import {UserModel} from "./components/UserModel";
 import WhiskerUtil from "../../test/whisker-util";
-import Random from "../../util/random";
+import {seedScratch, seedWhisker} from "../../util/random";
 import {assert, assume} from "../../test-runner/assert";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
+import {ConditionState} from "./util/ConditionState";
 
 export class ModelTester extends EventEmitter {
 
@@ -13,6 +14,7 @@ export class ModelTester extends EventEmitter {
     private userModels: UserModel[];
 
     private testDriver: TestDriver;
+    private conditionState: ConditionState;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -78,21 +80,15 @@ export class ModelTester extends EventEmitter {
                 }
             },);
         util.start();
-        this.testDriver.seedScratch("Hallo?"); // ...
-
-        let apple = this.testDriver.getSprite("Apple");
-        apple.onMoved = () => {
-            if (apple.isTouchingSprite("Bowl")) {
-                let ms = Date.now();
-                console.log("SCRATCH: Apple Sprite touched Bowl: " + ms)
-            }
-        }
+        seedScratch("Hallo?"); // ..
+        seedWhisker("0");
 
         this.programModels.forEach(model => {
+            model.testDriver = this.testDriver;
             model.reset();
         })
 
-        this.testLabelsForErrors();
+        this.registerAndTestConditions();
         this.setUpCallbacks();
 
         this.testDriver.detectRandomInputs({duration: [50, 100]});
@@ -105,32 +101,35 @@ export class ModelTester extends EventEmitter {
     }
 
     /**
-     * Set up the callbacks that need to be called around a Scratch step.
+     * Set up the callback that needs to be called around a Scratch step.
      */
     setUpCallbacks() {
-        // register models and callbacks
-        this.programModels.forEach(model => {
-            model.testDriver = this.testDriver;
-
-            // add the model transition to the callbacks
-            model.testDriver.addCallback(function () {
+        this.testDriver.addCallback(() => {
+            // register models and callbacks
+            this.programModels.forEach(model => {
                 model.makeOneTransition();
+            });
+
+            // check whether a model stopped
+            this.programModels.forEach(model => {
                 if (model.stopped()) {
                     model.emit(LogMessage.MODEL_STOPPED);
                     model.testDriver.clearCallbacks();
                     // testDriver.cancelRun(); todo what to do when the model is already finished
                 }
-            }, true, "modelstep");
-        })
+            });
+            this.conditionState.resetConditionsThrown();
+        }, true, "modelstep");
     }
 
     /**
      * Check existences of sprites, existences of variables and ranges of arguments.
      * @private
      */
-    private testLabelsForErrors() {
+    private registerAndTestConditions() {
+        this.conditionState = new ConditionState(this.testDriver);
         this.programModels.forEach(model => {
-            model.testLabelsForErrors(this.testDriver);
+            model.registerAndTestConditions(this.testDriver, this.conditionState);
         })
     }
 
