@@ -4,18 +4,20 @@ import {List} from "../utils/List";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
     /**
      * Searches for tests for the given project by using a Neuroevolution Algorithm
      */
-    async generateTests(): Promise<List<WhiskerTest>> {
+    async generateTests(): Promise<WhiskerTestListWithSummary> {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const networkChromosomes = await searchAlgorithm.findSolution();
         const testSuite = await this.getTestSuite(networkChromosomes);
         await this.collectStatistics(testSuite);
-        return testSuite;
+        const summary = searchAlgorithm.summarizeSolution();
+        return new WhiskerTestListWithSummary(testSuite, summary);
     }
 
     /**

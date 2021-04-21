@@ -39,6 +39,18 @@ export interface SearchAlgorithm<C extends Chromosome> {
      */
     findSolution(): Promise<List<C>>;
 
+/**
+ * Summarize the solution saved in _archive.
+ * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+ * 		- Not covered: the statement that’s not covered by any
+ *        function in the _bestIndividuals.
+ *     	- ApproachLevel: the approach level of that statement
+ *     	- BranchDistance: the branch distance of that statement
+ *     	- Fitness: the fitness value of that statement
+ * For other search algorithms, it returns an empty string.
+ */
+    summarizeSolution(): string;
+
     /**
      * Sets the properties for this search algorithm.
      * @param properties the properties for the search algorithm
