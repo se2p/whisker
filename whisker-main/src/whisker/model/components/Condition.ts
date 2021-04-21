@@ -1,5 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {Input} from "../../../vm/inputs";
+import {ConditionState} from "../util/ConditionState";
 
 /** Type for finding the correct condition function, defining the event. */
 export enum ConditionName {
@@ -16,11 +17,18 @@ export enum ConditionName {
  */
 export class Condition {
     private readonly name: ConditionName;
-    private readonly condition: (state) => boolean;
+    private readonly condition: (...state) => boolean;
     private readonly args = [];
 
     readonly isANegation: boolean;
+    private conditionState: ConditionState;
 
+    /**
+     * Get a condition instance. Checks the number of arguments for a condition type.
+     * @param name Type name of the condition.
+     * @param isANegation Whether the condition is negated.
+     * @param args The arguments for the condition to check later on.
+     */
     constructor(name: ConditionName, isANegation: boolean, ...args: any) {
         this.name = name;
         this.args = args;
@@ -63,7 +71,7 @@ export class Condition {
      * @param testDriver Instance of the test driver.
      */
     check(testDriver: TestDriver): boolean {
-        return this.condition(testDriver);
+        return this.condition(testDriver, this.conditionState);
     }
 
     /**
@@ -74,15 +82,20 @@ export class Condition {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
+     * Check existences of sprites, existences of variables and ranges of arguments. Also register the condition at
+     * the condition state saver.
      * @param testDriver Instance of the test driver.
+     * @param conditionState State saver of the conditions.
      */
-    testLabelsForErrors(testDriver: TestDriver) {
+    registerAndTestConditions(testDriver: TestDriver, conditionState: ConditionState) {
+        this.conditionState = conditionState;
+
         // console.log("Testing condition: " + this.name + this.args);
         switch (this.name) {
             case ConditionName.SpriteTouching:
                 this._checkSpriteExistence(testDriver, this.args[0]);
                 this._checkSpriteExistence(testDriver, this.args[1]);
+                this.conditionState.registerTouching(this.args[0], this.args[1]);
                 break;
             case ConditionName.SpriteColor:
                 this._checkSpriteExistence(testDriver, this.args[0]);
@@ -93,6 +106,7 @@ export class Condition {
                 if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
                     throw new Error("RGB ranges not correct.");
                 }
+                this.conditionState.registerColor(this.args[0], this.args[1], this.args[2], this.args[3]);
                 break;
             case ConditionName.Click:
                 // todo check coordinate range or sprite existence?
@@ -174,7 +188,8 @@ export class Condition {
      * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
      * @param varValue Value to compare to the variable's current value.
      */
-    _checkVarTestEvent(spriteName: string, varName: string, comparison: string, varValue: string) {
+    _checkVarTestEvent(spriteName: string, varName: string, comparison: string, varValue: string):
+        (testDriver: TestDriver) => boolean {
         // console.log("registering condition: var test ", spriteName, varName, comparison, varValue);
         let isANegation = this.isANegation;
         return function (testDriver: TestDriver): boolean {
@@ -202,18 +217,21 @@ export class Condition {
      * @param spriteName1 Name of the first sprite.
      * @param spriteName2 Name of the second sprite.
      */
-    _checkSpriteTouchingEvent(spriteName1: string, spriteName2: string) {
-        // console.log("registering condition: sprite touching test ", spriteName1, spriteName2);
+    _checkSpriteTouchingEvent(spriteName1: string, spriteName2: string):
+        (testDriver: TestDriver, conditionState: ConditionState) => boolean {
         let isANegation = this.isANegation;
-        return function (testDriver: TestDriver): boolean {
-            let sprite1 = testDriver.getSprites(sprite => sprite.name.includes(spriteName1))[0];
-
-            if (sprite1.isTouchingSprite(spriteName2)) {
-                console.log(spriteName1 + " touched " + spriteName2);
+        return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
+            if (conditionState.getSpriteCondition(spriteName1).spritesTouched.indexOf(spriteName2) != -1) {
+                console.log("MARKER: Touching " + spriteName1 + " " + spriteName2);
                 return !isANegation;
-            } else {
-                return isANegation;
             }
+
+            // let sprite1 = testDriver.getSprites(sprite => sprite.name.includes(spriteName1))[0];
+            // if (sprite1.isTouchingSprite(spriteName2)) {
+            // console.log("CALLBACK: TouchingBowl"+ spriteName2);
+            // return !isANegation;
+            // }
+            return isANegation;
         }
     }
 
@@ -224,16 +242,23 @@ export class Condition {
      * @param g RGB green color value.
      * @param b RGB blue color value.
      */
-    _checkSpriteColorEvent(spriteName: string, r: number, g: number, b: number) {
+    _checkSpriteColorEvent(spriteName: string, r: number, g: number, b: number):
+        (testDriver: TestDriver, conditionState: ConditionState) => boolean {
         // console.log("registering condition: sprite color test ", spriteName, r, g, b);
         let isANegation = this.isANegation;
-        return function (testDriver: TestDriver): boolean {
-            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName))[0];
-
-            if (sprite.isTouchingColor([r, g, b])) {
-                // console.log(spriteName + " touched color.")
+        return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
+            const searchResult = conditionState.getSpriteCondition(spriteName).colorsTouched.find(array =>
+                array[0] == r && array[1] == g && array[2] == b);
+            if (searchResult) {
+                console.log("MARKER: Color " + spriteName);
                 return !isANegation;
             }
+
+            // let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName))[0];
+            // if (sprite.isTouchingColor([r, g, b]) ) {
+            //     console.log("CALLBACK: Color " + spriteName);
+            //     return !isANegation;
+            // }
             return isANegation;
         }
     }

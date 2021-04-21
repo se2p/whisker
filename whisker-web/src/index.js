@@ -44,6 +44,7 @@ const loadModelFromString = function (models) {
         Whisker.modelTester.load(models);
     } catch (err) {
         Whisker.outputLog.println("ERROR: " + err.message);
+        console.log(err);
         const message = `${err.name}: ${err.message}`;
         showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
@@ -104,8 +105,8 @@ const _runModelTest = async function (vm, project) {
         summary = await Whisker.modelTester.test(vm, project, {accelerationFactor}, duration);
     } catch (e) {
         Whisker.outputLog.println("ERROR: " + e.message);
-    }
-    finally {
+        console.log(e);
+    } finally {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
         let runTests = i18next.t("tests")
@@ -442,10 +443,10 @@ const initEvents = function () {
                 );
             }
         });
-        _addFileListeners();
+    _addFileListeners();
 };
 
-const _addFileListeners = function() {
+const _addFileListeners = function () {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
@@ -603,7 +604,7 @@ function _translateTestTableTooltips(oldLanguage, newLanguage) {
     const oldIndexData = oldLangData.index;
     const newLangData = i18next.getDataByLanguage(newLanguage);
     const newIndexData = newLangData.index;
-    $('.tooltip-sign-text').html(function() {
+    $('.tooltip-sign-text').html(function () {
         _translateTooltip(this, oldIndexData, newIndexData);
     });
 }
