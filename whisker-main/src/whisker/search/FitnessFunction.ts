@@ -36,6 +36,19 @@ export interface FitnessFunction<C extends Chromosome> {
      */
     getFitness(chromosome: C): number;
 
+    /**
+     * Computes and returns the branch distance value for the given chromosome.
+     * @param chromosome the chromosome to rate
+     * @returns the branch distance value of the specified chromosome
+     */
+    getBranchDistance(chromosome: C): number;
+
+    /**
+     * Computes and returns the approach level value for the given chromosome.
+     * @param chromosome the chromosome to rate
+     * @returns the approach level  value of the specified chromosome
+     */
+    getApproachLevel(chromosome: C): number;
 
     /**
      * Comparator for two fitness values:

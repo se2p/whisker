@@ -90,8 +90,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             throw Error("Test case not executed");
         }
 
-        const approachLevel = this._getApproachLevel(chromosome.trace);
-        const branchDistance = this._getBranchDistance(chromosome.trace);
+        const approachLevel = this.getApproachLevel(chromosome);
+        const branchDistance = this.getBranchDistance(chromosome);
         // console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
         // console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
         return approachLevel + this._normalize(branchDistance)
@@ -112,7 +112,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return this.isOptimal(this.getFitness(chromosome));
     }
 
-    private _getApproachLevel(trace: ExecutionTrace) {
+    getApproachLevel(chromosome: TestChromosome):number {
+        const trace = chromosome.trace;
         let min: number = Number.MAX_VALUE;
 
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
@@ -141,7 +142,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return min
     }
 
-    private _getBranchDistance(trace: ExecutionTrace) {
+    getBranchDistance(chromosome: TestChromosome):number {
+        const trace = chromosome.trace;
         let minBranchApproachLevel: number = Number.MAX_VALUE;
         let branchDistance = Number.MAX_VALUE;
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {

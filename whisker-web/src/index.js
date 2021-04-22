@@ -70,7 +70,9 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = accSlider.slider('getValue');
-    return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
+    const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
+    Whisker.outputLog.print(res[1]);
+    return res[0];
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {

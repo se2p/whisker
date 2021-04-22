@@ -23,7 +23,7 @@ import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFit
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
-import {FixedTimeStoppingCondtion} from "../../../../src/whisker/search/stoppingconditions/FixedTimeStoppingCondition";
+import {FixedTimeStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedTimeStoppingCondition";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     setTimeElapsed(time:number) {
@@ -38,7 +38,7 @@ describe('FixedTimeStoppingCondition', () => {
         const algorithm = new DummySearchAlgorithm();
         const maxTime = 11;
         algorithm.setTimeElapsed(maxTime);
-        const stoppingCondition = new FixedTimeStoppingCondtion(maxTime-1);
+        const stoppingCondition = new FixedTimeStoppingCondition(maxTime-1);
 
         expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
@@ -48,7 +48,7 @@ describe('FixedTimeStoppingCondition', () => {
         const algorithm = new DummySearchAlgorithm();
         const maxTime = 100;
         algorithm.setTimeElapsed(0);
-        const stoppingCondition = new FixedTimeStoppingCondtion(maxTime);
+        const stoppingCondition = new FixedTimeStoppingCondition(maxTime);
 
         expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
@@ -58,7 +58,7 @@ describe('FixedTimeStoppingCondition', () => {
         const algorithm = new DummySearchAlgorithm();
         const maxTime = 100;
         algorithm.setTimeElapsed(50);
-        const stoppingCondition = new FixedTimeStoppingCondtion(maxTime);
+        const stoppingCondition = new FixedTimeStoppingCondition(maxTime);
 
         expect(await stoppingCondition.getProgress(algorithm)).toBeGreaterThanOrEqual(0.5);
     });

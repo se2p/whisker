@@ -107,6 +107,20 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
         return this._bestIndividuals;
     }
 
+/**
+ * Summarize the solution saved in _archive.
+ * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+ * 		- Not covered: the statement that’s not covered by any
+ *        function in the _bestIndividuals.
+ *     	- ApproachLevel: the approach level of that statement
+ *     	- BranchDistance: the branch distance of that statement
+ *     	- Fitness: the fitness value of that statement
+ * For other search algorithms, it returns an empty string.
+ */
+    summarizeSolution(): string {
+        return '';
+    }
+
     getStartTime(): number {
         return this._startTime;
     }
