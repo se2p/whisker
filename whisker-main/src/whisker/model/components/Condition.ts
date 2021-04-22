@@ -221,16 +221,11 @@ export class Condition {
         (testDriver: TestDriver, conditionState: ConditionState) => boolean {
         let isANegation = this.isANegation;
         return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
-            if (conditionState.getSpriteCondition(spriteName1).spritesTouched.indexOf(spriteName2) != -1) {
+            const areTouching = conditionState.areTouching(spriteName1, spriteName2);
+            if (areTouching) {
                 console.log("MARKER: Touching " + spriteName1 + " " + spriteName2);
                 return !isANegation;
             }
-
-            // let sprite1 = testDriver.getSprites(sprite => sprite.name.includes(spriteName1))[0];
-            // if (sprite1.isTouchingSprite(spriteName2)) {
-            // console.log("CALLBACK: TouchingBowl"+ spriteName2);
-            // return !isANegation;
-            // }
             return isANegation;
         }
     }
@@ -244,21 +239,12 @@ export class Condition {
      */
     _checkSpriteColorEvent(spriteName: string, r: number, g: number, b: number):
         (testDriver: TestDriver, conditionState: ConditionState) => boolean {
-        // console.log("registering condition: sprite color test ", spriteName, r, g, b);
         let isANegation = this.isANegation;
         return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
-            const searchResult = conditionState.getSpriteCondition(spriteName).colorsTouched.find(array =>
-                array[0] == r && array[1] == g && array[2] == b);
-            if (searchResult) {
+            if (conditionState.isTouchingColor(spriteName, r, g, b)) {
                 console.log("MARKER: Color " + spriteName);
                 return !isANegation;
             }
-
-            // let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName))[0];
-            // if (sprite.isTouchingColor([r, g, b]) ) {
-            //     console.log("CALLBACK: Color " + spriteName);
-            //     return !isANegation;
-            // }
             return isANegation;
         }
     }

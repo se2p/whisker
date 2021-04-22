@@ -1,19 +1,19 @@
 import TestDriver from "../../../test/test-driver";
-import Sprite from "../../../vm/sprite";
 
 /**
- * For edge conditions that need to listen to the onMoved of a sprite this class saves all needed checks for a
- * sprite and updates the onMoved of that sprite. (onMoved only accepts one function). todo ask for change of onMoved?
- *
+ * For edge conditions that need to listen to the onMoved of a sprite this class saves them and updates the
+ * onSpriteMoved on the test driver.
  * This class instance also tracks then the fulfilled checks of the registered onMoved checks.
  */
 export class ConditionState {
-    testDriver: TestDriver;
-    sprites: { [key: string]: Sprite } = {};
-    /** Saves the check functions for each sprite name. */
-    checks: { [key: string]: [() => void] } = {};
-    /** Saves the thrown/fulfilled checks for a sprite name. */
-    conditionsThrown: { [key: string]: SpriteCondition } = {};
+    private testDriver: TestDriver;
+    private checks: ((sprite) => void)[] = [];
+
+    private touched: string[] = [];
+    private oldTouched: string[] = []
+
+    private colorTouched: string[] = [];
+    private oldColorTouched: string[] = [];
 
     /**
      * Get an instance of a condition state saver.
@@ -21,47 +21,41 @@ export class ConditionState {
      */
     constructor(testDriver: TestDriver) {
         this.testDriver = testDriver;
-        this.testDriver.getSprites().forEach(sprite => {
-            this.sprites[sprite.name] = sprite;
-            this.conditionsThrown[sprite.name] = new SpriteCondition();
-        })
     }
 
     /**
-     * Updates the onMoved of a sprite with all functions concatenated that are needed for that sprite.
-     * @param sprite Instance of the sprite.
+     * Updates the onSpriteMoved of the test driver.
      */
-    _updateOnMoved(sprite: Sprite) {
-        let functions = this.checks[sprite.name];
-        sprite.onMoved = () => {
-            functions.forEach(fun => {
-                fun();
+    _updateOnMoved() {
+        this.testDriver.onSpriteMoved((sprite) => {
+            this.checks.forEach(fun => {
+                fun(sprite);
             });
-        };
+        });
     }
 
     /**
-     * Register a touching condition check for a sprite with another sprite.
+     * Register a touching condition check for a sprite with another sprite. The check is also registered for the
+     * other sprite as there have been inconsistencies.
      * @param spriteName1 Sprite's name that gets the condition check registered.
      * @param spriteName2 Name of the other sprite that the first needs to touch.
      */
     registerTouching(spriteName1: string, spriteName2: string) {
-        // function that adds the second sprite name to the touched sprites of the first one if it not already has
-        // touched it.
-        let fun = () => {
-            if (this.sprites[spriteName1].isTouchingSprite(spriteName2)
-                && this.conditionsThrown[spriteName1].spritesTouched.indexOf(spriteName2) == -1) {
-                this.conditionsThrown[spriteName1].spritesTouched.push(spriteName2);
+        this._registerTouching(spriteName1, spriteName2);
+        this._registerTouching(spriteName2, spriteName1);
+        this._updateOnMoved();
+        this._updateOnMoved();
+    }
+
+    _registerTouching(spriteName1: string, spriteName2: string) {
+        let fun = (sprite) => {
+            if (sprite.name == spriteName1 && sprite.isTouchingSprite(spriteName2)) {
+                this.touched.push(spriteName1 + ":" + spriteName2);
             }
         };
 
-        // add it to the checks of that sprite and update onMoved
-        if (this.checks[spriteName1]) {
-            this.checks[spriteName1].push(fun);
-        } else {
-            this.checks[spriteName1] = [fun];
-        }
-        this._updateOnMoved(this.sprites[spriteName1]);
+        this.checks.push(fun);
+        this._updateOnMoved();
     }
 
     /**
@@ -72,46 +66,47 @@ export class ConditionState {
      * @param b RGB blue value.
      */
     registerColor(spriteName: string, r: number, g: number, b: number) {
-        // function that adds the color to the sprites touched colors if the sprite not already has  touched it.
-        let fun = () => {
-            const search = this.conditionsThrown[spriteName].colorsTouched.find(array =>
-                array[0] == r && array[1] == g && array[2] == b);
-            if (this.sprites[spriteName].isTouchingColor([r, g, b]) && !search) {
-                this.conditionsThrown[spriteName].colorsTouched.push([r, g, b]);
+        let fun = (sprite) => {
+            if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
+                this.colorTouched.push(spriteName + ":" + r + ":" + g + ":" + b);
             }
         };
 
-        // add it to the checks of that sprite and update onMoved
-        if (this.checks[spriteName]) {
-            this.checks[spriteName].push(fun);
-        } else {
-            this.checks[spriteName] = [fun];
-        }
-        this._updateOnMoved(this.sprites[spriteName]);
+        this.checks.push(fun);
+        this._updateOnMoved();
     }
 
     /**
      * Reset the thrown conditions.
      */
     resetConditionsThrown() {
-        this.testDriver.getSprites().forEach(sprite => {
-            this.conditionsThrown[sprite.name] = new SpriteCondition();
-        })
+        this.oldTouched = this.touched;
+        this.touched = [];
+        this.oldColorTouched = this.colorTouched;
+        this.colorTouched = [];
     }
 
     /**
-     * Return the thrown events of a sprite.
-     * @param spriteName Name of the sprite.
+     * Check whether two sprites touched in the current step and they did not in the last step.
+     * @param spriteName1 Name of the first sprite.
+     * @param spriteName2 Name of the second sprite.
      */
-    getSpriteCondition(spriteName: string) {
-        return this.conditionsThrown[spriteName];
+    areTouching(spriteName1: string, spriteName2: string) {
+        return (this.touched.indexOf(spriteName1 + ":" + spriteName2) != -1
+            || this.touched.indexOf(spriteName2 + ":" + spriteName1) != -1)
+            && this.oldTouched.indexOf(spriteName1 + ":" + spriteName2) == -1
+            && this.oldTouched.indexOf(spriteName2 + ":" + spriteName1) == -1;
     }
-}
 
-/**
- * Saves the events that were thrown by the onMoved checks.
- */
-export class SpriteCondition {
-    spritesTouched: string[] = [];
-    colorsTouched: number[][] = [];
+    /**
+     * Check whether a sprite is touching a color.
+     * @param spriteName
+     * @param r
+     * @param g
+     * @param b
+     */
+    isTouchingColor(spriteName: string, r: number, g: number, b: number) {
+        return this.colorTouched.indexOf(spriteName + ":" + r + ":" + g + ":" + b) != -1
+            && this.oldColorTouched.indexOf(spriteName + ":" + r + ":" + g + ":" + b) == -1;
+    }
 }

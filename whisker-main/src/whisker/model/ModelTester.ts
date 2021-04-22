@@ -2,7 +2,7 @@ import {ModelLoaderXML} from "./util/ModelLoaderXML";
 import {ProgramModel} from "./components/ProgramModel";
 import {UserModel} from "./components/UserModel";
 import WhiskerUtil from "../../test/whisker-util";
-import {seedScratch, seedWhisker} from "../../util/random";
+import {INITIAL_SEED} from "../../util/random";
 import {assert, assume} from "../../test-runner/assert";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
@@ -46,57 +46,74 @@ export class ModelTester extends EventEmitter {
      * Test a model on a project.
      */
     async test(vm, project, props, duration) {
-        if (this.testDriver != undefined) {
-            this.testDriver.clearCallbacks();
-            this.testDriver.cancelRun();
-        }
-
-        if (typeof props === 'undefined' || props === null) {
-            props = {extend: {}};
-        } else if (!props.hasOwnProperty('extend')) {
-            props.extend = {};
-        }
-
-        const results = [];
         this.emit(LogMessage.RUN_START);
 
-        const util = new WhiskerUtil(vm, project);
-        await util.prepare(props.accelerationFactor);
+        const results = [];
+        for (let i = 0; i < 5; i++) {
+            if (this.testDriver != undefined) {
+                this.testDriver.clearCallbacks();
+                this.testDriver.cancelRun();
+            }
 
-        // todo change functions, or not needed?
-        this.testDriver = util.getTestDriver(
-            {
-                extend: {
-                    assert: assert,
-                    assume: assume,
-                    log: message => {
-                        this.log(message);
-                    },
-                    getCoverage: () => {
-                        const coverage = props.CoverageGenerator.getCoverage();
-                        return coverage.getCoverage();
-                    },
-                    ...props.extend
-                }
-            },);
-        util.start();
-        seedScratch("Hallo?"); // ..
-        seedWhisker("0");
+            if (typeof props === 'undefined' || props === null) {
+                props = {extend: {}};
+            } else if (!props.hasOwnProperty('extend')) {
+                props.extend = {};
+            }
 
-        this.programModels.forEach(model => {
-            model.testDriver = this.testDriver;
-            model.reset();
-        })
+            const util = new WhiskerUtil(vm, project);
+            await util.prepare(props.accelerationFactor);
 
-        this.registerAndTestConditions();
-        this.setUpCallbacks();
+            // todo change functions, or not needed?
+            this.testDriver = util.getTestDriver(
+                {
+                    extend: {
+                        assert: assert,
+                        assume: assume,
+                        log: message => {
+                            this.log(message);
+                        },
+                        getCoverage: () => {
+                            const coverage = props.CoverageGenerator.getCoverage();
+                            return coverage.getCoverage();
+                        },
+                        ...props.extend
+                    }
+                },);
+            util.start();
+            this.testDriver.seedScratch(INITIAL_SEED);
 
-        this.testDriver.detectRandomInputs({duration: [50, 100]});
-        await this.testDriver.runForTime(duration);
+            this.programModels.forEach(model => {
+                model.testDriver = this.testDriver;
+                model.reset();
+            })
+
+            this.registerAndTestConditions();
+            this.setUpCallbacks();
+
+            // this.testDriver.detectRandomInputs({duration: [50, 100]});
+
+            this.testDriver.addInputs([
+                {"time":792,"input":{"device":"keyboard","key":"left arrow","isDown":true}},
+                {"time":1054,"input":{"device":"keyboard","key":"left arrow","isDown":false}},
+                {"time":2023,"input":{"device":"keyboard","key":"right arrow","isDown":true}},
+                {"time":2522,"input":{"device":"keyboard","key":"right arrow","isDown":true}},
+                {"time":2574,"input":{"device":"keyboard","key":"right arrow","isDown":true}},
+                {"time":2622,"input":{"device":"keyboard","key":"right arrow","isDown":true}},
+                {"time":2674,"input":{"device":"keyboard","key":"right arrow","isDown":true}},
+                {"time":2683,"input":{"device":"keyboard","key":"right arrow","isDown":false}},
+                {"time":3699,"input":{"device":"keyboard","key":"right arrow","isDown":true}},
+                {"time":4013,"input":{"device":"keyboard","key":"right arrow","isDown":false}}
+            ]);
+
+            await this.testDriver.runForTime(duration);
+            console.log("ended----------------")
+            util.end();
+        }
+        // await this.testDriver.runForSteps(60);
 
         // todo what are the results, and update them
         this.emit(LogMessage.RUN_END, results);
-        util.end();
         return results;
     }
 
