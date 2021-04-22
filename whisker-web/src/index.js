@@ -20,6 +20,7 @@ const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = r
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
 
+const Test = require('whisker-main/src/test-runner/test')
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
@@ -69,8 +70,9 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
-    return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, accelerationFactor);
-};
+    const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, accelerationFactor);
+    Whisker.outputLog.print(res[1]);
+    return res[0];};
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);

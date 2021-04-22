@@ -149,8 +149,42 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 console.log("Not covered: "+this._fitnessFunctions.get(fitnessFunctionKey).toString());
             }
         }
-        StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.getPopulationSize();
         return this._bestIndividuals;
+    }
+
+/**
+ * Summarize the solution saved in _archive.
+ * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+ * 		- Not covered: the statement that’s not covered by any
+ *        function in the _bestIndividuals.
+ *     	- ApproachLevel: the approach level of that statement
+ *     	- BranchDistance: the branch distance of that statement
+ *     	- Fitness: the fitness value of that statement
+ * For other search algorithms, it returns an empty string.
+ */
+    summarizeSolution():string {
+        let summary = '';
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            if (!this._archive.has(fitnessFunctionKey)) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                summary += ("Not covered: "+fitnessFunction.toString() + "\n");
+                let fitness = 1;
+                let approachLevel = 10000;
+                let branchDistance = 10000;
+                for (const chromosome of this._bestIndividuals) {
+                    const curApproachLevel = fitnessFunction.getApproachLevel(chromosome);
+                    const curBranchDistance = fitnessFunction.getBranchDistance(chromosome);
+                    const curFitness = fitnessFunction.getFitness(chromosome);
+                    if (curApproachLevel < approachLevel) approachLevel = curApproachLevel;
+                    if (curBranchDistance < branchDistance) branchDistance = curBranchDistance;
+                    if (curFitness < fitness) fitness = curFitness;
+                }
+            summary += `ApproachLevel: ${approachLevel}\n`+
+            `BranchDistance: ${branchDistance}\n` +
+            `Fitness: ${fitness}\n`
+            }
+        }
+        return summary;
     }
 
     private updateBestIndividualAndStatistics() {

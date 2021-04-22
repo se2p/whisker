@@ -36,6 +36,7 @@ import {TestChromosome} from "./testcase/TestChromosome";
 import {ExecutionTrace} from "./testcase/ExecutionTrace";
 import {ScratchEvent} from "./testcase/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
+import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
 
 export class Search {
 
@@ -45,8 +46,8 @@ export class Search {
         this.vm = vm;
     }
 
-    private async execute(project, config: WhiskerSearchConfiguration): Promise<List<WhiskerTest>> {
-        console.log("Whisker-Main: test generation")
+    private async execute(project, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
+        console.log("Whisker-Main: test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         return await testGenerator.generateTests(project);
@@ -66,7 +67,7 @@ export class Search {
         return converter.getSuiteText(tests);
     }
 
-    private handleEmptyProject(): string {
+    private handleEmptyProject(): Array<string> {
         console.log("Cannot find any suitable events for this project, not starting search.")
         const stats = StatisticsCollector.getInstance();
 
@@ -95,13 +96,13 @@ export class Search {
 
         tests.add(new WhiskerTest(dummyTest));
         const javaScriptText = this.testsToString(tests);
-        return javaScriptText;
+        return [javaScriptText, 'empty project'];
     }
 
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm, project, projectName: string, configRaw: string, accelerationFactor: number): Promise<string> {
+    public async run(vm, project, projectName: string, configRaw: string, accelerationFactor: number): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -126,12 +127,13 @@ export class Search {
         seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();
         StatisticsCollector.getInstance().projectName = projectName;
-        const tests = await this.execute(project, config);
+        const testListWithSummary = await this.execute(project, config);
+        const tests = testListWithSummary.testList;
         this.printTests(tests);
         const csvString: string = StatisticsCollector.getInstance().asCsv();
         console.log(csvString);
 
         const javaScriptText = this.testsToString(tests);
-        return javaScriptText;
+        return [javaScriptText, testListWithSummary.summary];
     }
 }
