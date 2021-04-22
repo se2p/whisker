@@ -26,6 +26,8 @@ export class StatisticsCollector {
 
     private static _instance: StatisticsCollector;
 
+    private _projectName: string;
+    private _configName: string;
     private _fitnessFunctionCount: number;
     private _iterationCount: number;
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
@@ -39,12 +41,16 @@ export class StatisticsCollector {
     private _timeToReachFullCoverage: number;
     private _covOverTime: Map<number, number>;
 
+    private readonly _unknownProject = "(unknown)";
+    private readonly _unknownConfig = "(unknown)"
 
     /**
      * Private constructor to avoid instantiation
      */
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {
+        this._projectName = this._unknownProject;
+        this._configName = this._unknownConfig;
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
         this._coveredFitnessFunctionsCount = 0;
@@ -57,12 +63,28 @@ export class StatisticsCollector {
         this._covOverTime = new Map<number, number>();
     }
 
-    public static getInstance() {
+    public static getInstance(): StatisticsCollector {
         if (!StatisticsCollector._instance) {
             StatisticsCollector._instance = new StatisticsCollector();
         }
 
         return StatisticsCollector._instance;
+    }
+
+    get projectName(): string {
+        return this._projectName;
+    }
+
+    set projectName(value: string) {
+        this._projectName = value;
+    }
+
+    get configName(): string {
+        return this._configName;
+    }
+
+    set configName(value: string) {
+        this._configName = value;
     }
 
     get fitnessFunctionCount(): number {
@@ -174,7 +196,9 @@ export class StatisticsCollector {
         for (const coverageStatsMapKey in coverageStatsMap) {
             timestamps.push(coverageStatsMapKey)
         }
-        timestamps.sort(function(a, b){return a-b});
+        timestamps.sort(function (a, b) {
+            return a - b
+        });
 
         const coverages = [];
         for (const timestamp of timestamps) {
@@ -183,11 +207,11 @@ export class StatisticsCollector {
         const coveragesHeaders = timestamps.join(",");
         const coverageValues = coverages.join(",");
 
-        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
+        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize",
             "createdTestsCount", "createdTestsToReachFullCoverage", "timeToReachFullCoverage"];
         const headerRow = headers.join(",").concat(",", coveragesHeaders);
-        const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
             this._bestCoverage, this._testEventCount, this._eventsCount, this._bestTestSuiteSize,
             this._createdTestsCount, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
@@ -207,7 +231,7 @@ export class StatisticsCollector {
 
         }
         let maxCov = 0;
-        for (let i = 0; i <= maxTime; i = i+1000) {
+        for (let i = 0; i <= maxTime; i = i + 1000) {
             if (i in adjusted) {
                 maxCov = adjusted[i];
             } else {
@@ -227,5 +251,7 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
         this._startTime = Date.now();
+        this._projectName = this._unknownProject;
+        this._configName = this._unknownConfig;
     }
 }
