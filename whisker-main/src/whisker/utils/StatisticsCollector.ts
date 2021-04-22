@@ -168,7 +168,15 @@ export class StatisticsCollector {
         this._timeToReachFullCoverage = value;
     }
 
-    public asCsv(): string {
+    /**
+     * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so called
+     * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
+     * truncate this timeline. The optional parameter `numberOfCoverageValues` can be used to specify how many entries
+     * this timeline should consist of. If no value or `undefined` is given, all entries are included.
+     *
+     * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
+     */
+    public asCsv(numberOfCoverageValues?: number): string {
         const coverageStatsMap = this._adjustCoverageOverTime();
         const timestamps = [];
         for (const coverageStatsMapKey in coverageStatsMap) {
@@ -180,8 +188,16 @@ export class StatisticsCollector {
         for (const timestamp of timestamps) {
             coverages.push(coverageStatsMap[timestamp]);
         }
-        const coveragesHeaders = timestamps.join(",");
-        const coverageValues = coverages.join(",");
+
+        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        const truncateFitnessTimeline = numberOfCoverageValues != undefined && 0 <= numberOfCoverageValues;
+        const coveragesHeaders = truncateFitnessTimeline
+                ? timestamps.slice(0, numberOfCoverageValues).join(",")
+                : timestamps.join(",");
+        const coverageValues =
+            truncateFitnessTimeline
+                ? coverages.slice(0, numberOfCoverageValues).join(",")
+                : coverages.join(",");
 
         const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize",

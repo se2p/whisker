@@ -37,6 +37,8 @@ import {ExecutionTrace} from "./testcase/ExecutionTrace";
 import {ScratchEvent} from "./testcase/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
+import {FixedTimeStoppingCondtion} from "./search/stoppingconditions/FixedTimeStoppingCondition";
+import {OneOfStoppingCondition} from "./search/stoppingconditions/OneOfStoppingCondition";
 
 export class Search {
 
@@ -99,6 +101,42 @@ export class Search {
         return [javaScriptText, 'empty project'];
     }
 
+    private outputCSV(config: WhiskerSearchConfiguration): void {
+        /*
+         * When a FixedTimeStoppingCondition is used, the search is allowed to run for at most n seconds. The CSV output
+         * contains a fitness timeline, which tells the achieved coverage over time. In our case, we would expect the
+         * timeline to contain at most n entries. However, for certain projects, this number might actually be exceeded.
+         * For example, if a project contains a "wait 60 seconds" block, we might get n+60 entries. This is
+         * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
+         */
+        const stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+
+        // Retrieve the time limit (in milliseconds) of the search, if any.
+        let maxTime: number = undefined;
+        if (stoppingCondition instanceof FixedTimeStoppingCondtion) {
+            maxTime = stoppingCondition.maxTime;
+        } else if (stoppingCondition instanceof OneOfStoppingCondition) {
+            for (const d of stoppingCondition.conditions) {
+                if (d instanceof FixedTimeStoppingCondtion) {
+                    if (maxTime == undefined || maxTime > d.maxTime) { // take the minimum
+                        maxTime = d.maxTime;
+                    }
+                }
+            }
+        }
+
+        const truncateFitnessTimeline = maxTime != undefined;
+        let csvString: string;
+        if (truncateFitnessTimeline) {
+            // We want one coverage value per second (+ 1 because the timeline starts at 0 seconds.)
+            const numberOfCoverageValues = Math.floor(maxTime / 1000) + 1;
+            csvString = StatisticsCollector.getInstance().asCsv(numberOfCoverageValues);
+        } else {
+            csvString = StatisticsCollector.getInstance().asCsv();
+        }
+        console.log(csvString);
+    }
+
     /*
      * Main entry point -- called from whisker-web
      */
@@ -129,8 +167,7 @@ export class Search {
         const testListWithSummary = await this.execute(project, config);
         const tests = testListWithSummary.testList;
         this.printTests(tests);
-        const csvString: string = StatisticsCollector.getInstance().asCsv();
-        console.log(csvString);
+        this.outputCSV(config);
 
         const javaScriptText = this.testsToString(tests);
         return [javaScriptText, testListWithSummary.summary];
