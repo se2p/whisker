@@ -102,7 +102,8 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm, project, projectName: string, configRaw: string, accelerationFactor: number): Promise<Array<string>> {
+    public async run(vm, project, projectName: string, configRaw: string, configName: string,
+                     accelerationFactor: number): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -127,6 +128,7 @@ export class Search {
         seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();
         StatisticsCollector.getInstance().projectName = projectName;
+        StatisticsCollector.getInstance().configName = configName;
         const testListWithSummary = await this.execute(project, config);
         const tests = testListWithSummary.testList;
         this.printTests(tests);
