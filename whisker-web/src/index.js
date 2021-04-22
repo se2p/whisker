@@ -34,6 +34,7 @@ const Whisker = window.Whisker = {};
 window.$ = $;
 
 const DEFAULT_ACCELERATION_FACTOR = 1;
+const accSlider = $("#acceleration-factor").slider();
 
 const LANGUAGE_OPTION = "lng";
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
@@ -68,7 +69,7 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    const accelerationFactor = accSlider.slider('getValue');
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
 
@@ -81,7 +82,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     let summary;
     let coverage;
-    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    const accelerationFactor = accSlider.slider('getValue');
 
     try {
         await Whisker.scratch.vm.loadProject(project);
@@ -179,6 +180,7 @@ const initScratch = function () {
         $('#stop')
             .prop('disabled', true);
     });
+    $("#acceleration-value").text(DEFAULT_ACCELERATION_FACTOR);
 };
 
 const initComponents = function () {
@@ -215,12 +217,11 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
-    document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
-    $("#acceleration-factor").slider();
-};
+    accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
+}
 
 const initEvents = function () {
-    $("#acceleration-factor").on("slide", function(slideEvt) {
+    $("#acceleration-factor").on("slide", function (slideEvt) {
         $("#acceleration-value").text(slideEvt.value);
     });
     $('#green-flag').on('click', () => {
@@ -337,10 +338,10 @@ const initEvents = function () {
                 );
             }
         });
-        _addFileListeners();
+    _addFileListeners();
 };
 
-const _addFileListeners = function() {
+const _addFileListeners = function () {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
@@ -377,7 +378,7 @@ const toggleComponents = function () {
         if (componentStates) {
             const [input, accelerationFactor] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
-            if (accelerationFactor) document.querySelector('#acceleration-factor').value = accelerationFactor;
+            if (accelerationFactor) accSlider.slider('setValue', accelerationFactor);
         }
     }
 };
@@ -415,7 +416,7 @@ window.onbeforeunload = function () {
     if (window.localStorage) {
         const componentStates = [
             $('#toggle-input').is(':checked'),
-            document.querySelector('#acceleration-factor').value
+            accSlider.slider('getValue')
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
@@ -488,7 +489,7 @@ function _translateTestTableTooltips(oldLanguage, newLanguage) {
     const oldIndexData = oldLangData.index;
     const newLangData = i18next.getDataByLanguage(newLanguage);
     const newIndexData = newLangData.index;
-    $('.tooltip-sign-text').html(function() {
+    $('.tooltip-sign-text').html(function () {
         _translateTooltip(this, oldIndexData, newIndexData);
     });
 }
