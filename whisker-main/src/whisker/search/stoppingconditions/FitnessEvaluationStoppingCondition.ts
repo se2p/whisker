@@ -14,10 +14,10 @@ export class FitnessEvaluationStoppingCondition<T extends Chromosome> implements
     }
 
     getProgress(): number {
-        return StatisticsCollector.getInstance().createdTestsCount / this._maxEvaluations;
+        return StatisticsCollector.getInstance().numberFitnessEvaluations / this._maxEvaluations;
     }
 
     isFinished(): boolean {
-        return StatisticsCollector.getInstance().createdTestsCount >= this._maxEvaluations;
+        return StatisticsCollector.getInstance().numberFitnessEvaluations >= this._maxEvaluations;
     }
 }

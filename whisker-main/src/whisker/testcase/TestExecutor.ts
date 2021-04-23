@@ -91,7 +91,7 @@ export class TestExecutor {
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         this._vmWrapper.end();
         this.resetState();
-        StatisticsCollector.getInstance().createdTestsCount++;
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return testChromosome.trace;
     }
 
