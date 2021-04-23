@@ -267,7 +267,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Updates the archive of best chromosomes.
      *
-     * @param candidateChromosome The candidate chromosomes for the archive.
+     * @param candidateChromosome The candidate chromosome for the archive.
      */
     private updateArchive(candidateChromosome: C): void {
             for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
