@@ -28,6 +28,7 @@ import {Randomness} from "../../utils/Randomness";
 import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {TestChromosome} from "../../testcase/TestChromosome";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -87,10 +88,25 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._fitnessFunctions.values();
     }
 
+    async evaluatePopulation(population: List<C>): Promise<void> {
+        for (const chromosome of population) {
+            if (this._stoppingCondition.isFinished(this)) {
+                const executedChromosomes = population.getElements().filter(chromosome => (chromosome as unknown as TestChromosome).trace);
+                population.clear();
+                population.addAll(executedChromosomes)
+                console.log(population)
+                return;
+            } else {
+                await chromosome.evaluate();
+            }
+        }
+    }
+
     private generateInitialPopulation(): List<C> {
         const population = new List<C>();
         for (let i = 0; i < this._properties.getPopulationSize(); i++) {
             if (this._stoppingCondition.isFinished(this)) {
+                population.getElements().filter(chromosome => (chromosome as unknown as TestChromosome).trace)
                 break;
             }
             population.add(this._chromosomeGenerator.get());
@@ -113,6 +129,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
+        console.log(parentPopulation)
 
         this.updateArchive(parentPopulation);
         if (this._stoppingCondition.isFinished(this)) {
