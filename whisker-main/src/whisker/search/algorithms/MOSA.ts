@@ -113,6 +113,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return population;
     }
 
+
     /**
      * Returns a list of solutions for the given problem.
      *
@@ -134,7 +135,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this.updateBestIndividualAndStatistics();
         }
         while (!(this._stoppingCondition.isFinished(this))) {
-            console.log("Iteration " + this._iterations + ", covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
+            console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
             this.updateArchive(offspringPopulation);
@@ -161,7 +162,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             if (!this._archive.has(fitnessFunctionKey)) {
-                console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
+                console.log(`Not covered: ${this._fitnessFunctions.get(fitnessFunctionKey).toString()}`);
             }
         }
         return this._bestIndividuals;
@@ -286,7 +287,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     }
                     this._archive.set(fitnessFunctionKey, candidateChromosome);
-                    console.log("Found test for goal: " + fitnessFunction);
+                    console.log(`Found test for goal: ${fitnessFunction}`);
                 }
             }
         }
@@ -316,7 +317,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         bestFitness = candidateFitness;
                     }
                 }
-                console.log("Best Fitness for " + fitnessFunction.toString() + ": " + bestFitness);
+                console.log(`Best Fitness for ${fitnessFunction.toString()}: ${bestFitness}`);
                 if (!bestFront.contains(bestChromosome)) {
                     bestFront.add(bestChromosome);
                     chromosomesForNonDominatedSorting.remove(bestChromosome);
