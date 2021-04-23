@@ -35,7 +35,7 @@ export class StatisticsCollector {
     private _eventsCount: number; //executed events
     private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
-    private _createdTestsCount: number;
+    private _numberFitnessEvaluations: number;
     private _createdTestsToReachFullCoverage: number;
     private _startTime: number;
     private _timeToReachFullCoverage: number;
@@ -59,7 +59,7 @@ export class StatisticsCollector {
         this._bestCoverage = 0;
         this._startTime = 0;
         this._testEventCount = 0;
-        this._createdTestsCount = 0;
+        this._numberFitnessEvaluations = 0;
         this._covOverTime = new Map<number, number>();
     }
 
@@ -166,12 +166,12 @@ export class StatisticsCollector {
         this._testEventCount = value;
     }
 
-    get createdTestsCount(): number {
-        return this._createdTestsCount;
+    get numberFitnessEvaluations(): number {
+        return this._numberFitnessEvaluations;
     }
 
-    set createdTestsCount(value: number) {
-        this._createdTestsCount = value;
+    set numberFitnessEvaluations(value: number) {
+        this._numberFitnessEvaluations = value;
     }
 
     get createdTestsToReachFullCoverage(): number {
@@ -225,11 +225,11 @@ export class StatisticsCollector {
 
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize",
-            "createdTestsCount", "createdTestsToReachFullCoverage", "timeToReachFullCoverage"];
+            "numberFitnessEvaluations", "createdTestsToReachFullCoverage", "timeToReachFullCoverage"];
         const headerRow = headers.join(",").concat(",", coveragesHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
             this._bestCoverage, this._testEventCount, this._eventsCount, this._bestTestSuiteSize,
-            this._createdTestsCount, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
+            this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
     }

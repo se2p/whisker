@@ -103,8 +103,6 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             }
         }
         console.log("1+1 EA completed at "+Date.now());
-        StatisticsCollector.getInstance().createdTestsCount = this._iterations + 1;
-
         return this._bestIndividuals;
     }
 
