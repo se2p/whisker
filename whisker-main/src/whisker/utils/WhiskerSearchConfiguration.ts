@@ -24,7 +24,7 @@ import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
 import {VariableLengthTestChromosomeGenerator} from "../testcase/VariableLengthTestChromosomeGenerator";
 import {StoppingCondition} from "../search/StoppingCondition";
-import {FixedTimeStoppingCondtion} from "../search/stoppingconditions/FixedTimeStoppingCondition";
+import {FixedTimeStoppingCondition} from "../search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
@@ -168,7 +168,7 @@ export class WhiskerSearchConfiguration {
         if (stoppingCond == "fixed-iteration") {
             return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
         } else if (stoppingCond == "fixed-time") {
-            return new FixedTimeStoppingCondtion(stoppingCondition["duration"]);
+            return new FixedTimeStoppingCondition(stoppingCondition["duration"]);
         } else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
         } else if (stoppingCond == 'events') {

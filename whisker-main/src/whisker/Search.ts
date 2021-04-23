@@ -37,7 +37,7 @@ import {ExecutionTrace} from "./testcase/ExecutionTrace";
 import {ScratchEvent} from "./testcase/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
-import {FixedTimeStoppingCondtion} from "./search/stoppingconditions/FixedTimeStoppingCondition";
+import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "./search/stoppingconditions/OneOfStoppingCondition";
 
 export class Search {
@@ -113,11 +113,11 @@ export class Search {
 
         // Retrieve the time limit (in milliseconds) of the search, if any.
         let maxTime: number = undefined;
-        if (stoppingCondition instanceof FixedTimeStoppingCondtion) {
+        if (stoppingCondition instanceof FixedTimeStoppingCondition) {
             maxTime = stoppingCondition.maxTime;
         } else if (stoppingCondition instanceof OneOfStoppingCondition) {
             for (const d of stoppingCondition.conditions) {
-                if (d instanceof FixedTimeStoppingCondtion) {
+                if (d instanceof FixedTimeStoppingCondition) {
                     if (maxTime == undefined || maxTime > d.maxTime) { // take the minimum
                         maxTime = d.maxTime;
                     }
@@ -140,7 +140,8 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm, project, configRaw: string, accelerationFactor: number): Promise<Array<string>> {
+    public async run(vm, project, projectName: string, configRaw: string, configName: string,
+                     accelerationFactor: number): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -164,6 +165,8 @@ export class Search {
         Randomness.setInitialSeed(seed);
         seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();
+        StatisticsCollector.getInstance().projectName = projectName;
+        StatisticsCollector.getInstance().configName = configName;
         const testListWithSummary = await this.execute(project, config);
         const tests = testListWithSummary.testList;
         this.printTests(tests);

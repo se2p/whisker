@@ -22,7 +22,8 @@ import {StoppingCondition} from "../StoppingCondition";
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 
-export class FixedTimeStoppingCondtion<T extends Chromosome> implements StoppingCondition<T> {
+export class FixedTimeStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
+
     private readonly _maxTime: number;
 
     constructor(maxTime: number) {
