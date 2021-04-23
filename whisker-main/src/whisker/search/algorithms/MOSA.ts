@@ -90,11 +90,11 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     async evaluatePopulation(population: List<C>): Promise<void> {
         for (const chromosome of population) {
+            // Check if we have already reached our stopping condition; if so stop and exclude non-executed chromosomes
             if (this._stoppingCondition.isFinished(this)) {
                 const executedChromosomes = population.getElements().filter(chromosome => (chromosome as unknown as TestChromosome).trace);
                 population.clear();
                 population.addAll(executedChromosomes)
-                console.log(population)
                 return;
             } else {
                 await chromosome.evaluate();
@@ -129,7 +129,6 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
-        console.log(parentPopulation)
 
         this.updateArchive(parentPopulation);
         if (this._stoppingCondition.isFinished(this)) {
