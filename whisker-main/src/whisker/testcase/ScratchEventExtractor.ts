@@ -39,6 +39,7 @@ export class ScratchEventExtractor {
 
     private static availableWaitDurations = new List<number>();
     private static availableTextSnippets = new List<string>();
+    private static proceduresMap = new Map<string, List<ScratchEvent>>();
 
     static hasEvents(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
@@ -71,39 +72,58 @@ export class ScratchEventExtractor {
         return false;
     }
 
+    private static traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
+        do {
+            foundEvents.addList(this._extractEventsFromBlock(target, block))
+            if(block.inputs.SUBSTACK){
+                const conditionBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block)
+                this.traverseBlocks(target, conditionBlock, foundEvents);
+            }
+            if(block.inputs.SUBSTACK2){
+                const conditionBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block)
+                this.traverseBlocks(target, conditionBlock, foundEvents);
+            }
+
+            if(block.inputs.CONDITION){
+                foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
+            }
+
+            if(target.blocks.getOpcode(block) === 'procedures_call'){
+                foundEvents.addList(this.proceduresMap.get(block.mutation.proccode))
+            }
+
+
+            const duration = this._extractWaitDurations(target, block);
+            if (duration > 0) {
+                foundEvents.add(new WaitEvent(duration));
+            }
+            block = target.blocks.getBlock(block.next)
+        } while (block)
+    }
+
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
 
         // Get all hat blocks
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.sprite.blocks.getScripts()) {
+                const hatBlock = target.blocks.getBlock(scriptId);
                 eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
+                if(target.blocks.getOpcode(hatBlock) === 'procedures_definition'){
+                    const procedureEvents = new List<ScratchEvent>();
+                    this.traverseBlocks(target, hatBlock, procedureEvents);
+                    const prototype = target.blocks.getBlock(hatBlock.inputs.custom_block.block);
+                    this.proceduresMap.set(prototype.mutation.proccode, procedureEvents)
+                }
             }
         }
 
         // Check all blocks within scripts currently executing
         for (const t of vm.runtime.threads) {
             const target = t.target;
-            const topBlock = t.topBlock; // this is the first block of the script running in this thread?
-
-            for (const blockId of Object.keys(target.blocks._blocks)) {
-                const block = target.blocks.getBlock(blockId)
-
-                let tb = block;
-                // TODO: If we encounter procedure_prototype blocks we basically skip them;
-                //  maybe there is a way to map the prototypes to their procedure_definition blocks?
-                while (!tb.topLevel && Object.hasOwnProperty.bind(tb)('parent')) {
-                    tb = target.blocks.getBlock(tb.parent)
-                }
-                if (tb.id === topBlock) {
-                    eventList.addList(this._extractEventsFromBlock(target, block));
-
-                    const duration = this._extractWaitDurations(target, block);
-                    if (duration > 0) {
-                        eventList.add(new WaitEvent(duration));
-                    }
-                }
-            }
+            const block = target.blocks.getBlock(t.topBlock);
+            if(block)
+                this.traverseBlocks(target,block,eventList);
         }
 
         // TODO: In some programs without event handlers no waits are chosen
@@ -159,25 +179,34 @@ export class ScratchEventExtractor {
     // TODO: How to handle event parameters?
     static _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
-        const fields = target.blocks.getFields(block);
         if (typeof block.opcode === 'undefined') {
             return eventList;
         }
 
         switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed': // Key press
+            case 'event_whenkeypressed': {// Key press
+                const fields = target.blocks.getFields(block);
                 eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 // one event per concrete key for which there is a hat block
                 break;
-            case 'sensing_keyoptions': // Key down
+            }
+            case 'sensing_keypressed': {
+                const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
+                const fields = target.blocks.getFields(keyOptionsBlock);
                 const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
-                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
+                eventList.add(new KeyDownEvent(fields, !isKeyDown));
                 break;
+            }
             case 'sensing_mousex':
             case 'sensing_mousey':
             case 'touching-mousepointer': // TODO fix block name
                 // Mouse move
                 eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
+                break;
+            case 'motion_pointtowards':
+                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
+                if(towards.fields.TOWARDS.value === '_mouse_')
+                    eventList.add(new MouseMoveEvent());
                 break;
             case 'sensing_mousedown':
                 // Mouse down
@@ -186,9 +215,7 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                if (Container.vmWrapper.isQuestionAsked()) {
-                    eventList.addList(this._getTypeTextEvents());
-                }
+                eventList.addList(this._getTypeTextEvents());
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
