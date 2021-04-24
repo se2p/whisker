@@ -130,10 +130,10 @@ export class ScratchEventExtractor {
                 this.traverseBlocks(target, branchBlock, foundEvents);
             }
 
-            // look inside a conditional statement
+            // look at the block(s) inside a conditional statement
             if (block.inputs.CONDITION) {
                 const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
-                // Handle conditional statements with two conditions
+                // Handle conditional statements with two condition blocks
                 if(condition.inputs.OPERAND1){
                     this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
                 }
@@ -215,7 +215,7 @@ export class ScratchEventExtractor {
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
                 const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
-                eventList.add(new KeyDownEvent(fields, !isKeyDown));
+                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
                 break;
             }
             case 'sensing_mousex':
