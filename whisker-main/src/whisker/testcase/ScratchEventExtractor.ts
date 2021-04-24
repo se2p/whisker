@@ -21,7 +21,6 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import Scratch3LooksBlocks from 'scratch-vm/src/blocks/scratch3_looks.js';
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {ScratchEvent} from "./ScratchEvent";
 import {KeyDownEvent} from "./events/KeyDownEvent";
@@ -72,44 +71,16 @@ export class ScratchEventExtractor {
         return false;
     }
 
-    private static traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
-        do {
-            foundEvents.addList(this._extractEventsFromBlock(target, block))
-            if(block.inputs.SUBSTACK){
-                const conditionBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block)
-                this.traverseBlocks(target, conditionBlock, foundEvents);
-            }
-            if(block.inputs.SUBSTACK2){
-                const conditionBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block)
-                this.traverseBlocks(target, conditionBlock, foundEvents);
-            }
-
-            if(block.inputs.CONDITION){
-                foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
-            }
-
-            if(target.blocks.getOpcode(block) === 'procedures_call'){
-                foundEvents.addList(this.proceduresMap.get(block.mutation.proccode))
-            }
-
-
-            const duration = this._extractWaitDurations(target, block);
-            if (duration > 0) {
-                foundEvents.add(new WaitEvent(duration));
-            }
-            block = target.blocks.getBlock(block.next)
-        } while (block)
-    }
-
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
 
-        // Get all hat blocks
+        // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
+        // of the procedure definition script.
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.sprite.blocks.getScripts()) {
                 const hatBlock = target.blocks.getBlock(scriptId);
                 eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
-                if(target.blocks.getOpcode(hatBlock) === 'procedures_definition'){
+                if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
                     const procedureEvents = new List<ScratchEvent>();
                     this.traverseBlocks(target, hatBlock, procedureEvents);
                     const prototype = target.blocks.getBlock(hatBlock.inputs.custom_block.block);
@@ -122,8 +93,9 @@ export class ScratchEventExtractor {
         for (const t of vm.runtime.threads) {
             const target = t.target;
             const block = target.blocks.getBlock(t.topBlock);
-            if(block)
-                this.traverseBlocks(target,block,eventList);
+            // Sometimes we encounter undefined blocks here?
+            if (block)
+                this.traverseBlocks(target, block, eventList);
         }
 
         // TODO: In some programs without event handlers no waits are chosen
@@ -136,6 +108,47 @@ export class ScratchEventExtractor {
         }
 
         return eventList.distinctObjects();
+    }
+
+    /**
+     * Traverse downwards the block hierarchy and collect all encountered events.
+     * @param target the rendered target of the vm
+     * @param block the current block which will be checked for events
+     * @param foundEvents collects the encountered Events
+     */
+    private static traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
+        do {
+            foundEvents.addList(this._extractEventsFromBlock(target, block))
+            // first branch (if, forever, repeat, ...)
+            if (block.inputs.SUBSTACK) {
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block)
+                this.traverseBlocks(target, branchBlock, foundEvents);
+            }
+            // else branch
+            if (block.inputs.SUBSTACK2) {
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block)
+                this.traverseBlocks(target, branchBlock, foundEvents);
+            }
+
+            // look inside a conditional statement
+            if (block.inputs.CONDITION) {
+                foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
+            }
+
+            // handle procedure calls by mapping the call to its corresponding procedure_definition
+            if (target.blocks.getOpcode(block) === 'procedures_call') {
+                if (this.proceduresMap.has(block.mutation.proccode)) {
+                    foundEvents.addList(this.proceduresMap.get(block.mutation.proccode))
+                }
+            }
+
+            // WaitEvents
+            const duration = this._extractWaitDurations(target, block);
+            if (duration > 0) {
+                foundEvents.add(new WaitEvent(duration));
+            }
+            block = target.blocks.getBlock(block.next)
+        } while (block)
     }
 
     /**
@@ -184,7 +197,7 @@ export class ScratchEventExtractor {
         }
 
         switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed': {// Key press
+            case 'event_whenkeypressed': {  // Key press
                 const fields = target.blocks.getFields(block);
                 eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 // one event per concrete key for which there is a hat block
@@ -205,7 +218,7 @@ export class ScratchEventExtractor {
                 break;
             case 'motion_pointtowards':
                 const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
-                if(towards.fields.TOWARDS.value === '_mouse_')
+                if (towards.fields.TOWARDS.value === '_mouse_')
                     eventList.add(new MouseMoveEvent());
                 break;
             case 'sensing_mousedown':
