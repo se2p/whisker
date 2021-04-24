@@ -81,10 +81,12 @@ export class ScratchEventExtractor {
                 const hatBlock = target.blocks.getBlock(scriptId);
                 eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
                 if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
-                    const procedureEvents = new List<ScratchEvent>();
-                    this.traverseBlocks(target, hatBlock, procedureEvents);
-                    const prototype = target.blocks.getBlock(hatBlock.inputs.custom_block.block);
-                    this.proceduresMap.set(prototype.mutation.proccode, procedureEvents)
+                    const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
+                    if(!this.proceduresMap.has(proccode)) {
+                        const procedureEvents = new List<ScratchEvent>();
+                        this.traverseBlocks(target, hatBlock, procedureEvents);
+                        this.proceduresMap.set(proccode, procedureEvents)
+                    }
                 }
             }
         }
