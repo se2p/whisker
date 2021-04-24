@@ -132,7 +132,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         await this.evaluatePopulation(parentPopulation);
 
         if (this._stoppingCondition.isFinished(this)) {
-            this.updateBestIndividualAndStatistics();
+            this.updateStatistics();
         }
         while (!(this._stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
@@ -154,7 +154,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
             parentPopulation.reverse(); // reverse order from descending to ascending by quality for rank selection
             this._iterations++;
-            this.updateBestIndividualAndStatistics();
+            this.updateStatistics();
         }
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
@@ -201,8 +201,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return summary;
     }
 
-    private updateBestIndividualAndStatistics() {
-        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+    private updateStatistics() {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
@@ -283,6 +282,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     }
                     this._archive.set(fitnessFunctionKey, candidateChromosome);
+                    this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
                     console.log(`Found test for goal: ${fitnessFunction}`);
                 }
             }
