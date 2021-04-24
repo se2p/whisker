@@ -98,6 +98,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 return;
             } else {
                 await chromosome.evaluate();
+                this.updateArchive(chromosome);
             }
         }
     }
@@ -130,15 +131,13 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
 
-        this.updateArchive(parentPopulation);
         if (this._stoppingCondition.isFinished(this)) {
-            this.updateBestIndividualAndStatistics();
+            this.updateStatistics();
         }
         while (!(this._stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
-            this.updateArchive(offspringPopulation);
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);
@@ -153,10 +152,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     break;
                 }
             }
-            this.updateArchive(parentPopulation);
             parentPopulation.reverse(); // reverse order from descending to ascending by quality for rank selection
             this._iterations++;
-            this.updateBestIndividualAndStatistics();
+            this.updateStatistics();
         }
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
@@ -203,11 +201,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return summary;
     }
 
-    private updateBestIndividualAndStatistics() {
-        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+    private updateStatistics() {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
@@ -270,10 +266,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Updates the archive of best chromosomes.
      *
-     * @param chromosomes The candidate chromosomes for the archive.
+     * @param candidateChromosome The candidate chromosome for the archive.
      */
-    private updateArchive(chromosomes: List<C>): void {
-        for (const candidateChromosome of chromosomes) {
+    private updateArchive(candidateChromosome: C): void {
             for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 let bestLength = this._archive.has(fitnessFunctionKey)
@@ -287,10 +282,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     }
                     this._archive.set(fitnessFunctionKey, candidateChromosome);
+                    this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
                     console.log(`Found test for goal: ${fitnessFunction}`);
                 }
             }
-        }
     }
 
     /**
