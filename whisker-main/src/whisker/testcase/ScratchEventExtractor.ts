@@ -132,6 +132,14 @@ export class ScratchEventExtractor {
 
             // look inside a conditional statement
             if (block.inputs.CONDITION) {
+                const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
+                // Handle conditional statements with two conditions
+                if(condition.inputs.OPERAND1){
+                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
+                }
+                if(condition.inputs.OPERAND1){
+                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
+                }
                 foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
             }
 
