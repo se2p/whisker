@@ -116,9 +116,23 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
 
         console.log("Simple GA completed at "+Date.now());
-        StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.getPopulationSize();
 
         return this._bestIndividuals;
+    }
+
+
+/**
+ * Summarize the solution saved in _archive.
+ * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+ * 		- Not covered: the statement that’s not covered by any
+ *        function in the _bestIndividuals.
+ *     	- ApproachLevel: the approach level of that statement
+ *     	- BranchDistance: the branch distance of that statement
+ *     	- Fitness: the fitness value of that statement
+ * For other search algorithms, it returns an empty string.
+ */
+    summarizeSolution(): string {
+        return '';
     }
 
     /**

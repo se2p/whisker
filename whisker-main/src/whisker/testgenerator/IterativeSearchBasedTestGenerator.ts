@@ -25,6 +25,7 @@ import {TestChromosome} from '../testcase/TestChromosome';
 import {WhiskerTest} from './WhiskerTest';
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {FitnessFunction} from "../search/FitnessFunction";
+import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 /**
  * To generate a test suite using single-objective search,
@@ -33,7 +34,7 @@ import {FitnessFunction} from "../search/FitnessFunction";
  */
 export class IterativeSearchBasedTestGenerator extends TestGenerator {
 
-    async generateTests(project: ScratchProject): Promise<List<WhiskerTest>> {
+    async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary> {
         const testChromosomes = new List<TestChromosome>();
         this._fitnessFunctions = this.extractCoverageGoals();
         let numGoal = 1;
@@ -63,7 +64,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         }
         const testSuite = await this.getTestSuite(testChromosomes);
         await this.collectStatistics(testSuite);
-        return testSuite;
+        return new WhiskerTestListWithSummary(testSuite, '');
     }
 
     async _isCovered(coverageGoal: FitnessFunction<any>, testSuite: List<TestChromosome>): Promise<boolean> {
