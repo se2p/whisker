@@ -248,7 +248,8 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthTestChromosomeGenerator(this.getSearchAlgorithmProperties(),
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
-                    this.dict['init-var-length']);
+                    this.dict['minVarChromosomeLength'],
+                    this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork':
                 return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),

@@ -3,7 +3,8 @@
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
     "population-size": 10,
-    "init-var-length": 2,
+    "minVarChromosomeLength": 2,
+    "maxVarChromosomeLength": 6,
     "chromosome-length": 6,
     "crossover": {
         "operator": "singlepointrelative",
@@ -12,6 +13,7 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
+        "alpha": 0.5,
         "maxMutationCountStart": null,
         "maxMutationCountFocusedPhase": null
     },
