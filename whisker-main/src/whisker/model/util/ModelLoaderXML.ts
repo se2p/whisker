@@ -3,7 +3,8 @@ import {ModelNode} from "../components/ModelNode";
 import {ModelEdge} from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
-import {setUpCondition, setUpEffect} from "./EdgeEvent";
+import {setUpCondition} from "../components/Condition";
+import {setUpEffect} from "../components/Effect";
 
 /**
  * Load models from a xml file.

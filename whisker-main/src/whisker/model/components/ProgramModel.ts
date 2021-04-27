@@ -80,6 +80,8 @@ export class ProgramModel extends EventEmitter {
             }
             edge.runEffect();
 
+
+            edge.checkEffects(this.testDriver);
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
             }

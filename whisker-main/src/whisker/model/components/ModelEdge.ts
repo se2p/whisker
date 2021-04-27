@@ -1,6 +1,6 @@
 import {ModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
-import {Effect} from "../util/EdgeEvent";
+import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import {ConditionState} from "../util/ConditionState";
 
@@ -35,7 +35,7 @@ export class ModelEdge {
      * @param testDriver Instance of the test driver.
      * @return Promise<boolean>, if the conditions are fulfilled.
      */
-    testConditions(testDriver: TestDriver): boolean {
+    checkConditions(testDriver: TestDriver): boolean {
         let fulfilled = true;
 
         for (let i = 0; i < this.conditions.length; i++) {
@@ -52,10 +52,20 @@ export class ModelEdge {
     /**
      * Run all effects of the edge.
      */
-    runEffect(): void {
+    checkEffects(testDriver: TestDriver): boolean {
+        let fulfilled = true;
+
         for (let i = 0; i < this.effects.length; i++) {
-            eval(this.effects[i].effectFunc);
+            fulfilled = this.effects[i].check(testDriver);
+
+            // stop if one condition is not fulfilled
+            if (!fulfilled) {
+                // todo log this!
+                console.error("effect not fulfilled", this);
+                break;
+            }
         }
+        return fulfilled;
     }
 
     /**
@@ -98,41 +108,8 @@ export class ModelEdge {
         this.conditions.forEach(cond => {
             cond.registerAndTestConditions(testDriver, conditionState);
         })
+        this.effects.forEach(effect => {
+            effect.testEffectsForErrors(testDriver);
+        })
     }
-}
-
-/**
- * Print out the output given.
- * @param output Output to print.
- */
-export function outputEffect(output: string) {
-    console.log("Effect: " + output);
-}
-
-/**
- * Print out the value of the given variable of scratch. todo implement
- * @param varName Name of the variable.
- */
-export function varOutputEffect(varName: string) {
-    console.log("Effect: " + varName);
-}
-
-/**
- * Change the value of a integer variable. todo ?
- * @param spriteName Name of the sprite having the variable.
- * @param varName Name of the variable
- * @param mode
- */
-export function varChangeEffect(spriteName: string, varName: string, mode: string) {
-    console.log("Effect: " + varName + mode);
-}
-
-/**
- * Change an attribute of a sprite.
- * @param spriteName Name of the sprite
- * @param varName Name of the variable
- * @param varValue New value of the variable // todo only mode to compare? >,<,=
- */
-export function spriteChangeEffect(spriteName: string, varName: string, varValue: string) {
-    // console.log("Effect: " + spriteName + "." + varName  + varValue);
 }

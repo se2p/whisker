@@ -1,15 +1,68 @@
 import TestDriver from "../../../test/test-driver";
-import {Input} from "../../../vm/inputs";
 import {ConditionState} from "../util/ConditionState";
+import {ModelEdge} from "./ModelEdge";
 
 /** Type for finding the correct condition function, defining the event. */
 export enum ConditionName {
-    Key = "Key",
-    Click = "Click",
-    VarTest = "VarTest",
-    SpriteTouching = "SpriteTouching", // two sprites touching each other
-    SpriteColor = "SpriteColor", // sprite touching a color
-    Function = "Function"
+    Key = "Key", // args: key name
+    Click = "Click", // args: sprite name
+    VarTest = "VarTest", // args: sprite name, variable name, comparison (=,>,<...), value to compare to
+    SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
+    SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
+    Function = "Function" // args: js test function as a string
+}
+
+
+/**
+ * Evaluate the conditions for the given edge.
+ * @param newEdge Edge with the given condition.
+ * @param condString String representing the conditions.
+ */
+export function setUpCondition(newEdge: ModelEdge, condString: string) {
+    const conditions = condString.split(",");
+
+    try {
+        conditions.forEach(cond => {
+            newEdge.addCondition(getCondition(cond));
+        })
+    } catch (e) {
+        throw new Error("Edge '" + newEdge.id + "': " + e.message);
+    }
+}
+
+/**
+ * Converts a single condition for an edge into a function that can be evaluated. Single condition could be f.e.
+ * 'Key:space'.
+ * @param condString String part on the edge of the xml file that is the condition.
+ */
+export function getCondition(condString): Condition {
+    // negation
+    let isANegation = false;
+    if (condString.startsWith("!")) {
+        isANegation = true;
+        condString = condString.substr(1, condString.length);
+    }
+
+    const parts = condString.split(":");
+
+    if (parts.length < 2) {
+        throw new Error("Edge condition not correctly formatted. ':' missing.");
+    }
+
+    switch (parts[0]) {
+        case ConditionName.Key:
+            return new Condition(ConditionName.Key, isANegation, parts[1].toLowerCase());
+        case ConditionName.Click:
+            return new Condition(ConditionName.Click, isANegation, parts[1]);
+        case ConditionName.VarTest:
+            return new Condition(ConditionName.VarTest, isANegation, parts[1], parts[2], parts[3], parts[4]);
+        case ConditionName.SpriteTouching:
+            return new Condition(ConditionName.SpriteTouching, isANegation, parts[1], parts[2]);
+        case ConditionName.SpriteColor:
+            return new Condition(ConditionName.SpriteColor, isANegation, parts[1], parts[2], parts[3], parts[4]);
+        default:
+            throw new Error("Edge condition type not recognized or missing.");
+    }
 }
 
 /**
@@ -34,31 +87,41 @@ export class Condition {
         this.args = args;
         this.isANegation = isANegation;
 
-        // check args length
-        if (this.args.length == 0
-            || this.args.length != 2 && (this.name == ConditionName.SpriteTouching || this.name == ConditionName.Click)
-            || this.args.length != 4 && (this.name == ConditionName.SpriteColor || this.name == ConditionName.VarTest)) {
-            throw new Error("Not enough arguments for the condition.");
+        let argsError = function () {
+            return "Not enough arguments for condition " + name + ".";
         }
 
+        // todo refactor
         // Get the condition by the name given.
         switch (this.name) {
             case ConditionName.Key:
+                if (this.args.length != 1 || args[0] == undefined) throw new Error(argsError());
                 this.condition = this._checkKeyEvent(this.args[0]);
                 break;
             case ConditionName.Click:
-                this.condition = this._checkClickEvent(this.args[0], this.args[1]);
+                if (this.args.length != 1 || args[0] == undefined) throw new Error(argsError());
+                this.condition = this._checkClickEvent(this.args[0]);
                 break;
             case ConditionName.SpriteColor:
+                if (this.args.length != 4 || args[0] == undefined || args[1] == undefined
+                    || args[2] == undefined || args[3] == undefined) {
+                    throw new Error(argsError());
+                }
                 this.condition = this._checkSpriteColorEvent(this.args[0], this.args[1], this.args[2], this.args[3]);
                 break;
             case ConditionName.SpriteTouching:
+                if (this.args.length != 2 || args[0] == undefined|| args[1] == undefined) throw new Error(argsError());
                 this.condition = this._checkSpriteTouchingEvent(this.args[0], this.args[1]);
                 break;
             case ConditionName.VarTest:
+                if (this.args.length != 4 || args[0] == undefined || args[1] == undefined
+                    || args[2] == undefined || args[3] == undefined) {
+                    throw new Error(argsError());
+                }
                 this.condition = this._checkVarTestEvent(this.args[0], this.args[1], this.args[2], this.args[3]);
                 break;
             case ConditionName.Function:
+                if (this.args.length != 1 || args[0] == undefined) throw new Error(argsError());
                 this.condition = this.args[0]; // todo
                 break;
             default:
@@ -121,6 +184,12 @@ export class Condition {
                 }
                 // todo test whether comparison is something known =,<,>, >=, <= ??
                 break;
+            case ConditionName.Function:
+                try {
+                    eval(this.args[0]);
+                } catch (e) {
+                    throw new Error("Condition Function cannot be evaluated:\n" + e);
+                }
         }
     }
 
@@ -136,7 +205,7 @@ export class Condition {
      * @param testDriver Instance of the test driver.
      * @param spriteName Name of the sprite.
      */
-    _checkSpriteExistence(testDriver: TestDriver, spriteName: string) {
+    private _checkSpriteExistence(testDriver, spriteName: string) {
         let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
         if (sprite == undefined) {
             throw new Error("Sprite not existing with name: " + this.args[0]);
@@ -147,35 +216,25 @@ export class Condition {
      * Method for checking if an edge condition is fulfilled with a key event. Todo needs duration or not?
      * @param key Name of the key.
      */
-    _checkKeyEvent(key: string): (testDriver: TestDriver) => boolean {
+    private _checkKeyEvent(key: string): (testDriver: TestDriver) => boolean {
         // console.log("registering condition: key test ", key);
         let isANegation = this.isANegation;
         return function (testDriver: TestDriver): boolean {
-            let inputs = testDriver.vmWrapper.inputs.inputs;
-            if (inputs.length > 0) {
-
-                // try to find the input equal to the string
-                for (let i = 0; i < inputs.length; i++) {
-                    if (inputs[i]._data.key === Input.scratchKeyToKeyString(key)) {
-                        return !isANegation;
-                    }
-                }
-                return isANegation;
-            } else {
-                // console.log("inputs empty") todo why
+            if (testDriver.isKeyDown(key)) {
+                return !isANegation;
             }
-            return false;
+            return isANegation;
         }
     }
 
     /**
-     * Check whether a click is on the coordinate x and y. // todo maybe on sprite instead?
-     * @param x X coordinate.
-     * @param y Y coordinate.
+     * Check whether a click is on a sprite.
+     * @param spriteName Name of the sprite.
      */
-    _checkClickEvent(x: number, y: number): (testDriver: TestDriver) => boolean {
+    private _checkClickEvent(spriteName: string): (testDriver: TestDriver) => boolean {
         // console.log("registering condition: click ", x, y);
         return function (testDriver: TestDriver): boolean {
+            // todo get input click cooridantes and test them with the boundaries of the sprite?
             return false;
         }
     }
@@ -188,7 +247,7 @@ export class Condition {
      * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
      * @param varValue Value to compare to the variable's current value.
      */
-    _checkVarTestEvent(spriteName: string, varName: string, comparison: string, varValue: string):
+    private _checkVarTestEvent(spriteName: string, varName: string, comparison: string, varValue: string):
         (testDriver: TestDriver) => boolean {
         // console.log("registering condition: var test ", spriteName, varName, comparison, varValue);
         let isANegation = this.isANegation;
@@ -217,13 +276,12 @@ export class Condition {
      * @param spriteName1 Name of the first sprite.
      * @param spriteName2 Name of the second sprite.
      */
-    _checkSpriteTouchingEvent(spriteName1: string, spriteName2: string):
+    private _checkSpriteTouchingEvent(spriteName1: string, spriteName2: string):
         (testDriver: TestDriver, conditionState: ConditionState) => boolean {
         let isANegation = this.isANegation;
         return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
             const areTouching = conditionState.areTouching(spriteName1, spriteName2);
             if (areTouching) {
-                console.log("MARKER: Touching " + spriteName1 + " " + spriteName2);
                 return !isANegation;
             }
             return isANegation;
@@ -237,15 +295,20 @@ export class Condition {
      * @param g RGB green color value.
      * @param b RGB blue color value.
      */
-    _checkSpriteColorEvent(spriteName: string, r: number, g: number, b: number):
+    private _checkSpriteColorEvent(spriteName: string, r: number, g: number, b: number):
         (testDriver: TestDriver, conditionState: ConditionState) => boolean {
         let isANegation = this.isANegation;
         return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
             if (conditionState.isTouchingColor(spriteName, r, g, b)) {
-                console.log("MARKER: Color " + spriteName);
                 return !isANegation;
             }
             return isANegation;
         }
     }
+
+    // todo condition when the background image changes to a certain image
+    // todo condition when getting message
+    // todo condition volume > some value
+    // todo attribute test
+    // todo output test
 }
