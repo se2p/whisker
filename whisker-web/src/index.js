@@ -63,7 +63,10 @@ const loadTestsFromString = function (string) {
 const runSearch = async function () {
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
-    const configName = Whisker.configFileSelect.getName();
+    const configName =
+        Whisker.configFileSelect.hasName() ?
+            Whisker.configFileSelect.getName() :
+            'default.json';
     console.log(`Whisker-Web: loading project ${projectName}`);
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
