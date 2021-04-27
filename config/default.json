@@ -4,6 +4,8 @@
     "chromosome": "variablelengthtest",
     "population-size": 10,
     "chromosome-length": 20,
+    "minVarChromosomeLength": 2,
+    "maxVarChromosomeLength": 2,
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
@@ -11,6 +13,7 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
+        "alpha": 0.5,
         "maxMutationCountStart": null,
         "maxMutationCountFocusedPhase": null
     },

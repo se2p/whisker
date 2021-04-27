@@ -27,20 +27,21 @@ import {TestChromosomeGenerator} from "./TestChromosomeGenerator";
 
 export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerator {
 
-    private readonly _init_length: number;
+    private readonly _minInitialLength: number;
+    private readonly _maxInitialLength: number;
 
     constructor(properties: SearchAlgorithmProperties<TestChromosome>,
                 mutationOp: Mutation<TestChromosome>,
-                crossoverOp: Crossover<TestChromosome>, init_length: number) {
+                crossoverOp: Crossover<TestChromosome>,
+                minInitialLength: number,
+                maxInitialLength: number) {
         super(properties, mutationOp, crossoverOp);
-        this._init_length = init_length;
-        if (!init_length) {
-            this._init_length = 2;
-        }
+        this._minInitialLength = minInitialLength;
+        this._maxInitialLength = maxInitialLength;
     }
 
     protected getLength(): number {
-        return Randomness.getInstance().nextInt(this._init_length, this._length);
+        return Randomness.getInstance().nextInt(this._minInitialLength, this._maxInitialLength);
     }
 
 }
