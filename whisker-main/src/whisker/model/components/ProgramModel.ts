@@ -78,8 +78,9 @@ export class ProgramModel extends EventEmitter {
                 this.emit(LogMessage.MODEL_EDGE_TRACE, edgeOutput);
                 console.log("EDGE " + edge.id + " taken", conditions);
             }
-            edge.runEffect();
 
+
+            edge.checkEffects(this.testDriver);
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
             }

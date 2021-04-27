@@ -38,7 +38,7 @@ export class ModelNode {
         }
 
         for (let i = 0; i < this.outgoing.length; i++) {
-            const result = this.outgoing[i].testConditions(testDriver);
+            const result = this.outgoing[i].checkConditions(testDriver);
 
             if (result) {
                 return this.outgoing[i];
