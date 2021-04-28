@@ -94,7 +94,14 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         const branchDistance = this.getBranchDistance(chromosome);
         // console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
         // console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
-        return approachLevel + this._normalize(branchDistance)
+        let cfgDistance;
+        if (approachLevel === 0 && branchDistance === 0) {
+            cfgDistance = this.getCFGDistance(chromosome);
+        }
+        else {
+            cfgDistance = Number.MAX_VALUE;
+        }
+        return approachLevel + this._normalize(branchDistance) + this._normalize(cfgDistance);
     }
 
     compare(value1: number, value2: number): number {
@@ -194,6 +201,23 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         return branchDistance;
     }
+
+    getCFGDistance(chromosome: TestChromosome):number {
+
+        const trace = chromosome.trace;
+        const predecessors = this._cfg.getTransitivePredecessors(this._targetNode);
+        const blocksExecuted = new Set(Object.values(trace.blockTraces).map((b) =>this._cdg.getNode(b.id)));
+        let unExecuted = 0;
+        for (const pred of predecessors) {
+            if (blocksExecuted.has(pred) || pred.hasOwnProperty("userEvent") || pred.hasOwnProperty("event")){
+                break;
+            }
+            unExecuted += 1;
+        }
+        return unExecuted;
+
+    }
+
 
     private _normalize(x: number): number {
         return x / (x + 1.0);
