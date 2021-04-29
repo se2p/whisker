@@ -31,6 +31,7 @@ import assert from "assert";
 export class TestChromosome extends IntegerListChromosome {
 
     private _trace: ExecutionTrace;
+    private _coverage = new Set<string>();
 
     constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
@@ -54,6 +55,14 @@ export class TestChromosome extends IntegerListChromosome {
 
     set trace(value: ExecutionTrace) {
         this._trace = value;
+    }
+
+    get coverage(): Set<string> {
+        return this._coverage;
+    }
+
+    set coverage(value: Set<string>) {
+        this._coverage = value;
     }
 
     clone() {

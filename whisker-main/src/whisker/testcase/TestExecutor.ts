@@ -89,6 +89,7 @@ export class TestExecutor {
         await new WaitEvent().apply(this._vm);
 
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
         this._vmWrapper.end();
         this.resetState();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
