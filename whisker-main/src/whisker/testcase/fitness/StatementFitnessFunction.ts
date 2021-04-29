@@ -90,10 +90,15 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             throw Error("Test case not executed");
         }
 
+        if (chromosome.coverage.has(this._targetNode.id)) {
+            // Shortcut: If the target is covered, we don't need to spend
+            // any time on calculating anything
+            return 0;
+        }
+
         const approachLevel = this.getApproachLevel(chromosome);
         const branchDistance = this.getBranchDistance(chromosome);
-        // console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
-        // console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
+
         let cfgDistanceNormalized;
         if (approachLevel === 0 && branchDistance === 0) {
             cfgDistanceNormalized = this._normalize(this.getCFGDistance(chromosome));
