@@ -443,6 +443,7 @@ const initEvents = function () {
                 );
             }
         });
+    $('#run-only-model-test').on('click', runModelTest);
     _addFileListeners();
 };
 
@@ -471,7 +472,6 @@ const _addFileListeners = function () {
         const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName("label")[0];
         _showTooltipIfTooLong(label, event);
     });
-    $('#model-test').on('click', runModelTest);
 }
 
 const _showTooltipIfTooLong = function (label, event) {

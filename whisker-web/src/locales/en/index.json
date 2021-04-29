@@ -70,8 +70,9 @@
     "error-operator" : "Operator",
     "error-actual" : "Actual value",
     "model": "Your model",
-    "test-model": "Start model test",
+    "test-model": "Run model",
     "no-model": "No model loaded",
     "model-test-run": "Model test",
-    "model-duration":"Maximal test duration (s)"
+    "model-duration":"Maximal duration (s)",
+    "model-repetitions": "Repetitions"
 }
