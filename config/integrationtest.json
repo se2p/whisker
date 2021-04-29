@@ -49,6 +49,7 @@
         "max": 480
     },
     "wait-duration": 50,
+    "waitDurationAfterExecution": 250,
     "click-duration": 20,
     "press-duration": 20
 }
