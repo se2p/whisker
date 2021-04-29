@@ -209,7 +209,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
             we need to still record levels, and use a queue to save nodes for BFS.
         */
-        function bfs (cfg, targetNode, blockTraces) {
+        function bfs (cfg, targetNode, coveredBlocks) {
             // console.log('blockTraces: ', blockTraces);
             const queue = [targetNode];
             const visited = new Set([targetNode]);
@@ -220,7 +220,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 level += 1;
                 for (let i = 0; i < qSize; i ++) {
                     node = queue.shift();
-                    if (blockTraces.has(node)){
+                    if (coveredBlocks.has(node.id)){
                         return level;
                     }
                     visited.add(node);
@@ -240,9 +240,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             return 0;
         }
 
-        const trace = chromosome.trace;
-        const blockTraces = new Set(Object.values(trace.blockTraces).map((b) =>this._cdg.getNode(b.id)));
-        const level = bfs(this._cfg, this._targetNode, blockTraces);
+        const coveredBlocks = chromosome.coverage;
+        const level = bfs(this._cfg, this._targetNode, coveredBlocks);
         // console.log('cfg distance: ', this._targetNode.block.opcode, level);
         return level
 
