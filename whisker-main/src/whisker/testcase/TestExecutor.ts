@@ -72,18 +72,13 @@ export class TestExecutor {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
-            console.log("NumCodonStart",numCodon)
-            // Select the next Event
+            // Select the next Event and set its parameter
             const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
-            console.log("Codons",codons)
-            console.log("NumCodon", numCodon)
             nextEvent.setParameter(codons, numCodon);
-            console.log("NextEventAfter", nextEvent)
             const args = nextEvent.getParameter();
             events.add([nextEvent, args]);
             numCodon += nextEvent.getNumParameters() + 1;
             this.notify(nextEvent, args);
-            console.log("NumCodonAfter", numCodon)
 
             // Send the chosen Event including its parameters to the VM
             await nextEvent.apply(this._vm, args);
