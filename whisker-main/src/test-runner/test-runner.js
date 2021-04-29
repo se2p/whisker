@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 const Test = require('./test');
-const TestResult = require('./test-result');
+const {TestResult} = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
 const {assert, assume} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
@@ -12,10 +12,12 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
+     * @param {ModelTester} modelTester
      * @param {{extend: object}=} props .
+     * @param {{duration: number, repetitions: number}} modelProps
      * @returns {Promise<Array>} .
      */
-    async runTests (vm, project, tests, props) {
+    async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
 
         if (typeof props === 'undefined' || props === null) {
@@ -28,8 +30,24 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
-        for (const test of tests) {
-            let result;
+        if (modelTester && modelTester.programModelsDefined()) {
+            await modelTester.testModels(vm, project);
+        }
+
+        if (modelTester && (!tests || tests.length === 0)) {
+            // test only by model
+
+            if (!modelProps || !modelProps.repetitions) {
+                modelProps.repetitions = 1;
+            }
+
+            for (let i = 0; i < modelProps.repetitions; i++) {
+                results.push(await this._executeTest(vm, project, undefined, modelTester, props, modelProps));
+            }
+        } else {
+            // test by both, tests and model
+            for (const test of tests) {
+                let result;
 
             if (test.skip) {
                 result = new TestResult(test);
@@ -37,7 +55,7 @@ class TestRunner extends EventEmitter {
                 this.emit(TestRunner.TEST_SKIP, result);
 
             } else {
-                result = await this._executeTest(vm, project, test, props);
+                result = await this._executeTest(vm, project, test, modelTester, props, modelProps);
                 switch (result.status) {
                 case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
                 case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
@@ -48,8 +66,9 @@ class TestRunner extends EventEmitter {
 
             results.push(result);
 
-            if (this.aborted) {
-                return null;
+                if (this.aborted) {
+                    return null;
+                }
             }
         }
 
@@ -69,12 +88,13 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test} test .
+     * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
      *
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest (vm, project, test, props) {
+    async _executeTest(vm, project, test, modelTester, props, modelProps) {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project);
@@ -99,30 +119,37 @@ class TestRunner extends EventEmitter {
             },
         );
 
-        this.emit(TestRunner.TEST_START, test);
 
+        this.emit(TestRunner.TEST_START, test);
         util.start();
         testDriver.seedScratch(Random.INITIAL_SEED);
 
-        try {
-            await test.test(testDriver);
-            result.status = Test.PASS;
-
-        } catch (e) {
-            result.error = e;
-
-            if (isAssertionError(e)) {
-                result.status = Test.FAIL;
-            } else if (isAssumptionError(e)) {
-                result.status = Test.SKIP;
-            } else {
-                result.status = Test.ERROR;
-            }
-
-        } finally {
-            util.end();
+        if (modelTester && modelTester.programModelsDefined()) {
+            modelTester.prepareModel(testDriver, result);
         }
 
+        if (test) {
+            try {
+                await test.test(testDriver);
+                result.status = Test.PASS;
+
+            } catch (e) {
+                result.error = e;
+
+                if (isAssertionError(e)) {
+                    result.status = Test.FAIL;
+                } else if (isAssumptionError(e)) {
+                    result.status = Test.SKIP;
+                } else {
+                    result.status = Test.ERROR;
+                }
+            }
+        } else if (modelTester && modelTester.programModelsDefined()) {
+            // no test files given, only test against model
+            result.modelResult = await modelTester.test(testDriver, modelProps.duration, result);
+        }
+
+        util.end();
         return result;
     }
 

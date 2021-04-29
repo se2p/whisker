@@ -43,16 +43,18 @@ class TAP13Listener {
      * @param {Test[]} tests .
      */
     onRunStart (tests) {
-        this.tests = tests;
-        const lastTestIndex = tests.length;
-        const firstTestIndex = lastTestIndex > 0 ? 1 : 0;
+        if (tests) {
+            this.tests = tests;
+            const lastTestIndex = tests.length;
+            const firstTestIndex = lastTestIndex > 0 ? 1 : 0;
 
-        this.print(
-            [
-                `TAP version 13`,
-                `${firstTestIndex}..${lastTestIndex}`
-            ].join('\n')
-        );
+            this.print(
+                [
+                    `TAP version 13`,
+                    `${firstTestIndex}..${lastTestIndex}`
+                ].join('\n')
+            );
+        }
     }
 
     /**
@@ -81,6 +83,10 @@ class TAP13Listener {
 
         if (result.coverage) {
             yamlOutput.coverage = TAP13Formatter.formatCoverage(result.coverage);
+        }
+
+        if (result.modelResult) {
+            // todo adapt to model output
         }
 
         const output = [`${success ? 'ok' : 'not ok'} ${testIndex}${testName}`];

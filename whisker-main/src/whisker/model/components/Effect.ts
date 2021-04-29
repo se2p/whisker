@@ -128,12 +128,8 @@ export class Effect {
      * @param testDriver Instance of the test driver.
      */
     check(testDriver: TestDriver): boolean {
-        if (!this.effect(testDriver)) {
-            // todo log this as error
-            // console.log("Effect not fulfilled " + this.name, this.args, testDriver.vmWrapper.inputs.inputs)
-            return false;
-        }
-        return true;
+        return this.effect(testDriver);
+
     }
 
     /**
@@ -225,18 +221,9 @@ export class Effect {
                 sprite = testDriver.getSprite(spriteName);
             }
 
-            if (sprite.sayText) {
-                console.log("Sprite has say Text: " + sprite.sayText);
-            }
             // todo test whether think and say make a difference
             // todo eval the output (could also contain variables)
-            // return sprite.sayText === eval(output) || sprite.old.sayText == eval(output); // todo why is it in old
-
-            let result = sprite.sayText == eval(output);
-            if (!result) {
-                console.log(result);
-            }
-            return result;
+            return sprite.sayText === eval(output);
         }
     }
 
@@ -296,7 +283,7 @@ export class Effect {
             if (change == "+") {
                 // check for an increase of integer value of the variable
                 // todo check if its an integer variable
-                result =  value > oldValue;
+                result = value > oldValue;
             } else if (change == "-") {
                 // check for an decrease of integer value of the variable
                 // todo check if its an integer variable

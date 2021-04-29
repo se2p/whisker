@@ -1,8 +1,6 @@
 import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
-import EventEmitter from "events";
-import {LogMessage} from "../ModelTester";
 import {ConditionState} from "../util/ConditionState";
 
 /**
@@ -15,11 +13,9 @@ import {ConditionState} from "../util/ConditionState";
  * - Only one start node, unique
  * - Each edge has a condition (input event, condition for a variable,....)
  */
-export class ProgramModel extends EventEmitter {
+export class ProgramModel {
 
     readonly id: string;
-    testDriver: TestDriver;
-
     private readonly startNode: ModelNode;
     currentState: ModelNode;
 
@@ -39,7 +35,6 @@ export class ProgramModel extends EventEmitter {
      */
     constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
                 nodes: { [key: string]: ModelNode }, edges: { [key: string]: ModelEdge }) {
-        super();
         this.id = id;
         this.currentState = startNode;
         this.startNode = startNode;
@@ -51,40 +46,16 @@ export class ProgramModel extends EventEmitter {
     /**
      * Simulate one transition on the graph.
      */
-    makeOneTransition() {
-        if (this.stopped()) {
-            this.emit(LogMessage.MODEL_LOG, "already stopped");
-            return;
-        }
-
-        if (!this.testDriver) {
-            throw new Error("Model: no test driver registered");
-        }
-
+    makeOneTransition(testDriver: TestDriver): ModelEdge {
         // ask the current node for a valid transition
-        const edge = this.currentState.testEdgeConditions(this.testDriver);
+        let edge = this.currentState.testEdgeConditions(testDriver);
         if (edge != null) {
-
-            // For outputs, ignore bowl for now
-            if (!edge.id.startsWith("bowl")) {
-                // change edge conditions format for output
-                let conditions = [];
-                edge.conditions.forEach(cond => {
-                    conditions.push({name: cond.getConditionName(), args: cond.getArgs(), negated: cond.isANegation});
-                })
-                let edgeOutput = {edge: edge, edgeID: edge.id, conditions: conditions};
-
-
-                this.emit(LogMessage.MODEL_EDGE_TRACE, edgeOutput);
-                console.log("EDGE " + edge.id + " taken", conditions);
-            }
-
-
-            edge.checkEffects(this.testDriver);
+            edge.checkEffects(testDriver);
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
             }
         }
+        return edge;
     }
 
     /**
@@ -102,14 +73,21 @@ export class ProgramModel extends EventEmitter {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments and register the conditions in
-     * the condition state.
+     * Check existences of sprites, existences of variables and ranges of arguments.
      * @param testDriver Instance of the test driver.
-     * @param conditionState State saver for the conditions.
      */
-    registerAndTestConditions(testDriver: TestDriver, conditionState: ConditionState) {
+    testModel(testDriver: TestDriver) {
         Object.values(this.nodes).forEach(node => {
-            node.registerAndTestConditions(testDriver, conditionState);
+            node.testEdgesForErrors(testDriver);
+        })
+    }
+
+    /**
+     * Register the condition state.
+     */
+    registerConditionState(conditionState: ConditionState) {
+        Object.values(this.nodes).forEach(node => {
+            node.registerConditionState(conditionState);
         })
     }
 }

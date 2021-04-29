@@ -23,7 +23,43 @@ class TestResult {
          * @type {any[]}
          */
         this.log = [];
+
+        /**
+         * @type {ModelResult}
+         */
+        this.modelResult = null;
     }
 }
 
-module.exports = TestResult;
+class ModelResult {
+    constructor() {
+        /**
+         * @type {?string}
+         */
+        this.status = null;
+
+        /**
+         * @type {?Error}
+         */
+        this.error = null;
+
+        /**
+         * @type {any[]}
+         */
+        this.log = [];
+
+        /**
+         * @type {string[]}
+         */
+        this.edgeTrace = []
+
+        /**
+         * States of the variables
+         * @type {string[]}
+         */
+        this.state = [];
+    }
+
+}
+
+module.exports = {TestResult, ModelResult};

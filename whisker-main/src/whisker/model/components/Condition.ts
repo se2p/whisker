@@ -130,6 +130,20 @@ export class Condition {
     }
 
     /**
+     * Register the condition state.
+     */
+    registerConditionState(conditionState: ConditionState) {
+        this.conditionState = conditionState;
+        switch (this.name) {
+            case ConditionName.SpriteTouching:
+                this.conditionState.registerTouching(this.args[0], this.args[1]);
+                break;
+            case ConditionName.SpriteColor:
+                this.conditionState.registerColor(this.args[0], this.args[1], this.args[2], this.args[3]);
+        }
+    }
+
+    /**
      * Check the edge condition.
      * @param testDriver Instance of the test driver.
      */
@@ -145,20 +159,14 @@ export class Condition {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments. Also register the condition at
-     * the condition state saver.
-     * @param testDriver Instance of the test driver.
-     * @param conditionState State saver of the conditions.
+     * Check existences of sprites, existences of variables and ranges of arguments.
      */
-    registerAndTestConditions(testDriver: TestDriver, conditionState: ConditionState) {
-        this.conditionState = conditionState;
-
+    testConditionsForErrors(testDriver: TestDriver) {
         // console.log("Testing condition: " + this.name + this.args);
         switch (this.name) {
             case ConditionName.SpriteTouching:
                 this._checkSpriteExistence(testDriver, this.args[0]);
                 this._checkSpriteExistence(testDriver, this.args[1]);
-                this.conditionState.registerTouching(this.args[0], this.args[1]);
                 break;
             case ConditionName.SpriteColor:
                 this._checkSpriteExistence(testDriver, this.args[0]);
@@ -169,7 +177,6 @@ export class Condition {
                 if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
                     throw new Error("RGB ranges not correct.");
                 }
-                this.conditionState.registerColor(this.args[0], this.args[1], this.args[2], this.args[3]);
                 break;
             case ConditionName.Click:
                 // todo check coordinate range or sprite existence?
@@ -198,6 +205,25 @@ export class Condition {
      */
     getArgs() {
         return this.args;
+    }
+
+    /**
+     * Get a compact representation for this condition for edge tracing.
+     */
+    toString() {
+        let result = this.name + "(";
+
+        if (this.args.length == 1) {
+            result = result + this.args[0];
+        } else {
+            result = result + this.args.concat();
+        }
+
+        result = result + ")";
+        if (this.isANegation) {
+            result = result + " (negated)";
+        }
+        return result;
     }
 
     /**

@@ -84,47 +84,6 @@ const runSearch = async function () {
     return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
 };
 
-const _runModelTest = async function (vm, project) {
-    $('#green-flag').prop('disabled', true);
-    $('#reset').prop('disabled', true);
-    let running = i18next.t("running");
-    $('#run-all-tests').prop('disabled', true).text(running);
-    $('#record').prop('disabled', true);
-
-    let duration = Number(document.querySelector('#model-duration').value);
-    if (duration === 0) {
-        duration = 5000;
-    } else {
-        duration = duration * 1000;
-    }
-    const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
-    let summary;
-
-    try {
-        await Whisker.scratch.vm.loadProject(project);
-        summary = await Whisker.modelTester.test(vm, project, {accelerationFactor}, duration);
-    } catch (e) {
-        Whisker.outputLog.println("ERROR: " + e.message);
-        console.log(e);
-    } finally {
-        $('#green-flag').prop('disabled', false);
-        $('#reset').prop('disabled', false);
-        let runTests = i18next.t("tests")
-        $('#run-all-tests').prop('disabled', false).text(runTests);
-        $('#record').prop('disabled', false);
-    }
-
-    if (summary === null) {
-        return;
-    }
-
-    const formattedSummary = TAP13Formatter.formatSummary(summary);
-
-    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
-
-    Whisker.outputRun.println(summaryString);
-}
-
 const _runTestsWithCoverage = async function (vm, project, tests) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
@@ -135,13 +94,20 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     let summary;
     let coverage;
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
+    let duration = Number(document.querySelector('#model-duration').value);
+    if (duration) {
+        duration = duration * 1000;
+    }
+    const repetitions = Number(document.querySelector('#model-repetitions').value);
 
     try {
         await Whisker.scratch.vm.loadProject(project);
         CoverageGenerator.prepareClasses({Thread});
         CoverageGenerator.prepareVM(vm);
 
-        summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
+        // if a model is loaded then the project is tested against the model and the tests.
+        summary = await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, {accelerationFactor},
+            {duration, repetitions});
         coverage = CoverageGenerator.getCoverage();
 
         if (typeof window.messageServantCallback === 'function') {
@@ -197,10 +163,16 @@ const runModelTest = async function () {
     }
 
     Whisker.scratch.stop();
-    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runModelTest(Whisker.scratch.vm, project);
+    for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
+        const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
+        Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+        Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+        await _runTestsWithCoverage(Whisker.scratch.vm, project, undefined);
+        Whisker.outputRun.println();
+        Whisker.outputLog.println();
+    }
 }
 
 const runAllTests = async function () {
@@ -287,43 +259,6 @@ const initComponents = function () {
         fileSelect => fileSelect.loadAsArrayBuffer());
 
     Whisker.modelTester = new ModelTester.ModelTester();
-    // todo maybe an own log for the model, outsource this code?
-    Whisker.modelTester.on(ModelTester.LogMessage.RUN_START, () =>
-        Whisker.outputLog.println("====  Model tests started."));
-    Whisker.modelTester.on(ModelTester.LogMessage.RUN_CANCEL, () =>
-        Whisker.outputLog.println("====  Model tests" + " canceled!"));
-    Whisker.modelTester.on(ModelTester.LogMessage.RUN_END, (result) =>
-        Whisker.outputLog.println("====  Model tests ended.")); // todo what is the result?
-    Whisker.modelTester.on(ModelTester.LogMessage.LOG, (message) => Whisker.outputLog.println(message));
-    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_LOG, (model, message) => Whisker.outputLog.println(message));
-    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_STOPPED, (model) => Whisker.outputLog.println("Model" +
-        " stopped: " + model.id + "\n----------------"));
-    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_STATE, (sprites) => {
-        Whisker.outputLog.println("State of variables: ")
-        sprites.forEach(sprite => {
-            if (sprite.getVariables() !== []) {
-                sprite.getVariables().forEach(variable => {
-                    Whisker.outputLog.println(sprite.name + "." + variable.name + " = " + variable.value);
-                })
-            }
-        })
-    });
-    Whisker.modelTester.on(ModelTester.LogMessage.MODEL_EDGE_TRACE, (trace) => {
-        let edge = trace.edge;
-        let edgeID = trace.edgeID;
-        let conditions = trace.conditions;
-        Whisker.outputLog.println("---- EDGE TAKEN ----");
-        Whisker.outputLog.println("Edge id: " + edgeID);
-        conditions.forEach(cond => {
-            Whisker.outputLog.print("Edge condition: " + cond.name + " " + cond.args.toString());
-            if (cond.negated) {
-                Whisker.outputLog.print("(negated)\n");
-            } else {
-                Whisker.outputLog.println("");
-            }
-        })
-        Whisker.outputLog.println("--------------------")
-    });
 
     document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };

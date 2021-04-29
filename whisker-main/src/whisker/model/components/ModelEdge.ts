@@ -99,17 +99,24 @@ export class ModelEdge {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments and register the conditions in
-     * the condition state.
+     * Check existences of sprites, existences of variables and ranges of arguments.
      * @param testDriver Instance of the test driver.
-     * @param conditionState State saver of the conditions.
      */
-    registerAndTestConditions(testDriver: TestDriver, conditionState: ConditionState) {
+    testEdgeForErrors(testDriver: TestDriver) {
         this.conditions.forEach(cond => {
-            cond.registerAndTestConditions(testDriver, conditionState);
+            cond.testConditionsForErrors(testDriver);
         })
         this.effects.forEach(effect => {
             effect.testEffectsForErrors(testDriver);
+        })
+    }
+
+    /**
+     * Register the condition state.
+     */
+    registerConditionState(conditionState: ConditionState) {
+        this.conditions.forEach(cond => {
+            cond.registerConditionState(conditionState);
         })
     }
 }
