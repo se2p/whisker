@@ -19,6 +19,7 @@
  */
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import {List} from "../utils/List";
 
 export interface ScratchEvent {
 
@@ -29,4 +30,8 @@ export interface ScratchEvent {
     toString(args: number[]) : string;
 
     getNumParameters(): number;
+
+    setParameter(codons: List<number>, codonPosition: number): void;
+
+    getParameter(): number[];
 }

@@ -21,12 +21,13 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {Container} from "../../utils/Container";
+import {List} from "../../utils/List";
 
 export class KeyPressEvent implements ScratchEvent {
 
     private readonly _keyOption: string;
 
-    private readonly _timeout: number;
+    private _timeout: number;
 
     constructor(keyOption: string) {
         this._keyOption = keyOption;
@@ -58,5 +59,13 @@ export class KeyPressEvent implements ScratchEvent {
 
     getNumParameters(): number {
         return 0;
+    }
+
+    getParameter(): number[] {
+        return [];
+    }
+
+    setParameter(): void {
+       return;
     }
 }

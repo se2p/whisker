@@ -21,10 +21,11 @@
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {Container} from "../../utils/Container";
+import {List} from "../../utils/List";
 
 export class WaitEvent implements ScratchEvent {
 
-    private readonly timeout: number;
+    private timeout: number;
 
     constructor(duration = Container.config.getWaitDuration() ) {
         this.timeout = duration;
@@ -43,6 +44,14 @@ export class WaitEvent implements ScratchEvent {
     }
 
     getNumParameters(): number {
-        return 0;
+        return 1;
+    }
+
+    getParameter(): number[] {
+        return [this.timeout];
+    }
+
+    setParameter(codons: List<number>, codonPosition: number): void {
+        this.timeout = codons.get(codonPosition % codons.size());
     }
 }

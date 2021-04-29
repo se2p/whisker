@@ -52,4 +52,12 @@ export class TypeTextEvent implements ScratchEvent {
     getNumParameters(): number {
         return 0; // Text
     }
+
+    getParameter(): number[] {
+        return [];
+    }
+
+    setParameter(): void {
+        return;
+    }
 }

@@ -21,6 +21,7 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {Container} from "../../utils/Container";
+import {List} from "../../utils/List";
 
 export class KeyDownEvent implements ScratchEvent {
 
@@ -55,5 +56,14 @@ export class KeyDownEvent implements ScratchEvent {
 
     getNumParameters(): number {
         return 0;
+    }
+
+    getParameter(): number[] {
+        // 0 returns False in JS/TS
+        return [this._value ? 1 : 0];
+    }
+
+    setParameter(): void {
+        return;
     }
 }

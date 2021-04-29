@@ -86,4 +86,12 @@ export class ClickSpriteEvent implements ScratchEvent {
     getNumParameters(): number {
         return 0;
     }
+
+    setParameter(): void {
+        return;
+    }
+
+    getParameter(): number[] {
+        return [];
+    }
 }

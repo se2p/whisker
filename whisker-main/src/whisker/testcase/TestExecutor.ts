@@ -64,29 +64,37 @@ export class TestExecutor {
         const codons = testChromosome.getGenes();
 
         while (numCodon < codons.size()) {
+            // Fetch the currently available events and save them in the EventMap
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
-
+            console.log("NumCodonStart",numCodon)
+            // Select the next Event
             const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
-
-            const args = this._getArgs(nextEvent, codons, numCodon);
+            console.log("Codons",codons)
+            console.log("NumCodon", numCodon)
+            nextEvent.setParameter(codons, numCodon);
+            console.log("NextEventAfter", nextEvent)
+            const args = nextEvent.getParameter();
             events.add([nextEvent, args]);
             numCodon += nextEvent.getNumParameters() + 1;
             this.notify(nextEvent, args);
+            console.log("NumCodonAfter", numCodon)
 
+            // Send the chosen Event including its parameters to the VM
             await nextEvent.apply(this._vm, args);
             StatisticsCollector.getInstance().incrementEventsCount()
 
+            // Send a WaitEvent to the VM
             const waitEvent = new WaitEvent();
             events.add([waitEvent, []]);
             await waitEvent.apply(this._vm);
         }
 
-        await new WaitEvent().apply(this._vm);
+        await new WaitEvent(250).apply(this._vm);
 
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
@@ -94,19 +102,6 @@ export class TestExecutor {
         this.resetState();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return testChromosome.trace;
-    }
-
-    private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
-        const args = [];
-        for (let i = 0; i < event.getNumParameters(); i++) {
-            // Get next codon, but wrap around if length exceeded
-            const codon = codons.get(++codonPosition % codons.size());
-
-            // TODO: How to map from codon to parameter value?
-            // TODO: Make this responsibility of event?
-            args.push(codon)
-        }
-        return args;
     }
 
     public attach(observer: EventObserver): void {
