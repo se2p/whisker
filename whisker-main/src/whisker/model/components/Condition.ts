@@ -114,7 +114,7 @@ export class Condition {
                 break;
             case ConditionName.Function:
                 testArgs(1);
-                this.condition = this.args[0]; // todo
+                this.condition = this.args[0]; // todo eval and negated
                 break;
             default:
                 throw new Error("Condition type not recognized.");
@@ -282,11 +282,6 @@ export class Condition {
         return function (testDriver: TestDriver): boolean {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             let variable = sprite.getVariable(varName);
-
-            if (variable == undefined) {
-                throw new Error("Variable not found: " + varName);
-            }
-
             let result = Condition.compare(comparison, variable.value, varValue);
             if (result) {
                 return !negated;

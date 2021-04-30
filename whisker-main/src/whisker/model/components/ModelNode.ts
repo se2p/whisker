@@ -62,8 +62,14 @@ export class ModelNode {
      * Register the condition state.
      */
     registerConditionState(conditionState: ConditionState) {
-        this.outgoing.forEach(cond => {
-            cond.registerConditionState(conditionState);
+        this.outgoing.forEach(edge => {
+            edge.registerConditionState(conditionState);
+        })
+    }
+
+    reset() {
+        this.outgoing.forEach(edge => {
+            edge.reset();
         })
     }
 }

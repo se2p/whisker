@@ -102,7 +102,7 @@ export class Effect {
                 break;
             case EffectName.Function:
                 testArgs(1);
-                this.effect = this.args[0]; // todo
+                this.effect = this.args[0]; // todo eval and negated
                 break;
             default:
                 throw new Error("Effect type not recognized.");
@@ -168,6 +168,25 @@ export class Effect {
     }
 
     /**
+     * Get a readable output for an failed effect trace.
+     */
+    toString() {
+        let result = this.name + "(";
+
+        if (this.args.length == 1) {
+            result = result + this.args[0];
+        } else {
+            result = result + this.args.concat();
+        }
+
+        result = result + ")";
+        if (this.negated) {
+            result = result + " (negated)";
+        }
+        return result;
+    }
+
+    /**
      * Check the attribute name.
      * @private
      */
@@ -202,16 +221,11 @@ export class Effect {
     private static checkOutputEffect(negated: boolean, spriteName: string, output: string):
         (testDriver: TestDriver) => boolean {
         return function (testDriver: TestDriver) {
-            let sprite;
-            if (spriteName.toLowerCase() === "Stage") { // can the stage even say something?
-                sprite = testDriver.getStage();
-            } else {
-                sprite = testDriver.getSprite(spriteName);
-            }
+            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
 
             // todo test whether think and say make a difference
             // todo eval the output (could also contain variables)
-            if (sprite.sayText === eval(output)) {
+            if (sprite.sayText.indexOf(eval(output)) != -1) {
                 return !negated;
             }
             return negated;
@@ -276,10 +290,6 @@ export class Effect {
             if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge()) {
                 return !negated;
             }
-
-
-            // console.log("Change " + change + change + ", sprite.old.x=" + sprite.old.x + ", sprite.x=" + sprite.x,
-            //     testDriver.getTotalStepsExecuted());
 
             let result: boolean;
             if (change == "+") {

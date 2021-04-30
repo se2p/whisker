@@ -18,6 +18,9 @@ export class ModelEdge {
     conditions: Condition[] = [];
     effects: Effect[] = [];
 
+    numberOfEffectFailures: number = 0; // todo reset!!
+    failedEffects: Effect[] = [];
+
     /**
      * Create a new edge.
      * @param id ID of the edge.
@@ -53,17 +56,60 @@ export class ModelEdge {
      * Run all effects of the edge.
      */
     checkEffects(testDriver: TestDriver): boolean {
-        let fulfilled = true;
+        if (this.failedEffects.length != 0) {
+            return this.checkFailedEffects(testDriver);
+        }
 
         for (let i = 0; i < this.effects.length; i++) {
-            fulfilled = this.effects[i].check(testDriver);
+            let fulfilled = this.effects[i].check(testDriver);
 
             // stop if one condition is not fulfilled
             if (!fulfilled) {
-                break;
+                this.failedEffects.push(this.effects[i]);
             }
         }
-        return fulfilled;
+
+        if (this.failedEffects.length > 0) {
+            this.numberOfEffectFailures = 1;
+        }
+
+        return this.failedEffects.length == 0;
+    }
+
+    /**
+     * Recheck failed effects.
+     */
+    private checkFailedEffects(testDriver: TestDriver): boolean {
+        if (this.numberOfEffectFailures === 0) {
+            console.error("something wrong!!!!!!!!!!!!!!!");
+            return false;
+        }
+
+        let newFailures = [];
+        for (let i = 0; i < this.failedEffects.length; i++) {
+            const effect = this.failedEffects[i];
+            let fulfilled = effect.check(testDriver);
+
+            if (!fulfilled) {
+                newFailures.push(effect);
+            }
+        }
+
+        // no new failures
+        if (newFailures.length === 0) {
+            this.failedEffects = [];
+            this.numberOfEffectFailures = 0;
+            return true;
+        } else {
+            this.numberOfEffectFailures++;
+            this.failedEffects = newFailures;
+            return false;
+        }
+    }
+
+    reset(): void {
+        this.numberOfEffectFailures = 0;
+        this.failedEffects = [];
     }
 
     /**

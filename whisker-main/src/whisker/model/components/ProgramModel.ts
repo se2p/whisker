@@ -3,7 +3,7 @@ import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {ConditionState} from "../util/ConditionState";
 import {ModelResult} from "../../../test-runner/test-result";
-import * as assert from "assert";
+import {ModelTester} from "../ModelTester";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -24,6 +24,8 @@ export class ProgramModel {
     private readonly stopNodes: { [key: string]: ModelNode };
     private readonly nodes: { [key: string]: ModelNode };
     private readonly edges: { [key: string]: ModelEdge };
+
+    private effectsToCheck: ModelEdge[]; // edge with the failed effects
 
     /**
      * Construct a model (graph) with a string identifier and model type (program or user model). Sets up the start
@@ -49,17 +51,33 @@ export class ProgramModel {
      * Simulate one transition on the graph.
      */
     makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
+        // console.log("model step " + this.id, testDriver.getTotalStepsExecuted())
+
         // ask the current node for a valid transition
         let edge = this.currentState.testEdgeConditions(testDriver);
         if (edge != null) {
-            let result = edge.checkEffects(testDriver);
-            if (!result) {
-                console.error("EFFECT FAILED", edge);
-                modelResult.error.push(new Error("Effect failed in edge " + edge.id));
-            }
+            // add it to the edge effects to check
+            this.effectsToCheck.push(edge);
+
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
             }
+        }
+
+        // test the oldest one first
+        if (this.effectsToCheck.length > 0) {
+            let removeIndex = 0;
+            for (let i = 0; i < this.effectsToCheck.length; i++) {
+                let result = this.effectsToCheck[i].checkEffects(testDriver);
+                if (!result) {
+                    break;
+                } else {
+                    removeIndex++;
+                }
+            }
+
+            this.effectsToCheck = this.effectsToCheck.splice(removeIndex, this.effectsToCheck.length);
+            this.checkForFailed(testDriver, modelResult);
         }
         return edge;
     }
@@ -76,6 +94,10 @@ export class ProgramModel {
      */
     reset(): void {
         this.currentState = this.startNode;
+        this.effectsToCheck = [];
+        Object.values(this.nodes).forEach(node => {
+            node.reset()
+        });
     }
 
     /**
@@ -95,5 +117,36 @@ export class ProgramModel {
         Object.values(this.nodes).forEach(node => {
             node.registerConditionState(conditionState);
         })
+    }
+
+    /**
+     * At the end of a test run check the effects again.
+     */
+    checkAllFailedEffects(testDriver: TestDriver, modelResult: ModelResult) {
+        for (let i = 0; i < this.effectsToCheck.length; i++) {
+            let result = this.effectsToCheck[i].checkEffects(testDriver);
+            if (result) {
+            }
+        }
+        this.checkForFailed(testDriver, modelResult);
+    }
+
+    private checkForFailed(testDriver: TestDriver, modelResult: ModelResult) {
+        // if it failed more than once
+        if (this.effectsToCheck.length > 0 && this.effectsToCheck[0].numberOfEffectFailures > ModelTester.LEEWAY) {
+            // make a wonderful output
+            let failedEdge = this.effectsToCheck[0];
+            let output = "Failed effects:";
+            for (let i = 0; i < failedEdge.failedEffects.length; i++) {
+                output = output + " [" + i + "]" +  failedEdge.failedEffects[i].toString();
+            }
+
+            output = "Effect failed. Edge: '" + failedEdge.id + "'. " + output;
+            console.error(output, testDriver.getTotalStepsExecuted());
+            modelResult.error.push(new Error(output));
+
+            // remove it to not check again
+            this.effectsToCheck = this.effectsToCheck.splice(1, this.effectsToCheck.length);
+        }
     }
 }

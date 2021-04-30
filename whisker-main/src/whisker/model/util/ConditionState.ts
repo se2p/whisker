@@ -49,7 +49,7 @@ export class ConditionState {
     private _registerTouching(spriteName1: string, spriteName2: string): void {
         let fun = (sprite) => {
             if (sprite.name == spriteName1 && sprite.isTouchingSprite(spriteName2)) {
-                this.touched.push(this._getTouchingString(spriteName1, spriteName2));
+                this.touched.push(ConditionState.getTouchingString(spriteName1, spriteName2));
             }
         };
 
@@ -67,7 +67,7 @@ export class ConditionState {
     registerColor(spriteName: string, r: number, g: number, b: number): void {
         let fun = (sprite) => {
             if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
-                this.colorTouched.push(this._getColorString(spriteName, r, g, b));
+                this.colorTouched.push(ConditionState.getColorString(spriteName, r, g, b));
             }
         };
 
@@ -111,9 +111,10 @@ export class ConditionState {
      * @param spriteName2 Name of the second sprite.
      */
     areTouching(spriteName1: string, spriteName2: string): boolean {
-        let combi1 = this._getTouchingString(spriteName1, spriteName2);
-        let combi2 = this._getTouchingString(spriteName2, spriteName1);
-        return (this.touched.indexOf(combi1) != -1 || this.touched.indexOf(combi2) != -1);
+        let combi1 = ConditionState.getTouchingString(spriteName1, spriteName2);
+        let combi2 = ConditionState.getTouchingString(spriteName2, spriteName1);
+        return (this.touched.indexOf(combi1) != -1 || this.touched.indexOf(combi2) != -1
+            || this.testDriver.getSprite(spriteName1).isTouchingSprite(spriteName2));
     }
 
     /**
@@ -121,7 +122,7 @@ export class ConditionState {
      * either has moved (so ask the thrown events) or not (ask for the current state).
      */
     isTouchingColor(spriteName: string, r: number, g: number, b: number): boolean {
-        return this.colorTouched.indexOf(this._getColorString(spriteName, r, g, b)) != -1
+        return this.colorTouched.indexOf(ConditionState.getColorString(spriteName, r, g, b)) != -1
             || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]);
     }
 
@@ -133,11 +134,11 @@ export class ConditionState {
         return this.keyBeforeStep.indexOf(keyName) != -1;
     }
 
-    _getTouchingString(sprite1: string, sprite2: string): string {
+    private static getTouchingString(sprite1: string, sprite2: string): string {
         return sprite1 + ":" + sprite2;
     }
 
-    _getColorString(spriteName: string, r: number, g: number, b: number): string {
+    private static getColorString(spriteName: string, r: number, g: number, b: number): string {
         return spriteName + ":" + r + ":" + g + ":" + b;
     }
 }

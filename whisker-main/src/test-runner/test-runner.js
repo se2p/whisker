@@ -125,7 +125,7 @@ class TestRunner extends EventEmitter {
         testDriver.seedScratch(Random.INITIAL_SEED);
 
         if (modelTester && modelTester.programModelsDefined()) {
-            modelTester.prepareModel(testDriver, result);
+            modelTester.prepareModel(testDriver);
         }
 
         if (test) {
@@ -146,7 +146,7 @@ class TestRunner extends EventEmitter {
             }
         } else if (modelTester && modelTester.programModelsDefined()) {
             // no test files given, only test against model
-            result.modelResult = await modelTester.test(testDriver, modelProps.duration, result);
+            result.modelResult = await modelTester.test(testDriver, modelProps.duration);
         }
 
         util.end();

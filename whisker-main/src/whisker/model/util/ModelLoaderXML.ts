@@ -89,9 +89,6 @@ export class ModelLoaderXML {
         if (!this.startNode) {
             throw new Error("Graph '" + graphID + "':\n" + "Start node not marked.");
         }
-        if (Object.keys(this.stopNodes).length == 0) {
-            throw new Error("Graph '" + graphID + "':\n" + "Stop nodes not marked.");
-        }
 
         this.graphIDs.push(graphID);
 

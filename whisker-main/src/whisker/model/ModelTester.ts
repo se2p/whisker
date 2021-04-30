@@ -16,6 +16,9 @@ export class ModelTester extends EventEmitter {
     private conditionState: ConditionState;
     private result: ModelResult;
 
+    private modelsStopped = false;
+    static LEEWAY = 10;
+
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
      * @param modelsString Models as a string coded in xml.
@@ -59,11 +62,11 @@ export class ModelTester extends EventEmitter {
     }
 
     /**
-     * todo
-     * @param testDriver
-     * @param result
+     * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      */
     prepareModel(testDriver: TestDriver) {
+        console.log("----Reseting model----")
+        this.modelsStopped = false;
         this.conditionState = new ConditionState(testDriver);
         this.result = new ModelResult();
 
@@ -75,11 +78,33 @@ export class ModelTester extends EventEmitter {
         testDriver.addCallback(() => {
             this.conditionState.testKeys();
         }, false, "testKeys");
+
+        let endTimer = 3;
         testDriver.addCallback(() => {
             this.programModels.forEach(model => {
                 let edge = model.makeOneTransition(testDriver, this.result);
-                this.edgeTrace(edge);
+                this.edgeTrace(edge, testDriver);
             });
+
+            // after all transitions in the same step look up if they are finished
+            let stopped = false;
+            this.programModels.forEach(model => {
+                if (model.stopped()) {
+                    stopped = true;
+                }
+            })
+
+            if (stopped) {
+                this.programModels.forEach(model =>  {
+                    model.checkAllFailedEffects(testDriver, this.result);
+                })
+
+                if (endTimer == 0) {
+                    this.modelsStopped = true;
+                }
+                endTimer--;
+            }
+
             this.conditionState.resetConditionsThrown();
         }, true, "modelstep");
     }
@@ -94,7 +119,7 @@ export class ModelTester extends EventEmitter {
         // Start the test run with either a maximal duration or until the program stops
         await testDriver.runForSteps(1);
         await testDriver.runUntil(() => {
-            return !testDriver.isProjectRunning();
+            return !testDriver.isProjectRunning() || this.modelsStopped;
         }, duration);
 
         this.getModelStates(testDriver);
@@ -102,7 +127,7 @@ export class ModelTester extends EventEmitter {
         return this.result;
     }
 
-    private edgeTrace(edge: ModelEdge) {
+    private edgeTrace(edge: ModelEdge, testDriver: TestDriver) {
         if (edge && !edge.id.startsWith("bowl")) { // todo change this later on
             let edgeID = edge.id;
             let conditions = edge.conditions;
@@ -111,7 +136,7 @@ export class ModelTester extends EventEmitter {
                 edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
             }
             this.result.edgeTrace.push(edgeTrace);
-            console.log("TRACE: " + edgeTrace);
+            console.log("TRACE: " + edgeTrace, testDriver.getTotalStepsExecuted());
         }
     }
 
