@@ -109,6 +109,9 @@ export class ScratchEventExtractor {
             }
         }
 
+        if(this.availableWaitDurations.isEmpty())
+            eventList.add(new WaitEvent(0))
+
         return eventList.distinctObjects();
     }
 
