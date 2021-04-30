@@ -84,7 +84,7 @@ const _findControlDependencies = (postDominatedTree, edges, leastCommonAncestors
         }
 
         let current = edge.to;
-        while (current !== l) {
+        while (current !== undefined && current !== l) {
             markedNodes.add(current);
             const preds = new Set(postDominatedTree.predecessors(current.id));
             // We can just assume preds has size === 1
