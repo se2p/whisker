@@ -33,6 +33,9 @@ import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
 import {Container} from "../utils/Container";
 
+const Runtime = require('scratch-vm/src/engine/runtime');
+
+
 export class TestExecutor {
 
     private readonly _vm: VirtualMachine;
@@ -40,6 +43,7 @@ export class TestExecutor {
     private availableEvents: List<ScratchEvent>;
     private eventObservers: EventObserver[] = [];
     private _initialState = {};
+    private _projectRunning: boolean;
 
     constructor(vmWrapper: VMWrapper) {
         this._vmWrapper = vmWrapper;
@@ -59,14 +63,18 @@ export class TestExecutor {
         const events = new List<[ScratchEvent, number[]]>();
 
         seedScratch(String(Randomness.getInitialSeed()));
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
         this._vmWrapper.start();
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
 
-        while (numCodon < codons.size()) {
+        while (this._projectRunning && numCodon < codons.size()) {
             // Fetch the currently available events and save them in the EventMap
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
+            console.log(this.availableEvents)
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -118,6 +126,13 @@ export class TestExecutor {
         for (const observer of this.eventObservers) {
             observer.update(event, args);
         }
+    }
+
+    /**
+     * Event listener which checks if the project is still running, i.e no GameOver state was reached.
+     */
+    private projectStopped() {
+        return this._projectRunning = false;
     }
 
     private resetState() {
