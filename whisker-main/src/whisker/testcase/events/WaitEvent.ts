@@ -52,6 +52,7 @@ export class WaitEvent implements ScratchEvent {
     }
 
     setParameter(codons: List<number>, codonPosition: number): void {
-        this.timeout = codons.get(codonPosition % codons.size());
+        // Waits of 0 seconds lead to bugs.
+        this.timeout = codons.get(codonPosition % codons.size()) + 1;
     }
 }
