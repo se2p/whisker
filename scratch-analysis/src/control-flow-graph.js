@@ -369,17 +369,17 @@ export const generateCFG = vm => {
             successors.put(node.block.parent, node);
         }
 
+        const callsCustomBlock = node.block.opcode === 'procedures_call';
+        if (callsCustomBlock) { // Adds an edge from the call site of a custom block to its definition
+            const proccode = node.block.mutation.proccode;
+            const callee = customBlockDefinitions.get(proccode);
+            successors.put(node.id, callee)
+            // FIXME: there also need to be edges that go back from the definition to all its call sites
+        }
+
         if (!node.block.next) {
-            const callsCustomBlock = node.block.opcode === 'procedures_call';
-            if (callsCustomBlock) { // Adds an edge from the call site of a custom block to its definition
-                const proccode = node.block.mutation.proccode;
-                const callee = customBlockDefinitions.get(proccode);
-                successors.put(node.id, callee)
-                // FIXME: there also need to be edges that go back from the definition to all its call sites
-            } else {
-                // No exit node? Probably, the actual successors is the exit node
-                successors.put(node.id, cfg.exit());
-            }
+            // No exit node? Probably, the actual successors is the exit node
+            successors.put(node.id, cfg.exit());
         }
 
         // Special cases
