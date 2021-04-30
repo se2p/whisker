@@ -39,9 +39,9 @@ class ModelResult {
         this.status = null;
 
         /**
-         * @type {?Error}
+         * @type {?Error[]}
          */
-        this.error = null;
+        this.error = [];
 
         /**
          * @type {any[]}

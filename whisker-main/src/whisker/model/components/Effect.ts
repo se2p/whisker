@@ -32,7 +32,6 @@ export function setUpEffect(newEdge: ModelEdge, effectString: string) {
  * @param effectString String defining the effect, f.e. Output:Hmm
  */
 export function getEffect(effectString): Effect {
-    // negation
     let isANegation = false;
     if (effectString.startsWith("!")) {
         isANegation = true;
@@ -43,23 +42,7 @@ export function getEffect(effectString): Effect {
     if (parts.length < 2) {
         throw new Error("Edge effect not correctly formatted. ':' missing.");
     }
-
-    switch (parts[0]) {
-        case EffectName.Output:
-            return new Effect(EffectName.Output, isANegation, parts[1], parts[2]);
-        case EffectName.VarChange:
-            return new Effect(EffectName.VarChange, isANegation, parts[1], parts[2], parts[3]);
-        case EffectName.CostumeChange:
-            return new Effect(EffectName.CostumeChange, isANegation, parts[1], parts[2]);
-        case EffectName.BackgroundChange:
-            return new Effect(EffectName.BackgroundChange, isANegation, parts[1]);
-        case EffectName.Function:
-            return new Effect(EffectName.Function, isANegation, parts[1]);
-        case EffectName.AttrChange:
-            return new Effect(EffectName.AttrChange, isANegation, parts[1], parts[2], parts[3]);
-        default:
-            throw new Error("Edge effect type not recognized or missing.");
-    }
+    return new Effect(parts[0], isANegation, parts.splice(1, parts.length));
 }
 
 /**
@@ -77,45 +60,48 @@ export class Effect {
      * @param negated Whether the effect is negated (e.g. it does not output "hello")
      * @param args Arguments for the effect e.g. sprite names.
      */
-    constructor(name: EffectName, negated: boolean, ...args) {
+    constructor(name: EffectName, negated: boolean, args: any[]) {
         this.name = name;
         this.args = args;
         this.negated = negated;
 
-        let argsError = function () {
-            return "Not enough arguments for effect " + name + ".";
+        let testArgs = function (length) {
+            let error = new Error("Not enough arguments for effect " + name + ".");
+            if (args.length != length) {
+                throw error;
+            }
+
+            for (let i = 0; i < length; i++) {
+                if (args[i] == undefined) {
+                    throw error;
+                }
+            }
         }
 
-        // todo refactor
         // Get the effect function
         switch (this.name) {
             case EffectName.Output:
-                if (this.args.length != 2 || args[0] == undefined || args[1] == undefined)
-                    throw new Error(argsError());
-                this.effect = this._checkOutputEffect(args[0], args[1]);
+                testArgs(2);
+                this.effect = Effect.checkOutputEffect(negated, args[0], args[1]);
                 break;
             case EffectName.VarChange:
-                if (this.args.length != 3 || args[0] == undefined || args[1] == undefined || args[2] == undefined)
-                    throw new Error(argsError());
-                this.effect = this._checkVarChangeEffect(args[0], args[1], args[2])
+                testArgs(3);
+                this.effect = Effect.checkVariableEffect(negated, args[0], args[1], args[2])
                 break;
             case EffectName.AttrChange:
-                if (this.args.length != 3 || args[0] == undefined || args[1] == undefined || args[2] == undefined)
-                    throw new Error(argsError());
-                this.effect = this._checkAttrChangeEffect(args[0], args[1], args[2])
+                testArgs(3);
+                this.effect = Effect.checkAttributeEffect(negated, args[0], args[1], args[2])
                 break;
             case EffectName.CostumeChange:
-                if (this.args.length != 2 || args[0] == undefined || args[1] == undefined)
-                    throw new Error(argsError());
-                this.effect = this._checkCostumeChange(args[0], args[1]);
+                testArgs(2);
+                this.effect = Effect.checkCostumeEffect(negated, args[0], args[1]);
                 break;
             case EffectName.BackgroundChange:
-                if (this.args.length != 1 || args[0] == undefined)
-                    throw new Error(argsError());
-                this.effect = this._checkBackgroundChange(args[0]);
+                testArgs(1);
+                this.effect = Effect.checkBackgroundEffect(negated, args[0]);
                 break;
             case EffectName.Function:
-                if (this.args.length != 1 || args[0] == undefined) throw new Error(argsError());
+                testArgs(1);
                 this.effect = this.args[0]; // todo
                 break;
             default:
@@ -211,8 +197,10 @@ export class Effect {
      * Defines a function testing a sprite gives an output.
      * @param spriteName Name of the sprite.
      * @param output Output to say.
+     * @param negated Whether this effect is negated.
      */
-    private _checkOutputEffect(spriteName: string, output: string): (testDriver: TestDriver) => boolean {
+    private static checkOutputEffect(negated: boolean, spriteName: string, output: string):
+        (testDriver: TestDriver) => boolean {
         return function (testDriver: TestDriver) {
             let sprite;
             if (spriteName.toLowerCase() === "Stage") { // can the stage even say something?
@@ -223,7 +211,10 @@ export class Effect {
 
             // todo test whether think and say make a difference
             // todo eval the output (could also contain variables)
-            return sprite.sayText === eval(output);
+            if (sprite.sayText === eval(output)) {
+                return !negated;
+            }
+            return negated;
         }
     }
 
@@ -233,8 +224,10 @@ export class Effect {
      * @param varName Name of the variable.
      * @param change For integer variable '+' for increase, '-' for decrease. For string variables this has the new
      * value.
+     * @param negated Whether this effect is negated.
      */
-    private _checkVarChangeEffect(spriteName: string, varName: string, change: string): (testDriver: TestDriver) => boolean {
+    private static checkVariableEffect(negated: boolean, spriteName: string, varName: string, change: string):
+        (testDriver: TestDriver) => boolean {
         return function (testDriver: TestDriver) {
             let sprite;
             if (spriteName.toLowerCase() === "Stage") { // can the stage even say something?
@@ -244,19 +237,23 @@ export class Effect {
             }
 
             const variable = sprite.getVariable(varName);
-            console.log(variable); // todo somethings going wrong here, bug: Punkte = -3 here
+            let result;
             if (change == "+") {
                 // check for an increase of integer value of the variable
                 // todo check if its an integer variable
-                return variable.value > variable.old.value;
+                result = variable.value > variable.old.value;
             } else if (change == "-") {
                 // check for an decrease of integer value of the variable
                 // todo check if its an integer variable
-                return variable.value < variable.old.value;
+                result = variable.value < variable.old.value;
             } else {
                 // check whether the new value equals change now
-                return variable.value === change;
+                result = variable.value === change;
             }
+            if (result) {
+                return !negated;
+            }
+            return negated;
         }
     }
 
@@ -267,17 +264,22 @@ export class Effect {
      * @param attrName Name of the attribute.
      * @param change For integer variable '+' for increase, '-' for decrease. For string variables this has the new
      * value.
+     * @param negated Whether this effect is negated.
      */
-    private _checkAttrChangeEffect(spriteName: string, attrName: string, change: string): (testDriver: TestDriver) => boolean {
+    private static checkAttributeEffect(negated: boolean, spriteName: string, attrName: string, change: string):
+        (testDriver: TestDriver) => boolean {
         return function (testDriver: TestDriver) {
-            let sprite;
-            if (spriteName.toLowerCase() === "Stage") { // can the stage even say something?
-                sprite = testDriver.getStage();
-            } else {
-                sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            }
+            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const value = eval('sprite.' + attrName);
             const oldValue = eval('sprite.old.' + attrName);
+
+            if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge()) {
+                return !negated;
+            }
+
+
+            // console.log("Change " + change + change + ", sprite.old.x=" + sprite.old.x + ", sprite.x=" + sprite.x,
+            //     testDriver.getTotalStepsExecuted());
 
             let result: boolean;
             if (change == "+") {
@@ -292,7 +294,10 @@ export class Effect {
                 // check whether the new value equals change now
                 result = value == change;
             }
-            return result;
+            if (result) {
+                return !negated;
+            }
+            return negated;
         }
     }
 
@@ -300,24 +305,30 @@ export class Effect {
      * Defines a function testing whether a sprite has changed to a new costume.
      * @param spriteName Name of the sprite.
      * @param costumeNew Name of the new costume.
+     * @param negated Whether this effect is negated.
      */
-    private _checkCostumeChange(spriteName: string, costumeNew: string): (testDriver: TestDriver) => boolean {
+    private static checkCostumeEffect(negated: boolean, spriteName: string, costumeNew: string):
+        (testDriver: TestDriver) => boolean {
         return function (testDriver: TestDriver) {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            return sprite.currentCostume() == costumeNew; // todo test
+            if (sprite.currentCostume() == costumeNew) { // todo test
+                return !negated;
+            }
+            return negated;
         }
     }
 
     /**
      * Defines a function testing whether the background has changed.
      * @param newBackground Name of the new background.
+     * @param negated Whether this effect is negated.
      */
-    private _checkBackgroundChange(newBackground: string): (testDriver: TestDriver) => boolean {
+    private static checkBackgroundEffect(negated: boolean, newBackground: string): (testDriver: TestDriver) => boolean {
         return function (testDriver: TestDriver) {
             // todo how to get the background
             let stage = testDriver.getStage();
             // stage.
-            return false;
+            return negated;
         }
     }
 

@@ -16,7 +16,7 @@ export class ModelEdge {
     private readonly endNode: ModelNode;
 
     conditions: Condition[] = [];
-    private effects: Effect[] = [];
+    effects: Effect[] = [];
 
     /**
      * Create a new edge.
@@ -60,8 +60,6 @@ export class ModelEdge {
 
             // stop if one condition is not fulfilled
             if (!fulfilled) {
-                // todo log this!
-                console.error("effect not fulfilled", this);
                 break;
             }
         }

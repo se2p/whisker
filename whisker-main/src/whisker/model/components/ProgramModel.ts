@@ -2,6 +2,8 @@ import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {ConditionState} from "../util/ConditionState";
+import {ModelResult} from "../../../test-runner/test-result";
+import * as assert from "assert";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -46,11 +48,15 @@ export class ProgramModel {
     /**
      * Simulate one transition on the graph.
      */
-    makeOneTransition(testDriver: TestDriver): ModelEdge {
+    makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
         // ask the current node for a valid transition
         let edge = this.currentState.testEdgeConditions(testDriver);
         if (edge != null) {
-            edge.checkEffects(testDriver);
+            let result = edge.checkEffects(testDriver);
+            if (!result) {
+                console.error("EFFECT FAILED", edge);
+                modelResult.error.push(new Error("Effect failed in edge " + edge.id));
+            }
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
             }

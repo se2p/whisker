@@ -8,9 +8,11 @@ import TestDriver from "../../../test/test-driver";
 export class ConditionState {
     private testDriver: TestDriver;
     private checks: ((sprite) => void)[] = [];
+    private keyToCheck: string[] = [];
 
     private touched: string[] = [];
     private colorTouched: string[] = [];
+    private keyBeforeStep: string[] = []
 
     /**
      * Get an instance of a condition state saver.
@@ -74,11 +76,33 @@ export class ConditionState {
     }
 
     /**
+     * Register a key for checking for activeness before a step.
+     * @param keyName Name of the key.
+     */
+    registerKeyCheck(keyName: string) {
+        if (this.keyToCheck.indexOf(keyName) == -1) {
+            this.keyToCheck.push(keyName);
+        }
+    }
+
+    /**
+     * Test the keys that are active before a step and save them.
+     */
+    testKeys() {
+        this.keyToCheck.forEach(keyName => {
+            if (this.testDriver.isKeyDown(keyName)) {
+                this.keyBeforeStep.push(keyName);
+            }
+        })
+    }
+
+    /**
      * Reset the thrown conditions.
      */
     resetConditionsThrown() {
         this.touched = [];
         this.colorTouched = [];
+        this.keyBeforeStep = [];
     }
 
     /**
@@ -99,6 +123,14 @@ export class ConditionState {
     isTouchingColor(spriteName: string, r: number, g: number, b: number): boolean {
         return this.colorTouched.indexOf(this._getColorString(spriteName, r, g, b)) != -1
             || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]);
+    }
+
+    /**
+     * Check whether a key was pressed at the beginning of the step.
+     * @param keyName Name of the key.
+     */
+    isKeyDown(keyName: string) {
+        return this.keyBeforeStep.indexOf(keyName) != -1;
     }
 
     _getTouchingString(sprite1: string, sprite2: string): string {
