@@ -98,17 +98,8 @@ export class ScratchEventExtractor {
                 this.traverseBlocks(target, block, eventList);
         }
 
-        // TODO: In some programs without event handlers no waits are chosen
-        //       maybe because the execution of the greenflag scripts
-        //       is too quick? A nicer solution would be good.
-        if (eventList.isEmpty() && !this.availableWaitDurations.isEmpty()) {
-            for (const duration of this.availableWaitDurations) {
-                eventList.add(new WaitEvent(duration));
-            }
-        }
-
-        if(this.availableWaitDurations.isEmpty())
-            eventList.add(new WaitEvent(0))
+        // Add a WaitEvent
+        eventList.add(new WaitEvent())
 
         return eventList.distinctObjects();
     }
@@ -153,11 +144,7 @@ export class ScratchEventExtractor {
                 }
             }
 
-            // WaitEvents
-            const duration = this._extractWaitDurations(target, block);
-            if (duration > 0) {
-                foundEvents.add(new WaitEvent(duration));
-            }
+            // Get the next block in the hierarchy if there is one otherwise stop the loop
             block = target.blocks.getBlock(block.next)
         } while (block)
     }
