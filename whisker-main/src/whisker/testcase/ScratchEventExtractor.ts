@@ -82,11 +82,9 @@ export class ScratchEventExtractor {
                 eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
                 if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
                     const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
-                    if(!this.proceduresMap.has(proccode)) {
-                        const procedureEvents = new List<ScratchEvent>();
-                        this.traverseBlocks(target, hatBlock, procedureEvents);
-                        this.proceduresMap.set(proccode, procedureEvents)
-                    }
+                    const procedureEvents = new List<ScratchEvent>();
+                    this.traverseBlocks(target, hatBlock, procedureEvents);
+                    this.proceduresMap.set(proccode, procedureEvents)
                 }
             }
         }
@@ -241,7 +239,9 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                eventList.addList(this._getTypeTextEvents());
+                if (Container.vmWrapper.isQuestionAsked()) {
+                    eventList.addList(this._getTypeTextEvents());
+                }
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
