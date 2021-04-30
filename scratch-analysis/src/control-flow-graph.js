@@ -363,21 +363,30 @@ export const generateCFG = vm => {
         }
     }
 
+    // Keeps track of where control flow should resume after calling a custom block. A procedures_definition
+    // must branch back (return) to the next Scratch block after the procedures_call.
+    const returnToBlocks = new Mapping();
+
     // Now, we establish the connections between the nodes.
     for (const node of cfg.getAllNodes()) {
         if (node.block.parent) {
             successors.put(node.block.parent, node);
         }
 
-        if (!node.block.next) {
+        if (node.block.next) {
             const callsCustomBlock = node.block.opcode === 'procedures_call';
-            if (callsCustomBlock) { // Adds an edge from the call site of a custom block to its definition
+            if (callsCustomBlock) {
+                // Adds an edge from the call site of a custom block to its definition.
                 const proccode = node.block.mutation.proccode;
                 const callee = customBlockDefinitions.get(proccode);
                 successors.put(node.id, callee)
-                // FIXME: there also need to be edges that go back from the definition to all its call sites
+
+                // Registers the return target of a procedures_call.
+                const returnTo = cfg.getNode(node.block.next);
+                returnToBlocks.put(proccode, returnTo);
             } else {
                 // No exit node? Probably, the actual successors is the exit node
+                // TODO: this is just a heuristic and probably should not be used...
                 successors.put(node.id, cfg.exit());
             }
         }
@@ -405,6 +414,23 @@ export const generateCFG = vm => {
         if (EventFilter.cloneStart(node.block)) {
             const cloneTarget = Extract.cloneSendTarget(targets, node.block);
             eventReceive.put(`clone:${cloneTarget}`, node);
+        }
+    }
+
+    // Here we add the return edges from the last Scratch block of a procedures_definition back to the next Scratch
+    // block after the procedures_call.
+    for (const [proccode, customBlockDef] of customBlockDefinitions.entries()) {
+        // First, we need to find the last Scratch block of every procedures_definition.
+        let lastBlock = customBlockDef;
+        while (lastBlock.block.next) {
+            lastBlock = cfg.getNode(lastBlock.block.next);
+        }
+
+        // Then, we add a return edge to all possible call sites. (This is an over-approximation because some of these
+        // edges might be infeasible. But it suits our needs and purposes.)
+        for (const returnTo of returnToBlocks.get(proccode)) {
+            const returnFrom = cfg.getNode(lastBlock.id);
+            cfg.addEdge(returnFrom, returnTo);
         }
     }
 
