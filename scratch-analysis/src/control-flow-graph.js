@@ -345,21 +345,31 @@ export const generateCFG = vm => {
     }
 
     /*
-     * When it comes to custom blocks, there are three kinds of opcodes in Scratch:
-     *  - procedures_definition: represents the definition of a custom block
-     *  - procedures_call: represents the call of a custom block
-     *  - procedures_prototype: stores the so called "proccode" of a custom block. The proccode is essentially the name
-     *    of the custom block given by the user when he/she defined the custom block. A procedures_call refers to a
-     *    procedures_definition via its proccode. However, a procedures_definition does not know its own proccode.
-     *    Instead, there's a procedures_prototype that contains a reference to the corresponding procedures_definition.
-     * Here, we create a map of to get rid of the indirection that is given by procedures_prototype.
+     * A custom block in Scratch is referred to via its so called "proccode". The proccode is essentially the name
+     * of the custom block given by the user when he/she defined the custom block.
+     *
+     * There are three kinds of opcodes related to custom blocks.
+     *  - procedures_definition: represents the definition of a custom block; identified by its proccode
+     *  - procedures_call: represents the call of a custom block; refers to the procedures_definition via its proccode
+     *  - procedures_prototype: The proccode is usually directly accessible in the procedures_definition itself.
+     *    However, this is not always the case; we need to query the procedures_prototype which then contains a
+     *    reference to the corresponding procedures_definition.
      */
     const customBlockDefinitions = new Map(); // Maps proccodes to the corresponding procedures_definition
     for (const block of Object.values(blocks)) {
-        if (block.opcode === 'procedures_prototype') {
+        if (block.opcode === 'procedures_definition') {
+            if (block.inputs.custom_block.block) {
+                const customBlockPrototype = blocks[block.inputs.custom_block.block];
+                const proccode = customBlockPrototype.mutation.proccode;
+                customBlockDefinitions.set(proccode, new GraphNode(block.id, block));
+            }
+        } else if (block.opcode === 'procedures_prototype') {
             const proccode = block.mutation.proccode;
             const customBlockDefinition = blocks[block.parent];
-            customBlockDefinitions.set(proccode, new GraphNode(customBlockDefinition.id, customBlockDefinition));
+            if (customBlockDefinition) {
+                const customBlockNode = new GraphNode(customBlockDefinition.id, customBlockDefinition);
+                customBlockDefinitions.set(proccode, customBlockNode);
+            }
         }
     }
 
