@@ -2,10 +2,10 @@
     "test-generator": "many-objective",
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
-    "population-size": 10,
-    "chromosome-length": 40,
+    "population-size": 3,
+    "chromosome-length": 30,
     "minVarChromosomeLength": 2,
-    "maxVarChromosomeLength": 40,
+    "maxVarChromosomeLength": 30,
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
@@ -13,6 +13,10 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
+        "removeProb": 0.3,
+        "changeProb": 0.3,
+        "gaussianMutationPower": 1,
+        "insertProb": 0.3,
         "alpha": 0.5,
         "maxMutationCountStart": null,
         "maxMutationCountFocusedPhase": null
