@@ -74,7 +74,6 @@ export class TestExecutor {
         while (this._projectRunning && numCodon < codons.size()) {
             // Fetch the currently available events and save them in the EventMap
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
-            console.log(this.availableEvents)
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
