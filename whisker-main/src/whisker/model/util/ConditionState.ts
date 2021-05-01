@@ -42,8 +42,6 @@ export class ConditionState {
     registerTouching(spriteName1: string, spriteName2: string): void {
         this._registerTouching(spriteName1, spriteName2);
         this._registerTouching(spriteName2, spriteName1);
-        this._updateOnMoved();
-        this._updateOnMoved();
     }
 
     private _registerTouching(spriteName1: string, spriteName2: string): void {

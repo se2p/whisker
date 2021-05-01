@@ -1,5 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
+import {ModelResult} from "../../../test-runner/test-result";
 
 export enum EffectName {
     Output = "Output", // sprite name, string output
@@ -51,7 +52,7 @@ export function getEffect(effectString): Effect {
 export class Effect {
     private readonly name: EffectName;
     private readonly args = [];
-    private readonly effect: (testDriver: TestDriver) => boolean;
+    private readonly effect: (testDriver: TestDriver, modelResult: ModelResult) => boolean;
     private readonly negated: boolean;
 
     /**
@@ -112,9 +113,10 @@ export class Effect {
     /**
      * Check the edge effect has happened.
      * @param testDriver Instance of the test driver.
+     * @param modelResult For logging and errors.
      */
-    check(testDriver: TestDriver): boolean {
-        return this.effect(testDriver);
+    check(testDriver: TestDriver, modelResult: ModelResult): boolean {
+        return this.effect(testDriver, modelResult);
 
     }
 
@@ -219,8 +221,8 @@ export class Effect {
      * @param negated Whether this effect is negated.
      */
     private static checkOutputEffect(negated: boolean, spriteName: string, output: string):
-        (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
+        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult) {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
 
             // todo test whether think and say make a difference
@@ -241,8 +243,8 @@ export class Effect {
      * @param negated Whether this effect is negated.
      */
     private static checkVariableEffect(negated: boolean, spriteName: string, varName: string, change: string):
-        (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
+        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult) {
             let sprite;
             if (spriteName.toLowerCase() === "Stage") { // can the stage even say something?
                 sprite = testDriver.getStage();
@@ -252,17 +254,15 @@ export class Effect {
 
             const variable = sprite.getVariable(varName);
             let result;
-            if (change == "+") {
-                // check for an increase of integer value of the variable
-                // todo check if its an integer variable
-                result = variable.value > variable.old.value;
-            } else if (change == "-") {
-                // check for an decrease of integer value of the variable
-                // todo check if its an integer variable
-                result = variable.value < variable.old.value;
-            } else {
-                // check whether the new value equals change now
-                result = variable.value === change;
+            try {
+                console.log("compare " + variable.old.value + " " + change + " is " + variable.value, testDriver.getTotalStepsExecuted());
+                result = Effect.testChange(variable.old.value, variable.value, change);
+            } catch (e) {
+                e.msg = e.msg + spriteName + "." + varName;
+                console.error(e.msg);
+                if (modelResult.error.indexOf(e) == -1) {
+                    modelResult.error.push(e);
+                }
             }
             if (result) {
                 return !negated;
@@ -276,39 +276,61 @@ export class Effect {
      * Defines a function testing whether an attribute of a sprite has changed.
      * @param spriteName Name of the sprite having the variable.
      * @param attrName Name of the attribute.
-     * @param change For integer variable '+' for increase, '-' for decrease. For string variables this has the new
-     * value.
+     * @param change For integer variable '+' for increase, '-' for decrease. '=' for staying the same.For string
+     * variables this has the new value.
      * @param negated Whether this effect is negated.
      */
     private static checkAttributeEffect(negated: boolean, spriteName: string, attrName: string, change: string):
-        (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
+        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult) {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            const value = eval('sprite.' + attrName);
+            const newValue = eval('sprite.' + attrName);
             const oldValue = eval('sprite.old.' + attrName);
 
-            if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge()) {
+            if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge() && newValue === oldValue
+                && change != "=") {
                 return !negated;
             }
 
-            let result: boolean;
-            if (change == "+") {
-                // check for an increase of integer value of the variable
-                // todo check if its an integer variable
-                result = value > oldValue;
-            } else if (change == "-") {
-                // check for an decrease of integer value of the variable
-                // todo check if its an integer variable
-                result = value < oldValue;
-            } else {
-                // check whether the new value equals change now
-                result = value == change;
+            let result;
+            try {
+                result = Effect.testChange(oldValue, newValue, change);
+            } catch (e) {
+                e.msg = e.msg + spriteName + "." + attrName;
+                console.error(e.msg);
+                if (modelResult.error.indexOf(e) == -1) {
+                    modelResult.error.push(e);
+                }
             }
             if (result) {
                 return !negated;
             }
             return negated;
         }
+    }
+
+    private static testChange(oldValue, newValue, change) {
+        if (change === "+" || change === "++") {
+            if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
+                throw new Error("Effect failed: not a numerical value in variable ");
+            }
+            return oldValue < newValue;
+        } else if (change === "-" || change === "--") {
+            if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
+                throw new Error("Effect failed: not a numerical value in ");
+            }
+            return oldValue > newValue;
+        }
+
+        if (change === "=") {
+            return oldValue == newValue;
+        } else {
+            return newValue == change;
+        }
+    }
+
+    private static testNumber(value) {
+        return ((value != null) && (value !== '') && !isNaN(Number(value.toString())));
     }
 
     /**
@@ -318,8 +340,8 @@ export class Effect {
      * @param negated Whether this effect is negated.
      */
     private static checkCostumeEffect(negated: boolean, spriteName: string, costumeNew: string):
-        (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
+        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult) {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             if (sprite.currentCostume() == costumeNew) { // todo test
                 return !negated;
@@ -333,8 +355,9 @@ export class Effect {
      * @param newBackground Name of the new background.
      * @param negated Whether this effect is negated.
      */
-    private static checkBackgroundEffect(negated: boolean, newBackground: string): (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
+    private static checkBackgroundEffect(negated: boolean, newBackground: string):
+        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult) {
             // todo how to get the background
             let stage = testDriver.getStage();
             // stage.

@@ -3,6 +3,7 @@ import TestDriver from "../../../test/test-driver";
 import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import {ConditionState} from "../util/ConditionState";
+import {ModelResult} from "../../../test-runner/test-result";
 
 // todo construct super type without effect?
 
@@ -55,13 +56,13 @@ export class ModelEdge {
     /**
      * Run all effects of the edge.
      */
-    checkEffects(testDriver: TestDriver): boolean {
+    checkEffects(testDriver: TestDriver, modelResult: ModelResult): boolean {
         if (this.failedEffects.length != 0) {
-            return this.checkFailedEffects(testDriver);
+            return this.checkFailedEffects(testDriver, modelResult);
         }
 
         for (let i = 0; i < this.effects.length; i++) {
-            let fulfilled = this.effects[i].check(testDriver);
+            let fulfilled = this.effects[i].check(testDriver, modelResult);
 
             // stop if one condition is not fulfilled
             if (!fulfilled) {
@@ -79,16 +80,16 @@ export class ModelEdge {
     /**
      * Recheck failed effects.
      */
-    private checkFailedEffects(testDriver: TestDriver): boolean {
+    private checkFailedEffects(testDriver: TestDriver, modelResult: ModelResult): boolean {
         if (this.numberOfEffectFailures === 0) {
-            console.error("something wrong!!!!!!!!!!!!!!!");
+            console.error("There are no failed effects to check...");
             return false;
         }
 
         let newFailures = [];
         for (let i = 0; i < this.failedEffects.length; i++) {
             const effect = this.failedEffects[i];
-            let fulfilled = effect.check(testDriver);
+            let fulfilled = effect.check(testDriver, modelResult);
 
             if (!fulfilled) {
                 newFailures.push(effect);

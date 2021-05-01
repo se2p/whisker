@@ -17,7 +17,7 @@ export class ModelTester extends EventEmitter {
     private result: ModelResult;
 
     private modelsStopped = false;
-    static LEEWAY = 10;
+    static LEEWAY = 3;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.

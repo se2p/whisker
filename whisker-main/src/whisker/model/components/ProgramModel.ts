@@ -66,17 +66,16 @@ export class ProgramModel {
 
         // test the oldest one first
         if (this.effectsToCheck.length > 0) {
-            let removeIndex = 0;
+
+            let newEffectsToCheck = [];
             for (let i = 0; i < this.effectsToCheck.length; i++) {
-                let result = this.effectsToCheck[i].checkEffects(testDriver);
+                let result = this.effectsToCheck[i].checkEffects(testDriver, modelResult);
                 if (!result) {
-                    break;
-                } else {
-                    removeIndex++;
+                    newEffectsToCheck.push(this.effectsToCheck[i]);
                 }
             }
 
-            this.effectsToCheck = this.effectsToCheck.splice(removeIndex, this.effectsToCheck.length);
+            this.effectsToCheck = newEffectsToCheck;
             this.checkForFailed(testDriver, modelResult);
         }
         return edge;
@@ -124,7 +123,7 @@ export class ProgramModel {
      */
     checkAllFailedEffects(testDriver: TestDriver, modelResult: ModelResult) {
         for (let i = 0; i < this.effectsToCheck.length; i++) {
-            let result = this.effectsToCheck[i].checkEffects(testDriver);
+            let result = this.effectsToCheck[i].checkEffects(testDriver, modelResult);
             if (result) {
             }
         }
@@ -138,7 +137,7 @@ export class ProgramModel {
             let failedEdge = this.effectsToCheck[0];
             let output = "Failed effects:";
             for (let i = 0; i < failedEdge.failedEffects.length; i++) {
-                output = output + " [" + i + "]" +  failedEdge.failedEffects[i].toString();
+                output = output + " [" + i + "]" + failedEdge.failedEffects[i].toString();
             }
 
             output = "Effect failed. Edge: '" + failedEdge.id + "'. " + output;

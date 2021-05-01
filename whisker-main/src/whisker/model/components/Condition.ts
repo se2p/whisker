@@ -317,10 +317,18 @@ export class Condition {
     }
 
     private static compare(comparison, value1, value2) {
-        if (comparison == "=") {
+        if (comparison === "=" || comparison === "==") {
             return value1 == value2;
+        } else if (comparison === ">") {
+            return value1 > value2;
+        } else if (comparison === "<") {
+            return value1 < value2;
+        } else if (comparison === "<=") {
+            return value1 <= value2;
+        } else if (comparison === ">=") {
+            return value1 >= value2;
         }
-        // todo other comparison modes
+        console.log("Comparison for condition not known....")
         return false;
     }
 
