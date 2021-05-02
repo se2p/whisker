@@ -242,7 +242,6 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         const coveredBlocks = chromosome.coverage;
         const level = bfs(this._cfg, this._targetNode, coveredBlocks);
-        // console.log('cfg distance: ', this._targetNode.block.opcode, level);
         return level
 
     }
