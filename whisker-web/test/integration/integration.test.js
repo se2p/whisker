@@ -45,6 +45,7 @@ async function readCoverageOutput () {
         }
     }
 
+    await page.waitForTimeout(1000);
     return coverageLog;
 }
 
