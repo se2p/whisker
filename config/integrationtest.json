@@ -15,7 +15,7 @@
         "probability": 1,
         "removeProb": 0.3,
         "changeProb": 0.7,
-        "gaussianMutationPower": 2,
+        "gaussianMutationPower": 5,
         "insertProb": 0.3,
         "alpha": 0.5,
         "maxMutationCountStart": null,
@@ -53,6 +53,7 @@
         "max": 480
     },
     "wait-duration": 50,
+    "waitDurationFactor": 5,
     "waitDurationAfterExecution": 250,
     "click-duration": 20,
     "press-duration": 20

@@ -367,6 +367,14 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getWaitDurationFactor(): number {
+        if ("waitDurationFactor" in this.dict) {
+            return this.dict["waitDurationFactor"]
+        } else {
+            return 5;
+        }
+    }
+
     public getPressDuration(): number {
         if ("press-duration" in this.dict) {
             return this.dict["press-duration"]
