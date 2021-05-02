@@ -43,9 +43,10 @@ async function readCoverageOutput () {
         if (currentCoverageLog.includes('summary')) {
             break;
         }
+
+        await page.waitForTimeout(1000);
     }
 
-    await page.waitForTimeout(1000);
     return coverageLog;
 }
 
