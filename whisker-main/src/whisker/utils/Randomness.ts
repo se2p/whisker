@@ -132,4 +132,29 @@ export class Randomness {
         return list.get(this.nextInt(0, list.size()));
     }
 
+    /**
+     * Generate a random number sampled from a gaussian distribution using the Marsaglia polar method.
+     * @param mean the mean of the gaussian distribution
+     * @param std the std of the gaussian distribution
+     */
+    public nextGaussian(mean: number, std: number): number {
+        let x, y, s;
+        do {
+            x = Math.random() * 2 - 1;
+            y = Math.random() * 2 - 1;
+            s = x * x + y * y;
+        } while (s >= 1 || s == 0);
+        s = Math.sqrt(-2.0 * Math.log(s) / s);
+        return mean + std * x * s;
+    }
+
+    /**
+     * Generate a random integer sampled from a gaussian distribution using the Marsaglia polar method.
+     * @param mean the mean of the gaussian distribution
+     * @param std the std of the gaussian distribution
+     */
+    public nextGaussianInt(mean: number, std: number): number {
+        return Math.round(this.nextGaussian(mean,std))
+    }
+
 }
