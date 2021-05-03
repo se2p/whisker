@@ -3,7 +3,8 @@ import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {ConditionState} from "../util/ConditionState";
 import {ModelResult} from "../../../test-runner/test-result";
-import {ModelTester} from "../ModelTester";
+
+const EFFECT_LEEWAY = 3;
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -58,26 +59,12 @@ export class ProgramModel {
         if (edge != null) {
             // add it to the edge effects to check
             this.effectsToCheck.push(edge);
-
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
             }
         }
 
-        // test the oldest one first
-        if (this.effectsToCheck.length > 0) {
-
-            let newEffectsToCheck = [];
-            for (let i = 0; i < this.effectsToCheck.length; i++) {
-                let result = this.effectsToCheck[i].checkEffects(testDriver, modelResult);
-                if (!result) {
-                    newEffectsToCheck.push(this.effectsToCheck[i]);
-                }
-            }
-
-            this.effectsToCheck = newEffectsToCheck;
-            this.checkForFailed(testDriver, modelResult);
-        }
+        this.checkEffects(testDriver, modelResult);
         return edge;
     }
 
@@ -119,20 +106,27 @@ export class ProgramModel {
     }
 
     /**
-     * At the end of a test run check the effects again.
+     * Check the effects that are still missing.
      */
-    checkAllFailedEffects(testDriver: TestDriver, modelResult: ModelResult) {
+    checkEffects(testDriver: TestDriver, modelResult: ModelResult) {
+        if (this.effectsToCheck.length == 0) {
+            return;
+        }
+
+        let newEffectsToCheck = [];
         for (let i = 0; i < this.effectsToCheck.length; i++) {
             let result = this.effectsToCheck[i].checkEffects(testDriver, modelResult);
             if (result) {
+                newEffectsToCheck.push(this.effectsToCheck[i]);
             }
         }
-        this.checkForFailed(testDriver, modelResult);
-    }
+        this.effectsToCheck = newEffectsToCheck;
+        if (this.effectsToCheck.length == 0) {
+            return;
+        }
 
-    private checkForFailed(testDriver: TestDriver, modelResult: ModelResult) {
         // if it failed more than once
-        if (this.effectsToCheck.length > 0 && this.effectsToCheck[0].numberOfEffectFailures > ModelTester.LEEWAY) {
+        if (this.effectsToCheck[0].numberOfEffectFailures > EFFECT_LEEWAY) {
             // make a wonderful output
             let failedEdge = this.effectsToCheck[0];
             let output = "Failed effects:";

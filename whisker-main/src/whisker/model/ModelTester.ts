@@ -17,7 +17,6 @@ export class ModelTester extends EventEmitter {
     private result: ModelResult;
 
     private modelsStopped = false;
-    static LEEWAY = 3;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -95,8 +94,8 @@ export class ModelTester extends EventEmitter {
             })
 
             if (stopped) {
-                this.programModels.forEach(model =>  {
-                    model.checkAllFailedEffects(testDriver, this.result);
+                this.programModels.forEach(model => {
+                    model.checkEffects(testDriver, this.result);
                 })
 
                 if (endTimer == 0) {
@@ -108,7 +107,6 @@ export class ModelTester extends EventEmitter {
             this.conditionState.resetConditionsThrown();
         }, true, "modelstep");
     }
-
 
     /**
      * Test the model for a given maximal duration or until the program stops.

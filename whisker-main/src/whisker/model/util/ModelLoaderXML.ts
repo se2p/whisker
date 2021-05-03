@@ -37,6 +37,7 @@ export class ModelLoaderXML {
     private startNode: ModelNode;
     private stopNodes: { [key: string]: ModelNode };
     private nodesMap: { [key: string]: ModelNode };
+    private hasAStopNode: boolean;
     private edgesMap: { [key: string]: ModelEdge };
     private graphIDs: string[];
 
@@ -58,16 +59,22 @@ export class ModelLoaderXML {
             this.stopNodes = {};
             this.nodesMap = {};
             this.edgesMap = {};
-            this._loadModel(graph);
+            this.loadModel(graph);
         })
+
+        if (!this.hasAStopNode) {
+            throw new Error("Graphs have no stop nodes.");
+        }
+
         return {programModels: this.programModels, userModels: this.userModels};
     }
 
     /**
      * Load a model.
      * @param graph Contains a node array, an edge array and attributes.
+     * @private
      */
-    _loadModel(graph: { [key: string]: any }): void {
+    private loadModel(graph: { [key: string]: any }): void {
         // Get the nodes and edges..
         const graphEdges = graph.edge;
         const graphNodes = graph.node;
@@ -80,14 +87,17 @@ export class ModelLoaderXML {
         }
 
         try {
-            graphNodes.forEach(node => this._loadNode(graphID, node['_attributes']));
-            graphEdges.forEach(edge => this._loadEdge(graphID, edge['_attributes']));
+            graphNodes.forEach(node => this.loadNode(graphID, node['_attributes']));
+            graphEdges.forEach(edge => this.loadEdge(graphID, edge['_attributes']));
         } catch (e) {
             throw new Error("Graph '" + graphID + "':\n" + e.message);
         }
 
         if (!this.startNode) {
             throw new Error("Graph '" + graphID + "':\n" + "Start node not marked.");
+        }
+        if (Object.keys(this.stopNodes).length != 0) {
+            this.hasAStopNode = true;
         }
 
         this.graphIDs.push(graphID);
@@ -104,8 +114,9 @@ export class ModelLoaderXML {
      * Load a node into the node map.
      * @param graphID ID of the graph.
      * @param nodeAttr attributes of the node: id, startNode: boolean (optional), stopNode: boolean (optional)
+     * @private
      */
-    _loadNode(graphID: string, nodeAttr: { [key: string]: string }): void {
+    private loadNode(graphID: string, nodeAttr: { [key: string]: string }): void {
         if ((this.nodesMap)[nodeAttr.id]) {
             throw new Error("Node id '" + nodeAttr.id + "' already defined.");
         }
@@ -132,8 +143,9 @@ export class ModelLoaderXML {
      * @param graphID ID of the graph.
      * @param edgeAttr attributes of the edge: id, source: (nodeid as string), target: (nodeid as string),
      * condition: string, effect: string
+     * @private
      */
-    _loadEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
+    private loadEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
         const edgeID = edgeAttr.id;
         const startID = edgeAttr.source;
         const endID = edgeAttr.target;
