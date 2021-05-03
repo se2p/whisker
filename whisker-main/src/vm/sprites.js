@@ -27,6 +27,11 @@ class Sprites {
         this._onSpriteMoved = null;
 
         /**
+         * @type {(Function[])}
+         */
+        this._onSpriteMovedModel = [];
+
+        /**
          * @type {(Function|null)}
          */
         this._onSpriteVisualChange = null;
@@ -157,6 +162,9 @@ class Sprites {
         if (this._onSpriteMoved) {
             this._onSpriteMoved(this.wrapTarget(target));
         }
+        this._onSpriteMovedModel.forEach(fun => {
+            fun(this.wrapTarget(target));
+        })
     }
 
     /**
@@ -173,6 +181,14 @@ class Sprites {
      */
     onSpriteMoved (func) {
         this._onSpriteMoved = func;
+    }
+
+    /**
+     * Duplicated function for model tests.
+     * @param func
+     */
+    addModelSpriteMoved(func) {
+        this._onSpriteMovedModel.push(func);
     }
 
     /**

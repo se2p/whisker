@@ -74,12 +74,12 @@ export class ModelTester extends EventEmitter {
             model.reset();
             model.registerConditionState(this.conditionState);
         });
-        testDriver.addCallback(() => {
+        testDriver.addModelCallback(() => {
             this.conditionState.testKeys();
         }, false, "testKeys");
 
         let endTimer = 3;
-        testDriver.addCallback(() => {
+        testDriver.addModelCallback(() => {
             this.programModels.forEach(model => {
                 let edge = model.makeOneTransition(testDriver, this.result);
                 this.edgeTrace(edge, testDriver);

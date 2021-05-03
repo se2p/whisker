@@ -36,6 +36,11 @@ class VMWrapper {
         this.callbacks = new Callbacks(this);
 
         /**
+         * @type {Callbacks}
+         */
+        this.modelCallbacks = new Callbacks(this);
+
+        /**
          * @type {Inputs}
          */
         this.inputs = new Inputs(this);
@@ -117,6 +122,9 @@ class VMWrapper {
         this.callbacks.callCallbacks(false);
         await this._yield();
 
+        this.modelCallbacks.callCallbacks(false);
+        await this._yield();
+
         if (!this.isRunning()) return;
 
         this.randomInputs.performRandomInput();
@@ -129,6 +137,10 @@ class VMWrapper {
         await this._yield();
 
         this.vm.runtime._step();
+        await this._yield();
+
+        // do not stop even if this.isRunning=false!
+        this.modelCallbacks.callCallbacks(true);
         await this._yield();
 
         if (!this.isRunning()) return;

@@ -23,17 +23,6 @@ export class ConditionState {
     }
 
     /**
-     * Updates the onSpriteMoved of the test driver.
-     */
-    _updateOnMoved(): void {
-        this.testDriver.onSpriteMoved((sprite) => {
-            this.checks.forEach(fun => {
-                fun(sprite);
-            });
-        });
-    }
-
-    /**
      * Register a touching condition check for a sprite with another sprite. The check is also registered for the
      * other sprite as there have been inconsistencies.
      * @param spriteName1 Sprite's name that gets the condition check registered.
@@ -52,7 +41,7 @@ export class ConditionState {
         };
 
         this.checks.push(fun);
-        this._updateOnMoved();
+        this.testDriver.addModelSpriteMoved(fun);
     }
 
     /**
@@ -70,7 +59,7 @@ export class ConditionState {
         };
 
         this.checks.push(fun);
-        this._updateOnMoved();
+        this.testDriver.addModelSpriteMoved(fun);
     }
 
     /**
