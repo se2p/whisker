@@ -51,6 +51,13 @@ export interface FitnessFunction<C extends Chromosome> {
     getApproachLevel(chromosome: C): number;
 
     /**
+     * Computes and returns the CFG Distance value for the given chromosome.
+     * @param chromosome the chromosome to rate
+     * @returns the CFG distance value of the specified chromosome
+     */
+    getCFGDistance(chromosome: C): number;
+
+    /**
      * Comparator for two fitness values:
      *
      * We are sorting ascending, from bad fitness to better fitness
