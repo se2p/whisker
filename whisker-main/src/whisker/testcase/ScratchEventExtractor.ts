@@ -82,11 +82,9 @@ export class ScratchEventExtractor {
                 eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
                 if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
                     const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
-                    if(!this.proceduresMap.has(proccode)) {
-                        const procedureEvents = new List<ScratchEvent>();
-                        this.traverseBlocks(target, hatBlock, procedureEvents);
-                        this.proceduresMap.set(proccode, procedureEvents)
-                    }
+                    const procedureEvents = new List<ScratchEvent>();
+                    this.traverseBlocks(target, hatBlock, procedureEvents);
+                    this.proceduresMap.set(proccode, procedureEvents)
                 }
             }
         }
@@ -100,14 +98,8 @@ export class ScratchEventExtractor {
                 this.traverseBlocks(target, block, eventList);
         }
 
-        // TODO: In some programs without event handlers no waits are chosen
-        //       maybe because the execution of the greenflag scripts
-        //       is too quick? A nicer solution would be good.
-        if (eventList.isEmpty() && !this.availableWaitDurations.isEmpty()) {
-            for (const duration of this.availableWaitDurations) {
-                eventList.add(new WaitEvent(duration));
-            }
-        }
+        // Add a WaitEvent
+        eventList.add(new WaitEvent())
 
         return eventList.distinctObjects();
     }
@@ -152,11 +144,7 @@ export class ScratchEventExtractor {
                 }
             }
 
-            // WaitEvents
-            const duration = this._extractWaitDurations(target, block);
-            if (duration > 0) {
-                foundEvents.add(new WaitEvent(duration));
-            }
+            // Get the next block in the hierarchy if there is one otherwise stop the loop
             block = target.blocks.getBlock(block.next)
         } while (block)
     }
@@ -238,7 +226,9 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                eventList.addList(this._getTypeTextEvents());
+                if (Container.vmWrapper.isQuestionAsked()) {
+                    eventList.addList(this._getTypeTextEvents());
+                }
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
