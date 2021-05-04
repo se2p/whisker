@@ -2,7 +2,7 @@
     "test-generator": "many-objective",
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
-    "population-size": 3,
+    "population-size": 10,
     "chromosome-length": 30,
     "minVarChromosomeLength": 2,
     "maxVarChromosomeLength": 30,

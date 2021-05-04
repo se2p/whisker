@@ -177,28 +177,37 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * For other search algorithms, it returns an empty string.
      */
     summarizeSolution(): string {
-        let summary = '';
+        const summary = [];
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const curSummary = {};
             if (!this._archive.has(fitnessFunctionKey)) {
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                summary += ("Not covered: " + fitnessFunction.toString() + "\n");
+                curSummary['block'] = fitnessFunction.toString();
                 let fitness = 1;
                 let approachLevel = 10000;
-                let branchDistance = 10000;
+                let branchDistance = 100;
+                let CFGDistance = 100;
                 for (const chromosome of this._bestIndividuals) {
                     const curApproachLevel = fitnessFunction.getApproachLevel(chromosome);
                     const curBranchDistance = fitnessFunction.getBranchDistance(chromosome);
+                    const curCFGDistance = fitnessFunction.getCFGDistance(chromosome);
                     const curFitness = fitnessFunction.getFitness(chromosome);
                     if (curApproachLevel < approachLevel) approachLevel = curApproachLevel;
                     if (curBranchDistance < branchDistance) branchDistance = curBranchDistance;
+                    if (curCFGDistance < CFGDistance) CFGDistance = curCFGDistance;
                     if (curFitness < fitness) fitness = curFitness;
                 }
-                summary += `ApproachLevel: ${approachLevel}\n` +
-                    `BranchDistance: ${branchDistance}\n` +
-                    `Fitness: ${fitness}\n`
+                curSummary['ApproachLevel'] = approachLevel;
+                curSummary['BranchDistance'] = branchDistance;
+                curSummary['CFGDistance'] = CFGDistance;
+                curSummary['Fitness'] = fitness;
+                if (Object.keys(curSummary).length > 0){
+                    summary.push(curSummary);
+                }
             }
+
         }
-        return summary;
+        return JSON.stringify({'uncoveredBlocks': summary});
     }
 
     private updateStatistics() {
