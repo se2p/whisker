@@ -33,6 +33,7 @@ import {SoundEvent} from "./events/SoundEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
+import {DragEvent} from "./events/DragEvent";
 
 export class ScratchEventExtractor {
 
@@ -208,22 +209,32 @@ export class ScratchEventExtractor {
                 eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
                 break;
             }
+            case 'sensing_touchingobject':
+            case 'sensing_touchingcolor':
+                // Sensing if another Sprite or color is touched.
+                // Initialised with (0,0); coordinates are set during TestExecution
+                eventList.add(new DragEvent(0,0, target.sprite.name))
+                break;
             case 'sensing_mousex':
             case 'sensing_mousey':
             case 'touching-mousepointer': // TODO fix block name
                 // Mouse move
-                eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
+                // Initialised with (0,0); coordinates are set during TestExecution
+                eventList.add(new MouseMoveEvent(0,0)); // TODO: Any hints on position?
                 break;
-            case 'motion_pointtowards':
+            case 'motion_pointtowards': {
+                // Initialised with (0,0); coordinates are set during TestExecution
                 const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
                 if (towards.fields.TOWARDS.value === '_mouse_')
-                    eventList.add(new MouseMoveEvent());
+                    eventList.add(new MouseMoveEvent(0, 0));
                 break;
-            case 'sensing_mousedown':
+            }
+            case 'sensing_mousedown': {
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
                 eventList.add(new MouseDownEvent(!isMouseDown)); // TODO: Any hints on position?
                 break;
+            }
             case 'sensing_askandwait':
                 // Type text
                 if (Container.vmWrapper.isQuestionAsked()) {

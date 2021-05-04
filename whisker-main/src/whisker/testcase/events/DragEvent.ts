@@ -22,14 +22,18 @@ import {ScratchEvent} from "../ScratchEvent";
 import {Container} from "../../utils/Container";
 import {List} from "../../utils/List";
 
-export class MouseMoveEvent implements ScratchEvent {
+
+
+export class DragEvent implements ScratchEvent {
 
     private _x: number;
     private _y: number;
+    private readonly _spriteName: string;
 
-    constructor(x: number, y:number) {
+    constructor(x: number, y:number, spriteName:string) {
         this._x = x;
         this._y = y;
+        this._spriteName = spriteName;
     }
 
     async applyWithCoordinates(args: number[]): Promise<void> {
@@ -37,7 +41,8 @@ export class MouseMoveEvent implements ScratchEvent {
         this._x = x;
         this._y = y;
         Container.testDriver.inputImmediate({
-            device: 'mouse',
+            device: 'drag',
+            sprite: this._spriteName,
             x: Math.trunc(x),
             y: Math.trunc(y)
         });
@@ -46,7 +51,8 @@ export class MouseMoveEvent implements ScratchEvent {
     async apply(): Promise<void> {
         const {x, y} = Container.vmWrapper.getScratchCoords(this._x, this._y)
         Container.testDriver.inputImmediate({
-            device: 'mouse',
+            device: 'drag',
+            sprite: this._spriteName,
             x: Math.trunc(x),
             y: Math.trunc(y)
         });
@@ -55,8 +61,8 @@ export class MouseMoveEvent implements ScratchEvent {
     public toJavaScript(args: number[]): string {
         const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
         return '' +
-`t.inputImmediate({
-    device: 'mouse',
+            `t.inputImmediate({
+    device: 'drag',
     x: ${Math.trunc(x)},
     y: ${Math.trunc(y)}
 });`
@@ -64,11 +70,11 @@ export class MouseMoveEvent implements ScratchEvent {
 
     public toString(args: number[]): string {
         const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
-        return "MouseMove " + Math.trunc(x) + "/" + Math.trunc(y);
+        return "Drag " + Math.trunc(x) + "/" + Math.trunc(y);
     }
 
     getNumParameters(): number {
-        return 2; // x and y?
+        return 2;
     }
 
     getParameter(): number[] {
