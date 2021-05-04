@@ -81,8 +81,7 @@ export class ModelTester extends EventEmitter {
         let endTimer = 3;
         testDriver.addModelCallback(() => {
             this.programModels.forEach(model => {
-                let edge = model.makeOneTransition(testDriver, this.result);
-                this.edgeTrace(edge, testDriver);
+                this.edgeTrace(model.makeTransitions(testDriver, this.result), testDriver);
             });
 
             // after all transitions in the same step look up if they are finished
@@ -125,17 +124,25 @@ export class ModelTester extends EventEmitter {
         return this.result;
     }
 
-    private edgeTrace(edge: ModelEdge, testDriver: TestDriver) {
-        if (edge && !edge.id.startsWith("bowl")) { // todo change this later on
-            let edgeID = edge.id;
-            let conditions = edge.conditions;
-            let edgeTrace = "Edge '" + edgeID + "':";
-            for (let i = 0; i < conditions.length; i++) {
-                edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
+    private edgeTrace(transitions: ModelEdge[], testDriver: TestDriver) {
+        transitions.forEach(edge => {
+            if (!edge.id.startsWith("bowl")) { // todo change this later on
+                let edgeID = edge.id;
+                let conditions = edge.conditions;
+                let edgeTrace = "Edge '" + edgeID + "':";
+                for (let i = 0; i < conditions.length; i++) {
+                    edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
+                }
+                if (edge.effects.length > 0) {
+                    edgeTrace = edgeTrace + " => ";
+                    for (let i = 0; i < edge.effects.length; i++) {
+                        edgeTrace = edgeTrace + " [" + i + "] " + edge.effects[i].toString();
+                    }
+                }
+                this.result.edgeTrace.push(edgeTrace); //todo
+                console.log("TRACE: " + edgeTrace, testDriver.getTotalStepsExecuted());
             }
-            this.result.edgeTrace.push(edgeTrace);
-            console.log("TRACE: " + edgeTrace, testDriver.getTotalStepsExecuted());
-        }
+        });
     }
 
     private getModelStates(testDriver: TestDriver) {

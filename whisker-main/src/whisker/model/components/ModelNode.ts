@@ -13,6 +13,8 @@ export class ModelNode {
     isStartNode = false;
     isStopNode = false;
 
+    private lastStepChecked = 0;
+
     /**
      * Node of a graph with an unique id identifier.
      * @param id
@@ -37,14 +39,15 @@ export class ModelNode {
             return null;
         }
 
-        for (let i = 0; i < this.outgoing.length; i++) {
-            const result = this.outgoing[i].checkConditions(testDriver);
-
-            if (result) {
-                return this.outgoing[i];
+        if (this.lastStepChecked < testDriver.getTotalStepsExecuted()) {
+            for (let i = 0; i < this.outgoing.length; i++) {
+                if (this.outgoing[i].checkConditions(testDriver)) {
+                    return this.outgoing[i];
+                }
             }
         }
 
+        this.lastStepChecked = testDriver.getTotalStepsExecuted();
         return null;
     }
 
@@ -68,6 +71,7 @@ export class ModelNode {
     }
 
     reset() {
+        this.lastStepChecked = 0;
         this.outgoing.forEach(edge => {
             edge.reset();
         })

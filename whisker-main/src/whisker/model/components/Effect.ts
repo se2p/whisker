@@ -255,7 +255,6 @@ export class Effect {
             const variable = sprite.getVariable(varName);
             let result;
             try {
-                console.log("compare " + variable.old.value + " " + change + " is " + variable.value, testDriver.getTotalStepsExecuted());
                 result = Effect.testChange(variable.old.value, variable.value, change);
             } catch (e) {
                 e.msg = e.msg + spriteName + "." + varName;

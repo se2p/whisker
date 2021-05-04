@@ -14,7 +14,9 @@ const EFFECT_LEEWAY = 3;
  *
  * ############# Assumptions ##################
  * - Only one start node, unique
- * - Each edge has a condition (input event, condition for a variable,....)
+ * - Not every program model needs to have a stop node. (but one of the program nodes has one)
+ * - Each edge has a condition (input event, condition for a variable,....) -> or at least an always true condition
+ * - Effects can also occur at a later VM step, therefore its tested 3 successive steps long for occurrence.
  */
 export class ProgramModel {
 
@@ -49,23 +51,31 @@ export class ProgramModel {
     }
 
     /**
-     * Simulate one transition on the graph.
+     * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
+    makeTransitions(testDriver: TestDriver, modelResult: ModelResult): ModelEdge[] {
+        let transitions = [];
         // console.log("model step " + this.id, testDriver.getTotalStepsExecuted())
 
-        // ask the current node for a valid transition
-        let edge = this.currentState.testEdgeConditions(testDriver);
-        if (edge != null) {
-            // add it to the edge effects to check
+        while (true) {
+            // ask the current node for a valid transition
+            let edge = this.currentState.testEdgeConditions(testDriver);
+
+            if (!edge) {
+                break;
+            }
+
+            transitions.push(edge);
             this.effectsToCheck.push(edge);
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
+            } else {
+                break;
             }
         }
 
         this.checkEffects(testDriver, modelResult);
-        return edge;
+        return transitions;
     }
 
     /**
