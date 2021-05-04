@@ -30,6 +30,7 @@ import {Selection} from "../search/Selection";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 /**
  * A naive approach to generating tests is to simply
@@ -46,7 +47,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
 
     private _archive = new Map<number, TestChromosome>();
 
-    async generateTests(project: ScratchProject): Promise<List<WhiskerTest>> {
+    async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary>{
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
@@ -71,9 +72,8 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         }
         this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
         const testSuite = await this.getTestSuite(this._tests);
-        StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         this.collectStatistics(testSuite);
-        return testSuite;
+        return new WhiskerTestListWithSummary(testSuite, '');
     }
 
     private updateArchive(chromosome: TestChromosome): void {
@@ -115,6 +115,19 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         throw new NotSupportedFunctionException();
     }
 
+/**
+ * Summarize the solution saved in _archive.
+ * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+ * 		- Not covered: the statement that’s not covered by any
+ *        function in the _bestIndividuals.
+ *     	- ApproachLevel: the approach level of that statement
+ *     	- BranchDistance: the branch distance of that statement
+ *     	- Fitness: the fitness value of that statement
+ * For other search algorithms, it returns an empty string.
+ */
+    summarizeSolution(): string {
+        return '';
+    }
     setChromosomeGenerator(generator: ChromosomeGenerator<TestChromosome>): void {
         throw new NotSupportedFunctionException();
     }

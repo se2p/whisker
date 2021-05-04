@@ -55,4 +55,8 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
         // If none of the conditions implements getProgress, there's a problem
         throw new NotYetImplementedException();
     }
+
+    get conditions(): List<StoppingCondition<T>> {
+        return this._conditions;
+    }
 }

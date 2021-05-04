@@ -36,6 +36,9 @@ import {TestChromosome} from "./testcase/TestChromosome";
 import {ExecutionTrace} from "./testcase/ExecutionTrace";
 import {ScratchEvent} from "./testcase/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
+import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
+import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
+import {OneOfStoppingCondition} from "./search/stoppingconditions/OneOfStoppingCondition";
 
 export class Search {
 
@@ -45,8 +48,8 @@ export class Search {
         this.vm = vm;
     }
 
-    private async execute(project, config: WhiskerSearchConfiguration): Promise<List<WhiskerTest>> {
-        console.log("Whisker-Main: test generation")
+    private async execute(project, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
+        console.log("Whisker-Main: test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
         return await testGenerator.generateTests(project);
@@ -66,7 +69,7 @@ export class Search {
         return converter.getSuiteText(tests);
     }
 
-    private handleEmptyProject(): string {
+    private handleEmptyProject(): Array<string> {
         console.log("Cannot find any suitable events for this project, not starting search.")
         const stats = StatisticsCollector.getInstance();
 
@@ -95,13 +98,50 @@ export class Search {
 
         tests.add(new WhiskerTest(dummyTest));
         const javaScriptText = this.testsToString(tests);
-        return javaScriptText;
+        return [javaScriptText, 'empty project'];
+    }
+
+    private outputCSV(config: WhiskerSearchConfiguration): void {
+        /*
+         * When a FixedTimeStoppingCondition is used, the search is allowed to run for at most n seconds. The CSV output
+         * contains a fitness timeline, which tells the achieved coverage over time. In our case, we would expect the
+         * timeline to contain at most n entries. However, for certain projects, this number might actually be exceeded.
+         * For example, if a project contains a "wait 60 seconds" block, we might get n+60 entries. This is
+         * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
+         */
+        const stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+
+        // Retrieve the time limit (in milliseconds) of the search, if any.
+        let maxTime: number = undefined;
+        if (stoppingCondition instanceof FixedTimeStoppingCondition) {
+            maxTime = stoppingCondition.maxTime;
+        } else if (stoppingCondition instanceof OneOfStoppingCondition) {
+            for (const d of stoppingCondition.conditions) {
+                if (d instanceof FixedTimeStoppingCondition) {
+                    if (maxTime == undefined || maxTime > d.maxTime) { // take the minimum
+                        maxTime = d.maxTime;
+                    }
+                }
+            }
+        }
+
+        const truncateFitnessTimeline = maxTime != undefined;
+        let csvString: string;
+        if (truncateFitnessTimeline) {
+            // We want one coverage value per second (+ 1 because the timeline starts at 0 seconds.)
+            const numberOfCoverageValues = Math.floor(maxTime / 1000) + 1;
+            csvString = StatisticsCollector.getInstance().asCsv(numberOfCoverageValues);
+        } else {
+            csvString = StatisticsCollector.getInstance().asCsv();
+        }
+        console.log(csvString);
     }
 
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm, project, configRaw: string, accelerationFactor: number): Promise<string> {
+    public async run(vm, project, projectName: string, configRaw: string, configName: string,
+                     accelerationFactor: number): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -125,12 +165,14 @@ export class Search {
         Randomness.setInitialSeed(seed);
         seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();
-        const tests = await this.execute(project, config);
+        StatisticsCollector.getInstance().projectName = projectName;
+        StatisticsCollector.getInstance().configName = configName;
+        const testListWithSummary = await this.execute(project, config);
+        const tests = testListWithSummary.testList;
         this.printTests(tests);
-        const csvString: string = StatisticsCollector.getInstance().asCsv();
-        console.log(csvString);
+        this.outputCSV(config);
 
         const javaScriptText = this.testsToString(tests);
-        return javaScriptText;
+        return [javaScriptText, testListWithSummary.summary];
     }
 }

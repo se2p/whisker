@@ -31,6 +31,7 @@ import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
+import {Container} from "../utils/Container";
 
 export class TestExecutor {
 
@@ -86,11 +87,13 @@ export class TestExecutor {
             await waitEvent.apply(this._vm);
         }
 
-        await new WaitEvent().apply(this._vm);
+        await new WaitEvent(Container.config.getWaitDurationAfterExecution()).apply(this._vm);
 
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
         this._vmWrapper.end();
         this.resetState();
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return testChromosome.trace;
     }
 

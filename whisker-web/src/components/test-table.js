@@ -93,7 +93,7 @@ class TestTable {
             this.updateTest(test);
         }
         if (result.modelResult) {
-            // todo adapt for model
+           // todo adapt for model
         }
     }
 

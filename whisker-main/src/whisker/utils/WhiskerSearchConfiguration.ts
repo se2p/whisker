@@ -24,7 +24,7 @@ import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
 import {VariableLengthTestChromosomeGenerator} from "../testcase/VariableLengthTestChromosomeGenerator";
 import {StoppingCondition} from "../search/StoppingCondition";
-import {FixedTimeStoppingCondtion} from "../search/stoppingconditions/FixedTimeStoppingCondition";
+import {FixedTimeStoppingCondition} from "../search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
@@ -43,6 +43,8 @@ import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
 import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";
 import {InputExtraction} from "../whiskerNet/InputExtraction";
+import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
+import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/FitnessEvaluationStoppingCondition";
 
 class ConfigException implements Error {
     message: string;
@@ -166,9 +168,13 @@ export class WhiskerSearchConfiguration {
         if (stoppingCond == "fixed-iteration") {
             return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
         } else if (stoppingCond == "fixed-time") {
-            return new FixedTimeStoppingCondtion(stoppingCondition["duration"]);
+            return new FixedTimeStoppingCondition(stoppingCondition["duration"]);
         } else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
+        } else if (stoppingCond == 'events') {
+            return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
+        } else if (stoppingCond == 'evaluations') {
+            return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
         } else if (stoppingCond == "one-of") {
             const conditions = stoppingCondition["conditions"];
             const l: StoppingCondition<any>[] = [];
@@ -187,7 +193,9 @@ export class WhiskerSearchConfiguration {
                 return new BitflipMutation();
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome-length'], this.dict['mutation']['alpha']);
+                    this.dict['chromosome-length'], this.dict['mutation']['removeProb'],
+                    this.dict['mutation']['changeProb'], this.dict['mutation']['gaussianMutationPower'],
+                    this.dict['mutation']['insertProb'], this.dict['mutation']['alpha']);
             case'neatMutation':
                 return new NeatMutation(
                     this.dict['mutation']['mutationAddConnection'] as number,
@@ -242,7 +250,8 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthTestChromosomeGenerator(this.getSearchAlgorithmProperties(),
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
-                    this.dict['init-var-length']);
+                    this.dict['minVarChromosomeLength'],
+                    this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork':
                 return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
@@ -347,6 +356,14 @@ export class WhiskerSearchConfiguration {
             return this.dict["wait-duration"]
         } else {
             return 10;
+        }
+    }
+
+    public getWaitDurationAfterExecution(): number {
+        if ("waitDurationAfterExecution" in this.dict) {
+            return this.dict["waitDurationAfterExecution"]
+        } else {
+            return 250;
         }
     }
 

@@ -36,7 +36,7 @@ class FileSelect {
         return this.files.length;
     }
 
-    hasName() {
+    hasName () {
         return this.files && this.files[0];
     }
 
