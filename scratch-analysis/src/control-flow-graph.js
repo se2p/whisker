@@ -312,7 +312,10 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
  * @return {ControlFlowGraph} - a newly generated {@link ControlFlowGraph}.
  */
 export const generateCFG = vm => {
+    // So called "renderer targets" (the individual sprites and the stage) in the current project.
     const targets = vm.runtime.targets;
+
+    // Collect all Scratch blocks from the sprites.
     const blocks = getAllBlocks(targets);
 
     const cfg = new ControlFlowGraph();
@@ -321,24 +324,75 @@ export const generateCFG = vm => {
     const eventReceive = new Mapping();
     const successors = new Mapping();
 
+    // First, we insert all nodes into the CFG.
     for (const block of Object.values(blocks)) {
+
+        // Certain Scratch blocks are not related to control flow; they are not "statement blocks". For example, none
+        // of the blocks in the "Operators" category (e.g., arithmetic and boolean operators) are statement blocks.
+        // For CFG construction, we must ignore such blocks.
         if (!StatementFilter.isStatementBlock(block)) {
             continue;
         }
+
+        // Furthermore, many scratch blocks are "parameterized". For example, the "Say" block or a custom block accepts
+        // text. These text parameters are considered blocks themselves by Scratch but they are not related to control
+        // flow. We can identify such blocks by the fact that they are drawn with a shadow.
         if (block.shadow) {
             continue;
         }
+
         cfg.addNode(new GraphNode(block.id, block));
     }
+
+    /*
+     * A custom block in Scratch is referred to via its so called "proccode". The proccode is essentially the name
+     * of the custom block given by the user when he/she defined the custom block.
+     *
+     * There are three kinds of opcodes related to custom blocks.
+     *  - procedures_definition: represents the definition of a custom block; identified by its proccode
+     *  - procedures_call: represents the call of a custom block; refers to the procedures_definition via its proccode
+     *  - procedures_prototype: The proccode is usually directly accessible in the procedures_definition itself.
+     *    However, this is not always the case; we need to query the procedures_prototype which then contains a
+     *    reference to the corresponding procedures_definition.
+     */
+    const customBlockDefinitions = new Map(); // Maps proccodes to the corresponding procedures_definition
+    for (const block of Object.values(blocks)) {
+        if (block.opcode === 'procedures_definition') {
+            if (block.inputs.custom_block.block) {
+                const customBlockPrototype = blocks[block.inputs.custom_block.block];
+                const proccode = customBlockPrototype.mutation.proccode;
+                customBlockDefinitions.set(proccode, new GraphNode(block.id, block));
+            }
+        } else if (block.opcode === 'procedures_prototype') {
+            const proccode = block.mutation.proccode;
+            const customBlockDefinition = blocks[block.parent];
+            if (customBlockDefinition) {
+                const customBlockNode = new GraphNode(customBlockDefinition.id, customBlockDefinition);
+                customBlockDefinitions.set(proccode, customBlockNode);
+            }
+        }
+    }
+
+    // Now, we establish the connections between the nodes.
     for (const node of cfg.getAllNodes()) {
         if (node.block.parent) {
             successors.put(node.block.parent, node);
         }
+
+        const callsCustomBlock = node.block.opcode === 'procedures_call';
+        if (callsCustomBlock) { // Adds an edge from the call site of a custom block to its definition
+            const proccode = node.block.mutation.proccode;
+            const callee = customBlockDefinitions.get(proccode);
+            successors.put(node.id, callee)
+            // FIXME: there also need to be edges that go back from the definition to all its call sites
+        }
+
         if (!node.block.next) {
             // No exit node? Probably, the actual successors is the exit node
             successors.put(node.id, cfg.exit());
         }
 
+        // Special cases
         if (EventFilter.userEvent(node.block)) {
             const userEventNode = addOrGetUserEventNode(targets, cfg, successors, userEvents, node);
             successors.put(userEventNode.id, node);
@@ -364,6 +418,7 @@ export const generateCFG = vm => {
         }
     }
 
+    // Afterwards, we add a global entry and exit node for the entire Scratch program.
     cfg.addNode(cfg.entry());
     cfg.addNode(cfg.exit());
 
