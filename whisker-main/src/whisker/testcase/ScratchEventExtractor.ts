@@ -98,8 +98,9 @@ export class ScratchEventExtractor {
                 this.traverseBlocks(target, block, eventList);
         }
 
-        // Add a WaitEvent
-        eventList.add(new WaitEvent())
+        // Add a WaitEvent if we have at least one active script.
+        if (vm.runtime.threads.length > 0)
+            eventList.add(new WaitEvent())
 
         return eventList.distinctObjects();
     }
@@ -212,18 +213,20 @@ export class ScratchEventExtractor {
             case 'sensing_mousey':
             case 'touching-mousepointer': // TODO fix block name
                 // Mouse move
-                eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
+                eventList.add(new MouseMoveEvent(0,0));
                 break;
-            case 'motion_pointtowards':
+            case 'motion_pointtowards': {
                 const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
                 if (towards.fields.TOWARDS.value === '_mouse_')
-                    eventList.add(new MouseMoveEvent());
+                    eventList.add(new MouseMoveEvent(0, 0));
                 break;
-            case 'sensing_mousedown':
+            }
+            case 'sensing_mousedown': {
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
-                eventList.add(new MouseDownEvent(!isMouseDown)); // TODO: Any hints on position?
+                eventList.add(new MouseDownEvent(!isMouseDown));
                 break;
+            }
             case 'sensing_askandwait':
                 // Type text
                 if (Container.vmWrapper.isQuestionAsked()) {
@@ -242,11 +245,11 @@ export class ScratchEventExtractor {
                 break;
             case 'event_whengreaterthan':
                 // Sound
-                eventList.add(new SoundEvent()); // TODO: Volume as parameter
+                eventList.add(new SoundEvent());
                 break;
             case 'event_whenlessthan':
                 // Wait duration
-                eventList.add(new WaitEvent()); // TODO: Duration as parameter
+                eventList.add(new WaitEvent());
                 break;
         }
         return eventList;

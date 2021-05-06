@@ -158,10 +158,10 @@ export class NetworkExecutor {
             // If we have a regression Node evaluate it.
             if (network.hasRegression) {
                 const mouseCoords = NetworkExecutor.getMouseCoordinates(network);
-                const mouseMoveEvent = new MouseMoveEvent();
+                const mouseMoveEvent = new MouseMoveEvent(0,0);
                 events.add([mouseMoveEvent, mouseCoords]);
                 this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply(this._vm, mouseCoords)
+                await mouseMoveEvent.applyWithCoordinates(mouseCoords)
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
@@ -230,10 +230,10 @@ export class NetworkExecutor {
             // If we have a regression Node randomise this output as-well
             if (network.hasRegression) {
                 const mouseCoords = [this._random.nextInt(-240, 240), this._random.nextInt(-180, 180)]
-                const mouseMoveEvent = new MouseMoveEvent();
+                const mouseMoveEvent = new MouseMoveEvent(0,0);
                 events.add([mouseMoveEvent, mouseCoords]);
                 this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply(this._vm, mouseCoords)
+                await mouseMoveEvent.applyWithCoordinates(mouseCoords)
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
