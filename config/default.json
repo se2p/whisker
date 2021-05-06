@@ -3,9 +3,9 @@
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
     "population-size": 10,
-    "chromosome-length": 30,
-    "minVarChromosomeLength": 2,
-    "maxVarChromosomeLength": 30,
+    "chromosome-length": 40,
+    "minVarChromosomeLength": 3,
+    "maxVarChromosomeLength": 40,
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
