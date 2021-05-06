@@ -4,7 +4,7 @@ import TestDriver from "../../../test/test-driver";
 import {ConditionState} from "../util/ConditionState";
 import {ModelResult} from "../../../test-runner/test-result";
 
-const EFFECT_LEEWAY = 3;
+const EFFECT_LEEWAY = 1;
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -131,6 +131,15 @@ export class ProgramModel {
 
     /**
      * Check the effects that are still missing.
+     * Edges are taken when conditions are met, that means e.g. a key was active. The effect of the edge is tested
+     * in the same step the condition was tested. If it fails, it is again tested the next three steps. If it is
+     * only late it then accepts. While it tests these three steps other edges can be taken. Their effects are also
+     * tested. After the three steps the effect is reported as missing.
+     *
+     * If the effect is missing and tested for in the next three steps and another edge with the same effect is
+     * taken, the effect has to be fulfilled in two different steps. Therefore, dont test the same effect in the same
+     * step twice (in effect solved). The old edge missing the effect is preferred in the check if the effect is
+     * fulfilled.
      */
     checkEffects(testDriver: TestDriver, modelResult: ModelResult) {
         if (this.effectsToCheck.length == 0) {

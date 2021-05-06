@@ -118,7 +118,14 @@ export class ConditionState {
      * @param keyName Name of the key.
      */
     isKeyDown(keyName: string) {
-        return this.keyBeforeStep.indexOf(keyName) != -1;
+        if (this.areExcludingOnesActive(keyName))
+            return false;
+
+        return this._isKeyDown(keyName);
+    }
+
+    _isKeyDown(keyName: string) {
+        return this.keyBeforeStep.indexOf(keyName) != -1 && this.testDriver.isKeyDown(keyName);
     }
 
     private static getTouchingString(sprite1: string, sprite2: string): string {
@@ -127,5 +134,15 @@ export class ConditionState {
 
     private static getColorString(spriteName: string, r: number, g: number, b: number): string {
         return spriteName + ":" + r + ":" + g + ":" + b;
+    }
+
+    private areExcludingOnesActive(keyName: string) {
+        switch (keyName) {
+            case "left arrow": return this._isKeyDown("right arrow");
+            case "right arrow": return this._isKeyDown("left arrow");
+            case "up arrow": return this._isKeyDown("down arrow");
+            case "down arrow": return this._isKeyDown("up arrow");
+        }
+        return false;
     }
 }

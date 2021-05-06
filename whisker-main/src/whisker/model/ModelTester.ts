@@ -76,7 +76,7 @@ export class ModelTester extends EventEmitter {
     /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      */
-    prepareModel(testDriver: TestDriver) {
+    async prepareModel(testDriver: TestDriver) {
         console.log("----Reseting model----")
         this.modelsStopped = false;
         this.conditionState = new ConditionState(testDriver);
@@ -91,6 +91,10 @@ export class ModelTester extends EventEmitter {
             this.conditionState.testKeys();
         }, false, "testKeys");
 
+        // todo bug: when bowl hovers over bananas, step 305 bananas not touching red anymore -> bowl touching
+        //  bananas thrown, although it is still on red...
+        // run the test driver for one step as inputs can be in the first step but the vm does nothing yet.
+        await testDriver.runForSteps(1);
         let endTimer = 3;
         testDriver.addModelCallback(() => {
             this.programModels.forEach(model => {
@@ -123,6 +127,8 @@ export class ModelTester extends EventEmitter {
 
                 if (endTimer == 0) {
                     this.modelsStopped = true;
+                    this.getModelStates(testDriver);
+                    console.log("one run ended----------------")
                 }
                 endTimer--;
             }
@@ -131,20 +137,7 @@ export class ModelTester extends EventEmitter {
         }, true, "modelstep");
     }
 
-    /**
-     * Test the model for a given maximal duration or until the program stops.
-     * @param testDriver Instance of the test driver.
-     * @param duration Maximal duration. If undefined the test runs until the program stops.
-     */
-    async test(testDriver: TestDriver, duration: number) {
-        // Start the test run with either a maximal duration or until the program stops
-        await testDriver.runForSteps(1);
-        await testDriver.runUntil(() => {
-            return !testDriver.isProjectRunning() || this.modelsStopped;
-        }, duration);
-
-        this.getModelStates(testDriver);
-        console.log("one run ended----------------")
+    getResult(): ModelResult {
         return this.result;
     }
 

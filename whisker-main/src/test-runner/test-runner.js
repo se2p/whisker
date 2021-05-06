@@ -91,10 +91,12 @@ class TestRunner extends EventEmitter {
      * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
      *
+     * @param {duration:number,repetitions:number} modelProps
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, project, test, modelTester, props, modelProps) {
+    async _executeTest(vm, project, test, modelTester, props,
+                       modelProps) {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project);
@@ -125,7 +127,7 @@ class TestRunner extends EventEmitter {
         testDriver.seedScratch(Random.INITIAL_SEED);
 
         if (modelTester && modelTester.programModelsDefined()) {
-            modelTester.prepareModel(testDriver);
+            await modelTester.prepareModel(testDriver);
         }
 
         if (test) {
@@ -145,8 +147,14 @@ class TestRunner extends EventEmitter {
                 }
             }
         } else if (modelTester && modelTester.programModelsDefined()) {
-            // no test files given, only test against model
-            result.modelResult = await modelTester.test(testDriver, modelProps.duration);
+            // Start the test run with either a maximal duration or until the program stops
+            await testDriver.runUntil(() => {
+                return !testDriver.isProjectRunning() || this.modelsStopped;
+            }, modelProps.duration);
+        }
+
+        if (modelTester && modelTester.programModelsDefined()) {
+            result.modelResult = modelTester.getResult();
         }
 
         util.end();

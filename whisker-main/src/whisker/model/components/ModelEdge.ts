@@ -4,6 +4,7 @@ import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import {ConditionState} from "../util/ConditionState";
 import {ModelResult} from "../../../test-runner/test-result";
+import {ProgramModel} from "./ProgramModel";
 
 // todo construct super type without effect?
 
@@ -19,8 +20,9 @@ export class ModelEdge {
     conditions: Condition[] = [];
     effects: Effect[] = [];
 
-    numberOfEffectFailures: number = 0; // todo reset!!
+    numberOfEffectFailures: number = 0;
     failedEffects: Effect[] = [];
+    private lastStepCondChecked = -1;
 
     /**
      * Create a new edge.
@@ -36,14 +38,17 @@ export class ModelEdge {
 
     /**
      * Test whether the conditions on this edge are fulfilled.
-     * @param testDriver Instance of the test driver.
-     * @return Promise<boolean>, if the conditions are fulfilled.
      */
-    checkConditions(testDriver: TestDriver): boolean {
+    checkConditions(testDriver: TestDriver, modelResult: ModelResult): boolean {
+        if (this.lastStepCondChecked == testDriver.getTotalStepsExecuted()) {
+            return false; // dont check in the same step twice
+        }
+        this.lastStepCondChecked = testDriver.getTotalStepsExecuted();
+
         let fulfilled = true;
 
         for (let i = 0; i < this.conditions.length; i++) {
-            fulfilled = this.conditions[i].check(testDriver);
+            fulfilled = this.conditions[i].check(testDriver, modelResult);
 
             // stop if one condition is not fulfilled
             if (!fulfilled) {
@@ -111,6 +116,7 @@ export class ModelEdge {
     reset(): void {
         this.numberOfEffectFailures = 0;
         this.failedEffects = [];
+        this.lastStepCondChecked = -1;
     }
 
     /**
