@@ -73,8 +73,6 @@ export class ProgramModel {
                 break;
             }
         }
-
-        this.checkEffects(testDriver, modelResult);
         return transitions;
     }
 
@@ -145,11 +143,10 @@ export class ProgramModel {
             }
 
             output = "Effect failed. Edge: '" + failedEdge.id + "'. " + output;
-            console.error(output, testDriver.getTotalStepsExecuted());
-            modelResult.error.push(new Error(output));
 
             // remove it to not check again
             this.effectsToCheck = this.effectsToCheck.splice(1, this.effectsToCheck.length);
+            throw new Error(output);
         }
     }
 }

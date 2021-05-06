@@ -258,7 +258,10 @@ const initComponents = function () {
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
-    Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
+    Whisker.modelTester = new ModelTester.ModelTester();
+
+    Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
+        Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
@@ -266,7 +269,6 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
-    Whisker.modelTester = new ModelTester.ModelTester();
 
     document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };

@@ -18,6 +18,13 @@ export class ModelTester extends EventEmitter {
 
     private modelsStopped = false;
 
+    static readonly LOAD_ERROR = "LoadError";
+    static readonly LABEL_TEST_ERROR = "LabelTestError";
+
+    static readonly LOG_MODEL_STOPPED = "LogModelStopped";
+    static readonly LOG_MODEL = "LogModel";
+    static readonly LOG_EDGE_TRACE = "LogEdgeTrace";
+
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
      * @param modelsString Models as a string coded in xml.
@@ -28,6 +35,7 @@ export class ModelTester extends EventEmitter {
             this.programModels = result.programModels;
             this.userModels = result.userModels;
         } catch (e) {
+            this.emit(ModelTester.LOAD_ERROR, "Model Loader: " + e.message);
             throw new Error("Model Loader: " + e.message);
         }
     }
@@ -55,9 +63,14 @@ export class ModelTester extends EventEmitter {
         await util.prepare(1);
 
         const testDriver = util.getTestDriver({extend: {}});
-        this.programModels.forEach(model => {
-            model.testModel(testDriver); // todo what is with the output here?
-        })
+        try {
+            this.programModels.forEach(model => {
+                model.testModel(testDriver);
+            })
+        } catch (e) { // TODO what happens with the thrown error?
+            this.emit(ModelTester.LABEL_TEST_ERROR, e);
+            throw e;
+        }
     }
 
     /**
@@ -82,6 +95,12 @@ export class ModelTester extends EventEmitter {
         testDriver.addModelCallback(() => {
             this.programModels.forEach(model => {
                 this.edgeTrace(model.makeTransitions(testDriver, this.result), testDriver);
+                try {
+                    model.checkEffects(testDriver, this.result);
+                } catch (e) {
+                    console.error(e.message, testDriver.getTotalStepsExecuted());
+                    this.result.error.push(e);
+                }
             });
 
             // after all transitions in the same step look up if they are finished
@@ -94,7 +113,12 @@ export class ModelTester extends EventEmitter {
 
             if (stopped) {
                 this.programModels.forEach(model => {
-                    model.checkEffects(testDriver, this.result);
+                    try {
+                        model.checkEffects(testDriver, this.result);
+                    } catch (e) {
+                        console.error(e.message, testDriver.getTotalStepsExecuted());
+                        this.result.error.push(e);
+                    }
                 })
 
                 if (endTimer == 0) {
@@ -140,6 +164,7 @@ export class ModelTester extends EventEmitter {
                     }
                 }
                 this.result.edgeTrace.push(edgeTrace); //todo
+                this.emit(ModelTester.LOG_EDGE_TRACE, edgeTrace);
                 console.log("TRACE: " + edgeTrace, testDriver.getTotalStepsExecuted());
             }
         });
@@ -150,6 +175,7 @@ export class ModelTester extends EventEmitter {
             if (model.stopped()) {
                 console.log("Model '" + model.id + "' stopped.");
                 this.result.log.push("Model '" + model.id + "' stopped.");
+                this.emit(ModelTester.LOG_MODEL_STOPPED, model.id);
             }
         });
         const sprites = testDriver.getSprites();

@@ -3,9 +3,10 @@ const Test = require('./test');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
 const cleanYamlObject = require('clean-yaml-object');
 const TAP13Formatter = require('./tap13-formatter');
+const {ModelTester} = require("../whisker/model/ModelTester");
 
 class TAP13Listener {
-    constructor (testRunner, print) {
+    constructor(testRunner, modelTester, print) {
         /**
          * @type {TestRunner}
          */
@@ -15,6 +16,11 @@ class TAP13Listener {
          * @type {Function}
          */
         this.print = print;
+
+        /**
+         * @type {ModelTester}
+         */
+        this.modelTester = modelTester;
 
         this.tests = null;
 
@@ -28,6 +34,12 @@ class TAP13Listener {
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
         testRunner.on(TestRunner.TEST_ERROR, this._onTestDone);
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
+
+        this._onModelLoadError = this.onModelLoadError.bind(this);
+        this._onModelLabelTestError = this.onModelLabelTestError.bind(this);
+
+        modelTester.on(ModelTester.LOAD_ERROR, this._onModelLoadError);
+        modelTester.on(ModelTester.LABEL_TEST_ERROR, this._onModelLabelTestError);
     }
 
     unregister () {
@@ -37,6 +49,9 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
+        this.modelTester.off(ModelTester.MODEL_ERROR, this.print);
+        this.modelTester.off(ModelTester.LOAD_ERROR, this.print);
+        this.modelTester.off(ModelTester.LABEL_TEST_ERROR, this.print);
     }
 
     /**
@@ -85,8 +100,13 @@ class TAP13Listener {
             yamlOutput.coverage = TAP13Formatter.formatCoverage(result.coverage);
         }
 
-        if (result.modelResult) {
-            // todo adapt to model output
+        if (result.modelResult && result.modelResult.error.length > 0) {
+            let modelError = "";
+            result.modelResult.error.forEach(e => {
+                modelError = modelError + "- " + e.message +"\n";
+            });
+            console.log(modelError);
+            yamlOutput.modelError = modelError;
         }
 
         const output = [`${success ? 'ok' : 'not ok'} ${testIndex}${testName}`];
@@ -106,6 +126,22 @@ class TAP13Listener {
         } else {
             this.print('Bail out!');
         }
+    }
+
+    /**
+     * @param {string} err
+     */
+    onModelLoadError(err) {
+        err = "MODEL: " + err;
+        this.print(TAP13Formatter.descriptionToYAML(err));
+    }
+
+    /**
+     * @param {string} err
+     */
+    onModelLabelTestError(err) {
+        err = "MODEL: " + err;
+        this.print(TAP13Formatter.descriptionToYAML(err));
     }
 }
 

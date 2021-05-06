@@ -54,13 +54,20 @@ const TAP13Formatter = {
         const fail = summary.filter(result => result.status === Test.FAIL).length;
         const error = summary.filter(result => result.status === Test.ERROR).length;
         const skip = summary.filter(result => result.status === Test.SKIP).length;
+        let errors_in_model = 0;
+        summary.forEach(result => {
+            if (result.modelResult) {
+                errors_in_model += result.modelResult.error.length;
+            }
+        })
 
         return {
             tests,
             pass,
             fail,
             error,
-            skip
+            skip,
+            errors_in_model
         };
     },
 
