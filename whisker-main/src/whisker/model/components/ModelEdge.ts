@@ -56,13 +56,13 @@ export class ModelEdge {
     /**
      * Run all effects of the edge.
      */
-    checkEffects(testDriver: TestDriver, modelResult: ModelResult): boolean {
+    checkEffects(testDriver, modelResult: ModelResult, model: ProgramModel): boolean {
         if (this.failedEffects.length != 0) {
-            return this.checkFailedEffects(testDriver, modelResult);
+            return this.checkFailedEffects(testDriver, modelResult, model);
         }
 
         for (let i = 0; i < this.effects.length; i++) {
-            let fulfilled = this.effects[i].check(testDriver, modelResult);
+            let fulfilled = this.effects[i].check(testDriver, modelResult, model);
 
             // stop if one condition is not fulfilled
             if (!fulfilled) {
@@ -80,7 +80,7 @@ export class ModelEdge {
     /**
      * Recheck failed effects.
      */
-    private checkFailedEffects(testDriver: TestDriver, modelResult: ModelResult): boolean {
+    private checkFailedEffects(testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel): boolean {
         if (this.numberOfEffectFailures === 0) {
             console.error("There are no failed effects to check...");
             return false;
@@ -89,7 +89,7 @@ export class ModelEdge {
         let newFailures = [];
         for (let i = 0; i < this.failedEffects.length; i++) {
             const effect = this.failedEffects[i];
-            let fulfilled = effect.check(testDriver, modelResult);
+            let fulfilled = effect.check(testDriver, modelResult, model);
 
             if (!fulfilled) {
                 newFailures.push(effect);

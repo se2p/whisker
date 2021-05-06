@@ -1,14 +1,15 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import {ModelResult} from "../../../test-runner/test-result";
+import {ProgramModel} from "./ProgramModel";
 
 export enum EffectName {
     Output = "Output", // sprite name, string output
     VarChange = "VarChange", // sprite name, var name, ( + | - | new value)
     AttrChange = "AttrChange", // sprite name, attr name, (+|-|new value)
-    CostumeChange = "CostumeChange", // attribute of an sprite changes, spriteName: string, costumeNew: string
     BackgroundChange = "BackgroundChange",
-    Function = "Function"
+    Function = "Function",
+    Wait = "Wait" // wait in one the model, seconds
 }
 
 /**
@@ -51,8 +52,8 @@ export function getEffect(effectString): Effect {
  */
 export class Effect {
     private readonly name: EffectName;
-    private readonly args = [];
-    private readonly effect: (testDriver: TestDriver, modelResult: ModelResult) => boolean;
+    private readonly _args = [];
+    private readonly _effect: (testDriver, modelResult: ModelResult, model: ProgramModel) => boolean;
     private readonly negated: boolean;
 
     /**
@@ -63,11 +64,11 @@ export class Effect {
      */
     constructor(name: EffectName, negated: boolean, args: any[]) {
         this.name = name;
-        this.args = args;
+        this._args = args;
         this.negated = negated;
 
         let testArgs = function (length) {
-            let error = new Error("Not enough arguments for effect " + name + ".");
+            let error = new Error("Wrong number of arguments for effect " + name + ".");
             if (args.length != length) {
                 throw error;
             }
@@ -83,27 +84,29 @@ export class Effect {
         switch (this.name) {
             case EffectName.Output:
                 testArgs(2);
-                this.effect = Effect.checkOutputEffect(negated, args[0], args[1]);
+                this._effect = Effect.checkOutputEffect(negated, args[0], args[1]);
                 break;
             case EffectName.VarChange:
                 testArgs(3);
-                this.effect = Effect.checkVariableEffect(negated, args[0], args[1], args[2])
+                this._effect = Effect.checkVariableEffect(negated, args[0], args[1], args[2])
                 break;
             case EffectName.AttrChange:
                 testArgs(3);
-                this.effect = Effect.checkAttributeEffect(negated, args[0], args[1], args[2])
-                break;
-            case EffectName.CostumeChange:
-                testArgs(2);
-                this.effect = Effect.checkCostumeEffect(negated, args[0], args[1]);
+                this._effect = Effect.checkAttributeEffect(negated, args[0], args[1], args[2])
                 break;
             case EffectName.BackgroundChange:
                 testArgs(1);
-                this.effect = Effect.checkBackgroundEffect(negated, args[0]);
+                this._effect = Effect.checkBackgroundEffect(negated, args[0]);
                 break;
             case EffectName.Function:
                 testArgs(1);
-                this.effect = this.args[0]; // todo eval and negated
+                this._effect = (t, cs) => {
+                    return eval(this._args[0]);
+                };
+                break;
+            case EffectName.Wait:
+                testArgs(1);
+                this._effect = Effect.waitEffect(args[0]);
                 break;
             default:
                 throw new Error("Effect type not recognized.");
@@ -114,10 +117,19 @@ export class Effect {
      * Check the edge effect has happened.
      * @param testDriver Instance of the test driver.
      * @param modelResult For logging and errors.
+     * @param model The model this effect belongs to.
      */
-    check(testDriver: TestDriver, modelResult: ModelResult): boolean {
-        return this.effect(testDriver, modelResult);
+    check(testDriver, modelResult: ModelResult, model: ProgramModel): boolean {
+        return this._effect(testDriver, modelResult, model);
 
+    }
+
+    get args(): any[] {
+        return this._args;
+    }
+
+    get effect(): (testDriver, modelResult: ModelResult, model: ProgramModel) => boolean {
+        return this._effect;
     }
 
     /**
@@ -143,28 +155,30 @@ export class Effect {
         // console.log("Testing condition: " + this.name + this.args);
         switch (this.name) {
             case EffectName.Output:
-                sprite = this._checkSpriteExistence(testDriver, this.args[0]);
+                sprite = this._checkSpriteExistence(testDriver, this._args[0]);
                 break;
             case EffectName.VarChange:
-                sprite = this._checkSpriteExistence(testDriver, this.args[0]);
-                if (!sprite.getVariable(this.args[1])) {
-                    throw new Error("Variable " + this.args[1] + " is not defined on sprite " + this.args[0] + ".");
+                sprite = this._checkSpriteExistence(testDriver, this._args[0]);
+                if (!sprite.getVariable(this._args[1])) {
+                    throw new Error("Variable " + this._args[1] + " is not defined on sprite " + this._args[0] + ".");
                 }
                 break;
             case EffectName.AttrChange:
-                this._checkAttributeExistence(testDriver, this.args[1]);
+                this._checkAttributeExistence(testDriver, this._args[1]);
                 break;
             case EffectName.BackgroundChange:
                 // nothing yet...
                 break;
-            case EffectName.CostumeChange:
-                this._checkSpriteExistence(testDriver, this.args[0]);
-                break;
             case EffectName.Function:
                 try {
-                    eval(this.args[0]);
+                    eval(this._args[0]);
                 } catch (e) {
-                    throw new Error("Condition Function cannot be evaluated:\n" + e);
+                    throw new Error("Effect Function cannot be evaluated:\n" + e);
+                }
+                break;
+            case EffectName.Wait:
+                if (!Effect.testNumber(this._args[0]) && this._args[0] > 0) {
+                    throw new Error("Effect Wait seconds argument not a number.");
                 }
         }
     }
@@ -175,10 +189,10 @@ export class Effect {
     toString() {
         let result = this.name + "(";
 
-        if (this.args.length == 1) {
-            result = result + this.args[0];
+        if (this._args.length == 1) {
+            result = result + this._args[0];
         } else {
-            result = result + this.args.concat();
+            result = result + this._args.concat();
         }
 
         result = result + ")";
@@ -194,10 +208,10 @@ export class Effect {
      */
     private _checkAttributeExistence(testDriver: TestDriver, attrName: string) {
         try {
-            let sprite = this._checkSpriteExistence(testDriver, this.args[0]);
+            let sprite = this._checkSpriteExistence(testDriver, this._args[0]);
             eval("sprite." + attrName);
         } catch (e) {
-            throw new Error("Attribute " + attrName + " is not defined on sprite " + this.args[0] + ".");
+            throw new Error("Attribute " + attrName + " is not defined on sprite " + this._args[0] + ".");
         }
     }
 
@@ -209,7 +223,7 @@ export class Effect {
     private _checkSpriteExistence(testDriver: TestDriver, spriteName: string) {
         let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
         if (sprite == undefined) {
-            throw new Error("Sprite not existing with name: " + this.args[0]);
+            throw new Error("Sprite not existing with name: " + this._args[0]);
         }
         return sprite;
     }
@@ -221,11 +235,10 @@ export class Effect {
      * @param negated Whether this effect is negated.
      */
     private static checkOutputEffect(negated: boolean, spriteName: string, output: string):
-        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
-        return function (testDriver: TestDriver, modelResult: ModelResult) {
+        (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
 
-            // todo test whether think and say make a difference
             // todo eval the output (could also contain variables)
             if (sprite.sayText.indexOf(eval(output)) != -1) {
                 return !negated;
@@ -243,8 +256,8 @@ export class Effect {
      * @param negated Whether this effect is negated.
      */
     private static checkVariableEffect(negated: boolean, spriteName: string, varName: string, change: string):
-        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
-        return function (testDriver: TestDriver, modelResult: ModelResult) {
+        (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) {
             let sprite;
             if (spriteName.toLowerCase() === "Stage") { // can the stage even say something?
                 sprite = testDriver.getStage();
@@ -258,7 +271,6 @@ export class Effect {
                 result = Effect.testChange(variable.old.value, variable.value, change);
             } catch (e) {
                 e.msg = e.msg + spriteName + "." + varName;
-                console.error(e.msg);
                 if (modelResult.error.indexOf(e) == -1) {
                     modelResult.error.push(e);
                 }
@@ -273,6 +285,7 @@ export class Effect {
 
     /**
      * Defines a function testing whether an attribute of a sprite has changed.
+     * Attributes: effects, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText;
      * @param spriteName Name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param change For integer variable '+' for increase, '-' for decrease. '=' for staying the same.For string
@@ -280,8 +293,8 @@ export class Effect {
      * @param negated Whether this effect is negated.
      */
     private static checkAttributeEffect(negated: boolean, spriteName: string, attrName: string, change: string):
-        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
-        return function (testDriver: TestDriver, modelResult: ModelResult) {
+        (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const newValue = eval('sprite.' + attrName);
             const oldValue = eval('sprite.old.' + attrName);
@@ -308,7 +321,7 @@ export class Effect {
         }
     }
 
-    private static testChange(oldValue, newValue, change) {
+    static testChange(oldValue, newValue, change) {
         if (change === "+" || change === "++") {
             if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
                 throw new Error("Effect failed: not a numerical value in variable ");
@@ -321,32 +334,19 @@ export class Effect {
             return oldValue > newValue;
         }
 
-        if (change === "=") {
+        if (change === "=" || change === "==") {
             return oldValue == newValue;
+        } else if (change == "true") {
+            return newValue == true;
+        } else if (change == "false") {
+            return newValue == false;
         } else {
             return newValue == change;
         }
     }
 
-    private static testNumber(value) {
+    static testNumber(value) {
         return ((value != null) && (value !== '') && !isNaN(Number(value.toString())));
-    }
-
-    /**
-     * Defines a function testing whether a sprite has changed to a new costume.
-     * @param spriteName Name of the sprite.
-     * @param costumeNew Name of the new costume.
-     * @param negated Whether this effect is negated.
-     */
-    private static checkCostumeEffect(negated: boolean, spriteName: string, costumeNew: string):
-        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
-        return function (testDriver: TestDriver, modelResult: ModelResult) {
-            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            if (sprite.currentCostume() == costumeNew) { // todo test
-                return !negated;
-            }
-            return negated;
-        }
     }
 
     /**
@@ -355,8 +355,8 @@ export class Effect {
      * @param negated Whether this effect is negated.
      */
     private static checkBackgroundEffect(negated: boolean, newBackground: string):
-        (testDriver: TestDriver, modelResult: ModelResult) => boolean {
-        return function (testDriver: TestDriver, modelResult: ModelResult) {
+        (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) => boolean {
+        return function (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) {
             // todo how to get the background
             let stage = testDriver.getStage();
             // stage.
@@ -364,10 +364,36 @@ export class Effect {
         }
     }
 
+    /**
+     * Represents the effect wait for some seconds.
+     * @param seconds Seconds to wait for.
+     * @private
+     */
+    private static waitEffect(seconds: number):
+        (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) => boolean {
+        let milliseconds = seconds * 1000;
+        let startTime = -1;
+        return function (testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel) {
+            // called again after the wait
+            if (startTime != -1) {
+                startTime = -1;
+                return true;
+            }
+
+            startTime = testDriver.getRealRunTimeElapsed();
+            // function for the main step of the model to evaluate whether to stop waiting
+            let waitFunction = () => {
+                let currentRealRunTime = testDriver.getRealRunTimeElapsed();
+                return currentRealRunTime > startTime + milliseconds;
+            }
+            model.waitEffectStart(waitFunction);
+            return false;
+        };
+    }
+
     // todo functions for clones
     // todo functions for counting effect "wiederhole 10 mal"
     // todo effect plays a sound...
-    // todo effect change size
     // todo effect "pralle vom rand ab"
     // todo effect "richtung auf x setzen"
     // todo effect "gehe zu zufallsposition"

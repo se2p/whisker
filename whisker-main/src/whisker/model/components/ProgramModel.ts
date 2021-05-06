@@ -30,6 +30,8 @@ export class ProgramModel {
 
     private effectsToCheck: ModelEdge[]; // edge with the failed effects
 
+    private waitingFunction: () => boolean = undefined;
+
     /**
      * Construct a model (graph) with a string identifier and model type (program or user model). Sets up the start
      * node and stopping nodes for simulating transitions on the graph.
@@ -54,12 +56,22 @@ export class ProgramModel {
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
     makeTransitions(testDriver: TestDriver, modelResult: ModelResult): ModelEdge[] {
+        // wait effect
+        if (this.waitingFunction) {
+            if (!this.waitingFunction()) {
+                // still waiting
+                return [];
+            } else {
+                this.waitingFunction = undefined;
+            }
+        }
+
         let transitions = [];
         // console.log("model step " + this.id, testDriver.getTotalStepsExecuted())
 
         while (true) {
             // ask the current node for a valid transition
-            let edge = this.currentState.testEdgeConditions(testDriver);
+            let edge = this.currentState.testEdgeConditions(testDriver, modelResult);
 
             if (!edge) {
                 break;
@@ -74,6 +86,10 @@ export class ProgramModel {
             }
         }
         return transitions;
+    }
+
+    waitEffectStart(waitCheck) {
+        this.waitingFunction = waitCheck
     }
 
     /**
@@ -123,8 +139,7 @@ export class ProgramModel {
 
         let newEffectsToCheck = [];
         for (let i = 0; i < this.effectsToCheck.length; i++) {
-            let result = this.effectsToCheck[i].checkEffects(testDriver, modelResult);
-            if (result) {
+            if (!this.effectsToCheck[i].checkEffects(testDriver, modelResult, this)) {
                 newEffectsToCheck.push(this.effectsToCheck[i]);
             }
         }
@@ -137,7 +152,7 @@ export class ProgramModel {
         if (this.effectsToCheck[0].numberOfEffectFailures > EFFECT_LEEWAY) {
             // make a wonderful output
             let failedEdge = this.effectsToCheck[0];
-            let output = "Failed effects:";
+            let output = "Effects:";
             for (let i = 0; i < failedEdge.failedEffects.length; i++) {
                 output = output + " [" + i + "]" + failedEdge.failedEffects[i].toString();
             }

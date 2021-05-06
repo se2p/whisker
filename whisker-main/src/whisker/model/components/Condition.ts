@@ -1,6 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {ConditionState} from "../util/ConditionState";
 import {ModelEdge} from "./ModelEdge";
+import {ModelResult} from "../../../test-runner/test-result";
 
 /** Type for finding the correct condition function, defining the event. */
 export enum ConditionName {
@@ -56,10 +57,10 @@ export function getCondition(condString): Condition {
  */
 export class Condition {
     private readonly name: ConditionName;
-    private readonly condition: (...state) => boolean;
+    private readonly _condition: (ts: TestDriver, cs: ConditionState, mr: ModelResult) => boolean;
     private readonly args: any[];
 
-    readonly negated: boolean;
+    private readonly _negated: boolean;
     private conditionState: ConditionState;
 
     /**
@@ -71,7 +72,7 @@ export class Condition {
     constructor(name: ConditionName, negated: boolean, args: any[]) {
         this.name = name;
         this.args = args;
-        this.negated = negated;
+        this._negated = negated;
 
         let testArgs = function (length) {
             let error = new Error("Not enough arguments for condition " + name + ".");
@@ -90,35 +91,39 @@ export class Condition {
         switch (this.name) {
             case ConditionName.Key:
                 testArgs(1);
-                this.condition = Condition.checkKeyCondition(negated, this.args[0]);
+                this._condition = Condition.checkKeyCondition(negated, this.args[0]);
                 break;
             case ConditionName.Click:
                 testArgs(1);
-                this.condition = Condition.checkClickCondition(negated, this.args[0]);
+                this._condition = Condition.checkClickCondition(negated, this.args[0]);
                 break;
             case ConditionName.SpriteColor:
                 testArgs(4);
-                this.condition = Condition.checkSpriteColorCond(negated, this.args[0], this.args[1], this.args[2], this.args[3]);
+                this._condition = Condition.checkSpriteColorCond(negated, this.args[0], this.args[1], this.args[2], this.args[3]);
                 break;
             case ConditionName.SpriteTouching:
                 testArgs(2);
-                this.condition = Condition.checkSpriteTouchingCond(negated, this.args[0], this.args[1]);
+                this._condition = Condition.checkSpriteTouchingCond(negated, this.args[0], this.args[1]);
                 break;
             case ConditionName.VarTest:
                 testArgs(4);
-                this.condition = Condition.checkVariableCondition(negated, this.args[0], this.args[1], this.args[2], this.args[3]);
+                this._condition = Condition.checkVariableCondition(negated, this.args[0], this.args[1], this.args[2], this.args[3]);
                 break;
             case ConditionName.AttrTest:
                 testArgs(4);
-                this.condition = Condition.checkAttrCondition(negated, this.args[0], this.args[1], this.args[2], this.args[3]);
+                this._condition = Condition.checkAttrCondition(negated, this.args[0], this.args[1], this.args[2], this.args[3]);
                 break;
             case ConditionName.Function:
                 testArgs(1);
-                this.condition = this.args[0]; // todo eval and negated
+                this._condition = (t, cs) => {
+                    return eval(this.args[0]);
+                };
                 break;
             case ConditionName.Nothing:
                 // Nothing
-                this.condition = (t, cs) => {return true;};
+                this._condition = (t, cs) => {
+                    return true;
+                };
                 break;
             default:
                 throw new Error("Condition type not recognized.");
@@ -146,9 +151,10 @@ export class Condition {
     /**
      * Check the edge condition.
      * @param testDriver Instance of the test driver.
+     * @param modelResult For logging and errors.
      */
-    check(testDriver: TestDriver): boolean {
-        return this.condition(testDriver, this.conditionState);
+    check(testDriver: TestDriver, modelResult: ModelResult): boolean {
+        return this._condition(testDriver, this.conditionState, modelResult);
     }
 
     /**
@@ -189,11 +195,17 @@ export class Condition {
                 if (variable == undefined) {
                     throw new Error("Variable not found: " + this.args[1]);
                 }
-                // todo test whether comparison is something known =,<,>, >=, <= ??
+                if (this.args[2] != "==" && this.args[2] != "=" && this.args[2] != ">" && this.args[2] != ">="
+                    && this.args[2] != "<" && this.args[2] != "<=") {
+                    throw new Error("Comparison not known: " + this.args[2]);
+                }
                 break;
             case ConditionName.AttrTest:
                 this._checkSpriteExistence(testDriver, this.args[0]);
-                // todo test whether comparison is something known =,<,>, >=, <= ??
+                if (this.args[2] != "==" && this.args[2] != "=" && this.args[2] != ">" && this.args[2] != ">="
+                    && this.args[2] != "<" && this.args[2] != "<=") {
+                    throw new Error("Comparison not known: " + this.args[2]);
+                }
                 break;
             case ConditionName.Function:
                 try {
@@ -209,6 +221,14 @@ export class Condition {
      */
     getArgs() {
         return this.args;
+    }
+
+    get condition(): (ts: TestDriver, cs: ConditionState, mr: ModelResult) => boolean {
+        return this._condition;
+    }
+
+    get negated(): boolean {
+        return this._negated;
     }
 
     /**
@@ -227,7 +247,7 @@ export class Condition {
         }
 
         result = result + ")";
-        if (this.negated) {
+        if (this._negated) {
             result = result + " (negated)";
         }
         return result;
@@ -246,15 +266,14 @@ export class Condition {
     }
 
     /**
-     * Method for checking if an edge condition is fulfilled with a key event. Todo needs duration or not?
+     * Method for checking if an edge condition is fulfilled with a key event.
      * @param key Name of the key.
      * @param negated Whether this condition is negated.
      */
     private static checkKeyCondition(negated: boolean, key: string):
-        (testDriver: TestDriver, conditionState: ConditionState) => boolean {
-        // console.log("registering condition: key test ", key);
-        return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
-            if (conditionState.isKeyDown(key) && testDriver.isKeyDown(key)) {
+        (testDriver: TestDriver, conditionState: ConditionState, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, conditionState: ConditionState, modelResult: ModelResult): boolean {
+            if (conditionState.isKeyDown(key)) {
                 return !negated;
             }
             return negated;
@@ -266,11 +285,13 @@ export class Condition {
      * @param spriteName Name of the sprite.
      * @param negated Whether this condition is negated.
      */
-    private static checkClickCondition(negated: boolean, spriteName: string): (testDriver: TestDriver) => boolean {
-        // console.log("registering condition: click ", x, y);
-        return function (testDriver: TestDriver): boolean {
-            // todo get input click cooridantes and test them with the boundaries of the sprite?
-            return !negated;
+    private static checkClickCondition(negated: boolean, spriteName: string):
+        (testDriver: TestDriver, c: ConditionState, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, c: ConditionState, modelResult: ModelResult): boolean {
+            if (testDriver.isMouseDown() && testDriver.getSprite(spriteName).isTouchingMouse()) {
+                return !negated;
+            }
+            return negated;
         }
     }
 
@@ -284,12 +305,20 @@ export class Condition {
      * @param negated Whether this condition is negated.
      */
     private static checkVariableCondition(negated: boolean, spriteName: string, varName: string, comparison: string,
-                                          varValue: string): (testDriver: TestDriver) => boolean {
-        // console.log("registering condition: var test ", spriteName, varName, comparison, varValue);
-        return function (testDriver: TestDriver): boolean {
+                                          varValue: string):
+        (testDriver: TestDriver, c: ConditionState, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, c: ConditionState, modelResult: ModelResult): boolean {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             let variable = sprite.getVariable(varName);
-            let result = Condition.compare(comparison, variable.value, varValue);
+            let result;
+            try {
+                result = Condition.compare(variable.value, varValue, comparison);
+            } catch (e) {
+                e.msg = e.msg + spriteName + "." + varName;
+                if (modelResult.error.indexOf(e) == -1) {
+                    modelResult.error.push(e);
+                }
+            }
             if (result) {
                 return !negated;
             } else {
@@ -308,14 +337,22 @@ export class Condition {
      * @param negated Whether this condition is negated.
      */
     private static checkAttrCondition(negated: boolean, spriteName: string, attrName: string, comparison: string,
-                                      varValue: string): (testDriver: TestDriver) => boolean {
-        // console.log("registering condition: attr test ", spriteName, attrName, comparison, varValue);
-        return function (testDriver: TestDriver): boolean {
+                                      varValue: string):
+        (testDriver: TestDriver, c: ConditionState, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, c: ConditionState, modelResult: ModelResult): boolean {
             let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const value = eval('sprite.' + attrName);
             const oldValue = eval('sprite.old.' + attrName);
 
-            let result = Condition.compare(comparison, value, oldValue);
+            let result;
+            try {
+                result = Condition.compare(value, oldValue, comparison);
+            } catch (e) {
+                e.msg = e.msg + spriteName + "." + attrName;
+                if (modelResult.error.indexOf(e) == -1) {
+                    modelResult.error.push(e);
+                }
+            }
             if (result) {
                 return !negated
             }
@@ -323,10 +360,14 @@ export class Condition {
         }
     }
 
-    private static compare(comparison, value1, value2) {
+    static compare(value1, value2, comparison) {
         if (comparison === "=" || comparison === "==") {
             return value1 == value2;
-        } else if (comparison === ">") {
+        }
+        if (!this.testNumber(value1) || !this.testNumber(value2)) {
+            throw new Error("Condition failed: not a numerical value in ");
+        }
+        if (comparison === ">") {
             return value1 > value2;
         } else if (comparison === "<") {
             return value1 < value2;
@@ -335,8 +376,11 @@ export class Condition {
         } else if (comparison === ">=") {
             return value1 >= value2;
         }
-        console.log("Comparison for condition not known....")
         return false;
+    }
+
+    static testNumber(value) {
+        return ((value != null) && (value !== '') && !isNaN(Number(value.toString())));
     }
 
     /**
@@ -347,8 +391,8 @@ export class Condition {
      * @param negated Whether this condition is negated.
      */
     private static checkSpriteTouchingCond(negated: boolean, spriteName1: string, spriteName2: string):
-        (testDriver: TestDriver, conditionState: ConditionState) => boolean {
-        return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
+        (testDriver: TestDriver, conditionState: ConditionState, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, conditionState: ConditionState, modelResult: ModelResult): boolean {
             const areTouching = conditionState.areTouching(spriteName1, spriteName2);
             if (areTouching) {
                 return !negated;
@@ -366,9 +410,10 @@ export class Condition {
      * @param negated Whether this condition is negated.
      */
     private static checkSpriteColorCond(negated: boolean, spriteName: string, r: number, g: number, b: number):
-        (testDriver: TestDriver, conditionState: ConditionState) => boolean {
-        return function (testDriver: TestDriver, conditionState: ConditionState): boolean {
+        (testDriver: TestDriver, conditionState: ConditionState, modelResult: ModelResult) => boolean {
+        return function (testDriver: TestDriver, conditionState: ConditionState, modelResult: ModelResult): boolean {
             if (conditionState.isTouchingColor(spriteName, r, g, b)) {
+                console.log(spriteName + " touching red", negated, testDriver.getTotalStepsExecuted());
                 return !negated;
             }
             return negated;

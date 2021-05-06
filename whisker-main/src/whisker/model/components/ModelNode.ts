@@ -1,6 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import {ConditionState} from "../util/ConditionState";
+import {ModelResult} from "../../../test-runner/test-result";
 
 /**
  * Node structure for a model.
@@ -12,8 +13,6 @@ export class ModelNode {
 
     isStartNode = false;
     isStopNode = false;
-
-    private lastStepChecked = 0;
 
     /**
      * Node of a graph with an unique id identifier.
@@ -34,20 +33,17 @@ export class ModelNode {
     /**
      * Returns an model edge if one has its conditions for traversing the edge fulfilled or else null.
      */
-    testEdgeConditions(testDriver: TestDriver): ModelEdge {
+    testEdgeConditions(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
         if (this.outgoing.length == 0) {
             return null;
         }
 
-        if (this.lastStepChecked < testDriver.getTotalStepsExecuted()) {
-            for (let i = 0; i < this.outgoing.length; i++) {
-                if (this.outgoing[i].checkConditions(testDriver)) {
-                    return this.outgoing[i];
-                }
+        for (let i = 0; i < this.outgoing.length; i++) {
+            if (this.outgoing[i].checkConditions(testDriver, modelResult)) {
+                return this.outgoing[i];
             }
         }
 
-        this.lastStepChecked = testDriver.getTotalStepsExecuted();
         return null;
     }
 
@@ -71,7 +67,6 @@ export class ModelNode {
     }
 
     reset() {
-        this.lastStepChecked = 0;
         this.outgoing.forEach(edge => {
             edge.reset();
         })
