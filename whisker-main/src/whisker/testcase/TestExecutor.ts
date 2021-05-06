@@ -76,8 +76,8 @@ export class TestExecutor {
             this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
 
             if (this.availableEvents.isEmpty()) {
-                console.log("Whisker-Main: No events available for project.");
-                continue;
+                console.log("Whisker-Main: No events available for project; Adding WaitEvent.");
+                this.availableEvents.add(new WaitEvent());
             }
             // Select the next Event and set its parameter
             const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
