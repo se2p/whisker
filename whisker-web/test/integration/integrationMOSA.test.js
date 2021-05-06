@@ -68,7 +68,7 @@ beforeEach(async() => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtest.json");
+    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtestMOSA.json");
 });
 
 
