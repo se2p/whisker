@@ -164,17 +164,46 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
 /**
  * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+ * @returns: For each statement that is not covered, it returns 4 items:
  * 		- Not covered: the statement that’s not covered by any
  *        function in the _bestIndividuals.
  *     	- ApproachLevel: the approach level of that statement
  *     	- BranchDistance: the branch distance of that statement
  *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
  */
     summarizeSolution(): string {
-        return '';
+    const summary = [];
+    for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+        const curSummary = {};
+        if (!this._archiveCovered.has(fitnessFunctionKey)) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            curSummary['block'] = fitnessFunction.toString();
+            let fitness = 1;
+            let approachLevel = 10000;
+            let branchDistance = 100;
+            let CFGDistance = 100;
+            for (const chromosome of this._bestIndividuals) {
+                const curApproachLevel = fitnessFunction.getApproachLevel(chromosome);
+                const curBranchDistance = fitnessFunction.getBranchDistance(chromosome);
+                const curCFGDistance = fitnessFunction.getCFGDistance(chromosome);
+                const curFitness = fitnessFunction.getFitness(chromosome);
+                if (curApproachLevel < approachLevel) approachLevel = curApproachLevel;
+                if (curBranchDistance < branchDistance) branchDistance = curBranchDistance;
+                if (curCFGDistance < CFGDistance) CFGDistance = curCFGDistance;
+                if (curFitness < fitness) fitness = curFitness;
+            }
+            curSummary['ApproachLevel'] = approachLevel;
+            curSummary['BranchDistance'] = branchDistance;
+            curSummary['CFGDistance'] = CFGDistance;
+            curSummary['Fitness'] = fitness;
+            if (Object.keys(curSummary).length > 0) {
+                summary.push(curSummary);
+            }
+        }
+
     }
+    return JSON.stringify({'uncoveredBlocks': summary});
+}
 
     /**
      * Sets the appropriate starting values for the search.
