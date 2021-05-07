@@ -56,6 +56,6 @@ describe("VariableLengthMutation Test", () => {
         for (let i = 0; i < 50; i++) {
             mutant = variableLengthMutation.apply(mutant)
         }
-        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
+        expect(mutant.getGenes().getElements()).not.toEqual(chromosome.getGenes().getElements())
     })
 })
