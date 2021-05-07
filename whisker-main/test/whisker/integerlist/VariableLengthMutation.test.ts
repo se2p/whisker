@@ -33,7 +33,6 @@ describe("VariableLengthMutation Test", () => {
     test("Test remove mutation", () => {
         variableLengthMutation = new VariableLengthMutation(
             min, max, length, 1, 0, 1, 0, 0.5)
-        const oldLength = chromosome.getLength();
         const mutant = variableLengthMutation.apply(chromosome)
         expect(mutant.getLength()).toBeLessThanOrEqual(chromosome.getLength())
     })
@@ -54,13 +53,9 @@ describe("VariableLengthMutation Test", () => {
         variableLengthMutation = new VariableLengthMutation(
             min, max, length, 0, 1, 5, 0, 0)
         let mutant = variableLengthMutation.apply(chromosome)
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 50; i++) {
             mutant = variableLengthMutation.apply(mutant)
         }
-        const averageOriginal = chromosome.getGenes().getElements().reduce(
-            (a, b) => a + b) / chromosome.getGenes().size();
-        const averageMutant = mutant.getGenes().getElements().reduce(
-            (a, b) => a + b) / chromosome.getGenes().size();
-        expect(averageMutant).not.toBe(averageOriginal)
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
     })
 })
