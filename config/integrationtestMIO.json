@@ -1,0 +1,59 @@
+{
+    "test-generator": "many-objective",
+    "algorithm": "mio",
+    "chromosome": "variablelengthtest",
+    "population-size": 10,
+    "minVarChromosomeLength": 2,
+    "maxVarChromosomeLength": 6,
+    "chromosome-length": 6,
+    "crossover": {
+        "operator": "singlepointrelative",
+        "probability": 0.8
+    },
+    "mutation": {
+        "operator": "variablelength",
+        "probability": 1,
+        "removeProb": 0.3,
+        "changeProb": 0.7,
+        "gaussianMutationPower": 5,
+        "insertProb": 0.3,
+        "alpha": 0.5,
+        "maxMutationCountStart": 0,
+        "maxMutationCountFocusedPhase": 10
+    },
+    "selection": {
+        "operator": "rank",
+        "size": 2,
+        "randomSelectionProbabilityStart": 0.5,
+        "randomSelectionProbabilityFocusedPhase": 0
+    },
+    "fitness-function": {
+        "type": "statement",
+        "targets": []
+    },
+    "stopping-condition": {
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "fixed-time",
+                "duration": 15000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "archive": {
+        "maxArchiveSizeStart": 10,
+        "maxArchiveSizeFocusedPhase": 1
+    },
+    "startOfFocusedPhase": 0.5,
+    "integerRange": {
+        "min": 0,
+        "max": 480
+    },
+    "wait-duration": 50,
+    "waitDurationAfterExecution": 250,
+    "click-duration": 20,
+    "press-duration": 20
+}
