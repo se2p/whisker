@@ -115,9 +115,13 @@ export class ProgramModel {
      * @param testDriver Instance of the test driver.
      */
     testModel(testDriver: TestDriver) {
-        Object.values(this.nodes).forEach(node => {
-            node.testEdgesForErrors(testDriver);
-        })
+        try {
+            Object.values(this.nodes).forEach(node => {
+                node.testEdgesForErrors(testDriver);
+            })
+        } catch (e) {
+            throw new Error("Errors on Model '" + this.id + "':\n" + e.message);
+        }
     }
 
     /**

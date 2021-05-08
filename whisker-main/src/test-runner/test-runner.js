@@ -28,11 +28,11 @@ class TestRunner extends EventEmitter {
 
         const results = [];
 
-        this.emit(TestRunner.RUN_START, tests);
-
         if (modelTester && modelTester.programModelsDefined()) {
             await modelTester.testModels(vm, project);
         }
+
+        this.emit(TestRunner.RUN_START, tests);
 
         if (modelTester && (!tests || tests.length === 0)) {
             // test only by model
@@ -154,7 +154,7 @@ class TestRunner extends EventEmitter {
         }
 
         if (modelTester && modelTester.programModelsDefined()) {
-            result.modelResult = modelTester.getResult();
+            result.modelResult = modelTester.getModelStates(testDriver);
         }
 
         util.end();

@@ -154,12 +154,16 @@ export class ModelEdge {
      * @param testDriver Instance of the test driver.
      */
     testEdgeForErrors(testDriver: TestDriver) {
-        this.conditions.forEach(cond => {
-            cond.testConditionsForErrors(testDriver);
-        })
-        this.effects.forEach(effect => {
-            effect.testEffectsForErrors(testDriver);
-        })
+        try {
+            this.conditions.forEach(cond => {
+                cond.testConditionsForErrors(testDriver);
+            })
+            this.effects.forEach(effect => {
+                effect.testEffectsForErrors(testDriver);
+            })
+        } catch (e) {
+            throw new Error("Edge '" + this.id + "':\n" + e.message);
+        }
     }
 
     /**

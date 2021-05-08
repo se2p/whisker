@@ -74,5 +74,6 @@
     "no-model": "Kein Modell geladen",
     "model-test-run": "Modell Test",
     "model-duration": "Maximale Zeit (s)",
-    "model-repetitions": "Wiederholungen"
+    "model-repetitions": "Wiederholungen",
+    "model-logs-checkbox": "Modell Logs einschalten"
 }

@@ -261,7 +261,7 @@ export class Condition {
     private _checkSpriteExistence(testDriver, spriteName: string) {
         let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
         if (sprite == undefined) {
-            throw new Error("Sprite not existing with name: " + this.args[0]);
+            throw new Error("Sprite not existing with name '" + this.args[0] + "'");
         }
     }
 

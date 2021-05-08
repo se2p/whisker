@@ -20,10 +20,7 @@ export class ModelTester extends EventEmitter {
 
     static readonly LOAD_ERROR = "LoadError";
     static readonly LABEL_TEST_ERROR = "LabelTestError";
-
-    static readonly LOG_MODEL_STOPPED = "LogModelStopped";
     static readonly LOG_MODEL = "LogModel";
-    static readonly LOG_EDGE_TRACE = "LogEdgeTrace";
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -67,8 +64,8 @@ export class ModelTester extends EventEmitter {
             this.programModels.forEach(model => {
                 model.testModel(testDriver);
             })
-        } catch (e) { // TODO what happens with the thrown error?
-            this.emit(ModelTester.LABEL_TEST_ERROR, e);
+        } catch (e) {
+            this.emit(ModelTester.LABEL_TEST_ERROR, e.message);
             throw e;
         }
     }
@@ -77,7 +74,8 @@ export class ModelTester extends EventEmitter {
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      */
     async prepareModel(testDriver: TestDriver) {
-        console.log("----Reseting model----")
+        console.log("----Preparing model----")
+        this.emit(ModelTester.LOG_MODEL, "Preparing model...");
         this.modelsStopped = false;
         this.conditionState = new ConditionState(testDriver);
         this.result = new ModelResult();
@@ -127,7 +125,6 @@ export class ModelTester extends EventEmitter {
 
                 if (endTimer == 0) {
                     this.modelsStopped = true;
-                    this.getModelStates(testDriver);
                     console.log("one run ended----------------")
                 }
                 endTimer--;
@@ -137,16 +134,12 @@ export class ModelTester extends EventEmitter {
         }, true, "modelstep");
     }
 
-    getResult(): ModelResult {
-        return this.result;
-    }
-
     private edgeTrace(transitions: ModelEdge[], testDriver: TestDriver) {
         transitions.forEach(edge => {
             if (!edge.id.startsWith("bowl")) { // todo change this later on
                 let edgeID = edge.id;
                 let conditions = edge.conditions;
-                let edgeTrace = "Edge '" + edgeID + "':";
+                let edgeTrace = "'" + edgeID + "':";
                 for (let i = 0; i < conditions.length; i++) {
                     edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
                 }
@@ -157,26 +150,34 @@ export class ModelTester extends EventEmitter {
                     }
                 }
                 this.result.edgeTrace.push(edgeTrace); //todo
-                this.emit(ModelTester.LOG_EDGE_TRACE, edgeTrace);
-                console.log("TRACE: " + edgeTrace, testDriver.getTotalStepsExecuted());
+                this.emit(ModelTester.LOG_MODEL, "- Edge trace: " + edgeTrace);
+                console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
             }
         });
     }
 
-    private getModelStates(testDriver: TestDriver) {
+    getModelStates(testDriver: TestDriver) {
         this.programModels.forEach(model => {
             if (model.stopped()) {
                 console.log("Model '" + model.id + "' stopped.");
                 this.result.log.push("Model '" + model.id + "' stopped.");
-                this.emit(ModelTester.LOG_MODEL_STOPPED, model.id);
+                this.emit(ModelTester.LOG_MODEL, "---Model '" + model.id + "' stopped.");
             }
         });
-        const sprites = testDriver.getSprites();
+        const sprites = testDriver.getSprites(undefined, false);
+        let log = [];
+        log.push("--- State of variables:");
         sprites.forEach(sprite => {
             sprite.getVariables().forEach(variable => {
-                this.result.state.push(sprite.name + "." + variable.name + " = " + variable.value);
+                let varOutput = sprite.name + "." + variable.name + " = " + variable.value;
+                this.result.state.push(varOutput);
+                log.push(varOutput);
             })
         })
+        if (log.length > 1) {
+            this.emit(ModelTester.LOG_MODEL, log.join("\n"));
+        }
         console.log(this.result)
+        return this.result;
     }
 }

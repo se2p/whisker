@@ -49,7 +49,6 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
-        this.modelTester.off(ModelTester.MODEL_ERROR, this.print);
         this.modelTester.off(ModelTester.LOAD_ERROR, this.print);
         this.modelTester.off(ModelTester.LABEL_TEST_ERROR, this.print);
     }

@@ -259,6 +259,9 @@ const initComponents = function () {
     Whisker.testTable.show();
 
     Whisker.modelTester = new ModelTester.ModelTester();
+    Whisker.modelTester.on(ModelTester.ModelTester.LABEL_TEST_ERROR, (msg) => {
+        showModal(i18next.t("test-execution"), msg);
+    })
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
         Whisker.outputRun.println.bind(Whisker.outputRun));
@@ -323,6 +326,16 @@ const initEvents = function () {
             Whisker.scratch.enableInput();
         } else {
             Whisker.scratch.disableInput();
+        }
+    });
+    let modelLog = (msg)  => {
+        Whisker.outputLog.println(msg);
+    };
+    $('#model-logs-checkbox').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            Whisker.modelTester.on(ModelTester.ModelTester.LOG_MODEL, modelLog);
+        } else {
+            Whisker.modelTester.off(ModelTester.ModelTester.LOG_MODEL, modelLog);
         }
     });
     $('#toggle-advanced').on('change', event => {
