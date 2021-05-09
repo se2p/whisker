@@ -104,7 +104,6 @@ class TAP13Listener {
             result.modelResult.error.forEach(e => {
                 modelError = modelError + "- " + e.message +"\n";
             });
-            console.log(modelError);
             yamlOutput.modelError = modelError;
         }
 

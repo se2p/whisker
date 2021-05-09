@@ -44,6 +44,11 @@ class ModelResult {
         this.error = [];
 
         /**
+         * type {[key:string]:number}
+         */
+        this.coverage = {};
+
+        /**
          * @type {any[]}
          */
         this.log = [];

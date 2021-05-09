@@ -21,6 +21,7 @@ export class ModelTester extends EventEmitter {
     static readonly LOAD_ERROR = "LoadError";
     static readonly LABEL_TEST_ERROR = "LabelTestError";
     static readonly LOG_MODEL = "LogModel";
+    static readonly LOG_MODEL_COVERAGE: "LogModelCoverage";
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -156,6 +157,9 @@ export class ModelTester extends EventEmitter {
         });
     }
 
+    /**
+     * Get the result of the test run as a ModelResult.
+     */
     getModelStates(testDriver: TestDriver) {
         this.programModels.forEach(model => {
             if (model.stopped()) {
@@ -177,7 +181,25 @@ export class ModelTester extends EventEmitter {
         if (log.length > 1) {
             this.emit(ModelTester.LOG_MODEL, log.join("\n"));
         }
+        this.emit(ModelTester.LOG_MODEL, "--- Model Coverage");
+        let coverages = {};
+        this.programModels.forEach(model => {
+            coverages[model.id] = model.getCoverageCurrentRun();
+            this.result.coverage[model.id] = coverages[model.id];
+        })
+        this.emit(ModelTester.LOG_MODEL_COVERAGE, coverages);
         console.log(this.result)
         return this.result;
+    }
+
+    /**
+     * Get the total coverage of the program models of all test runs.
+     */
+    getTotalCoverage() {
+        let coverage = {};
+        this.programModels.forEach(model => {
+            coverage[model.id] = model.getTotalCoverage();
+        })
+        return coverage;
     }
 }

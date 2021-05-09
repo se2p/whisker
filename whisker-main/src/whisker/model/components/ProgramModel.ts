@@ -31,6 +31,8 @@ export class ProgramModel {
     private effectsToCheck: ModelEdge[]; // edge with the failed effects
 
     private waitingFunction: () => boolean = undefined;
+    private coverageCurrentRun: { [key: string]: boolean } = {};
+    private coverageTotal: { [key: string]: boolean } = {};
 
     /**
      * Construct a model (graph) with a string identifier and model type (program or user model). Sets up the start
@@ -76,6 +78,8 @@ export class ProgramModel {
             if (!edge) {
                 break;
             }
+            this.coverageCurrentRun[edge.id] = true;
+            this.coverageTotal[edge.id] = true;
 
             transitions.push(edge);
             this.effectsToCheck.push(edge);
@@ -86,6 +90,41 @@ export class ProgramModel {
             }
         }
         return transitions;
+    }
+
+    /**
+     * Get the coverage of this model of the last run.
+     */
+    getCoverageCurrentRun() {
+        console.log(this.coverageCurrentRun);
+        let covered = 0;
+        for (const key in this.coverageCurrentRun) {
+            if (this.coverageCurrentRun[key]) {
+                covered++;
+            }
+        }
+        return {
+            covered: covered,
+            total: Object.keys(this.coverageCurrentRun).length
+        }
+    }
+
+    /**
+     * Get the coverage of all test runs with this model. Resets the total coverage.
+     */
+    getTotalCoverage() {
+        console.log(this.coverageTotal);
+        let covered = 0;
+        for (const key in this.coverageTotal) {
+            if (this.coverageTotal[key]) {
+                covered++;
+            }
+            this.coverageTotal[key] = false;
+        }
+        return {
+            covered: covered,
+            total: Object.keys(this.coverageTotal).length
+        }
     }
 
     waitEffectStart(waitCheck) {
@@ -108,6 +147,9 @@ export class ProgramModel {
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
+        for (const edgesCoveredKey in this.coverageCurrentRun) {
+            this.coverageCurrentRun[edgesCoveredKey] = false;
+        }
     }
 
     /**

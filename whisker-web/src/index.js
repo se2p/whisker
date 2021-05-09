@@ -44,7 +44,7 @@ const loadModelFromString = function (models) {
         Whisker.modelTester.load(models);
     } catch (err) {
         Whisker.outputLog.println("ERROR: " + err.message);
-        console.log(err);
+        console.error(err);
         const message = `${err.name}: ${err.message}`;
         showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
@@ -142,14 +142,17 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     }
 
     const formattedSummary = TAP13Formatter.formatSummary(summary);
+    const formattedModelCoverage = TAP13Formatter.formatCoverage(Whisker.modelTester.getTotalCoverage());
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+    const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
 
     Whisker.outputRun.println([
         summaryString,
-        coverageString
+        coverageString,
+        modelCoverageString
     ].join('\n'));
 };
 
@@ -331,11 +334,17 @@ const initEvents = function () {
     let modelLog = (msg)  => {
         Whisker.outputLog.println(msg);
     };
+    let modelCoverage = (coverage) => {
+        const formattedModelCoverage = TAP13Formatter.formatCoverage(coverage);
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
+    }
     $('#model-logs-checkbox').on('change', event => {
         if ($(event.target).is(':checked')) {
             Whisker.modelTester.on(ModelTester.ModelTester.LOG_MODEL, modelLog);
+            Whisker.modelTester.on(ModelTester.ModelTester.LOG_MODEL_COVERAGE, modelCoverage);
         } else {
             Whisker.modelTester.off(ModelTester.ModelTester.LOG_MODEL, modelLog);
+            Whisker.modelTester.off(ModelTester.ModelTester.LOG_MODEL_COVERAGE, modelCoverage);
         }
     });
     $('#toggle-advanced').on('change', event => {
