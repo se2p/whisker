@@ -183,23 +183,29 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this._archive.has(fitnessFunctionKey)) {
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 curSummary['block'] = fitnessFunction.toString();
-                let fitness = 1;
-                let approachLevel = 10000;
-                let branchDistance = 100;
-                let CFGDistance = 100;
+                let fitness = Number.MAX_SAFE_INTEGER;
+                let approachLevel = Number.MAX_SAFE_INTEGER;
+                let branchDistance = Number.MAX_SAFE_INTEGER;
+                let CFGDistance = Number.MAX_SAFE_INTEGER;
                 for (const chromosome of this._bestIndividuals) {
-                    const curApproachLevel = fitnessFunction.getApproachLevel(chromosome);
-                    const curBranchDistance = fitnessFunction.getBranchDistance(chromosome);
-                    const curCFGDistance = fitnessFunction.getCFGDistance(chromosome);
                     const curFitness = fitnessFunction.getFitness(chromosome);
-                    if (curApproachLevel < approachLevel) approachLevel = curApproachLevel;
-                    if (curBranchDistance < branchDistance) branchDistance = curBranchDistance;
-                    if (curCFGDistance < CFGDistance) CFGDistance = curCFGDistance;
-                    if (curFitness < fitness) fitness = curFitness;
+                    if (curFitness < fitness) {
+                        fitness = curFitness;
+                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
+                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
+                        if (approachLevel === 0 && branchDistance === 0) {
+                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
+                        }
+                        else {
+                            CFGDistance = Number.MAX_SAFE_INTEGER;
+                            //this means that it was unnecessary to calculate cfg distance, since
+                            //approach level or branch distance was not 0;
+                        }
+                    }
                 }
                 curSummary['ApproachLevel'] = approachLevel;
                 curSummary['BranchDistance'] = branchDistance;
-                curSummary['CFGDistance'] = CFGDistance;
+                curSummary['CFGDistanceUnNormalized'] = CFGDistance;
                 curSummary['Fitness'] = fitness;
                 if (Object.keys(curSummary).length > 0){
                     summary.push(curSummary);
