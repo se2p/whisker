@@ -233,6 +233,7 @@ export class ScratchEventExtractor {
                 const value = field.TOUCHINGOBJECTMENU.value;
                 if (value == "_mouse_") {
                     eventList.add(new MouseMoveToEvent(target.x, target.y));
+                    eventList.add(new MouseMoveEvent());
                 }
                 break;
             }
