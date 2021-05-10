@@ -1,56 +1,6 @@
 import {Condition, ConditionName} from "../../../../src/whisker/model/components/Condition";
 
 describe('Condition', () => {
-    test('test compare: error no number', () => {
-        expect(function () {
-            Condition.compare("0", "string", ">")
-        }).toThrow();
-        expect(function () {
-            Condition.compare("string", "0", ">")
-        }).toThrow();
-
-        expect(function () {
-            Condition.compare("string", "0", "<")
-        }).toThrow();
-        expect(function () {
-            Condition.compare("0", "string", "<")
-        }).toThrow();
-
-        expect(function () {
-            Condition.compare("0", "string", ">=")
-        }).toThrow();
-        expect(function () {
-            Condition.compare("string", "0", ">=")
-        }).toThrow();
-
-        expect(function () {
-            Condition.compare("0", "string", ">=")
-        }).toThrow();
-        expect(function () {
-            Condition.compare("string", "0", ">=")
-        }).toThrow();
-    });
-
-    test("test compare: decrease number", () => {
-        expect(Condition.compare("0", "-1", "<")).toBeFalsy();
-        expect(Condition.compare("-1", "0", "<")).toBeTruthy();
-        expect(Condition.compare("1", "1", "<")).toBeFalsy();
-    })
-
-    test("test compare:increase number", () => {
-        expect(Condition.compare("0", "-1", ">")).toBeTruthy();
-        expect(Condition.compare("-1", "0", ">")).toBeFalsy();
-        expect(Condition.compare("1", "1", ">")).toBeFalsy();
-    })
-
-    test("test compare: equal", () => {
-        expect(Condition.compare("0", "-1", "=")).toBeFalsy();
-        expect(Condition.compare("-1", "0", "=")).toBeFalsy();
-        expect(Condition.compare("1", "1", "=")).toBeTruthy();
-        expect(Condition.compare("hallo", "hallo", "=")).toBeTruthy();
-        expect(Condition.compare("1", "hallo", "=")).toBeFalsy();
-    })
-
     test("no arguments", () => {
         expect(() => {
             new Condition(ConditionName.Key, true, [])
@@ -175,15 +125,6 @@ describe('Condition', () => {
         expect(() => {
             new Condition(ConditionName.AttrTest, true, [undefined, "test", "test2"]);
         }).toThrow()
-    })
-
-    test("test number", () => {
-        expect(Condition.testNumber("string")).toBeFalsy();
-        expect(Condition.testNumber("")).toBeFalsy();
-        expect(Condition.testNumber(null)).toBeFalsy();
-        expect(Condition.testNumber(undefined)).toBeFalsy();
-        expect(Condition.testNumber(1)).toBeTruthy();
-        expect(Condition.testNumber("1")).toBeTruthy();
     })
 
     test("conditions", () => {

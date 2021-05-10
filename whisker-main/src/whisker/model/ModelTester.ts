@@ -4,7 +4,7 @@ import {UserModel} from "./components/UserModel";
 import WhiskerUtil from "../../test/whisker-util";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
-import {ConditionState} from "./util/ConditionState";
+import {CheckListener} from "./util/CheckListener";
 import {ModelResult} from "../../test-runner/test-result";
 import {ModelEdge} from "./components/ModelEdge";
 
@@ -13,7 +13,7 @@ export class ModelTester extends EventEmitter {
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
-    private conditionState: ConditionState;
+    private checkListener: CheckListener;
     private result: ModelResult;
 
     private modelsStopped = false;
@@ -78,16 +78,16 @@ export class ModelTester extends EventEmitter {
         console.log("----Preparing model----")
         this.emit(ModelTester.LOG_MODEL, "Preparing model...");
         this.modelsStopped = false;
-        this.conditionState = new ConditionState(testDriver);
+        this.checkListener = new CheckListener(testDriver);
         this.result = new ModelResult();
 
         // reset the models
         this.programModels.forEach(model => {
             model.reset();
-            model.registerConditionState(this.conditionState);
+            model.registerCheckListener(this.checkListener);
         });
-        testDriver.addModelCallback(() => {
-            this.conditionState.testKeys();
+        let keyCallback = testDriver.addModelCallback(() => {
+            this.checkListener.testKeys();
         }, false, "testKeys");
 
         // todo bug: when bowl hovers over bananas, step 305 bananas not touching red anymore -> bowl touching
@@ -131,7 +131,7 @@ export class ModelTester extends EventEmitter {
                 endTimer--;
             }
 
-            this.conditionState.resetConditionsThrown();
+            this.checkListener.reset();
         }, true, "modelstep");
     }
 

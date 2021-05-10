@@ -2,11 +2,9 @@ import {ModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {Effect} from "./Effect";
 import {Condition} from "./Condition";
-import {ConditionState} from "../util/ConditionState";
 import {ModelResult} from "../../../test-runner/test-result";
 import {ProgramModel} from "./ProgramModel";
-
-// todo construct super type without effect?
+import {CheckListener} from "../util/CheckListener";
 
 /**
  * Edge structure for a model with effects that can be triggered based on its conditions.
@@ -38,24 +36,30 @@ export class ModelEdge {
 
     /**
      * Test whether the conditions on this edge are fulfilled.
+     * @Returns the failed conditions.
      */
-    checkConditions(testDriver: TestDriver, modelResult: ModelResult): boolean {
+    getFailedConditions(testDriver: TestDriver, modelResult: ModelResult): Condition[] {
         if (this.lastStepCondChecked == testDriver.getTotalStepsExecuted()) {
-            return false; // dont check in the same step twice
+            return this.conditions; // dont check in the same step twice
         }
-        this.lastStepCondChecked = testDriver.getTotalStepsExecuted();
 
-        let fulfilled = true;
+        this.lastStepCondChecked = testDriver.getTotalStepsExecuted();
+        let failedConditions = [];
 
         for (let i = 0; i < this.conditions.length; i++) {
-            fulfilled = this.conditions[i].check(testDriver, modelResult);
-
-            // stop if one condition is not fulfilled
-            if (!fulfilled) {
-                break;
+            try {
+                if (!this.conditions[i].check(testDriver)) {
+                    failedConditions.push(this.conditions[i]);
+                }
+            } catch (e) {
+                e.message = "Edge '" + this.id + "': " + e.message;
+                console.error(e);
+                failedConditions.push(this.conditions[i]);
+                modelResult.error.push(e);
             }
         }
-        return fulfilled;
+
+        return failedConditions;
     }
 
     /**
@@ -63,15 +67,19 @@ export class ModelEdge {
      */
     checkEffects(testDriver, modelResult: ModelResult, model: ProgramModel): boolean {
         if (this.failedEffects.length != 0) {
-            return this.checkFailedEffects(testDriver, modelResult, model);
+            return this.checkFailedEffects(testDriver, model);
         }
 
         for (let i = 0; i < this.effects.length; i++) {
-            let fulfilled = this.effects[i].check(testDriver, modelResult, model);
-
-            // stop if one condition is not fulfilled
-            if (!fulfilled) {
+            try {
+                if (!this.effects[i].check(testDriver, model)) {
+                    this.failedEffects.push(this.effects[i]);
+                }
+            } catch (e) {
+                e.message = "Edge '" + this.id + "': " + e.message;
+                console.error(e);
                 this.failedEffects.push(this.effects[i]);
+                modelResult.error.push(e);
             }
         }
 
@@ -85,7 +93,7 @@ export class ModelEdge {
     /**
      * Recheck failed effects.
      */
-    private checkFailedEffects(testDriver: TestDriver, modelResult: ModelResult, model: ProgramModel): boolean {
+    private checkFailedEffects(testDriver: TestDriver, model: ProgramModel): boolean {
         if (this.numberOfEffectFailures === 0) {
             console.error("There are no failed effects to check...");
             return false;
@@ -93,11 +101,12 @@ export class ModelEdge {
 
         let newFailures = [];
         for (let i = 0; i < this.failedEffects.length; i++) {
-            const effect = this.failedEffects[i];
-            let fulfilled = effect.check(testDriver, modelResult, model);
-
-            if (!fulfilled) {
-                newFailures.push(effect);
+            try {
+                if (!this.failedEffects[i].check(testDriver, model)) {
+                    newFailures.push(this.failedEffects[i]);
+                }
+            } catch (e) {
+                newFailures.push(this.failedEffects[i]);
             }
         }
 
@@ -153,7 +162,7 @@ export class ModelEdge {
      * Check existences of sprites, existences of variables and ranges of arguments.
      * @param testDriver Instance of the test driver.
      */
-    testEdgeForErrors(testDriver: TestDriver) {
+    testEdgeForErrors(testDriver: TestDriver): void {
         try {
             this.conditions.forEach(cond => {
                 cond.testConditionsForErrors(testDriver);
@@ -169,9 +178,9 @@ export class ModelEdge {
     /**
      * Register the condition state.
      */
-    registerConditionState(conditionState: ConditionState) {
+    registerCheckListener(checkListener: CheckListener): void {
         this.conditions.forEach(cond => {
-            cond.registerConditionState(conditionState);
+            cond.registerCheckListener(checkListener);
         })
     }
 }

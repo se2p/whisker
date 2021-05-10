@@ -1,7 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
-import {ConditionState} from "../util/ConditionState";
 import {ModelResult} from "../../../test-runner/test-result";
+import {CheckListener} from "../util/CheckListener";
 
 /**
  * Node structure for a model.
@@ -39,7 +39,7 @@ export class ModelNode {
         }
 
         for (let i = 0; i < this.outgoing.length; i++) {
-            if (this.outgoing[i].checkConditions(testDriver, modelResult)) {
+            if (this.outgoing[i].getFailedConditions(testDriver, modelResult).length == 0) {
                 return this.outgoing[i];
             }
         }
@@ -60,9 +60,9 @@ export class ModelNode {
     /**
      * Register the condition state.
      */
-    registerConditionState(conditionState: ConditionState) {
+    registerCheckListener(checkListener: CheckListener) {
         this.outgoing.forEach(edge => {
-            edge.registerConditionState(conditionState);
+            edge.registerCheckListener(checkListener);
         })
     }
 

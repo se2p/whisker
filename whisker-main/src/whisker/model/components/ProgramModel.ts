@@ -1,7 +1,7 @@
 import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
-import {ConditionState} from "../util/ConditionState";
+import {CheckListener} from "../util/CheckListener";
 import {ModelResult} from "../../../test-runner/test-result";
 
 const EFFECT_LEEWAY = 1;
@@ -169,9 +169,9 @@ export class ProgramModel {
     /**
      * Register the condition state.
      */
-    registerConditionState(conditionState: ConditionState) {
+    registerCheckListener(checkListener: CheckListener) {
         Object.values(this.nodes).forEach(node => {
-            node.registerConditionState(conditionState);
+            node.registerCheckListener(checkListener);
         })
     }
 

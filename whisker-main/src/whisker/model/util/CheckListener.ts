@@ -1,18 +1,16 @@
 import TestDriver from "../../../test/test-driver";
 
 /**
- * For edge conditions that need to listen to the onMoved of a sprite this class saves them and updates the
- * onSpriteMoved on the test driver.
- * This class instance also tracks then the fulfilled checks of the registered onMoved checks.
+ * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
  */
-export class ConditionState {
+export class CheckListener {
     private testDriver: TestDriver;
     private checks: ((sprite) => void)[] = [];
     private keyToCheck: string[] = [];
 
-    private touched: string[] = [];
-    private colorTouched: string[] = [];
-    private keyBeforeStep: string[] = []
+    private touched: { [key: string]: boolean } = {};
+    private colorTouched: { [key: string]: boolean } = {};
+    private keyBeforeStep: { [key: string]: boolean } = {};
 
     /**
      * Get an instance of a condition state saver.
@@ -23,7 +21,7 @@ export class ConditionState {
     }
 
     /**
-     * Register a touching condition check for a sprite with another sprite. The check is also registered for the
+     * Register a touching check for a sprite with another sprite. The check is also registered for the
      * other sprite as there have been inconsistencies.
      * @param spriteName1 Sprite's name that gets the condition check registered.
      * @param spriteName2 Name of the other sprite that the first needs to touch.
@@ -34,9 +32,12 @@ export class ConditionState {
     }
 
     private _registerTouching(spriteName1: string, spriteName2: string): void {
+        let touchingString = CheckListener.getTouchingString(spriteName1, spriteName2);
+        this.touched[touchingString] = false;
+
         let fun = (sprite) => {
             if (sprite.name == spriteName1 && sprite.isTouchingSprite(spriteName2)) {
-                this.touched.push(ConditionState.getTouchingString(spriteName1, spriteName2));
+                this.touched[touchingString] = true;
             }
         };
 
@@ -45,16 +46,19 @@ export class ConditionState {
     }
 
     /**
-     * Registers a color touching condition check for a sprite with a RGB color value (as an array).
+     * Registers a color touching check for a sprite with a RGB color value (as an array).
      * @param spriteName Name of the sprite that gets the check.
      * @param r RGB red value.
      * @param g RGB green value.
      * @param b RGB blue value.
      */
     registerColor(spriteName: string, r: number, g: number, b: number): void {
+        let colorString = CheckListener.getColorString(spriteName, r, g, b);
+        this.colorTouched[colorString] = false;
+
         let fun = (sprite) => {
             if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
-                this.colorTouched.push(ConditionState.getColorString(spriteName, r, g, b));
+                this.colorTouched[colorString] = true;
             }
         };
 
@@ -67,6 +71,8 @@ export class ConditionState {
      * @param keyName Name of the key.
      */
     registerKeyCheck(keyName: string) {
+        this.keyBeforeStep[keyName] = false;
+
         if (this.keyToCheck.indexOf(keyName) == -1) {
             this.keyToCheck.push(keyName);
         }
@@ -78,18 +84,24 @@ export class ConditionState {
     testKeys() {
         this.keyToCheck.forEach(keyName => {
             if (this.testDriver.isKeyDown(keyName)) {
-                this.keyBeforeStep.push(keyName);
+                this.keyBeforeStep[keyName] = true;
             }
         })
     }
 
     /**
-     * Reset the thrown conditions.
+     * Reset the fulfilled checks of the last step.
      */
-    resetConditionsThrown() {
-        this.touched = [];
-        this.colorTouched = [];
-        this.keyBeforeStep = [];
+    reset() {
+        for (const touchedKey in this.touched) {
+            this.touched[touchedKey] = false;
+        }
+        for (const colorKey in this.colorTouched) {
+            this.colorTouched[colorKey] = false;
+        }
+        for (const keyBeforeStepKey in this.keyBeforeStep) {
+            this.keyBeforeStep[keyBeforeStepKey] = false;
+        }
     }
 
     /**
@@ -98,19 +110,18 @@ export class ConditionState {
      * @param spriteName2 Name of the second sprite.
      */
     areTouching(spriteName1: string, spriteName2: string): boolean {
-        let combi1 = ConditionState.getTouchingString(spriteName1, spriteName2);
-        let combi2 = ConditionState.getTouchingString(spriteName2, spriteName1);
-        return (this.touched.indexOf(combi1) != -1 || this.touched.indexOf(combi2) != -1
-            || this.testDriver.getSprite(spriteName1).isTouchingSprite(spriteName2));
+        let combi1 = CheckListener.getTouchingString(spriteName1, spriteName2);
+        let combi2 = CheckListener.getTouchingString(spriteName2, spriteName1);
+        return (this.touched[combi1] || this.touched[combi2]
+            && this.testDriver.getSprite(spriteName1).isTouchingSprite(spriteName2));
     }
 
     /**
-     * Check whether a sprite is touching a color (for each step). If the sprite touched the color the step before, it
-     * either has moved (so ask the thrown events) or not (ask for the current state).
+     * Check whether a sprite is touching a color.
      */
     isTouchingColor(spriteName: string, r: number, g: number, b: number): boolean {
-        return this.colorTouched.indexOf(ConditionState.getColorString(spriteName, r, g, b)) != -1
-            || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]);
+        return (this.colorTouched[CheckListener.getColorString(spriteName, r, g, b)]
+            || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]));
     }
 
     /**
@@ -124,8 +135,8 @@ export class ConditionState {
         return this._isKeyDown(keyName);
     }
 
-    _isKeyDown(keyName: string) {
-        return this.keyBeforeStep.indexOf(keyName) != -1 && this.testDriver.isKeyDown(keyName);
+    private _isKeyDown(keyName: string) {
+        return this.keyBeforeStep[keyName] && this.testDriver.isKeyDown(keyName);
     }
 
     private static getTouchingString(sprite1: string, sprite2: string): string {
@@ -138,10 +149,14 @@ export class ConditionState {
 
     private areExcludingOnesActive(keyName: string) {
         switch (keyName) {
-            case "left arrow": return this._isKeyDown("right arrow");
-            case "right arrow": return this._isKeyDown("left arrow");
-            case "up arrow": return this._isKeyDown("down arrow");
-            case "down arrow": return this._isKeyDown("up arrow");
+            case "left arrow":
+                return this._isKeyDown("right arrow");
+            case "right arrow":
+                return this._isKeyDown("left arrow");
+            case "up arrow":
+                return this._isKeyDown("down arrow");
+            case "down arrow":
+                return this._isKeyDown("up arrow");
         }
         return false;
     }
