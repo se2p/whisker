@@ -183,10 +183,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this._archive.has(fitnessFunctionKey)) {
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 curSummary['block'] = fitnessFunction.toString();
-                let fitness = Number.MAX_SAFE_INTEGER;
-                let approachLevel = Number.MAX_SAFE_INTEGER;
-                let branchDistance = Number.MAX_SAFE_INTEGER;
-                let CFGDistance = Number.MAX_SAFE_INTEGER;
+                let fitness = Number.MAX_VALUE;
+                let approachLevel = Number.MAX_VALUE;
+                let branchDistance = Number.MAX_VALUE;
+                let CFGDistance = Number.MAX_VALUE;
                 for (const chromosome of this._bestIndividuals) {
                     const curFitness = fitnessFunction.getFitness(chromosome);
                     if (curFitness < fitness) {
@@ -197,7 +197,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                             CFGDistance = fitnessFunction.getCFGDistance(chromosome);
                         }
                         else {
-                            CFGDistance = Number.MAX_SAFE_INTEGER;
+                            CFGDistance = Number.MAX_VALUE;
                             //this means that it was unnecessary to calculate cfg distance, since
                             //approach level or branch distance was not 0;
                         }
@@ -205,7 +205,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 }
                 curSummary['ApproachLevel'] = approachLevel;
                 curSummary['BranchDistance'] = branchDistance;
-                curSummary['CFGDistanceUnNormalized'] = CFGDistance;
+                curSummary['CFGDistance'] = CFGDistance;
                 curSummary['Fitness'] = fitness;
                 if (Object.keys(curSummary).length > 0){
                     summary.push(curSummary);
