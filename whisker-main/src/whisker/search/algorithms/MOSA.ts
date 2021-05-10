@@ -184,9 +184,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 curSummary['block'] = fitnessFunction.toString();
                 let fitness = 1;
-                let approachLevel = 100;
-                let branchDistance = 100;
-                let CFGDistance = 100;
+                let approachLevel = 999;
+                let branchDistance = 999;
+                let CFGDistance = 999;
                 for (const chromosome of this._bestIndividuals) {
                     const curFitness = fitnessFunction.getFitness(chromosome);
                     if (curFitness < fitness) {
@@ -197,7 +197,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                             CFGDistance = fitnessFunction.getCFGDistance(chromosome);
                         }
                         else {
-                            CFGDistance = 999999;
+                            CFGDistance = 999;
                             //this means that it was unnecessary to calculate cfg distance, since
                             //approach level or branch distance was not 0;
                         }
