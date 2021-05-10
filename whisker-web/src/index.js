@@ -69,7 +69,7 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-    const accelerationFactor = accSlider.slider('getValue');
+    const accelerationFactor = $('#acceleration-value').text();
     const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
     Whisker.outputLog.print(res[1]);
     return res[0];
@@ -84,7 +84,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     let summary;
     let coverage;
-    const accelerationFactor = accSlider.slider('getValue');
+    const accelerationFactor = $('#acceleration-value').text();
 
     try {
         await Whisker.scratch.vm.loadProject(project);
@@ -182,7 +182,6 @@ const initScratch = function () {
         $('#stop')
             .prop('disabled', true);
     });
-    $("#acceleration-value").text(DEFAULT_ACCELERATION_FACTOR);
 };
 
 const initComponents = function () {
@@ -220,6 +219,7 @@ const initComponents = function () {
         fileSelect => fileSelect.loadAsArrayBuffer());
 
     accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
+    $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
 }
 
 const initEvents = function () {
@@ -380,7 +380,10 @@ const toggleComponents = function () {
         if (componentStates) {
             const [input, accelerationFactor] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
-            if (accelerationFactor) accSlider.slider('setValue', accelerationFactor);
+            if (accelerationFactor) {
+                accSlider.slider('setValue', accelerationFactor);
+                $('#acceleration-value').text(accelerationFactor);
+            }
         }
     }
 };
