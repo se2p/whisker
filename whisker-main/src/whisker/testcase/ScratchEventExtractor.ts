@@ -52,7 +52,7 @@ export class ScratchEventExtractor {
             }
         }
 
-        return !this.availableWaitDurations.isEmpty();
+        return false;
     }
 
     /**
@@ -311,6 +311,7 @@ export class ScratchEventExtractor {
         }
 
         switch (target.blocks.getOpcode(block)) {
+            case 'event_whenflagclicked':
             case 'event_whenkeypressed':
             case 'sensing_keyoptions':
             case 'sensing_mousex':
