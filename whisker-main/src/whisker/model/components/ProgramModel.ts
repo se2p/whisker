@@ -21,26 +21,26 @@ const EFFECT_LEEWAY = 1;
 export class ProgramModel {
 
     readonly id: string;
-    private readonly startNode: ModelNode;
-    currentState: ModelNode;
+    protected readonly startNode: ModelNode;
+    protected currentState: ModelNode;
 
-    private readonly stopNodes: { [key: string]: ModelNode };
-    private readonly nodes: { [key: string]: ModelNode };
-    private readonly edges: { [key: string]: ModelEdge };
+    protected readonly stopNodes: { [key: string]: ModelNode }; // delete?
+    protected readonly nodes: { [key: string]: ModelNode };
+    protected readonly edges: { [key: string]: ModelEdge };
 
     private effectsToCheck: ModelEdge[]; // edge with the failed effects
 
     private waitingFunction: () => boolean = undefined;
-    private coverageCurrentRun: { [key: string]: boolean } = {};
-    private coverageTotal: { [key: string]: boolean } = {};
+    protected coverageCurrentRun: { [key: string]: boolean } = {};
+    protected coverageTotal: { [key: string]: boolean } = {};
 
     /**
-     * Construct a model (graph) with a string identifier and model type (program or user model). Sets up the start
-     * node and stopping nodes for simulating transitions on the graph.
+     * Construct a program model (graph) with a string identifier. Sets up the start node and stop nodes for
+     * simulating transitions on the graph.
      *
      * @param id ID of the model.
      * @param startNode Start node for traversing the graph.
-     * @param stopNodes Nodes stopping the graph walkthrough.
+     * @param stopNodes Nodes stopping the graph walk through.
      * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
      */
@@ -96,7 +96,6 @@ export class ProgramModel {
      * Get the coverage of this model of the last run.
      */
     getCoverageCurrentRun() {
-        console.log(this.coverageCurrentRun);
         let covered = 0;
         for (const key in this.coverageCurrentRun) {
             if (this.coverageCurrentRun[key]) {
@@ -113,7 +112,6 @@ export class ProgramModel {
      * Get the coverage of all test runs with this model. Resets the total coverage.
      */
     getTotalCoverage() {
-        console.log(this.coverageTotal);
         let covered = 0;
         for (const key in this.coverageTotal) {
             if (this.coverageTotal[key]) {
@@ -194,7 +192,7 @@ export class ProgramModel {
 
         let newEffectsToCheck = [];
         for (let i = 0; i < this.effectsToCheck.length; i++) {
-            if (!this.effectsToCheck[i].checkEffects(testDriver, modelResult, this)) {
+            if (this.effectsToCheck[i].checkEffects(testDriver, modelResult, this).length > 0) {
                 newEffectsToCheck.push(this.effectsToCheck[i]);
             }
         }
@@ -203,7 +201,7 @@ export class ProgramModel {
             return;
         }
 
-        // if it failed more than once
+        // if it failed more than allowed by the leeway
         if (this.effectsToCheck[0].numberOfEffectFailures > EFFECT_LEEWAY) {
             // make a wonderful output
             let failedEdge = this.effectsToCheck[0];
@@ -216,7 +214,8 @@ export class ProgramModel {
 
             // remove it to not check again
             this.effectsToCheck = this.effectsToCheck.splice(1, this.effectsToCheck.length);
-            throw new Error(output);
+            console.error(output, testDriver.getTotalStepsExecuted());
+            modelResult.error.push(new Error(output));
         }
     }
 }

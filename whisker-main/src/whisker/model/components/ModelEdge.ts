@@ -20,7 +20,7 @@ export class ModelEdge {
 
     numberOfEffectFailures: number = 0;
     failedEffects: Effect[] = [];
-    private lastStepCondChecked = -1;
+    private lastStepChecked = -1;
 
     /**
      * Create a new edge.
@@ -38,12 +38,12 @@ export class ModelEdge {
      * Test whether the conditions on this edge are fulfilled.
      * @Returns the failed conditions.
      */
-    getFailedConditions(testDriver: TestDriver, modelResult: ModelResult): Condition[] {
-        if (this.lastStepCondChecked == testDriver.getTotalStepsExecuted()) {
+    checkConditions(testDriver: TestDriver, modelResult: ModelResult): Condition[] {
+        if (this.lastStepChecked == testDriver.getTotalStepsExecuted()) {
             return this.conditions; // dont check in the same step twice
         }
 
-        this.lastStepCondChecked = testDriver.getTotalStepsExecuted();
+        this.lastStepChecked = testDriver.getTotalStepsExecuted();
         let failedConditions = [];
 
         for (let i = 0; i < this.conditions.length; i++) {
@@ -65,7 +65,7 @@ export class ModelEdge {
     /**
      * Run all effects of the edge.
      */
-    checkEffects(testDriver, modelResult: ModelResult, model: ProgramModel): boolean {
+    checkEffects(testDriver, modelResult: ModelResult, model: ProgramModel): Effect[] {
         if (this.failedEffects.length != 0) {
             return this.checkFailedEffects(testDriver, model);
         }
@@ -87,16 +87,21 @@ export class ModelEdge {
             this.numberOfEffectFailures = 1;
         }
 
-        return this.failedEffects.length == 0;
+        return this.failedEffects;
     }
 
     /**
      * Recheck failed effects.
      */
-    private checkFailedEffects(testDriver: TestDriver, model: ProgramModel): boolean {
+    private checkFailedEffects(testDriver: TestDriver, model: ProgramModel): Effect[] {
+        if (this.lastStepChecked == testDriver.getTotalStepsExecuted()) {
+            return this.effects; // dont check in the same step twice
+        }
+        this.lastStepChecked = testDriver.getTotalStepsExecuted();
+
         if (this.numberOfEffectFailures === 0) {
             console.error("There are no failed effects to check...");
-            return false;
+            return this.effects;
         }
 
         let newFailures = [];
@@ -114,18 +119,18 @@ export class ModelEdge {
         if (newFailures.length === 0) {
             this.failedEffects = [];
             this.numberOfEffectFailures = 0;
-            return true;
+            return [];
         } else {
             this.numberOfEffectFailures++;
             this.failedEffects = newFailures;
-            return false;
+            return this.failedEffects;
         }
     }
 
     reset(): void {
         this.numberOfEffectFailures = 0;
         this.failedEffects = [];
-        this.lastStepCondChecked = -1;
+        this.lastStepChecked = -1;
     }
 
     /**

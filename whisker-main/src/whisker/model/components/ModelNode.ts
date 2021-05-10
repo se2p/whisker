@@ -39,7 +39,7 @@ export class ModelNode {
         }
 
         for (let i = 0; i < this.outgoing.length; i++) {
-            if (this.outgoing[i].getFailedConditions(testDriver, modelResult).length == 0) {
+            if (this.outgoing[i].checkConditions(testDriver, modelResult).length == 0) {
                 return this.outgoing[i];
             }
         }

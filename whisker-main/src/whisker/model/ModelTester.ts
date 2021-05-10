@@ -10,6 +10,13 @@ import {ModelEdge} from "./components/ModelEdge";
 
 export class ModelTester extends EventEmitter {
 
+    /**
+     * For checking initialisation values for all sprites and constraints afterwards. Can also stay undefined if
+     * there are none.
+     * @private
+     */
+    private constraintsModel: ProgramModel;
+
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
@@ -30,6 +37,7 @@ export class ModelTester extends EventEmitter {
     load(modelsString) {
         try {
             const result = new ModelLoaderXML().loadModels(modelsString);
+            this.constraintsModel = result.constraintsModel;
             this.programModels = result.programModels;
             this.userModels = result.userModels;
         } catch (e) {
@@ -95,40 +103,44 @@ export class ModelTester extends EventEmitter {
         // run the test driver for one step as inputs can be in the first step but the vm does nothing yet.
         await testDriver.runForSteps(1);
         let endTimer = 3;
-        testDriver.addModelCallback(() => {
-            this.programModels.forEach(model => {
-                this.edgeTrace(model.makeTransitions(testDriver, this.result), testDriver);
-                try {
-                    model.checkEffects(testDriver, this.result);
-                } catch (e) {
-                    console.error(e.message, testDriver.getTotalStepsExecuted());
-                    this.result.error.push(e);
+        let modelStopped = false;
+
+        let constraintCallback
+        if (this.constraintsModel) {
+            constraintCallback = testDriver.addModelCallback(() => {
+                this.constraintsModel.makeTransitions(testDriver, this.result);
+
+                if (this.constraintsModel.stopped()) {
+                    testDriver.removeModelCallback(constraintCallback); // there are no more to check
                 }
             });
+        }
 
-            // after all transitions in the same step look up if they are finished
-            let stopped = false;
+        let modelStepCallback = testDriver.addModelCallback(() => {
             this.programModels.forEach(model => {
-                if (model.stopped()) {
-                    stopped = true;
-                }
-            })
+                this.edgeTrace(model.makeTransitions(testDriver, this.result), testDriver);
+                model.checkEffects(testDriver, this.result);
+            });
 
-            if (stopped) {
+            if (modelStopped && endTimer == 0) {
+                this.modelsStopped = true;
+                testDriver.removeModelCallback(modelStepCallback);
+                testDriver.removeModelCallback(keyCallback);
+                if (this.constraintsModel) {
+                    testDriver.removeModelCallback(constraintCallback);
+                }
+            } else if (modelStopped) {
                 this.programModels.forEach(model => {
-                    try {
-                        model.checkEffects(testDriver, this.result);
-                    } catch (e) {
-                        console.error(e.message, testDriver.getTotalStepsExecuted());
-                        this.result.error.push(e);
-                    }
+                    model.checkEffects(testDriver, this.result);
                 })
-
-                if (endTimer == 0) {
-                    this.modelsStopped = true;
-                    console.log("one run ended----------------")
-                }
                 endTimer--;
+            } else {
+                this.programModels.forEach(model => {
+                    if (model.stopped()) {
+                        modelStopped = true;
+                    }
+                    // todo if it is the constraint model then stop all!
+                })
             }
 
             this.checkListener.reset();
@@ -183,6 +195,7 @@ export class ModelTester extends EventEmitter {
         }
         this.emit(ModelTester.LOG_MODEL, "--- Model Coverage");
         let coverages = {};
+        coverages["constraints"] = this.constraintsModel.getCoverageCurrentRun();
         this.programModels.forEach(model => {
             coverages[model.id] = model.getCoverageCurrentRun();
             this.result.coverage[model.id] = coverages[model.id];
@@ -197,6 +210,7 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage() {
         let coverage = {};
+        coverage["constraints"] = this.constraintsModel.getTotalCoverage();
         this.programModels.forEach(model => {
             coverage[model.id] = model.getTotalCoverage();
         })

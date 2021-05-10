@@ -5,6 +5,7 @@ import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {setUpCondition} from "../components/Condition";
 import {setUpEffect} from "../components/Effect";
+import {ConstraintsModel} from "../components/ConstraintsModel";
 
 /**
  * Load models from a xml file.
@@ -25,8 +26,14 @@ import {setUpEffect} from "../components/Effect";
  * - edge has a condition and effect noted.
  * - multiple conditions on an edge have to all be fulfilled for the condition to be true
  * - edges that have the same source and target but different conditions are alternatives
+ * - there can be a constraint program model, that defines all constraints (initialisation of variable/attributes,
+ * constraints after initialisation e.g. time < 30 as it decreases)
  */
 export class ModelLoaderXML {
+
+    private static readonly PROGRAM_MODEL_ID = "program";
+    private static readonly CONSTRAINTS_MODEL_ID = "constraints";
+    private static readonly USER_MODEL_ID = "user";
 
     private xmlOptions = {
         compact: true,
@@ -41,6 +48,7 @@ export class ModelLoaderXML {
     private edgesMap: { [key: string]: ModelEdge };
     private graphIDs: string[];
 
+    private constraints: ConstraintsModel;
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
@@ -48,7 +56,7 @@ export class ModelLoaderXML {
      * Load the models from a string file content.
      * @param xmlText Content of a xml file containing the models.
      */
-    loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[] } {
+    loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModel: ProgramModel } {
         const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].graph;
         this.graphIDs = [];
         this.programModels = [];
@@ -66,7 +74,11 @@ export class ModelLoaderXML {
             throw new Error("Graphs have no stop nodes.");
         }
 
-        return {programModels: this.programModels, userModels: this.userModels};
+        return {
+            programModels: this.programModels,
+            userModels: this.userModels,
+            constraintsModel: this.constraints
+        };
     }
 
     /**
@@ -102,11 +114,17 @@ export class ModelLoaderXML {
 
         this.graphIDs.push(graphID);
 
-        if (graph._attributes.usage == "program") {
-            this.programModels.push(new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
-                this.edgesMap))
-        } else {
-            this.userModels.push(new UserModel(graphID));// todo
+        switch (graph._attributes.usage) {
+            case ModelLoaderXML.PROGRAM_MODEL_ID:
+                this.programModels.push(new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
+                    this.edgesMap))
+                break;
+            case ModelLoaderXML.USER_MODEL_ID:
+                this.userModels.push(new UserModel(graphID));// todo
+                break;
+            case ModelLoaderXML.CONSTRAINTS_MODEL_ID:
+                this.constraints = new ConstraintsModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMap);
+                break;
         }
     }
 
