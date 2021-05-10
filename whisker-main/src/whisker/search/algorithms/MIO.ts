@@ -171,39 +171,46 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
  *     	- BranchDistance: the branch distance of that statement
  *     	- Fitness: the fitness value of that statement
  */
-    summarizeSolution(): string {
-    const summary = [];
-    for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-        const curSummary = {};
-        if (!this._archiveCovered.has(fitnessFunctionKey)) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            curSummary['block'] = fitnessFunction.toString();
-            let fitness = 1;
-            let approachLevel = 10000;
-            let branchDistance = 100;
-            let CFGDistance = 100;
-            for (const chromosome of this._bestIndividuals) {
-                const curApproachLevel = fitnessFunction.getApproachLevel(chromosome);
-                const curBranchDistance = fitnessFunction.getBranchDistance(chromosome);
-                const curCFGDistance = fitnessFunction.getCFGDistance(chromosome);
-                const curFitness = fitnessFunction.getFitness(chromosome);
-                if (curApproachLevel < approachLevel) approachLevel = curApproachLevel;
-                if (curBranchDistance < branchDistance) branchDistance = curBranchDistance;
-                if (curCFGDistance < CFGDistance) CFGDistance = curCFGDistance;
-                if (curFitness < fitness) fitness = curFitness;
-            }
-            curSummary['ApproachLevel'] = approachLevel;
-            curSummary['BranchDistance'] = branchDistance;
-            curSummary['CFGDistance'] = CFGDistance;
-            curSummary['Fitness'] = fitness;
-            if (Object.keys(curSummary).length > 0) {
-                summary.push(curSummary);
-            }
-        }
 
+    summarizeSolution(): string {
+        const summary = [];
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const curSummary = {};
+            if (!this._archiveCovered.has(fitnessFunctionKey)) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                curSummary['block'] = fitnessFunction.toString();
+                let fitness = 999;
+                let approachLevel = 999;
+                let branchDistance = 999;
+                let CFGDistance = 999;
+                for (const chromosome of this._bestIndividuals) {
+                    const curFitness = fitnessFunction.getFitness(chromosome);
+                    if (curFitness < fitness) {
+                        fitness = curFitness;
+                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
+                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
+                        if (approachLevel === 0 && branchDistance === 0) {
+                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
+                        }
+                        else {
+                            CFGDistance = 999;
+                            //this means that it was unnecessary to calculate cfg distance, since
+                            //approach level or branch distance was not 0;
+                        }
+                    }
+                }
+                curSummary['ApproachLevel'] = approachLevel;
+                curSummary['BranchDistance'] = branchDistance;
+                curSummary['CFGDistanceUnNormalized'] = CFGDistance;
+                curSummary['Fitness'] = fitness;
+                if (Object.keys(curSummary).length > 0){
+                    summary.push(curSummary);
+                }
+            }
+
+        }
+        return JSON.stringify({'uncoveredBlocks': summary});
     }
-    return JSON.stringify({'uncoveredBlocks': summary});
-}
 
     /**
      * Sets the appropriate starting values for the search.

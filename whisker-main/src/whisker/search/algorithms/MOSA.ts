@@ -183,7 +183,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this._archive.has(fitnessFunctionKey)) {
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 curSummary['block'] = fitnessFunction.toString();
-                let fitness = 1;
+                let fitness = 999;
                 let approachLevel = 999;
                 let branchDistance = 999;
                 let CFGDistance = 999;
