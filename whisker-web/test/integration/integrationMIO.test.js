@@ -185,6 +185,24 @@ describe('Basic event handling', () => {
         await expect(coverage).toBe("1.00");
     }, timeout);
 
+    test('Test moving mouse to sprite', async () => {
+        await loadProject('test/integration/touchingMousePointer/TouchingMousePointerTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test moving mouse to and from', async () => {
+        await loadProject('test/integration/mouseMoveDistance/MouseMoveDistanceTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
     test('Test wait', async () => {
         await loadProject('test/integration/waitEvent/WaitEventTest.sb3')
         await (await page.$('#run-search')).click();

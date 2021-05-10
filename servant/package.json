@@ -8,7 +8,7 @@
         "commander": "^6.2.0",
         "csv-stringify": "^5.5.3",
         "js-yaml": "^3.14.1",
-        "puppeteer": "8.0.0",
+        "puppeteer": "9.1.1",
         "rimraf": "3.0.2",
         "whisker-web": "0.4.0",
         "yaml": "^1.10.0"

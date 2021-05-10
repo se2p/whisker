@@ -25,6 +25,7 @@ import {KeyPressEvent} from "./events/KeyPressEvent";
 import {ScratchEvent} from "./ScratchEvent";
 import {KeyDownEvent} from "./events/KeyDownEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
+import {MouseMoveToEvent} from "./events/MouseMoveToEvent";
 import {MouseDownEvent} from "./events/MouseDownEvent";
 import {TypeTextEvent} from "./events/TypeTextEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
@@ -51,7 +52,7 @@ export class ScratchEventExtractor {
             }
         }
 
-        return !this.availableWaitDurations.isEmpty();
+        return false;
     }
 
     /**
@@ -221,21 +222,43 @@ export class ScratchEventExtractor {
                 break;
             }
             case 'sensing_mousex':
-            case 'sensing_mousey':
-            case 'touching-mousepointer': // TODO fix block name
+            case 'sensing_mousey': {
                 // Mouse move
                 eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
                 break;
-            case 'motion_pointtowards':
+            }
+            case 'sensing_touchingobject': {
+                const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
+                const field = target.blocks.getFields(touchingMenuBlock);
+                const value = field.TOUCHINGOBJECTMENU.value;
+                if (value == "_mouse_") {
+                    eventList.add(new MouseMoveToEvent(target.x, target.y));
+                    eventList.add(new MouseMoveEvent());
+                }
+                break;
+            }
+            case 'sensing_distanceto': {
+                const distanceMenuBlock = target.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
+                const field = target.blocks.getFields(distanceMenuBlock);
+                const value = field.DISTANCETOMENU.value;
+                if (value == "_mouse_") {
+                    // TODO: Maybe could determine position to move to here?
+                    eventList.add(new MouseMoveEvent());
+                }
+                break;
+            }
+            case 'motion_pointtowards': {
                 const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
                 if (towards.fields.TOWARDS.value === '_mouse_')
                     eventList.add(new MouseMoveEvent());
                 break;
-            case 'sensing_mousedown':
+            }
+            case 'sensing_mousedown': {
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
                 eventList.add(new MouseDownEvent(!isMouseDown)); // TODO: Any hints on position?
                 break;
+            }
             case 'sensing_askandwait':
                 // Type text
                 eventList.addList(this._getTypeTextEvents());
@@ -288,11 +311,11 @@ export class ScratchEventExtractor {
         }
 
         switch (target.blocks.getOpcode(block)) {
+            case 'event_whenflagclicked':
             case 'event_whenkeypressed':
             case 'sensing_keyoptions':
             case 'sensing_mousex':
             case 'sensing_mousey':
-            case 'touching-mousepointer':
             case 'sensing_mousedown':
             case 'sensing_askandwait':
             case 'event_whenthisspriteclicked':
@@ -300,6 +323,24 @@ export class ScratchEventExtractor {
             case 'event_whengreaterthan':
             case 'event_whenlessthan':
                 return true;
+            case 'sensing_touchingobject': {
+                const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
+                const field = target.blocks.getFields(touchingMenuBlock);
+                const value = field.TOUCHINGOBJECTMENU.value;
+                if (value == "_mouse_") {
+                    return true;
+                }
+                break;
+            }
+            case 'sensing_distanceto': {
+                const distanceMenuBlock = target.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
+                const field = target.blocks.getFields(distanceMenuBlock);
+                const value = field.DISTANCETOMENU.value;
+                if (value == "_mouse_") {
+                    return true;
+                }
+                break;
+            }
         }
         return false;
     }
