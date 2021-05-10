@@ -123,7 +123,7 @@ async function runGeneticSearch (browser) {
         await (await page.$('#toggle-advanced')).click();
         await (await page.$('#toggle-tap')).click();
         await (await page.$('#toggle-log')).click();
-        await page.evaluate(factor => document.querySelector('#acceleration-value').value = factor, accelerationFactor);
+        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
@@ -222,7 +222,7 @@ async function runTests (path, browser, index, targetProject) {
      */
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
-        await page.evaluate(factor => document.querySelector('#acceleration-value').value = factor, accelerationFactor);
+        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         await (await page.$('#fileselect-tests')).uploadFile(path);
         await (await page.$('#toggle-advanced')).click();
