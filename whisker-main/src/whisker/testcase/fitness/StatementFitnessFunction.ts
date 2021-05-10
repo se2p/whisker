@@ -90,11 +90,23 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             throw Error("Test case not executed");
         }
 
+        if (chromosome.coverage.has(this._targetNode.id)) {
+            // Shortcut: If the target is covered, we don't need to spend
+            // any time on calculating anything
+            return 0;
+        }
+
         const approachLevel = this.getApproachLevel(chromosome);
         const branchDistance = this.getBranchDistance(chromosome);
-        // console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
-        // console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
-        return approachLevel + this._normalize(branchDistance)
+
+        let cfgDistanceNormalized;
+        if (approachLevel === 0 && branchDistance === 0) {
+            cfgDistanceNormalized = this._normalize(this.getCFGDistance(chromosome));
+        }
+        else {
+            cfgDistanceNormalized = 1;
+        }
+        return approachLevel + this._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -194,6 +206,51 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         return branchDistance;
     }
+
+    getCFGDistance(chromosome: TestChromosome):number {
+
+        /*
+            function bfs: go through blocks from the targetNode, all uncovered blocks are visited ones. However, to avoid
+            situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
+            we need to still record levels, and use a queue to save nodes for BFS.
+        */
+        function bfs (cfg, targetNode, coveredBlocks) {
+            // console.log('blockTraces: ', blockTraces);
+            const queue = [targetNode];
+            const visited = new Set([targetNode]);
+            let node;
+            let level = -1;
+            while (queue.length > 0) {
+                const qSize = queue.length;
+                level += 1;
+                for (let i = 0; i < qSize; i ++) {
+                    node = queue.shift();
+                    if (coveredBlocks.has(node.id)){
+                        return level;
+                    }
+                    visited.add(node);
+                    for (const pred of cfg.predecessors(node.id)) {
+                        if (!visited.has(pred)) {
+                            queue.push(pred);
+                        }
+                    }
+                }
+            }
+            /*
+            the only possibility that none of the targetNode's predecessors is included in blockTrace, is that
+            the targetNode is events, userEvents, or starting ones, e.g., Entry, start, keypressed:space. In those cases,
+            because approach level and branch distance is already 0, these blocks must be executed anyway, so
+            return 0.
+             */
+            return 0;
+        }
+
+        const coveredBlocks = chromosome.coverage;
+        const level = bfs(this._cfg, this._targetNode, coveredBlocks);
+        return level
+
+    }
+
 
     private _normalize(x: number): number {
         return x / (x + 1.0);

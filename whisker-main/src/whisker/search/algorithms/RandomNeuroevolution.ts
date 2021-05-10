@@ -103,7 +103,6 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
             if (this._iterations % reportPeriod === 0)
                 this.reportOfCurrentIteration(population);
         }
-        StatisticsCollector.getInstance().createdTestsCount = (this._iterations + 1) * this._properties.populationSize;
         return this._bestIndividuals;
     }
 

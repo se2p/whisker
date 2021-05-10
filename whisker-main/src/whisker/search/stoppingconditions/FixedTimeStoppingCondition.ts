@@ -24,7 +24,7 @@ import {SearchAlgorithm} from "../SearchAlgorithm";
 
 export class FixedTimeStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private _maxTime: number;
+    private readonly _maxTime: number;
 
     constructor(maxTime: number) {
         this._maxTime = maxTime;
@@ -36,5 +36,9 @@ export class FixedTimeStoppingCondition<T extends Chromosome> implements Stoppin
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
         return this._maxTime - (Date.now() - algorithm.getStartTime());
+    }
+
+    get maxTime(): number {
+        return this._maxTime;
     }
 }

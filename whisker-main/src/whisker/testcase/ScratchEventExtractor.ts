@@ -21,7 +21,6 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import Scratch3LooksBlocks from 'scratch-vm/src/blocks/scratch3_looks.js';
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {ScratchEvent} from "./ScratchEvent";
 import {KeyDownEvent} from "./events/KeyDownEvent";
@@ -39,6 +38,7 @@ export class ScratchEventExtractor {
 
     private static availableWaitDurations = new List<number>();
     private static availableTextSnippets = new List<string>();
+    private static proceduresMap = new Map<string, List<ScratchEvent>>();
 
     static hasEvents(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
@@ -59,11 +59,11 @@ export class ScratchEventExtractor {
      * @param vm the Scratch-VM of the project
      * @return true if the project has a mouseMove event
      */
-    static hasMouseEvent(vm: VirtualMachine):boolean {
+    static hasMouseEvent(vm: VirtualMachine): boolean {
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if(this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
+                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
                         return true;
                 }
             }
@@ -73,23 +73,92 @@ export class ScratchEventExtractor {
 
     static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
+
+        // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
+        // of the procedure definition script.
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
+            for (const scriptId of target.sprite.blocks.getScripts()) {
+                const hatBlock = target.blocks.getBlock(scriptId);
+                eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
+                if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
+                    const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
+                    if(!this.proceduresMap.has(proccode)) {
+                        const procedureEvents = new List<ScratchEvent>();
+                        this.traverseBlocks(target, hatBlock, procedureEvents);
+                        this.proceduresMap.set(proccode, procedureEvents)
+                    }
                 }
             }
         }
 
-        // TODO: This does not seem to capture all cases, so deactivated until we have a better solution
-        // if (vm.runtime.threads.length > 0) {
-            // TODO: Maybe we shouldn't send _all_ delays?
+        // Check all blocks within scripts currently executing
+        for (const t of vm.runtime.threads) {
+            const target = t.target;
+            const block = target.blocks.getBlock(t.topBlock);
+            // Sometimes we encounter undefined blocks here?
+            if (block)
+                this.traverseBlocks(target, block, eventList);
+        }
+
+        // TODO: In some programs without event handlers no waits are chosen
+        //       maybe because the execution of the greenflag scripts
+        //       is too quick? A nicer solution would be good.
+        if (eventList.isEmpty() && !this.availableWaitDurations.isEmpty()) {
             for (const duration of this.availableWaitDurations) {
                 eventList.add(new WaitEvent(duration));
             }
-        // }
+        }
 
         return eventList.distinctObjects();
+    }
+
+    /**
+     * Traverse downwards the block hierarchy and collect all encountered events.
+     * @param target the rendered target of the vm
+     * @param block the current block which will be checked for events
+     * @param foundEvents collects the encountered Events
+     */
+    private static traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
+        do {
+            foundEvents.addList(this._extractEventsFromBlock(target, block))
+            // first branch (if, forever, repeat, ...)
+            if (block.inputs.SUBSTACK) {
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block)
+                this.traverseBlocks(target, branchBlock, foundEvents);
+            }
+            // else branch
+            if (block.inputs.SUBSTACK2) {
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block)
+                this.traverseBlocks(target, branchBlock, foundEvents);
+            }
+
+            // look at the block(s) inside a conditional statement
+            if (block.inputs.CONDITION) {
+                const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
+                // Handle conditional statements with two condition blocks
+                if(condition.inputs.OPERAND1){
+                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
+                }
+                if(condition.inputs.OPERAND1){
+                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
+                }
+                foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
+            }
+
+            // handle procedure calls by mapping the call to its corresponding procedure_definition
+            if (target.blocks.getOpcode(block) === 'procedures_call') {
+                if (this.proceduresMap.has(block.mutation.proccode)) {
+                    foundEvents.addList(this.proceduresMap.get(block.mutation.proccode))
+                }
+            }
+
+            // WaitEvents
+            const duration = this._extractWaitDurations(target, block);
+            if (duration > 0) {
+                foundEvents.add(new WaitEvent(duration));
+            }
+            block = target.blocks.getBlock(block.next)
+        } while (block)
     }
 
     /**
@@ -133,25 +202,34 @@ export class ScratchEventExtractor {
     // TODO: How to handle event parameters?
     static _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
-        const fields = target.blocks.getFields(block);
         if (typeof block.opcode === 'undefined') {
             return eventList;
         }
 
         switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed': // Key press
+            case 'event_whenkeypressed': {  // Key press
+                const fields = target.blocks.getFields(block);
                 eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 // one event per concrete key for which there is a hat block
                 break;
-            case 'sensing_keyoptions': // Key down
+            }
+            case 'sensing_keypressed': {
+                const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
+                const fields = target.blocks.getFields(keyOptionsBlock);
                 const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
                 eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
                 break;
+            }
             case 'sensing_mousex':
             case 'sensing_mousey':
             case 'touching-mousepointer': // TODO fix block name
                 // Mouse move
                 eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
+                break;
+            case 'motion_pointtowards':
+                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
+                if (towards.fields.TOWARDS.value === '_mouse_')
+                    eventList.add(new MouseMoveEvent());
                 break;
             case 'sensing_mousedown':
                 // Mouse down
@@ -160,13 +238,13 @@ export class ScratchEventExtractor {
                 break;
             case 'sensing_askandwait':
                 // Type text
-                if (Container.vmWrapper.isQuestionAsked()) {
-                    eventList.addList(this._getTypeTextEvents());
-                }
+                eventList.addList(this._getTypeTextEvents());
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
-                eventList.add(new ClickSpriteEvent(target));
+                if (target.visible === true) {
+                    eventList.add(new ClickSpriteEvent(target));
+                }
                 break;
             case 'event_whenstageclicked':
                 // Click stage

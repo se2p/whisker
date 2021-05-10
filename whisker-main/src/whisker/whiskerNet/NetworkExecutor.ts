@@ -180,6 +180,8 @@ export class NetworkExecutor {
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this.resetState();
 
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+
         // If we found a defect network let it go extinct!
         if (!workingNetwork) {
             console.error("Found defect Network", network)
@@ -249,6 +251,8 @@ export class NetworkExecutor {
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this.resetState();
+
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;

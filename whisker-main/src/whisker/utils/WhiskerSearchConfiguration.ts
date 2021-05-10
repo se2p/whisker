@@ -193,7 +193,9 @@ export class WhiskerSearchConfiguration {
                 return new BitflipMutation();
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome-length'], this.dict['mutation']['alpha']);
+                    this.dict['chromosome-length'], this.dict['mutation']['removeProb'],
+                    this.dict['mutation']['changeProb'], this.dict['mutation']['gaussianMutationPower'],
+                    this.dict['mutation']['insertProb'], this.dict['mutation']['alpha']);
             case'neatMutation':
                 return new NeatMutation(
                     this.dict['mutation']['mutationAddConnection'] as number,
@@ -248,7 +250,8 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthTestChromosomeGenerator(this.getSearchAlgorithmProperties(),
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
-                    this.dict['init-var-length']);
+                    this.dict['minVarChromosomeLength'],
+                    this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork':
                 return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
@@ -353,6 +356,14 @@ export class WhiskerSearchConfiguration {
             return this.dict["wait-duration"]
         } else {
             return 10;
+        }
+    }
+
+    public getWaitDurationAfterExecution(): number {
+        if ("waitDurationAfterExecution" in this.dict) {
+            return this.dict["waitDurationAfterExecution"]
+        } else {
+            return 250;
         }
     }
 

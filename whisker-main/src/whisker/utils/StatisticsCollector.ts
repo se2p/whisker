@@ -26,6 +26,8 @@ export class StatisticsCollector {
 
     private static _instance: StatisticsCollector;
 
+    private _projectName: string;
+    private _configName: string;
     private _fitnessFunctionCount: number;
     private _iterationCount: number;
     private _coveredFitnessFunctionsCount: number; // fitness value == 0 means covered
@@ -33,18 +35,22 @@ export class StatisticsCollector {
     private _eventsCount: number; //executed events
     private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
-    private _createdTestsCount: number;
+    private _numberFitnessEvaluations: number;
     private _createdTestsToReachFullCoverage: number;
     private _startTime: number;
     private _timeToReachFullCoverage: number;
     private _covOverTime: Map<number, number>;
 
+    private readonly _unknownProject = "(unknown)";
+    private readonly _unknownConfig = "(unknown)"
 
     /**
      * Private constructor to avoid instantiation
      */
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {
+        this._projectName = this._unknownProject;
+        this._configName = this._unknownConfig;
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
         this._coveredFitnessFunctionsCount = 0;
@@ -53,16 +59,32 @@ export class StatisticsCollector {
         this._bestCoverage = 0;
         this._startTime = 0;
         this._testEventCount = 0;
-        this._createdTestsCount = 0;
+        this._numberFitnessEvaluations = 0;
         this._covOverTime = new Map<number, number>();
     }
 
-    public static getInstance() {
+    public static getInstance(): StatisticsCollector {
         if (!StatisticsCollector._instance) {
             StatisticsCollector._instance = new StatisticsCollector();
         }
 
         return StatisticsCollector._instance;
+    }
+
+    get projectName(): string {
+        return this._projectName;
+    }
+
+    set projectName(value: string) {
+        this._projectName = value;
+    }
+
+    get configName(): string {
+        return this._configName;
+    }
+
+    set configName(value: string) {
+        this._configName = value;
     }
 
     get fitnessFunctionCount(): number {
@@ -144,12 +166,12 @@ export class StatisticsCollector {
         this._testEventCount = value;
     }
 
-    get createdTestsCount(): number {
-        return this._createdTestsCount;
+    get numberFitnessEvaluations(): number {
+        return this._numberFitnessEvaluations;
     }
 
-    set createdTestsCount(value: number) {
-        this._createdTestsCount = value;
+    set numberFitnessEvaluations(value: number) {
+        this._numberFitnessEvaluations = value;
     }
 
     get createdTestsToReachFullCoverage(): number {
@@ -168,28 +190,46 @@ export class StatisticsCollector {
         this._timeToReachFullCoverage = value;
     }
 
-    public asCsv(): string {
+    /**
+     * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so called
+     * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
+     * truncate this timeline. The optional parameter `numberOfCoverageValues` can be used to specify how many entries
+     * this timeline should consist of. If no value or `undefined` is given, all entries are included.
+     *
+     * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
+     */
+    public asCsv(numberOfCoverageValues?: number): string {
         const coverageStatsMap = this._adjustCoverageOverTime();
         const timestamps = [];
         for (const coverageStatsMapKey in coverageStatsMap) {
             timestamps.push(coverageStatsMapKey)
         }
-        timestamps.sort(function(a, b){return a-b});
+        timestamps.sort(function (a, b) {
+            return a - b
+        });
 
         const coverages = [];
         for (const timestamp of timestamps) {
             coverages.push(coverageStatsMap[timestamp]);
         }
-        const coveragesHeaders = timestamps.join(",");
-        const coverageValues = coverages.join(",");
 
-        const headers = ["fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
+        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        const truncateFitnessTimeline = numberOfCoverageValues != undefined && 0 <= numberOfCoverageValues;
+        const coveragesHeaders = truncateFitnessTimeline
+                ? timestamps.slice(0, numberOfCoverageValues).join(",")
+                : timestamps.join(",");
+        const coverageValues =
+            truncateFitnessTimeline
+                ? coverages.slice(0, numberOfCoverageValues).join(",")
+                : coverages.join(",");
+
+        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize",
-            "createdTestsCount", "createdTestsToReachFullCoverage", "timeToReachFullCoverage"];
+            "numberFitnessEvaluations", "createdTestsToReachFullCoverage", "timeToReachFullCoverage"];
         const headerRow = headers.join(",").concat(",", coveragesHeaders);
-        const data = [this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
             this._bestCoverage, this._testEventCount, this._eventsCount, this._bestTestSuiteSize,
-            this._createdTestsCount, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
+            this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
     }
@@ -207,7 +247,7 @@ export class StatisticsCollector {
 
         }
         let maxCov = 0;
-        for (let i = 0; i <= maxTime; i = i+1000) {
+        for (let i = 0; i <= maxTime; i = i + 1000) {
             if (i in adjusted) {
                 maxCov = adjusted[i];
             } else {
@@ -227,5 +267,7 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
         this._startTime = Date.now();
+        this._projectName = this._unknownProject;
+        this._configName = this._unknownConfig;
     }
 }

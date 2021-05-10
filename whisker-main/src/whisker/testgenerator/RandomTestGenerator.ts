@@ -72,7 +72,6 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         }
         this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
         const testSuite = await this.getTestSuite(this._tests);
-        StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         this.collectStatistics(testSuite);
         return new WhiskerTestListWithSummary(testSuite, '');
     }
