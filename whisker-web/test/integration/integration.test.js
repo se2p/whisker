@@ -5,7 +5,7 @@ const timeout = process.env.SLOWMO ? 30000 : 20000;
 async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#toggle-advanced')).click();
-    await page.evaluate(factor => document.querySelector('#acceleration-value').value = factor, ACCELERATION);
+    await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
 }
 
 async function waitForSearchCompletion () {
