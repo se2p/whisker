@@ -120,7 +120,8 @@ export class ScratchEventExtractor {
      * @param foundEvents collects the encountered Events
      */
     private static traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
-        do {
+
+        while (block) {
             foundEvents.addList(this._extractEventsFromBlock(target, block))
             // first branch (if, forever, repeat, ...)
             if (block.inputs.SUBSTACK) {
@@ -137,10 +138,10 @@ export class ScratchEventExtractor {
             if (block.inputs.CONDITION) {
                 const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
                 // Handle conditional statements with two condition blocks
-                if(condition.inputs.OPERAND1){
+                if (condition.inputs.OPERAND1) {
                     this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
                 }
-                if(condition.inputs.OPERAND1){
+                if (condition.inputs.OPERAND1) {
                     this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
                 }
                 foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
@@ -158,8 +159,8 @@ export class ScratchEventExtractor {
             if (duration > 0) {
                 foundEvents.add(new WaitEvent(duration));
             }
-            block = target.blocks.getBlock(block.next)
-        } while (block)
+            block = target.blocks.getBlock(block.next);
+        };
     }
 
     /**
