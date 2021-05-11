@@ -154,10 +154,20 @@
                 <div class="col-lg-12">
                     <h3 data-i18n="project"></h3>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-6 spacer50">
                     <!-- Use tabindex to make the canvas focusable. -->
                     <div id="viewer">
                         <canvas id="scratch-stage" tabindex="1"></canvas>
+                        <div class="slide-container but">
+                            <div class="col-lg-6 ">
+                                <input id="acceleration-factor" type="text" data-slider-min="1" data-slider-max="5"
+                                       data-slider-step="1" data-slider-value="1">
+                                <div class="row">
+                                    <label for="acceleration-factor" id="acceleration" data-i18n="acceleration"></label>
+                                    <div id="acceleration-value"></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="spacer10 but">
                             <button id="green-flag" class="btn btn-outline-success" type="button"
                                     data-toggle="tooltip" data-placement="top" data-animation="false"
@@ -165,16 +175,6 @@
                             <button id="stop" class="btn btn-danger" type="button"
                                     data-toggle="tooltip" data-placement="top" data-animation="false"
                                     data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
-                        </div>
-                    </div>
-                    <div class="slide-container spacer50">
-                        <div class="col-lg-6 ">
-                            <input id="acceleration-factor" type="text" data-slider-min="1" data-slider-max="5"
-                                   data-slider-step="1" data-slider-value="1">
-                            <div class="row">
-                                <label for="acceleration-factor" id="acceleration" data-i18n="acceleration"></label>
-                                <div id="acceleration-value"></div>
-                            </div>
                         </div>
                     </div>
                 </div>
