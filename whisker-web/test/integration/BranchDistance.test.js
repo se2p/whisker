@@ -175,6 +175,17 @@ describe('Fitness tests',  ()=>{
         await expect(branchDistance).toBe(10);
     }, timeout);
 
+    test('Test repeat until distance with multiple loop iterations, with increasing distances', async () => {
+        await loadProject('test/integration/branchDistance/BranchDistanceLoopIterations_Increasing.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        const log = await readFitnessLog();
+        const approachLevel  = log.uncoveredBlocks[0].ApproachLevel;
+        await expect(approachLevel).toBe(0);
+        const branchDistance = log.uncoveredBlocks[0].BranchDistance;
+        await expect(branchDistance).toBe(10);
+    }, timeout);
+
     test('Test repeat until distance for approach level', async () => {
         await loadProject('test/integration/branchDistance/RepeatUntilApproachLevel1.sb3')
         await (await page.$('#run-search')).click();
