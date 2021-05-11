@@ -241,8 +241,8 @@ describe('Fitness tests',  ()=>{
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         const log = await readFitnessLog();
-        const cfg1 = log.uncoveredBlocks[0].CFGDistanceUnNormalized;
-        const cfg2 = log.uncoveredBlocks[1].CFGDistanceUnNormalized;
-        await expect(cfg1).toBe(Number.MAX_SAFE_INTEGER) && expect(cfg2).toBe(Number.MAX_SAFE_INTEGER);
+        const cfg1 = log.uncoveredBlocks[0].CFGDistance;
+        const cfg2 = log.uncoveredBlocks[1].CFGDistance;
+        await expect(cfg1).toBe(Number.MAX_VALUE) && expect(cfg2).toBe(Number.MAX_VALUE);
     }, timeout);
 });
