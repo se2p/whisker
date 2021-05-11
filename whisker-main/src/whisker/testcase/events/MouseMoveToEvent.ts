@@ -62,4 +62,12 @@ export class MouseMoveToEvent implements ScratchEvent {
     getNumParameters(): number {
         return 0;
     }
+
+    getParameter(): number[] {
+        return [this.x, this.y];
+    }
+
+    setParameter(): void {
+        return;
+    }
 }

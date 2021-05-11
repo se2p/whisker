@@ -222,7 +222,7 @@ export class ScratchEventExtractor {
                 const value = field.TOUCHINGOBJECTMENU.value;
                 if (value == "_mouse_") {
                     eventList.add(new MouseMoveToEvent(target.x, target.y));
-                    eventList.add(new MouseMoveEvent());
+                    eventList.add(new MouseMoveEvent(0,0));
                 }
                 break;
             }
@@ -232,7 +232,7 @@ export class ScratchEventExtractor {
                 const value = field.DISTANCETOMENU.value;
                 if (value == "_mouse_") {
                     // TODO: Maybe could determine position to move to here?
-                    eventList.add(new MouseMoveEvent());
+                    eventList.add(new MouseMoveEvent(0,0));
                 }
                 break;
             }
