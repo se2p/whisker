@@ -20,24 +20,22 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ExecutionTrace} from "../ExecutionTrace";
-import {GraphNode, UserEventNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
+import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
 import {List} from "../../utils/List";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
-    // TODO: Constructor needs CDG and target node
-    private _targetNode: GraphNode;
-    private _cdg: ControlDependenceGraph;
-    private _cfg: ControlFlowGraph;
-    private _approachLevels: Record<string, number>
-    private eventMapping: Record<string, string>
+    private readonly _targetNode: GraphNode;
+    private readonly _cdg: ControlDependenceGraph;
+    private readonly _cfg: ControlFlowGraph;
+    private readonly _approachLevels: Record<string, number>
+    private readonly _eventMapping: Record<string, string>
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
         this._cdg = cdg;
         this._cfg = cfg;
-        this.eventMapping = {};
+        this._eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
 
     }
@@ -63,10 +61,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
 
                 if (n.hasOwnProperty("userEvent") || n.hasOwnProperty("event")) {
-                    this.eventMapping[node.id] = n.id;
+                    this._eventMapping[node.id] = n.id;
                     const succs: [GraphNode] = cdg.successors(n.id);
                     for (const s of Array.from(succs.values())) {
-                        this.eventMapping[s.id] = n.id;
+                        this._eventMapping[s.id] = n.id;
                     }
                 }
 
@@ -106,6 +104,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         else {
             cfgDistanceNormalized = 1;
         }
+        console.log("Approach level: "+approachLevel+", branch distance: "+branchDistance+", CFG distance: "+cfgDistanceNormalized);
         return approachLevel + this._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
@@ -144,8 +143,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             min = this._approachLevels[blockTrace.id]
         }
 
-        if (blockTrace.id in this.eventMapping) {
-            const userEventNode = this.eventMapping[blockTrace.id];
+        if (blockTrace.id in this._eventMapping) {
+            const userEventNode = this._eventMapping[blockTrace.id];
             const userEventMin = this._approachLevels[userEventNode];
             if (userEventMin <= currentMin && userEventMin <= min) {
                 min = this._approachLevels[userEventNode]
@@ -262,14 +261,28 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     _checkControlBlock(statement, controlNode): boolean {
         let requiredCondition;
         switch (controlNode.block.opcode) {
-            case 'control_repeat':
-            case 'control_repeat_until':
             case 'control_forever': { // Todo not sure about forever
                requiredCondition = true;
                break;
             }
             case 'control_wait_until': {
                 requiredCondition = true;
+                break;
+            }
+            case 'control_repeat': {
+                requiredCondition = false;
+                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                    requiredCondition = true;
+                }
+                break;
+            }
+            case 'control_repeat_until': {
+                requiredCondition = true;
+                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                    requiredCondition = false;
+                }
                 break;
             }
             case 'control_if': {
