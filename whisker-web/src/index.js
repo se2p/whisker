@@ -333,9 +333,11 @@ const initEvents = function () {
             if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t("test-generation"), i18next.t("no-project"));
             } else {
+                accSlider.slider('disable');
                 const tests = runSearch();
                 tests.then(
                     result => {
+                        accSlider.slider('enable');
                         loadTestsFromString(result);
                         // TODO: This text is used as a marker to tell servant
                         //       when the search is done. There must be a nicer way...
