@@ -69,7 +69,7 @@ export class TestExecutor {
 
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
-                continue;
+                break;
             }
 
             const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
