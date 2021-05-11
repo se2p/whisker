@@ -62,6 +62,7 @@ const loadTestsFromString = function (string) {
 };
 
 const runSearch = async function () {
+    accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
     const configName =
@@ -78,6 +79,7 @@ const runSearch = async function () {
     const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, configName,
         accelerationFactor);
     Whisker.outputLog.print(res[1]);
+    accSlider.slider('enable');
     return res[0];
 };
 
@@ -90,6 +92,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     let summary;
     let coverage;
+    accSlider.slider('disable');
     const accelerationFactor = $('#acceleration-value').text();
 
     try {
@@ -117,6 +120,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         let runTests = i18next.t("tests")
         $('#run-all-tests').prop('disabled', false).text(runTests);
         $('#record').prop('disabled', false);
+        accSlider.slider('enable');
     }
 
     if (summary === null) {
@@ -136,11 +140,13 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 };
 
 const runTests = async function (tests) {
+    accSlider.slider('disable');
     Whisker.scratch.stop();
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
+    accSlider.slider('enable');
 };
 
 const runAllTests = async function () {
@@ -152,6 +158,7 @@ const runAllTests = async function () {
         return;
     }
 
+    accSlider.slider('disable');
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
@@ -162,6 +169,7 @@ const runAllTests = async function () {
         await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
         Whisker.outputRun.println();
         Whisker.outputLog.println();
+        accSlider.slider('enable');
     }
 };
 
@@ -333,11 +341,9 @@ const initEvents = function () {
             if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t("test-generation"), i18next.t("no-project"));
             } else {
-                accSlider.slider('disable');
                 const tests = runSearch();
                 tests.then(
                     result => {
-                        accSlider.slider('enable');
                         loadTestsFromString(result);
                         // TODO: This text is used as a marker to tell servant
                         //       when the search is done. There must be a nicer way...
