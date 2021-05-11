@@ -242,4 +242,3 @@ describe('Multiple event handling', () => {
         await expect(coverage).toBe("1.00");
     }, timeout);
 });
-
