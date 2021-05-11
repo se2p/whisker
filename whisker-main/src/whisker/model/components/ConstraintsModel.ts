@@ -42,6 +42,7 @@ export class ConstraintsModel extends ProgramModel {
                 output = "Constraints failed. " + output;
                 console.error(output, testDriver.getTotalStepsExecuted());
                 modelResult.error.push(new Error(output));
+                throw new Error(output);
             }
 
             this.currentState = edge.getEndNode();

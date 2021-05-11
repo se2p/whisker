@@ -28,10 +28,6 @@ class TestRunner extends EventEmitter {
 
         const results = [];
 
-        if (modelTester && modelTester.programModelsDefined()) {
-            await modelTester.testModels(vm, project);
-        }
-
         this.emit(TestRunner.RUN_START, tests);
 
         if (modelTester && (!tests || tests.length === 0)) {

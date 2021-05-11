@@ -2,15 +2,14 @@ import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import {ModelResult} from "../../../test-runner/test-result";
 import {ProgramModel} from "./ProgramModel";
-import {Util} from "../util/Util";
 import {Checks} from "../util/Checks";
 
 export enum EffectName {
     Output = "Output", // sprite name, string output
     VarChange = "VarChange", // sprite name, var name, ( + | - | new value)
     AttrChange = "AttrChange", // sprite name, attr name, (+|-|new value)
-    VarTest = "VarTest",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
-    AttrTest = "AttrTest",// args: sprite name, attribute name, comparison (=,>,<...), value to compare to
+    VarComp = "VarComp",// this.args: sprite name, variable name, comparison (=,>,<...), value to compare to
+    AttrComp = "AttrComp",// this.args: sprite name, attribute name, comparison (=,>,<...), value to compare to
     BackgroundChange = "BackgroundChange",
     Function = "Function",
     Wait = "Wait" // wait in one the model, seconds
@@ -57,11 +56,11 @@ export function getEffect(effectString): Effect {
 export class Effect {
     private readonly name: EffectName;
     private readonly args = [];
-    private readonly _effect: (testDriver: TestDriver, ...state) => boolean;
+    private _effect : (...state) => boolean;
     private readonly negated: boolean;
 
     /**
-     * Get an effect representation, checks the arugments.
+     * Get an effect representation, checks the arguments.
      * @param name Name of the effect type.
      * @param negated Whether the effect is negated (e.g. it does not output "hello")
      * @param args Arguments for the effect e.g. sprite names.
@@ -88,53 +87,73 @@ export class Effect {
         switch (this.name) {
             case EffectName.Output:
                 testArgs(2);
-                this._effect = Checks.getOutputOnSpriteCheck(negated, args[0], args[1]);
                 break;
             case EffectName.VarChange:
-                testArgs(3);
-                this._effect = Checks.getVariableChangeCheck(negated, args[0], args[1], args[2])
-                break;
             case EffectName.AttrChange:
                 testArgs(3);
-                this._effect = Checks.getAttributeChangeCheck(negated, args[0], args[1], args[2])
                 break;
             case EffectName.BackgroundChange:
-                testArgs(1);
-                this._effect = Checks.getBackgroundChangeCheck(negated, args[0]);
-                break;
             case EffectName.Function:
-                testArgs(1);
-                this._effect = (t, cs) => {
-                    return eval(this.args[0]);
-                };
-                break;
             case EffectName.Wait:
                 testArgs(1);
-                this._effect = Checks.getWaitStarter(args[0]);
                 break;
-            case EffectName.AttrTest:
+            case EffectName.AttrComp:
+            case EffectName.VarComp:
                 testArgs(4);
-                this._effect = Checks.getAttributeComparisonCheck(negated, args[0], args[1], args[2], args[3]);
-                break;
-            case EffectName.VarTest:
-                testArgs(4);
-                this._effect = Checks.getVariableComparisonCheck(negated, args[0], args[1], args[2], args[3]);
                 break;
             default:
-                throw new Error("Effect type not recognized.");
+                throw new Error("Effect type not recognized: " + this.name);
         }
     }
 
     /**
      * Check the edge effect has happened.
-     * @param testDriver Instance of the test driver.
      * @param model The model this effect belongs to.
      */
-    check(testDriver, model: ProgramModel): boolean {
-        return this._effect(testDriver, model);
+    check(model: ProgramModel): boolean {
+        return this._effect(model);
     }
 
-    get effect(): (testDriver, modelResult: ModelResult, model: ProgramModel) => boolean {
+    /**
+     * Register the check listener and test driver and check the effect for errors.
+     */
+    registerComponents(t: TestDriver, result:ModelResult) {
+        try {
+            switch (this.name) {
+                case EffectName.AttrComp:
+                    this._effect = Checks.getAttributeComparisonCheck(t, this.negated, this.args[0], this.args[1],
+                        this.args[2], this.args[3]);
+                    break;
+                case EffectName.Wait:
+                    this._effect = Checks.getWaitStarter(t, this.args[0]);
+                    break;
+                case EffectName.AttrChange:
+                    this._effect = Checks.getAttributeChangeCheck(t, this.negated, this.args[0], this.args[1], this.args[2]);
+                    break;
+                case EffectName.BackgroundChange:
+                    this._effect = Checks.getBackgroundChangeCheck(t, this.negated, this.args[0]);
+                    break;
+                case EffectName.Function:
+                    this._effect = Checks.getFunctionCheck(t, this.negated, this.args[0]);
+                    break;
+                case EffectName.Output:
+                    this._effect = Checks.getOutputOnSpriteCheck(t, this.negated, this.args[0], this.args[1]);
+                    break;
+                case EffectName.VarChange:
+                    this._effect = Checks.getVariableChangeCheck(t, this.negated, this.args[0], this.args[1], this.args[2]);
+                    break;
+                case EffectName.VarComp:
+                    this._effect = Checks.getVariableComparisonCheck(t, this.negated, this.args[0], this.args[1],
+                        this.args[2], this.args[3]);
+                    break;
+            }
+        } catch (e) {
+            console.error(e);
+            result.error.push(e);
+        }
+    }
+
+    get effect(): (...state) => boolean {
         return this._effect;
     }
 
@@ -150,58 +169,6 @@ export class Effect {
      */
     isANegation(): boolean {
         return this.negated;
-    }
-
-    /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
-     * @param testDriver Instance of the test driver.
-     */
-    testEffectsForErrors(testDriver: TestDriver) {
-        let sprite = null;
-        switch (this.name) {
-            case EffectName.Output:
-                sprite = Util.checkSpriteExistence(testDriver, this.args[0]);
-                break;
-            case EffectName.VarChange:
-                sprite = Util.checkSpriteExistence(testDriver, this.args[0]);
-                if (!sprite.getVariable(this.args[1])) {
-                    throw new Error("Variable " + this.args[1] + " is not defined on sprite " + this.args[0] + ".");
-                }
-                break;
-            case EffectName.AttrChange:
-                Util.checkAttributeExistence(testDriver, this.args[0], this.args[1]);
-                break;
-            case EffectName.VarTest:
-                sprite = Util.checkSpriteExistence(testDriver, this.args[0]);
-                let variable = sprite.getVariable(this.args[1]);
-
-                if (variable == undefined) {
-                    throw new Error("Variable not found: " + this.args[1]);
-                }
-                if (this.args[2] != "==" && this.args[2] != "=" && this.args[2] != ">" && this.args[2] != ">="
-                    && this.args[2] != "<" && this.args[2] != "<=") {
-                    throw new Error("Comparison not known: " + this.args[2]);
-                }
-                break;
-            case EffectName.AttrTest:
-                Util.checkAttributeExistence(testDriver, this.args[0], this.args[1]);
-                if (this.args[2] != "==" && this.args[2] != "=" && this.args[2] != ">" && this.args[2] != ">="
-                    && this.args[2] != "<" && this.args[2] != "<=") {
-                    throw new Error("Comparison not known: " + this.args[2]);
-                }
-                break;
-            case EffectName.Function:
-                try {
-                    eval(this.args[0]);
-                } catch (e) {
-                    throw new Error("Effect Function cannot be evaluated:\n" + e);
-                }
-                break;
-            case EffectName.Wait:
-                if (!Util.testNumber(this.args[0]) && this.args[0] > 0) {
-                    throw new Error("Effect Wait seconds argument not a number.");
-                }
-        }
     }
 
     /**

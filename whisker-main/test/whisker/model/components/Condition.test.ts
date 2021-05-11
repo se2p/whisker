@@ -31,10 +31,10 @@ describe('Condition', () => {
         }).toThrow()
 
         expect(() => {
-            new Condition(ConditionName.VarTest, true, []);
+            new Condition(ConditionName.VarComp, true, []);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, []);
+            new Condition(ConditionName.AttrComp, true, []);
         }).toThrow()
 
         expect(() => {
@@ -81,49 +81,49 @@ describe('Condition', () => {
 
     test("not enough arguments: variable effect", () => {
         expect(() => {
-            new Condition(ConditionName.VarTest, true, ["test"]);
+            new Condition(ConditionName.VarComp, true, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarTest, true, ["test", "test2"]);
+            new Condition(ConditionName.VarComp, true, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarTest, true, ["test", "test2", ">"]);
+            new Condition(ConditionName.VarComp, true, ["test", "test2", ">"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarTest, true, ["test", "test2", ">", undefined]);
+            new Condition(ConditionName.VarComp, true, ["test", "test2", ">", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarTest, true, ["test", "test2", undefined]);
+            new Condition(ConditionName.VarComp, true, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarTest, true, ["test", undefined, "test2"]);
+            new Condition(ConditionName.VarComp, true, ["test", undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarTest, true, [undefined, "test", "test2"]);
+            new Condition(ConditionName.VarComp, true, [undefined, "test", "test2"]);
         }).toThrow()
     })
 
     test("not enough arguments: attribute effect", () => {
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, ["test"]);
+            new Condition(ConditionName.AttrComp, true, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, ["test", "test2"]);
+            new Condition(ConditionName.AttrComp, true, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, ["test", "test2", ">"]);
+            new Condition(ConditionName.AttrComp, true, ["test", "test2", ">"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, ["test", "test2", ">", undefined]);
+            new Condition(ConditionName.AttrComp, true, ["test", "test2", ">", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, ["test", "test2", undefined]);
+            new Condition(ConditionName.AttrComp, true, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, ["test", undefined, "test2"]);
+            new Condition(ConditionName.AttrComp, true, ["test", undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrTest, true, [undefined, "test", "test2"]);
+            new Condition(ConditionName.AttrComp, true, [undefined, "test", "test2"]);
         }).toThrow()
     })
 
@@ -134,8 +134,8 @@ describe('Condition', () => {
             new Condition(ConditionName.SpriteColor, true, ["test", "0", "1", "2"]);
             new Condition(ConditionName.SpriteTouching, true, ["test", "test2"]);
             new Condition(ConditionName.Function, true, ["()=>{return null;}"]);
-            new Condition(ConditionName.VarTest, true, ["sprite", "var", ">", "0"]);
-            new Condition(ConditionName.AttrTest, true, ["sprite", "attr", ">", "0"]);
+            new Condition(ConditionName.VarComp, true, ["sprite", "var", ">", "0"]);
+            new Condition(ConditionName.AttrComp, true, ["sprite", "attr", ">", "0"]);
             new Condition(ConditionName.Nothing, true, []);
         }).not.toThrow();
     })

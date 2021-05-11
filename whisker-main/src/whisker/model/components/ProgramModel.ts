@@ -69,7 +69,6 @@ export class ProgramModel {
         }
 
         let transitions = [];
-        // console.log("model step " + this.id, testDriver.getTotalStepsExecuted())
 
         while (true) {
             // ask the current node for a valid transition
@@ -151,25 +150,11 @@ export class ProgramModel {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
-     * @param testDriver Instance of the test driver.
+     * Register the check listener and test driver.
      */
-    testModel(testDriver: TestDriver) {
-        try {
-            Object.values(this.nodes).forEach(node => {
-                node.testEdgesForErrors(testDriver);
-            })
-        } catch (e) {
-            throw new Error("Errors on Model '" + this.id + "':\n" + e.message);
-        }
-    }
-
-    /**
-     * Register the condition state.
-     */
-    registerCheckListener(checkListener: CheckListener) {
+    registerComponents(checkListener: CheckListener, testDriver: TestDriver, result: ModelResult) {
         Object.values(this.nodes).forEach(node => {
-            node.registerCheckListener(checkListener);
+            node.registerComponents(checkListener, testDriver, result);
         })
     }
 
@@ -192,7 +177,8 @@ export class ProgramModel {
 
         let newEffectsToCheck = [];
         for (let i = 0; i < this.effectsToCheck.length; i++) {
-            if (this.effectsToCheck[i].checkEffects(testDriver, modelResult, this).length > 0) {
+            let result = this.effectsToCheck[i].checkEffects(testDriver, modelResult, this);
+            if (result && result.length > 0) {
                 newEffectsToCheck.push(this.effectsToCheck[i]);
             }
         }

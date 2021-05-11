@@ -1,7 +1,6 @@
 import {ModelLoaderXML} from "./util/ModelLoaderXML";
 import {ProgramModel} from "./components/ProgramModel";
 import {UserModel} from "./components/UserModel";
-import WhiskerUtil from "../../test/whisker-util";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckListener} from "./util/CheckListener";
@@ -23,10 +22,8 @@ export class ModelTester extends EventEmitter {
     private checkListener: CheckListener;
     private result: ModelResult;
 
-    private modelsStopped = false;
-
     static readonly LOAD_ERROR = "LoadError";
-    static readonly LABEL_TEST_ERROR = "LabelTestError";
+    static readonly CONSTRAINT_FAILED = "ConstraintFailed";
     static readonly LOG_MODEL = "LogModel";
     static readonly LOG_MODEL_COVERAGE: "LogModelCoverage";
 
@@ -61,90 +58,103 @@ export class ModelTester extends EventEmitter {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
-     * @private
-     */
-    async testModels(vm, project) {
-        const util = new WhiskerUtil(vm, project);
-        await util.prepare(1);
-
-        const testDriver = util.getTestDriver({extend: {}});
-        try {
-            this.programModels.forEach(model => {
-                model.testModel(testDriver);
-            })
-        } catch (e) {
-            this.emit(ModelTester.LABEL_TEST_ERROR, e.message);
-            throw e;
-        }
-    }
-
-    /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      */
     async prepareModel(testDriver: TestDriver) {
         console.log("----Preparing model----")
         this.emit(ModelTester.LOG_MODEL, "Preparing model...");
-        this.modelsStopped = false;
         this.checkListener = new CheckListener(testDriver);
         this.result = new ModelResult();
 
-        // reset the models
+        // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
         this.programModels.forEach(model => {
             model.reset();
-            model.registerCheckListener(this.checkListener);
+            model.registerComponents(this.checkListener, testDriver, this.result);
         });
+        this.constraintsModel.reset();
+        this.constraintsModel.registerComponents(this.checkListener, testDriver, this.result);
+
+        // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).
+        if (this.result.error.length > 0) {
+            console.error("errors in conditions/effects before test run");
+            return;
+        }
+
+        await this.addCallbacks(testDriver);
+    }
+
+    // todo bug: when bowl hovers over bananas, step 305 bananas not touching red anymore -> bowl touching
+    //  bananas thrown, although it is still on red...
+
+    private async addCallbacks(testDriver: TestDriver) {
         let keyCallback = testDriver.addModelCallback(() => {
             this.checkListener.testKeys();
         }, false, "testKeys");
 
-        // todo bug: when bowl hovers over bananas, step 305 bananas not touching red anymore -> bowl touching
-        //  bananas thrown, although it is still on red...
-        // run the test driver for one step as inputs can be in the first step but the vm does nothing yet.
-        await testDriver.runForSteps(1);
-        let endTimer = 3;
+        let constraintCallback;
+        let modelStepCallback;
+        let modelStoppedCallback;
         let modelStopped = false;
+        let endTimer = 1; // effects can be delayed one step
 
-        let constraintCallback
-        if (this.constraintsModel) {
-            constraintCallback = testDriver.addModelCallback(() => {
+        let constraintFunction = () => {
+            try {
                 this.constraintsModel.makeTransitions(testDriver, this.result);
-
-                if (this.constraintsModel.stopped()) {
-                    testDriver.removeModelCallback(constraintCallback); // there are no more to check
-                }
-            });
-        }
-
-        let modelStepCallback = testDriver.addModelCallback(() => {
+            } catch (e) {
+                constraintCallback.disable();
+                modelStepCallback.disable();
+                modelStoppedCallback.disable();
+                this.emit(ModelTester.CONSTRAINT_FAILED, e.message + "\n Model stopped for this test!");
+            }
+            if (this.constraintsModel.stopped()) {
+                constraintCallback.disable(); // there are no more to check
+            }
+        };
+        let modelStepFunction = () => {
             this.programModels.forEach(model => {
                 this.edgeTrace(model.makeTransitions(testDriver, this.result), testDriver);
                 model.checkEffects(testDriver, this.result);
             });
 
-            if (modelStopped && endTimer == 0) {
-                this.modelsStopped = true;
-                testDriver.removeModelCallback(modelStepCallback);
-                testDriver.removeModelCallback(keyCallback);
-                if (this.constraintsModel) {
-                    testDriver.removeModelCallback(constraintCallback);
+            this.programModels.forEach(model => {
+                if (model.stopped()) {
+                    modelStopped = true;
                 }
-            } else if (modelStopped) {
+            });
+
+            if (modelStopped) {
+                modelStepCallback.disable();
+                modelStoppedCallback.enable();
+            }
+            this.checkListener.reset();
+        }
+        let stoppedFunction = () => {
+            if (endTimer == 0) {
+                modelStoppedCallback.disable();
+                keyCallback.disable();
+                if (this.constraintsModel) {
+                    constraintCallback.disable();
+                }
+            } else {
                 this.programModels.forEach(model => {
                     model.checkEffects(testDriver, this.result);
                 })
+                this.checkListener.reset();
                 endTimer--;
-            } else {
-                this.programModels.forEach(model => {
-                    if (model.stopped()) {
-                        modelStopped = true;
-                    }
-                    // todo if it is the constraint model then stop all!
-                })
             }
+        }
 
-            this.checkListener.reset();
-        }, true, "modelstep");
+        // the actual callbacks
+        if (this.constraintsModel) {
+            constraintCallback = testDriver.addModelCallback(constraintFunction, true, "constraints");
+        }
+
+        // run the test driver for one step as inputs can be in the first step but the vm does nothing yet.
+        await testDriver.runForSteps(1);
+
+        modelStepCallback = testDriver.addModelCallback(modelStepFunction, true, "modelStep");
+        modelStoppedCallback = testDriver.addModelCallback(stoppedFunction, true, "modelStopped");
+        modelStoppedCallback.disable(); // is started when models stop
     }
 
     private edgeTrace(transitions: ModelEdge[], testDriver: TestDriver) {

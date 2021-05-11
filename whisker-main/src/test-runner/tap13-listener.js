@@ -36,10 +36,9 @@ class TAP13Listener {
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
 
         this._onModelLoadError = this.onModelLoadError.bind(this);
-        this._onModelLabelTestError = this.onModelLabelTestError.bind(this);
-
+        this._onConstraintError = this.onConstraintError.bind(this);
         modelTester.on(ModelTester.LOAD_ERROR, this._onModelLoadError);
-        modelTester.on(ModelTester.LABEL_TEST_ERROR, this._onModelLabelTestError);
+        modelTester.on(ModelTester.CONSTRAINT_FAILED, this._onConstraintError);
     }
 
     unregister () {
@@ -50,7 +49,8 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
         this.modelTester.off(ModelTester.LOAD_ERROR, this.print);
-        this.modelTester.off(ModelTester.LABEL_TEST_ERROR, this.print);
+        this.modelTester.off(ModelTester.CONSTRAINT_FAILED, this._onConstraintError);
+
     }
 
     /**
@@ -137,8 +137,7 @@ class TAP13Listener {
     /**
      * @param {string} err
      */
-    onModelLabelTestError(err) {
-        err = "MODEL: " + err;
+    onConstraintError(err) {
         this.print(TAP13Formatter.descriptionToYAML(err));
     }
 }

@@ -40,7 +40,7 @@ export class ModelEdge {
      */
     checkConditions(testDriver: TestDriver, modelResult: ModelResult): Condition[] {
         if (this.lastStepChecked == testDriver.getTotalStepsExecuted()) {
-            return this.conditions; // dont check in the same step twice
+            return null; // dont check in the same step twice
         }
 
         this.lastStepChecked = testDriver.getTotalStepsExecuted();
@@ -48,7 +48,7 @@ export class ModelEdge {
 
         for (let i = 0; i < this.conditions.length; i++) {
             try {
-                if (!this.conditions[i].check(testDriver)) {
+                if (!this.conditions[i].check()) {
                     failedConditions.push(this.conditions[i]);
                 }
             } catch (e) {
@@ -72,7 +72,7 @@ export class ModelEdge {
 
         for (let i = 0; i < this.effects.length; i++) {
             try {
-                if (!this.effects[i].check(testDriver, model)) {
+                if (!this.effects[i].check(model)) {
                     this.failedEffects.push(this.effects[i]);
                 }
             } catch (e) {
@@ -107,7 +107,7 @@ export class ModelEdge {
         let newFailures = [];
         for (let i = 0; i < this.failedEffects.length; i++) {
             try {
-                if (!this.failedEffects[i].check(testDriver, model)) {
+                if (!this.failedEffects[i].check(model)) {
                     newFailures.push(this.failedEffects[i]);
                 }
             } catch (e) {
@@ -164,28 +164,14 @@ export class ModelEdge {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
-     * @param testDriver Instance of the test driver.
+     * Register the check listener and test driver.
      */
-    testEdgeForErrors(testDriver: TestDriver): void {
-        try {
-            this.conditions.forEach(cond => {
-                cond.testConditionsForErrors(testDriver);
-            })
-            this.effects.forEach(effect => {
-                effect.testEffectsForErrors(testDriver);
-            })
-        } catch (e) {
-            throw new Error("Edge '" + this.id + "':\n" + e.message);
-        }
-    }
-
-    /**
-     * Register the condition state.
-     */
-    registerCheckListener(checkListener: CheckListener): void {
+    registerComponents(checkListener: CheckListener, testDriver: TestDriver, result: ModelResult): void {
         this.conditions.forEach(cond => {
-            cond.registerCheckListener(checkListener);
+            cond.registerComponents(checkListener, testDriver, result);
+        })
+        this.effects.forEach(effect => {
+            effect.registerComponents(testDriver, result);
         })
     }
 }

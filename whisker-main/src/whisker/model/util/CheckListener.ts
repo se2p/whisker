@@ -113,7 +113,7 @@ export class CheckListener {
         let combi1 = CheckListener.getTouchingString(spriteName1, spriteName2);
         let combi2 = CheckListener.getTouchingString(spriteName2, spriteName1);
         return (this.touched[combi1] || this.touched[combi2]
-            && this.testDriver.getSprite(spriteName1).isTouchingSprite(spriteName2));
+            || this.testDriver.getSprite(spriteName1).isTouchingSprite(spriteName2));
     }
 
     /**

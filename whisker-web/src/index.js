@@ -262,9 +262,6 @@ const initComponents = function () {
     Whisker.testTable.show();
 
     Whisker.modelTester = new ModelTester.ModelTester();
-    Whisker.modelTester.on(ModelTester.ModelTester.LABEL_TEST_ERROR, (msg) => {
-        showModal(i18next.t("test-execution"), msg);
-    })
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
         Whisker.outputRun.println.bind(Whisker.outputRun));

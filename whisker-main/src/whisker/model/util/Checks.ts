@@ -18,13 +18,15 @@ import {Util} from "./Util";
 export class Checks {
     /**
      * Get a method for checking if a key was pressed or not pressed.
+     * @param t Instance of the test driver.
+     * @param cs Listener for the checks.
      * @param key Name of the key.
      * @param negated Whether this check is negated.
      */
-    static getKeyDownCheck(negated: boolean, key: string):
-        (testDriver: TestDriver, checkListener: CheckListener) => boolean {
-        return function (testDriver: TestDriver, checkListener: CheckListener): boolean {
-            if (checkListener.isKeyDown(key)) {
+    static getKeyDownCheck(t: TestDriver, cs: CheckListener, negated: boolean, key: string): () => boolean {
+        cs.registerKeyCheck(key);
+        return () => {
+            if (cs.isKeyDown(key)) {
                 return !negated;
             }
             return negated;
@@ -33,12 +35,14 @@ export class Checks {
 
     /**
      * Get a method for checking whether a sprite was clicked.
+     * @param t Instance of the test driver.
      * @param spriteName Name of the sprite.
      * @param negated Whether this check is negated.
      */
-    static getSpriteClickedCheck(negated: boolean, spriteName: string): (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver): boolean {
-            if (testDriver.isMouseDown() && testDriver.getSprite(spriteName).isTouchingMouse()) {
+    static getSpriteClickedCheck(t: TestDriver, negated: boolean, spriteName: string): () => boolean {
+        Util.checkSpriteExistence(t, spriteName);
+        return () => {
+            if (t.isMouseDown() && t.getSprite(spriteName).isTouchingMouse()) {
                 return !negated;
             }
             return negated;
@@ -48,17 +52,29 @@ export class Checks {
     /**
      * Get a method for checking whether a variable has a given comparison with a given value fulfilled.
      *
+     * @param t Instance of the test driver.
      * @param spriteName Name of the sprite having the variable.
      * @param varName Name of the variable.
      * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
      * @param varValue Value to compare to the variable's current value.
      * @param negated Whether this check is negated.
      */
-    static getVariableComparisonCheck(negated: boolean, spriteName: string, varName: string, comparison: string,
-                                      varValue: string): (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver): boolean {
-            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+    static getVariableComparisonCheck(t: TestDriver, negated: boolean, spriteName: string, varName: string,
+                                      comparison: string, varValue: string): () => boolean {
+        let sprite = Util.checkSpriteExistence(t, spriteName);
+        let variable = sprite.getVariable(varName);
+
+        if (variable == undefined) {
+            throw new Error("Variable not found: " + varName);
+        }
+        if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
+            && comparison != "<" && comparison != "<=") {
+            throw new Error("Comparison not known: " + comparison);
+        }
+        return () => {
+            let sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             let variable = sprite.getVariable(varName);
+
             let result;
             try {
                 result = Util.compare(variable.value, varValue, comparison);
@@ -77,18 +93,26 @@ export class Checks {
     /**
      * Get a method for checking whether a sprite's attribute has a given comparison with a given value fulfilled.
      *
+     * @param t Instance of the test driver.
      * @param spriteName Name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param comparison  Mode of comparison, e.g. =, <, >, <=, >=
      * @param varValue Value to compare to the variable's current value.
      * @param negated Whether this check is negated.
      */
-    static getAttributeComparisonCheck(negated: boolean, spriteName: string, attrName: string, comparison: string,
-                                       varValue: string): (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver): boolean {
-            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            const value = eval('sprite.' + attrName);
-            const oldValue = eval('sprite.old.' + attrName);
+    static getAttributeComparisonCheck(t: TestDriver, negated: boolean, spriteName: string, attrName: string,
+                                       comparison: string, varValue: string): () => boolean {
+        Util.checkAttributeExistence(t, spriteName, attrName);
+        if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
+            && comparison != "<=") {
+            throw new Error("Comparison not known: " + comparison);
+        }
+        const currentValueEval = "sprite." + attrName;
+        const oldValueEval = "sprite.old." + attrName;
+        return () => {
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+            const value = eval(currentValueEval);
+            const oldValue = eval(oldValueEval);
 
             let result;
             try {
@@ -106,16 +130,41 @@ export class Checks {
     }
 
     /**
+     * Get a method checking another method.
+     * @param t Instance of the test driver.
+     * @param negated Whether it should be negated.
+     * @param f the function as a string.
+     */
+    static getFunctionCheck(t: TestDriver, negated: boolean, f): () => boolean {
+        try {
+            eval(f);
+        } catch (e) {
+            throw new Error("Function cannot be evaluated:\n" + e);
+        }
+        return () => {
+            if (eval(f)) {
+                return !negated;
+            }
+            return negated;
+        };
+    }
+
+    /**
      * Get a method checking whether two sprites are touching.
      *
+     * @param t Instance of the test driver.
+     * @param cs Listener for the checks.
      * @param spriteName1 Name of the first sprite.
      * @param spriteName2 Name of the second sprite.
      * @param negated Whether this check is negated.
      */
-    static getSpriteTouchingCheck(negated: boolean, spriteName1: string, spriteName2: string):
-        (testDriver: TestDriver, checkListener: CheckListener) => boolean {
-        return function (testDriver: TestDriver, checkListener: CheckListener): boolean {
-            const areTouching = checkListener.areTouching(spriteName1, spriteName2);
+    static getSpriteTouchingCheck(t: TestDriver, cs: CheckListener, negated: boolean, spriteName1: string,
+                                  spriteName2: string): () => boolean {
+        Util.checkSpriteExistence(t, spriteName1);
+        Util.checkSpriteExistence(t, spriteName2);
+        cs.registerTouching(spriteName1, spriteName2);
+        return () => {
+            const areTouching = cs.areTouching(spriteName1, spriteName2);
             if (areTouching) {
                 return !negated;
             }
@@ -125,16 +174,25 @@ export class Checks {
 
     /**
      * Get a method whether a sprite touches a color.
+
+     * @param t Instance of the test driver.
+     * @param cs Listener for the checks.
      * @param spriteName Name of the sprite.
      * @param r RGB red color value.
      * @param g RGB green color value.
      * @param b RGB blue color value.
      * @param negated Whether this check is negated.
      */
-    static getSpriteColorTouchingCheck(negated: boolean, spriteName: string, r: number, g: number, b: number):
-        (testDriver: TestDriver, checkListener: CheckListener) => boolean {
-        return function (testDriver: TestDriver, checkListener: CheckListener): boolean {
-            if (checkListener.isTouchingColor(spriteName, r, g, b)) {
+    static getSpriteColorTouchingCheck(t: TestDriver, cs: CheckListener, negated: boolean, spriteName: string,
+                                       r: number, g: number, b: number): () => boolean {
+        Util.checkSpriteExistence(t, spriteName);
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
+            throw new Error("RGB ranges not correct.");
+        }
+        cs.registerColor(spriteName, r, g, b);
+
+        return () => {
+            if (cs.isTouchingColor(spriteName, r, g, b)) {
                 return !negated;
             }
             return negated;
@@ -143,16 +201,16 @@ export class Checks {
 
     /**
      * Get a method checking whether a sprite has the given output included in their sayText.
+     * @param t Instance of the test driver.
      * @param spriteName Name of the sprite.
      * @param output Output to say.
      * @param negated Whether this check is negated.
      */
-    static getOutputOnSpriteCheck(negated: boolean, spriteName: string, output: string):
-        (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
-            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-
-            // todo eval the output (could also contain variables)
+    static getOutputOnSpriteCheck(t: TestDriver, negated: boolean, spriteName: string, output: string): () => boolean {
+        Util.checkSpriteExistence(t, spriteName);
+        // todo eval the output (could also contain variables)
+        return () => {
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             if (sprite.sayText.indexOf(eval(output)) != -1) {
                 return !negated;
             }
@@ -162,15 +220,21 @@ export class Checks {
 
     /**
      * Get a method checking whether a variable value of a sprite changed.
+     * @param t Instance of the test driver.
      * @param spriteName Name of the sprite having the variable.
      * @param varName Name of the variable.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
      * @param negated Whether this check is negated.
      */
-    static getVariableChangeCheck(negated: boolean, spriteName: string, varName: string, change: string):
-        (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
-            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+    static getVariableChangeCheck(t: TestDriver, negated: boolean, spriteName: string, varName: string, change: string):
+        () => boolean {
+        const sprite = Util.checkSpriteExistence(t, spriteName);
+        const variable = sprite.getVariable(varName);
+        if (variable == undefined) {
+            throw new Error("Variable " + varName + " is not defined on sprite " + spriteName + ".");
+        }
+        return () => {
+            const sprite = Util.checkSpriteExistence(t, spriteName);
             const variable = sprite.getVariable(varName);
             let result;
 
@@ -191,17 +255,22 @@ export class Checks {
     /**
      * Get a method checking whether an attribute of a sprite changed.
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText;
+     * @param t Instance of the test driver.
      * @param spriteName Name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
      * @param negated Whether this check is negated.
      */
-    static getAttributeChangeCheck(negated: boolean, spriteName: string, attrName: string, change: string):
-        (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
-            let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            const newValue = eval('sprite.' + attrName);
-            const oldValue = eval('sprite.old.' + attrName);
+    static getAttributeChangeCheck(t: TestDriver, negated: boolean, spriteName: string, attrName: string, change: string):
+        () => boolean {
+        Util.checkAttributeExistence(t, spriteName, attrName);
+        const currentValueEval = "sprite." + attrName;
+        const oldValueEval = "sprite.old." + attrName;
+
+        return () => {
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+            const newValue = eval(currentValueEval);
+            const oldValue = eval(oldValueEval);
 
             if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge() && newValue === oldValue
                 && change != "=") {
@@ -224,13 +293,14 @@ export class Checks {
 
     /**
      * Get a method checking whether the background of the stage changed.
+     * @param t Instance of the test driver.
      * @param newBackground Name of the new background.
      * @param negated Whether this check is negated.
      */
-    static getBackgroundChangeCheck(negated: boolean, newBackground: string): (testDriver: TestDriver) => boolean {
-        return function (testDriver: TestDriver) {
+    static getBackgroundChangeCheck(t: TestDriver, negated: boolean, newBackground: string): () => boolean {
+        return () => {
             // todo how to get the background
-            let stage = testDriver.getStage();
+            const stage = t.getStage();
             // stage.
             return negated;
         }
@@ -238,24 +308,28 @@ export class Checks {
 
     /**
      * Get a method starting a wait duration on the given model.
+     * @param t Instance of the test driver.
      * @param seconds Seconds to wait for.
      */
-    static getWaitStarter(seconds: number):
-        (testDriver: TestDriver, model: ProgramModel) => boolean {
-        let milliseconds = seconds * 1000;
+    static getWaitStarter(t: TestDriver, seconds: number): (model: ProgramModel) => boolean {
+        if (!Util.testNumber(seconds) && seconds > 0) {
+            throw new Error("Effect Wait seconds argument not a number.");
+        }
+
+        const milliseconds = seconds * 1000;
         let startTime = -1;
-        return function (testDriver: TestDriver, model: ProgramModel) {
+
+        return (model: ProgramModel) => {
             // called again after the wait
             if (startTime != -1) {
                 startTime = -1;
                 return true;
             }
 
-            startTime = testDriver.getRealRunTimeElapsed();
+            startTime = t.getRealRunTimeElapsed();
             // function for the main step of the model to evaluate whether to stop waiting
-            let waitFunction = () => {
-                let currentRealRunTime = testDriver.getRealRunTimeElapsed();
-                return currentRealRunTime > startTime + milliseconds;
+            const waitFunction = () => {
+                return t.getRealRunTimeElapsed() > startTime + milliseconds;
             }
             model.waitEffectStart(waitFunction);
             return false;

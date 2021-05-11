@@ -39,7 +39,8 @@ export class ModelNode {
         }
 
         for (let i = 0; i < this.outgoing.length; i++) {
-            if (this.outgoing[i].checkConditions(testDriver, modelResult).length == 0) {
+            const result = this.outgoing[i].checkConditions(testDriver, modelResult);
+            if (result && result.length == 0) {
                 return this.outgoing[i];
             }
         }
@@ -48,21 +49,11 @@ export class ModelNode {
     }
 
     /**
-     * Check existences of sprites, existences of variables and ranges of arguments.
-     * @param testDriver Instance of the test driver.
+     * Register the check listener and test driver.
      */
-    testEdgesForErrors(testDriver: TestDriver) {
+    registerComponents(checkListener: CheckListener, testDriver: TestDriver, result: ModelResult) {
         this.outgoing.forEach(edge => {
-            edge.testEdgeForErrors(testDriver);
-        })
-    }
-
-    /**
-     * Register the condition state.
-     */
-    registerCheckListener(checkListener: CheckListener) {
-        this.outgoing.forEach(edge => {
-            edge.registerCheckListener(checkListener);
+            edge.registerComponents(checkListener, testDriver, result);
         })
     }
 
