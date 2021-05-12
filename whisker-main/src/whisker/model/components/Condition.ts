@@ -15,8 +15,7 @@ export enum ConditionName {
     SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
     SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
     Function = "Function", // args: js test function as a string
-    Nothing = "Nothing" // instead of green flag event mostly
-}
+} // todo add output condition
 
 /**
  * Evaluate the conditions for the given edge.
@@ -49,7 +48,7 @@ export function getCondition(condString): Condition {
 
     const parts = condString.split(":");
 
-    if (parts.length < 2 && condString != ConditionName.Nothing) {
+    if (parts.length < 2) {
         throw new Error("Edge condition not correctly formatted. ':' missing.");
     }
     return new Condition(parts[0], negated, parts.splice(1, parts.length));
@@ -109,8 +108,6 @@ export class Condition {
             case ConditionName.AttrComp:
                 testArgs(4);
                 break;
-            case ConditionName.Nothing:
-                break;
             default:
                 throw new Error("Condition type not recognized: " + this.name);
         }
@@ -152,11 +149,6 @@ export class Condition {
                 case ConditionName.Function:
                     this._condition = Checks.getFunctionCheck(t, this.negated, this.args[0]);
                     break;
-                case ConditionName.Nothing:
-                    this._condition = (cs) => {
-                        return true;
-                    };
-                    break;
             }
         } catch (e) {
             console.error(e);
@@ -197,9 +189,6 @@ export class Condition {
      * Get a compact representation for this condition for edge tracing.
      */
     toString() {
-        if (this.name == ConditionName.Nothing) {
-            return "no condition";
-        }
         let result = this.name + "(";
 
         if (this.args.length == 1) {

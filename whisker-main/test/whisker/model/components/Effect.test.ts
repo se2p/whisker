@@ -22,13 +22,7 @@ describe('Effect', () => {
             new Effect(EffectName.Function, true, []);
         }).toThrow()
         expect(() => {
-            new Effect(EffectName.Wait, true, []);
-        }).toThrow()
-        expect(() => {
             new Effect(EffectName.Function, true, [undefined]);
-        }).toThrow()
-        expect(() => {
-            new Effect(EffectName.Wait, true, [undefined]);
         }).toThrow()
     })
 
@@ -90,7 +84,6 @@ describe('Effect', () => {
             new Effect(EffectName.AttrChange, true, ["test", "attr", "-"]);
             new Effect(EffectName.BackgroundChange, true, ["test"]);
             new Effect(EffectName.Function, true, ["test"]);
-            new Effect(EffectName.Wait, true, ["2"]);
         }).not.toThrow();
     })
 

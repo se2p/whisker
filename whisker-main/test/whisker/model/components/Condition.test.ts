@@ -36,10 +36,6 @@ describe('Condition', () => {
         expect(() => {
             new Condition(ConditionName.AttrComp, true, []);
         }).toThrow()
-
-        expect(() => {
-            new Condition(ConditionName.Nothing, true, []);
-        }).not.toThrow()
     })
 
     test("not enough arguments: sprite color", () => {
@@ -136,7 +132,6 @@ describe('Condition', () => {
             new Condition(ConditionName.Function, true, ["()=>{return null;}"]);
             new Condition(ConditionName.VarComp, true, ["sprite", "var", ">", "0"]);
             new Condition(ConditionName.AttrComp, true, ["sprite", "attr", ">", "0"]);
-            new Condition(ConditionName.Nothing, true, []);
         }).not.toThrow();
     })
 

@@ -30,7 +30,6 @@ export class ProgramModel {
 
     private edgesToCheck: ModelEdge[]; // edge with the failed effects
 
-    private waitingFunction: () => boolean = undefined;
     protected coverageCurrentRun: { [key: string]: boolean } = {};
     protected coverageTotal: { [key: string]: boolean } = {};
 
@@ -58,15 +57,7 @@ export class ProgramModel {
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
     makeTransitions(testDriver: TestDriver, modelResult: ModelResult): ModelEdge[] {
-        // wait effect
-        if (this.waitingFunction) {
-            if (!this.waitingFunction()) {
-                // still waiting
-                return [];
-            } else {
-                this.waitingFunction = undefined;
-            }
-        }
+        let edge = this.currentState.testEdgeConditions(testDriver, modelResult);
 
         let transitions = [];
 
@@ -122,10 +113,6 @@ export class ProgramModel {
             covered: covered,
             total: Object.keys(this.coverageTotal).length
         }
-    }
-
-    waitEffectStart(waitCheck) {
-        this.waitingFunction = waitCheck
     }
 
     /**

@@ -11,8 +11,7 @@ export enum EffectName {
     VarComp = "VarComp",// this.args: sprite name, variable name, comparison (=,>,<...), value to compare to
     AttrComp = "AttrComp",// this.args: sprite name, attribute name, comparison (=,>,<...), value to compare to
     BackgroundChange = "BackgroundChange",
-    Function = "Function",
-    Wait = "Wait" // wait in one the model, seconds
+    Function = "Function"
 }
 
 /**
@@ -94,7 +93,6 @@ export class Effect {
                 break;
             case EffectName.BackgroundChange:
             case EffectName.Function:
-            case EffectName.Wait:
                 testArgs(1);
                 break;
             case EffectName.AttrComp:
@@ -108,10 +106,9 @@ export class Effect {
 
     /**
      * Check the edge effect has happened.
-     * @param model The model this effect belongs to.
      */
-    check(model: ProgramModel): boolean {
-        return this._effect(model);
+    check(): boolean {
+        return this._effect();
     }
 
     /**
@@ -123,9 +120,6 @@ export class Effect {
                 case EffectName.AttrComp:
                     this._effect = Checks.getAttributeComparisonCheck(t, this.negated, this.args[0], this.args[1],
                         this.args[2], this.args[3]);
-                    break;
-                case EffectName.Wait:
-                    this._effect = Checks.getWaitStarter(t, this.args[0]);
                     break;
                 case EffectName.AttrChange:
                     this._effect = Checks.getAttributeChangeCheck(t, this.negated, this.args[0], this.args[1], this.args[2]);
