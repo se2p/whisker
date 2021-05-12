@@ -28,7 +28,7 @@ export class ProgramModel {
     protected readonly nodes: { [key: string]: ModelNode };
     protected readonly edges: { [key: string]: ModelEdge };
 
-    private effectsToCheck: ModelEdge[]; // edge with the failed effects
+    private edgesToCheck: ModelEdge[]; // edge with the failed effects
 
     private waitingFunction: () => boolean = undefined;
     protected coverageCurrentRun: { [key: string]: boolean } = {};
@@ -81,7 +81,7 @@ export class ProgramModel {
             this.coverageTotal[edge.id] = true;
 
             transitions.push(edge);
-            this.effectsToCheck.push(edge);
+            this.edgesToCheck.push(edge);
             if (this.currentState != edge.getEndNode()) {
                 this.currentState = edge.getEndNode();
             } else {
@@ -140,7 +140,7 @@ export class ProgramModel {
      */
     reset(): void {
         this.currentState = this.startNode;
-        this.effectsToCheck = [];
+        this.edgesToCheck = [];
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
@@ -171,37 +171,36 @@ export class ProgramModel {
      * fulfilled.
      */
     checkEffects(testDriver: TestDriver, modelResult: ModelResult) {
-        if (this.effectsToCheck.length == 0) {
+        if (this.edgesToCheck.length == 0) {
             return;
         }
 
         let newEffectsToCheck = [];
-        for (let i = 0; i < this.effectsToCheck.length; i++) {
-            let result = this.effectsToCheck[i].checkEffects(testDriver, modelResult, this);
+        for (let i = 0; i < this.edgesToCheck.length; i++) {
+            let edge = this.edgesToCheck[i];
+            let result = edge.checkEffects(testDriver, modelResult, this);
+
+
+            // failed some effect
             if (result && result.length > 0) {
-                newEffectsToCheck.push(this.effectsToCheck[i]);
+
+
+                // if it failed more than allowed by the leeway
+                if (edge.numberOfEffectFailures > EFFECT_LEEWAY) {
+                    // make a wonderful output
+                    let output = "Effects:";
+                    for (let i = 0; i < edge.failedEffects.length; i++) {
+                        output = output + " [" + i + "]" + edge.failedEffects[i].toString();
+                    }
+
+                    output = "Effect failed. Edge: '" + edge.id + "'. " + output;
+                    console.error(output, testDriver.getTotalStepsExecuted());
+                    modelResult.error.push(new Error(output));
+                } else {
+                    newEffectsToCheck.push(this.edgesToCheck[i]);
+                }
             }
         }
-        this.effectsToCheck = newEffectsToCheck;
-        if (this.effectsToCheck.length == 0) {
-            return;
-        }
-
-        // if it failed more than allowed by the leeway
-        if (this.effectsToCheck[0].numberOfEffectFailures > EFFECT_LEEWAY) {
-            // make a wonderful output
-            let failedEdge = this.effectsToCheck[0];
-            let output = "Effects:";
-            for (let i = 0; i < failedEdge.failedEffects.length; i++) {
-                output = output + " [" + i + "]" + failedEdge.failedEffects[i].toString();
-            }
-
-            output = "Effect failed. Edge: '" + failedEdge.id + "'. " + output;
-
-            // remove it to not check again
-            this.effectsToCheck = this.effectsToCheck.splice(1, this.effectsToCheck.length);
-            console.error(output, testDriver.getTotalStepsExecuted());
-            modelResult.error.push(new Error(output));
-        }
+        this.edgesToCheck = newEffectsToCheck;
     }
 }
