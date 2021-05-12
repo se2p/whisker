@@ -5,8 +5,7 @@ import TestDriver from "../../../test/test-driver";
  */
 export class CheckListener {
     private testDriver: TestDriver;
-    private checks: ((sprite) => void)[] = [];
-    private keyToCheck: string[] = [];
+    private checks: (() => void)[] = [];
 
     private touched: { [key: string]: boolean } = {};
     private colorTouched: { [key: string]: boolean } = {};
@@ -33,16 +32,16 @@ export class CheckListener {
 
     private _registerTouching(spriteName1: string, spriteName2: string): void {
         let touchingString = CheckListener.getTouchingString(spriteName1, spriteName2);
-        this.touched[touchingString] = false;
 
-        let fun = (sprite) => {
-            if (sprite.name == spriteName1 && sprite.isTouchingSprite(spriteName2)) {
-                this.touched[touchingString] = true;
-            }
-        };
+        if (!this.touched[touchingString]) {
+            this.touched[touchingString] = false;
 
-        this.checks.push(fun);
-        this.testDriver.addModelSpriteMoved(fun);
+            this.testDriver.addModelSpriteMoved((sprite) => {
+                if (sprite.name == spriteName1 && sprite.isTouchingSprite(spriteName2)) {
+                    this.touched[touchingString] = true;
+                }
+            });
+        }
     }
 
     /**
@@ -54,16 +53,16 @@ export class CheckListener {
      */
     registerColor(spriteName: string, r: number, g: number, b: number): void {
         let colorString = CheckListener.getColorString(spriteName, r, g, b);
-        this.colorTouched[colorString] = false;
 
-        let fun = (sprite) => {
-            if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
-                this.colorTouched[colorString] = true;
-            }
-        };
+        if (!this.colorTouched[colorString]) {
+            this.colorTouched[colorString] = false;
 
-        this.checks.push(fun);
-        this.testDriver.addModelSpriteMoved(fun);
+            this.testDriver.addModelSpriteMoved((sprite) => {
+                if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
+                    this.colorTouched[colorString] = true;
+                }
+            });
+        }
     }
 
     /**
@@ -71,22 +70,24 @@ export class CheckListener {
      * @param keyName Name of the key.
      */
     registerKeyCheck(keyName: string) {
-        this.keyBeforeStep[keyName] = false;
+        if (!this.keyBeforeStep[keyName]) {
+            this.keyBeforeStep[keyName] = false;
 
-        if (this.keyToCheck.indexOf(keyName) == -1) {
-            this.keyToCheck.push(keyName);
+            this.checks.push(() => {
+                if (this.testDriver.isKeyDown(keyName)) {
+                    this.keyBeforeStep[keyName] = true;
+                }
+            })
         }
     }
 
     /**
      * Test the keys that are active before a step and save them.
      */
-    testKeys() {
-        this.keyToCheck.forEach(keyName => {
-            if (this.testDriver.isKeyDown(keyName)) {
-                this.keyBeforeStep[keyName] = true;
-            }
-        })
+    testsBeforeStep() {
+        this.checks.forEach(fun => {
+            fun()
+        });
     }
 
     /**

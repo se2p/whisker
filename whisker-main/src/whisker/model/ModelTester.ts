@@ -87,8 +87,8 @@ export class ModelTester extends EventEmitter {
     //  bananas thrown, although it is still on red...
 
     private async addCallbacks(testDriver: TestDriver) {
-        let keyCallback = testDriver.addModelCallback(() => {
-            this.checkListener.testKeys();
+        let beforeStepCallback = testDriver.addModelCallback(() => {
+            this.checkListener.testsBeforeStep();
         }, false, "testKeys");
 
         let constraintCallback;
@@ -131,7 +131,7 @@ export class ModelTester extends EventEmitter {
         let stoppedFunction = () => {
             if (endTimer == 0) {
                 modelStoppedCallback.disable();
-                keyCallback.disable();
+                beforeStepCallback.disable();
                 if (this.constraintsModel) {
                     constraintCallback.disable();
                 }
