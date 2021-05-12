@@ -2,6 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckListener} from "./CheckListener";
 import {ProgramModel} from "../components/ProgramModel";
 import {Util} from "./Util";
+import Sprite from "../../../vm/sprite";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -42,7 +43,8 @@ export class Checks {
     static getSpriteClickedCheck(t: TestDriver, negated: boolean, spriteName: string): () => boolean {
         Util.checkSpriteExistence(t, spriteName);
         return () => {
-            if (t.isMouseDown() && t.getSprite(spriteName).isTouchingMouse()) {
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+            if (t.isMouseDown() && sprite.isTouchingMouse()) {
                 return !negated;
             }
             return negated;
@@ -272,8 +274,7 @@ export class Checks {
             const newValue = eval(currentValueEval);
             const oldValue = eval(oldValueEval);
 
-            if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge() && newValue === oldValue
-                && change != "=") {
+            if (Checks.cannotMoveOnEdge(sprite, attrName, newValue, oldValue, change)) {
                 return !negated;
             }
 
@@ -289,6 +290,15 @@ export class Checks {
             }
             return negated;
         }
+    }
+
+    private static cannotMoveOnEdge(sprite: Sprite, attrName: string, newValue: number, oldValue: number, change: string): boolean {
+        if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge() && newValue === oldValue
+            && change != "=") {
+            return ((change == '+' || change == '++') && newValue > 0)
+                || ((change == '-' || change == '--') && newValue < 0);
+        }
+        return false;
     }
 
     /**
