@@ -21,97 +21,40 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {KeyPressEvent} from "./events/KeyPressEvent";
 import {ScratchEvent} from "./ScratchEvent";
+import {WaitEvent} from "./events/WaitEvent";
+import {KeyPressEvent} from "./events/KeyPressEvent";
+import {Container} from "../utils/Container";
 import {KeyDownEvent} from "./events/KeyDownEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {MouseMoveToEvent} from "./events/MouseMoveToEvent";
 import {MouseDownEvent} from "./events/MouseDownEvent";
-import {TypeTextEvent} from "./events/TypeTextEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
-import {WaitEvent} from "./events/WaitEvent";
+import {TypeTextEvent} from "./events/TypeTextEvent";
 import {Randomness} from "../utils/Randomness";
-import {Container} from "../utils/Container";
 
-export class ScratchEventExtractor {
 
-    private static availableWaitDurations = new List<number>();
-    private static availableTextSnippets = new List<string>();
-    private static proceduresMap = new Map<string, List<ScratchEvent>>();
+export abstract class ScratchEventExtractor {
 
-    static hasEvents(vm: VirtualMachine): boolean {
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
-                        return true;
-                    }
-                }
-            }
-        }
+    protected availableTextSnippets = new List<string>();
+    protected availableWaitDurations = new List<number>();
+    protected proceduresMap = new Map<string, List<ScratchEvent>>();
 
-        return false;
+    constructor(vm: VirtualMachine) {
+        this.extractAvailableDurations(vm);
+        this.extractAvailableTextSnippets(vm);
+        this.extractProcedures(vm);
     }
 
     /**
-     * Checks if the Scratch project has a mouseMove event
+     * Returns all applicable events
      * @param vm the Scratch-VM of the project
-     * @return true if the project has a mouseMove event
+     * @return a list of applicable events
      */
-    static hasMouseEvent(vm: VirtualMachine): boolean {
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
-                        return true;
-                }
-            }
-        }
-        return false;
-    }
+    public abstract extractEvents(vm: VirtualMachine): List<ScratchEvent>;
 
-    static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        const eventList = new List<ScratchEvent>();
-
-        // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
-        // of the procedure definition script.
-        for (const target of vm.runtime.targets) {
-            for (const scriptId of target.sprite.blocks.getScripts()) {
-                const hatBlock = target.blocks.getBlock(scriptId);
-                eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
-                if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
-                    const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
-                    if(!this.proceduresMap.has(proccode)) {
-                        const procedureEvents = new List<ScratchEvent>();
-                        this.traverseBlocks(target, hatBlock, procedureEvents);
-                        this.proceduresMap.set(proccode, procedureEvents)
-                    }
-                }
-            }
-        }
-
-        // Check all blocks within scripts currently executing
-        for (const t of vm.runtime.threads) {
-            const target = t.target;
-            const block = target.blocks.getBlock(t.topBlock);
-            // Sometimes we encounter undefined blocks here?
-            if (block)
-                this.traverseBlocks(target, block, eventList);
-        }
-
-        // TODO: In some programs without event handlers no waits are chosen
-        //       maybe because the execution of the greenflag scripts
-        //       is too quick? A nicer solution would be good.
-        if (eventList.isEmpty() && !this.availableWaitDurations.isEmpty()) {
-            for (const duration of this.availableWaitDurations) {
-                eventList.add(new WaitEvent(duration));
-            }
-        }
-
-        return eventList.distinctObjects();
-    }
 
     /**
      * Traverse downwards the block hierarchy and collect all encountered events.
@@ -119,7 +62,7 @@ export class ScratchEventExtractor {
      * @param block the current block which will be checked for events
      * @param foundEvents collects the encountered Events
      */
-    private static traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
+    protected traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
 
         while (block) {
             foundEvents.addList(this._extractEventsFromBlock(target, block))
@@ -163,46 +106,9 @@ export class ScratchEventExtractor {
         };
     }
 
-    /**
-     * Collects all available text snippets that can be used for generating answers.
-     */
-    static extractAvailableTextSnippets(vm: VirtualMachine): void {
-        this.availableTextSnippets = new List<string>();
-        // TODO: Text length with random length?
-        this.availableTextSnippets.add(this._randomText(3)); // TODO: Any hints on text?
-
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    const snippet = this._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
-                    if (snippet != '' && !this.availableTextSnippets.contains(snippet))
-                        this.availableTextSnippets.add(snippet);
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Collects all available durations that can be used for wait events
-     */
-    static extractAvailableDurations(vm: VirtualMachine): void {
-        this.availableWaitDurations = new List<number>();
-
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
-                    if (duration > 0 && !this.availableWaitDurations.contains(duration))
-                        this.availableWaitDurations.add(duration);
-                }
-            }
-        }
-    }
-
 
     // TODO: How to handle event parameters?
-    static _extractEventsFromBlock(target, block): List<ScratchEvent> {
+    protected _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         if (typeof block.opcode === 'undefined') {
             return eventList;
@@ -286,11 +192,147 @@ export class ScratchEventExtractor {
         return eventList;
     }
 
+
+    /**
+     * Collects all available text snippets that can be used for generating answers.
+     */
+    public extractAvailableTextSnippets(vm: VirtualMachine): void {
+        this.availableTextSnippets = new List<string>();
+        // TODO: Text length with random length?
+        this.availableTextSnippets.add(this._randomText(3)); // TODO: Any hints on text?
+
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    const snippet = this._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
+                    if (snippet != '' && !this.availableTextSnippets.contains(snippet))
+                        this.availableTextSnippets.add(snippet);
+                }
+            }
+        }
+    }
+
+    /**
+     * Collects all available durations that can be used for wait events
+     */
+    public extractProcedures(vm: VirtualMachine): void {
+        // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
+        // of the procedure definition script.
+        for (const target of vm.runtime.targets) {
+            for (const scriptId of target.sprite.blocks.getScripts()) {
+                const hatBlock = target.blocks.getBlock(scriptId);
+
+                if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
+                    const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
+                    if(!this.proceduresMap.has(proccode)) {
+                        const procedureEvents = new List<ScratchEvent>();
+                        this.traverseBlocks(target, hatBlock, procedureEvents);
+                        this.proceduresMap.set(proccode, procedureEvents)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Collects all available durations that can be used for wait events
+     */
+    public extractAvailableDurations(vm: VirtualMachine): void {
+        this.availableWaitDurations = new List<number>();
+
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
+                    if (duration > 0 && !this.availableWaitDurations.contains(duration))
+                        this.availableWaitDurations.add(duration);
+                }
+            }
+        }
+    }
+
+
+    protected _randomText(length: number): string {
+        let answer = '';
+        const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
+        for (let i = 0; i < length; i++) {
+            answer += chars.charAt(Randomness.getInstance().nextInt(0, chars.length - 1));
+        }
+
+        return answer;
+    }
+
+    private _extractWaitDurations(target, block): number {
+        const inputs = target.blocks.getInputs(block);
+        if (target.blocks.getOpcode(block) == 'control_wait') {
+            const op = target.blocks.getBlock(inputs.DURATION.block);
+            const field = target.blocks.getFields(op).NUM;
+            if (!field) {
+                return -1;
+            }
+            return 1000 * parseFloat(field.value);
+        } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
+            target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
+            target.blocks.getOpcode(block) == 'motion_glideto' ||
+            target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
+            const op = target.blocks.getBlock(inputs.SECS.block);
+            const field = target.blocks.getFields(op).NUM;
+            if (!field) {
+                return -1;
+            }
+            return 1000 * parseFloat(field.value);
+        }
+        return -1;
+    }
+
+    private _extractAvailableTextSnippets(target, block): string {
+        let availableTextSnippet = '';
+        if (target.blocks.getOpcode(block) == 'operator_equals') {
+            const inputs = target.blocks.getInputs(block);
+            const op1 = target.blocks.getBlock(inputs.OPERAND1.block);
+            const op2 = target.blocks.getBlock(inputs.OPERAND2.block);
+
+            if (target.blocks.getOpcode(op2) === 'sensing_answer' && target.blocks.getOpcode(op1) === 'text') {
+                availableTextSnippet = target.blocks.getFields(op1).TEXT.value;
+            } else if (target.blocks.getOpcode(op1) === 'sensing_answer' && target.blocks.getOpcode(op2) === 'text') {
+                availableTextSnippet = target.blocks.getFields(op2).TEXT.value;
+            }
+        }
+        return availableTextSnippet;
+    }
+
+    protected _getTypeTextEvents(): List<TypeTextEvent> {
+        const typeTextEventList = new List<TypeTextEvent>();
+        const length = this.availableTextSnippets.size();
+        for (let i = 0; i < length; i++) {
+            typeTextEventList.add(new TypeTextEvent(this.availableTextSnippets.get(i)))
+        }
+        return typeTextEventList;
+    }
+
+
+    /**
+     * Checks if the Scratch project has a mouseMove event
+     * @param vm the Scratch-VM of the project
+     * @return true if the project has a mouseMove event
+     */
+    public hasMouseEvent(vm: VirtualMachine): boolean {
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Checks if the block has a mouseMove event handler
      */
     // TODO: Search through the fields if they have the 'mouse' value
-    private static _searchForMouseEvent(target, block): boolean {
+    private _searchForMouseEvent(target, block): boolean {
         if (typeof block.opcode === 'undefined') {
             return false;
         }
@@ -304,9 +346,26 @@ export class ScratchEventExtractor {
         }
     }
 
+    /**
+     * Checks if the Scratch project has any events
+     * @param vm the Scratch-VM of the project
+     * @return true if the project has any events
+     */
+    public static hasEvents(vm: VirtualMachine): boolean {
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
+                        return true;
+                    }
+                }
+            }
+        }
 
-    static _hasEvents(target, block): boolean {
-        const fields = target.blocks.getFields(block);
+        return false;
+    }
+
+    private static _hasEvents(target, block): boolean {
         if (typeof block.opcode === 'undefined') {
             return false;
         }
@@ -346,62 +405,4 @@ export class ScratchEventExtractor {
         return false;
     }
 
-
-    private static _randomText(length: number): string {
-        let answer = '';
-        const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
-        for (let i = 0; i < length; i++) {
-            answer += chars.charAt(Randomness.getInstance().nextInt(0, chars.length - 1));
-        }
-
-        return answer;
-    }
-
-    static _extractWaitDurations(target, block): number {
-        const inputs = target.blocks.getInputs(block);
-        if (target.blocks.getOpcode(block) == 'control_wait') {
-            const op = target.blocks.getBlock(inputs.DURATION.block);
-            const field = target.blocks.getFields(op).NUM;
-            if (!field) {
-                return -1;
-            }
-            return 1000 * parseFloat(field.value);
-        } else if (target.blocks.getOpcode(block) == 'looks_sayforsecs' ||
-            target.blocks.getOpcode(block) == 'looks_thinkforsecs' ||
-            target.blocks.getOpcode(block) == 'motion_glideto' ||
-            target.blocks.getOpcode(block) == 'motion_glidesecstoxy') {
-            const op = target.blocks.getBlock(inputs.SECS.block);
-            const field = target.blocks.getFields(op).NUM;
-            if (!field) {
-                return -1;
-            }
-            return 1000 * parseFloat(field.value);
-        }
-        return -1;
-    }
-
-    private static _getTypeTextEvents(): List<TypeTextEvent> {
-        const typeTextEventList = new List<TypeTextEvent>();
-        let length = this.availableTextSnippets.size();
-        for (let i = 0; i < length; i++) {
-            typeTextEventList.add(new TypeTextEvent(this.availableTextSnippets.get(i)))
-        }
-        return typeTextEventList;
-    }
-
-    static _extractAvailableTextSnippets(target, block): string {
-        let availableTextSnippet = '';
-        if (target.blocks.getOpcode(block) == 'operator_equals') {
-            const inputs = target.blocks.getInputs(block);
-            const op1 = target.blocks.getBlock(inputs.OPERAND1.block);
-            const op2 = target.blocks.getBlock(inputs.OPERAND2.block);
-
-            if (target.blocks.getOpcode(op2) === 'sensing_answer' && target.blocks.getOpcode(op1) === 'text') {
-                availableTextSnippet = target.blocks.getFields(op1).TEXT.value;
-            } else if (target.blocks.getOpcode(op1) === 'sensing_answer' && target.blocks.getOpcode(op2) === 'text') {
-                availableTextSnippet = target.blocks.getFields(op2).TEXT.value;
-            }
-        }
-        return availableTextSnippet;
-    }
 }
