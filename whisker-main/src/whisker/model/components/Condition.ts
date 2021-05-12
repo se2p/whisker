@@ -9,7 +9,9 @@ export enum ConditionName {
     Key = "Key", // args: key name
     Click = "Click", // args: sprite name
     VarComp = "VarComp", // args: sprite name, variable name, comparison (=,>,<...), value to compare to
-    AttrComp = "AttrComp", // args: sprite name, attribute name, comparison (=,>,<...), value to compare to
+    AttrComp = "AttrComp", // args: sprite name, attribute name, comparison (=,>,<...), value to compare to,
+    VarChange = "VarChange", // sprite name, var name, ( + | - | new value)
+    AttrChange = "AttrChange", // sprite name, attr name, (+|-|new value)
     SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
     SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
     Function = "Function", // args: js test function as a string
@@ -98,6 +100,10 @@ export class Condition {
             case ConditionName.SpriteTouching:
                 testArgs(2);
                 break;
+            case ConditionName.VarChange:
+            case ConditionName.AttrChange:
+                testArgs(3);
+                break;
             case ConditionName.SpriteColor:
             case ConditionName.VarComp:
             case ConditionName.AttrComp:
@@ -136,6 +142,12 @@ export class Condition {
                 case ConditionName.AttrComp:
                     this._condition = Checks.getAttributeComparisonCheck(t, this.negated, this.args[0], this.args[1],
                         this.args[2], this.args[3]);
+                    break;
+                case ConditionName.AttrChange:
+                    this._condition = Checks.getAttributeChangeCheck(t, this.negated, this.args[0], this.args[1], this.args[2]);
+                    break;
+                case ConditionName.VarChange:
+                    this._condition = Checks.getVariableChangeCheck(t, this.negated, this.args[0], this.args[1], this.args[2]);
                     break;
                 case ConditionName.Function:
                     this._condition = Checks.getFunctionCheck(t, this.negated, this.args[0]);
