@@ -70,7 +70,6 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
                 StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
             }
         }
-        this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
         const testSuite = await this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);
         return new WhiskerTestListWithSummary(testSuite, this.summarizeSolution());
@@ -90,6 +89,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                 }
                 this._archive.set(fitnessFunctionKey, chromosome);
+                this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
                 console.log("Found test for goal: " + fitnessFunction);
             }
         }
