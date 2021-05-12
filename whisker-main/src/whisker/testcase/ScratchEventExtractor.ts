@@ -213,18 +213,17 @@ export abstract class ScratchEventExtractor {
     }
 
     /**
-     * Collects all available durations that can be used for wait events
+     * Get all hat blocks and set up the procedureMap which maps the name of a procedure
+     * to the encountered events of the procedure definition script.
      */
     public extractProcedures(vm: VirtualMachine): void {
-        // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
-        // of the procedure definition script.
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.sprite.blocks.getScripts()) {
                 const hatBlock = target.blocks.getBlock(scriptId);
 
                 if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
                     const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
-                    if(!this.proceduresMap.has(proccode)) {
+                    if (!this.proceduresMap.has(proccode)) {
                         const procedureEvents = new List<ScratchEvent>();
                         this.traverseBlocks(target, hatBlock, procedureEvents);
                         this.proceduresMap.set(proccode, procedureEvents)
