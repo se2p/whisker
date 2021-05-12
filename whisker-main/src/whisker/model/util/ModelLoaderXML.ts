@@ -164,7 +164,7 @@ export class ModelLoaderXML {
      * @private
      */
     private loadEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
-        const edgeID = edgeAttr.id;
+        const edgeID = graphID + "-" + edgeAttr.id;
         const startID = edgeAttr.source;
         const endID = edgeAttr.target;
 
@@ -179,7 +179,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "':Unknown node id '" + endID + "'.");
         }
 
-        const newEdge = new ModelEdge(graphID + "-" + edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
+        const newEdge = new ModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
 
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
