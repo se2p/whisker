@@ -4,7 +4,7 @@ import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import {ModelResult} from "../../../test-runner/test-result";
 import {ProgramModel} from "./ProgramModel";
-import {CheckListener} from "../util/CheckListener";
+import {CheckUtility} from "../util/CheckUtility";
 
 /**
  * Edge structure for a model with effects that can be triggered based on its conditions.
@@ -14,13 +14,12 @@ export class ModelEdge {
     readonly id: string;
     private readonly startNode: ModelNode;
     private readonly endNode: ModelNode;
+    private programModel: ProgramModel;
 
     conditions: Condition[] = [];
     effects: Effect[] = [];
 
-    numberOfEffectFailures: number = 0;
     failedEffects: Effect[] = [];
-    private lastStepChecked = -1;
 
     /**
      * Create a new edge.
@@ -35,15 +34,18 @@ export class ModelEdge {
     }
 
     /**
+     * Register a model that this edge belongs to.
+     * @param programModel The model..
+     */
+    registerProgramModel(programModel: ProgramModel) {
+        this.programModel = programModel;
+    }
+
+    /**
      * Test whether the conditions on this edge are fulfilled.
      * @Returns the failed conditions.
      */
     checkConditions(testDriver: TestDriver, modelResult: ModelResult): Condition[] {
-        if (this.lastStepChecked == testDriver.getTotalStepsExecuted()) {
-            return null; // dont check in the same step twice
-        }
-
-        this.lastStepChecked = testDriver.getTotalStepsExecuted();
         let failedConditions = [];
 
         for (let i = 0; i < this.conditions.length; i++) {
@@ -62,75 +64,8 @@ export class ModelEdge {
         return failedConditions;
     }
 
-    /**
-     * Run all effects of the edge.
-     */
-    checkEffects(testDriver, modelResult: ModelResult, model: ProgramModel): Effect[] {
-        if (this.failedEffects.length != 0) {
-            return this.checkFailedEffects(testDriver, model);
-        }
-
-        for (let i = 0; i < this.effects.length; i++) {
-            try {
-                if (!this.effects[i].check(model)) {
-                    this.failedEffects.push(this.effects[i]);
-                }
-            } catch (e) {
-                e.message = "Edge '" + this.id + "': " + e.message;
-                console.error(e);
-                this.failedEffects.push(this.effects[i]);
-                modelResult.error.push(e);
-            }
-        }
-
-        if (this.failedEffects.length > 0) {
-            this.numberOfEffectFailures = 1;
-        }
-
-        return this.failedEffects;
-    }
-
-    /**
-     * Recheck failed effects.
-     */
-    private checkFailedEffects(testDriver: TestDriver, model: ProgramModel): Effect[] {
-        if (this.lastStepChecked == testDriver.getTotalStepsExecuted()) {
-            return this.effects; // dont check in the same step twice
-        }
-        this.lastStepChecked = testDriver.getTotalStepsExecuted();
-
-        if (this.numberOfEffectFailures === 0) {
-            console.error("There are no failed effects to check...");
-            return this.effects;
-        }
-
-        let newFailures = [];
-        for (let i = 0; i < this.failedEffects.length; i++) {
-            try {
-                if (!this.failedEffects[i].check(model)) {
-                    newFailures.push(this.failedEffects[i]);
-                }
-            } catch (e) {
-                newFailures.push(this.failedEffects[i]);
-            }
-        }
-
-        // no new failures
-        if (newFailures.length === 0) {
-            this.failedEffects = [];
-            this.numberOfEffectFailures = 0;
-            return [];
-        } else {
-            this.numberOfEffectFailures++;
-            this.failedEffects = newFailures;
-            return this.failedEffects;
-        }
-    }
-
     reset(): void {
-        this.numberOfEffectFailures = 0;
         this.failedEffects = [];
-        this.lastStepChecked = -1;
     }
 
     /**
@@ -166,12 +101,16 @@ export class ModelEdge {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckListener, testDriver: TestDriver, result: ModelResult): void {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult): void {
         this.conditions.forEach(cond => {
             cond.registerComponents(checkListener, testDriver, result);
         })
         this.effects.forEach(effect => {
             effect.registerComponents(testDriver, result);
         })
+    }
+
+    getModel() {
+        return this.programModel;
     }
 }

@@ -36,6 +36,13 @@ describe('Condition', () => {
         expect(() => {
             new Condition(ConditionName.AttrComp, true, []);
         }).toThrow()
+
+        expect(() => {
+            new Condition(ConditionName.VarChange, true, []);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.AttrChange, true, []);
+        }).toThrow()
     })
 
     test("not enough arguments: sprite color", () => {
@@ -99,7 +106,7 @@ describe('Condition', () => {
         }).toThrow()
     })
 
-    test("not enough arguments: attribute effect", () => {
+    test("not enough arguments: attribute comparison", () => {
         expect(() => {
             new Condition(ConditionName.AttrComp, true, ["test"]);
         }).toThrow()
@@ -123,6 +130,43 @@ describe('Condition', () => {
         }).toThrow()
     })
 
+    test("not enough arguments: variable change", () => {
+        expect(() => {
+            new Condition(ConditionName.VarChange, true, ["test"]);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.VarChange, true, ["test", "test2"]);
+        }).toThrow()
+
+        expect(() => {
+            new Condition(ConditionName.VarChange, true, ["test", "test2", undefined]);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.VarChange, true, [undefined, "test", "test2"]);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.VarChange, true, ["test", undefined, "test2"]);
+        }).toThrow()
+    })
+
+    test("not enough arguments: attribute change", () => {
+        expect(() => {
+            new Condition(ConditionName.AttrChange, true, ["test"]);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.AttrChange, true, ["test", "test2"]);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.AttrChange, true, ["test", "test2", undefined]);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.AttrChange, true, ["test", undefined, "test2"]);
+        }).toThrow()
+        expect(() => {
+            new Condition(ConditionName.AttrChange, true, [undefined, "test", "test2"]);
+        }).toThrow()
+    })
+
     test("conditions", () => {
         expect(() => {
             new Condition(ConditionName.Key, true, ["test"]);
@@ -132,6 +176,8 @@ describe('Condition', () => {
             new Condition(ConditionName.Function, true, ["()=>{return null;}"]);
             new Condition(ConditionName.VarComp, true, ["sprite", "var", ">", "0"]);
             new Condition(ConditionName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+            new Condition(ConditionName.VarChange, true, ["test", "var", "+"]);
+            new Condition(ConditionName.AttrChange, true, ["test", "attr", "-"]);
         }).not.toThrow();
     })
 

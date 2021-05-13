@@ -331,17 +331,22 @@ const initEvents = function () {
     let modelLog = (msg)  => {
         Whisker.outputLog.println(msg);
     };
+    let modelWarning = (msg)  => {
+        Whisker.outputLog.println("MODEL WARNING: " + msg);
+    };
     let modelCoverage = (coverage) => {
         const formattedModelCoverage = TAP13Formatter.formatCoverage(coverage);
         Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
     }
     $('#model-logs-checkbox').on('change', event => {
         if ($(event.target).is(':checked')) {
-            Whisker.modelTester.on(ModelTester.ModelTester.LOG_MODEL, modelLog);
-            Whisker.modelTester.on(ModelTester.ModelTester.LOG_MODEL_COVERAGE, modelCoverage);
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG, modelLog);
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
         } else {
-            Whisker.modelTester.off(ModelTester.ModelTester.LOG_MODEL, modelLog);
-            Whisker.modelTester.off(ModelTester.ModelTester.LOG_MODEL_COVERAGE, modelCoverage);
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_LOG, modelLog);
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
         }
     });
     $('#toggle-advanced').on('change', event => {

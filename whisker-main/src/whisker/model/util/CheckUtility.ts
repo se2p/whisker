@@ -1,15 +1,21 @@
 import TestDriver from "../../../test/test-driver";
+import {ModelResult} from "../../../test-runner/test-result";
+import {Effect} from "../components/Effect";
+import {ModelEdge} from "../components/ModelEdge";
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
  */
-export class CheckListener {
-    private testDriver: TestDriver;
+export class CheckUtility {
+    private readonly testDriver: TestDriver;
     private checks: (() => void)[] = [];
 
     private touched: { [key: string]: boolean } = {};
     private colorTouched: { [key: string]: boolean } = {};
     private keyBeforeStep: { [key: string]: boolean } = {};
+
+    private effectChecks: Effect[] = [];
+    private failedChecks: Effect[] = [];
 
     /**
      * Get an instance of a condition state saver.
@@ -31,7 +37,7 @@ export class CheckListener {
     }
 
     private _registerTouching(spriteName1: string, spriteName2: string): void {
-        let touchingString = CheckListener.getTouchingString(spriteName1, spriteName2);
+        let touchingString = CheckUtility.getTouchingString(spriteName1, spriteName2);
 
         if (!this.touched[touchingString]) {
             this.touched[touchingString] = false;
@@ -52,7 +58,7 @@ export class CheckListener {
      * @param b RGB blue value.
      */
     registerColor(spriteName: string, r: number, g: number, b: number): void {
-        let colorString = CheckListener.getColorString(spriteName, r, g, b);
+        let colorString = CheckUtility.getColorString(spriteName, r, g, b);
 
         if (!this.colorTouched[colorString]) {
             this.colorTouched[colorString] = false;
@@ -111,8 +117,8 @@ export class CheckListener {
      * @param spriteName2 Name of the second sprite.
      */
     areTouching(spriteName1: string, spriteName2: string): boolean {
-        let combi1 = CheckListener.getTouchingString(spriteName1, spriteName2);
-        let combi2 = CheckListener.getTouchingString(spriteName2, spriteName1);
+        let combi1 = CheckUtility.getTouchingString(spriteName1, spriteName2);
+        let combi2 = CheckUtility.getTouchingString(spriteName2, spriteName1);
         return (this.touched[combi1] || this.touched[combi2]
             || this.testDriver.getSprite(spriteName1).isTouchingSprite(spriteName2));
     }
@@ -121,7 +127,7 @@ export class CheckListener {
      * Check whether a sprite is touching a color.
      */
     isTouchingColor(spriteName: string, r: number, g: number, b: number): boolean {
-        return (this.colorTouched[CheckListener.getColorString(spriteName, r, g, b)]
+        return (this.colorTouched[CheckUtility.getColorString(spriteName, r, g, b)]
             || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]));
     }
 
@@ -160,5 +166,106 @@ export class CheckListener {
                 return this._isKeyDown("up arrow");
         }
         return false;
+    }
+
+    /**
+     * Register the effects of an edge in this listener to test them later on.
+     * @param takenEdge The taken edge of a model.
+     */
+    registerEffectCheck(takenEdge: ModelEdge) {
+        takenEdge.effects.forEach(effect => {
+            this.effectChecks.push(effect);
+        })
+    }
+
+    /**
+     * Check the effects of an edge immediately and throw an error if they are not fulfilled. For the constraints model.
+     * @param edge The taken edge of the constraints model.
+     * @param modelResult To save errors into.
+     */
+    checkEffectsConstraint(edge: ModelEdge, modelResult: ModelResult) {
+        let effects = edge.effects;
+        let hadError = false;
+        for (let i = 0; i < effects.length; i++) {
+            if (!effects[i].check()) {
+                let output = "Constraint failed! " + effects[i].toString();
+                console.error(output, this.testDriver.getTotalStepsExecuted());
+                modelResult.error.push(new Error(output));
+                hadError = true;
+            }
+        }
+        if (hadError) {
+            throw new Error("Constraints failed!");
+        }
+    }
+
+    /**
+     * Check the registered effects of this step.
+     */
+    checkEffects(modelResult: ModelResult) {
+        let doNotCheck = {};
+
+        // check for contradictions in effects
+        for (let i = 0; i < this.effectChecks.length - 1; i++) {
+
+            for (let j = i + 1; j < this.effectChecks.length; j++) {
+                if (this.effectChecks[i].contradicts(this.effectChecks[j])) {
+                    doNotCheck[i] = true;
+                    doNotCheck[j] = true;
+                }
+            }
+
+            if (!doNotCheck[i]) {
+                try {
+                    if (!this.effectChecks[i].check()) {
+                        this.failedChecks.push(this.effectChecks[i]);
+                    }
+                } catch (e) {
+                    e.message = "Error in Model '" + this.effectChecks[i].edge.getModel().id + "'. Edge '"
+                        + this.effectChecks[i].edge.id + "': " + e.message;
+                    console.error(e);
+                    this.failedChecks.push(this.effectChecks[i]);
+                    modelResult.error.push(e);
+                }
+            }
+        }
+
+        // Get the contradicting edges and return them for outputs
+        let contradictingEffects = [];
+        for (let i = 0; i < this.effectChecks.length; i++) {
+            if (doNotCheck[i]) {
+                contradictingEffects.push(this.effectChecks[i]);
+            }
+        }
+        this.effectChecks = [];
+        return contradictingEffects;
+    }
+
+    /**
+     * Check the failed effects of this step.
+     */
+    checkFailedEffects(modelResult: ModelResult) {
+        if (!this.failedChecks || this.failedChecks.length == 0) {
+            return;
+        }
+
+        function makeFailedOutput(effect, testDriver) {
+            let edge = effect.edge;
+            let output = "Effect failed! Model: '" + edge.getModel().id + "'. Edge: '" + edge.id + "'. Effect: "
+                + effect.toString();
+            console.error(output, testDriver.getTotalStepsExecuted());
+            modelResult.error.push(new Error(output));
+        }
+
+        this.failedChecks.forEach(effect => {
+            try {
+                if (!effect.check()) {
+                    makeFailedOutput(this.testDriver, effect);
+                }
+            } catch (e) {
+                makeFailedOutput(this.testDriver, effect);
+            }
+        })
+        this.failedChecks = [];
     }
 }

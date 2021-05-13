@@ -3,9 +3,10 @@ import {ProgramModel} from "./components/ProgramModel";
 import {UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
-import {CheckListener} from "./util/CheckListener";
+import {CheckUtility} from "./util/CheckUtility";
 import {ModelResult} from "../../test-runner/test-result";
 import {ModelEdge} from "./components/ModelEdge";
+import {Effect} from "./components/Effect";
 
 export class ModelTester extends EventEmitter {
 
@@ -19,13 +20,14 @@ export class ModelTester extends EventEmitter {
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
-    private checkListener: CheckListener;
+    private checkUtility: CheckUtility;
     private result: ModelResult;
 
-    static readonly LOAD_ERROR = "LoadError";
-    static readonly CONSTRAINT_FAILED = "ConstraintFailed";
-    static readonly LOG_MODEL = "LogModel";
-    static readonly LOG_MODEL_COVERAGE: "LogModelCoverage";
+    static readonly MODEL_LOAD_ERROR = "ModelLoadError";
+    static readonly MODEL_CONSTRAINT_FAILED = "ModelConstraintFailed";
+    static readonly MODEL_LOG = "ModelLog";
+    static readonly MODEL_WARNING: "ModelWarning";
+    static readonly MODEL_LOG_COVERAGE: "LogModelCoverage";
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -38,7 +40,7 @@ export class ModelTester extends EventEmitter {
             this.programModels = result.programModels;
             this.userModels = result.userModels;
         } catch (e) {
-            this.emit(ModelTester.LOAD_ERROR, "Model Loader: " + e.message);
+            this.emit(ModelTester.MODEL_LOAD_ERROR, "Model Loader: " + e.message);
             throw new Error("Model Loader: " + e.message);
         }
     }
@@ -62,17 +64,17 @@ export class ModelTester extends EventEmitter {
      */
     async prepareModel(testDriver: TestDriver) {
         console.log("----Preparing model----")
-        this.emit(ModelTester.LOG_MODEL, "Preparing model...");
-        this.checkListener = new CheckListener(testDriver);
+        this.emit(ModelTester.MODEL_LOG, "Preparing model...");
+        this.checkUtility = new CheckUtility(testDriver);
         this.result = new ModelResult();
 
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
         this.programModels.forEach(model => {
             model.reset();
-            model.registerComponents(this.checkListener, testDriver, this.result);
+            model.registerComponents(this.checkUtility, testDriver, this.result);
         });
         this.constraintsModel.reset();
-        this.constraintsModel.registerComponents(this.checkListener, testDriver, this.result);
+        this.constraintsModel.registerComponents(this.checkUtility, testDriver, this.result);
 
         // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).
         if (this.result.error.length > 0) {
@@ -88,7 +90,7 @@ export class ModelTester extends EventEmitter {
 
     private async addCallbacks(testDriver: TestDriver) {
         let beforeStepCallback = testDriver.addModelCallback(() => {
-            this.checkListener.testsBeforeStep();
+            this.checkUtility.testsBeforeStep();
         }, false, "testKeys");
 
         let constraintCallback;
@@ -98,24 +100,22 @@ export class ModelTester extends EventEmitter {
         let endTimer = 1; // effects can be delayed one step
 
         let constraintFunction = () => {
+            let edge = this.constraintsModel.makeTransitions(testDriver, this.result);
             try {
-                this.constraintsModel.makeTransitions(testDriver, this.result);
+                if (edge != null) {
+                    this.checkUtility.checkEffectsConstraint(edge, this.result);
+                }
             } catch (e) {
                 constraintCallback.disable();
                 modelStepCallback.disable();
                 modelStoppedCallback.disable();
-                this.emit(ModelTester.CONSTRAINT_FAILED, e.message + "\n Model stopped for this test!");
+                this.emit(ModelTester.MODEL_CONSTRAINT_FAILED, e.message + "\n Model stopped for this test!");
             }
             if (this.constraintsModel.stopped()) {
                 constraintCallback.disable(); // there are no more to check
             }
         };
         let modelStepFunction = () => {
-            this.programModels.forEach(model => {
-                this.edgeTrace(model.makeTransitions(testDriver, this.result), testDriver);
-                model.checkEffects(testDriver, this.result);
-            });
-
             this.programModels.forEach(model => {
                 if (model.stopped()) {
                     modelStopped = true;
@@ -125,8 +125,24 @@ export class ModelTester extends EventEmitter {
             if (modelStopped) {
                 modelStepCallback.disable();
                 modelStoppedCallback.enable();
+            } else {
+                this.checkUtility.checkFailedEffects(this.result);
+                this.programModels.forEach(model => {
+                    let takenEdge = model.makeTransitions(testDriver, this.result);
+                    if (takenEdge != null) {
+                        this.checkUtility.registerEffectCheck(takenEdge);
+                        this.edgeTrace(takenEdge, testDriver);
+                    }
+                });
+                let contradictingEffects = this.checkUtility.checkEffects(this.result);
+                if (contradictingEffects && contradictingEffects.length > 0) {
+                    let output = this.contradictingEffectsOutput(contradictingEffects);
+                    console.error("EFFECTS CONTRADICTING", output);
+                    this.result.log.push("EFFECTS CONTRADICTING" + output);
+                    this.emit(ModelTester.MODEL_WARNING, output);
+                }
             }
-            this.checkListener.reset();
+            this.checkUtility.reset();
         }
         let stoppedFunction = () => {
             if (endTimer == 0) {
@@ -136,10 +152,8 @@ export class ModelTester extends EventEmitter {
                     constraintCallback.disable();
                 }
             } else {
-                this.programModels.forEach(model => {
-                    model.checkEffects(testDriver, this.result);
-                })
-                this.checkListener.reset();
+                this.checkUtility.checkFailedEffects(this.result);
+                this.checkUtility.reset();
                 endTimer--;
             }
         }
@@ -157,26 +171,24 @@ export class ModelTester extends EventEmitter {
         modelStoppedCallback.disable(); // is started when models stop
     }
 
-    private edgeTrace(transitions: ModelEdge[], testDriver: TestDriver) {
-        transitions.forEach(edge => {
-            if (!edge.id.startsWith("bowl")) { // todo change this later on
-                let edgeID = edge.id;
-                let conditions = edge.conditions;
-                let edgeTrace = "'" + edgeID + "':";
-                for (let i = 0; i < conditions.length; i++) {
-                    edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
-                }
-                if (edge.effects.length > 0) {
-                    edgeTrace = edgeTrace + " => ";
-                    for (let i = 0; i < edge.effects.length; i++) {
-                        edgeTrace = edgeTrace + " [" + i + "] " + edge.effects[i].toString();
-                    }
-                }
-                this.result.edgeTrace.push(edgeTrace); //todo
-                this.emit(ModelTester.LOG_MODEL, "- Edge trace: " + edgeTrace);
-                console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
+    private edgeTrace(transition: ModelEdge, testDriver: TestDriver) {
+        if (!transition.id.startsWith("bowl")) { // todo change this later on
+            let edgeID = transition.id;
+            let conditions = transition.conditions;
+            let edgeTrace = "'" + edgeID + "':";
+            for (let i = 0; i < conditions.length; i++) {
+                edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
             }
-        });
+            if (transition.effects.length > 0) {
+                edgeTrace = edgeTrace + " => ";
+                for (let i = 0; i < transition.effects.length; i++) {
+                    edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
+                }
+            }
+            this.result.edgeTrace.push(edgeTrace); //todo
+            this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
+            console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
+        }
     }
 
     /**
@@ -187,7 +199,7 @@ export class ModelTester extends EventEmitter {
             if (model.stopped()) {
                 console.log("Model '" + model.id + "' stopped.");
                 this.result.log.push("Model '" + model.id + "' stopped.");
-                this.emit(ModelTester.LOG_MODEL, "---Model '" + model.id + "' stopped.");
+                this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
             }
         });
         const sprites = testDriver.getSprites(undefined, false);
@@ -201,16 +213,16 @@ export class ModelTester extends EventEmitter {
             })
         })
         if (log.length > 1) {
-            this.emit(ModelTester.LOG_MODEL, log.join("\n"));
+            this.emit(ModelTester.MODEL_LOG, log.join("\n"));
         }
-        this.emit(ModelTester.LOG_MODEL, "--- Model Coverage");
+        this.emit(ModelTester.MODEL_LOG, "--- Model Coverage");
         let coverages = {};
         coverages["constraints"] = this.constraintsModel.getCoverageCurrentRun();
         this.programModels.forEach(model => {
             coverages[model.id] = model.getCoverageCurrentRun();
             this.result.coverage[model.id] = coverages[model.id];
         })
-        this.emit(ModelTester.LOG_MODEL_COVERAGE, coverages);
+        this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
         console.log(this.result)
         return this.result;
     }
@@ -225,5 +237,13 @@ export class ModelTester extends EventEmitter {
             coverage[model.id] = model.getTotalCoverage();
         })
         return coverage;
+    }
+
+    private contradictingEffectsOutput(contradictingEffects: Effect[]): string{
+        let output = "Model had to check contradicting effects! Skipping these.";
+        contradictingEffects.forEach(effect => {
+            output += "\n -- " + effect.toString();
+        })
+        return output;
     }
 }

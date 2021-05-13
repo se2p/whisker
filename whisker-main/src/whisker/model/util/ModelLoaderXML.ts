@@ -5,7 +5,6 @@ import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {setUpCondition} from "../components/Condition";
 import {setUpEffect} from "../components/Effect";
-import {ConstraintsModel} from "../components/ConstraintsModel";
 
 /**
  * Load models from a xml file.
@@ -48,7 +47,7 @@ export class ModelLoaderXML {
     private edgesMap: { [key: string]: ModelEdge };
     private graphIDs: string[];
 
-    private constraints: ConstraintsModel;
+    private constraints: ProgramModel;
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
@@ -116,14 +115,22 @@ export class ModelLoaderXML {
 
         switch (graph._attributes.usage) {
             case ModelLoaderXML.PROGRAM_MODEL_ID:
-                this.programModels.push(new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
-                    this.edgesMap))
+                let model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
+                    this.edgesMap)
+                this.programModels.push(model);
+                for (let edgesMapKey in this.edgesMap) {
+                    this.edgesMap[edgesMapKey].registerProgramModel(model);
+                }
                 break;
             case ModelLoaderXML.USER_MODEL_ID:
                 this.userModels.push(new UserModel(graphID));// todo
                 break;
             case ModelLoaderXML.CONSTRAINTS_MODEL_ID:
-                this.constraints = new ConstraintsModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMap);
+                this.constraints = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
+                    this.edgesMap);
+                for (let edgesMapKey in this.edgesMap) {
+                    this.edgesMap[edgesMapKey].registerProgramModel(this.constraints);
+                }
                 break;
         }
     }

@@ -1,10 +1,9 @@
 import {ModelNode} from "./ModelNode";
 import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
-import {CheckListener} from "../util/CheckListener";
+import {CheckUtility} from "../util/CheckUtility";
 import {ModelResult} from "../../../test-runner/test-result";
 
-const EFFECT_LEEWAY = 1;
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -27,8 +26,6 @@ export class ProgramModel {
     protected readonly stopNodes: { [key: string]: ModelNode }; // delete?
     protected readonly nodes: { [key: string]: ModelNode };
     protected readonly edges: { [key: string]: ModelEdge };
-
-    private edgesToCheck: ModelEdge[]; // edge with the failed effects
 
     protected coverageCurrentRun: { [key: string]: boolean } = {};
     protected coverageTotal: { [key: string]: boolean } = {};
@@ -56,30 +53,15 @@ export class ProgramModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeTransitions(testDriver: TestDriver, modelResult: ModelResult): ModelEdge[] {
+    makeTransitions(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
         let edge = this.currentState.testEdgeConditions(testDriver, modelResult);
 
-        let transitions = [];
-
-        while (true) {
-            // ask the current node for a valid transition
-            let edge = this.currentState.testEdgeConditions(testDriver, modelResult);
-
-            if (!edge) {
-                break;
-            }
+        if (edge != null) {
             this.coverageCurrentRun[edge.id] = true;
             this.coverageTotal[edge.id] = true;
-
-            transitions.push(edge);
-            this.edgesToCheck.push(edge);
-            if (this.currentState != edge.getEndNode()) {
-                this.currentState = edge.getEndNode();
-            } else {
-                break;
-            }
+            this.currentState = edge.getEndNode();
         }
-        return transitions;
+        return edge;
     }
 
     /**
@@ -94,7 +76,7 @@ export class ProgramModel {
         }
         return {
             covered: covered,
-            total: Object.keys(this.coverageCurrentRun).length
+            total: Object.keys(this.edges).length
         }
     }
 
@@ -111,7 +93,7 @@ export class ProgramModel {
         }
         return {
             covered: covered,
-            total: Object.keys(this.coverageTotal).length
+            total: Object.keys(this.edges).length
         }
     }
 
@@ -127,7 +109,6 @@ export class ProgramModel {
      */
     reset(): void {
         this.currentState = this.startNode;
-        this.edgesToCheck = [];
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
@@ -139,55 +120,9 @@ export class ProgramModel {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckListener, testDriver: TestDriver, result: ModelResult) {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult) {
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(checkListener, testDriver, result);
         })
-    }
-
-    /**
-     * Check the effects that are still missing.
-     * Edges are taken when conditions are met, that means e.g. a key was active. The effect of the edge is tested
-     * in the same step the condition was tested. If it fails, it is again tested the next three steps. If it is
-     * only late it then accepts. While it tests these three steps other edges can be taken. Their effects are also
-     * tested. After the three steps the effect is reported as missing.
-     *
-     * If the effect is missing and tested for in the next three steps and another edge with the same effect is
-     * taken, the effect has to be fulfilled in two different steps. Therefore, dont test the same effect in the same
-     * step twice (in effect solved). The old edge missing the effect is preferred in the check if the effect is
-     * fulfilled.
-     */
-    checkEffects(testDriver: TestDriver, modelResult: ModelResult) {
-        if (this.edgesToCheck.length == 0) {
-            return;
-        }
-
-        let newEffectsToCheck = [];
-        for (let i = 0; i < this.edgesToCheck.length; i++) {
-            let edge = this.edgesToCheck[i];
-            let result = edge.checkEffects(testDriver, modelResult, this);
-
-
-            // failed some effect
-            if (result && result.length > 0) {
-
-
-                // if it failed more than allowed by the leeway
-                if (edge.numberOfEffectFailures > EFFECT_LEEWAY) {
-                    // make a wonderful output
-                    let output = "Effects:";
-                    for (let i = 0; i < edge.failedEffects.length; i++) {
-                        output = output + " [" + i + "]" + edge.failedEffects[i].toString();
-                    }
-
-                    output = "Effect failed. Edge: '" + edge.id + "'. " + output;
-                    console.error(output, testDriver.getTotalStepsExecuted());
-                    modelResult.error.push(new Error(output));
-                } else {
-                    newEffectsToCheck.push(this.edgesToCheck[i]);
-                }
-            }
-        }
-        this.edgesToCheck = newEffectsToCheck;
     }
 }

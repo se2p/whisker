@@ -1,7 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import {ModelResult} from "../../../test-runner/test-result";
-import {CheckListener} from "../util/CheckListener";
+import {CheckUtility} from "../util/CheckUtility";
 
 /**
  * Node structure for a model.
@@ -51,7 +51,7 @@ export class ModelNode {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckListener, testDriver: TestDriver, result: ModelResult) {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult) {
         this.outgoing.forEach(edge => {
             edge.registerComponents(checkListener, testDriver, result);
         })

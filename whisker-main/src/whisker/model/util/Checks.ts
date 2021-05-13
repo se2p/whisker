@@ -1,6 +1,5 @@
 import TestDriver from "../../../test/test-driver";
-import {CheckListener} from "./CheckListener";
-import {ProgramModel} from "../components/ProgramModel";
+import {CheckUtility} from "./CheckUtility";
 import {Util} from "./Util";
 import Sprite from "../../../vm/sprite";
 
@@ -24,7 +23,7 @@ export class Checks {
      * @param key Name of the key.
      * @param negated Whether this check is negated.
      */
-    static getKeyDownCheck(t: TestDriver, cs: CheckListener, negated: boolean, key: string): () => boolean {
+    static getKeyDownCheck(t: TestDriver, cs: CheckUtility, negated: boolean, key: string): () => boolean {
         cs.registerKeyCheck(key);
         return () => {
             if (cs.isKeyDown(key)) {
@@ -160,7 +159,7 @@ export class Checks {
      * @param spriteName2 Name of the second sprite.
      * @param negated Whether this check is negated.
      */
-    static getSpriteTouchingCheck(t: TestDriver, cs: CheckListener, negated: boolean, spriteName1: string,
+    static getSpriteTouchingCheck(t: TestDriver, cs: CheckUtility, negated: boolean, spriteName1: string,
                                   spriteName2: string): () => boolean {
         Util.checkSpriteExistence(t, spriteName1);
         Util.checkSpriteExistence(t, spriteName2);
@@ -185,7 +184,7 @@ export class Checks {
      * @param b RGB blue color value.
      * @param negated Whether this check is negated.
      */
-    static getSpriteColorTouchingCheck(t: TestDriver, cs: CheckListener, negated: boolean, spriteName: string,
+    static getSpriteColorTouchingCheck(t: TestDriver, cs: CheckUtility, negated: boolean, spriteName: string,
                                        r: number, g: number, b: number): () => boolean {
         Util.checkSpriteExistence(t, spriteName);
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
@@ -314,35 +313,5 @@ export class Checks {
             // stage.
             return negated;
         }
-    }
-
-    /**
-     * Get a method starting a wait duration on the given model.
-     * @param t Instance of the test driver.
-     * @param seconds Seconds to wait for.
-     */
-    static getWaitStarter(t: TestDriver, seconds: number): (model: ProgramModel) => boolean {
-        if (!Util.testNumber(seconds) && seconds > 0) {
-            throw new Error("Effect Wait seconds argument not a number.");
-        }
-
-        const milliseconds = seconds * 1000;
-        let startTime = -1;
-
-        return (model: ProgramModel) => {
-            // called again after the wait
-            if (startTime != -1) {
-                startTime = -1;
-                return true;
-            }
-
-            startTime = t.getRealRunTimeElapsed();
-            // function for the main step of the model to evaluate whether to stop waiting
-            const waitFunction = () => {
-                return t.getRealRunTimeElapsed() > startTime + milliseconds;
-            }
-            model.waitEffectStart(waitFunction);
-            return false;
-        };
     }
 }

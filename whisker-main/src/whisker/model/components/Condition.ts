@@ -1,5 +1,5 @@
 import TestDriver from "../../../test/test-driver";
-import {CheckListener} from "../util/CheckListener";
+import {CheckUtility} from "../util/CheckUtility";
 import {ModelEdge} from "./ModelEdge";
 import {Checks} from "../util/Checks";
 import {ModelResult} from "../../../test-runner/test-result";
@@ -10,8 +10,8 @@ export enum ConditionName {
     Click = "Click", // args: sprite name
     VarComp = "VarComp", // args: sprite name, variable name, comparison (=,>,<...), value to compare to
     AttrComp = "AttrComp", // args: sprite name, attribute name, comparison (=,>,<...), value to compare to,
-    VarChange = "VarChange", // sprite name, var name, ( + | - | new value)
-    AttrChange = "AttrChange", // sprite name, attr name, (+|-|new value)
+    VarChange = "VarChange", // sprite name, var name,( + | - | = )
+    AttrChange = "AttrChange", // sprite name, attr name,( + | - | = )
     SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
     SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
     Function = "Function", // args: js test function as a string
@@ -63,7 +63,7 @@ export class Condition {
     private readonly args: any[];
 
     private readonly _negated: boolean;
-    private checkListener: CheckListener;
+    private checkListener: CheckUtility;
 
     /**
      * Get a condition instance. Checks the number of arguments for a condition type.
@@ -116,7 +116,7 @@ export class Condition {
     /**
      * Register the check listener and test driver and check the condition for errors.
      */
-    registerComponents(cs: CheckListener, t: TestDriver, result: ModelResult) {
+    registerComponents(cs: CheckUtility, t: TestDriver, result: ModelResult) {
         try {
             switch (this.name) {
                 case ConditionName.SpriteTouching:

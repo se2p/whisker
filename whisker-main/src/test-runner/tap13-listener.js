@@ -37,8 +37,11 @@ class TAP13Listener {
 
         this._onModelLoadError = this.onModelLoadError.bind(this);
         this._onConstraintError = this.onConstraintError.bind(this);
-        modelTester.on(ModelTester.LOAD_ERROR, this._onModelLoadError);
-        modelTester.on(ModelTester.CONSTRAINT_FAILED, this._onConstraintError);
+        this._onModelWarning = this.onModelWarning.bind(this);
+
+        modelTester.on(ModelTester.MODEL_LOAD_ERROR, this._onModelLoadError);
+        modelTester.on(ModelTester.MODEL_CONSTRAINT_FAILED, this._onConstraintError);
+        modelTester.on(ModelTester.MODEL_WARNING, this._onModelWarning);
     }
 
     unregister () {
@@ -48,9 +51,9 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
-        this.modelTester.off(ModelTester.LOAD_ERROR, this.print);
-        this.modelTester.off(ModelTester.CONSTRAINT_FAILED, this._onConstraintError);
-
+        this.modelTester.off(ModelTester.MODEL_LOAD_ERROR, this._onModelLoadError);
+        this.modelTester.off(ModelTester.MODEL_CONSTRAINT_FAILED, this._onConstraintError);
+        this.modelTester.off(ModelTester.MODEL_WARNING, this._onModelWarning);
     }
 
     /**
@@ -139,6 +142,14 @@ class TAP13Listener {
      */
     onConstraintError(err) {
         this.print(TAP13Formatter.descriptionToYAML(err));
+    }
+
+    /**
+     * @param {string} err
+     */
+    onModelWarning(err) {
+        console.log(err);
+        this.print(TAP13Formatter.descriptionToYAML("MODEL WARNING: \n" + err));
     }
 }
 
