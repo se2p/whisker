@@ -13,11 +13,7 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
-        "removeProb": 0.3,
-        "changeProb": 0.7,
         "gaussianMutationPower": 5,
-        "insertProb": 0.3,
-        "alpha": 0.5,
         "maxMutationCountStart": 0,
         "maxMutationCountFocusedPhase": 10
     },
