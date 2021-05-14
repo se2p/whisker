@@ -51,7 +51,7 @@ export class KeyDownEvent implements ScratchEvent {
     }
 
     public toString(args: number[]): string {
-        return "KeyDown " + this._keyOption+": "+this._value;
+        return "KeyDown " + this._keyOption + ": " + this._value;
     }
 
     getNumParameters(): number {

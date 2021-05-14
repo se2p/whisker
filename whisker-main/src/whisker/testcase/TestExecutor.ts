@@ -21,7 +21,6 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
-import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
 import {ScratchEvent} from "./ScratchEvent";
@@ -32,6 +31,7 @@ import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
 import {Container} from "../utils/Container";
+import {ScratchEventExtractor} from "./ScratchEventExtractor";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -40,14 +40,15 @@ export class TestExecutor {
 
     private readonly _vm: VirtualMachine;
     private _vmWrapper: VMWrapper
-    private availableEvents: List<ScratchEvent>;
-    private eventObservers: EventObserver[] = [];
+    private _eventExtractor: ScratchEventExtractor;
+    private _eventObservers: EventObserver[] = [];
     private _initialState = {};
     private _projectRunning: boolean;
 
-    constructor(vmWrapper: VMWrapper) {
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
+        this._eventExtractor = eventExtractor;
         this.recordInitialState();
     }
 
@@ -71,14 +72,15 @@ export class TestExecutor {
         let numCodon = 0;
         const codons = testChromosome.getGenes();
 
-        while (this._projectRunning && numCodon < codons.size()) {
-            // Fetch the currently available events and save them in the EventMap
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
+        while (numCodon < codons.size() && this._projectRunning) {
+            const availableEvents = this._eventExtractor.extractEvents(this._vm);
 
-            if (this.availableEvents.isEmpty()) {
-                console.log("Whisker-Main: No events available for project; Adding WaitEvent.");
-                this.availableEvents.add(new WaitEvent());
+            if (availableEvents.isEmpty()) {
+                console.log("Whisker-Main: No events available for project.");
+                availableEvents.add(new WaitEvent());
             }
+
+
             // Select the next Event and set its parameter
             const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
             nextEvent.setParameter(codons, numCodon);
@@ -108,21 +110,21 @@ export class TestExecutor {
     }
 
     public attach(observer: EventObserver): void {
-        const isExist = this.eventObservers.includes(observer);
+        const isExist = this._eventObservers.includes(observer);
         if (!isExist) {
-            this.eventObservers.push(observer);
+            this._eventObservers.push(observer);
         }
     }
 
     public detach(observer: EventObserver): void {
-        const observerIndex = this.eventObservers.indexOf(observer);
+        const observerIndex = this._eventObservers.indexOf(observer);
         if (observerIndex !== -1) {
-            this.eventObservers.splice(observerIndex, 1);
+            this._eventObservers.splice(observerIndex, 1);
         }
     }
 
     private notify(event: ScratchEvent, args: number[]): void {
-        for (const observer of this.eventObservers) {
+        for (const observer of this._eventObservers) {
             observer.update(event, args);
         }
     }
