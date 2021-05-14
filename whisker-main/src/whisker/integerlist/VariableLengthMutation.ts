@@ -71,8 +71,8 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
      * @return A mutated deep copy of the given chromosome.
      */
     apply(chromosome: IntegerListChromosome): IntegerListChromosome {
-        const newCodons = new List<number>(chromosome.getGenes().getElements()); // TODO: Immutable list would be nicer
-        console.log("BEFORE", newCodons.toString())
+        const newCodons = new List<number>();
+        newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
         const mutationProbability = 1 / newCodons.size();
         let index = 0;
         while (index < newCodons.size()) {
@@ -81,7 +81,6 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
             }
             index++;
         }
-        console.log("AFTER", newCodons.toString())
         return chromosome.cloneWith(newCodons);
     }
 
