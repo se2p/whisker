@@ -26,8 +26,8 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOAD_ERROR = "ModelLoadError";
     static readonly MODEL_CONSTRAINT_FAILED = "ModelConstraintFailed";
     static readonly MODEL_LOG = "ModelLog";
-    static readonly MODEL_WARNING: "ModelWarning";
-    static readonly MODEL_LOG_COVERAGE: "LogModelCoverage";
+    static readonly MODEL_WARNING = "ModelWarning";
+    static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.

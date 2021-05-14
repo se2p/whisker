@@ -148,7 +148,6 @@ class TAP13Listener {
      * @param {string} err
      */
     onModelWarning(err) {
-        console.log(err);
         this.print(TAP13Formatter.descriptionToYAML("MODEL WARNING: \n" + err));
     }
 }
