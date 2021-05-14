@@ -77,12 +77,12 @@ export class TestExecutor {
 
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
-                availableEvents.add(new WaitEvent());
+                availableEvents.add(new WaitEvent(0));
             }
 
 
             // Select the next Event and set its parameter
-            const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
+            const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon) % availableEvents.size())
             nextEvent.setParameter(codons, numCodon);
             const args = nextEvent.getParameter();
             events.add([nextEvent, args]);

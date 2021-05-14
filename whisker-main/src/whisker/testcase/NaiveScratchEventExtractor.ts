@@ -50,7 +50,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         eventList.addList(this._getTypeTextEvents()); // Just one random string
         eventList.add(new MouseDownEvent(true));
         eventList.add(new MouseDownEvent(false));
-        eventList.add(new MouseMoveEvent());
+        eventList.add(new MouseMoveEvent(0,0));
         // eventList.add(new SoundEvent()); // Not implemented yet
 
         for (const key of this.KEYS) {

@@ -38,7 +38,6 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         // of the procedure definition script.
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.sprite.blocks.getScripts()) {
-                const hatBlock = target.blocks.getBlock(scriptId);
                 eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
             }
         }

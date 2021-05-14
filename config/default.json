@@ -6,6 +6,7 @@
     "chromosome-length": 30,
     "minVarChromosomeLength": 2,
     "maxVarChromosomeLength": 30,
+    "extractor": "dynamic",
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
