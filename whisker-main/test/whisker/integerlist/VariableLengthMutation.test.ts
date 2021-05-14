@@ -9,52 +9,38 @@ describe("VariableLengthMutation Test", () => {
     const random = Randomness.getInstance();
     const min = 0;
     const max = 420;
-    const length = 50;
-    let chromosome: IntegerListChromosome;
-    let variableLengthMutation: VariableLengthMutation
+    const crossover = new SinglePointRelativeCrossover<IntegerListChromosome>();
+    const mutation = new VariableLengthMutation(min, max, 20, 5);
 
-    beforeEach(() => {
-        const codons = new List<number>();
-        const chromosomeSize = random.nextInt(1, length - 1);
-        for (let i = 0; i < chromosomeSize; i++) {
-            codons.add(random.nextInt(min, max))
+    test("Test apply mutation", () => {
+        const codons = new List<number>(Array.from(
+            {length: 10}, () => Math.floor(random.nextInt(min, max))));
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
+        let mutant = mutation.apply(chromosome)
+        for (let i = 0; i < 30; i++) {
+            mutant = mutation.apply(mutant)
         }
-        chromosome = new IntegerListChromosome(codons, variableLengthMutation,
-            new SinglePointRelativeCrossover<IntegerListChromosome>());
+        expect(mutant.getGenes().getElements()).not.toEqual(chromosome.getGenes().getElements())
     })
 
-    test("Test insert mutation", () => {
-        variableLengthMutation = new VariableLengthMutation(
-            min, max, length, 0, 0, 1, 1, 0.5)
-        const mutant = variableLengthMutation.apply(chromosome)
-        expect(mutant.getLength()).toBeGreaterThan(chromosome.getLength())
-    })
-
-    test("Test remove mutation", () => {
-        variableLengthMutation = new VariableLengthMutation(
-            min, max, length, 1, 0, 1, 0, 0.5)
-        const mutant = variableLengthMutation.apply(chromosome)
-        expect(mutant.getLength()).toBeLessThanOrEqual(chromosome.getLength())
-    })
-
-    test("Test remove mutation with minimal ChromosomeLength", () => {
-        const codons = new List<number>([1, 1]);
-        const chromosome = new IntegerListChromosome(codons, variableLengthMutation,
-            new SinglePointRelativeCrossover<IntegerListChromosome>());
-        variableLengthMutation = new VariableLengthMutation(
-            min, max, length, 1, 0, 1, 0, 0.5)
-        for (let i = 0; i < 50; i++) {
-            const mutant = variableLengthMutation.apply(chromosome)
-            expect(mutant.getLength()).toBeGreaterThanOrEqual(1)
+    test("Test apply mutation with minimal chromosome size of 1", () => {
+        const codons = new List<number>(Array.from(
+            {length: 1}, () => Math.floor(random.nextInt(min, max))));
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
+        let mutant = mutation.apply(chromosome)
+        for (let i = 0; i < 30; i++) {
+            mutant = mutation.apply(mutant)
         }
+        expect(mutant.getGenes().getElements()).not.toEqual(chromosome.getGenes().getElements())
     })
 
-    test("Test change mutation", () => {
-        variableLengthMutation = new VariableLengthMutation(
-            min, max, length, 0, 1, 5, 0, 0)
-        let mutant = variableLengthMutation.apply(chromosome)
-        for (let i = 0; i < 50; i++) {
-            mutant = variableLengthMutation.apply(mutant)
+    test("Test apply mutation maximum chromosome size", () => {
+        const codons = new List<number>(Array.from(
+            {length: 20}, () => Math.floor(random.nextInt(min, max))));
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
+        let mutant = mutation.apply(chromosome)
+        for (let i = 0; i < 30; i++) {
+            mutant = mutation.apply(mutant)
         }
         expect(mutant.getGenes().getElements()).not.toEqual(chromosome.getGenes().getElements())
     })
