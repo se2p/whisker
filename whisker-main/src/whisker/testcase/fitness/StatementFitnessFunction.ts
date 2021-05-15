@@ -315,7 +315,9 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
     _matchesBranchStart(statement, controlNode, branchStartId): boolean {
         let cur = statement;
-        while (cur && cur.id !== controlNode.id) {
+        const traversed = []
+        while (cur && cur.id !== controlNode.id && !traversed.includes(cur)) {
+            traversed.push(cur)
             if (cur.id === branchStartId) {
                 return true;
             }

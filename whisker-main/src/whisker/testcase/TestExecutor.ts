@@ -21,7 +21,6 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
-import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
 import {ScratchEvent} from "./ScratchEvent";
@@ -32,18 +31,20 @@ import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
 import {Container} from "../utils/Container";
+import {ScratchEventExtractor} from "./ScratchEventExtractor";
 
 export class TestExecutor {
 
     private readonly _vm: VirtualMachine;
     private _vmWrapper: VMWrapper
-    private availableEvents: List<ScratchEvent>;
-    private eventObservers: EventObserver[] = [];
+    private _eventExtractor: ScratchEventExtractor;
+    private _eventObservers: EventObserver[] = [];
     private _initialState = {};
 
-    constructor(vmWrapper: VMWrapper) {
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
+        this._eventExtractor = eventExtractor;
         this.recordInitialState();
     }
 
@@ -65,14 +66,14 @@ export class TestExecutor {
         const codons = testChromosome.getGenes();
 
         while (numCodon < codons.size()) {
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vm);
+            const availableEvents = this._eventExtractor.extractEvents(this._vm);
 
-            if (this.availableEvents.isEmpty()) {
+            if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
-            const nextEvent: ScratchEvent = this.availableEvents.get(codons.get(numCodon) % this.availableEvents.size())
+            const nextEvent = availableEvents.get(codons.get(numCodon) % availableEvents.size())
 
             const args = this._getArgs(nextEvent, codons, numCodon);
             events.add([nextEvent, args]);
@@ -111,21 +112,21 @@ export class TestExecutor {
     }
 
     public attach(observer: EventObserver): void {
-        const isExist = this.eventObservers.includes(observer);
+        const isExist = this._eventObservers.includes(observer);
         if (!isExist) {
-            this.eventObservers.push(observer);
+            this._eventObservers.push(observer);
         }
     }
 
     public detach(observer: EventObserver): void {
-        const observerIndex = this.eventObservers.indexOf(observer);
+        const observerIndex = this._eventObservers.indexOf(observer);
         if (observerIndex !== -1) {
-            this.eventObservers.splice(observerIndex, 1);
+            this._eventObservers.splice(observerIndex, 1);
         }
     }
 
     private notify(event: ScratchEvent, args: number[]): void {
-        for (const observer of this.eventObservers) {
+        for (const observer of this._eventObservers) {
             observer.update(event, args);
         }
     }
