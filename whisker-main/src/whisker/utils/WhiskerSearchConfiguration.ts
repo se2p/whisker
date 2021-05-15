@@ -48,6 +48,7 @@ import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/F
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor";
+import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
 
 class ConfigException implements Error {
     message: string;
@@ -241,6 +242,8 @@ export class WhiskerSearchConfiguration {
         switch (this.dict['extractor']) {
             case 'naive':
                 return new NaiveScratchEventExtractor(Container.vm);
+            case 'wait':
+                return new JustWaitScratchEventExtractor(Container.vm);
             case 'static':
                 return new StaticScratchEventExtractor(Container.vm);
             case 'dynamic':
