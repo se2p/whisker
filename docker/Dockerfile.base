@@ -1,0 +1,100 @@
+# syntax=docker/dockerfile:1
+
+
+################################################################################
+# Dockerfile to build a base image of Whisker.
+#
+# This Dockerfile is organized as a multi-stage build, which enables us to
+# reduce the size of the final image while still allowing us to use intermediate
+# layers and files without regret.
+#
+# We have the following stages:
+# (1) Build stage:
+#     (a) Install base image
+#     (b) Install additional tools required to build Whisker
+#     (c) Install or update build/library dependencies
+#     (d) Copy Whisker source files to the container
+#     (e) Build Whisker from its sources and dependencies
+# (2) Execution stage:
+#     Only copies files necessary to run Whisker and sets the entry point to
+#     Whisker's servant. This results in a single-layer image.
+# (3) Headless or Web UI stages (specified in different Dockerfiles):
+#     Re-use and share the base image created by this Dockerfile; set the
+#     default command line parameters for Whisker's servant depending on whether
+#     headless or Web UI mode are desired
+#
+# Because an image is built during the final sub-stage (e) of the build stage we
+# can minimize the size of image layers by leveraging a build cache. The
+# sub-stages are ordered from the less frequently changed (to ensure the build
+# cache not busted) to the more frequently changed.
+#
+# Note: if you need to modify or debug this Dockerfile, you can only build the
+# image up until one of the (sub)stages by specifying "--target <stage name>".
+# To inspect the contents of the container at a specific stage, stop building
+# at that stage and run the container in interactive mode:
+# `docker run -it <image name> /bin/bash`
+################################################################################
+
+#-------------------------------------------------------------------------------
+# (1) Build Stage
+#-------------------------------------------------------------------------------
+
+# (a) Use the current LTS version of Node.JS from the Alpine Linux project,
+#     which provides a particularly small base image.
+FROM node:lts-alpine as base
+
+# (b) Install tools required for the project.
+#     Run `docker build --no-cache .` to update the tools listed below.
+#     Yarn is already included in the base image but requires git to download
+#     dependencies.
+#     Bash is not required but still useful to have for debugging (e.g., when
+#     wanting to inspect the contents of a container at a specific build stage.)
+FROM base as tools
+RUN apk add --no-cache git \
+                       bash
+
+# (c) Copy manifest and lock files required for installing build/library
+#     dependencies. The following layers are only re-built when one of these
+#     files listed below are updated.
+FROM tools as deps
+COPY ["package.json", "yarn.lock", "/whisker-build/"]
+COPY ["scratch-analysis/package.json", "/whisker-build/scratch-analysis/"]
+COPY ["whisker-web/package.json", "/whisker-build/whisker-web/"]
+COPY ["whisker-main/package.json", "/whisker-build/whisker-main/"]
+WORKDIR /whisker-build/
+
+# (d) Copy source files.
+#     This layer is rebuilt when a source file changes in the source directory.
+FROM deps as src
+COPY ./ ./
+
+# (e) Build Whisker.
+FROM src as build
+RUN yarn install && yarn build
+
+
+#-------------------------------------------------------------------------------
+# (2) Execution Stage
+#-------------------------------------------------------------------------------
+
+FROM node:lts-alpine as execute
+
+WORKDIR /whisker/
+
+# Only copy the artifacts needed to run Whisker from the build stage to the
+# execution stage.
+COPY --from=build /whisker-build/config           ./config
+COPY --from=build /whisker-build/node_modules     ./node_modules
+COPY --from=build /whisker-build/scratch-analysis ./scratch-analysis
+COPY --from=build /whisker-build/servant          ./servant
+COPY --from=build /whisker-build/whisker-web      ./whisker-web
+COPY --from=build /whisker-build/whisker-main     ./whisker-main
+
+# Set the image's main command, allowing the image to be run as though it was
+# that command:
+ENTRYPOINT ["node", "/whisker/servant/servant.js"]
+
+# Note: the default arguments of Whisker's servant are set via the CMD command
+# in specialized Dockerfiles that use this Dockerfile as their basis:
+# Dockerfile.headless and Dockerfile.webui
+

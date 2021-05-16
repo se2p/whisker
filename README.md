@@ -87,7 +87,13 @@ For example, the following command runs tests with a 10 fold speedup and two par
 node servant.js -s project.sb3 -t tests.js -a 10 -d -p 2
 ```
 
+## Using Docker
 
+Alternatively, you can build and run Whisker using docker. First, build the
+base image using the following command:
+```bash
+docker build -t whisker/base -f docker/Dockerfile.base .
+```
 
 ## Writing Tests
 
