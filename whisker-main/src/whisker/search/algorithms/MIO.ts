@@ -27,6 +27,8 @@ import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {ExtensionMutation} from "../../testcase/ExtensionMutation";
+import {IntegerListChromosome} from "../../integerlist/IntegerListChromosome";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -77,6 +79,12 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private _samplingCounter: Map<number, number>;
 
     private _startTime: number;
+
+    private _extensionMutation: ExtensionMutation;
+
+    setExtensionMutation(mutation: ExtensionMutation): void {
+        this._extensionMutation = mutation;
+    }
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -137,15 +145,24 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
+        console.log("Starting MIO");
         this.setStartValues();
         let chromosome: C;
         while (!(this._stoppingCondition.isFinished(this))) {
+            console.log("Not finished yet");
             if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
-                const mutatedChromosome = chromosome.mutate();
-                await mutatedChromosome.evaluate();
+                console.log("Applying mutation");
+                let mutatedChromosome;
+                if (this._extensionMutation.canBeExtended(chromosome)) {
+                        mutatedChromosome = await this._extensionMutation.apply(chromosome);
+                } else {
+                    mutatedChromosome = chromosome.mutate();
+                    await mutatedChromosome.evaluate();
+                }
                 this._mutationCounter++;
                 this.updateArchive(mutatedChromosome);
             } else {
+                console.log("Getting new chromosome");
                 chromosome = this.getNewChromosome();
                 await chromosome.evaluate();
                 this._mutationCounter = 0;

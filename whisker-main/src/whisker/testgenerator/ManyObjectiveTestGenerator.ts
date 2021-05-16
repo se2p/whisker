@@ -23,6 +23,12 @@ import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
+import {LengthExploration} from "../testcase/LengthExploration";
+import {Container} from "../utils/Container";
+import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
+import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunction";
+import {MIO} from "../search/algorithms/MIO";
+import {ExtensionMutation} from "../testcase/ExtensionMutation";
 
 /**
  * A many-objective search algorithm can generate tests
@@ -31,8 +37,20 @@ import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 export class ManyObjectiveTestGenerator extends TestGenerator {
 
     async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary> {
+
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this.buildSearchAlgorithm(true);
+
+        // TODO: Find a nice way to do this
+        if (searchAlgorithm instanceof MIO) {
+            searchAlgorithm.setExtensionMutation(new ExtensionMutation(Container.vmWrapper,
+                 new DynamicScratchEventExtractor(Container.vm),
+                 (this._fitnessFunctions.get(0) as StatementCoverageFitness).cfg));
+        }
+
+        const properties = this._config.getSearchAlgorithmProperties();
+        properties.setChromosomeLength(length);
+        searchAlgorithm.setProperties(properties);
 
         // TODO: Assuming there is at least one solution?
         const testChromosomes = await searchAlgorithm.findSolution();
