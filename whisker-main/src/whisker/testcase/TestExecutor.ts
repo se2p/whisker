@@ -88,19 +88,15 @@ export class TestExecutor {
             events.add([nextEvent, args]);
             numCodon += nextEvent.getNumParameters() + 1;
             this.notify(nextEvent, args);
-
             // Send the chosen Event including its parameters to the VM
             await nextEvent.apply(this._vm, args);
             StatisticsCollector.getInstance().incrementEventsCount()
 
             // Send a WaitEvent to the VM
-            const waitEvent = new WaitEvent();
+            const waitEvent = new WaitEvent(1);
             events.add([waitEvent, []]);
             await waitEvent.apply(this._vm);
         }
-
-        await new WaitEvent(Container.config.getWaitDurationAfterExecution()).apply(this._vm);
-
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
         this._vmWrapper.end();

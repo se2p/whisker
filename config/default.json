@@ -50,8 +50,7 @@
         "max": 480
     },
     "wait-duration": 50,
-    "waitDurationFactor": 5,
-    "waitDurationAfterExecution": 250,
+    "waitStepUpperBound": 200,
     "click-duration": 20,
     "press-duration": 20
 }

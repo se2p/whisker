@@ -387,9 +387,9 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getWaitDurationFactor(): number {
-        if ("waitDurationFactor" in this.dict) {
-            return this.dict["waitDurationFactor"]
+    public getWaitStepUpperBound(): number {
+        if ("waitStepUpperBound" in this.dict) {
+            return this.dict["waitStepUpperBound"]
         } else {
             return 5;
         }
