@@ -46,7 +46,7 @@ FROM zenika/alpine-chrome:with-puppeteer as base
 # (b) Copy manifest and lock files required for installing build/library
 #     dependencies. The following layers are only re-built when one of these
 #     files listed below are updated.
-FROM tools as deps
+FROM base as deps
 COPY ["package.json", "yarn.lock", "/whisker-build/"]
 COPY ["scratch-analysis/package.json", "/whisker-build/scratch-analysis/"]
 COPY ["whisker-web/package.json", "/whisker-build/whisker-web/"]
