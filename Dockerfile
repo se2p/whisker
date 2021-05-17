@@ -49,6 +49,7 @@ FROM base as deps
 WORKDIR /whisker-build/
 COPY ["package.json", "yarn.lock", "./"]
 COPY ["scratch-analysis/package.json", "./scratch-analysis/"]
+COPY ["servant/package.json", "./servant/"]
 COPY ["whisker-web/package.json", "./whisker-web/"]
 COPY ["whisker-main/package.json", "./whisker-main/"]
 # TODO: We need this because the default user is not allowed to create files
