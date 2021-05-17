@@ -16,6 +16,7 @@
 !scratch-analysis
 !servant
 !tsconfig.json
+!whisker-docker.sh
 !whisker-main
 !whisker-web
 !yarn.lock

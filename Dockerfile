@@ -74,18 +74,18 @@ WORKDIR /whisker/
 
 # Only copy the artifacts needed to run Whisker from the build stage to the
 # execution stage.
-COPY --from=build /whisker-build/config           ./config
-COPY --from=build /whisker-build/node_modules     ./node_modules
-COPY --from=build /whisker-build/scratch-analysis ./scratch-analysis
-COPY --from=build /whisker-build/servant          ./servant
-COPY --from=build /whisker-build/whisker-web      ./whisker-web
-COPY --from=build /whisker-build/whisker-main     ./whisker-main
+COPY --from=build /whisker-build/config            ./config
+COPY --from=build /whisker-build/node_modules      ./node_modules
+COPY --from=build /whisker-build/scratch-analysis  ./scratch-analysis
+COPY --from=build /whisker-build/servant           ./servant
+COPY --from=build /whisker-build/whisker-web       ./whisker-web
+COPY --from=build /whisker-build/whisker-main      ./whisker-main
+COPY --from=build /whisker-build/whisker-docker.sh ./whisker-docker.sh
 
 # Set the image's main command, allowing the image to be run as though it was
 # that command:
-ENTRYPOINT ["node", "/whisker/servant/servant.js", "--isHeadless"]
+ENTRYPOINT ["/whisker/whisker-docker.sh"]
 
 # Set the default arguments for Whisker's servant, if none are specified
 # explicitly by the user:
 CMD ["--help"]
-
