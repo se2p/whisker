@@ -383,7 +383,7 @@ export class WhiskerSearchConfiguration {
         if ("waitStepUpperBound" in this.dict) {
             return this.dict["waitStepUpperBound"]
         } else {
-            return 5;
+            return 200;
         }
     }
 
