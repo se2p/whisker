@@ -15,10 +15,7 @@
 #     (c) Build Whisker from its sources and dependencies
 # (2) Execution stage:
 #     Only copies files necessary to run Whisker and sets the entry point to
-#     Whisker's servant. This results in a single-layer image.
-# (3) Headless stage
-#     Set the default command line parameters for Whisker's servant so that we
-#     run in headless mode
+#     Whisker's servant in headless mode. This results in a single-layer image.
 #
 # Because an image is built during the final sub-stage (c) of the build stage we
 # can minimize the size of image layers by leveraging a build cache. The
@@ -29,7 +26,7 @@
 # image up until one of the (sub)stages by specifying "--target <stage name>".
 # To inspect the contents of the container at a specific stage, stop building
 # at that stage and run the container in interactive mode:
-# `docker run -it <image name> /bin/sh`
+# `docker run -it --entrypoint /bin/sh <image name>`
 ################################################################################
 
 #-------------------------------------------------------------------------------
@@ -45,7 +42,7 @@ FROM zenika/alpine-chrome:with-puppeteer as base
 # (b) Copy manifest and lock files required for installing build/library
 #     dependencies. The following layers are only re-built when one of these
 #     files listed below are updated.
-FROM base as deps
+FROM base as install
 WORKDIR /whisker-build/
 COPY ["package.json", "yarn.lock", "./"]
 COPY ["scratch-analysis/package.json", "./scratch-analysis/"]
@@ -59,7 +56,7 @@ RUN yarn install
 
 # (c) Copy source files and build Whisker. This layer is only rebuilt when a
 #     source file changes in the source directory.
-FROM deps as build
+FROM install as build
 WORKDIR /whisker-build/
 COPY ./ ./
 USER root
