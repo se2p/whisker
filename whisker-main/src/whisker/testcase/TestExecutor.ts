@@ -77,7 +77,7 @@ export class TestExecutor {
 
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
-                availableEvents.add(new WaitEvent(1));
+                break;
             }
 
 

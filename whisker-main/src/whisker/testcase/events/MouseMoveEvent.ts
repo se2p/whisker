@@ -27,7 +27,7 @@ export class MouseMoveEvent implements ScratchEvent {
     private _x: number;
     private _y: number;
 
-    constructor(x: number, y:number) {
+    constructor(x = 0, y = 0) {
         this._x = x;
         this._y = y;
     }

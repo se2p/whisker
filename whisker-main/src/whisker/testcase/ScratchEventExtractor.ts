@@ -122,7 +122,7 @@ export abstract class ScratchEventExtractor {
             case 'sensing_mousex':
             case 'sensing_mousey': {
                 // Mouse move
-                eventList.add(new MouseMoveEvent(0, 0));
+                eventList.add(new MouseMoveEvent());
                 break;
             }
             case 'sensing_touchingobject': {
@@ -131,7 +131,7 @@ export abstract class ScratchEventExtractor {
                 const value = field.TOUCHINGOBJECTMENU.value;
                 if (value == "_mouse_") {
                     eventList.add(new MouseMoveToEvent(target.x, target.y));
-                    eventList.add(new MouseMoveEvent(0, 0));
+                    eventList.add(new MouseMoveEvent());
                 }
                 break;
             }
@@ -141,14 +141,14 @@ export abstract class ScratchEventExtractor {
                 const value = field.DISTANCETOMENU.value;
                 if (value == "_mouse_") {
                     // TODO: Maybe could determine position to move to here?
-                    eventList.add(new MouseMoveEvent(0, 0));
+                    eventList.add(new MouseMoveEvent());
                 }
                 break;
             }
             case 'motion_pointtowards': {
                 const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
                 if (towards.fields.TOWARDS.value === '_mouse_')
-                    eventList.add(new MouseMoveEvent(0, 0));
+                    eventList.add(new MouseMoveEvent());
                 break;
             }
             case 'sensing_mousedown': {
