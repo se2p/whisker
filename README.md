@@ -38,7 +38,7 @@ yarn build
 
 After building Whisker, simply open 'whisker-web/dist/index.html' in your browser (e.g. Firefox)
 
-```
+```bash
 firefox whisker-web/dist/index.html
 ```
 
@@ -83,17 +83,25 @@ To run tests in accelerated mode, provide an acceleration factor using the optio
 
 For example, the following command runs tests with a 10 fold speedup and two parallel executions in a headless chrome instance:
 
-```
+```bash
 node servant.js -s project.sb3 -t tests.js -a 10 -d -p 2
 ```
 
-## Using Docker
+## Using Docker (Headless Mode)
 
-Alternatively, you can build and run Whisker using docker. First, build the
-base image using the following command:
+Alternatively, you can build and run Whisker in headless mode using docker. This can be beneficial if you want to
+conduct large-scale experiments on a computing cluster. To this, create a Docker image for Whisker, for example using
+the command
 ```bash
-docker build -t whisker/base -f docker/Dockerfile.base .
+docker build -t whisker .
 ```
+Now, you can run the dockerized version of Whisker via
+```bash
+docker run whisker <additional arguments>
+```
+The main entry point to the container is the wrapper script `whisker-docker.sh`, which calls Whisker's servant in
+headless mode (using the flags `-d`, `-k` and `-l`, among others.) Any `<additional arguments>` given by the user will
+be forwarded by the script to the servant.
 
 ## Writing Tests
 

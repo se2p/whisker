@@ -6,7 +6,7 @@ if [ ! -f /.dockerenv ]; then
     exit 1
 fi
 
-node servant/servant.js -d -k -l -g \
+node servant/servant.js -d -k -l \
     -u whisker-web/dist/index.html \
     -c config/default.json \
     "$@"
