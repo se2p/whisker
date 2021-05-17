@@ -36,7 +36,7 @@ export class WaitEvent implements ScratchEvent {
     }
 
     public toJavaScript(args: number[]): string {
-        return `await t.runForTime(${this.steps});`;
+        return `await t.runForSteps(${this.steps});`;
     }
 
     public toString(args: number[]): string {
@@ -52,7 +52,7 @@ export class WaitEvent implements ScratchEvent {
     }
 
     setParameter(codons: List<number>, codonPosition: number): void {
-        // Waits of 0 seconds/steps lead to bugs.
+        // Waits of 0 seconds/steps leads to endless loop.
         this.steps = codons.get(codonPosition % codons.size()) % Container.config.getWaitStepUpperBound() + 1;
     }
 }

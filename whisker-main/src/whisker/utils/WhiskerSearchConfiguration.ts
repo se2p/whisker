@@ -379,14 +379,6 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getWaitDurationAfterExecution(): number {
-        if ("waitDurationAfterExecution" in this.dict) {
-            return this.dict["waitDurationAfterExecution"]
-        } else {
-            return 250;
-        }
-    }
-
     public getWaitStepUpperBound(): number {
         if ("waitStepUpperBound" in this.dict) {
             return this.dict["waitStepUpperBound"]
