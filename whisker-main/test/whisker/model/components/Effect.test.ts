@@ -221,6 +221,12 @@ describe('Effect', () => {
         varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "="]);
         expect(varChange.contradicts(varComp)).toBeFalsy();
         expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "+="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "-="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
 
         // >=
         varComp = new Effect(null, EffectName.VarComp, true, ["sprite", "var", ">=", "0"]);
@@ -233,7 +239,12 @@ describe('Effect', () => {
         varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "="]);
         expect(varChange.contradicts(varComp)).toBeFalsy();
         expect(varComp.contradicts(varChange)).toBeFalsy();
-
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "+="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "-="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
 
         // <
         varComp = new Effect(null, EffectName.VarComp, true, ["sprite", "var", "<", "0"]);
@@ -244,6 +255,12 @@ describe('Effect', () => {
         expect(varChange.contradicts(varComp)).toBeFalsy();
         expect(varComp.contradicts(varChange)).toBeFalsy();
         varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "+="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "-="]);
         expect(varChange.contradicts(varComp)).toBeFalsy();
         expect(varComp.contradicts(varChange)).toBeFalsy();
 
@@ -258,6 +275,12 @@ describe('Effect', () => {
         varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "="]);
         expect(varChange.contradicts(varComp)).toBeFalsy();
         expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "+="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "-="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
 
         // =
         varComp = new Effect(null, EffectName.VarComp, true, ["sprite", "var", "=", "0"]);
@@ -270,7 +293,12 @@ describe('Effect', () => {
         varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "="]);
         expect(varChange.contradicts(varComp)).toBeFalsy();
         expect(varComp.contradicts(varChange)).toBeFalsy();
-
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "+="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
+        varChange = new Effect(null, EffectName.VarChange, true, ["sprite", "var", "-="]);
+        expect(varChange.contradicts(varComp)).toBeFalsy();
+        expect(varComp.contradicts(varChange)).toBeFalsy();
     })
 
     test("contradiction: attribute comparison and change", () => {
@@ -297,6 +325,12 @@ describe('Effect', () => {
         attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "="]);
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "+="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "-="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
 
         // >=
         attrComp = new Effect(null, EffectName.AttrComp, true, ["sprite", "var", ">=", "0"]);
@@ -307,6 +341,12 @@ describe('Effect', () => {
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
         attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "+="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "-="]);
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
 
@@ -322,6 +362,12 @@ describe('Effect', () => {
         attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "="]);
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "+="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "-="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
 
         // <=
         attrComp = new Effect(null, EffectName.AttrComp, true, ["sprite", "var", "<=", "0"]);
@@ -332,6 +378,12 @@ describe('Effect', () => {
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
         attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "+="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "-="]);
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
 
@@ -346,6 +398,12 @@ describe('Effect', () => {
         attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "="]);
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "+="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
+        attrChange = new Effect(null, EffectName.AttrChange, true, ["sprite", "var", "-="]);
+        expect(attrChange.contradicts(attrComp)).toBeFalsy();
+        expect(attrComp.contradicts(attrChange)).toBeFalsy();
     })
 
     test("contradictions: var/attr change", () => {
@@ -358,11 +416,25 @@ describe('Effect', () => {
         varChange2 = new Effect(null, EffectName.VarChange, true, ['sprite', 'var', '=']);
         expect(varChange2.contradicts(varChange)).toBeTruthy();
         expect(varChange.contradicts(varChange2)).toBeTruthy();
+        varChange2 = new Effect(null, EffectName.VarChange, true, ['sprite', 'var', '+=']);
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
+        expect(varChange.contradicts(varChange2)).toBeFalsy();
+        varChange2 = new Effect(null, EffectName.VarChange, true, ['sprite', 'var', '-=']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
 
         varChange2 = new Effect(null, EffectName.VarChange, true, ['sprite2', 'var', '=']);
         expect(varChange2.contradicts(varChange)).toBeFalsy();
         expect(varChange.contradicts(varChange2)).toBeFalsy();
         varChange2 = new Effect(null, EffectName.VarChange, true, ['sprite', 'var2', '=']);
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
+        expect(varChange.contradicts(varChange2)).toBeFalsy();
+
+        varChange = new Effect(null, EffectName.VarChange, true, ['sprite', 'var', '-']);
+        varChange2 = new Effect(null, EffectName.VarChange, true, ['sprite', 'var', '+=']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
+        varChange2 = new Effect(null, EffectName.VarChange, true, ['sprite', 'var', '-=']);
         expect(varChange2.contradicts(varChange)).toBeFalsy();
         expect(varChange.contradicts(varChange2)).toBeFalsy();
 
@@ -375,11 +447,26 @@ describe('Effect', () => {
         attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var', '=']);
         expect(attrChange2.contradicts(attrChange)).toBeTruthy();
         expect(attrChange.contradicts(attrChange2)).toBeTruthy();
+        attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var', '+=']);
+        expect(attrChange2.contradicts(attrChange)).toBeFalsy();
+        expect(attrChange.contradicts(attrChange2)).toBeFalsy();
+        attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var', '-=']);
+        expect(attrChange2.contradicts(attrChange)).toBeTruthy();
+        expect(attrChange.contradicts(attrChange2)).toBeTruthy();
 
         attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite2', 'var', '=']);
         expect(attrChange2.contradicts(attrChange)).toBeFalsy();
         expect(attrChange.contradicts(attrChange2)).toBeFalsy();
         attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var2', '=']);
+        expect(attrChange2.contradicts(attrChange)).toBeFalsy();
+        expect(attrChange.contradicts(attrChange2)).toBeFalsy();
+
+        attrChange = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var', '-']);
+        attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var', '-']);
+        attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var', '+=']);
+        expect(attrChange2.contradicts(attrChange)).toBeTruthy();
+        expect(attrChange.contradicts(attrChange2)).toBeTruthy();
+        attrChange2 = new Effect(null, EffectName.AttrChange, true, ['sprite', 'var', '-=']);
         expect(attrChange2.contradicts(attrChange)).toBeFalsy();
         expect(attrChange.contradicts(attrChange2)).toBeFalsy();
     })

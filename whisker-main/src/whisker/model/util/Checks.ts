@@ -225,6 +225,7 @@ export class Checks {
      * @param spriteName Name of the sprite having the variable.
      * @param varName Name of the variable.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
+     * "+=" for increase or staying the same."-=" for decrease or staying the same.
      * @param negated Whether this check is negated.
      */
     static getVariableChangeCheck(t: TestDriver, negated: boolean, spriteName: string, varName: string, change: string):
@@ -260,6 +261,7 @@ export class Checks {
      * @param spriteName Name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
+     * "+=" for increase or staying the same."-=" for decrease or staying the same.
      * @param negated Whether this check is negated.
      */
     static getAttributeChangeCheck(t: TestDriver, negated: boolean, spriteName: string, attrName: string, change: string):

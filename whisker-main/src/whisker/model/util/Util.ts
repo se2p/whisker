@@ -34,6 +34,7 @@ export abstract class Util {
      * @param oldValue Old value.
      * @param newValue New value.
      * @param change For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='.
+     * "+=" for increase or staying the same."-=" for decrease or staying the same.
      */
     static testChange(oldValue, newValue, change) {
         if (oldValue == null) {
@@ -59,6 +60,16 @@ export abstract class Util {
             case '=':
             case'==':
                 return oldValue == newValue;
+            case '+=':
+                if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
+                    throw new Error("Effect failed: not a numerical value in variable");
+                }
+                return oldValue <= newValue;
+            case '-=':
+                if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
+                    throw new Error("Effect failed: not a numerical value in variable");
+                }
+                return oldValue >= newValue;
             default:
                 throw new Error("Value Change Testing: Mode of change not known.");
         }
