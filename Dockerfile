@@ -37,7 +37,7 @@
 # (1) Build Stage
 #-------------------------------------------------------------------------------
 
-# (a) We need an image that has built-in support for Puppeteer. It provides 
+# (a) We need an image that has built-in support for Puppeteer. It provides
 #     fixes for common issues that prevent Chrome from starting, such as missing
 #     system fonts, external libraries, etc. The one we use is based on the
 #     Alpine Linux project, which offers a particularly small base image.
@@ -60,6 +60,7 @@ COPY ./ ./
 
 # (d) Build Whisker.
 FROM src as build
+USER root
 RUN yarn install && yarn build
 
 
