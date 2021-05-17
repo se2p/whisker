@@ -12,8 +12,7 @@
 # (1) Build stage:
 #     (a) Install base image
 #     (b) Install or update build/library dependencies
-#     (c) Copy Whisker source files to the container
-#     (d) Build Whisker from its sources and dependencies
+#     (c) Build Whisker from its sources and dependencies
 # (2) Execution stage:
 #     Only copies files necessary to run Whisker and sets the entry point to
 #     Whisker's servant. This results in a single-layer image.
@@ -21,7 +20,7 @@
 #     Set the default command line parameters for Whisker's servant so that we
 #     run in headless mode
 #
-# Because an image is built during the final sub-stage (d) of the build stage we
+# Because an image is built during the final sub-stage (c) of the build stage we
 # can minimize the size of image layers by leveraging a build cache. The
 # sub-stages are ordered from the less frequently changed (to ensure the build
 # cache not busted) to the more frequently changed.
@@ -47,21 +46,23 @@ FROM zenika/alpine-chrome:with-puppeteer as base
 #     dependencies. The following layers are only re-built when one of these
 #     files listed below are updated.
 FROM base as deps
-COPY ["package.json", "yarn.lock", "/whisker-build/"]
-COPY ["scratch-analysis/package.json", "/whisker-build/scratch-analysis/"]
-COPY ["whisker-web/package.json", "/whisker-build/whisker-web/"]
-COPY ["whisker-main/package.json", "/whisker-build/whisker-main/"]
 WORKDIR /whisker-build/
-
-# (c) Copy source files.
-#     This layer is rebuilt when a source file changes in the source directory.
-FROM deps as src
-COPY ./ ./
-
-# (d) Build Whisker.
-FROM src as build
+COPY ["package.json", "yarn.lock", "./"]
+COPY ["scratch-analysis/package.json", "./scratch-analysis/"]
+COPY ["whisker-web/package.json", "./whisker-web/"]
+COPY ["whisker-main/package.json", "./whisker-main/"]
+# TODO: We need this because the default user is not allowed to create files
+# and directories. There must be a better way to fix these permission problems?
 USER root
-RUN yarn install && yarn build
+RUN yarn install
+
+# (c) Copy source files and build Whisker. This layer is only rebuilt when a
+#     source file changes in the source directory.
+FROM deps as build
+WORKDIR /whisker-build/
+COPY ./ ./
+USER root
+RUN yarn build
 
 
 #-------------------------------------------------------------------------------
