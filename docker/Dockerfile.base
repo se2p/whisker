@@ -50,7 +50,8 @@ FROM node:lts-alpine as base
 #     Bash is not required but still useful to have for debugging (e.g., when
 #     wanting to inspect the contents of a container at a specific build stage.)
 FROM base as tools
-RUN apk add --no-cache git \
+RUN apk update && \
+    apk add --no-cache git \
                        bash
 
 # (c) Copy manifest and lock files required for installing build/library
@@ -80,6 +81,13 @@ RUN yarn install && yarn build
 FROM node:lts-alpine as execute
 
 WORKDIR /whisker/
+
+# TODO: also install xvfb?
+RUN apk update && \
+    apk add --no-cache \
+        $(apk info --quiet --depends chromium) \
+        gcompat \
+        libxshmfence
 
 # Only copy the artifacts needed to run Whisker from the build stage to the
 # execution stage.
