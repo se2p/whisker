@@ -21,28 +21,38 @@
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {Container} from "../../utils/Container";
+import {List} from "../../utils/List";
 
 export class WaitEvent implements ScratchEvent {
 
-    private readonly timeout: number;
+    private steps: number;
 
-    constructor(duration = Container.config.getWaitDuration() ) {
-        this.timeout = duration;
+    constructor(steps = 1) {
+        this.steps = steps;
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
-        await Container.testDriver.runForTime(this.timeout / Container.acceleration);
+        await Container.testDriver.runForSteps(this.steps);
     }
 
     public toJavaScript(args: number[]): string {
-        return `await t.runForTime(${this.timeout});`;
+        return `await t.runForSteps(${this.steps});`;
     }
 
     public toString(args: number[]): string {
-        return "Wait " + this.timeout + " ms";
+        return "Wait for " + this.steps + " steps";
     }
 
     getNumParameters(): number {
-        return 0;
+        return 1;
+    }
+
+    getParameter(): number[] {
+        return [this.steps];
+    }
+
+    setParameter(codons: List<number>, codonPosition: number): void {
+        // Waits of 0 seconds/steps leads to endless loop.
+        this.steps = codons.get(codonPosition % codons.size()) % Container.config.getWaitStepUpperBound() + 1;
     }
 }

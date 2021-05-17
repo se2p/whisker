@@ -21,6 +21,7 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {Container} from "../../utils/Container";
+import {List} from "../../utils/List";
 
 export class ClickStageEvent implements ScratchEvent {
 
@@ -46,5 +47,13 @@ export class ClickStageEvent implements ScratchEvent {
 
     getNumParameters(): number {
         return 0;
+    }
+
+    setParameter(): void {
+        return;
+    }
+
+    getParameter(): number[] {
+        return [];
     }
 }

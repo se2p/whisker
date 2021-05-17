@@ -38,7 +38,6 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         // of the procedure definition script.
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.sprite.blocks.getScripts()) {
-                const hatBlock = target.blocks.getBlock(scriptId);
                 eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
             }
         }
@@ -52,14 +51,7 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
                 this.traverseBlocks(target, block, eventList);
         }
 
-        // TODO: In some programs without event handlers no waits are chosen
-        //       maybe because the execution of the greenflag scripts
-        //       is too quick? A nicer solution would be good.
-        if (eventList.isEmpty() && !this.availableWaitDurations.isEmpty()) {
-            for (const duration of this.availableWaitDurations) {
-                eventList.add(new WaitEvent(duration));
-            }
-        }
+        eventList.add(new WaitEvent())
 
         return eventList.distinctObjects();
     }

@@ -21,8 +21,11 @@
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {List} from "../../utils/List";
 
 export class SoundEvent implements ScratchEvent {
+
+    private _volume:number;
 
     async apply(vm: VirtualMachine): Promise<void> {
         throw new NotYetImplementedException();
@@ -37,6 +40,14 @@ export class SoundEvent implements ScratchEvent {
     }
 
     getNumParameters(): number {
-        return 0; // volume passed in as parameter?
+        return 1;
+    }
+
+    getParameter(): number[] {
+        return [this._volume];
+    }
+
+    setParameter(codons: List<number>, codonPosition: number): void {
+        this._volume = codons.get(codonPosition % codons.size());
     }
 }

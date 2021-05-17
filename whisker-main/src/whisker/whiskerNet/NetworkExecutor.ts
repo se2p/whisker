@@ -169,7 +169,7 @@ export class NetworkExecutor {
                 const mouseMoveEvent = new MouseMoveEvent();
                 events.add([mouseMoveEvent, mouseCoords]);
                 this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply(this._vm, mouseCoords)
+                await mouseMoveEvent.applyWithCoordinates(mouseCoords)
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
@@ -241,7 +241,7 @@ export class NetworkExecutor {
                 const mouseMoveEvent = new MouseMoveEvent();
                 events.add([mouseMoveEvent, mouseCoords]);
                 this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply(this._vm, mouseCoords)
+                await mouseMoveEvent.applyWithCoordinates(mouseCoords)
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
