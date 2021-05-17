@@ -2,7 +2,7 @@
 
 
 ################################################################################
-# Dockerfile to build a base image of Whisker.
+# Dockerfile to build a headless image of Whisker.
 #
 # This Dockerfile is organized as a multi-stage build, which enables us to
 # reduce the size of the final image while still allowing us to use intermediate
@@ -17,10 +17,9 @@
 # (2) Execution stage:
 #     Only copies files necessary to run Whisker and sets the entry point to
 #     Whisker's servant. This results in a single-layer image.
-# (3) Headless or Web UI stages (specified in different Dockerfiles):
-#     Re-use and share the base image created by this Dockerfile; set the
-#     default command line parameters for Whisker's servant depending on whether
-#     headless or Web UI mode are desired
+# (3) Headless stage
+#     Set the default command line parameters for Whisker's servant so that we
+#     run in headless mode
 #
 # Because an image is built during the final sub-stage (d) of the build stage we
 # can minimize the size of image layers by leveraging a build cache. The
@@ -83,9 +82,9 @@ COPY --from=build /whisker-build/whisker-main     ./whisker-main
 
 # Set the image's main command, allowing the image to be run as though it was
 # that command:
-ENTRYPOINT ["node", "/whisker/servant/servant.js"]
+ENTRYPOINT ["node", "/whisker/servant/servant.js", "--isHeadless"]
 
-# Note: the default arguments of Whisker's servant are set via the CMD command
-# in specialized Dockerfiles that use this Dockerfile as their basis:
-# Dockerfile.headless and Dockerfile.webui
+# Set the default arguments for Whisker's servant, if none are specified
+# explicitly by the user:
+CMD ["--help"]
 
