@@ -56,7 +56,7 @@ export class ModelLoaderXML {
      * @param xmlText Content of a xml file containing the models.
      */
     loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModel: ProgramModel } {
-        const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].graph;
+        const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].model;
         this.graphIDs = [];
         this.programModels = [];
         this.userModels = [];

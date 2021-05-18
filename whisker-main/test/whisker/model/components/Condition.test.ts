@@ -1,183 +1,184 @@
-import {Condition, ConditionName} from "../../../../src/whisker/model/components/Condition";
+import {Condition} from "../../../../src/whisker/model/components/Condition";
+import {CheckName} from "../../../../src/whisker/model/util/Checks";
 
 describe('Condition', () => {
     test("no arguments", () => {
         expect(() => {
-            new Condition(ConditionName.Key, true, [])
+            new Condition(CheckName.Key, true, []);
         }).toThrow();
         expect(() => {
-            new Condition(ConditionName.Key, true, [undefined])
+            new Condition(CheckName.Key, true, [undefined])
         }).toThrow();
 
         expect(() => {
-            new Condition(ConditionName.Click, true, []);
+            new Condition(CheckName.Click, true, []);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.Click, true, [undefined]);
-        }).toThrow()
-
-        expect(() => {
-            new Condition(ConditionName.SpriteColor, true, []);
-        }).toThrow()
-        expect(() => {
-            new Condition(ConditionName.SpriteTouching, true, []);
+            new Condition(CheckName.Click, true, [undefined]);
         }).toThrow()
 
         expect(() => {
-            new Condition(ConditionName.Function, true, []);
+            new Condition(CheckName.SpriteColor, true, []);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.Function, true, [undefined]);
-        }).toThrow()
-
-        expect(() => {
-            new Condition(ConditionName.VarComp, true, []);
-        }).toThrow()
-        expect(() => {
-            new Condition(ConditionName.AttrComp, true, []);
+            new Condition(CheckName.SpriteTouching, true, []);
         }).toThrow()
 
         expect(() => {
-            new Condition(ConditionName.VarChange, true, []);
+            new Condition(CheckName.Function, true, []);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrChange, true, []);
+            new Condition(CheckName.Function, true, [undefined]);
+        }).toThrow()
+
+        expect(() => {
+            new Condition(CheckName.VarComp, true, []);
+        }).toThrow()
+        expect(() => {
+            new Condition(CheckName.AttrComp, true, []);
+        }).toThrow()
+
+        expect(() => {
+            new Condition(CheckName.VarChange, true, []);
+        }).toThrow()
+        expect(() => {
+            new Condition(CheckName.AttrChange, true, []);
         }).toThrow()
     })
 
     test("not enough arguments: sprite color", () => {
         expect(() => {
-            new Condition(ConditionName.SpriteColor, true, ["test"])
+            new Condition(CheckName.SpriteColor, true, ["test"])
         }).toThrow();
         expect(() => {
-            new Condition(ConditionName.SpriteColor, true, ["test", "0"])
+            new Condition(CheckName.SpriteColor, true, ["test", "0"])
         }).toThrow();
         expect(() => {
-            new Condition(ConditionName.SpriteColor, true, ["test", "0", "1"])
+            new Condition(CheckName.SpriteColor, true, ["test", "0", "1"])
         }).toThrow();
 
         expect(() => {
-            new Condition(ConditionName.SpriteColor, true, [undefined, "test", "0", "1"])
+            new Condition(CheckName.SpriteColor, true, [undefined, "test", "0", "1"])
         }).toThrow();
         expect(() => {
-            new Condition(ConditionName.SpriteColor, true, ["test", undefined, "0", "1"])
+            new Condition(CheckName.SpriteColor, true, ["test", undefined, "0", "1"])
         }).toThrow();
         expect(() => {
-            new Condition(ConditionName.SpriteColor, true, ["test", "0", undefined, "1"])
+            new Condition(CheckName.SpriteColor, true, ["test", "0", undefined, "1"])
         }).toThrow();
         expect(() => {
-            new Condition(ConditionName.SpriteColor, true, ["test", "0", "2", undefined])
+            new Condition(CheckName.SpriteColor, true, ["test", "0", "2", undefined])
         }).toThrow();
     })
 
     test("not enough arguments: sprite touching", () => {
         expect(() => {
-            new Condition(ConditionName.SpriteTouching, true, ["test"]);
+            new Condition(CheckName.SpriteTouching, true, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.SpriteTouching, true, ["test", undefined]);
+            new Condition(CheckName.SpriteTouching, true, ["test", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.SpriteTouching, true, [undefined, "test"]);
+            new Condition(CheckName.SpriteTouching, true, [undefined, "test"]);
         }).toThrow()
     })
 
     test("not enough arguments: variable effect", () => {
         expect(() => {
-            new Condition(ConditionName.VarComp, true, ["test"]);
+            new Condition(CheckName.VarComp, true, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarComp, true, ["test", "test2"]);
+            new Condition(CheckName.VarComp, true, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarComp, true, ["test", "test2", ">"]);
+            new Condition(CheckName.VarComp, true, ["test", "test2", ">"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarComp, true, ["test", "test2", ">", undefined]);
+            new Condition(CheckName.VarComp, true, ["test", "test2", ">", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarComp, true, ["test", "test2", undefined]);
+            new Condition(CheckName.VarComp, true, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarComp, true, ["test", undefined, "test2"]);
+            new Condition(CheckName.VarComp, true, ["test", undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarComp, true, [undefined, "test", "test2"]);
+            new Condition(CheckName.VarComp, true, [undefined, "test", "test2"]);
         }).toThrow()
     })
 
     test("not enough arguments: attribute comparison", () => {
         expect(() => {
-            new Condition(ConditionName.AttrComp, true, ["test"]);
+            new Condition(CheckName.AttrComp, true, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrComp, true, ["test", "test2"]);
+            new Condition(CheckName.AttrComp, true, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrComp, true, ["test", "test2", ">"]);
+            new Condition(CheckName.AttrComp, true, ["test", "test2", ">"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrComp, true, ["test", "test2", ">", undefined]);
+            new Condition(CheckName.AttrComp, true, ["test", "test2", ">", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrComp, true, ["test", "test2", undefined]);
+            new Condition(CheckName.AttrComp, true, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrComp, true, ["test", undefined, "test2"]);
+            new Condition(CheckName.AttrComp, true, ["test", undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrComp, true, [undefined, "test", "test2"]);
+            new Condition(CheckName.AttrComp, true, [undefined, "test", "test2"]);
         }).toThrow()
     })
 
     test("not enough arguments: variable change", () => {
         expect(() => {
-            new Condition(ConditionName.VarChange, true, ["test"]);
+            new Condition(CheckName.VarChange, true, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarChange, true, ["test", "test2"]);
+            new Condition(CheckName.VarChange, true, ["test", "test2"]);
         }).toThrow()
 
         expect(() => {
-            new Condition(ConditionName.VarChange, true, ["test", "test2", undefined]);
+            new Condition(CheckName.VarChange, true, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarChange, true, [undefined, "test", "test2"]);
+            new Condition(CheckName.VarChange, true, [undefined, "test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.VarChange, true, ["test", undefined, "test2"]);
+            new Condition(CheckName.VarChange, true, ["test", undefined, "test2"]);
         }).toThrow()
     })
 
     test("not enough arguments: attribute change", () => {
         expect(() => {
-            new Condition(ConditionName.AttrChange, true, ["test"]);
+            new Condition(CheckName.AttrChange, true, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrChange, true, ["test", "test2"]);
+            new Condition(CheckName.AttrChange, true, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrChange, true, ["test", "test2", undefined]);
+            new Condition(CheckName.AttrChange, true, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrChange, true, ["test", undefined, "test2"]);
+            new Condition(CheckName.AttrChange, true, ["test", undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(ConditionName.AttrChange, true, [undefined, "test", "test2"]);
+            new Condition(CheckName.AttrChange, true, [undefined, "test", "test2"]);
         }).toThrow()
     })
 
     test("conditions", () => {
         expect(() => {
-            new Condition(ConditionName.Key, true, ["test"]);
-            new Condition(ConditionName.Click, true, ["test"]);
-            new Condition(ConditionName.SpriteColor, true, ["test", "0", "1", "2"]);
-            new Condition(ConditionName.SpriteTouching, true, ["test", "test2"]);
-            new Condition(ConditionName.Function, true, ["()=>{return null;}"]);
-            new Condition(ConditionName.VarComp, true, ["sprite", "var", ">", "0"]);
-            new Condition(ConditionName.AttrComp, true, ["sprite", "attr", ">", "0"]);
-            new Condition(ConditionName.VarChange, true, ["test", "var", "+"]);
-            new Condition(ConditionName.AttrChange, true, ["test", "attr", "-"]);
+            new Condition(CheckName.Key, true, ["test"]);
+            new Condition(CheckName.Click, true, ["test"]);
+            new Condition(CheckName.SpriteColor, true, ["test", "0", "1", "2"]);
+            new Condition(CheckName.SpriteTouching, true, ["test", "test2"]);
+            new Condition(CheckName.Function, true, ["()=>{return null;}"]);
+            new Condition(CheckName.VarComp, true, ["sprite", "var", ">", "0"]);
+            new Condition(CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+            new Condition(CheckName.VarChange, true, ["test", "var", "+"]);
+            new Condition(CheckName.AttrChange, true, ["test", "attr", "-"]);
         }).not.toThrow();
     })
 

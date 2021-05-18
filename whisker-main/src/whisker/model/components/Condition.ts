@@ -1,21 +1,8 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelEdge} from "./ModelEdge";
-import {Checks} from "../util/Checks";
+import {CheckName, Checks} from "../util/Checks";
 import {ModelResult} from "../../../test-runner/test-result";
-
-/** Type for finding the correct condition function, defining the event. */
-export enum ConditionName {
-    Key = "Key", // args: key name
-    Click = "Click", // args: sprite name
-    VarComp = "VarComp", // args: sprite name, variable name, comparison (=,>,<...), value to compare to
-    AttrComp = "AttrComp", // args: sprite name, attribute name, comparison (=,>,<...), value to compare to,
-    VarChange = "VarChange", // sprite name, var name,( + | - | = )
-    AttrChange = "AttrChange", // sprite name, attr name,( + | - | = )
-    SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
-    SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
-    Function = "Function", // args: js test function as a string
-} // todo add output condition
 
 /**
  * Evaluate the conditions for the given edge.
@@ -58,7 +45,7 @@ export function getCondition(condString): Condition {
  * Defining an edge condition.
  */
 export class Condition {
-    private readonly name: ConditionName;
+    private readonly name: CheckName;
     private _condition: (...state) => boolean;
     private readonly args: any[];
 
@@ -71,85 +58,19 @@ export class Condition {
      * @param negated Whether the condition is negated.
      * @param args The arguments for the condition to check later on.
      */
-    constructor(name: ConditionName, negated: boolean, args: any[]) {
+    constructor(name: CheckName, negated: boolean, args: any[]) {
         this.name = name;
         this.args = args;
         this._negated = negated;
-
-        let testArgs = function (length) {
-            let error = new Error("Not enough arguments for condition " + name + ".");
-            if (args.length !== length) {
-                throw error;
-            }
-
-            for (let i = 0; i < length; i++) {
-                if (args[i] == undefined) {
-                    throw error;
-                }
-            }
-        }
-
-        // Get the condition by the name given.
-        switch (this.name) {
-            case ConditionName.Key:
-            case ConditionName.Function:
-            case ConditionName.Click:
-                testArgs(1);
-                break;
-            case ConditionName.SpriteTouching:
-                testArgs(2);
-                break;
-            case ConditionName.VarChange:
-            case ConditionName.AttrChange:
-                testArgs(3);
-                break;
-            case ConditionName.SpriteColor:
-            case ConditionName.VarComp:
-            case ConditionName.AttrComp:
-                testArgs(4);
-                break;
-            default:
-                throw new Error("Condition type not recognized: " + this.name);
-        }
+        Checks.testArgs(this.name, Object.values(args));
     }
 
     /**
      * Register the check listener and test driver and check the condition for errors.
      */
-    registerComponents(cs: CheckUtility, t: TestDriver, result: ModelResult) {
+    registerComponents(cu: CheckUtility, t: TestDriver, result: ModelResult) {
         try {
-            switch (this.name) {
-                case ConditionName.SpriteTouching:
-                    this._condition = Checks.getSpriteTouchingCheck(t, cs, this.negated, (this.args)[0], (this.args)[1]);
-                    break;
-                case ConditionName.SpriteColor:
-                    this._condition = Checks.getSpriteColorTouchingCheck(t, cs, this.negated, (this.args)[0],
-                        (this.args)[1], (this.args)[2], (this.args)[3]);
-                    break;
-                case ConditionName.Key:
-                    this._condition = Checks.getKeyDownCheck(t, cs, this.negated, this.args[0]);
-                    break;
-                case ConditionName.Click:
-                    this._condition = Checks.getSpriteClickedCheck(t, this.negated, this.args[0]);
-                    break;
-                case ConditionName.VarComp:
-                    this._condition = Checks.getVariableComparisonCheck(t, this.negated, this.args[0], this.args[1],
-                        this.args[2], this.args[3]);
-                    break;
-                case ConditionName.AttrComp:
-                    this._condition = Checks.getAttributeComparisonCheck(t, this.negated, this.args[0], this.args[1],
-                        this.args[2], this.args[3]);
-                    break;
-                case ConditionName.AttrChange:
-                    this._condition = Checks.getAttributeChangeCheck(t, this.negated, this.args[0], this.args[1], this.args[2]);
-                    break;
-                case ConditionName.VarChange:
-                    this._condition = Checks.getVariableChangeCheck(t, this.negated, this.args[0], this.args[1], this.args[2]);
-                    break;
-                case ConditionName.Function:
-                    this._condition = Checks.getFunctionCheck(t, this.negated, this.args[0]);
-                    break;
-            }
+            this._condition = Checks.checkArgsWithTestDriver(t, this.name, this.negated, cu, this.args);
         } catch (e) {
             console.error(e);
             result.error.push(e);
@@ -166,7 +87,7 @@ export class Condition {
     /**
      * Get the name of the condition event.
      */
-    getConditionName(): ConditionName {
+    getConditionName(): CheckName {
         return this.name;
     }
 

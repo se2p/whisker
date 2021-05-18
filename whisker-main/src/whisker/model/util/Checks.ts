@@ -15,21 +15,104 @@ import Sprite from "../../../vm/sprite";
 // todo check when getting message
 // todo check volume > some value
 
+export enum CheckName {
+    AttrChange = "AttrChange", // sprite name, attr name, ( + | - | = )
+    AttrComp = "AttrComp",// args: sprite name, attribute name, comparison (=,>,<...), value to compare to
+    BackgroundChange = "BackgroundChange",
+    Click = "Click", // args: sprite name
+    Function = "Function",
+    Key = "Key", // args: key name
+    Output = "Output", // sprite name, string output
+    SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
+    SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
+    VarChange = "VarChange", // sprite name, var name, ( + | - | = )
+    VarComp = "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
+}
+
 export class Checks {
     /**
      * Get a method for checking if a key was pressed or not pressed.
      * @param t Instance of the test driver.
-     * @param cs Listener for the checks.
+     * @param cu Listener for the checks.
      * @param key Name of the key.
      * @param negated Whether this check is negated.
      */
-    static getKeyDownCheck(t: TestDriver, cs: CheckUtility, negated: boolean, key: string): () => boolean {
-        cs.registerKeyCheck(key);
+    static getKeyDownCheck(t: TestDriver, cu: CheckUtility, negated: boolean, key: string): () => boolean {
+        cu.registerKeyCheck(key);
         return () => {
-            if (cs.isKeyDown(key)) {
+            if (cu.isKeyDown(key)) {
                 return !negated;
             }
             return negated;
+        }
+    }
+
+    static testArgs(name: CheckName, args: any[]) {
+        console.log(name, args);
+        let testArgs = function (length) {
+            let error = new Error("Wrong number of arguments for effect " + name + ".");
+            if (args.length != length) {
+                throw error;
+            }
+
+            for (let i = 0; i < length; i++) {
+                if (args[i] == undefined) {
+                    throw error;
+                }
+            }
+        }
+
+        switch (name) {
+            case CheckName.BackgroundChange:
+            case CheckName.Function:
+            case CheckName.Key:
+            case CheckName.Click:
+                testArgs(1);
+                break;
+            case CheckName.Output:
+            case CheckName.SpriteTouching:
+                testArgs(2);
+                break;
+            case CheckName.VarChange:
+            case CheckName.AttrChange:
+                testArgs(3);
+                break;
+            case CheckName.AttrComp:
+            case CheckName.VarComp:
+            case CheckName.SpriteColor:
+                testArgs(4);
+                break;
+            default:
+                throw new Error("Check type not recognized: " + name);
+        }
+    }
+
+    static checkArgsWithTestDriver(t: TestDriver, name: CheckName, negated: boolean, cu: CheckUtility, args:any[]) {
+        switch (name) {
+            case CheckName.AttrComp:
+                return Checks.getAttributeComparisonCheck(t, negated, args[0], args[1], args[2], args[3]);
+            case CheckName.AttrChange:
+                return Checks.getAttributeChangeCheck(t, negated, args[0], args[1], args[2]);
+            case CheckName.BackgroundChange:
+                return Checks.getBackgroundChangeCheck(t, negated, args[0]);
+            case CheckName.Function:
+                return Checks.getFunctionCheck(t, negated, args[0]);
+            case CheckName.Output:
+                return Checks.getOutputOnSpriteCheck(t, negated, args[0], args[1]);
+            case CheckName.VarChange:
+                return Checks.getVariableChangeCheck(t, negated, args[0], args[1], args[2]);
+            case CheckName.VarComp:
+                return Checks.getVariableComparisonCheck(t, negated, args[0], args[1], args[2], args[3]);
+            case CheckName.SpriteTouching:
+                return Checks.getSpriteTouchingCheck(t, cu, negated, args[0], args[1]);
+            case CheckName.SpriteColor:
+                return Checks.getSpriteColorTouchingCheck(t, cu, negated, args[0], args[1], args[2], args[3]);
+            case CheckName.Key:
+                return Checks.getKeyDownCheck(t, cu, negated, args[0]);
+            case CheckName.Click:
+                return Checks.getSpriteClickedCheck(t, negated, args[0]);
+            default:
+                return undefined;
         }
     }
 
@@ -154,18 +237,18 @@ export class Checks {
      * Get a method checking whether two sprites are touching.
      *
      * @param t Instance of the test driver.
-     * @param cs Listener for the checks.
+     * @param cu Listener for the checks.
      * @param spriteName1 Name of the first sprite.
      * @param spriteName2 Name of the second sprite.
      * @param negated Whether this check is negated.
      */
-    static getSpriteTouchingCheck(t: TestDriver, cs: CheckUtility, negated: boolean, spriteName1: string,
+    static getSpriteTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName1: string,
                                   spriteName2: string): () => boolean {
         Util.checkSpriteExistence(t, spriteName1);
         Util.checkSpriteExistence(t, spriteName2);
-        cs.registerTouching(spriteName1, spriteName2);
+        cu.registerTouching(spriteName1, spriteName2);
         return () => {
-            const areTouching = cs.areTouching(spriteName1, spriteName2);
+            const areTouching = cu.areTouching(spriteName1, spriteName2);
             if (areTouching) {
                 return !negated;
             }
@@ -177,23 +260,23 @@ export class Checks {
      * Get a method whether a sprite touches a color.
 
      * @param t Instance of the test driver.
-     * @param cs Listener for the checks.
+     * @param cu Listener for the checks.
      * @param spriteName Name of the sprite.
      * @param r RGB red color value.
      * @param g RGB green color value.
      * @param b RGB blue color value.
      * @param negated Whether this check is negated.
      */
-    static getSpriteColorTouchingCheck(t: TestDriver, cs: CheckUtility, negated: boolean, spriteName: string,
+    static getSpriteColorTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName: string,
                                        r: number, g: number, b: number): () => boolean {
         Util.checkSpriteExistence(t, spriteName);
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw new Error("RGB ranges not correct.");
         }
-        cs.registerColor(spriteName, r, g, b);
+        cu.registerColor(spriteName, r, g, b);
 
         return () => {
-            if (cs.isTouchingColor(spriteName, r, g, b)) {
+            if (cu.isTouchingColor(spriteName, r, g, b)) {
                 return !negated;
             }
             return negated;
