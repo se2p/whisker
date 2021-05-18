@@ -23,14 +23,13 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
-import {Container} from "../utils/Container";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 
 const Runtime = require('scratch-vm/src/engine/runtime');

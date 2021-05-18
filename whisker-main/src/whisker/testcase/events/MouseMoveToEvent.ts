@@ -18,12 +18,10 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class MouseMoveToEvent implements ScratchEvent {
+export class MouseMoveToEvent extends ScratchEvent {
 
 
     private readonly x: number;
@@ -31,11 +29,12 @@ export class MouseMoveToEvent implements ScratchEvent {
     private readonly y: number;
 
     constructor(x: number, y: number) {
+        super();
         this.x = x;
         this.y = y;
     }
 
-    async apply(vm: VirtualMachine, args: number[]): Promise<void> {
+    async apply(args: number[]): Promise<void> {
         // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
         Container.testDriver.inputImmediate({
             device: 'mouse',

@@ -19,14 +19,15 @@
  */
 
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class TypeTextEvent implements ScratchEvent {
+export class TypeTextEvent extends ScratchEvent {
 
     private readonly _text: string;
 
     constructor(text: string) {
+        super();
         this._text = text;
     }
 

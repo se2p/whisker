@@ -19,11 +19,11 @@
  */
 
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {List} from "../../utils/List";
 
-export class SoundEvent implements ScratchEvent {
+export class SoundEvent extends ScratchEvent {
 
     private _volume:number;
 

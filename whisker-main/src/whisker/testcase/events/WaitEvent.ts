@@ -19,15 +19,16 @@
  */
 
 import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {List} from "../../utils/List";
 
-export class WaitEvent implements ScratchEvent {
+export class WaitEvent extends ScratchEvent {
 
     private steps: number;
 
     constructor(steps = 1) {
+        super();
         this.steps = steps;
     }
 

@@ -18,59 +18,51 @@
  *
  */
 
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {List} from "../../utils/List";
 
 
-
-export class DragEvent implements ScratchEvent {
+export class DragEvent extends ScratchEvent {
 
     private _x: number;
     private _y: number;
     private readonly _spriteName: string;
 
-    constructor(x: number, y:number, spriteName:string) {
+    constructor(spriteName: string, x = 0, y = 0) {
+        super();
+        this._spriteName = spriteName;
         this._x = x;
         this._y = y;
-        this._spriteName = spriteName;
     }
 
     async applyWithCoordinates(args: number[]): Promise<void> {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
-        this._x = x;
-        this._y = y;
         Container.testDriver.inputImmediate({
             device: 'drag',
             sprite: this._spriteName,
-            x: Math.trunc(x),
-            y: Math.trunc(y)
+            x: Math.trunc(args[0]),
+            y: Math.trunc(args[1])
         });
     }
 
     async apply(): Promise<void> {
-        const {x, y} = Container.vmWrapper.getScratchCoords(this._x, this._y)
-        Container.testDriver.inputImmediate({
-            device: 'drag',
-            sprite: this._spriteName,
-            x: Math.trunc(x),
-            y: Math.trunc(y)
-        });
+        const fittedCoordinates = this.fitCoordinates(this._x, this._y)
+        this._x =fittedCoordinates.x
+        this._y = fittedCoordinates.y
+        await this.applyWithCoordinates([this._x, this._y])
     }
 
     public toJavaScript(args: number[]): string {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
         return '' +
             `t.inputImmediate({
     device: 'drag',
-    x: ${Math.trunc(x)},
-    y: ${Math.trunc(y)}
+    x: ${Math.trunc(args[0])},
+    y: ${Math.trunc(args[1])}
 });`
     }
 
     public toString(args: number[]): string {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
-        return "Drag " + Math.trunc(x) + "/" + Math.trunc(y);
+        return "Drag " + Math.trunc(args[0]) + "/" + Math.trunc(args[1]);
     }
 
     getNumParameters(): number {

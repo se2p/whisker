@@ -21,7 +21,7 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {Container} from "../utils/Container";
 import {KeyDownEvent} from "./events/KeyDownEvent";
@@ -33,6 +33,7 @@ import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import {TypeTextEvent} from "./events/TypeTextEvent";
 import {Randomness} from "../utils/Randomness";
+import {DragEvent} from "./events/DragEvent";
 
 
 export abstract class ScratchEventExtractor {
@@ -126,6 +127,7 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_touchingobject': {
+                // MouseMoveToEvent
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
                 const value = field.TOUCHINGOBJECTMENU.value;
@@ -133,6 +135,8 @@ export abstract class ScratchEventExtractor {
                     eventList.add(new MouseMoveToEvent(target.x, target.y));
                     eventList.add(new MouseMoveEvent());
                 }
+                // DragEvent
+                eventList.add(new DragEvent(target.sprite.name))
                 break;
             }
             case 'sensing_distanceto': {
@@ -155,6 +159,10 @@ export abstract class ScratchEventExtractor {
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
                 eventList.add(new MouseDownEvent(!isMouseDown));
+                break;
+            }
+            case 'pen_penDown':{
+                eventList.add(new MouseMoveEvent())
                 break;
             }
             case 'sensing_askandwait':

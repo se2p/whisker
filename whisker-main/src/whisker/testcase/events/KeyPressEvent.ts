@@ -19,17 +19,18 @@
  */
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {List} from "../../utils/List";
 
-export class KeyPressEvent implements ScratchEvent {
+export class KeyPressEvent extends ScratchEvent {
 
     private readonly _keyOption: string;
 
     private _timeout: number;
 
     constructor(keyOption: string) {
+        super();
         this._keyOption = keyOption;
         this._timeout = Container.config.getPressDuration() / Container.acceleration;
     }
