@@ -6,7 +6,7 @@ import {EventObserver} from "../testcase/EventObserver";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
 import {seedScratch} from "../../util/random"
-import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NetworkChromosome} from "./NetworkChromosome";
@@ -14,6 +14,8 @@ import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
+import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -60,6 +62,11 @@ export class NetworkExecutor {
     private _random: Randomness;
 
     /**
+     * Extractor to determine possible events
+     */
+    private _eventExtractor: ScratchEventExtractor;
+
+    /**
      * Constructs a new NetworkExecutor object.
      * @param vmWrapper the wrapper of the Scratch-VM.
      * @param timeout timeout after which each playthrough is halted.
@@ -69,6 +76,7 @@ export class NetworkExecutor {
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
         this._random = Randomness.getInstance();
+        this._eventExtractor = new StaticScratchEventExtractor(this._vm);
         this.recordInitialState();
     }
 
@@ -112,7 +120,7 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
+            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
@@ -212,7 +220,7 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
+            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;

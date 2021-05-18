@@ -3,10 +3,9 @@
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
     "population-size": 10,
-    "chromosome-length": 30,
     "minVarChromosomeLength": 2,
-    "maxVarChromosomeLength": 30,
-    "extractor": "dynamic",
+    "maxVarChromosomeLength": 40,
+    "chromosome-length": 40,
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
@@ -14,7 +13,11 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
+        "removeProb": 0.3,
+        "changeProb": 0.7,
         "gaussianMutationPower": 5,
+        "insertProb": 0.3,
+        "alpha": 0.5,
         "maxMutationCountStart": null,
         "maxMutationCountFocusedPhase": null
     },
@@ -33,7 +36,7 @@
         "conditions": [
             {
                 "type": "fixed-time",
-                "duration": 100000
+                "duration": 1000
             },
             {
                 "type": "optimal"
@@ -49,7 +52,7 @@
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 200,
+    "waitStepUpperBound": 50,
     "click-duration": 20,
     "press-duration": 20
 }

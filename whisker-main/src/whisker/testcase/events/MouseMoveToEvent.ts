@@ -20,38 +20,43 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "../ScratchEvent";
+import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 import {Container} from "../../utils/Container";
-import {List} from "../../utils/List";
 
-export class KeyDownEvent implements ScratchEvent {
+export class MouseMoveToEvent implements ScratchEvent {
 
-    private readonly _keyOption: string;
-    private readonly _value: boolean;
 
-    constructor(keyOption: string, value: boolean) {
-        this._keyOption = keyOption;
-        this._value = value;
+    private readonly x: number;
+
+    private readonly y: number;
+
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(vm: VirtualMachine, args: number[]): Promise<void> {
+        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
         Container.testDriver.inputImmediate({
-            device: 'keyboard',
-            key: this._keyOption,
-            isDown: this._value
+            device: 'mouse',
+            x: Math.trunc(this.x),
+            y: Math.trunc(this.y)
         });
     }
 
     public toJavaScript(args: number[]): string {
+        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
         return '' +
-`t.inputImmediate({
-    device: 'keyboard',
-    key: '${this._keyOption}',
-    isDown: ${this._value}
-});`;
+            `t.inputImmediate({
+    device: 'mouse',
+    x: ${Math.trunc(this.x)},
+    y: ${Math.trunc(this.y)}
+});`
     }
 
     public toString(args: number[]): string {
-        return "KeyDown " + this._keyOption + ": " + this._value;
+        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+        return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 
     getNumParameters(): number {
@@ -59,8 +64,7 @@ export class KeyDownEvent implements ScratchEvent {
     }
 
     getParameter(): number[] {
-        // 0 returns False in JS/TS
-        return [this._value ? 1 : 0];
+        return [this.x, this.y];
     }
 
     setParameter(): void {

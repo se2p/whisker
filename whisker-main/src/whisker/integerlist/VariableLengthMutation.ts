@@ -42,29 +42,9 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
     private readonly _length: number;
 
     /**
-     * Probability of removing an integer from the IntegerList
-     */
-    private readonly _removeProb: number;
-
-    /**
-     * Probability of changing some integers in the IntegerList by adding gaussian noise.
-     */
-    private readonly _changeProb: number;
-
-    /**
      * Power of gaussian noise which is added to integer value in the change mutation
      */
     private readonly _gaussianMutationPower: number
-
-    /**
-     * Probability of inserting a new integer to the IntegerList
-     */
-    private readonly _insertProb: number;
-
-    /**
-     * Probability of repeatedly adding a new integer to the IntegerList
-     */
-    private readonly _alpha: number;
 
     /**
      * Random number generator.
@@ -72,58 +52,66 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
     private readonly _random: Randomness
 
 
-    constructor(min: number, max: number, length: number, removeProb: number, changeProb: number,
-                gaussianMutationPower: number, insertProb: number, alpha: number) {
+    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         this._min = min;
         this._max = max;
         this._length = length;
-        this._removeProb = removeProb;
-        this._changeProb = changeProb;
         this._gaussianMutationPower = gaussianMutationPower;
-        this._insertProb = insertProb;
-        this._alpha = alpha;
         this._random = Randomness.getInstance();
     }
 
     /**
-     * Applies mutation to the IntegerList by either removing, changing or adding integers to the IntegerList.
-     * @param chromosome the chromosome which will be mutated
+     * Returns a mutated deep copy of the given chromosome.
+     * Each integer in the codon list mutates with a probability of one divided by the lists size.
+     * If a index inside the list mutates it executes one of the following mutations with equal probability:
+     *  - add a new codon to the list at the index
+     *  - replace the current codon at the index using gaussian noise
+     *  - remove the current codon at the index
+     * @param chromosome The original chromosome, that mutates.
+     * @return A mutated deep copy of the given chromosome.
      */
     apply(chromosome: IntegerListChromosome): IntegerListChromosome {
-        let newCodons = new List<number>();
+        const newCodons = new List<number>();
         newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
-
-        if (this._random.nextDouble() < this._removeProb && newCodons.size() > 1) {
-            newCodons = this.remove(newCodons);
+        const mutationProbability = 1 / newCodons.size();
+        let index = 0;
+        while (index < newCodons.size()) {
+            if (this._random.nextDouble() < mutationProbability) {
+                index = this.mutateAtIndex(newCodons, index);
+            }
+            index++;
         }
-
-        if (this._random.nextDouble() < this._changeProb) {
-            newCodons = this.change(newCodons);
-        }
-
-        if (this._random.nextDouble() < this._insertProb) {
-            newCodons = this.insert(newCodons);
-        }
-
         return chromosome.cloneWith(newCodons);
     }
 
     /**
-     * Changes integers from the IntegerList by adding gaussian noise.
-     * @param oldCodons the IntegerList to mutate
+     * Execute one of the allowed mutations, with equally distributed probability.
+     * Since this modifies the size of the list, the adjusted index, after a mutation is returned.
+     *
+     * @param codons The list of codons that is being mutated.
+     * @param index  The index where to mutate inside the list.
+     * @return The modified index after the mutation.
      */
-    private change(oldCodons: List<number>): List<number> {
-        const mutationProbability = 1.0 / oldCodons.size();
-
-        const newCodons = new List<number>();
-        for (const codon of oldCodons) {
-            if (this._random.nextDouble() < mutationProbability) {
-                newCodons.add(this.getRandomCodonGaussian(codon));
-            } else {
-                newCodons.add(codon);
-            }
+    private mutateAtIndex(codons: List<number>, index: number) {
+        const mutation = this._random.nextInt(0, 3)
+        switch (mutation) {
+            case 0:
+                if (codons.size() < this._length) {
+                    codons.insert(this._random.nextInt(this._min, this._max), index);
+                    index++;
+                }
+                break;
+            case 1:
+                codons.replace(this.getRandomCodonGaussian(codons.get(index)), index);
+                break;
+            case 2:
+                if (codons.size() > 1) {
+                    codons.removeAt(index);
+                    index--;
+                }
+                break;
         }
-        return newCodons;
+        return index;
     }
 
     /**
@@ -136,47 +124,4 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
         // Wrap the sampled number into the range [this._min, this._max]
         return randomGaussian - (this._max + 1) * Math.floor(randomGaussian / (this._max + 1));
     }
-
-    /**
-     * Removes integers from the IntegerList
-     * @param oldCodons the IntegerList to mutate
-     */
-    private remove(oldCodons: List<number>): List<number> {
-        const mutationProbability = 1.0 / oldCodons.size();
-
-        const newCodons = new List<number>();
-        for (const codon of oldCodons) {
-            if (this._random.nextDouble() >= mutationProbability) {
-                newCodons.add(codon);
-            }
-        }
-
-        if (newCodons.isEmpty()) {
-            newCodons.addList(oldCodons);
-        }
-
-        return newCodons;
-    }
-
-    /**
-     *
-     * Adds integers to the IntegerList
-     * @param oldCodons the IntegerList to mutate
-     */
-    private insert(oldCodons: List<number>): List<number> {
-
-        const newCodons = new List<number>();
-        newCodons.addList(oldCodons);
-
-        let count = 0;
-
-        while (this._random.nextDouble() <= Math.pow(this._alpha, count) && newCodons.size() < this._length) {
-            count++;
-            const position = this._random.nextInt(0, newCodons.size());
-            newCodons.insert(this._random.nextInt(this._min, this._max), position);
-        }
-
-        return newCodons;
-    }
-
 }

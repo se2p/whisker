@@ -25,22 +25,22 @@ import {List} from "../../utils/List";
 
 export class WaitEvent implements ScratchEvent {
 
-    private timeout: number;
+    private steps: number;
 
-    constructor(duration = Container.config.getWaitDuration() ) {
-        this.timeout = duration;
+    constructor(steps = 1) {
+        this.steps = steps;
     }
 
     async apply(vm: VirtualMachine): Promise<void> {
-        await Container.testDriver.runForTime(this.timeout / Container.acceleration);
+        await Container.testDriver.runForSteps(this.steps);
     }
 
     public toJavaScript(args: number[]): string {
-        return `await t.runForTime(${this.timeout});`;
+        return `await t.runForSteps(${this.steps});`;
     }
 
     public toString(args: number[]): string {
-        return "Wait " + this.timeout + " ms";
+        return "Wait for " + this.steps + " steps";
     }
 
     getNumParameters(): number {
@@ -48,11 +48,11 @@ export class WaitEvent implements ScratchEvent {
     }
 
     getParameter(): number[] {
-        return [this.timeout];
+        return [this.steps];
     }
 
     setParameter(codons: List<number>, codonPosition: number): void {
-        // Waits of 0 seconds lead to bugs.
-        this.timeout = (codons.get(codonPosition % codons.size()) + 1) * Container.config.getWaitDurationFactor();
+        // Waits of 0 seconds/steps leads to endless loop.
+        this.steps = codons.get(codonPosition % codons.size()) % Container.config.getWaitStepUpperBound() + 1;
     }
 }
