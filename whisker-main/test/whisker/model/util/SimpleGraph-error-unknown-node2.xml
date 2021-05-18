@@ -1,13 +1,13 @@
 <models>
-    <graph id="g0" usage="program">
+    <model id="g0" usage="program">
         <node id="n0" startNode="true"/>
         <node id="n1" stopNode="true" />
         <edge id="e0" source="n0" target="n1" condition="Key:Space" effect="Output:Cat:Hmm"/>
-    </graph>
+    </model>
 
-    <graph id="g1" usage="program">
+    <model id="g1" usage="program">
         <node id="n0" startNode="true"/>
         <node id="n1" stopNode="true"/>
         <edge id="e0" source="nothere" target="n1" condition="Key:up arrow" effect="Output:Cat:Yes"/>
-    </graph>
+    </model>
 </models>

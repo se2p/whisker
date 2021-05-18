@@ -49,14 +49,6 @@ describe('ModelLoaderXML', () => {
         }).toThrow();
     });
 
-    test('No effect on edge.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-edge-effect.xml', 'utf8');
-        const loader = new ModelLoaderXML();
-        expect(function () {
-            loader.loadModels(text)
-        }).toThrow();
-    });
-
     test('No start node given.', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-startnode.xml', 'utf8');
         const loader = new ModelLoaderXML();
