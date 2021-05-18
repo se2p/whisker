@@ -33,6 +33,15 @@ export function getEffect(parentEdge: ModelEdge, effectString): Effect {
     }
     const parts = effectString.split(":");
 
+    if (parts[0] == CheckName.Function) {
+        // append all elements again as the function could contain a :
+        let theFunction = "";
+        for (let i = 1; i < parts.length; i++) {
+            theFunction += parts[i];
+        }
+        return new Effect(parentEdge, CheckName.Function, isANegation, [theFunction]);
+    }
+
     if (parts.length < 2) {
         throw new Error("Edge effect not correctly formatted. ':' missing.");
     }

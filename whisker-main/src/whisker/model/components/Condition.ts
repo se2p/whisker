@@ -34,6 +34,15 @@ export function getCondition(condString): Condition {
     }
 
     const parts = condString.split(":");
+    if (parts[0] == CheckName.Function) {
+        // append all elements again as the function could contain a :
+        let theFunction = "";
+        for (let i = 1; i < parts.length; i++) {
+            theFunction += parts[i];
+        }
+        return new Condition(CheckName.Function, negated, [theFunction]);
+    }
+
 
     if (parts.length < 2) {
         throw new Error("Edge condition not correctly formatted. ':' missing.");
