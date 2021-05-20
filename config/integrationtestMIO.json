@@ -3,9 +3,9 @@
     "algorithm": "mio",
     "chromosome": "variablelengthtest",
     "population-size": 10,
-    "minVarChromosomeLength": 20,
-    "maxVarChromosomeLength": 40,
-    "chromosome-length": 40,
+    "minVarChromosomeLength": 30,
+    "maxVarChromosomeLength": 30,
+    "chromosome-length": 30,
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
@@ -48,7 +48,7 @@
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 10,
+    "waitStepUpperBound": 5,
     "click-duration": 20,
     "press-duration": 20
 }
