@@ -57,7 +57,7 @@ export class ModelEdge {
                 e.message = "Edge '" + this.id + "': " + e.message;
                 console.error(e);
                 failedConditions.push(this.conditions[i]);
-                modelResult.error.push(e);
+                modelResult.addError(this.conditions[i], e.message);
             }
         }
 

@@ -39,9 +39,9 @@ class ModelResult {
         this.status = null;
 
         /**
-         * @type {?Error[]}
+         * @type {{checkId: string, errorText: string}}
          */
-        this.error = [];
+        this.errors = {};
 
         /**
          * type {[key:string]:number}
@@ -63,8 +63,20 @@ class ModelResult {
          * @type {string[]}
          */
         this.state = [];
+
+        this.hasErrors = false;
     }
 
+    /**
+     * @param {Check} check
+     * @param {string} error
+     */
+    addError(check, error) {
+        if (this.errors[check.id] === undefined) {
+            this.errors[check.id] = error;
+            this.hasErrors = true;
+        }
+    }
 }
 
 module.exports = {TestResult, ModelResult};

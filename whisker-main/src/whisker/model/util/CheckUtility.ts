@@ -186,16 +186,19 @@ export class CheckUtility {
     checkEffectsConstraint(edge: ModelEdge, modelResult: ModelResult) {
         let effects = edge.effects;
         let hadError = false;
+        let output = [];
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check()) {
-                let output = "Constraint failed! " + effects[i].toString();
-                console.error(output, this.testDriver.getTotalStepsExecuted());
-                modelResult.error.push(new Error(output));
+                let effectString = effects[i].toString();
+                console.error("Constraint failed! " + effectString, this.testDriver.getTotalStepsExecuted());
+                modelResult.addError(effects[i], "Constraint failed! " + effectString);
                 hadError = true;
+                output.push(effectString);
             }
         }
-        if (hadError) {
-            throw new Error("Constraints failed!");
+        if (hadError && edge.getEndNode().isStopNode) {
+            throw new Error("Constraints failed! " + output.join("/n")+"\n-> Model stopped for this test after" +
+                " constraint checks!");
         }
     }
 
@@ -225,7 +228,7 @@ export class CheckUtility {
                         + this.effectChecks[i].edge.id + "': " + e.message;
                     console.error(e);
                     this.failedChecks.push(this.effectChecks[i]);
-                    modelResult.error.push(e);
+                    modelResult.addError(this.effectChecks[i], e.message);
                 }
             }
         }
@@ -254,7 +257,7 @@ export class CheckUtility {
             let output = "Effect failed! Model: '" + edge.getModel().id + "'. Edge: '" + edge.id + "'. Effect: "
                 + effect.toString();
             console.error(output, testDriver.getTotalStepsExecuted());
-            modelResult.error.push(new Error(output));
+            modelResult.addError(effect, output);
         }
 
         this.failedChecks.forEach(effect => {

@@ -36,11 +36,9 @@ class TAP13Listener {
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
 
         this._onModelLoadError = this.onModelLoadError.bind(this);
-        this._onConstraintError = this.onConstraintError.bind(this);
         this._onModelWarning = this.onModelWarning.bind(this);
 
         modelTester.on(ModelTester.MODEL_LOAD_ERROR, this._onModelLoadError);
-        modelTester.on(ModelTester.MODEL_CONSTRAINT_FAILED, this._onConstraintError);
         modelTester.on(ModelTester.MODEL_WARNING, this._onModelWarning);
     }
 
@@ -52,7 +50,6 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
         this.modelTester.off(ModelTester.MODEL_LOAD_ERROR, this._onModelLoadError);
-        this.modelTester.off(ModelTester.MODEL_CONSTRAINT_FAILED, this._onConstraintError);
         this.modelTester.off(ModelTester.MODEL_WARNING, this._onModelWarning);
     }
 
@@ -102,12 +99,12 @@ class TAP13Listener {
             yamlOutput.coverage = TAP13Formatter.formatCoverage(result.coverage);
         }
 
-        if (result.modelResult && result.modelResult.error.length > 0) {
-            let modelError = "";
-            result.modelResult.error.forEach(e => {
-                modelError = modelError + "- " + e.message +"\n";
-            });
-            yamlOutput.modelError = modelError;
+        if (result.modelResult && result.modelResult.hasErrors) {
+            let modelErrors = "";
+            for (const errorKey in result.modelResult.errors) {
+                modelErrors = modelErrors + "- " + result.modelResult.errors[errorKey] +"\n";
+            }
+            yamlOutput.modelErrors = modelErrors;
         }
 
         const output = [`${success ? 'ok' : 'not ok'} ${testIndex}${testName}`];
@@ -134,13 +131,6 @@ class TAP13Listener {
      */
     onModelLoadError(err) {
         err = "MODEL: " + err;
-        this.print(TAP13Formatter.descriptionToYAML(err));
-    }
-
-    /**
-     * @param {string} err
-     */
-    onConstraintError(err) {
         this.print(TAP13Formatter.descriptionToYAML(err));
     }
 

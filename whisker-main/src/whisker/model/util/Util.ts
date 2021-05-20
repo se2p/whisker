@@ -50,13 +50,13 @@ export abstract class Util {
                 if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
                     throw new Error("Effect failed: not a numerical value in variable");
                 }
-                return oldValue < newValue;
+                return Number(oldValue.toString()) < Number(newValue.toString());
             case '-':
             case '--':
                 if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
                     throw new Error("Effect failed: not a numerical value in");
                 }
-                return oldValue > newValue;
+                return Number(oldValue.toString()) > Number(newValue.toString());
             case '=':
             case'==':
                 return oldValue == newValue;
@@ -64,12 +64,12 @@ export abstract class Util {
                 if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
                     throw new Error("Effect failed: not a numerical value in variable");
                 }
-                return oldValue <= newValue;
+                return Number(oldValue.toString()) <= Number(newValue.toString());
             case '-=':
                 if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
                     throw new Error("Effect failed: not a numerical value in variable");
                 }
-                return oldValue >= newValue;
+                return Number(oldValue.toString()) >= Number(newValue.toString());
             default:
                 throw new Error("Value Change Testing: Mode of change not known.");
         }
@@ -105,6 +105,9 @@ export abstract class Util {
         if (!this.testNumber(value1) || !this.testNumber(value2)) {
             throw new Error("Condition failed: not a numerical value in ");
         }
+        value1 = Number(value1.toString());
+        value2 = Number(value2.toString());
+
         if (comparison === ">") {
             return value1 > value2;
         } else if (comparison === "<") {

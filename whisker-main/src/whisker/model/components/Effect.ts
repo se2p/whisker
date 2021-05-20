@@ -1,7 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import {ModelResult} from "../../../test-runner/test-result";
-import {CheckName, Checks} from "../util/Checks";
+import {Check, CheckName} from "./Check";
 
 /**
  * Evaluate the effects of the given edge.
@@ -51,12 +51,8 @@ export function getEffect(parentEdge: ModelEdge, effectString): Effect {
 /**
  * Class representing the check of an edge effect.
  */
-export class Effect {
-    private readonly name: CheckName;
-    private readonly args = [];
-    private _effect: (...state) => boolean;
-    private readonly negated: boolean;
-    private readonly _edge: ModelEdge;
+export class Effect extends Check {
+    private _effect: () => boolean;
 
     /**
      * Get an effect representation, checks the arguments.
@@ -66,11 +62,8 @@ export class Effect {
      * @param args Arguments for the effect e.g. sprite names.
      */
     constructor(edge: ModelEdge, name: CheckName, negated: boolean, args: any[]) {
-        this._edge = edge;
-        this.name = name;
-        this.args = args;
-        this.negated = negated;
-        Checks.testArgs(name, args);
+        let newID = edge.id + ".effect" + (edge.effects.length + 1);
+        super(newID, edge, name, args, negated);
     }
 
     /**
@@ -85,33 +78,15 @@ export class Effect {
      */
     registerComponents(t: TestDriver, result: ModelResult) {
         try {
-            this._effect = Checks.checkArgsWithTestDriver(t, this.name, this.negated,null, this.args);
+            this._effect = this.checkArgsWithTestDriver(t, null);
         } catch (e) {
             console.error(e);
-            result.error.push(e);
+            result.addError(this, e.message);
         }
     }
 
-    get edge(): ModelEdge {
-        return this._edge;
-    }
-
-    get effect(): (...state) => boolean {
+    get effect(): () => boolean {
         return this._effect;
-    }
-
-    /**
-     * Get the name of the effect type.
-     */
-    getEffectName(): CheckName {
-        return this.name;
-    }
-
-    /**
-     * Whether the effect is negated e.g. 'it does not output hello'.
-     */
-    isANegation(): boolean {
-        return this.negated;
     }
 
     /**
@@ -183,7 +158,6 @@ export class Effect {
                     return false;
                 }
 
-                console.log(compValue1 + compOp1 + compValue2 + " && " + compValue2 + compOp2 + compValue1)
                 return !eval(compValue2 + compOp1 + compValue1) || !eval(compValue1 + compOp2 + compValue2);
             default:
                 return false;

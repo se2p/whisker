@@ -24,7 +24,6 @@ export class ModelTester extends EventEmitter {
     private result: ModelResult;
 
     static readonly MODEL_LOAD_ERROR = "ModelLoadError";
-    static readonly MODEL_CONSTRAINT_FAILED = "ModelConstraintFailed";
     static readonly MODEL_LOG = "ModelLog";
     static readonly MODEL_WARNING = "ModelWarning";
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
@@ -77,16 +76,13 @@ export class ModelTester extends EventEmitter {
         this.constraintsModel.registerComponents(this.checkUtility, testDriver, this.result);
 
         // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).
-        if (this.result.error.length > 0) {
+        if (this.result.hasErrors) {
             console.error("errors in conditions/effects before test run");
             return;
         }
 
         await this.addCallbacks(testDriver);
     }
-
-    // todo bug: when bowl hovers over bananas, step 305 bananas not touching red anymore -> bowl touching
-    //  bananas thrown, although it is still on red...
 
     private async addCallbacks(testDriver: TestDriver) {
         let beforeStepCallback = testDriver.addModelCallback(() => {
@@ -109,7 +105,6 @@ export class ModelTester extends EventEmitter {
                 constraintCallback.disable();
                 modelStepCallback.disable();
                 modelStoppedCallback.disable();
-                this.emit(ModelTester.MODEL_CONSTRAINT_FAILED, e.message + "\n Model stopped for this test!");
             }
             if (this.constraintsModel.stopped()) {
                 constraintCallback.disable(); // there are no more to check

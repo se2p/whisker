@@ -15,21 +15,12 @@ import Sprite from "../../../vm/sprite";
 // todo check when getting message
 // todo check volume > some value
 
-export enum CheckName {
-    AttrChange = "AttrChange", // sprite name, attr name, ( + | - | = )
-    AttrComp = "AttrComp",// args: sprite name, attribute name, comparison (=,>,<...), value to compare to
-    BackgroundChange = "BackgroundChange",
-    Click = "Click", // args: sprite name
-    Function = "Function",
-    Key = "Key", // args: key name
-    Output = "Output", // sprite name, string output
-    SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
-    SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
-    VarChange = "VarChange", // sprite name, var name, ( + | - | = )
-    VarComp = "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
-}
+/**
+ * Generates methods for different events (e.g. user inputs or sensorial Scratch events) based on a test driver and
+ * its loaded Scratch program.
+ */
+export abstract class CheckGenerator {
 
-export class Checks {
     /**
      * Get a method for checking if a key was pressed or not pressed.
      * @param t Instance of the test driver.
@@ -44,75 +35,6 @@ export class Checks {
                 return !negated;
             }
             return negated;
-        }
-    }
-
-    static testArgs(name: CheckName, args: any[]) {
-        console.log(name, args);
-        let testArgs = function (length) {
-            let error = new Error("Wrong number of arguments for effect " + name + ".");
-            if (args.length != length) {
-                throw error;
-            }
-
-            for (let i = 0; i < length; i++) {
-                if (args[i] == undefined) {
-                    throw error;
-                }
-            }
-        }
-
-        switch (name) {
-            case CheckName.BackgroundChange:
-            case CheckName.Function:
-            case CheckName.Key:
-            case CheckName.Click:
-                testArgs(1);
-                break;
-            case CheckName.Output:
-            case CheckName.SpriteTouching:
-                testArgs(2);
-                break;
-            case CheckName.VarChange:
-            case CheckName.AttrChange:
-                testArgs(3);
-                break;
-            case CheckName.AttrComp:
-            case CheckName.VarComp:
-            case CheckName.SpriteColor:
-                testArgs(4);
-                break;
-            default:
-                throw new Error("Check type not recognized: " + name);
-        }
-    }
-
-    static checkArgsWithTestDriver(t: TestDriver, name: CheckName, negated: boolean, cu: CheckUtility, args:any[]) {
-        switch (name) {
-            case CheckName.AttrComp:
-                return Checks.getAttributeComparisonCheck(t, negated, args[0], args[1], args[2], args[3]);
-            case CheckName.AttrChange:
-                return Checks.getAttributeChangeCheck(t, negated, args[0], args[1], args[2]);
-            case CheckName.BackgroundChange:
-                return Checks.getBackgroundChangeCheck(t, negated, args[0]);
-            case CheckName.Function:
-                return Checks.getFunctionCheck(t, negated, args[0]);
-            case CheckName.Output:
-                return Checks.getOutputOnSpriteCheck(t, negated, args[0], args[1]);
-            case CheckName.VarChange:
-                return Checks.getVariableChangeCheck(t, negated, args[0], args[1], args[2]);
-            case CheckName.VarComp:
-                return Checks.getVariableComparisonCheck(t, negated, args[0], args[1], args[2], args[3]);
-            case CheckName.SpriteTouching:
-                return Checks.getSpriteTouchingCheck(t, cu, negated, args[0], args[1]);
-            case CheckName.SpriteColor:
-                return Checks.getSpriteColorTouchingCheck(t, cu, negated, args[0], args[1], args[2], args[3]);
-            case CheckName.Key:
-                return Checks.getKeyDownCheck(t, cu, negated, args[0]);
-            case CheckName.Click:
-                return Checks.getSpriteClickedCheck(t, negated, args[0]);
-            default:
-                return undefined;
         }
     }
 
@@ -295,6 +217,10 @@ export class Checks {
         // todo eval the output (could also contain variables)
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+
+            // todo give a warning if they are not equal
+
+
             if (sprite.sayText.indexOf(eval(output)) != -1) {
                 return !negated;
             }
@@ -358,7 +284,7 @@ export class Checks {
             const newValue = eval(currentValueEval);
             const oldValue = eval(oldValueEval);
 
-            if (Checks.cannotMoveOnEdge(sprite, attrName, newValue, oldValue, change)) {
+            if (CheckGenerator.cannotMoveOnEdge(sprite, attrName, newValue, oldValue, change)) {
                 return !negated;
             }
 
@@ -376,7 +302,8 @@ export class Checks {
         }
     }
 
-    private static cannotMoveOnEdge(sprite: Sprite, attrName: string, newValue: number, oldValue: number, change: string): boolean {
+    private static cannotMoveOnEdge(sprite: Sprite, attrName: string, newValue: number, oldValue: number,
+                                    change: string): boolean {
         if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge() && newValue === oldValue
             && change != "=") {
             return ((change == '+' || change == '++') && newValue > 0)
