@@ -18,25 +18,22 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class MouseMoveToEvent implements ScratchEvent {
+export class MouseMoveToEvent extends ScratchEvent {
 
 
     private readonly x: number;
-
     private readonly y: number;
 
     constructor(x: number, y: number) {
+        super();
         this.x = x;
         this.y = y;
     }
 
-    async apply(vm: VirtualMachine, args: number[]): Promise<void> {
-        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'mouse',
             x: Math.trunc(this.x),
@@ -44,18 +41,16 @@ export class MouseMoveToEvent implements ScratchEvent {
         });
     }
 
-    public toJavaScript(args: number[]): string {
-        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    public toJavaScript(): string {
         return '' +
-            `t.inputImmediate({
+`t.inputImmediate({
     device: 'mouse',
     x: ${Math.trunc(this.x)},
     y: ${Math.trunc(this.y)}
 });`
     }
 
-    public toString(args: number[]): string {
-        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    public toString(): string {
         return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 

@@ -18,53 +18,39 @@
  *
  */
 
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {List} from "../../utils/List";
 
-export class MouseMoveEvent implements ScratchEvent {
+export class MouseMoveEvent extends ScratchEvent {
 
     private _x: number;
     private _y: number;
 
     constructor(x = 0, y = 0) {
+        super();
         this._x = x;
         this._y = y;
-    }
-
-    async applyWithCoordinates(args: number[]): Promise<void> {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
-        this._x = x;
-        this._y = y;
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            x: Math.trunc(x),
-            y: Math.trunc(y)
-        });
     }
 
     async apply(): Promise<void> {
-        const {x, y} = Container.vmWrapper.getScratchCoords(this._x, this._y)
         Container.testDriver.inputImmediate({
             device: 'mouse',
-            x: Math.trunc(x),
-            y: Math.trunc(y)
+            x: Math.trunc(this._x),
+            y: Math.trunc(this._y)
         });
     }
 
-    public toJavaScript(args: number[]): string {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'mouse',
-    x: ${Math.trunc(x)},
-    y: ${Math.trunc(y)}
+    x: ${Math.trunc(this._x)},
+    y: ${Math.trunc(this._y)}
 });`
     }
 
-    public toString(args: number[]): string {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
-        return "MouseMove " + Math.trunc(x) + "/" + Math.trunc(y);
+    public toString(): string {
+        return "MouseMove " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
     getNumParameters(): number {
@@ -75,9 +61,9 @@ export class MouseMoveEvent implements ScratchEvent {
         return [this._x, this._y];
     }
 
-    setParameter(codons: List<number>, codonPosition: number): void {
-        this._x = codons.get(codonPosition % codons.size());
-        codonPosition++;
-        this._y = codons.get(codonPosition % codons.size());
+    setParameter(args:number[]): void {
+        const fittedCoordinates = this.fitCoordinates(args[0], args[1])
+        this._x = fittedCoordinates.x;
+        this._y = fittedCoordinates.y;
     }
 }

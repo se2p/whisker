@@ -23,14 +23,13 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
-import {Container} from "../utils/Container";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
@@ -82,20 +81,20 @@ export class TestExecutor {
 
 
             // Select the next Event and set its parameter
-            const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon) % availableEvents.size())
-            nextEvent.setParameter(codons, numCodon);
-            const args = nextEvent.getParameter();
+            const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon++) % availableEvents.size())
+            const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
+            nextEvent.setParameter(args);
             events.add([nextEvent, args]);
-            numCodon += nextEvent.getNumParameters() + 1;
+            numCodon += nextEvent.getNumParameters();
             this.notify(nextEvent, args);
             // Send the chosen Event including its parameters to the VM
-            await nextEvent.apply(this._vm, args);
+            await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount()
 
             // Send a WaitEvent to the VM
             const waitEvent = new WaitEvent(1);
             events.add([waitEvent, []]);
-            await waitEvent.apply(this._vm);
+            await waitEvent.apply();
         }
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
@@ -103,6 +102,20 @@ export class TestExecutor {
         this.resetState();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return testChromosome.trace;
+    }
+
+    /**
+     * Collects the required parameters for a given event from the list of codons.
+     * @param event the event for which parameters should be collected
+     * @param codons the list of codons
+     * @param codonPosition the starting position from which on codons should be collected as parameters
+     */
+    private static getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
+        const args = [];
+        for (let i = 0; i < event.getNumParameters(); i++) {
+            args.push(codons.get(codonPosition++ % codons.size()));
+        }
+        return args;
     }
 
     public attach(observer: EventObserver): void {
