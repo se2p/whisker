@@ -157,6 +157,10 @@ export abstract class ScratchEventExtractor {
                 eventList.add(new MouseDownEvent(!isMouseDown));
                 break;
             }
+            case 'pen_penDown':{
+                eventList.add(new MouseMoveEvent())
+                break;
+            }
             case 'sensing_askandwait':
                 // Type text
                 if (Container.vmWrapper.isQuestionAsked()) {
