@@ -18,22 +18,22 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import {RenderedTarget} from'scratch-vm/src/sprites/rendered-target';
 
-export class ClickSpriteEvent implements ScratchEvent {
+export class ClickSpriteEvent extends ScratchEvent {
 
-    private readonly _target;
-
+    private readonly _target: RenderedTarget;
     private readonly _timeout: number;
 
-    constructor(target) {
-        this._target = target
+    constructor(target: RenderedTarget) {
+        super()
+        this._target = target;
         this._timeout = Container.config.getClickDuration() / Container.acceleration;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         if (this._target.isOriginal) {
             // Click on sprite
             Container.testDriver.inputImmediate({
@@ -54,10 +54,10 @@ export class ClickSpriteEvent implements ScratchEvent {
         }
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         if (this._target.isOriginal) {
             return '' +
-                `t.inputImmediate({
+`t.inputImmediate({
     device: 'mouse',
     sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
@@ -75,11 +75,11 @@ export class ClickSpriteEvent implements ScratchEvent {
         }
     }
 
-    public toString(args: number[]): string {
+    public toString(): string {
         if (this._target.isOriginal) {
             return "ClickSprite " + this._target.sprite.name;
         } else {
-            return "ClickClone " + this._target.sprite.name +" at "+this._target.x +"/" + this._target.y;
+            return "ClickClone " + this._target.sprite.name + " at " + this._target.x + "/" + this._target.y;
         }
     }
 
@@ -91,7 +91,7 @@ export class ClickSpriteEvent implements ScratchEvent {
         return;
     }
 
-    getParameter(): number[] {
-        return [];
+    getParameter(): (number | RenderedTarget)[] {
+        return [this._target, this._timeout];
     }
 }

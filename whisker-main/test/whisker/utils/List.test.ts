@@ -135,7 +135,7 @@ describe("List", () => {
     });
 
     test("Distinct objects", () => {
-        const list = new List([new ClickStageEvent("x"), new ClickStageEvent("x"), new ClickStageEvent("x")]);
+        const list = new List([new ClickStageEvent(), new ClickStageEvent(), new ClickStageEvent()]);
         const distinct = list.distinctObjects();
         expect(distinct.size()).toBe(1);
     });

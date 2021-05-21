@@ -21,7 +21,7 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {Container} from "../utils/Container";
 import {KeyDownEvent} from "./events/KeyDownEvent";
@@ -157,6 +157,10 @@ export abstract class ScratchEventExtractor {
                 eventList.add(new MouseDownEvent(!isMouseDown));
                 break;
             }
+            case 'pen_penDown':{
+                eventList.add(new MouseMoveEvent())
+                break;
+            }
             case 'sensing_askandwait':
                 // Type text
                 if (Container.vmWrapper.isQuestionAsked()) {
@@ -171,7 +175,7 @@ export abstract class ScratchEventExtractor {
                 break;
             case 'event_whenstageclicked':
                 // Click stage
-                eventList.add(new ClickStageEvent(target));
+                eventList.add(new ClickStageEvent());
                 break;
             case 'event_whengreaterthan':
                 // Sound

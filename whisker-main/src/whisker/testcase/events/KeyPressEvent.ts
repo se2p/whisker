@@ -18,23 +18,21 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {List} from "../../utils/List";
 
-export class KeyPressEvent implements ScratchEvent {
+export class KeyPressEvent extends ScratchEvent {
 
     private readonly _keyOption: string;
-
-    private _timeout: number;
+    private readonly _timeout: number;
 
     constructor(keyOption: string) {
+        super();
         this._keyOption = keyOption;
         this._timeout = Container.config.getPressDuration() / Container.acceleration;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,
@@ -43,7 +41,7 @@ export class KeyPressEvent implements ScratchEvent {
         });
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'keyboard',
@@ -53,7 +51,7 @@ export class KeyPressEvent implements ScratchEvent {
   });`;
     }
 
-    public toString(args: number[]): string {
+    public toString(): string {
         return "KeyPress " + this._keyOption;
     }
 
@@ -61,8 +59,8 @@ export class KeyPressEvent implements ScratchEvent {
         return 0;
     }
 
-    getParameter(): number[] {
-        return [];
+    getParameter(): (string | number)[] {
+        return [this._keyOption, this._timeout];
     }
 
     setParameter(): void {

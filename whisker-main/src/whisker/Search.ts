@@ -33,7 +33,7 @@ import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {ExecutionTrace} from "./testcase/ExecutionTrace";
-import {ScratchEvent} from "./testcase/ScratchEvent";
+import {ScratchEvent} from "./testcase/events/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
 import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
