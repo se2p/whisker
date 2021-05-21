@@ -14,7 +14,7 @@
         "operator": "variablelength",
         "probability": 1,
         "gaussianMutationPower": 5,
-        "maxMutationCountStart": 0,
+        "maxMutationCountStart": 3,
         "maxMutationCountFocusedPhase": 10
     },
     "selection": {
@@ -48,7 +48,7 @@
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 5,
+    "waitStepUpperBound": 50,
     "click-duration": 20,
     "press-duration": 20
 }
