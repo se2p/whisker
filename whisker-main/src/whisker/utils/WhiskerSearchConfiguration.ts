@@ -24,7 +24,7 @@ import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
 import {VariableLengthTestChromosomeGenerator} from "../testcase/VariableLengthTestChromosomeGenerator";
 import {StoppingCondition} from "../search/StoppingCondition";
-import {FixedTimeStoppingCondtion} from "../search/stoppingconditions/FixedTimeStoppingCondition";
+import {FixedTimeStoppingCondition} from "../search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
@@ -34,7 +34,7 @@ import {NetworkChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGen
 import {NeatMutation} from "../whiskerNet/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/NeatCrossover";
 import {Container} from "./Container";
-import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
 import {NeuroevolutionProperties} from "../whiskerNet/NeuroevolutionProperties";
 import {StatementNetworkFitness} from "../whiskerNet/NetworkFitness/StatementNetworkFitness";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
@@ -43,6 +43,12 @@ import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
 import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";
 import {InputExtraction} from "../whiskerNet/InputExtraction";
+import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
+import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/FitnessEvaluationStoppingCondition";
+import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
+import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor";
+import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
 
 class ConfigException implements Error {
     message: string;
@@ -166,9 +172,13 @@ export class WhiskerSearchConfiguration {
         if (stoppingCond == "fixed-iteration") {
             return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
         } else if (stoppingCond == "fixed-time") {
-            return new FixedTimeStoppingCondtion(stoppingCondition["duration"]);
+            return new FixedTimeStoppingCondition(stoppingCondition["duration"]);
         } else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
+        } else if (stoppingCond == 'events') {
+            return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
+        } else if (stoppingCond == 'evaluations') {
+            return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
         } else if (stoppingCond == "one-of") {
             const conditions = stoppingCondition["conditions"];
             const l: StoppingCondition<any>[] = [];
@@ -187,7 +197,7 @@ export class WhiskerSearchConfiguration {
                 return new BitflipMutation();
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome-length'], this.dict['mutation']['alpha']);
+                    this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(
                     this.dict['mutation']['mutationAddConnection'] as number,
@@ -228,6 +238,20 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getEventExtractor(): ScratchEventExtractor {
+        switch (this.dict['extractor']) {
+            case 'naive':
+                return new NaiveScratchEventExtractor(Container.vm);
+            case 'wait':
+                return new JustWaitScratchEventExtractor(Container.vm);
+            case 'static':
+                return new StaticScratchEventExtractor(Container.vm);
+            case 'dynamic':
+            default:
+                return new DynamicScratchEventExtractor(Container.vm);
+        }
+    }
+
     public getChromosomeGenerator(): ChromosomeGenerator<any> {
         switch (this.dict['chromosome']) {
             case 'bitstring':
@@ -242,17 +266,22 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthTestChromosomeGenerator(this.getSearchAlgorithmProperties(),
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
-                    this.dict['init-var-length']);
-            case 'sparseNetwork':
+                    this.dict['minVarChromosomeLength'],
+                    this.dict['maxVarChromosomeLength']);
+            case 'sparseNetwork': {
+                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    ScratchEventExtractor.extractEventsNeuroevolution(Container.vm).size(), this.dict['inputRate'],
-                    ScratchEventExtractor.hasMouseEvent(Container.vm))
-            case 'fullyConnectedNetwork':
+                    eventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
+                    eventExtractor.hasMouseEvent(Container.vm));
+            }
+            case 'fullyConnectedNetwork': {
+                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    ScratchEventExtractor.extractEventsNeuroevolution(Container.vm).size(),
-                    ScratchEventExtractor.hasMouseEvent(Container.vm))
+                    eventExtractor.extractEvents(Container.vm).size(),
+                    eventExtractor.hasMouseEvent(Container.vm));
+            }
             case 'test':
             default:
                 return new TestChromosomeGenerator(this.getSearchAlgorithmProperties(),
@@ -347,6 +376,14 @@ export class WhiskerSearchConfiguration {
             return this.dict["wait-duration"]
         } else {
             return 10;
+        }
+    }
+
+    public getWaitStepUpperBound(): number {
+        if ("waitStepUpperBound" in this.dict) {
+            return this.dict["waitStepUpperBound"]
+        } else {
+            return 200;
         }
     }
 

@@ -84,4 +84,26 @@ describe("Randomness", () => {
         }
         expect(sequence1).not.toEqual(sequence2);
     });
+
+    test("Pick number from GaussianDistribution", () =>{
+        const random = Randomness.getInstance();
+        const sampledValues = []
+        for (let i = 0; i < 10000; i++) {
+            sampledValues.push(random.nextGaussian(100,2))
+        }
+        const average = sampledValues.reduce((a, b) => a + b) / sampledValues.length;
+        expect(average).toBeGreaterThan(99)
+        expect(average).toBeLessThan(101)
+    })
+
+    test("Pick integer from GaussianDistribution", () =>{
+        const random = Randomness.getInstance();
+        const sampledValues = []
+        for (let i = 0; i < 10000; i++) {
+            sampledValues.push(random.nextGaussianInt(100,2))
+        }
+        const average = sampledValues.reduce((a, b) => a + b) / sampledValues.length;
+        expect(average).toBeGreaterThan(99)
+        expect(average).toBeLessThan(101)
+    })
 });

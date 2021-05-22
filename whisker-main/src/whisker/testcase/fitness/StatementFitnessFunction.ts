@@ -20,24 +20,22 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ExecutionTrace} from "../ExecutionTrace";
-import {GraphNode, UserEventNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
+import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
 import {List} from "../../utils/List";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
 
-    // TODO: Constructor needs CDG and target node
-    private _targetNode: GraphNode;
-    private _cdg: ControlDependenceGraph;
-    private _cfg: ControlFlowGraph;
-    private _approachLevels: Record<string, number>
-    private eventMapping: Record<string, string>
+    private readonly _targetNode: GraphNode;
+    private readonly _cdg: ControlDependenceGraph;
+    private readonly _cfg: ControlFlowGraph;
+    private readonly _approachLevels: Record<string, number>
+    private readonly _eventMapping: Record<string, string>
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
         this._cdg = cdg;
         this._cfg = cfg;
-        this.eventMapping = {};
+        this._eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
 
     }
@@ -63,10 +61,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
 
                 if (n.hasOwnProperty("userEvent") || n.hasOwnProperty("event")) {
-                    this.eventMapping[node.id] = n.id;
+                    this._eventMapping[node.id] = n.id;
                     const succs: [GraphNode] = cdg.successors(n.id);
                     for (const s of Array.from(succs.values())) {
-                        this.eventMapping[s.id] = n.id;
+                        this._eventMapping[s.id] = n.id;
                     }
                 }
 
@@ -90,11 +88,24 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             throw Error("Test case not executed");
         }
 
-        const approachLevel = this._getApproachLevel(chromosome.trace);
-        const branchDistance = this._getBranchDistance(chromosome.trace);
-        // console.log("Approach Level for Target", this._targetNode.id, " is ", approachLevel);
-        // console.log("Branch Distance for Target", this._targetNode.id, " is ", branchDistance);
-        return approachLevel + this._normalize(branchDistance)
+        if (chromosome.coverage.has(this._targetNode.id)) {
+            // Shortcut: If the target is covered, we don't need to spend
+            // any time on calculating anything
+            return 0;
+        }
+
+        const approachLevel = this.getApproachLevel(chromosome);
+        const branchDistance = this.getBranchDistance(chromosome);
+
+        let cfgDistanceNormalized;
+        if (approachLevel === 0 && branchDistance === 0) {
+            cfgDistanceNormalized = this._normalize(this.getCFGDistance(chromosome));
+        }
+        else {
+            cfgDistanceNormalized = 1;
+        }
+        console.log("Approach level: "+approachLevel+", branch distance: "+branchDistance+", CFG distance: "+cfgDistanceNormalized);
+        return approachLevel + this._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -112,7 +123,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return this.isOptimal(this.getFitness(chromosome));
     }
 
-    private _getApproachLevel(trace: ExecutionTrace) {
+    getApproachLevel(chromosome: TestChromosome):number {
+        const trace = chromosome.trace;
         let min: number = Number.MAX_VALUE;
 
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
@@ -131,8 +143,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             min = this._approachLevels[blockTrace.id]
         }
 
-        if (blockTrace.id in this.eventMapping) {
-            const userEventNode = this.eventMapping[blockTrace.id];
+        if (blockTrace.id in this._eventMapping) {
+            const userEventNode = this._eventMapping[blockTrace.id];
             const userEventMin = this._approachLevels[userEventNode];
             if (userEventMin <= currentMin && userEventMin <= min) {
                 min = this._approachLevels[userEventNode]
@@ -141,7 +153,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return min
     }
 
-    private _getBranchDistance(trace: ExecutionTrace) {
+    getBranchDistance(chromosome: TestChromosome):number {
+        const trace = chromosome.trace;
         let minBranchApproachLevel: number = Number.MAX_VALUE;
         let branchDistance = Number.MAX_VALUE;
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
@@ -156,7 +169,10 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             }
 
             if (traceMin <= minBranchApproachLevel) {
-                if (!this._targetNode.block.opcode.startsWith("event_") && this._targetNode.block.opcode !== 'control_start_as_clone' && blockTrace.opcode.startsWith("control") && !(blockTrace.opcode === "control_wait")) {
+                if (!this._targetNode.block.opcode.startsWith("event_when") &&
+                    this._targetNode.block.opcode !== 'control_start_as_clone' &&
+                    blockTrace.opcode.startsWith("control") &&
+                    !(blockTrace.opcode === "control_wait")) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -176,7 +192,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                         minBranchApproachLevel = traceMin;
                         branchDistance = newDistance;
                     }
-                } else if (blockTrace.opcode.startsWith("event_") || blockTrace.opcode === 'control_start_as_clone') {
+                } else if (blockTrace.opcode.startsWith("event_when") || blockTrace.opcode === 'control_start_as_clone') {
 
                     // In event blocks we always have the true distance, otherwise we would not be here
                     // An event block in the trace means it was executed
@@ -193,6 +209,51 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return branchDistance;
     }
 
+    getCFGDistance(chromosome: TestChromosome):number {
+
+        /*
+            function bfs: go through blocks from the targetNode, all uncovered blocks are visited ones. However, to avoid
+            situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
+            we need to still record levels, and use a queue to save nodes for BFS.
+        */
+        function bfs (cfg, targetNode, coveredBlocks) {
+            // console.log('blockTraces: ', blockTraces);
+            const queue = [targetNode];
+            const visited = new Set([targetNode]);
+            let node;
+            let level = -1;
+            while (queue.length > 0) {
+                const qSize = queue.length;
+                level += 1;
+                for (let i = 0; i < qSize; i ++) {
+                    node = queue.shift();
+                    if (coveredBlocks.has(node.id)){
+                        return level;
+                    }
+                    visited.add(node);
+                    for (const pred of cfg.predecessors(node.id)) {
+                        if (!visited.has(pred)) {
+                            queue.push(pred);
+                        }
+                    }
+                }
+            }
+            /*
+            the only possibility that none of the targetNode's predecessors is included in blockTrace, is that
+            the targetNode is events, userEvents, or starting ones, e.g., Entry, start, keypressed:space. In those cases,
+            because approach level and branch distance is already 0, these blocks must be executed anyway, so
+            return 0.
+             */
+            return 0;
+        }
+
+        const coveredBlocks = chromosome.coverage;
+        const level = bfs(this._cfg, this._targetNode, coveredBlocks);
+        return level
+
+    }
+
+
     private _normalize(x: number): number {
         return x / (x + 1.0);
     }
@@ -200,14 +261,28 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     _checkControlBlock(statement, controlNode): boolean {
         let requiredCondition;
         switch (controlNode.block.opcode) {
-            case 'control_repeat':
-            case 'control_repeat_until':
             case 'control_forever': { // Todo not sure about forever
                requiredCondition = true;
                break;
             }
             case 'control_wait_until': {
                 requiredCondition = true;
+                break;
+            }
+            case 'control_repeat': {
+                requiredCondition = false;
+                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                    requiredCondition = true;
+                }
+                break;
+            }
+            case 'control_repeat_until': {
+                requiredCondition = true;
+                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                    requiredCondition = false;
+                }
                 break;
             }
             case 'control_if': {
@@ -240,7 +315,9 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
     _matchesBranchStart(statement, controlNode, branchStartId): boolean {
         let cur = statement;
-        while (cur && cur.id !== controlNode.id) {
+        const traversed = []
+        while (cur && cur.id !== controlNode.id && !traversed.includes(cur)) {
+            traversed.push(cur)
             if (cur.id === branchStartId) {
                 return true;
             }

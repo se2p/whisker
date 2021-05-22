@@ -27,6 +27,7 @@ import {FitnessFunction} from "../search/FitnessFunction";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {TestChromosome} from "../testcase/TestChromosome";
+import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 export abstract class TestGenerator {
 
@@ -38,7 +39,7 @@ export abstract class TestGenerator {
         this._config = configuration;
     }
 
-    public abstract generateTests(project: ScratchProject): Promise<List<WhiskerTest>>;
+    public abstract generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary>;
 
     protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())

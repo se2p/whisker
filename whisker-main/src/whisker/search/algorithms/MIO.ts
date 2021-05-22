@@ -159,8 +159,57 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log("Iteration " + this._iterations + ", covered goals: "
                 + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
         }
-        StatisticsCollector.getInstance().createdTestsCount = this._iterations;
         return this._bestIndividuals;
+    }
+
+/**
+ * Summarize the solution saved in _archive.
+ * @returns: For each statement that is not covered, it returns 4 items:
+ * 		- Not covered: the statement that’s not covered by any
+ *        function in the _bestIndividuals.
+ *     	- ApproachLevel: the approach level of that statement
+ *     	- BranchDistance: the branch distance of that statement
+ *     	- Fitness: the fitness value of that statement
+ */
+
+    summarizeSolution(): string {
+        const summary = [];
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const curSummary = {};
+            if (!this._archiveCovered.has(fitnessFunctionKey)) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                curSummary['block'] = fitnessFunction.toString();
+                let fitness = Number.MAX_VALUE;
+                let approachLevel = Number.MAX_VALUE;
+                let branchDistance = Number.MAX_VALUE;
+                let CFGDistance = Number.MAX_VALUE;
+                for (const chromosome of this._bestIndividuals) {
+                    const curFitness = fitnessFunction.getFitness(chromosome);
+                    if (curFitness < fitness) {
+                        fitness = curFitness;
+                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
+                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
+                        if (approachLevel === 0 && branchDistance === 0) {
+                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
+                        }
+                        else {
+                            CFGDistance = Number.MAX_VALUE;
+                            //this means that it was unnecessary to calculate cfg distance, since
+                            //approach level or branch distance was not 0;
+                        }
+                    }
+                }
+                curSummary['ApproachLevel'] = approachLevel;
+                curSummary['BranchDistance'] = branchDistance;
+                curSummary['CFGDistance'] = CFGDistance;
+                curSummary['Fitness'] = fitness;
+                if (Object.keys(curSummary).length > 0){
+                    summary.push(curSummary);
+                }
+            }
+
+        }
+        return JSON.stringify({'uncoveredBlocks': summary});
     }
 
     /**

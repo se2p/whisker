@@ -21,100 +21,175 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import Scratch3LooksBlocks from 'scratch-vm/src/blocks/scratch3_looks.js';
+import {ScratchEvent} from "./events/ScratchEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
-import {ScratchEvent} from "./ScratchEvent";
+import {Container} from "../utils/Container";
 import {KeyDownEvent} from "./events/KeyDownEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
+import {MouseMoveToEvent} from "./events/MouseMoveToEvent";
 import {MouseDownEvent} from "./events/MouseDownEvent";
-import {TypeTextEvent} from "./events/TypeTextEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
-import {WaitEvent} from "./events/WaitEvent";
+import {TypeTextEvent} from "./events/TypeTextEvent";
 import {Randomness} from "../utils/Randomness";
-import {Container} from "../utils/Container";
 
-export class ScratchEventExtractor {
 
-    private static availableWaitDurations = new List<number>();
-    private static availableTextSnippets = new List<string>();
+export abstract class ScratchEventExtractor {
 
-    static hasEvents(vm: VirtualMachine): boolean {
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
-                        return true;
-                    }
-                }
-            }
-        }
+    protected availableTextSnippets = new List<string>();
+    protected proceduresMap = new Map<string, List<ScratchEvent>>();
 
-        return !this.availableWaitDurations.isEmpty();
+    constructor(vm: VirtualMachine) {
+        this.extractAvailableTextSnippets(vm);
+        this.extractProcedures(vm);
     }
 
     /**
-     * Checks if the Scratch project has a mouseMove event
+     * Returns all applicable events
      * @param vm the Scratch-VM of the project
-     * @return true if the project has a mouseMove event
+     * @return a list of applicable events
      */
-    static hasMouseEvent(vm: VirtualMachine): boolean {
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
-                        return true;
-                }
-            }
-        }
-        return false;
-    }
+    public abstract extractEvents(vm: VirtualMachine): List<ScratchEvent>;
 
-    static extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        const eventList = new List<ScratchEvent>();
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
-                }
-            }
-        }
-
-        // TODO: This does not seem to capture all cases, so deactivated until we have a better solution
-        // if (vm.runtime.threads.length > 0) {
-            // TODO: Maybe we shouldn't send _all_ delays?
-            for (const duration of this.availableWaitDurations) {
-                eventList.add(new WaitEvent(duration));
-            }
-        // }
-
-        return eventList.distinctObjects();
-    }
 
     /**
-     * Copy of the method above (extractEvents(VirtualMachine)) but includes only one WaitEvent.
-     * In order to keep the networks as small as possible; in NE we are only interested in one WaitEvent as multiple
-     * WaitEvents lead to more OutputNodes.
-     * @param vm the Scratch-VM of the given Scratch project
+     * Traverse downwards the block hierarchy and collect all encountered events.
+     * @param target the rendered target of the vm
+     * @param block the current block which will be checked for events
+     * @param foundEvents collects the encountered Events
      */
-    static extractEventsNeuroevolution(vm: VirtualMachine): List<ScratchEvent> {
-        const eventList = new List<ScratchEvent>();
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(blockId)));
+    protected traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
+
+        while (block) {
+            foundEvents.addList(this._extractEventsFromBlock(target, block))
+            // first branch (if, forever, repeat, ...)
+            if (block.inputs.SUBSTACK) {
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block)
+                this.traverseBlocks(target, branchBlock, foundEvents);
+            }
+            // else branch
+            if (block.inputs.SUBSTACK2) {
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block)
+                this.traverseBlocks(target, branchBlock, foundEvents);
+            }
+
+            // look at the block(s) inside a conditional statement
+            if (block.inputs.CONDITION) {
+                const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
+                // Handle conditional statements with two condition blocks
+                if (condition.inputs.OPERAND1) {
+                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
+                }
+                if (condition.inputs.OPERAND1) {
+                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
+                }
+                foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
+            }
+
+            // handle procedure calls by mapping the call to its corresponding procedure_definition
+            if (target.blocks.getOpcode(block) === 'procedures_call') {
+                if (this.proceduresMap.has(block.mutation.proccode)) {
+                    foundEvents.addList(this.proceduresMap.get(block.mutation.proccode))
                 }
             }
+            block = target.blocks.getBlock(block.next);
         }
-        eventList.add(new WaitEvent());
-        return eventList.distinctObjects();
     }
+
+
+    // TODO: How to handle event parameters?
+    protected _extractEventsFromBlock(target, block): List<ScratchEvent> {
+        const eventList = new List<ScratchEvent>();
+        if (typeof block.opcode === 'undefined') {
+            return eventList;
+        }
+
+        switch (target.blocks.getOpcode(block)) {
+            case 'event_whenkeypressed': {  // Key press
+                const fields = target.blocks.getFields(block);
+                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
+                // one event per concrete key for which there is a hat block
+                break;
+            }
+            case 'sensing_keypressed': {
+                const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
+                const fields = target.blocks.getFields(keyOptionsBlock);
+                const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
+                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
+                break;
+            }
+            case 'sensing_mousex':
+            case 'sensing_mousey': {
+                // Mouse move
+                eventList.add(new MouseMoveEvent());
+                break;
+            }
+            case 'sensing_touchingobject': {
+                const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
+                const field = target.blocks.getFields(touchingMenuBlock);
+                const value = field.TOUCHINGOBJECTMENU.value;
+                if (value == "_mouse_") {
+                    eventList.add(new MouseMoveToEvent(target.x, target.y));
+                    eventList.add(new MouseMoveEvent());
+                }
+                break;
+            }
+            case 'sensing_distanceto': {
+                const distanceMenuBlock = target.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
+                const field = target.blocks.getFields(distanceMenuBlock);
+                const value = field.DISTANCETOMENU.value;
+                if (value == "_mouse_") {
+                    // TODO: Maybe could determine position to move to here?
+                    eventList.add(new MouseMoveEvent());
+                }
+                break;
+            }
+            case 'motion_pointtowards': {
+                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
+                if (towards.fields.TOWARDS.value === '_mouse_')
+                    eventList.add(new MouseMoveEvent());
+                break;
+            }
+            case 'sensing_mousedown': {
+                // Mouse down
+                const isMouseDown = Container.testDriver.isMouseDown();
+                eventList.add(new MouseDownEvent(!isMouseDown));
+                break;
+            }
+            case 'pen_penDown':{
+                eventList.add(new MouseMoveEvent())
+                break;
+            }
+            case 'sensing_askandwait':
+                // Type text
+                if (Container.vmWrapper.isQuestionAsked()) {
+                    eventList.addList(this._getTypeTextEvents());
+                }
+                break;
+            case 'event_whenthisspriteclicked':
+                // Click sprite
+                if (target.visible === true) {
+                    eventList.add(new ClickSpriteEvent(target));
+                }
+                break;
+            case 'event_whenstageclicked':
+                // Click stage
+                eventList.add(new ClickStageEvent());
+                break;
+            case 'event_whengreaterthan':
+                // Sound
+                eventList.add(new SoundEvent());
+                break;
+        }
+        return eventList;
+    }
+
 
     /**
      * Collects all available text snippets that can be used for generating answers.
      */
-    static extractAvailableTextSnippets(vm: VirtualMachine): void {
+    public extractAvailableTextSnippets(vm: VirtualMachine): void {
         this.availableTextSnippets = new List<string>();
         // TODO: Text length with random length?
         this.availableTextSnippets.add(this._randomText(3)); // TODO: Any hints on text?
@@ -130,123 +205,28 @@ export class ScratchEventExtractor {
         }
     }
 
-
     /**
-     * Collects all available durations that can be used for wait events
+     * Get all hat blocks and set up the procedureMap which maps the name of a procedure
+     * to the encountered events of the procedure definition script.
      */
-    static extractAvailableDurations(vm: VirtualMachine): void {
-        this.availableWaitDurations = new List<number>();
-
+    public extractProcedures(vm: VirtualMachine): void {
         for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
-                    if (duration > 0 && !this.availableWaitDurations.contains(duration))
-                        this.availableWaitDurations.add(duration);
+            for (const scriptId of target.sprite.blocks.getScripts()) {
+                const hatBlock = target.blocks.getBlock(scriptId);
+
+                if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
+                    const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
+                    if (!this.proceduresMap.has(proccode)) {
+                        const procedureEvents = new List<ScratchEvent>();
+                        this.traverseBlocks(target, hatBlock, procedureEvents);
+                        this.proceduresMap.set(proccode, procedureEvents)
+                    }
                 }
             }
         }
     }
 
-
-    // TODO: How to handle event parameters?
-    static _extractEventsFromBlock(target, block): List<ScratchEvent> {
-        const eventList = new List<ScratchEvent>();
-        const fields = target.blocks.getFields(block);
-        if (typeof block.opcode === 'undefined') {
-            return eventList;
-        }
-
-        switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed': // Key press
-                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
-                // one event per concrete key for which there is a hat block
-                break;
-            case 'sensing_keyoptions': // Key down
-                const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
-                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
-                break;
-            case 'sensing_mousex':
-            case 'sensing_mousey':
-            case 'touching-mousepointer': // TODO fix block name
-                // Mouse move
-                eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
-                break;
-            case 'sensing_mousedown':
-                // Mouse down
-                const isMouseDown = Container.testDriver.isMouseDown();
-                eventList.add(new MouseDownEvent(!isMouseDown)); // TODO: Any hints on position?
-                break;
-            case 'sensing_askandwait':
-                // Type text
-                if (Container.vmWrapper.isQuestionAsked()) {
-                    eventList.addList(this._getTypeTextEvents());
-                }
-                break;
-            case 'event_whenthisspriteclicked':
-                // Click sprite
-                eventList.add(new ClickSpriteEvent(target));
-                break;
-            case 'event_whenstageclicked':
-                // Click stage
-                eventList.add(new ClickStageEvent(target));
-                break;
-            case 'event_whengreaterthan':
-                // Sound
-                eventList.add(new SoundEvent()); // TODO: Volume as parameter
-                break;
-            case 'event_whenlessthan':
-                // Wait duration
-                eventList.add(new WaitEvent()); // TODO: Duration as parameter
-                break;
-        }
-        return eventList;
-    }
-
-    /**
-     * Checks if the block has a mouseMove event handler
-     */
-    // TODO: Search through the fields if they have the 'mouse' value
-    private static _searchForMouseEvent(target, block): boolean {
-        if (typeof block.opcode === 'undefined') {
-            return false;
-        }
-
-        switch (target.blocks.getOpcode(block)) {
-            case 'motion_pointtowards_menu':
-            case 'motion_pointtowards':
-                return true;
-            default:
-                return false;
-        }
-    }
-
-
-    static _hasEvents(target, block): boolean {
-        const fields = target.blocks.getFields(block);
-        if (typeof block.opcode === 'undefined') {
-            return false;
-        }
-
-        switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed':
-            case 'sensing_keyoptions':
-            case 'sensing_mousex':
-            case 'sensing_mousey':
-            case 'touching-mousepointer':
-            case 'sensing_mousedown':
-            case 'sensing_askandwait':
-            case 'event_whenthisspriteclicked':
-            case 'event_whenstageclicked':
-            case 'event_whengreaterthan':
-            case 'event_whenlessthan':
-                return true;
-        }
-        return false;
-    }
-
-
-    private static _randomText(length: number): string {
+    protected _randomText(length: number): string {
         let answer = '';
         const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
         for (let i = 0; i < length; i++) {
@@ -256,7 +236,7 @@ export class ScratchEventExtractor {
         return answer;
     }
 
-    static _extractWaitDurations(target, block): number {
+    private _extractWaitDurations(target, block): number {
         const inputs = target.blocks.getInputs(block);
         if (target.blocks.getOpcode(block) == 'control_wait') {
             const op = target.blocks.getBlock(inputs.DURATION.block);
@@ -279,16 +259,7 @@ export class ScratchEventExtractor {
         return -1;
     }
 
-    private static _getTypeTextEvents(): List<TypeTextEvent> {
-        const typeTextEventList = new List<TypeTextEvent>();
-        let length = this.availableTextSnippets.size();
-        for (let i = 0; i < length; i++) {
-            typeTextEventList.add(new TypeTextEvent(this.availableTextSnippets.get(i)))
-        }
-        return typeTextEventList;
-    }
-
-    static _extractAvailableTextSnippets(target, block): string {
+    private _extractAvailableTextSnippets(target, block): string {
         let availableTextSnippet = '';
         if (target.blocks.getOpcode(block) == 'operator_equals') {
             const inputs = target.blocks.getInputs(block);
@@ -303,4 +274,109 @@ export class ScratchEventExtractor {
         }
         return availableTextSnippet;
     }
+
+    protected _getTypeTextEvents(): List<TypeTextEvent> {
+        const typeTextEventList = new List<TypeTextEvent>();
+        const length = this.availableTextSnippets.size();
+        for (let i = 0; i < length; i++) {
+            typeTextEventList.add(new TypeTextEvent(this.availableTextSnippets.get(i)))
+        }
+        return typeTextEventList;
+    }
+
+
+    /**
+     * Checks if the Scratch project has a mouseMove event
+     * @param vm the Scratch-VM of the project
+     * @return true if the project has a mouseMove event
+     */
+    public hasMouseEvent(vm: VirtualMachine): boolean {
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the block has a mouseMove event handler
+     */
+    // TODO: Search through the fields if they have the 'mouse' value
+    private _searchForMouseEvent(target, block): boolean {
+        if (typeof block.opcode === 'undefined') {
+            return false;
+        }
+
+        switch (target.blocks.getOpcode(block)) {
+            case 'motion_pointtowards_menu':
+            case 'motion_pointtowards':
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Checks if the Scratch project has any events
+     * @param vm the Scratch-VM of the project
+     * @return true if the project has any events
+     */
+    public static hasEvents(vm: VirtualMachine): boolean {
+        for (const target of vm.runtime.targets) {
+            if (target.hasOwnProperty('blocks')) {
+                for (const blockId of Object.keys(target.blocks._blocks)) {
+                    if (this._hasEvents(target, target.blocks.getBlock(blockId))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static _hasEvents(target, block): boolean {
+        if (typeof block.opcode === 'undefined') {
+            return false;
+        }
+
+        switch (target.blocks.getOpcode(block)) {
+            case 'event_whenflagclicked':
+            case 'event_whenkeypressed':
+            case 'sensing_keyoptions':
+            case 'sensing_mousex':
+            case 'sensing_mousey':
+            case 'sensing_mousedown':
+            case 'sensing_askandwait':
+            case 'event_whenthisspriteclicked':
+            case 'event_whenstageclicked':
+            case 'event_whengreaterthan':
+            case 'event_whenlessthan':
+                return true;
+            case 'sensing_touchingobject': {
+                const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
+                const field = target.blocks.getFields(touchingMenuBlock);
+                const value = field.TOUCHINGOBJECTMENU.value;
+                if (value == "_mouse_") {
+                    return true;
+                }
+                break;
+            }
+            case 'sensing_distanceto': {
+                const distanceMenuBlock = target.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
+                const field = target.blocks.getFields(distanceMenuBlock);
+                const value = field.DISTANCETOMENU.value;
+                if (value == "_mouse_") {
+                    return true;
+                }
+                break;
+            }
+        }
+        return false;
+    }
+
 }

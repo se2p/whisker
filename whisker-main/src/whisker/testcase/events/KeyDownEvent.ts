@@ -18,21 +18,21 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class KeyDownEvent implements ScratchEvent {
+export class KeyDownEvent extends ScratchEvent {
 
     private readonly _keyOption: string;
     private readonly _value: boolean;
 
     constructor(keyOption: string, value: boolean) {
+        super();
         this._keyOption = keyOption;
         this._value = value;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,
@@ -40,7 +40,7 @@ export class KeyDownEvent implements ScratchEvent {
         });
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'keyboard',
@@ -49,11 +49,20 @@ export class KeyDownEvent implements ScratchEvent {
 });`;
     }
 
-    public toString(args: number[]): string {
-        return "KeyDown " + this._keyOption+": "+this._value;
+    public toString(): string {
+        return "KeyDown " + this._keyOption + ": " + this._value;
     }
 
     getNumParameters(): number {
         return 0;
+    }
+
+    getParameter(): number[] {
+        // 0 returns False in JS/TS
+        return [this._value ? 1 : 0];
+    }
+
+    setParameter(): void {
+        return;
     }
 }

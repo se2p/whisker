@@ -62,14 +62,22 @@ const loadTestsFromString = function (string) {
 
 const runSearch = async function () {
     Whisker.scratch.stop();
-    console.log('Whisker-Web: loading project');
+    const projectName = Whisker.projectFileSelect.getName();
+    const configName =
+        Whisker.configFileSelect.hasName() ?
+            Whisker.configFileSelect.getName() :
+            'default.json';
+    console.log(`Whisker-Web: loading project ${projectName}`);
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
-    return Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, config, accelerationFactor);
+    const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, configName,
+        accelerationFactor);
+    Whisker.outputLog.print(res[1]);
+    return res[0];
 };
 
 const _runTestsWithCoverage = async function (vm, project, tests) {

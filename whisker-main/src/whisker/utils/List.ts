@@ -20,6 +20,7 @@
 
 import {Randomness} from "./Randomness";
 import isEqual from 'lodash.isequal';
+
 /**
  * A class to store a list of elements of the same type.
  *
@@ -74,8 +75,17 @@ export class List<T> implements Iterable<T> {
     }
 
     /**
+     * Replaces the element at the given position with the specified element.
+     * @param newElement the new element to replace the old element with
+     * @param position the position at which the old element should be replaced with the new element
+     */
+    replace(newElement: T, position: number): void {
+        this._items[position] = newElement;
+    }
+
+    /**
      * Appends the specified element to the end of this list.
-     * @param element element to be added to the list
+     * @param elements element to be added to the list
      */
     addAll(elements: T[]): void {
         this._items = this._items.concat(elements) // TODO: Nicer way to do this?
@@ -83,7 +93,7 @@ export class List<T> implements Iterable<T> {
 
     /**
      * Appends the specified element to the end of this list.
-     * @param element element to be added to the list
+     * @param other element to be added to the list
      */
     addList(other: List<T>): void {
         this._items = this._items.concat(other._items) // TODO: Nicer way to do this?
@@ -102,21 +112,21 @@ export class List<T> implements Iterable<T> {
      * Returns all elements the list currently holds.
      * @return all elements in an array
      */
-    getElements(): T[]{
+    getElements(): T[] {
         return this._items;
     }
 
     /**
      * Remove all elements in the list
      */
-    clear() {
+    clear(): void {
         this._items = [];
     }
 
     /**
      * Create a (shallow) copy
      */
-    clone() {
+    clone(): List<T> {
         const copiedItems = [...this._items];
         return new List<T>(copiedItems);
     }
@@ -135,6 +145,15 @@ export class List<T> implements Iterable<T> {
         if (index > -1) {
             this._items.splice(index, 1);
         }
+    }
+
+    /**
+     * Removes the element at the given position from the list.
+     *
+     * @param position the position of the element to remove
+     */
+    removeAt(position: number): void {
+        this._items.splice(position, 1);
     }
 
     /**
@@ -164,7 +183,7 @@ export class List<T> implements Iterable<T> {
      * @returns a list consisting of the distinct elements.
      */
     distinct(): List<T> {
-        let distinctItems = this._items.filter((o, i, arr) =>
+        const distinctItems = this._items.filter((o, i, arr) =>
             arr.findIndex(t => t === o) === i);
         return new List<T>(distinctItems);
     }
@@ -175,7 +194,7 @@ export class List<T> implements Iterable<T> {
      * @returns a list consisting of the distinct elements.
      */
     distinctObjects(): List<T> {
-        let distinctItems = this._items.filter((o, i, arr) =>
+        const distinctItems = this._items.filter((o, i, arr) =>
             arr.findIndex(t => isEqual(t, o)) === i);
         return new List<T>(distinctItems);
     }
@@ -201,18 +220,21 @@ export class List<T> implements Iterable<T> {
      *
      * @param comparator The comparator used to compare list elements.
      */
-    sort(comparator): void {
+    sort(comparator: (a: T, b: T) => number): void {
         this._items.sort(comparator)
     }
 
     /**
      * Reverses the order of the list.
      */
-    reverse() {
+    reverse(): void {
         this._items.reverse();
     }
 
-    public toString = () : string => {
-        return ""+ this._items.toString();
+    /**
+     * Returns the list in the following string format: "element1, element2, ..."
+     */
+    public toString = (): string => {
+        return this._items.toString();
     }
 }

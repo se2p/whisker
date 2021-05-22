@@ -26,92 +26,102 @@ import {IntegerListChromosome} from './IntegerListChromosome';
 
 export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
 
+    /**
+     * Lower bound for integer values
+     */
     private readonly _min: number;
 
+    /**
+     * Upper bound for integer values
+     */
     private readonly _max: number;
 
+    /**
+     * Upper bound for IntegerList size.
+     */
     private readonly _length: number;
 
-    private readonly _alpha: number;
+    /**
+     * Power of gaussian noise which is added to integer value in the change mutation
+     */
+    private readonly _gaussianMutationPower: number
 
-    constructor(min: number, max: number, length: number, alpha: number) {
+    /**
+     * Random number generator.
+     */
+    private readonly _random: Randomness
+
+
+    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         this._min = min;
         this._max = max;
         this._length = length;
-        this._alpha = alpha;
+        this._gaussianMutationPower = gaussianMutationPower;
+        this._random = Randomness.getInstance();
     }
 
-    apply (chromosome: IntegerListChromosome): IntegerListChromosome {
-        let newCodons = new List<number>();
+    /**
+     * Returns a mutated deep copy of the given chromosome.
+     * Each integer in the codon list mutates with a probability of one divided by the lists size.
+     * If a index inside the list mutates it executes one of the following mutations with equal probability:
+     *  - add a new codon to the list at the index
+     *  - replace the current codon at the index using gaussian noise
+     *  - remove the current codon at the index
+     * @param chromosome The original chromosome, that mutates.
+     * @return A mutated deep copy of the given chromosome.
+     */
+    apply(chromosome: IntegerListChromosome): IntegerListChromosome {
+        const newCodons = new List<number>();
         newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
-
-        // TODO: Should be a parameter (or even three different ones)
-        const mutationProbability = 1.0 / 3.0;
-
-        if (Randomness.getInstance().nextDouble() < mutationProbability && newCodons.size() > 1) {
-            newCodons = this.remove(newCodons);
+        const mutationProbability = 1 / newCodons.size();
+        let index = 0;
+        while (index < newCodons.size()) {
+            if (this._random.nextDouble() < mutationProbability) {
+                index = this.mutateAtIndex(newCodons, index);
+            }
+            index++;
         }
-
-        if (Randomness.getInstance().nextDouble() < mutationProbability) {
-            newCodons = this.change(newCodons);
-        }
-
-        if (Randomness.getInstance().nextDouble() < mutationProbability) {
-            newCodons = this.insert(newCodons);
-        }
-
         return chromosome.cloneWith(newCodons);
     }
 
-    private getRandomCodon(): number {
-        return Randomness.getInstance().nextInt(this._min, this._max);
+    /**
+     * Execute one of the allowed mutations, with equally distributed probability.
+     * Since this modifies the size of the list, the adjusted index, after a mutation is returned.
+     *
+     * @param codons The list of codons that is being mutated.
+     * @param index  The index where to mutate inside the list.
+     * @return The modified index after the mutation.
+     */
+    private mutateAtIndex(codons: List<number>, index: number) {
+        const mutation = this._random.nextInt(0, 3)
+        switch (mutation) {
+            case 0:
+                if (codons.size() < this._length) {
+                    codons.insert(this._random.nextInt(this._min, this._max), index);
+                    index++;
+                }
+                break;
+            case 1:
+                codons.replace(this.getRandomCodonGaussian(codons.get(index)), index);
+                break;
+            case 2:
+                if (codons.size() > 1) {
+                    codons.removeAt(index);
+                    index--;
+                }
+                break;
+        }
+        return index;
     }
 
-    private change(oldCodons: List<number>): List<number> {
-        const mutationProbability = 1.0 / oldCodons.size();
-
-        const newCodons = new List<number>();
-        for (const codon of oldCodons) {
-            if (Randomness.getInstance().nextDouble() < mutationProbability) {
-                newCodons.add(this.getRandomCodon());
-            } else {
-                newCodons.add(codon);
-            }
-        }
-        return newCodons;
+    /**
+     * Get a random number sampled from the gaussian distribution with the mean being the integer Value and the
+     * standard deviation being the gaussianMutationPower.
+     * @param value the integer value to add gaussian noise to.
+     */
+    private getRandomCodonGaussian(value: number): number {
+        const randomGaussian = this._random.nextGaussianInt(value, this._gaussianMutationPower);
+        // Wrap the sampled number into the range [this._min, this._max]
+        return randomGaussian - (this._max + 1) * Math.floor(randomGaussian / (this._max + 1));
     }
-
-    private remove(oldCodons: List<number>): List<number> {
-        const mutationProbability = 1.0 / oldCodons.size();
-
-        const newCodons = new List<number>();
-        for (const codon of oldCodons) {
-            if (Randomness.getInstance().nextDouble() >= mutationProbability) {
-                newCodons.add(codon);
-            }
-        }
-
-        if (newCodons.isEmpty()) {
-            newCodons.addList(oldCodons);
-        }
-
-        return newCodons;
-    }
-
-    private insert(oldCodons: List<number>): List<number> {
-
-        const newCodons = new List<number>();
-        newCodons.addList(oldCodons);
-
-        let count = 0;
-
-        while(Randomness.getInstance().nextDouble() <= Math.pow(this._alpha, count) && newCodons.size() < this._length) {
-            count++;
-            const position = Randomness.getInstance().nextInt(0, newCodons.size());
-            newCodons.insert(this.getRandomCodon(), position);
-        }
-
-        return newCodons;
-    }
-
 }

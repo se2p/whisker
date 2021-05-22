@@ -22,6 +22,7 @@ import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {WhiskerTest} from './WhiskerTest';
+import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 /**
  * A many-objective search algorithm can generate tests
@@ -29,7 +30,7 @@ import {WhiskerTest} from './WhiskerTest';
  */
 export class ManyObjectiveTestGenerator extends TestGenerator {
 
-    async generateTests(project: ScratchProject): Promise<List<WhiskerTest>> {
+    async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary> {
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this.buildSearchAlgorithm(true);
 
@@ -39,6 +40,9 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
         const testSuite = await this.getTestSuite(testChromosomes);
 
         await this.collectStatistics(testSuite);
-        return testSuite;
+
+        const summary = searchAlgorithm.summarizeSolution();
+
+        return new WhiskerTestListWithSummary(testSuite, summary);
     }
 }

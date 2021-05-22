@@ -31,6 +31,7 @@ import assert from "assert";
 export class TestChromosome extends IntegerListChromosome {
 
     private _trace: ExecutionTrace;
+    private _coverage = new Set<string>();
 
     constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
@@ -38,7 +39,7 @@ export class TestChromosome extends IntegerListChromosome {
     }
 
     async evaluate(): Promise<void> {
-        const executor = new TestExecutor(Container.vmWrapper);
+        const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor());
         await executor.execute(this);
         assert (this.trace != null);
     }
@@ -54,6 +55,14 @@ export class TestChromosome extends IntegerListChromosome {
 
     set trace(value: ExecutionTrace) {
         this._trace = value;
+    }
+
+    get coverage(): Set<string> {
+        return this._coverage;
+    }
+
+    set coverage(value: Set<string>) {
+        this._coverage = value;
     }
 
     clone() {
@@ -75,7 +84,7 @@ export class TestChromosome extends IntegerListChromosome {
         assert (this._trace != null);
         let text = "";
         for (const [scratchEvent, args] of this._trace.events) {
-            text += scratchEvent.toString(args) + "\n";
+            text += scratchEvent.toString() + "\n";
         }
 
         return text;

@@ -19,7 +19,7 @@
  */
 
 import {Trace} from 'scratch-vm/src/engine/tracing.js'
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {List} from "../utils/List";
 
 /**
