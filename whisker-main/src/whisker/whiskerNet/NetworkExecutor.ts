@@ -185,8 +185,9 @@ export class NetworkExecutor {
             timer = Date.now();
         }
 
-        // Save the executed Trace
+        // Save the executed Trace and the covered blocks
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // End and reset the VM.
         this._vmWrapper.end();

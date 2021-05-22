@@ -90,6 +90,11 @@ export class NetworkChromosome extends Chromosome {
     private _trace: ExecutionTrace;
 
     /**
+     * Saves the achieved coverage of the chromosome during the playthrough.
+     */
+    private _coverage = new Set<string>();
+
+    /**
      * Saves the codons of the network in a similar way to other non-Network chromosomes.
      * Used for transforming the network into a TestChromosome for evaluating its StatementFitness
      */
@@ -548,6 +553,14 @@ export class NetworkChromosome extends Chromosome {
 
     set trace(value: ExecutionTrace) {
         this._trace = value;
+    }
+
+    get coverage(): Set<string> {
+        return this._coverage;
+    }
+
+    set coverage(value: Set<string>) {
+        this._coverage = value;
     }
 
     get connections(): List<ConnectionGene> {

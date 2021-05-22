@@ -104,7 +104,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         else {
             cfgDistanceNormalized = 1;
         }
-        console.log("Approach level: "+approachLevel+", branch distance: "+branchDistance+", CFG distance: "+cfgDistanceNormalized);
+        //console.log("Approach level: "+approachLevel+", branch distance: "+branchDistance+", CFG distance: "+cfgDistanceNormalized);
         return approachLevel + this._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
