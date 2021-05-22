@@ -85,15 +85,21 @@ export class ProgramModel {
      */
     getTotalCoverage() {
         let covered = 0;
-        for (const key in this.coverageTotal) {
+        let missedEdges = [];
+        for (const key in this.edges) {
             if (this.coverageTotal[key]) {
                 covered++;
+            } else {
+                missedEdges.push(key);
             }
             this.coverageTotal[key] = false;
         }
         return {
-            covered: covered,
-            total: Object.keys(this.edges).length
+            coverage: {
+                covered: covered,
+                total: Object.keys(this.edges).length
+            },
+            missedEdges
         }
     }
 

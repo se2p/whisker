@@ -142,17 +142,20 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     }
 
     const formattedSummary = TAP13Formatter.formatSummary(summary);
-    const formattedModelCoverage = TAP13Formatter.formatCoverage(Whisker.modelTester.getTotalCoverage());
+    let modelCoverage = Whisker.modelTester.getTotalCoverage();
+    const formattedModelCoverage = TAP13Formatter.formatCoverage(modelCoverage.coverage);
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
     const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+    const modelMissedEdges = TAP13Formatter.extraToYAML({missedModelEdges: modelCoverage.missedEdges});
 
     Whisker.outputRun.println([
         summaryString,
         coverageString,
-        modelCoverageString
+        modelCoverageString,
+        modelMissedEdges
     ].join('\n'));
 };
 

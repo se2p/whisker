@@ -227,14 +227,19 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage() {
         let coverage = {};
-        coverage["constraints"] = this.constraintsModel.getTotalCoverage();
+        let missedEdges = [];
+        let coverageResult = this.constraintsModel.getTotalCoverage()
+        coverage["constraints"] = coverageResult.coverage;
+        missedEdges = [...missedEdges, ...coverageResult.missedEdges];
         this.programModels.forEach(model => {
-            coverage[model.id] = model.getTotalCoverage();
+            coverageResult = model.getTotalCoverage();
+            coverage[model.id] = coverageResult.coverage;
+            missedEdges = [...missedEdges, ...coverageResult.missedEdges];
         })
-        return coverage;
+        return {coverage, missedEdges};
     }
 
-    private contradictingEffectsOutput(contradictingEffects: Effect[]): string{
+    private contradictingEffectsOutput(contradictingEffects: Effect[]): string {
         let output = "Model had to check contradicting effects! Skipping these.";
         contradictingEffects.forEach(effect => {
             output += "\n -- " + effect.toString();
