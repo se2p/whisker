@@ -14,7 +14,7 @@ export class InputNode extends NodeGene {
      * @param id the identification number of the node within the network
      * @param sprite the name of the sprite this input Node handles
      */
-    constructor(id: number, sprite:string) {
+    constructor(id: number, sprite: string) {
         super(id, ActivationFunction.NONE, NodeType.INPUT);
         this.nodeValue = 0;
         this.lastActivationValue = 0;
@@ -27,7 +27,7 @@ export class InputNode extends NodeGene {
         return this.id === other.id && this.activationFunction === other.activationFunction;
     }
 
-    clone(): NodeGene {
+    clone(): InputNode {
         return new InputNode(this.id, this._sprite)
 
     }
@@ -38,7 +38,6 @@ export class InputNode extends NodeGene {
             return this.activationValue;
         }
     }
-
 
     toString(): string {
         return "InputNode{ID: " + this.id + ", Value: " + this.activationValue +

@@ -53,13 +53,17 @@ export class KeyDownEvent extends ScratchEvent {
         return "KeyDown " + this._keyOption + ": " + this._value;
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 0;
     }
 
-    getParameter(): number[] {
+    getParameter(): (string | number)[] {
         // 0 returns False in JS/TS
-        return [this._value ? 1 : 0];
+        return [this._keyOption, this._value ? 1 : 0];
+    }
+
+    getVariableParameterNames(): string[] {
+        return [];
     }
 
     setParameter(): void {

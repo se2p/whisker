@@ -20,6 +20,8 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import {ParameterTypes} from "./ParameterTypes";
+import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
 
 export class WaitEvent extends ScratchEvent {
 
@@ -42,7 +44,7 @@ export class WaitEvent extends ScratchEvent {
         return "Wait for " + this.steps + " steps";
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 1;
     }
 
@@ -50,8 +52,19 @@ export class WaitEvent extends ScratchEvent {
         return [this.steps];
     }
 
-    setParameter(args:number[]): void {
-        // Waits of 0 seconds/steps leads to endless loop.
-        this.steps = 1;
+    getVariableParameterNames(): string[] {
+        return ["Duration"];
+    }
+
+    setParameter(args:number[], testExecutor:ParameterTypes): void {
+        switch (testExecutor){
+            case ParameterTypes.CODON:
+                // Waits of 0 seconds/steps leads to endless loop.
+                this.steps = args[0] % Container.config.getWaitStepUpperBound() + 1;
+                break;
+            case ParameterTypes.REGRESSION:
+                this.steps = Math.ceil(NeuroevolutionUtil.relu(args[0]) + 0.0001);
+                break;
+        }
     }
 }

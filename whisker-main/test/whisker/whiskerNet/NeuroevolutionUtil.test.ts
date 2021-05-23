@@ -11,6 +11,7 @@ import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/A
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 
 describe("NeuroevolutionUtil Tests", () => {
 
@@ -40,7 +41,8 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
-        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, numberOutputs, 0.4, false)
+        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, numberOutputs,
+            new List<ScratchEvent>(), 0.4)
     })
 
     test("Test Speciation when a new Population gets created", () => {
@@ -195,40 +197,14 @@ describe("NeuroevolutionUtil Tests", () => {
         for (let i = 0; i < stabiliseCount + 1; i++) {
             chromosome.activateNetwork(genInputs)
         }
-        const softmaxOutput = NeuroevolutionUtil.softmax(chromosome.outputNodes);
+        const softmaxOutput = NeuroevolutionUtil.softmax(chromosome);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
 
     })
 
-    test("Test Regression Nodes Output", () =>{
-        const noRegressionNetwork = generator.get();
-        const regGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, numberOutputs, 0.4, true);
-        const regressionNetwork1 = regGenerator.get();
-        const regressionNetwork2 = regGenerator.get();
-
-        const stabValue1 = noRegressionNetwork.stabilizedCounter(20);
-        const stabValue2 = regressionNetwork1.stabilizedCounter(20);
-        const stabValue3 = regressionNetwork2.stabilizedCounter(20);
-
-        for (let i = 0; i < stabValue1+1; i++) {
-            noRegressionNetwork.activateNetwork(genInputs)
-        }
-
-        for (let i = 0; i < stabValue2+1; i++) {
-            regressionNetwork1.activateNetwork(genInputs)
-        }
-
-        for (let i = 0; i < stabValue3+1; i++) {
-            regressionNetwork2.activateNetwork(genInputs)
-        }
-
-        const outputSum1 = NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).reduce((a, b) => a + b, 0);
-        const outputSum2 = NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).reduce((a, b) => a + b, 0);
-
-        expect(NeuroevolutionUtil.evaluateRegressionNodes(noRegressionNetwork.outputNodes).length).toBe(0);
-        expect(NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork1.outputNodes).length).toBe(2);
-        expect(NeuroevolutionUtil.evaluateRegressionNodes(regressionNetwork2.outputNodes).length).toBe(2);
-        expect(outputSum1).not.toBe(outputSum2)
+    test("Test RELU activation functino", () =>{
+        expect(NeuroevolutionUtil.relu(Math.PI)).toEqual(Math.PI);
+        expect(NeuroevolutionUtil.relu(-Math.PI)).toEqual(0);
     })
 
     test("Test findConnection for connection which is inside the list", () =>{

@@ -37,12 +37,16 @@ export class SoundEvent extends ScratchEvent {
         throw new NotYetImplementedException();
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 1;
     }
 
     getParameter(): number[] {
         return [this._volume];
+    }
+
+    getVariableParameterNames(): string[] {
+        return ["Volume"];
     }
 
     setParameter(args:number[]): void {

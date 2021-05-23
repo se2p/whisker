@@ -49,12 +49,16 @@ export class TypeTextEvent extends ScratchEvent {
         return `TypeText '${this._text}'`
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 0; // Text
     }
 
     getParameter(): string[] {
         return [this._text];
+    }
+
+    getVariableParameterNames(): string[] {
+        return [];
     }
 
     setParameter(): void {

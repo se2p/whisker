@@ -6,8 +6,8 @@ import {ConnectionGene} from "./ConnectionGene";
 import {NodeType} from "./NetworkNodes/NodeType";
 import {Randomness} from "../utils/Randomness";
 import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
-import {HiddenNode} from "./NetworkNodes/HiddenNode";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
+import {HiddenNode} from "./NetworkNodes/HiddenNode";
 
 
 export class NeatMutation implements Mutation<NetworkChromosome> {

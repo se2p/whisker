@@ -51,7 +51,6 @@
             }
         ]
     },
-    "waitStepUpperBound": 200,
     "click-duration": 20,
     "press-duration": 20
 }

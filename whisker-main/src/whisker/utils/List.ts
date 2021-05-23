@@ -120,8 +120,8 @@ export class List<T> implements Iterable<T> {
      * Filters the elements of a List given a predicate function
      * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the list.
      */
-    filter(predicate: (value: T, index: number, array: T[]) => boolean):void {
-        this._items = this._items.filter(predicate);
+    filter(predicate: (value: T, index: number, array: T[]) => boolean):List<T> {
+        return new List<T>(this._items.filter(predicate));
     }
 
     /**

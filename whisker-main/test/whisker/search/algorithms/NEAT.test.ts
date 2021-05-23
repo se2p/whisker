@@ -16,6 +16,8 @@ import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/Network
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeatPopulation";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {List} from "../../../../src/whisker/utils/List";
 
 
 describe('Test NEAT', () => {
@@ -48,7 +50,8 @@ describe('Test NEAT', () => {
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
         outputSize = 3;
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, outputSize, 0.4, false);
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, outputSize,
+            new List<ScratchEvent>(), 0.4);
 
         builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         iterations = 20;

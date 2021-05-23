@@ -2,14 +2,18 @@ import {NetworkChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerN
 import {NeatMutation} from "../../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/NeatCrossover";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/NetworkChromosome";
+import {List} from "../../../../src/whisker/utils/List";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 
 describe('Test NetworkChromosomeGeneratorSparse', () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
-    let generator: NetworkChromosomeGeneratorSparse
-    let genInputs: Map<string, number[]>
-    let outputSize: number
+    let generator: NetworkChromosomeGeneratorSparse;
+    let genInputs: Map<string, number[]>;
+    let outputSize: number;
 
     beforeEach(() => {
         crossoverOp = new NeatCrossover(0.4);
@@ -22,35 +26,38 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
         outputSize = 3;
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, new List<ScratchEvent>(), 0.4);
     })
 
     test('Create initial random Chromosome', () => {
-        generator.setCrossoverOperator(crossoverOp)
-        generator.setMutationOperator(mutationOp)
+        generator.setCrossoverOperator(crossoverOp);
+        generator.setMutationOperator(mutationOp);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(13) // +1 for Bias
-        expect(neatChromosome.connections.size()).toBeGreaterThan(0)
+        expect(neatChromosome.allNodes.size()).toBe(13); // +1 for Bias
+        expect(neatChromosome.connections.size() % 3).toBe(0);
+        expect(neatChromosome.connections.size()).toBeGreaterThan(0);
     })
 
     test('Create initial random Chromosome with regression', () => {
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, 0.4, true);
+        const parameterizedEvents = new List<ScratchEvent>([new WaitEvent(), new MouseMoveEvent()]);
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, parameterizedEvents, 0.4);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(13 + 2) // +1 for Bias + 2 for Regression Nodes
-        expect(neatChromosome.connections.size()).toBeGreaterThan(0)
+        expect(neatChromosome.allNodes.size()).toBe(13 + 3); // +1 for Bias +3 for Regression Nodes
+        expect(neatChromosome.connections.size() % 6).toBe(0);
+        expect(neatChromosome.connections.size()).toBeGreaterThan(0);
     })
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
         outputSize = 2;
-        const chromosomes : NetworkChromosome[] = []
+        const chromosomes : NetworkChromosome[] = [];
         // eslint-disable-next-line prefer-spread
         let stabCount = 0;
         for (let i = 0; i < 100; i++) {
-            const chrom = generator.get();
-            chromosomes.push(chrom)
-            stabCount = chrom.stabilizedCounter(30);
+            const chromosome = generator.get();
+            chromosomes.push(chromosome);
+            stabCount = chromosome.stabilizedCounter(30);
         }
         for(const chromosome of chromosomes){
             chromosome.generateNetwork();
@@ -58,7 +65,7 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
             for (let i = 0; i < stabCount + 1; i++) {
                 chromosome.activateNetwork(genInputs);
             }
-            expect(chromosome.activateNetwork(genInputs)).toBeTruthy()
+            expect(chromosome.activateNetwork(genInputs)).toBeTruthy();
         }
     })
 })

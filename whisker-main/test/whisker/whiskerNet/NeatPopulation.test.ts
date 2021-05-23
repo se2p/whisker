@@ -5,8 +5,10 @@ import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {List} from "../../../src/whisker/utils/List";
 
-describe("Test NeatPopulation", () =>{
+describe("Test NeatPopulation", () => {
 
     let size: number;
     let numberOfSpecies: number;
@@ -16,11 +18,11 @@ describe("Test NeatPopulation", () =>{
     let inputs: Map<string, number[]>;
     let numberOutputs: number;
     let properties: NeuroevolutionProperties<NetworkChromosome>
-    let population : NeatPopulation<NetworkChromosome>
+    let population: NeatPopulation<NetworkChromosome>
     let random: Randomness
 
 
-    beforeEach(() =>{
+    beforeEach(() => {
         size = 100;
         numberOfSpecies = 5;
         crossOver = new NeatCrossover(0.4);
@@ -28,10 +30,10 @@ describe("Test NeatPopulation", () =>{
             0.2, 0.01, 0.8,
             1.5, 0.1, 3, 0.1);
         inputs = new Map<string, number[]>();
-        inputs.set("First", [1,2,3,4,5,6]);
+        inputs.set("First", [1, 2, 3, 4, 5, 6]);
         numberOutputs = 3;
         chromosomeGenerator = new NetworkChromosomeGeneratorSparse(
-            mutation, crossOver, inputs, numberOutputs, 0.4, false)
+            mutation, crossOver, inputs, numberOutputs, new List<ScratchEvent>(), 0.4);
         properties = new NeuroevolutionProperties<NetworkChromosome>(size)
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;
@@ -42,13 +44,13 @@ describe("Test NeatPopulation", () =>{
         properties.parentsPerSpecies = 0.2
         properties.mutationWithoutCrossover = 0.3
         properties.interspeciesMating = 0.1;
-        population = new NeatPopulation(size, numberOfSpecies, chromosomeGenerator ,properties)
+        population = new NeatPopulation(size, numberOfSpecies, chromosomeGenerator, properties)
         random = Randomness.getInstance();
-        for(const c of population.chromosomes)
+        for (const c of population.chromosomes)
             c.networkFitness = random.nextInt(1, 50);
     })
 
-    test("Test Constructor", () =>{
+    test("Test Constructor", () => {
         expect(population.speciesCount).toBeGreaterThan(0)
         expect(population.highestFitness).toBe(0)
         expect(population.highestFitnessLastChanged).toBe(0)
@@ -62,7 +64,7 @@ describe("Test NeatPopulation", () =>{
         expect(population.averageFitness).toBe(0)
     })
 
-    test("Test Getter and Setter", () =>{
+    test("Test Getter and Setter", () => {
 
         population.speciesCount = 3;
         population.highestFitness = 3;
@@ -81,10 +83,10 @@ describe("Test NeatPopulation", () =>{
         expect(population.populationChampion).toBe(champ)
     })
 
-    test("Test evolution", () =>{
+    test("Test evolution", () => {
         const oldGeneration = population.chromosomes;
         for (let i = 0; i < 50; i++) {
-            for(const c of population.chromosomes)
+            for (const c of population.chromosomes)
                 c.networkFitness = random.nextInt(1, 50);
             population.evolution();
         }
@@ -97,7 +99,7 @@ describe("Test NeatPopulation", () =>{
         expect(population.chromosomes.size()).toBe(size)
     })
 
-    test("Test evolution stagnant population with only one species", () =>{
+    test("Test evolution stagnant population with only one species", () => {
         population.highestFitness = 60;
         population.highestFitnessLastChanged = 100;
         for (let i = 1; i < population.species.size(); i++) {
@@ -108,7 +110,7 @@ describe("Test NeatPopulation", () =>{
         expect(population.species.get(0).chromosomes.size()).toBe(size)
     })
 
-    test("Test evolve with distance Threshold below 0.3", () =>{
+    test("Test evolve with distance Threshold below 0.3", () => {
         population.generation = 3;
         population.properties.distanceThreshold = 0.1;
         population.evolution();

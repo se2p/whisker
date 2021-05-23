@@ -55,12 +55,16 @@ export class KeyPressEvent extends ScratchEvent {
         return "KeyPress " + this._keyOption;
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 0;
     }
 
     getParameter(): (string | number)[] {
         return [this._keyOption, this._timeout];
+    }
+
+    getVariableParameterNames(): string[] {
+        return [];
     }
 
     setParameter(): void {

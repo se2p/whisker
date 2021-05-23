@@ -22,28 +22,25 @@ export class ClassificationNode extends NodeGene {
         return this.id === other.id && this.activationFunction === other.activationFunction;
     }
 
-    clone(): NodeGene {
+    clone(): ClassificationNode {
         return new ClassificationNode(this.id, this.activationFunction)
 
     }
 
     getActivationValue(): number {
-        {
-            if (this.activationCount > 0) {
-                switch (this.activationFunction) {
-                    case ActivationFunction.SIGMOID:
-                        this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);
-                        break;
-                    default:
-                        this.activationValue = this.nodeValue;
-                        break;
-                }
-                return this.activationValue;
-            } else
-                return 0.0;
-        }
+        if (this.activationCount > 0) {
+            switch (this.activationFunction) {
+                case ActivationFunction.SIGMOID:
+                    this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);
+                    break;
+                default:
+                    this.activationValue = this.nodeValue;
+                    break;
+            }
+            return this.activationValue;
+        } else
+            return 0.0;
     }
-
 
     toString(): string {
         return " ClassificationNode{ID: " + this.id + ", Value: " + this.activationValue +

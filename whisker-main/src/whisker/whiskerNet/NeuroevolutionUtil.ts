@@ -2,10 +2,7 @@ import {Species} from "./Species";
 import {NeatPopulation} from "./NeatPopulation";
 import {NetworkChromosome} from "./NetworkChromosome";
 import {List} from "../utils/List";
-import {NodeGene} from "./NetworkNodes/NodeGene";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
-import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
-import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {ConnectionGene} from "./ConnectionGene";
 import {NeatMutation} from "./NeatMutation";
 
@@ -137,20 +134,6 @@ export class NeuroevolutionUtil {
     }
 
     /**
-     * Evaluates the regression nodes of a network
-     * @param outputNodes all output nodes of a network
-     */
-    public static evaluateRegressionNodes(outputNodes: List<NodeGene>): number[] {
-        const regressionValues = [];
-        for (const oNode of outputNodes) {
-            if (oNode instanceof RegressionNode) {
-                regressionValues.push(oNode.nodeValue);
-            }
-        }
-        return regressionValues;
-    }
-
-    /**
      * Checks if the network already contains a given connection
      * @param connections the list of connections
      * @param connection the connection which should be searched in the list of all connections
@@ -180,31 +163,35 @@ export class NeuroevolutionUtil {
     }
 
     /**
-     * Sigmoid activation function
-     * @param x the value to which the sigmoid function should be applied to
-     * @param gain the gain of the sigmoid function (set to 1 for a standard sigmoid function)
+     * SIGMOID activation function
+     * @param x the value to which the SIGMOID function should be applied to
+     * @param gain the gain of the SIGMOID function (set to 1 for a standard SIGMOID function)
      */
     public static sigmoid(x: number, gain: number): number {
         return (1 / (1 + Math.exp(gain * x)));
     }
 
     /**
-     * Calculates the softmax function over all classification-outputNode values
-     * @param outputNodes all outputNodes of a network
+     * Calculates the SOFTMAX function over all classification-outputNode values
+     * @param network the network over which the softmax function should be calculated
      */
-    public static softmax(outputNodes: List<NodeGene>): number[] {
+    public static softmax(network: NetworkChromosome): number[] {
         const result = []
         let denominator = 0;
-        for (const oNode of outputNodes) {
-            if (oNode instanceof ClassificationNode) {
-                denominator += Math.exp(oNode.nodeValue);
-            }
+        for (const oNode of network.getClassificationNodes()) {
+            denominator += Math.exp(oNode.nodeValue);
         }
-        for (const oNode of outputNodes) {
-            if (oNode instanceof ClassificationNode) {
-                result.push(Math.exp(oNode.nodeValue) / denominator)
-            }
+        for (const oNode of network.getClassificationNodes()) {
+            result.push(Math.exp(oNode.nodeValue) / denominator)
         }
         return result;
+    }
+
+    /**
+     * RELU activation function.
+     * @param x the value to which the RELU function should be applied to
+     */
+    public static relu(x: number): number {
+        return Math.max(0, x);
     }
 }

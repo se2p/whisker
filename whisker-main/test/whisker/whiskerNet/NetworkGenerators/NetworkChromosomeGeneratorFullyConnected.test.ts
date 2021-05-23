@@ -2,14 +2,18 @@ import {NeatMutation} from "../../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../../src/whisker/whiskerNet/NeatCrossover";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/NetworkChromosome";
 import {NetworkChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {List} from "../../../../src/whisker/utils/List";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 
 describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
 
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
-    let generator: NetworkChromosomeGeneratorFullyConnected
-    let genInputs: Map<string, number[]>
-    let outputSize: number
+    let generator: NetworkChromosomeGeneratorFullyConnected;
+    let genInputs: Map<string, number[]>;
+    let outputSize: number;
 
     beforeEach(() => {
         crossoverOp = new NeatCrossover(0.4);
@@ -17,40 +21,41 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
             0.2, 0.01, 0.8, 1.5,
             0.1, 3, 0.1);
         genInputs = new Map<string, number[]>();
-        genInputs.set("First", [1,2,3]);
-        genInputs.set("Second", [4,5,6]);
-        genInputs.set("Third", [7,8]);
+        genInputs.set("First", [1, 2, 3]);
+        genInputs.set("Second", [4, 5, 6]);
+        genInputs.set("Third", [7, 8]);
         genInputs.set("Fourth", [9]);
         outputSize = 3;
-        generator = new NetworkChromosomeGeneratorFullyConnected(mutationOp, crossoverOp, genInputs, outputSize, false);
+        generator = new NetworkChromosomeGeneratorFullyConnected(mutationOp, crossoverOp, genInputs, outputSize, new List<ScratchEvent>());
     })
 
     test('Create initial random Chromosome', () => {
-        generator.setCrossoverOperator(crossoverOp)
-        generator.setMutationOperator(mutationOp)
+        generator.setCrossoverOperator(crossoverOp);
+        generator.setMutationOperator(mutationOp);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(13)
-        expect(neatChromosome.connections.size()).toBe(27)
+        expect(neatChromosome.allNodes.size()).toBe(13);
+        expect(neatChromosome.connections.size()).toBe(27);
     })
 
     test('Create initial random Chromosome with regression', () => {
-        generator = new NetworkChromosomeGeneratorFullyConnected(mutationOp, crossoverOp, genInputs, outputSize, true);
+        const parameterizedEvents = new List<ScratchEvent>([new WaitEvent(), new MouseMoveEvent()]);
+        generator = new NetworkChromosomeGeneratorFullyConnected(mutationOp, crossoverOp, genInputs, outputSize, parameterizedEvents);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(15)
-        expect(neatChromosome.connections.size()).toBe(45)
+        expect(neatChromosome.allNodes.size()).toBe(16);
+        expect(neatChromosome.connections.size()).toBe(27 + 27); // inputNodes * (outputNodes + regressionNodes)
     })
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
         outputSize = 2;
-        const chromosomes: NetworkChromosome[] = []
+        const chromosomes: NetworkChromosome[] = [];
         // eslint-disable-next-line prefer-spread
         let stabCount = 0;
         for (let i = 0; i < 100; i++) {
-            const chrom = generator.get();
-            chromosomes.push(chrom)
-            stabCount = chrom.stabilizedCounter(30);
+            const chromosome = generator.get();
+            chromosomes.push(chromosome);
+            stabCount = chromosome.stabilizedCounter(30);
         }
         for (const chromosome of chromosomes) {
             chromosome.generateNetwork();

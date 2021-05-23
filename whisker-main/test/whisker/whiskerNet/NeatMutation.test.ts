@@ -9,6 +9,7 @@ import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode"
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {List} from "../../../src/whisker/utils/List";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 
 
 describe("Test NeatMutation", () => {
@@ -26,9 +27,10 @@ describe("Test NeatMutation", () => {
             0.2, 0.1, 0.8, 1.5,
             0.1, 3, 0.1);
         genInputs = new Map<string, number[]>();
-        genInputs.set("First", [1,2,3,4,5,6]);
+        genInputs.set("First", [1, 2, 3, 4, 5, 6]);
         outputSize = 3;
-        networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, outputSize, 0.4, false)
+        networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, outputSize,
+            new List<ScratchEvent>(), 0.4);
         networkChromosome = networkChromosomeGenerator.get();
     })
 
@@ -87,7 +89,7 @@ describe("Test NeatMutation", () => {
 
     test("Test MutateAddConnection with recurrent connection between output Nodes", () => {
         const allNodes = new List<NodeGene>();
-        const iNode = new InputNode(0,"Test");
+        const iNode = new InputNode(0, "Test");
         allNodes.add(iNode);
         const oNode1 = new ClassificationNode(1, ActivationFunction.SIGMOID);
         allNodes.add(oNode1);
@@ -104,7 +106,7 @@ describe("Test NeatMutation", () => {
         mutation = new NeatMutation(0.03, 1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1, 3, 0.1);
-        networkChromosome = new NetworkChromosome(connectionList, allNodes,mutation,crossOver)
+        networkChromosome = new NetworkChromosome(connectionList, allNodes, mutation, crossOver)
         const originalConnectionsSize = networkChromosome.connections.size();
 
         mutation.mutateAddConnection(networkChromosome, 30);
@@ -149,7 +151,7 @@ describe("Test NeatMutation", () => {
 
     test("Test mutateToggleEnableConnection", () => {
         const recConnection = new ConnectionGene(networkChromosome.outputNodes.get(0),
-            networkChromosome.outputNodes.get(1), 1,true,60,true);
+            networkChromosome.outputNodes.get(1), 1, true, 60, true);
         networkChromosome.connections.add(recConnection);
         networkChromosome.generateNetwork();
         const connectionStates = []
@@ -157,7 +159,7 @@ describe("Test NeatMutation", () => {
             connectionStates.push(connection.isEnabled)
 
         for (let i = 0; i < 50; i++) {
-        mutation.mutateToggleEnableConnection(networkChromosome, 10)
+            mutation.mutateToggleEnableConnection(networkChromosome, 10)
         }
         const mutatedStates = []
         for (const connection of networkChromosome.connections)
@@ -168,7 +170,7 @@ describe("Test NeatMutation", () => {
 
     test("Test mutateConnectionReenable", () => {
         const recConnection = new ConnectionGene(networkChromosome.outputNodes.get(0),
-            networkChromosome.outputNodes.get(1), 1,false,60,true);
+            networkChromosome.outputNodes.get(1), 1, false, 60, true);
         networkChromosome.connections.add(recConnection);
         networkChromosome.generateNetwork();
         const connectionStates = []

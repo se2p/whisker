@@ -59,8 +59,7 @@ export abstract class ScratchEventExtractor {
      */
     public getParameterizedEvents(vm: VirtualMachine): List<ScratchEvent> {
         const events = this.extractEvents(vm);
-        events.filter(event => event.getNumParameters() > 0)
-        return events;
+        return events.filter(event => event.getNumVariableParameters() > 0)
     }
 
 

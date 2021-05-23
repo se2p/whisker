@@ -22,7 +22,7 @@ export class BiasNode extends NodeGene {
         return this.id === other.id && this.activationFunction === other.activationFunction;
     }
 
-    clone(): NodeGene {
+    clone(): BiasNode {
         return new BiasNode(this.id)
 
     }

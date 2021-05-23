@@ -15,6 +15,8 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
+import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {List} from "../../../../src/whisker/utils/List";
 
 
 describe('Test RandomNeuroevolution', () => {
@@ -47,7 +49,7 @@ describe('Test RandomNeuroevolution', () => {
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
         outputSize = 3;
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, 0.4, false);
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, new List<ScratchEvent>(), 0.4);
 
         builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM_NEUROEVOLUTION);
         iterations = 20;

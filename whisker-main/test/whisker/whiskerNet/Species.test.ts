@@ -7,6 +7,7 @@ import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 
 describe("Species Test", () => {
 
@@ -28,9 +29,10 @@ describe("Species Test", () => {
             0.2, 0.01, 0.8,
             1.5, 0.1, 3, 0.1);
         inputs = new Map<string, number[]>();
-        inputs.set("First", [1,2,3,4,5,6]);
+        inputs.set("First", [1, 2, 3, 4, 5, 6]);
         numberOutputs = 3;
-        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, inputs, numberOutputs, 0.4, false)
+        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, inputs, numberOutputs,
+            new List<ScratchEvent>(), 0.4)
         population = new List<NetworkChromosome>();
         populationSize = 50;
         properties = new NeuroevolutionProperties(populationSize);
@@ -52,7 +54,7 @@ describe("Species Test", () => {
         champion.networkFitness = 10;
     })
 
-    test("Test Constructor", () =>{
+    test("Test Constructor", () => {
         const species = new Species(1, true, properties);
         expect(species.id).toBe(1)
         expect(species.age).toBe(1)
@@ -66,7 +68,7 @@ describe("Species Test", () => {
         expect(species.chromosomes.size()).toBe(0)
     })
 
-    test("Test Getter and Setter", () =>{
+    test("Test Getter and Setter", () => {
         species.age = 10;
         species.averageFitness = 3;
         species.expectedOffspring = 4;
@@ -102,7 +104,7 @@ describe("Species Test", () => {
         expect(champion.sharedFitness).toBeLessThan(1)
     })
 
-    test("Test assignAdjustFitness() with stagnant species", () =>{
+    test("Test assignAdjustFitness() with stagnant species", () => {
         species.age = 10;
         species.ageOfLastImprovement = 6;
         species.properties.penalizingAge = 5;
@@ -211,7 +213,7 @@ describe("Species Test", () => {
         const sizeBeforeBreed = popSpecie.size();
 
         for (let i = 0; i < 100; i++) {
-        popSpecie.breed(population, speciesList)
+            popSpecie.breed(population, speciesList)
         }
 
         // We did not eliminate the marked Chromosomes here therefore 2 times the size of the old population
@@ -235,7 +237,7 @@ describe("Species Test", () => {
         expect(popSpecie.size()).toBe(0)
     })
 
-    test(" Test averageSpeciesFitness", () =>{
+    test(" Test averageSpeciesFitness", () => {
         species.assignAdjustFitness();
         const avgFitness = species.averageSpeciesFitness();
         expect(avgFitness).toBeLessThan(10)

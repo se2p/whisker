@@ -71,8 +71,9 @@ describe("List", () => {
 
     test("Filter list", () => {
         const list = new List([13,21,9,33,77,35,11,20,62,81])
-        list.filter(value => value < 30);
-        expect(list.getElements()).toEqual([13,21,9,11,20]);
+        const filteredList = list.filter(value => value < 30);
+        expect(filteredList.getElements()).toEqual([13,21,9,11,20]);
+        expect(list.getElements()).toEqual([13,21,9,33,77,35,11,20,62,81])
     });
 
     test("Clear list", () => {

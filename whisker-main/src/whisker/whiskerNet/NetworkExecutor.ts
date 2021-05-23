@@ -9,12 +9,12 @@ import {seedScratch} from "../../util/random"
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NetworkChromosome} from "./NetworkChromosome";
-import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
+import {ParameterTypes} from "../testcase/events/ParameterTypes";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -83,7 +83,6 @@ export class NetworkExecutor {
      * Lets a neural network play the given Scratch game.
      * @param network the network which should play the given game.
      */
-    //TODO: Adjust to the new event model -> Use RegressionNodes to determine Parameters;
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         let workingNetwork = false;
@@ -96,9 +95,10 @@ export class NetworkExecutor {
 
         // Extract the inputs form the current state of the VM and check if we have to add additional InputNodes.
         const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
-        const inputSize = [].concat(...spriteInfo).length;
-        if (inputSize > network.inputNodesSize())
-            network.addInputNode(spriteInfo);
+        spriteInfo.forEach((v, k) => {
+            if (!network.inputNodes.has(k) || network.inputNodes.get(k).size() !== v.length)
+                network.addInputNode(spriteInfo)
+        })
 
 
         // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
@@ -125,6 +125,11 @@ export class NetworkExecutor {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
             }
+
+            // If a key is still pressed release the key before another event is sent to the VM
+            if (this._vmWrapper.inputs.isAnyKeyDown())
+                this._vmWrapper.inputs.resetKeyboard();
+
             // Load the inputs into the Network
             const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
 
@@ -149,34 +154,22 @@ export class NetworkExecutor {
             }
 
             // Get the classification results by using the softmax function over the outputNode values
-            const output = NeuroevolutionUtil.softmax(network.outputNodes);
-
+            const output = NeuroevolutionUtil.softmax(network);
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce(
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.add(indexOfMaxValue);
+
+            // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
-
-            // The Nets are faster in sending Events to the VM than the VM is in executing them.
-            // Thus, if a key is still pressed release the key before another event is sent to the VM
-            if (this._vmWrapper.inputs.isAnyKeyDown())
-                this._vmWrapper.inputs.resetKeyboard();
-
-            // Update the VM with the given event. No args given since only MouseMove events take params currently.
+            if (nextEvent.getNumVariableParameters() > 0) {
+                const args = this.getArgs(nextEvent, network);
+                nextEvent.setParameter(args, ParameterTypes.REGRESSION);
+            }
             events.add([nextEvent, []]);
             this.notify(nextEvent, []);
             await nextEvent.apply()
             StatisticsCollector.getInstance().incrementEventsCount();
-
-            // If we have a regression Node evaluate it.
-            if (network.hasRegression) {
-                const mouseCoords = NetworkExecutor.getMouseCoordinates(network);
-                const mouseMoveEvent = new MouseMoveEvent(0,0);
-                events.add([mouseMoveEvent, mouseCoords]);
-                this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply()
-                StatisticsCollector.getInstance().incrementEventsCount();
-            }
 
             // Add a waitEvent in the end of each round.
             const waitEvent = new WaitEvent(1);
@@ -210,7 +203,6 @@ export class NetworkExecutor {
      * Plays a Scratch-Game by choosing an event randomly in each iteration
      * @param network the network to evaluate
      */
-    //TODO: Adjust to the new event model -> Use RegressionNodes to determine Parameters;
     async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         const codons = new List<number>()
@@ -236,21 +228,16 @@ export class NetworkExecutor {
             // Select a random event from the list of available events and update the Scratch-VM with it.
             const randomIndex = this._random.nextInt(0, this.availableEvents.size())
             codons.add(randomIndex);
+            // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(randomIndex)
+            if (nextEvent.getNumVariableParameters() > 0) {
+                const args = this.getArgs(nextEvent, network);
+                nextEvent.setParameter(args, ParameterTypes.REGRESSION);
+            }
             events.add([nextEvent, []]);
             this.notify(nextEvent, []);
             await nextEvent.apply()
             StatisticsCollector.getInstance().incrementEventsCount();
-
-            // If we have a regression Node randomise this output as-well
-            if (network.hasRegression) {
-                const mouseCoords = [this._random.nextInt(-240, 240), this._random.nextInt(-180, 180)]
-                const mouseMoveEvent = new MouseMoveEvent(0,0);
-                events.add([mouseMoveEvent, mouseCoords]);
-                this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply()
-                StatisticsCollector.getInstance().incrementEventsCount();
-            }
 
             // Add a wait event in the end of each iteration.
             const waitEvent = new WaitEvent(1);
@@ -259,8 +246,9 @@ export class NetworkExecutor {
             timer = Date.now();
         }
 
-        // Save the executed Trace
+        // Save the executed Trace and the covered blocks
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
         // End and reset the VM.
         this._vmWrapper.end();
@@ -281,19 +269,12 @@ export class NetworkExecutor {
         return this._projectRunning = false;
     }
 
-    /**
-     * Extracts the Mouse coordinates from the regression nodes
-     * @param network the network which we ask for mouse coordinates
-     * @private
-     */
-    private static getMouseCoordinates(network: NetworkChromosome): number[] {
-        const coords = new List<number>();
-        for (const node of network.outputNodes) {
-            if (node instanceof RegressionNode && !coords.contains(node.nodeValue)) {
-                coords.add(node.nodeValue)
-            }
+    private getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
+        const args = []
+        for (const node of network.regressionNodes.get(event.constructor.name)) {
+            args.push(node.activationValue);
         }
-        return coords.getElements();
+        return args;
     }
 
     public attach(observer: EventObserver): void {

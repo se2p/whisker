@@ -83,7 +83,7 @@ export class ClickSpriteEvent extends ScratchEvent {
         }
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 0;
     }
 
@@ -93,5 +93,9 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     getParameter(): (number | RenderedTarget)[] {
         return [this._target, this._timeout];
+    }
+
+    getVariableParameterNames(): string[] {
+        return [];
     }
 }
