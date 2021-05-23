@@ -66,6 +66,17 @@ const getCoverage = function (str) {
     }
 
     coverageString = coverageString.replace(/^# /gm, '');
+    const coverage = yaml.safeLoad(coverageString.split("modelCoverage")[0]);
+    return coverage.combined.match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
+}
+
+const getModelCoverage = function (str) {
+    let coverageString = str.split('# modelCoverage:\n')[1];
+    if (typeof coverageString === 'undefined') {
+        return null;
+    }
+
+    coverageString = coverageString.replace(/^# /gm, '');
     const coverage = yaml.safeLoad(coverageString);
     return coverage.combined.match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
 }
@@ -79,9 +90,11 @@ const tapToCsvRow = async function (str) {
 
     const name = getName(str);
     const coverage = getCoverage(str);
+    const modelCoverage = getModelCoverage(str);
 
     row.projectname = name;
     row.coverage = coverage;
+    row.modelCoverage = modelCoverage;
 
     return row;
 }

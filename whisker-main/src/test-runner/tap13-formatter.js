@@ -100,6 +100,32 @@ const TAP13Formatter = {
     },
 
     /**
+     * @param {Map|{}} coveragePerModel .
+     * @return {object} .
+     */
+    formatModelCoverage(coveragePerModel) {
+        let covered = 0;
+        let total = 0;
+        let missedEdges = new Set();
+
+        const formattedCoverage = {};
+        for (const modelName of Object.keys(coveragePerModel)) {
+            const coverageRecord = coveragePerModel[modelName];
+            covered += coverageRecord.covered.length;
+            total += coverageRecord.total;
+            coverageRecord.missedEdges.forEach(edge => {missedEdges.add(edge);});
+            formattedCoverage[modelName] =
+                this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
+        }
+
+        return {
+            combined: this.formatCoverageRecord({covered, total}),
+            individual: formattedCoverage,
+            missedEdges: [...missedEdges]
+        };
+    },
+
+    /**
      * @param {object} coverageRecord .
      * @return {string} .
      */

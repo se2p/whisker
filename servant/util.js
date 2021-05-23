@@ -45,6 +45,7 @@ const cli = {
             .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../whisker-web/dist/index.html')
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
+            .option('-m, --modelPath <Path>', 'Model to test with', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
@@ -64,6 +65,7 @@ const cli = {
             whiskerURL,
             scratchPath,
             testPath,
+            modelPath,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -84,6 +86,7 @@ const cli = {
             whiskerURL: `file://${path.resolve(whiskerURL)}`,
             scratchPath,
             testPath,
+            modelPath,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,

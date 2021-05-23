@@ -84,21 +84,19 @@ export class ProgramModel {
      * Get the coverage of all test runs with this model. Resets the total coverage.
      */
     getTotalCoverage() {
-        let covered = 0;
+        let covered = [];
         let missedEdges = [];
         for (const key in this.edges) {
             if (this.coverageTotal[key]) {
-                covered++;
+                covered.push(key);
             } else {
                 missedEdges.push(key);
             }
             this.coverageTotal[key] = false;
         }
         return {
-            coverage: {
-                covered: covered,
-                total: Object.keys(this.edges).length
-            },
+            covered: covered,
+            total: Object.keys(this.edges).length,
             missedEdges
         }
     }

@@ -226,17 +226,12 @@ export class ModelTester extends EventEmitter {
      * Get the total coverage of the program models of all test runs.
      */
     getTotalCoverage() {
-        let coverage = {};
-        let missedEdges = [];
-        let coverageResult = this.constraintsModel.getTotalCoverage()
-        coverage["constraints"] = coverageResult.coverage;
-        missedEdges = [...missedEdges, ...coverageResult.missedEdges];
+        const coverage = {};
+        coverage[this.constraintsModel.id] =  this.constraintsModel.getTotalCoverage();
         this.programModels.forEach(model => {
-            coverageResult = model.getTotalCoverage();
-            coverage[model.id] = coverageResult.coverage;
-            missedEdges = [...missedEdges, ...coverageResult.missedEdges];
+            coverage[model.id] = model.getTotalCoverage();
         })
-        return {coverage, missedEdges};
+        return coverage;
     }
 
     private contradictingEffectsOutput(contradictingEffects: Effect[]): string {

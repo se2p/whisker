@@ -101,6 +101,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     let summary;
     let coverage;
+    let coverageModels = {};
     const accelerationFactor = Number(document.querySelector('#acceleration-factor').value);
     let duration = Number(document.querySelector('#model-duration').value);
     if (duration) {
@@ -118,14 +119,30 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             {duration, repetitions});
         coverage = CoverageGenerator.getCoverage();
 
+        if (Whisker.modelTester.programModelsDefined()) {
+            coverageModels = Whisker.modelTester.getTotalCoverage();
+        }
+
         if (typeof window.messageServantCallback === 'function') {
             const coveredBlockIdsPerSprite =
                 [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
             const blockIdsPerSprite =
                 [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+            let modelCoverage = [];
+            if (Whisker.modelTester.programModelsDefined()) {
+                for (const modelName in coverageModels) {
+                    let content = [];
+                    const elem = coverageModels[modelName];
+                    content.push({key:"covered", values: elem.covered});
+                    content.push({key:"total", values: elem.total});
+                    content.push({key:"missedEdges", values: elem.missedEdges});
+                    modelCoverage.push({key: modelName, values: content});
+                }
+            }
 
-            const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-            window.messageServantCallback({serializeableCoverageObject, summary});
+            const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+            const serializableModelCoverage = {modelCoverage};
+            window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
         }
 
         CoverageGenerator.restoreClasses({Thread});
@@ -142,22 +159,19 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     }
 
     const formattedSummary = TAP13Formatter.formatSummary(summary);
-    let modelCoverage = Whisker.modelTester.getTotalCoverage();
-    const formattedModelCoverage = TAP13Formatter.formatCoverage(modelCoverage.coverage);
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+    const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
     const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
-    const modelMissedEdges = TAP13Formatter.extraToYAML({missedModelEdges: modelCoverage.missedEdges});
 
     Whisker.outputRun.println([
         summaryString,
         coverageString,
-        modelCoverageString,
-        modelMissedEdges
-    ].join('\n'));
-};
+        modelCoverageString
+    ].join('\n'))
+}
 
 const runTests = async function (tests) {
     Whisker.scratch.stop();
@@ -338,7 +352,7 @@ const initEvents = function () {
         Whisker.outputLog.println("MODEL WARNING: " + msg);
     };
     let modelCoverage = (coverage) => {
-        const formattedModelCoverage = TAP13Formatter.formatCoverage(coverage);
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverage);
         Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
     }
     $('#model-logs-checkbox').on('change', event => {

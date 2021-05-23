@@ -16,8 +16,9 @@ const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./wi
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
-    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
+    whiskerURL, scratchPath, testPath, modelPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile,
+    configPath, isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch,
+    isGenerateWitnessTestOnly
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -61,7 +62,7 @@ async function init () {
                     continue;
                 }
                 logger.info("Testing project "+file);
-                csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
+                csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file, modelPath)));
             }
 
             if (csvFile != false) {
@@ -69,7 +70,7 @@ async function init () {
                 fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
             }
         } else {
-            await runTestsOnFile(browser, scratchPath);
+            await runTestsOnFile(browser, scratchPath, modelPath);
 
             if (csvFile != false) {
                 logger.warn(`Scratch path ${scratchPath} is not a directory, skipping CSV file creation`);
@@ -79,17 +80,19 @@ async function init () {
     }
 }
 
-async function runTestsOnFile (browser, targetProject) {
+async function runTestsOnFile (browser, targetProject, modelPath) {
     const paths = prepareTestFiles(testPath);
     const csvs = [];
-    await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject)))
+    await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject, modelPath)))
         .then(results => {
             // browser.close();
             const summaries = results.map(({summary}) => summary);
             const coverages = results.map(({coverage}) => coverage);
+            const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
             csvs.push(...results.map(({csv}) => csv));
 
-            printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
+            printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+                modelCoverage[0]);
             logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
         })
         .catch(errors => logger.error('Error on executing tests: ', errors))
@@ -196,7 +199,7 @@ async function runGeneticSearch (browser) {
     }
 }
 
-async function runTests (path, browser, index, targetProject) {
+async function runTests (path, browser, index, targetProject, modelPath) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
@@ -225,6 +228,9 @@ async function runTests (path, browser, index, targetProject) {
         await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         await (await page.$('#fileselect-tests')).uploadFile(path);
+        if (modelPath) {
+            await (await page.$('#fileselect-models')).uploadFile(modelPath);
+        }
         await (await page.$('#toggle-advanced')).click();
         await (await page.$('#toggle-tap')).click();
         await (await page.$('#toggle-log')).click();
@@ -301,6 +307,24 @@ async function runTests (path, browser, index, targetProject) {
     }
 
     /**
+     * Generates a model coverage object based on the coveragePerModel and missedEdges.
+     *
+     * @param {*} serializedCoverage  The model coverage object using array and objects instead of maps and sets, as it was
+     *                                serialized by puppeter
+     */
+    function convertSerializedModelCoverage (serializedCoverage) {
+        const modelCoverage = {};
+        serializedCoverage.modelCoverage.forEach(({key,values}) => {
+            const coverageObject = {};
+            values.forEach(({key, values}) => {
+                coverageObject[key] = values;
+            })
+            modelCoverage[key] =  coverageObject;
+        });
+        return modelCoverage;
+    }
+
+    /**
      * Uses the CoverageGenerator, which is attached to the window object in the whisker-web/index.js to get the coverage
      * of the test run and transfer it from the Whisker instance in the browser to this script.
      * The original Maps and Sets have to be reworked to be a collection of objects and arrays, otherwise the coverage raw
@@ -319,10 +343,11 @@ async function runTests (path, browser, index, targetProject) {
         await executeTests();
 
         const {csvRow, coverageLog} = await readTestOutput();
-        const {serializeableCoverageObject, summary} = await promise;
+        const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
         await page.close();
 
-        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializeableCoverageObject), csv: csvRow});
+        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializableCoverageObject),
+            csv: csvRow, modelCoverage: convertSerializedModelCoverage(serializableModelCoverage)});
     } catch (e) {
         return Promise.reject(e);
     }
@@ -437,14 +462,19 @@ function prepareTestFiles (whiskerTestPath) {
  *
  * @param {string} summaries The summaries from the whisker-web instance test run
  * @param {string} coverage  Combined coverage of from all pages
+ * @param {Map} modelCoverage  Coverage of the models.
  */
-function printTestResultsFromCoverageGenerator (summaries, coverage) {
+function printTestResultsFromCoverageGenerator (summaries, coverage ,modelCoverage) {
     const formattedSummary = TAP13Formatter.mergeFormattedSummaries(summaries.map(TAP13Formatter.formatSummary));
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
+    const formattedModelCoverage = TAP13Formatter.formatModelCoverage(modelCoverage);
+    const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
     logger.info('\nSummary:\n', summaryString);
     logger.info('\nCoverage:\n', coverageString);
+    logger.info('\nModel coverage:\n', modelCoverageString);
 }
