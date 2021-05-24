@@ -3,6 +3,7 @@ import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode"
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 
 describe("ConnectionGene Test", () =>{
 
@@ -13,7 +14,7 @@ describe("ConnectionGene Test", () =>{
 
     beforeEach(() =>{
         sourceNode = new InputNode(0,"Test");
-        targetNode = new ClassificationNode(1, ActivationFunction.SIGMOID);
+        targetNode = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
         connection = new ConnectionGene(sourceNode, targetNode,0.2,true,ConnectionGene.getNextInnovationNumber(),false);
     })
 
@@ -39,7 +40,7 @@ describe("ConnectionGene Test", () =>{
 
     test("Test cloneWithNodes", () =>{
         const inNode = new InputNode(2,"Test");
-        const outNode = new ClassificationNode(3, ActivationFunction.SIGMOID);
+        const outNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
         const cloneConnection = connection.cloneWithNodes(inNode, outNode);
 
         expect(connection.source).not.toBe(cloneConnection.source);
@@ -52,7 +53,7 @@ describe("ConnectionGene Test", () =>{
 
     test("Test equalsByNodes with equal nodes", () =>{
         const inNode = new InputNode(1,"Test");
-        const outNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
+        const outNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2,true,1,false);
         expect(connection.equalsByNodes(otherConnection)).toBe(false)
@@ -60,7 +61,7 @@ describe("ConnectionGene Test", () =>{
 
     test("Test equalsByNodes with differing nodes", () =>{
         const inNode = new InputNode(2,"Test");
-        const outNode = new ClassificationNode(3, ActivationFunction.SIGMOID);
+        const outNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2,true,1,false);
         expect(connection.equalsByNodes(otherConnection)).toBe(false)

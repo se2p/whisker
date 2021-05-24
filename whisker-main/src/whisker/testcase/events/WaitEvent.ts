@@ -67,4 +67,8 @@ export class WaitEvent extends ScratchEvent {
                 break;
         }
     }
+
+    stringIdentifier(): string {
+        return "WaitEvent";
+    }
 }

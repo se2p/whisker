@@ -53,17 +53,6 @@ export abstract class ScratchEventExtractor {
     public abstract extractEvents(vm: VirtualMachine): List<ScratchEvent>;
 
     /**
-     * Returns all applicable events which have at least one parameter.
-     * @param vm the Scratch-VM of the project
-     * @return a list of applicable events having at least one parameter.
-     */
-    public getParameterizedEvents(vm: VirtualMachine): List<ScratchEvent> {
-        const events = this.extractEvents(vm);
-        return events.filter(event => event.getNumVariableParameters() > 0)
-    }
-
-
-    /**
      * Traverse downwards the block hierarchy and collect all encountered events.
      * @param target the rendered target of the vm
      * @param block the current block which will be checked for events

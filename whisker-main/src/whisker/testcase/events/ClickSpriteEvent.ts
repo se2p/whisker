@@ -20,7 +20,7 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {RenderedTarget} from'scratch-vm/src/sprites/rendered-target';
+import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 
 export class ClickSpriteEvent extends ScratchEvent {
 
@@ -57,7 +57,7 @@ export class ClickSpriteEvent extends ScratchEvent {
     public toJavaScript(): string {
         if (this._target.isOriginal) {
             return '' +
-`t.inputImmediate({
+                `t.inputImmediate({
     device: 'mouse',
     sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
@@ -97,5 +97,9 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     getVariableParameterNames(): string[] {
         return [];
+    }
+
+    stringIdentifier(): string {
+        return "ClickSpriteEvent-" + this._target.sprite.name;
     }
 }

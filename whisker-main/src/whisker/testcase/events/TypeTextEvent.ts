@@ -39,7 +39,7 @@ export class TypeTextEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         return '' +
-`t.inputImmediate({
+            `t.inputImmediate({
     device: 'text',
     answer: '${this._text}'
   });`
@@ -63,5 +63,9 @@ export class TypeTextEvent extends ScratchEvent {
 
     setParameter(): void {
         return;
+    }
+
+    stringIdentifier(): string {
+        return "TypeTextEvent-" + this._text;
     }
 }

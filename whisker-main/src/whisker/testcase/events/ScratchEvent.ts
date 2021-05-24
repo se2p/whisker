@@ -63,6 +63,12 @@ export abstract class ScratchEvent {
     abstract toString(): string;
 
     /**
+     * Returns an identifier as string which treats events with variable parameters as equal and events whose
+     * parameters are determined by the ScratchEventExtractor as different.
+     */
+    abstract stringIdentifier():string;
+
+    /**
      * Fits the given coordinates to the Scratch-Stage.
      * @param x the x-coordinate to fit into the range [-StageWidth/2, StageWidth/2]
      * @param y the y-coordinate to fit into the range [-StageHeight/2, StageHeight]

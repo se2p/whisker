@@ -2,16 +2,24 @@ import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 
 export class ClassificationNode extends NodeGene {
 
     /**
+     * The Scratch-Event this classification node handles.
+     */
+    private readonly _event: ScratchEvent
+
+    /**
      * Constructs a new classification Node
      * @param id the identification number of the node within the network
+     * @param event the Scratch-Event this node handles
      * @param activationFunction the activation function of the classification node
      */
-    constructor(id: number, activationFunction: ActivationFunction) {
+    constructor(id: number, event: ScratchEvent, activationFunction: ActivationFunction) {
         super(id, activationFunction, NodeType.OUTPUT);
+        this._event = event;
         this.nodeValue = 0;
         this.lastActivationValue = 0;
         this.activationValue = 0;
@@ -19,11 +27,13 @@ export class ClassificationNode extends NodeGene {
 
     equals(other: unknown): boolean {
         if (!(other instanceof ClassificationNode)) return false;
-        return this.id === other.id && this.activationFunction === other.activationFunction;
+        return this.id === other.id &&
+            this.event.stringIdentifier() === other.event.stringIdentifier() &&
+            this.activationFunction === other.activationFunction;
     }
 
     clone(): ClassificationNode {
-        return new ClassificationNode(this.id, this.activationFunction)
+        return new ClassificationNode(this.id, this.event, this.activationFunction)
 
     }
 
@@ -47,4 +57,7 @@ export class ClassificationNode extends NodeGene {
             ", InputConnections: " + this.incomingConnections + "}";
     }
 
+    get event(): ScratchEvent {
+        return this._event;
+    }
 }

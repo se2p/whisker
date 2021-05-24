@@ -65,4 +65,8 @@ export class MouseDownEvent extends ScratchEvent {
     setParameter(): void {
         return;
     }
+
+    stringIdentifier(): string {
+        return "MouseDownEvent";
+    }
 }

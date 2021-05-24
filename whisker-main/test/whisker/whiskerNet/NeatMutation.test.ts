@@ -10,6 +10,10 @@ import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/C
 import {List} from "../../../src/whisker/utils/List";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {KeyDownEvent} from "../../../src/whisker/testcase/events/KeyDownEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
+import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 
 
 describe("Test NeatMutation", () => {
@@ -19,7 +23,7 @@ describe("Test NeatMutation", () => {
     let mutation: NeatMutation;
     let crossOver: NeatCrossover;
     let genInputs: Map<string, number[]>;
-    let outputSize: number;
+    let events: List<ScratchEvent>;
 
     beforeEach(() => {
         crossOver = new NeatCrossover(0.4);
@@ -28,9 +32,9 @@ describe("Test NeatMutation", () => {
             0.1, 3, 0.1);
         genInputs = new Map<string, number[]>();
         genInputs.set("First", [1, 2, 3, 4, 5, 6]);
-        outputSize = 3;
-        networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, outputSize,
-            new List<ScratchEvent>(), 0.4);
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
+            new KeyDownEvent("right arrow", true), new MouseMoveEvent()])
+        networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events, 0.4);
         networkChromosome = networkChromosomeGenerator.get();
     })
 
@@ -91,9 +95,9 @@ describe("Test NeatMutation", () => {
         const allNodes = new List<NodeGene>();
         const iNode = new InputNode(0, "Test");
         allNodes.add(iNode);
-        const oNode1 = new ClassificationNode(1, ActivationFunction.SIGMOID);
+        const oNode1 = new ClassificationNode(1, new WaitEvent(),ActivationFunction.SIGMOID);
         allNodes.add(oNode1);
-        const oNode2 = new ClassificationNode(2, ActivationFunction.SIGMOID);
+        const oNode2 = new ClassificationNode(2, new ClickStageEvent(),ActivationFunction.SIGMOID);
         allNodes.add(oNode2);
 
 

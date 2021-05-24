@@ -42,7 +42,7 @@ export class KeyDownEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         return '' +
-`t.inputImmediate({
+            `t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
     isDown: ${this._value}
@@ -68,5 +68,9 @@ export class KeyDownEvent extends ScratchEvent {
 
     setParameter(): void {
         return;
+    }
+
+    stringIdentifier(): string {
+        return "KeyDownEvent-" + this._keyOption;
     }
 }

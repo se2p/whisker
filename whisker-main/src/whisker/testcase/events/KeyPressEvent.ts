@@ -43,7 +43,7 @@ export class KeyPressEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         return '' +
-`t.inputImmediate({
+            `t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
     isDown: true,
@@ -68,6 +68,10 @@ export class KeyPressEvent extends ScratchEvent {
     }
 
     setParameter(): void {
-       return;
+        return;
+    }
+
+    stringIdentifier(): string {
+        return "KeyPressEvent-" + this._keyOption;
     }
 }

@@ -32,30 +32,23 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
     private readonly _inputs: Map<string, number[]>;
 
     /**
-     * Number of available events -> number of output nodes
+     * All Scratch-Events the given Scratch project handles.
      */
-    private readonly _outputSize: number;
-
-    /**
-     * A list of parameterized Events indicating how many regression nodes are needed
-     */
-    private readonly _parameterizedEvents: List<ScratchEvent>
+    private readonly _scratchEvents: List<ScratchEvent>;
 
     /**
      * Constructs a new NetworkGenerator
      * @param mutationOp the used mutation operator
      * @param crossoverOp the used crossover operator
      * @param inputs a map which maps each sprite to its input feature-vector
-     * @param numOutputNodes number of needed output nodes
-     * @param parameterizedEvents a list of parameterized Events indicating how many regression nodes are needed
+     * @param scratchEvents all Scratch-Events the given Scratch-Project handles
      */
-     constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
-                          inputs: Map<string, number[]>, numOutputNodes: number, parameterizedEvents: List<ScratchEvent>) {
+    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
+                inputs: Map<string, number[]>, scratchEvents: List<ScratchEvent>) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
         this._inputs = inputs;
-        this._outputSize = numOutputNodes;
-        this._parameterizedEvents = parameterizedEvents;
+        this._scratchEvents = scratchEvents;
     }
 
     /**
@@ -86,41 +79,39 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
         allNodes.add(biasNode);
 
         // Create the classification output nodes and add them to the nodes list
-        const outputList = new List<NodeGene>()
-        while (outputList.size() < this.outputSize) {
-            const oNode = new ClassificationNode(nodeId++, ActivationFunction.SIGMOID);
-            outputList.add(oNode);
-            allNodes.add(oNode);
+        for (const event of this._scratchEvents) {
+            const classificationNode = new ClassificationNode(nodeId++, event, ActivationFunction.SIGMOID);
+            allNodes.add(classificationNode);
         }
 
         // Add regression nodes for each parameter of each parameterized Event
-        if (!this._parameterizedEvents.isEmpty()) {
-            this.addRegressionNodes(allNodes, outputList, nodeId);
+        const parameterizedEvents = this._scratchEvents.filter(event => event.getNumVariableParameters() > 0);
+        if (!parameterizedEvents.isEmpty()) {
+            this.addRegressionNodes(allNodes, parameterizedEvents, nodeId);
         }
 
         // Create connections between input and output nodes
-        const connections = this.createConnections(inputList, outputList);
+        const outputNodes = allNodes.filter(node => node instanceof ClassificationNode || node instanceof RegressionNode);
+        const connections = this.createConnections(inputList, outputNodes);
         const chromosome = new NetworkChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
 
         // Perturb the weights
         const mutationOp = chromosome.getMutationOperator() as NeatMutation;
         mutationOp.mutateWeight(chromosome, 1, 1);
-
         return chromosome;
     }
 
     /**
      * Adds regression nodes to the network
      * @param allNodes contains all nodes of the network
-     * @param outputNodes contains all output nodes of the network
+     * @param parameterizedEvents contains all parameterized Events of the given Scratch-Project
      * @param nodeId counter to assign id's to the new regression nodes
      */
-    protected addRegressionNodes(allNodes: List<NodeGene>, outputNodes: List<NodeGene>, nodeId: number): void {
-        for (const event of this._parameterizedEvents) {
+    protected addRegressionNodes(allNodes: List<NodeGene>, parameterizedEvents: List<ScratchEvent>, nodeId: number): void {
+        for (const event of parameterizedEvents) {
             for (const parameter of event.getVariableParameterNames()) {
-                // Create the regression Node and add it to the corresponding NodeLists
+                // Create the regression Node and add it to the NodeList
                 const regressionNode = new RegressionNode(nodeId++, event.constructor.name + "-" + parameter, ActivationFunction.NONE)
-                outputNodes.add(regressionNode)
                 allNodes.add(regressionNode)
             }
         }
@@ -140,13 +131,5 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
 
     setMutationOperator(mutationOp: Mutation<NetworkChromosome>): void {
         this._mutationOp = mutationOp;
-    }
-
-    get inputs(): Map<string, number[]> {
-        return this._inputs;
-    }
-
-    get outputSize(): number {
-        return this._outputSize;
     }
 }

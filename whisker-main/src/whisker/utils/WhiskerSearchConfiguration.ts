@@ -272,16 +272,14 @@ export class WhiskerSearchConfiguration {
                 const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    eventExtractor.extractEvents(Container.vm).size(),
-                    eventExtractor.getParameterizedEvents(Container.vm),
+                    eventExtractor.extractEvents(Container.vm),
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
                 const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    eventExtractor.extractEvents(Container.vm).size(),
-                    eventExtractor.getParameterizedEvents(Container.vm));
+                    eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
             default:

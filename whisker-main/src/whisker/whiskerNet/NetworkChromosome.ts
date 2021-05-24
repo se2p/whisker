@@ -14,6 +14,8 @@ import {Randomness} from "../utils/Randomness";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
+import {ScratchEvent} from "../testcase/events/ScratchEvent";
+import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
 
 export class NetworkChromosome extends Chromosome {
     /**
@@ -30,6 +32,11 @@ export class NetworkChromosome extends Chromosome {
      * Holds all output nodes of a network
      */
     private readonly _outputNodes: List<NodeGene>;
+
+    /**
+     * Maps events to the corresponding classification Node
+     */
+    private readonly _classificationNodes: Map<string, ClassificationNode>;
 
     /**
      * Maps events which take at least one parameter as input to the corresponding regression Nodes
@@ -99,7 +106,7 @@ export class NetworkChromosome extends Chromosome {
     /**
      * Saves the achieved coverage of the chromosome during the playthrough.
      */
-    private _coverage = new Set<string>();
+    private _coverage: Set<string>;
 
     /**
      * Saves the codons of the network in a similar way to other non-Network chromosomes.
@@ -135,6 +142,7 @@ export class NetworkChromosome extends Chromosome {
         this._allNodes = allNodes;
         this._inputNodes = new Map<string, List<InputNode>>();
         this._outputNodes = new List<NodeGene>();
+        this._classificationNodes = new Map<string, ClassificationNode>();
         this._regressionNodes = new Map<string, List<RegressionNode>>();
         this._connections = connections;
         this._crossoverOp = crossoverOp;
@@ -148,6 +156,7 @@ export class NetworkChromosome extends Chromosome {
         this._expectedOffspring = 0;
         this._numberOffspringPopulationChamp = 0;
         this._trace = null;
+        this._coverage = new Set<string>();
         this._codons = new List<number>();
         this._isRecurrent = false;
         this._hasLoop = false;
@@ -223,7 +232,28 @@ export class NetworkChromosome extends Chromosome {
         this.generateNetwork();
     }
 
-    public add
+    /**
+     * Adds additional classification/regression Nodes if we have encountered a new Event during the playthrough
+     * @param events a list of encountered events
+     */
+    public updateOutputNodes(events: List<ScratchEvent>): void {
+        let updated = false;
+        for (const event of events) {
+            if (this.classificationNodes.get(event.stringIdentifier()) === undefined) {
+                updated = true;
+                const classificationNode = new ClassificationNode(this.allNodes.size(), event, ActivationFunction.SIGMOID);
+                this.allNodes.add(classificationNode);
+                this.connectOutputNode(classificationNode);
+                for (const parameter of event.getVariableParameterNames()) {
+                    const regressionNode = new RegressionNode(this.allNodes.size(), event.constructor.name + "-" + parameter, ActivationFunction.NONE)
+                    this.allNodes.add(regressionNode);
+                    this.connectOutputNode(regressionNode);
+                }
+            }
+        }
+        if (updated)
+            this.generateNetwork();
+    }
 
     /**
      * Connects an inputNode to the Network by creating a connection between the inputNode and all outputNodes
@@ -238,6 +268,20 @@ export class NetworkChromosome extends Chromosome {
         }
     }
 
+    /**
+     * Connects an outputNode to the Network by creating a connection between the outputNode and all inputNodes
+     * @param oNode the outputNode to connect
+     */
+    private connectOutputNode(oNode: NodeGene): void {
+        for (const iNodes of this.inputNodes.values()) {
+            for (const iNode of iNodes) {
+                const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1), true, 0, false)
+                NeuroevolutionUtil.assignInnovationNumber(newConnection);
+                this.connections.add(newConnection)
+                oNode.incomingConnections.add(newConnection);
+            }
+        }
+    }
 
     /**
      * Generates the network by placing the Input and Output nodes in the corresponding List.
@@ -255,6 +299,12 @@ export class NetworkChromosome extends Chromosome {
                     this.inputNodes.set(node.sprite, newSpriteVector);
                 } else if (!this.inputNodes.get(node.sprite).contains(node))
                     this.inputNodes.get(node.sprite).add(node);
+            }
+            // Add classification nodes to the Classification-Map
+            if (node instanceof ClassificationNode) {
+                if (this.classificationNodes.get(node.event.stringIdentifier()) === undefined) {
+                    this.classificationNodes.set(node.event.stringIdentifier(), node);
+                }
             }
             // Add Regression nodes to the RegressionNode-Map
             if (node instanceof RegressionNode) {
@@ -523,10 +573,6 @@ export class NetworkChromosome extends Chromosome {
         this.connections.sort((a, b) => a.innovation - b.innovation);
     }
 
-    public getClassificationNodes():List<ClassificationNode>{
-        return this.outputNodes.filter(node => node instanceof ClassificationNode);
-    }
-
     /**
      * Returns the number of events this network has executed. (Needed for WhiskerTest class)
      */
@@ -561,6 +607,10 @@ export class NetworkChromosome extends Chromosome {
 
     get outputNodes(): List<NodeGene> {
         return this._outputNodes;
+    }
+
+    get classificationNodes(): Map<string, ClassificationNode> {
+        return this._classificationNodes;
     }
 
     get regressionNodes(): Map<string, List<RegressionNode>> {

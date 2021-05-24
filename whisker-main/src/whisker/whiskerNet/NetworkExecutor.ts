@@ -9,12 +9,12 @@ import {seedScratch} from "../../util/random"
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NetworkChromosome} from "./NetworkChromosome";
-import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {ParameterTypes} from "../testcase/events/ParameterTypes";
+import * as assert from "assert";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -123,7 +123,7 @@ export class NetworkExecutor {
             this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
-                continue;
+                break;
             }
 
             // If a key is still pressed release the key before another event is sent to the VM
@@ -140,6 +140,10 @@ export class NetworkExecutor {
                     network.addInputNode(spriteInfo)
             })
 
+            // Check if we encountered additional events during the playthrough
+            // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
+            network.updateOutputNodes(this.availableEvents);
+
             // If we have a recurrent network we do not flush the nodes and only activate it once
             if (network.isRecurrent) {
                 workingNetwork = network.activateNetwork(spriteInfo)
@@ -154,14 +158,16 @@ export class NetworkExecutor {
             }
 
             // Get the classification results by using the softmax function over the outputNode values
-            const output = NeuroevolutionUtil.softmax(network);
+            const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+            if(output.length != this.availableEvents.size())
+                console.error(output, this.availableEvents)
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce(
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.add(indexOfMaxValue);
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
-            const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue)
+            const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
             if (nextEvent.getNumVariableParameters() > 0) {
                 const args = this.getArgs(nextEvent, network);
                 nextEvent.setParameter(args, ParameterTypes.REGRESSION);

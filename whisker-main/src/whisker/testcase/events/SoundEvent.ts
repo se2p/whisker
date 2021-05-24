@@ -52,4 +52,8 @@ export class SoundEvent extends ScratchEvent {
     setParameter(args:number[]): void {
         this._volume = args[0];
     }
+
+    stringIdentifier(): string {
+        return "SoundEvent";
+    }
 }

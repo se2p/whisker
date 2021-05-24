@@ -74,12 +74,16 @@ export class MouseMoveEvent extends ScratchEvent {
                 this._y = fittedCoordinates.y;
                 break;
             }
-            case ParameterTypes.REGRESSION:{
+            case ParameterTypes.REGRESSION: {
                 // TODO: Find a good way to map regression values to coordinates
                 this._x = (args[0] * 240) % 240;
                 this._y = (args[1] * 160) % 160;
                 break;
             }
         }
+    }
+
+    stringIdentifier(): string {
+        return "MouseMoveEvent";
     }
 }

@@ -5,6 +5,7 @@ import {List} from "../utils/List";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 import {ConnectionGene} from "./ConnectionGene";
 import {NeatMutation} from "./NeatMutation";
+import {ScratchEvent} from "../testcase/events/ScratchEvent";
 
 export class NeuroevolutionUtil {
 
@@ -174,15 +175,16 @@ export class NeuroevolutionUtil {
     /**
      * Calculates the SOFTMAX function over all classification-outputNode values
      * @param network the network over which the softmax function should be calculated
+     * @param events the list of available events for which the softmax function should be calculated
      */
-    public static softmax(network: NetworkChromosome): number[] {
+    public static softmaxEvents(network: NetworkChromosome, events: List<ScratchEvent>): number[] {
         const result = []
         let denominator = 0;
-        for (const oNode of network.getClassificationNodes()) {
-            denominator += Math.exp(oNode.nodeValue);
+        for (const event of events) {
+            denominator += Math.exp(network.classificationNodes.get(event.stringIdentifier()).nodeValue);
         }
-        for (const oNode of network.getClassificationNodes()) {
-            result.push(Math.exp(oNode.nodeValue) / denominator)
+        for (const event of events) {
+            result.push(Math.exp(network.classificationNodes.get(event.stringIdentifier()).nodeValue) / denominator)
         }
         return result;
     }

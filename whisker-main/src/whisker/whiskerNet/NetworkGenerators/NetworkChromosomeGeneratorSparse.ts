@@ -26,14 +26,13 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
      * @param mutationOp the used mutation operator
      * @param crossoverOp the used crossover operator
      * @param inputs a map which maps each sprite to its input feature-vector
-     * @param numOutputNodes number of needed output nodes
-     * @param parameterizedEvents a list of parameterized Events indicating how many regression nodes are needed
+     * @param scratchEvents all Scratch-Events the given project handles
      * @param inputRate the probability multiple input features are connected to the network
      */
     constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
-                          inputs: Map<string, number[]>, numOutputNodes: number, parameterizedEvents: List<ScratchEvent>,
-                          inputRate: number) {
-        super(mutationOp, crossoverOp, inputs, numOutputNodes, parameterizedEvents)
+                inputs: Map<string, number[]>, scratchEvents: List<ScratchEvent>,
+                inputRate: number) {
+        super(mutationOp, crossoverOp, inputs, scratchEvents)
         this._inputRate = inputRate;
     }
 

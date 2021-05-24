@@ -17,25 +17,28 @@ import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {List} from "../../../../src/whisker/utils/List";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {KeyDownEvent} from "../../../../src/whisker/testcase/events/KeyDownEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 
 
 describe('Test RandomNeuroevolution', () => {
 
-    let properties: NeuroevolutionProperties<NetworkChromosome>
-    let searchAlgorithm: SearchAlgorithm<NetworkChromosome>
-    let builder: SearchAlgorithmBuilder<NetworkChromosome>
-    let iterations: number
-    let populationSize: number
+    let properties: NeuroevolutionProperties<NetworkChromosome>;
+    let searchAlgorithm: SearchAlgorithm<NetworkChromosome>;
+    let builder: SearchAlgorithmBuilder<NetworkChromosome>;
+    let iterations: number;
+    let populationSize: number;
     let mutationOp: NeatMutation;
     let crossoverOp: NeatCrossover;
-    let generator: NetworkChromosomeGeneratorSparse
-    let genInputs: Map<string, number[]>
-    let outputSize: number
-    let random : Randomness
+    let generator: NetworkChromosomeGeneratorSparse;
+    let genInputs: Map<string, number[]>;
+    let events: List<ScratchEvent>;
+    let random : Randomness;
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
-        mock.init()
+        mock.init();
         // @ts-ignore
         Container.vmWrapper = mock;
 
@@ -48,8 +51,9 @@ describe('Test RandomNeuroevolution', () => {
         genInputs.set("Second", [4,5,6]);
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
-        outputSize = 3;
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, new List<ScratchEvent>(), 0.4);
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
+            new KeyDownEvent("right arrow", true), new MouseMoveEvent()]);
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, events, 0.4);
 
         builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM_NEUROEVOLUTION);
         iterations = 20;

@@ -10,6 +10,7 @@ import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNod
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 
 describe("Test NeatCrossover", () => {
 
@@ -35,7 +36,7 @@ describe("Test NeatCrossover", () => {
         nodes1.add(iNode2)
         nodes1.add(iNode3)
 
-        const oNode1 = new ClassificationNode(4, ActivationFunction.SIGMOID)
+        const oNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID)
         nodes1.add(oNode1)
         const hiddenNode1 = new HiddenNode(3, ActivationFunction.SIGMOID)
         nodes1.add(hiddenNode1)
@@ -127,7 +128,7 @@ describe("Test NeatCrossover", () => {
 
     test("CrossoverTest with deactivated connections", () => {
         const inNode = new InputNode(0, "Test");
-        const outNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
+        const outNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         parent1Connections.clear();
         parent1Connections.add(new ConnectionGene(inNode, outNode, 1, false, 0, false))

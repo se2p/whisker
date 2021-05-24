@@ -12,6 +12,8 @@ import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/Neuroevo
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 
 describe("NeuroevolutionUtil Tests", () => {
 
@@ -20,7 +22,7 @@ describe("NeuroevolutionUtil Tests", () => {
     let crossOver: NeatCrossover;
     let mutation: NeatMutation;
     let genInputs: Map<string, number[]>;
-    let numberOutputs: number;
+    let events: List<ScratchEvent>;
     let generator: NetworkChromosomeGeneratorSparse
     let properties: NeuroevolutionProperties<NetworkChromosome>
 
@@ -35,14 +37,13 @@ describe("NeuroevolutionUtil Tests", () => {
         genInputs.set("Second", [4,5,6]);
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
-        numberOutputs = 3;
         populationSize = 50;
         properties = new NeuroevolutionProperties<NetworkChromosome>(populationSize);
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
-        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, numberOutputs,
-            new List<ScratchEvent>(), 0.4)
+        events = new List<ScratchEvent>([new MouseMoveEvent()])
+        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events,0.4)
     })
 
     test("Test Speciation when a new Population gets created", () => {
@@ -92,7 +93,7 @@ describe("NeuroevolutionUtil Tests", () => {
     test("Test Compatibility Distance of Chromosomes with disjoint connections", () => {
         const inputNode1 = new InputNode(0,"Test");
         const inputNode2 = new InputNode(1,"Test");
-        const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
+        const outputNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
         nodes.add(inputNode1);
@@ -120,7 +121,7 @@ describe("NeuroevolutionUtil Tests", () => {
     test("Test Compatibility Distance of Chromosomes with disjoint connections switched", () => {
         const inputNode1 = new InputNode(0,"Test");
         const inputNode2 = new InputNode(1,"Test");
-        const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
+        const outputNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
         nodes.add(inputNode1);
@@ -160,7 +161,7 @@ describe("NeuroevolutionUtil Tests", () => {
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {
         const inputNode1 = new InputNode(0,"Test");
         const inputNode2 = new InputNode(1,"Test");
-        const outputNode = new ClassificationNode(2, ActivationFunction.SIGMOID);
+        const outputNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
         nodes.add(inputNode1);
@@ -197,7 +198,7 @@ describe("NeuroevolutionUtil Tests", () => {
         for (let i = 0; i < stabiliseCount + 1; i++) {
             chromosome.activateNetwork(genInputs)
         }
-        const softmaxOutput = NeuroevolutionUtil.softmax(chromosome);
+        const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
 
     })
@@ -221,14 +222,14 @@ describe("NeuroevolutionUtil Tests", () => {
         for(const connection of chromosome.connections)
             connectionList.add(connection);
         const inNode = new InputNode(100,"Test")
-        const outNode = new ClassificationNode(101, ActivationFunction.SIGMOID)
+        const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID)
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
         expect(NeuroevolutionUtil.findConnection(connectionList, newConnection)).toBe(null)
     })
 
     test("Test Assign innovation number of a new connection", () =>{
         const inNode = new InputNode(100,"Test")
-        const outNode = new ClassificationNode(101, ActivationFunction.SIGMOID)
+        const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID)
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
         NeuroevolutionUtil.assignInnovationNumber(newConnection)
         expect(newConnection.innovation).toBeLessThan(100)
@@ -238,7 +239,7 @@ describe("NeuroevolutionUtil Tests", () => {
         const chromosome = generator.get();
         const existingConnection = chromosome.connections.get(0)
         const inNode = new InputNode(existingConnection.source.id,"Test")
-        const outNode = new ClassificationNode(existingConnection.target.id, ActivationFunction.SIGMOID)
+        const outNode = new ClassificationNode(existingConnection.target.id, new MouseMoveEvent(), ActivationFunction.SIGMOID)
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
         NeuroevolutionUtil.assignInnovationNumber(newConnection)
         expect(newConnection.innovation).toBe(existingConnection.innovation)

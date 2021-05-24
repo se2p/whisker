@@ -7,6 +7,9 @@ import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/Neuroevo
 import {Randomness} from "../../../src/whisker/utils/Randomness";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {List} from "../../../src/whisker/utils/List";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {KeyDownEvent} from "../../../src/whisker/testcase/events/KeyDownEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 
 describe("Test NeatPopulation", () => {
 
@@ -16,7 +19,7 @@ describe("Test NeatPopulation", () => {
     let crossOver: NeatCrossover;
     let mutation: NeatMutation;
     let inputs: Map<string, number[]>;
-    let numberOutputs: number;
+    let events: List<ScratchEvent>;
     let properties: NeuroevolutionProperties<NetworkChromosome>
     let population: NeatPopulation<NetworkChromosome>
     let random: Randomness
@@ -31,9 +34,9 @@ describe("Test NeatPopulation", () => {
             1.5, 0.1, 3, 0.1);
         inputs = new Map<string, number[]>();
         inputs.set("First", [1, 2, 3, 4, 5, 6]);
-        numberOutputs = 3;
-        chromosomeGenerator = new NetworkChromosomeGeneratorSparse(
-            mutation, crossOver, inputs, numberOutputs, new List<ScratchEvent>(), 0.4);
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
+            new KeyDownEvent("right arrow", true), new MouseMoveEvent()])
+        chromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, inputs, events, 0.4);
         properties = new NeuroevolutionProperties<NetworkChromosome>(size)
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;

@@ -6,18 +6,20 @@ import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene"
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/NeuroevolutionUtil";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {ClickStageEvent} from "../../../../src/whisker/testcase/events/ClickStageEvent";
 
 
 describe("classificationNode Tests", () => {
     let classificationNode: NodeGene
 
     beforeEach(() => {
-        classificationNode = new ClassificationNode(1, ActivationFunction.SIGMOID);
+        classificationNode = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
     })
 
     test("Constructor Test", () => {
 
-        const classificationNode = new ClassificationNode(10, ActivationFunction.SIGMOID);
+        const classificationNode = new ClassificationNode(10, new WaitEvent(), ActivationFunction.SIGMOID);
 
         expect(classificationNode.id).toBe(10);
         expect(classificationNode.activationFunction).toBe(ActivationFunction.SIGMOID);
@@ -25,10 +27,11 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.nodeValue).toBe(0);
         expect(classificationNode.lastActivationValue).toBe(0);
         expect(classificationNode.activationValue).toBe(0)
-        expect(classificationNode.activatedFlag).toBe(false)
+        expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.activationCount).toBe(0);
-        expect(classificationNode.traversed).toBe(false)
+        expect(classificationNode.traversed).toBeFalsy();
         expect(classificationNode.incomingConnections.size()).toBe(0);
+        expect(classificationNode.event instanceof WaitEvent).toBeTruthy();
     })
 
     test("Reset Node", () =>{
@@ -43,20 +46,23 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.activationValue).toBe(0)
         expect(classificationNode.nodeValue).toBe(0)
         expect(classificationNode.lastActivationValue).toBe(0)
-        expect(classificationNode.activatedFlag).toBe(false)
-        expect(classificationNode.traversed).toBe(false)
+        expect(classificationNode.activatedFlag).toBeFalsy();
+        expect(classificationNode.traversed).toBeFalsy();
 
     })
 
     test("Equals Test", () =>{
-        const classificationNode2 = new ClassificationNode(1, ActivationFunction.SIGMOID);
-        expect(classificationNode2.equals(classificationNode)).toBe(true)
+        const classificationNode2 = new ClassificationNode(1, new WaitEvent, ActivationFunction.SIGMOID);
+        expect(classificationNode2.equals(classificationNode)).toBeTruthy();
 
-        const classificationNode3 = new ClassificationNode(2, ActivationFunction.SIGMOID);
-        expect(classificationNode3.equals(classificationNode)).toBe(false)
+        const classificationNode3 = new ClassificationNode(2, new WaitEvent, ActivationFunction.SIGMOID);
+        expect(classificationNode3.equals(classificationNode)).toBeFalsy();
 
-        const classificationNode4 = new ClassificationNode(1, ActivationFunction.NONE);
-        expect(classificationNode4.equals(classificationNode)).toBe(false)
+        const classificationNode4 = new ClassificationNode(1, new ClickStageEvent(), ActivationFunction.SIGMOID);
+        expect(classificationNode4.equals(classificationNode)).toBeFalsy();
+
+        const classificationNode5 = new ClassificationNode(1, new WaitEvent, ActivationFunction.NONE);
+        expect(classificationNode5.equals(classificationNode)).toBeFalsy();
 
         const biasNode = new BiasNode(1);
         expect(biasNode.equals(classificationNode)).toBe(false)
@@ -79,7 +85,7 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.getActivationValue()).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
 
-        const classificationNode2 = new ClassificationNode(2, ActivationFunction.NONE)
+        const classificationNode2 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.NONE)
         classificationNode2.nodeValue = 5;
         classificationNode2.activationCount = 10;
         expect(classificationNode2.getActivationValue()).toBe(5);

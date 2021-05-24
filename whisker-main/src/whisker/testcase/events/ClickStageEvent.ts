@@ -52,4 +52,10 @@ export class ClickStageEvent extends ScratchEvent {
     getVariableParameterNames(): string[] {
         return [];
     }
+
+    stringIdentifier(): string {
+        return "ClickStageEvent";
+    }
+
+
 }

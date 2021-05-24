@@ -6,6 +6,7 @@ import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {KeyDownEvent} from "../../../../src/whisker/testcase/events/KeyDownEvent";
 
 describe('Test NetworkChromosomeGeneratorSparse', () => {
 
@@ -13,7 +14,7 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
     let crossoverOp: NeatCrossover;
     let generator: NetworkChromosomeGeneratorSparse;
     let genInputs: Map<string, number[]>;
-    let outputSize: number;
+    let events: List<ScratchEvent>;
 
     beforeEach(() => {
         crossoverOp = new NeatCrossover(0.4);
@@ -25,8 +26,9 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         genInputs.set("Second", [4,5,6]);
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
-        outputSize = 3;
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, new List<ScratchEvent>(), 0.4);
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
+            new KeyDownEvent("right arrow", true), new MouseMoveEvent()])
+        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, events, 0.4);
     })
 
     test('Create initial random Chromosome', () => {
@@ -34,23 +36,15 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         generator.setMutationOperator(mutationOp);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(13); // +1 for Bias
-        expect(neatChromosome.connections.size() % 3).toBe(0);
+        expect(neatChromosome.allNodes.size()).toBe(17); // +1 for Bias
+        expect(neatChromosome.connections.size() % 7).toBe(0);
         expect(neatChromosome.connections.size()).toBeGreaterThan(0);
-    })
-
-    test('Create initial random Chromosome with regression', () => {
-        const parameterizedEvents = new List<ScratchEvent>([new WaitEvent(), new MouseMoveEvent()]);
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, outputSize, parameterizedEvents, 0.4);
-        const neatChromosome = generator.get();
-        neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(13 + 3); // +1 for Bias +3 for Regression Nodes
-        expect(neatChromosome.connections.size() % 6).toBe(0);
-        expect(neatChromosome.connections.size()).toBeGreaterThan(0);
+        expect(neatChromosome.outputNodes.size()).toEqual(7);
+        expect(neatChromosome.classificationNodes.size).toBe(4);
+        expect(neatChromosome.regressionNodes.size).toBe(2);
     })
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
-        outputSize = 2;
         const chromosomes : NetworkChromosome[] = [];
         // eslint-disable-next-line prefer-spread
         let stabCount = 0;

@@ -43,7 +43,7 @@ export class MouseMoveToEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         return '' +
-`t.inputImmediate({
+            `t.inputImmediate({
     device: 'mouse',
     x: ${Math.trunc(this.x)},
     y: ${Math.trunc(this.y)}
@@ -68,5 +68,9 @@ export class MouseMoveToEvent extends ScratchEvent {
 
     setParameter(): void {
         return;
+    }
+
+    stringIdentifier(): string {
+        return "MouseMoveToEvent-" + this.x + "-" + this.y;
     }
 }
