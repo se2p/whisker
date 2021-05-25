@@ -24,12 +24,12 @@ import {Container} from "../../utils/Container";
 export class KeyPressEvent extends ScratchEvent {
 
     private readonly _keyOption: string;
-    private readonly _timeout: number;
+    private readonly _steps: number;
 
     constructor(keyOption: string) {
         super();
         this._keyOption = keyOption;
-        this._timeout = Container.config.getPressDuration() / Container.acceleration;
+        this._steps = Container.config.getPressDuration();
     }
 
     async apply(): Promise<void> {
@@ -37,7 +37,7 @@ export class KeyPressEvent extends ScratchEvent {
             device: 'keyboard',
             key: this._keyOption,
             isDown: true,
-            duration: this._timeout
+            steps: this._steps
         });
     }
 
@@ -47,7 +47,7 @@ export class KeyPressEvent extends ScratchEvent {
     device: 'keyboard',
     key: '${this._keyOption}',
     isDown: true,
-    duration: ${Container.config.getPressDuration()}
+    steps: ${Container.config.getPressDuration()}
   });`;
     }
 
@@ -60,7 +60,7 @@ export class KeyPressEvent extends ScratchEvent {
     }
 
     getParameter(): (string | number)[] {
-        return [this._keyOption, this._timeout];
+        return [this._keyOption, this._steps];
     }
 
     setParameter(): void {

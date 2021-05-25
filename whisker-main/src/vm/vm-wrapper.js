@@ -186,15 +186,15 @@ class VMWrapper {
         }
 
         this.running = false;
-        const timeElapsed = this.getRunTimeElapsed();
+        const stepsExecuted = this.getRunStepsExecuted();
 
-        this.inputs.updateInputs(timeElapsed);
+        this.inputs.updateInputs(stepsExecuted);
 
         if (constraintError && this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL) {
             throw constraintError;
         }
 
-        return timeElapsed;
+        return stepsExecuted;
     }
 
     /**
