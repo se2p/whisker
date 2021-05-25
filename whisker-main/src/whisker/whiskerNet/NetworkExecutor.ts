@@ -119,16 +119,18 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
+
+            // If a key is still pressed release the key before another event is sent to the VM
+            if (this._vmWrapper.inputs.isAnyKeyDown()) {
+                this._vmWrapper.inputs.resetKeyboard();
+            }
+
             // Collect the currently available events
             this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
-
-            // If a key is still pressed release the key before another event is sent to the VM
-            if (this._vmWrapper.inputs.isAnyKeyDown())
-                this._vmWrapper.inputs.resetKeyboard();
 
             // Load the inputs into the Network
             const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
@@ -159,6 +161,7 @@ export class NetworkExecutor {
 
             // Get the classification results by using the softmax function over the outputNode values
             const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+            // TODO: Remove this check at at some point
             if(output.length != this.availableEvents.size())
                 console.error(output, this.availableEvents)
             // Choose the event with the highest probability according to the softmax values

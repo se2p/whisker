@@ -73,8 +73,12 @@ export class ConnectionGene {
     }
 
     toString(): string {
-        return "ConnectionGene{FromId: " + this.source.id + ", ToId: " + this.target.id + ", Weight: " + this.weight +
-            ", Enabled: " + this.isEnabled + ", InnovationNumber: " + this.innovation + "}"
+        return "ConnectionGene{FromId: " + this.source.id +
+            ", ToId: " + this.target.id +
+            ", Weight: " + this.weight +
+            ", Enabled: " + this.isEnabled +
+            ", Recurrent: " + this.recurrent +
+            ", InnovationNumber: " + this.innovation + "}"
     }
 
     get source(): NodeGene {

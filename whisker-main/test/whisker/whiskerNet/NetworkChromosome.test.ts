@@ -48,7 +48,6 @@ describe('Test NetworkChromosome', () => {
 
     test('Constructor Test', () => {
         expect(chromosome.allNodes.size()).toBe(genInputs.get("First").length + 1 + 7);
-        expect(chromosome.inputNodesSize()).toBe(genInputs.get("First").length);
         expect(chromosome.outputNodes.size()).toBe(7);
         expect(chromosome.classificationNodes.size).toEqual(4);
         expect(chromosome.regressionNodes.size).toEqual(2);
@@ -211,13 +210,6 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.inputNodes.get("First").get(0).activatedFlag).toBeTruthy();
         expect(chromosome.inputNodes.get("First").get(1).activatedFlag).toBeFalsy();
         expect(chromosome.inputNodes.get("Second").get(0).activatedFlag).toBeTruthy();
-        expect(chromosome.inputNodesSize()).toBe(9)
-    })
-
-    test("Test add inputNode with additional information gathered from an already existing sprite", () => {
-        genInputs.get("First").push(11)
-        chromosome.addInputNode(genInputs)
-        expect(chromosome.inputNodesSize()).toBe(7)
     })
 
     test('Test generateNetwork with hidden Layer', () => {

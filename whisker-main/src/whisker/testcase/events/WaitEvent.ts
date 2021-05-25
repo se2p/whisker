@@ -59,13 +59,16 @@ export class WaitEvent extends ScratchEvent {
     setParameter(args:number[], testExecutor:ParameterTypes): void {
         switch (testExecutor){
             case ParameterTypes.CODON:
-                // Waits of 0 seconds/steps leads to endless loop.
-                this.steps = args[0] % Container.config.getWaitStepUpperBound() + 1;
+                this.steps = args[0];
                 break;
             case ParameterTypes.REGRESSION:
-                this.steps = Math.ceil(NeuroevolutionUtil.relu(args[0]) + 0.0001);
+                this.steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }
+        this.steps %= Container.config.getWaitStepUpperBound();
+        // Waits of 0 steps lead to an endless loop.
+        if (this.steps == 0)
+            this.steps = 1;
     }
 
     stringIdentifier(): string {

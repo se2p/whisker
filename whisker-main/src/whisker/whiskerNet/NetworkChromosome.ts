@@ -289,6 +289,7 @@ export class NetworkChromosome extends Chromosome {
      */
     public generateNetwork(): void {
         this.sortConnections();
+        this.sortNodes();
         // Place the input, regression and output nodes into the corresponding Map/List
         for (const node of this.allNodes) {
             // Add input nodes to the InputNode-Map
@@ -421,7 +422,6 @@ export class NetworkChromosome extends Chromosome {
 
             // For each node compute the sum of its incoming connections
             for (const node of this.allNodes) {
-
                 if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
 
                     // Reset the activation Flag and the activation value
@@ -446,7 +446,6 @@ export class NetworkChromosome extends Chromosome {
                         node.lastActivationValue = node.activationValue;
                         node.activationValue = node.getActivationValue();
                         node.activationCount++;
-
                     }
                 }
             }
@@ -556,18 +555,14 @@ export class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Counts the number of input Nodes
-     * @return the number of input nodes
+     * Sorts the nodes of this network according to its types.
      */
-    public inputNodesSize(): number {
-        let counter = 0;
-        for (const nodeList of this.inputNodes.values())
-            counter += nodeList.size();
-        return counter;
+    private sortNodes(): void {
+        this.allNodes.sort((a, b) => a.type - b.type);
     }
 
     /**
-     * Sorts the connections of this network corresponding to its innovation numbers.
+     * Sorts the connections of this network according to its innovation numbers.
      */
     private sortConnections(): void {
         this.connections.sort((a, b) => a.innovation - b.innovation);
