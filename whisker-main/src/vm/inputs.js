@@ -160,8 +160,8 @@ class Input {
 
         //Convert time to steps;
         if(data.duration !== undefined && data.steps === undefined){
-            // One step takes about 30ms
-            data.steps = Math.round(data.duration / 30);
+            const stepTime = this._inputs.vmWrapper.vm.runtime.currentStepTime * this._inputs.vmWrapper.accelerationFactor;
+            data.steps = Math.round(data.duration / stepTime);
         }
         if(data.steps < 1){
             data.steps = 1;
@@ -245,9 +245,9 @@ class Inputs {
      */
     addInputs (inputs) {
         for (const data of inputs) {
-            if(data.duration !== undefined && data.steps === undefined){
-                // One step takes about 30ms
-                let steps = Math.round(data.duration / 30);
+            if(data.time !== undefined && data.steps === undefined){
+                const stepDuration = this.vmWrapper.vm.runtime.currentStepTime * this.vmWrapper.accelerationFactor
+                let steps = Math.round(data.time / stepDuration);
                 if(steps < 1){
                     steps = 1;
                 }

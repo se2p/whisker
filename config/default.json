@@ -50,6 +50,6 @@
         "max": 480
     },
     "waitStepUpperBound": 200,
-    "click-duration": 20,
-    "press-duration": 20
+    "click-duration": 3,
+    "press-duration": 3
 }
