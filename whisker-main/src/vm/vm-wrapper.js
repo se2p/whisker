@@ -410,6 +410,16 @@ class VMWrapper {
     }
 
     /**
+     * Converts the unit of time into the unit of steps
+     * @param {number} timeDuration .
+     * @return {number} .
+     */
+    convertFromTimeToSteps(timeDuration){
+        const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
+        return Math.ceil(timeDuration / stepDuration);
+    }
+
+    /**
      * Gets the answer given to the ask-and-wait block.
      *
      * @return {string} .

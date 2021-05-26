@@ -158,14 +158,16 @@ class Input {
         }
 
 
-        //Convert time to steps;
+        //Convert time to steps; Ensures backwards compatibility with old Whisker-Tests.
         if(data.duration !== undefined && data.steps === undefined){
-            const stepTime = this._inputs.vmWrapper.vm.runtime.currentStepTime * this._inputs.vmWrapper.accelerationFactor;
-            data.steps = Math.round(data.duration / stepTime);
+            data.steps = this._inputs.vmWrapper.convertFromTimeToSteps(data.duration);
         }
+
+        // Safety check to ensure having a step duration >= 1
         if(data.steps < 1){
             data.steps = 1;
         }
+
         return data;
     }
 
@@ -246,12 +248,7 @@ class Inputs {
     addInputs (inputs) {
         for (const data of inputs) {
             if(data.time !== undefined && data.steps === undefined){
-                const stepDuration = this.vmWrapper.vm.runtime.currentStepTime * this.vmWrapper.accelerationFactor
-                let steps = Math.round(data.time / stepDuration);
-                if(steps < 1){
-                    steps = 1;
-                }
-                data.steps = steps;
+                data.steps = this.vmWrapper.convertFromTimeToSteps(data.time);
             }
             this.addInput(data.steps, data.input);
         }
