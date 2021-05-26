@@ -41,7 +41,7 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 10000,
+        "timeout": 1000000,
         "offset": 0.01
     },
     "stopping-condition": {
@@ -50,12 +50,10 @@
             {
                 "type": "fixed-iteration",
                 "iterations": 300
-            },
-            {
-                "type": "optimal"
             }
         ]
     },
-    "click-duration": 15,
-    "press-duration": 15
+    "waitStepUpperBound": 50,
+    "click-duration": 1,
+    "press-duration": 1
 }
