@@ -186,15 +186,15 @@ class VMWrapper {
         }
 
         this.running = false;
-        const timeElapsed = this.getRunTimeElapsed();
+        const stepsExecuted = this.getRunStepsExecuted();
 
-        this.inputs.updateInputs(timeElapsed);
+        this.inputs.updateInputs(stepsExecuted);
 
         if (constraintError && this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL) {
             throw constraintError;
         }
 
-        return timeElapsed;
+        return stepsExecuted;
     }
 
     /**
@@ -407,6 +407,16 @@ class VMWrapper {
             width,
             height
         };
+    }
+
+    /**
+     * Converts the unit of time into the unit of steps
+     * @param {number} timeDuration .
+     * @return {number} .
+     */
+    convertFromTimeToSteps(timeDuration){
+        const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
+        return Math.ceil(timeDuration / stepDuration);
     }
 
     /**
