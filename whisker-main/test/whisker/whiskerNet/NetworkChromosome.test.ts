@@ -397,7 +397,6 @@ describe('Test NetworkChromosome', () => {
     })
 
     test('Network activation with hidden layer', () => {
-
         // Create input Nodes
         const nodes = new List<NodeGene>()
         nodes.add(new InputNode(0, "First"))
@@ -443,8 +442,8 @@ describe('Test NetworkChromosome', () => {
         expect(Number(hiddenNode.activationValue.toFixed(3))).toBe(0.999)
         expect(Number(deepHiddenNode.nodeValue.toFixed(3))).toBe(0.799)
         expect(Number(deepHiddenNode.activationValue.toFixed(3))).toBe(0.980)
-        expect(Number(nodes.get(4).nodeValue.toFixed(3))).toBe(1.082)
-        expect(nodes.get(3).nodeValue).toBe(0.6)
+        expect(Number(nodes.get(6).nodeValue.toFixed(3))).toBe(1.082)
+        expect(nodes.get(5).nodeValue).toBe(0.6)
         expect(softmaxOutput).toEqual([0.382, 0.618]);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
     })
