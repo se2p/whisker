@@ -2,6 +2,12 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
 import {Util} from "./Util";
 import Sprite from "../../../vm/sprite";
+import {
+    getComparisonNotKnownError, getErrorForAttribute, getErrorForVariable,
+    getFunctionEvalError,
+    getRGBRangeError,
+    getVariableNotFoundError
+} from "./ModelError";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -71,11 +77,11 @@ export abstract class CheckGenerator {
         let variable = sprite.getVariable(varName);
 
         if (variable == undefined) {
-            throw new Error("Variable not found: " + varName);
+            throw getVariableNotFoundError(varName, spriteName);
         }
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
             && comparison != "<" && comparison != "<=") {
-            throw new Error("Comparison not known: " + comparison);
+            throw getComparisonNotKnownError(comparison);
         }
         return () => {
             let sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
@@ -85,8 +91,7 @@ export abstract class CheckGenerator {
             try {
                 result = Util.compare(variable.value, varValue, comparison);
             } catch (e) {
-                e.message = e.message + spriteName + "." + varName;
-                throw e;
+                throw getErrorForVariable(spriteName, varName, e.message);
             }
             if (result) {
                 return !negated;
@@ -111,7 +116,7 @@ export abstract class CheckGenerator {
         Util.checkAttributeExistence(t, spriteName, attrName);
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
-            throw new Error("Comparison not known: " + comparison);
+            throw getComparisonNotKnownError(comparison);
         }
         const currentValueEval = "sprite." + attrName;
         const oldValueEval = "sprite.old." + attrName;
@@ -124,8 +129,7 @@ export abstract class CheckGenerator {
             try {
                 result = Util.compare(value, oldValue, comparison);
             } catch (e) {
-                e.message = e.message + spriteName + "." + attrName;
-                throw e;
+                throw getErrorForAttribute(spriteName, attrName, e.message);
             }
 
             if (result) {
@@ -145,7 +149,7 @@ export abstract class CheckGenerator {
         try {
             eval(f);
         } catch (e) {
-            throw new Error("Function cannot be evaluated:\n" + e);
+            throw getFunctionEvalError(e);
         }
         return () => {
             if (eval(f)) {
@@ -193,7 +197,7 @@ export abstract class CheckGenerator {
                                        r: number, g: number, b: number): () => boolean {
         Util.checkSpriteExistence(t, spriteName);
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
-            throw new Error("RGB ranges not correct.");
+            throw getRGBRangeError();
         }
         cu.registerColor(spriteName, r, g, b);
 
@@ -242,7 +246,7 @@ export abstract class CheckGenerator {
         const sprite = Util.checkSpriteExistence(t, spriteName);
         const variable = sprite.getVariable(varName);
         if (variable == undefined) {
-            throw new Error("Variable " + varName + " is not defined on sprite " + spriteName + ".");
+            throw getVariableNotFoundError(varName, spriteName);
         }
         return () => {
             const sprite = Util.checkSpriteExistence(t, spriteName);
@@ -252,8 +256,7 @@ export abstract class CheckGenerator {
             try {
                 result = Util.testChange(variable.old.value, variable.value, change);
             } catch (e) {
-                e.message = e.message + " for " + spriteName + "." + varName;
-                throw e;
+                throw getErrorForVariable(spriteName, varName, e.message);
             }
             if (result) {
                 return !negated;
@@ -292,8 +295,7 @@ export abstract class CheckGenerator {
             try {
                 result = Util.testChange(oldValue, newValue, change);
             } catch (e) {
-                e.message = e.message + " for " + spriteName + "." + attrName;
-                throw e;
+                throw getErrorForAttribute(spriteName, attrName, e.message);
             }
             if (result) {
                 return !negated;

@@ -39,9 +39,9 @@ class ModelResult {
         this.status = null;
 
         /**
-         * @type {{checkId: string, errorText: string}}
+         * @type {string[]}
          */
-        this.errors = {};
+        this.errors = [];
 
         /**
          * type {[key:string]:number}
@@ -63,18 +63,14 @@ class ModelResult {
          * @type {string[]}
          */
         this.state = [];
-
-        this.hasErrors = false;
     }
 
     /**
-     * @param {Check} check
      * @param {string} error
      */
-    addError(check, error) {
-        if (this.errors[check.id] === undefined) {
-            this.errors[check.id] = error;
-            this.hasErrors = true;
+    addError(error) {
+        if (this.errors.indexOf(error) === -1) {
+            this.errors.push(error);
         }
     }
 }

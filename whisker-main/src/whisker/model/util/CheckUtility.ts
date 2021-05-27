@@ -2,6 +2,12 @@ import TestDriver from "../../../test/test-driver";
 import {ModelResult} from "../../../test-runner/test-result";
 import {Effect} from "../components/Effect";
 import {ModelEdge} from "../components/ModelEdge";
+import {
+    getConstraintFailedOutput,
+    getConstraintsFailedError,
+    getEffectFailedOutput,
+    getErrorOnEdgeOutput
+} from "./ModelError";
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -189,16 +195,14 @@ export class CheckUtility {
         let output = [];
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check()) {
-                let effectString = effects[i].toString();
-                console.error("Constraint failed! " + effectString, this.testDriver.getTotalStepsExecuted());
-                modelResult.addError(effects[i], "Constraint failed! " + effectString);
+                let error = getConstraintFailedOutput(effects[i]);
+                modelResult.addError(error);
+                output.push(error);
                 hadError = true;
-                output.push(effectString);
             }
         }
         if (hadError && edge.getEndNode().isStopNode) {
-            throw new Error("Constraints failed! " + output.join("/n")+"\n-> Model stopped for this test after" +
-                " constraint checks!");
+            throw getConstraintsFailedError(output.join("/n"));
         }
     }
 
@@ -224,11 +228,11 @@ export class CheckUtility {
                         this.failedChecks.push(this.effectChecks[i]);
                     }
                 } catch (e) {
-                    e.message = "Error in Model '" + this.effectChecks[i].edge.getModel().id + "'. Edge '"
-                        + this.effectChecks[i].edge.id + "': " + e.message;
-                    console.error(e);
+                    let error = getErrorOnEdgeOutput(this.effectChecks[i].edge.getModel(),
+                        this.effectChecks[i].edge, e.message);
+                    console.error(error);
                     this.failedChecks.push(this.effectChecks[i]);
-                    modelResult.addError(this.effectChecks[i], e.message);
+                    modelResult.addError(error);
                 }
             }
         }
@@ -253,11 +257,9 @@ export class CheckUtility {
         }
 
         function makeFailedOutput(testDriver, effect) {
-            let edge = effect.edge;
-            let output = "Effect failed! Model: '" + edge.getModel().id + "'. Edge: '" + edge.id + "'. Effect: "
-                + effect.toString();
+            let output = getEffectFailedOutput(effect);
             console.error(output, testDriver.getTotalStepsExecuted());
-            modelResult.addError(effect, output);
+            modelResult.addError(output);
         }
 
         this.failedChecks.forEach(effect => {

@@ -56,10 +56,8 @@ const TAP13Formatter = {
         const skip = summary.filter(result => result.status === Test.SKIP).length;
         let allErrors = [];
         summary.forEach(result => {
-            if (result.modelResult && result.modelResult.hasErrors) {
-                for (const errorKey in result.modelResult.errors) {
-                    allErrors.push(result.modelResult.errors[errorKey]);
-                }
+            if (result.modelResult && result.modelResult.errors.length > 0) {
+                allErrors = [...allErrors, ...result.modelResult.errors];
             }
         })
         let uniqueErrors = [...new Set(allErrors)];

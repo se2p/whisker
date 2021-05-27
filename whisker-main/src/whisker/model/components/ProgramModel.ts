@@ -53,7 +53,7 @@ export class ProgramModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeTransitions(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
+    makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
         let edge = this.currentState.testEdgeConditions(testDriver, modelResult);
 
         if (edge != null) {

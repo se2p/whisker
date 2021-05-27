@@ -1,5 +1,11 @@
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
+import {
+    getAttributeNotFoundError,
+    getChangeComparisonNotKnownError,
+    getComparisonNotKnownError,
+    getNotNumericalValueError, getSpriteNotFoundError
+} from "./ModelError";
 
 export abstract class Util {
 
@@ -11,7 +17,7 @@ export abstract class Util {
     static checkSpriteExistence(testDriver: TestDriver, spriteName: string): Sprite {
         let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
         if (sprite == undefined) {
-            throw new Error("Sprite not existing with name '" + spriteName + "'");
+            throw getSpriteNotFoundError(spriteName);
         }
         return sprite;
     }
@@ -25,7 +31,7 @@ export abstract class Util {
             let sprite = Util.checkSpriteExistence(testDriver, spriteName);
             eval("sprite." + attrName);
         } catch (e) {
-            throw new Error("Attribute " + attrName + " is not defined on sprite " + spriteName + ".");
+            throw getAttributeNotFoundError(attrName, spriteName);
         }
     }
 
@@ -38,40 +44,31 @@ export abstract class Util {
      */
     static testChange(oldValue, newValue, change) {
         if (oldValue == null) {
-            throw new Error("Test change: old value not defined");
+            throw getNotNumericalValueError("null or undefined");
         }
         if (newValue == null) {
-            throw new Error("Test change: new value not defined");
+            throw getNotNumericalValueError("null or undefined");
         }
+
+        if (change == '=' || change == '==') {
+            return oldValue == newValue;
+        }
+        this.testNumber(oldValue);
+        this.testNumber(newValue);
 
         switch (change) {
             case '+':
             case '++':
-                if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
-                    throw new Error("Effect failed: not a numerical value in variable");
-                }
                 return Number(oldValue.toString()) < Number(newValue.toString());
             case '-':
             case '--':
-                if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
-                    throw new Error("Effect failed: not a numerical value in");
-                }
                 return Number(oldValue.toString()) > Number(newValue.toString());
-            case '=':
-            case'==':
-                return oldValue == newValue;
             case '+=':
-                if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
-                    throw new Error("Effect failed: not a numerical value in variable");
-                }
                 return Number(oldValue.toString()) <= Number(newValue.toString());
             case '-=':
-                if (!this.testNumber(oldValue) || !this.testNumber(newValue)) {
-                    throw new Error("Effect failed: not a numerical value in variable");
-                }
                 return Number(oldValue.toString()) >= Number(newValue.toString());
             default:
-                throw new Error("Value Change Testing: Mode of change not known.");
+                throw getChangeComparisonNotKnownError(change);
         }
     }
 
@@ -79,7 +76,9 @@ export abstract class Util {
      * Test whether a value is a number.
      */
     static testNumber(value) {
-        return ((value != null) && (value !== '') && !isNaN(Number(value.toString())));
+        if (!((value != null) && (value !== '') && !isNaN(Number(value.toString())))) {
+            throw getNotNumericalValueError(value);
+        }
     }
 
     /**
@@ -102,9 +101,8 @@ export abstract class Util {
             }
             return value1 == value2;
         }
-        if (!this.testNumber(value1) || !this.testNumber(value2)) {
-            throw new Error("Condition failed: not a numerical value in ");
-        }
+        this.testNumber(value1);
+        this.testNumber(value2);
         value1 = Number(value1.toString());
         value2 = Number(value2.toString());
 
@@ -118,6 +116,6 @@ export abstract class Util {
             return value1 >= value2;
         }
 
-        throw new Error("Value Comparison Testing: Mode of comparison not known.");
+        throw getComparisonNotKnownError(comparison);
     }
 }

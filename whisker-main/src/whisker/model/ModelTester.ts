@@ -76,7 +76,7 @@ export class ModelTester extends EventEmitter {
         this.constraintsModel.registerComponents(this.checkUtility, testDriver, this.result);
 
         // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).
-        if (this.result.hasErrors) {
+        if (this.result.errors.length > 0) {
             console.error("errors in conditions/effects before test run");
             return;
         }
@@ -96,7 +96,7 @@ export class ModelTester extends EventEmitter {
         let endTimer = 1; // effects can be delayed one step
 
         let constraintFunction = () => {
-            let edge = this.constraintsModel.makeTransitions(testDriver, this.result);
+            let edge = this.constraintsModel.makeOneTransition(testDriver, this.result);
             try {
                 if (edge != null) {
                     this.checkUtility.checkEffectsConstraint(edge, this.result);
@@ -123,7 +123,7 @@ export class ModelTester extends EventEmitter {
             } else {
                 this.checkUtility.checkFailedEffects(this.result);
                 this.programModels.forEach(model => {
-                    let takenEdge = model.makeTransitions(testDriver, this.result);
+                    let takenEdge = model.makeOneTransition(testDriver, this.result);
                     if (takenEdge != null) {
                         this.checkUtility.registerEffectCheck(takenEdge);
                         this.edgeTrace(takenEdge, testDriver);
@@ -167,23 +167,23 @@ export class ModelTester extends EventEmitter {
     }
 
     private edgeTrace(transition: ModelEdge, testDriver: TestDriver) {
-        if (!transition.id.startsWith("bowl")) { // todo change this later on
-            let edgeID = transition.id;
-            let conditions = transition.conditions;
-            let edgeTrace = "'" + edgeID + "':";
-            for (let i = 0; i < conditions.length; i++) {
-                edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
-            }
-            if (transition.effects.length > 0) {
-                edgeTrace = edgeTrace + " => ";
-                for (let i = 0; i < transition.effects.length; i++) {
-                    edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
-                }
-            }
-            this.result.edgeTrace.push(edgeTrace); //todo
-            this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-            console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
-        }
+        // if (!transition.id.startsWith("bowl")) { // todo change this later on
+        //     let edgeID = transition.id;
+        //     let conditions = transition.conditions;
+        //     let edgeTrace = "'" + edgeID + "':";
+        //     for (let i = 0; i < conditions.length; i++) {
+        //         edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
+        //     }
+        //     if (transition.effects.length > 0) {
+        //         edgeTrace = edgeTrace + " => ";
+        //         for (let i = 0; i < transition.effects.length; i++) {
+        //             edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
+        //         }
+        //     }
+        //     this.result.edgeTrace.push(edgeTrace); //todo
+        //     this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
+        //     console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
+        // }
     }
 
     /**

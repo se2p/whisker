@@ -99,12 +99,8 @@ class TAP13Listener {
             yamlOutput.coverage = TAP13Formatter.formatCoverage(result.coverage);
         }
 
-        if (result.modelResult && result.modelResult.hasErrors) {
-            let modelErrors = "";
-            for (const errorKey in result.modelResult.errors) {
-                modelErrors = modelErrors + "- " + result.modelResult.errors[errorKey] +"\n";
-            }
-            yamlOutput.modelErrors = modelErrors;
+        if (result.modelResult && result.modelResult.errors.length > 0) {
+            yamlOutput.modelErrors = result.modelResult.errors;
         }
 
         const output = [`${success ? 'ok' : 'not ok'} ${testIndex}${testName}`];

@@ -77,7 +77,7 @@ export class Condition extends Check {
             this._condition = this.checkArgsWithTestDriver(t, cu);
         } catch (e) {
             console.error(e);
-            result.addError(this, e.message);
+            result.addError(e.message);
         }
     }
 

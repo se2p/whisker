@@ -81,7 +81,7 @@ export class Effect extends Check {
             this._effect = this.checkArgsWithTestDriver(t, null);
         } catch (e) {
             console.error(e);
-            result.addError(this, e.message);
+            result.addError(e.message);
         }
     }
 

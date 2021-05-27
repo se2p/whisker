@@ -5,6 +5,7 @@ import {Condition} from "./Condition";
 import {ModelResult} from "../../../test-runner/test-result";
 import {ProgramModel} from "./ProgramModel";
 import {CheckUtility} from "../util/CheckUtility";
+import {getErrorOnEdgeOutput} from "../util/ModelError";
 
 /**
  * Edge structure for a model with effects that can be triggered based on its conditions.
@@ -54,10 +55,10 @@ export class ModelEdge {
                     failedConditions.push(this.conditions[i]);
                 }
             } catch (e) {
-                e.message = "Edge '" + this.id + "': " + e.message;
-                console.error(e);
+                let error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
+                console.error(error);
                 failedConditions.push(this.conditions[i]);
-                modelResult.addError(this.conditions[i], e.message);
+                modelResult.addError(error);
             }
         }
 

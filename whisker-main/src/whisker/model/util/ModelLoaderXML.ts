@@ -183,7 +183,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Unknown node id '" + startID + "'.");
         }
         if (!(this.nodesMap)[endID]) {
-            throw new Error("Edge '" + edgeID + "':Unknown node id '" + endID + "'.");
+            throw new Error("Edge '" + edgeID + "': Unknown node id '" + endID + "'.");
         }
 
         const newEdge = new ModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
