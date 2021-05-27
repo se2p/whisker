@@ -14,7 +14,6 @@ import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {ParameterTypes} from "../testcase/events/ParameterTypes";
-import * as assert from "assert";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
