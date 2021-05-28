@@ -156,8 +156,8 @@ class VMWrapper {
         }
 
         condition = condition || (() => false);
-        timeout = timeout || Infinity;
-        steps = steps || Infinity;
+        timeout = timeout === undefined ? Infinity : timeout;
+        steps = steps === undefined ? Infinity : steps;
 
         this.running = true;
         this.runStartTime = Date.now();
