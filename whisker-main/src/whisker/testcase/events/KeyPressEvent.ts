@@ -79,8 +79,7 @@ new WaitEvent(this._steps).toJavaScript() + `\n` +
         return [this._steps];
     }
 
-    setParameter(args:number[]): void {
-        console.log("PressUpperBound: ", Container.config.getPressDurationUpperBound())
+    setParameter(args: number[]): void {
         this._steps = args[0] % Container.config.getPressDurationUpperBound();
     }
 }

@@ -391,7 +391,7 @@ export class WhiskerSearchConfiguration {
         if ("pressDurationUpperBound" in this.dict) {
             return this.dict["pressDurationUpperBound"]
         } else {
-            return 30;
+            return 50;
         }
     }
 
