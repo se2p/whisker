@@ -80,7 +80,7 @@ const getCoverage = function (str) {
     return coverage.combined.match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
 }
 
-const getModelCoverage = function (str) {
+const getModelCoverage = function (str, row) {
     let coverageString = str.split('# modelCoverage:\n')[1];
     if (typeof coverageString === 'undefined') {
         return null;
@@ -88,7 +88,11 @@ const getModelCoverage = function (str) {
 
     coverageString = coverageString.replace(/^# /gm, '');
     const coverage = yaml.safeLoad(coverageString);
-    return coverage.combined.match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
+    row.modelCoverage = coverage.combined.match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
+    for (const individualKey in coverage.individual) {
+        row[individualKey + "ModelCoverage"] = coverage.individual[individualKey].match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
+    }
+    row.modelErrors = row.modelErrors.size;
 }
 
 const getName = function (str) {
@@ -100,12 +104,10 @@ const tapToCsvRow = async function (str) {
 
     const name = getName(str);
     const coverage = getCoverage(str);
-    const modelCoverage = getModelCoverage(str);
+    getModelCoverage(str, row);
 
     row.projectname = name;
     row.coverage = coverage;
-    row.modelCoverage = modelCoverage;
-    row.modelErrors = row.modelErrors.size;
 
     return row;
 }
@@ -135,6 +137,15 @@ const rowsToCsv = function (rows) {
     csvHeader.push('modelErrors');
     csvHeader.push('modelCoverage');
 
+    const modelCoverageIDs = [];
+    // model coverages
+    for (const rowElementKey in rows[0]) {
+        if (rowElementKey.toString().indexOf("ModelCoverage") !== -1) {
+            csvHeader.push(rowElementKey.toString());
+            modelCoverageIDs.push(rowElementKey.toString())
+        }
+    }
+
     const csvBody = [csvHeader];
     for (row of rows) {
         const csvLine = [];
@@ -156,6 +167,9 @@ const rowsToCsv = function (rows) {
         csvLine.push(row.coverage);
         csvLine.push(row.modelErrors);
         csvLine.push(row.modelCoverage);
+        modelCoverageIDs.forEach(id => {
+            csvLine.push(row[id]);
+        })
 
         csvBody.push(csvLine);
     }
