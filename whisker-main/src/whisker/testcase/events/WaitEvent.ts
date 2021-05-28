@@ -52,6 +52,6 @@ export class WaitEvent extends ScratchEvent {
 
     setParameter(args:number[]): void {
         // Waits of 0 seconds/steps leads to endless loop.
-        this.steps = args[0] % Container.config.getWaitStepUpperBound() + 1;
+        this.steps = args[0] % Container.config.getWaitStepUpperBound();
     }
 }

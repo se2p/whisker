@@ -395,6 +395,14 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getPressDownDurationUpperBound(): number {
+        if ("pressDownDurationUpperBound" in this.dict) {
+            return this.dict["pressDownDurationUpperBound"]
+        } else {
+            return 30;
+        }
+    }
+
     public getClickDuration(): number {
         if ("click-duration" in this.dict) {
             return this.dict["click-duration"]

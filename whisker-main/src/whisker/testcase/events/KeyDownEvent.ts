@@ -20,23 +20,35 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import {WaitEvent} from "./WaitEvent";
 
 export class KeyDownEvent extends ScratchEvent {
 
     private readonly _keyOption: string;
-    private readonly _value: boolean;
+    private _steps: number;
 
-    constructor(keyOption: string, value: boolean) {
+    constructor(keyOption: string, steps:number ) {
         super();
         this._keyOption = keyOption;
-        this._value = value;
+        this._steps = steps;
     }
 
     async apply(): Promise<void> {
+        // Press the specified key
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,
-            isDown: this._value
+            isDown: true
+        });
+
+        // Keep the key pressed for this._steps steps.
+        await new WaitEvent(this._steps).apply();
+
+        // Release the key
+        Container.testDriver.inputImmediate({
+            device: 'keyboard',
+            key: this._keyOption,
+            isDown: false
         });
     }
 
@@ -45,24 +57,30 @@ export class KeyDownEvent extends ScratchEvent {
 `t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
-    isDown: ${this._value}
-});`;
+    isDown: 'true'
+});`+ `\n`+
+new WaitEvent(this._steps).toJavaScript() + `\n` +
+`t.inputImmediate({
+    device: 'keyboard',
+    key: '${this._keyOption}',
+    isDown: 'false'
+});`
+
     }
 
     public toString(): string {
-        return "KeyDown " + this._keyOption + ": " + this._value;
+        return "KeyDown " + this._keyOption + ": " + this._steps;
     }
 
     getNumParameters(): number {
-        return 0;
+        return 1;
     }
 
     getParameter(): number[] {
-        // 0 returns False in JS/TS
-        return [this._value ? 1 : 0];
+        return [this._steps];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(args:number[]): void {
+        this._steps = args[0] % Container.config.getPressDownDurationUpperBound();
     }
 }

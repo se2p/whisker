@@ -54,8 +54,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         // eventList.add(new SoundEvent()); // Not implemented yet
 
         for (const key of this.KEYS) {
-            eventList.add(new KeyDownEvent(key, false));
-            eventList.add(new KeyDownEvent(key, true));
+            eventList.add(new KeyDownEvent(key, 1));
             eventList.add(new KeyPressEvent(key));
         }
         return eventList.distinctObjects();

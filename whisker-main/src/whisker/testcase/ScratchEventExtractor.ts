@@ -115,8 +115,7 @@ export abstract class ScratchEventExtractor {
             case 'sensing_keypressed': {
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
-                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
+                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, 1));
                 break;
             }
             case 'sensing_mousex':
