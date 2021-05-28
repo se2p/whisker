@@ -122,11 +122,11 @@ describe('Util tests', function () {
     })
 
     test("test number", () => {
-        expect(Util.testNumber("string")).toBeFalsy();
-        expect(Util.testNumber("")).toBeFalsy();
-        expect(Util.testNumber(null)).toBeFalsy();
-        expect(Util.testNumber(undefined)).toBeFalsy();
-        expect(Util.testNumber(1)).toBeTruthy();
-        expect(Util.testNumber("1")).toBeTruthy();
+        expect(() => Util.testNumber("string")).toThrow();
+        expect(() => Util.testNumber("")).toThrow();
+        expect(() => Util.testNumber(null)).toThrow();
+        expect(() => Util.testNumber(undefined)).toThrow();;
+        expect(() => Util.testNumber(1)).not.toThrow();;
+        expect(() => Util.testNumber("1")).not.toThrow();;
     })
 });
