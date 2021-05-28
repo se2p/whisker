@@ -71,7 +71,7 @@ export class TestExecutor {
         let numCodon = 0;
         const codons = testChromosome.getGenes();
 
-        while (numCodon < codons.size() && this._projectRunning && this.hasActionEvents(availableEvents)) {
+        while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
 
             if (availableEvents.isEmpty()) {
