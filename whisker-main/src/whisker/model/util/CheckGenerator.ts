@@ -225,7 +225,7 @@ export abstract class CheckGenerator {
             // todo give a warning if they are not equal
 
 
-            if (sprite.sayText.indexOf(eval(output)) != -1) {
+            if (sprite.sayText && sprite.sayText != "" && sprite.sayText.indexOf(eval(output)) != -1) {
                 return !negated;
             }
             return negated;

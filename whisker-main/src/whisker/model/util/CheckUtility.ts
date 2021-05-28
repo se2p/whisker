@@ -213,7 +213,7 @@ export class CheckUtility {
         let doNotCheck = {};
 
         // check for contradictions in effects
-        for (let i = 0; i < this.effectChecks.length - 1; i++) {
+        for (let i = 0; i < this.effectChecks.length; i++) {
 
             for (let j = i + 1; j < this.effectChecks.length; j++) {
                 if (this.effectChecks[i].contradicts(this.effectChecks[j])) {
