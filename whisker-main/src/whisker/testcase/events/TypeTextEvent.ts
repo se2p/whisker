@@ -18,26 +18,26 @@
  *
  */
 
-import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class TypeTextEvent implements ScratchEvent {
+export class TypeTextEvent extends ScratchEvent {
 
     private readonly _text: string;
 
     constructor(text: string) {
+        super();
         this._text = text;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'text',
             answer: this._text
         });
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'text',
@@ -45,11 +45,19 @@ export class TypeTextEvent implements ScratchEvent {
   });`
     }
 
-    public toString(args: number[]): string {
+    public toString(): string {
         return `TypeText '${this._text}'`
     }
 
     getNumParameters(): number {
         return 0; // Text
+    }
+
+    getParameter(): string[] {
+        return [this._text];
+    }
+
+    setParameter(): void {
+        return;
     }
 }

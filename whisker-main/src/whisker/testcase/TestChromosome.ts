@@ -84,7 +84,7 @@ export class TestChromosome extends IntegerListChromosome {
         assert (this._trace != null);
         let text = "";
         for (const [scratchEvent, args] of this._trace.events) {
-            text += scratchEvent.toString(args) + "\n";
+            text += scratchEvent.toString() + "\n";
         }
 
         return text;

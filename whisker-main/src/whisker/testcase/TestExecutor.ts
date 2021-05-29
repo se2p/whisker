@@ -23,15 +23,16 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
-import {Container} from "../utils/Container";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
+import Runtime from "scratch-vm/src/engine/runtime";
+
 
 export class TestExecutor {
 
@@ -40,6 +41,7 @@ export class TestExecutor {
     private _eventExtractor: ScratchEventExtractor;
     private _eventObservers: EventObserver[] = [];
     private _initialState = {};
+    private _projectRunning: boolean;
 
     constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor) {
         this._vmWrapper = vmWrapper;
@@ -60,36 +62,39 @@ export class TestExecutor {
         const events = new List<[ScratchEvent, number[]]>();
 
         seedScratch(String(Randomness.getInitialSeed()));
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
         this._vmWrapper.start();
+        let availableEvents = this._eventExtractor.extractEvents(this._vm);
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
 
-        while (numCodon < codons.size()) {
-            const availableEvents = this._eventExtractor.extractEvents(this._vm);
+        while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+            availableEvents = this._eventExtractor.extractEvents(this._vm);
 
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
-            const nextEvent = availableEvents.get(codons.get(numCodon) % availableEvents.size())
-
-            const args = this._getArgs(nextEvent, codons, numCodon);
+            // Select the next Event and set its parameter
+            const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon++) % availableEvents.size())
+            const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
+            nextEvent.setParameter(args);
             events.add([nextEvent, args]);
-            numCodon += nextEvent.getNumParameters() + 1;
+            numCodon += nextEvent.getNumParameters();
             this.notify(nextEvent, args);
-
-            await nextEvent.apply(this._vm, args);
+            // Send the chosen Event including its parameters to the VM
+            await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount()
 
-            const waitEvent = new WaitEvent();
+            // Send a WaitEvent to the VM
+            const waitEvent = new WaitEvent(1);
             events.add([waitEvent, []]);
-            await waitEvent.apply(this._vm);
+            await waitEvent.apply();
         }
-
-        await new WaitEvent(Container.config.getWaitDurationAfterExecution()).apply(this._vm);
-
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
         this._vmWrapper.end();
@@ -98,15 +103,16 @@ export class TestExecutor {
         return testChromosome.trace;
     }
 
-    private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
+    /**
+     * Collects the required parameters for a given event from the list of codons.
+     * @param event the event for which parameters should be collected
+     * @param codons the list of codons
+     * @param codonPosition the starting position from which on codons should be collected as parameters
+     */
+    private static getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
         const args = [];
         for (let i = 0; i < event.getNumParameters(); i++) {
-            // Get next codon, but wrap around if length exceeded
-            const codon = codons.get(++codonPosition % codons.size());
-
-            // TODO: How to map from codon to parameter value?
-            // TODO: Make this responsibility of event?
-            args.push(codon)
+            args.push(codons.get(codonPosition++ % codons.size()));
         }
         return args;
     }
@@ -129,6 +135,21 @@ export class TestExecutor {
         for (const observer of this._eventObservers) {
             observer.update(event, args);
         }
+    }
+
+    /**
+     * Event listener checking if the project is still running.
+     */
+    private projectStopped() {
+        return this._projectRunning = false;
+    }
+
+    /**
+     * Checks if the given event list contains actionEvents, i.e events other than WaitEvents.
+     * @param events the event list to check.
+     */
+    private hasActionEvents(events: List<ScratchEvent>) {
+        return events.filter(event => !(event instanceof WaitEvent)).size() > 0;
     }
 
     private resetState() {

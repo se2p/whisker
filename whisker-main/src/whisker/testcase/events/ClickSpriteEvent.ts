@@ -18,29 +18,29 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import {RenderedTarget} from'scratch-vm/src/sprites/rendered-target';
 
-export class ClickSpriteEvent implements ScratchEvent {
+export class ClickSpriteEvent extends ScratchEvent {
 
-    private readonly _target;
+    private readonly _target: RenderedTarget;
+    private readonly _steps: number;
 
-    private readonly _timeout: number;
-
-    constructor(target) {
-        this._target = target
-        this._timeout = Container.config.getClickDuration() / Container.acceleration;
+    constructor(target: RenderedTarget) {
+        super()
+        this._target = target;
+        this._steps = Container.config.getClickDuration();
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         if (this._target.isOriginal) {
             // Click on sprite
             Container.testDriver.inputImmediate({
                 device: 'mouse',
                 sprite: Container.testDriver.getSprite(this._target.sprite.name),
                 isDown: true,
-                duration: this._timeout
+                steps: this._steps
             });
         } else {
             // Click on clone
@@ -49,19 +49,19 @@ export class ClickSpriteEvent implements ScratchEvent {
                 x: this._target.x,
                 y: this._target.y,
                 isDown: true,
-                duration: this._timeout
+                steps: this._steps
             });
         }
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         if (this._target.isOriginal) {
             return '' +
-                `t.inputImmediate({
+`t.inputImmediate({
     device: 'mouse',
     sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
-    duration: ${Container.config.getClickDuration()}
+    steps: ${Container.config.getClickDuration()}
   });`;
         } else {
             return '' +
@@ -70,20 +70,28 @@ export class ClickSpriteEvent implements ScratchEvent {
     x: ${this._target.x},
     y: ${this._target.y},
     isDown: true,
-    duration: ${Container.config.getClickDuration()}
+    steps: ${Container.config.getClickDuration()}
   });`;
         }
     }
 
-    public toString(args: number[]): string {
+    public toString(): string {
         if (this._target.isOriginal) {
             return "ClickSprite " + this._target.sprite.name;
         } else {
-            return "ClickClone " + this._target.sprite.name +" at "+this._target.x +"/" + this._target.y;
+            return "ClickClone " + this._target.sprite.name + " at " + this._target.x + "/" + this._target.y;
         }
     }
 
     getNumParameters(): number {
         return 0;
+    }
+
+    setParameter(): void {
+        return;
+    }
+
+    getParameter(): (number | RenderedTarget)[] {
+        return [this._target, this._steps];
     }
 }

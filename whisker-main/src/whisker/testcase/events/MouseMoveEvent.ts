@@ -18,38 +18,52 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class MouseMoveEvent implements ScratchEvent {
+export class MouseMoveEvent extends ScratchEvent {
 
-    async apply(vm: VirtualMachine, args: number[]): Promise<void> {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    private _x: number;
+    private _y: number;
+
+    constructor(x = 0, y = 0) {
+        super();
+        this._x = x;
+        this._y = y;
+    }
+
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'mouse',
-            x: Math.trunc(x),
-            y: Math.trunc(y)
+            x: Math.trunc(this._x),
+            y: Math.trunc(this._y)
         });
     }
 
-    public toJavaScript(args: number[]): string {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'mouse',
-    x: ${Math.trunc(x)},
-    y: ${Math.trunc(y)}
+    x: ${Math.trunc(this._x)},
+    y: ${Math.trunc(this._y)}
 });`
     }
 
-    public toString(args: number[]): string {
-        const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
-        return "MouseMove " + Math.trunc(x) + "/" + Math.trunc(y);
+    public toString(): string {
+        return "MouseMove " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
     getNumParameters(): number {
         return 2; // x and y?
+    }
+
+    getParameter(): number[] {
+        return [this._x, this._y];
+    }
+
+    setParameter(args:number[]): void {
+        const fittedCoordinates = this.fitCoordinates(args[0], args[1])
+        this._x = fittedCoordinates.x;
+        this._y = fittedCoordinates.y;
     }
 }

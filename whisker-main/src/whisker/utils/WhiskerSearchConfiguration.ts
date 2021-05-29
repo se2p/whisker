@@ -379,19 +379,19 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getWaitDurationAfterExecution(): number {
-        if ("waitDurationAfterExecution" in this.dict) {
-            return this.dict["waitDurationAfterExecution"]
+    public getWaitStepUpperBound(): number {
+        if ("waitStepUpperBound" in this.dict) {
+            return this.dict["waitStepUpperBound"]
         } else {
-            return 250;
+            return 200;
         }
     }
 
-    public getPressDuration(): number {
-        if ("press-duration" in this.dict) {
-            return this.dict["press-duration"]
+    public getPressDurationUpperBound(): number {
+        if ("pressDurationUpperBound" in this.dict) {
+            return this.dict["pressDurationUpperBound"]
         } else {
-            return 10;
+            return 50;
         }
     }
 

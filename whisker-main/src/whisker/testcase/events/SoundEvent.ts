@@ -18,25 +18,34 @@
  *
  */
 
-import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
 
-export class SoundEvent implements ScratchEvent {
+export class SoundEvent extends ScratchEvent {
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    private _volume:number;
+
+    async apply(): Promise<void> {
         throw new NotYetImplementedException();
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         throw new NotYetImplementedException();
     }
 
-    public toString(args: number[]): string {
+    public toString(): string {
         throw new NotYetImplementedException();
     }
 
     getNumParameters(): number {
-        return 0; // volume passed in as parameter?
+        return 1;
+    }
+
+    getParameter(): number[] {
+        return [this._volume];
+    }
+
+    setParameter(args:number[]): void {
+        this._volume = args[0];
     }
 }

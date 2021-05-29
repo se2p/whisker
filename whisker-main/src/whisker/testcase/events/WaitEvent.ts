@@ -18,31 +18,39 @@
  *
  */
 
-import {VirtualMachine} from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class WaitEvent implements ScratchEvent {
+export class WaitEvent extends ScratchEvent {
 
-    private readonly timeout: number;
+    private steps: number;
 
-    constructor(duration = Container.config.getWaitDuration() ) {
-        this.timeout = duration;
+    constructor(steps = 1) {
+        super();
+        this.steps = steps;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
-        await Container.testDriver.runForTime(this.timeout / Container.acceleration);
+    async apply(): Promise<void> {
+        await Container.testDriver.runForSteps(this.steps);
     }
 
-    public toJavaScript(args: number[]): string {
-        return `await t.runForTime(${this.timeout});`;
+    public toJavaScript(): string {
+        return `await t.runForSteps(${this.steps});`;
     }
 
-    public toString(args: number[]): string {
-        return "Wait " + this.timeout + " ms";
+    public toString(): string {
+        return "Wait for " + this.steps + " steps";
     }
 
     getNumParameters(): number {
-        return 0;
+        return 1;
+    }
+
+    getParameter(): number[] {
+        return [this.steps];
+    }
+
+    setParameter(args: number[]): void {
+        this.steps = args[0] % Container.config.getWaitStepUpperBound();
     }
 }

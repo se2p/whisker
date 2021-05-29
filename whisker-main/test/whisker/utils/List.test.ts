@@ -69,6 +69,13 @@ describe("List", () => {
         expect(list.get(0)).toBe(1);
     });
 
+    test("Filter list", () => {
+        const list = new List([13,21,9,33,77,35,11,20,62,81])
+        const filteredList = list.filter(value => value < 30);
+        expect(filteredList.getElements()).toEqual([13,21,9,11,20]);
+        expect(list.getElements()).toEqual([13,21,9,33,77,35,11,20,62,81])
+    });
+
     test("Clear list", () => {
         list.clear();
         expect(list.size()).toBe(0);
@@ -135,7 +142,7 @@ describe("List", () => {
     });
 
     test("Distinct objects", () => {
-        const list = new List([new ClickStageEvent("x"), new ClickStageEvent("x"), new ClickStageEvent("x")]);
+        const list = new List([new ClickStageEvent(), new ClickStageEvent(), new ClickStageEvent()]);
         const distinct = list.distinctObjects();
         expect(distinct.size()).toBe(1);
     });
