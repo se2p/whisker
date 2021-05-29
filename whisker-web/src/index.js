@@ -140,13 +140,11 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 };
 
 const runTests = async function (tests) {
-    accSlider.slider('disable');
     Whisker.scratch.stop();
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
-    accSlider.slider('enable');
 };
 
 const runAllTests = async function () {
@@ -158,7 +156,6 @@ const runAllTests = async function () {
         return;
     }
 
-    accSlider.slider('disable');
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
@@ -169,7 +166,6 @@ const runAllTests = async function () {
         await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
         Whisker.outputRun.println();
         Whisker.outputLog.println();
-        accSlider.slider('enable');
     }
 };
 
@@ -237,9 +233,9 @@ const initComponents = function () {
 }
 
 const initEvents = function () {
-    $("#acceleration-factor").on("slide", function (slideEvt) {
-        $("#acceleration-value").text(slideEvt.value);
-    });
+    $("#acceleration-factor")
+        .on('slide', function (slideEvt) { $("#acceleration-value").text(slideEvt.value);})
+        .on('change', function (clickEvt) { $("#acceleration-value").text(clickEvt.value.newValue);});
     $('#green-flag').on('click', () => {
         if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t("test-generation"), i18next.t("no-project"));
