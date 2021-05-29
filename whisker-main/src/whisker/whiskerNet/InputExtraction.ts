@@ -164,7 +164,6 @@ export class InputExtraction {
     private static calculateColorDistance(sprite: RenderedTarget, sensedColor: string): { dx: number, dy: number } {
         // Gather the sensed color of the block and transform it in the [r,g,b] format
         const color3b = Cast.toRgbColorList(sensedColor);
-        console.log(color3b)
 
         // Collect all touchable objects which might carry the sensed color
         const renderer = sprite.runtime.renderer;
