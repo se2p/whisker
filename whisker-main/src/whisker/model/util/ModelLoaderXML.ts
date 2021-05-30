@@ -179,6 +179,14 @@ export class ModelLoaderXML {
             throw new Error("ID '" + edgeAttr.id + "' already defined.");
         }
 
+        if (startID == undefined) {
+            throw new Error("Edge '" + edgeID + "': source node not defined.");
+        }
+
+        if (endID == undefined) {
+            throw new Error("Edge '" + edgeID + "': target node not defined.");
+        }
+
         if (!(this.nodesMap)[startID]) {
             throw new Error("Edge '" + edgeID + "': Unknown node id '" + startID + "'.");
         }

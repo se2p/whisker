@@ -48,6 +48,18 @@ function getFunctionEvalError(error: Error) {
     return new Error("Function cannot be evaluated:\n" + error.message);
 }
 
+function getExpressionEndTagMissingError() {
+    return new Error("Sprite/variable expression missing closing tag ')'");
+}
+
+function getEmptyExpressionError() {
+    return new Error("Sprite/variable expression empty.");
+}
+
+function getExpressionEnterError() {
+    return new Error("Sprite/variable expression may not contain new line element.");
+}
+
 function getRGBRangeError() {
     return new Error("RGB ranges not correct.");
 }
@@ -78,6 +90,9 @@ export {
     getSpriteNotFoundError,
     getComparisonNotKnownError,
     getFunctionEvalError,
+    getEmptyExpressionError,
+    getExpressionEndTagMissingError,
+    getExpressionEnterError,
     getRGBRangeError,
     getErrorForVariable,
     getErrorForAttribute,

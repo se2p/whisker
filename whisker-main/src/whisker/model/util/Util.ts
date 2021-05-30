@@ -4,7 +4,12 @@ import {
     getAttributeNotFoundError,
     getChangeComparisonNotKnownError,
     getComparisonNotKnownError,
-    getNotNumericalValueError, getSpriteNotFoundError
+    getEmptyExpressionError,
+    getExpressionEndTagMissingError,
+    getExpressionEnterError,
+    getFunctionEvalError,
+    getNotNumericalValueError,
+    getSpriteNotFoundError
 } from "./ModelError";
 
 export abstract class Util {
@@ -117,5 +122,100 @@ export abstract class Util {
         }
 
         throw getComparisonNotKnownError(comparison);
+    }
+
+
+    static readonly EXPR_START = "$(";
+    static readonly EXPR_END = ")";
+
+    private static getSpriteString(index, name) {
+        return "const sprite" + index + "= t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
+            + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + name + "');\n}\n";
+    }
+
+    private static getVariableString(index, varName: string) {
+        return "const variable" + index + "= sprite" + index + ".getVariable('" + varName + "', false).value;\n if" +
+            " (variable" + index
+            + "== undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
+    }
+
+    private static isAnAttribute(attrName) {
+        return attrName === "effects" || attrName === "x" || attrName === "y" || attrName === "pos"
+            || attrName === "direction" || attrName === "visible" || attrName === "size"
+            || attrName === "currentCostume" || attrName === "volume" || attrName === "layerOrder"
+            || attrName === "sayText";
+    }
+
+    static getExpressionForEval(t: TestDriver, toEval: string) : string {
+        if (toEval.indexOf((this.EXPR_START)) == -1) {
+            try {
+                eval(toEval);
+            } catch (e) {
+                throw getFunctionEvalError(e);
+            }
+            return "(t) => {return " + toEval + "}";
+        }
+
+        let startIndex;
+        let endIndex;
+
+        if (toEval.indexOf("\n") != -1) {
+            throw getExpressionEnterError();
+        }
+
+        let expression = "return ";
+        let inits = "(t) => {\n";
+        let subexpression;
+        let index = 0;
+
+        // console.log("starting output", toEval);
+        while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
+            // console.log("startIndex", startIndex);
+            endIndex = toEval.indexOf(this.EXPR_END);
+            // console.log("endIndex", endIndex);
+
+            if (endIndex == -1) {
+                throw getExpressionEndTagMissingError();
+            } else if (startIndex + 2 >= endIndex - 1) {
+                throw getEmptyExpressionError();
+            }
+
+            expression += toEval.substring(0, startIndex);
+            // console.log(expression);
+
+            subexpression = toEval.substring(startIndex + 2, endIndex);
+            toEval = toEval.substring(endIndex + 1, toEval.length);
+            // console.log("subexpression= " + subexpression);
+            // console.log("new to eval", +toEval);
+            let parts = subexpression.split(".");
+            // console.log("parts", parts);
+
+            let spriteString = this.getSpriteString(index, parts[0]);
+            inits += spriteString;
+            // console.log(inits);
+
+            if (this.isAnAttribute(parts[1])) {
+                expression += "sprite" + index + "['" + parts[1] + "']";
+            } else {
+                inits += this.getVariableString(index, parts[1]);
+                expression += "variable" + index;
+            }
+            // console.log("expression new", expression);
+
+            index++;
+        }
+        // rest of the toEval
+        expression += toEval;
+        expression = inits + expression + ";\n}";
+        // console.log("resulting expression", expression);
+
+        // test it beforehand
+        try {
+            eval(expression)(t);
+        } catch (e) {
+            throw e;
+        }
+
+        return expression;
     }
 }

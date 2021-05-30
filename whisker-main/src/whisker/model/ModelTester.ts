@@ -72,8 +72,10 @@ export class ModelTester extends EventEmitter {
             model.reset();
             model.registerComponents(this.checkUtility, testDriver, this.result);
         });
-        this.constraintsModel.reset();
-        this.constraintsModel.registerComponents(this.checkUtility, testDriver, this.result);
+        if (this.constraintsModel) {
+            this.constraintsModel.reset();
+            this.constraintsModel.registerComponents(this.checkUtility, testDriver, this.result);
+        }
 
         // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).
         if (this.result.errors.length > 0) {
@@ -102,6 +104,7 @@ export class ModelTester extends EventEmitter {
                     this.checkUtility.checkEffectsConstraint(edge, this.result);
                 }
             } catch (e) {
+                console.error(e);
                 constraintCallback.disable();
                 modelStepCallback.disable();
                 modelStoppedCallback.disable();
@@ -200,6 +203,7 @@ export class ModelTester extends EventEmitter {
         const sprites = testDriver.getSprites(undefined, false);
         let log = [];
         log.push("--- State of variables:");
+
         sprites.forEach(sprite => {
             sprite.getVariables().forEach(variable => {
                 let varOutput = sprite.name + "." + variable.name + " = " + variable.value;
@@ -210,13 +214,18 @@ export class ModelTester extends EventEmitter {
         if (log.length > 1) {
             this.emit(ModelTester.MODEL_LOG, log.join("\n"));
         }
+
         this.emit(ModelTester.MODEL_LOG, "--- Model Coverage");
         let coverages = {};
-        coverages["constraints"] = this.constraintsModel.getCoverageCurrentRun();
+
+        if (this.constraintsModel) {
+            coverages["constraints"] = this.constraintsModel.getCoverageCurrentRun();
+        }
         this.programModels.forEach(model => {
             coverages[model.id] = model.getCoverageCurrentRun();
             this.result.coverage[model.id] = coverages[model.id];
         })
+
         this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
         console.log(this.result)
         return this.result;
@@ -227,7 +236,9 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage() {
         const coverage = {};
-        coverage[this.constraintsModel.id] =  this.constraintsModel.getTotalCoverage();
+        if (this.constraintsModel) {
+            coverage[this.constraintsModel.id] = this.constraintsModel.getTotalCoverage();
+        }
         this.programModels.forEach(model => {
             coverage[model.id] = model.getTotalCoverage();
         })

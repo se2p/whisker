@@ -3,7 +3,9 @@ import {CheckUtility} from "./CheckUtility";
 import {Util} from "./Util";
 import Sprite from "../../../vm/sprite";
 import {
-    getComparisonNotKnownError, getErrorForAttribute, getErrorForVariable,
+    getComparisonNotKnownError,
+    getErrorForAttribute,
+    getErrorForVariable,
     getFunctionEvalError,
     getRGBRangeError,
     getVariableNotFoundError
@@ -218,14 +220,11 @@ export abstract class CheckGenerator {
      */
     static getOutputOnSpriteCheck(t: TestDriver, negated: boolean, spriteName: string, output: string): () => boolean {
         Util.checkSpriteExistence(t, spriteName);
-        // todo eval the output (could also contain variables)
+        let expression = Util.getExpressionForEval(t, output);
+
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-
-            // todo give a warning if they are not equal
-
-
-            if (sprite.sayText && sprite.sayText != "" && sprite.sayText.indexOf(eval(output)) != -1) {
+            if (sprite.sayText && sprite.sayText != "" && sprite.sayText.indexOf(eval(expression)(t)) != -1) {
                 return !negated;
             }
             return negated;
