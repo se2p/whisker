@@ -1,14 +1,14 @@
 import TestDriver from "../../../test/test-driver";
-import {ModelEdge} from "./ModelEdge";
+import {ProgramModelEdge} from "./ModelEdge";
 import {ModelResult} from "../../../test-runner/test-result";
 import {Check, CheckName} from "./Check";
 
 /**
  * Evaluate the effects of the given edge.
- * @param newEdge Edge with the effects.
+ * @param newEdge Edge of a program model with the effects.
  * @param effectString String representing the effects.
  */
-export function setUpEffect(newEdge: ModelEdge, effectString: string) {
+export function setUpEffect(newEdge: ProgramModelEdge, effectString: string) {
     const effects = effectString.split(",");
 
     try {
@@ -25,7 +25,7 @@ export function setUpEffect(newEdge: ModelEdge, effectString: string) {
  * @param parentEdge Parent edge.
  * @param effectString String defining the effect, f.e. Output:Hmm
  */
-export function getEffect(parentEdge: ModelEdge, effectString): Effect {
+export function getEffect(parentEdge: ProgramModelEdge, effectString): Effect {
     let isANegation = false;
     if (effectString.startsWith("!")) {
         isANegation = true;
@@ -61,7 +61,7 @@ export class Effect extends Check {
      * @param negated Whether the effect is negated (e.g. it does not output "hello")
      * @param args Arguments for the effect e.g. sprite names.
      */
-    constructor(edge: ModelEdge, name: CheckName, negated: boolean, args: any[]) {
+    constructor(edge: ProgramModelEdge, name: CheckName, negated: boolean, args: any[]) {
         let newID = edge.id + ".effect" + (edge.effects.length + 1);
         super(newID, edge, name, args, negated);
     }

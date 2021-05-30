@@ -111,16 +111,27 @@ const TAP13Formatter = {
             const coverageRecord = coveragePerModel[modelName];
             covered += coverageRecord.covered.length;
             total += coverageRecord.total;
-            coverageRecord.missedEdges.forEach(edge => {missedEdges.add(edge);});
+            if (coverageRecord.missedEdges) {
+                coverageRecord.missedEdges.forEach(edge => {
+                    missedEdges.add(edge);
+                });
+            }
             formattedCoverage[modelName] =
                 this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
         }
 
-        return {
-            combined: this.formatCoverageRecord({covered, total}),
-            individual: formattedCoverage,
-            missedEdges: [...missedEdges]
-        };
+        if (missedEdges.size === 0) {
+            return {
+                combined: this.formatCoverageRecord({covered, total}),
+                individual: formattedCoverage
+            }
+        } else {
+            return {
+                combined: this.formatCoverageRecord({covered, total}),
+                individual: formattedCoverage,
+                missedEdges: [...missedEdges]
+            };
+        }
     },
 
     /**

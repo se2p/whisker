@@ -1,5 +1,5 @@
 import {ModelNode} from "./ModelNode";
-import {ModelEdge} from "./ModelEdge";
+import {ModelEdge, ProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelResult} from "../../../test-runner/test-result";
@@ -25,7 +25,7 @@ export class ProgramModel {
 
     protected readonly stopNodes: { [key: string]: ModelNode }; // delete?
     protected readonly nodes: { [key: string]: ModelNode };
-    protected readonly edges: { [key: string]: ModelEdge };
+    protected readonly edges: { [key: string]: ProgramModelEdge };
 
     protected coverageCurrentRun: { [key: string]: boolean } = {};
     protected coverageTotal: { [key: string]: boolean } = {};
@@ -41,7 +41,7 @@ export class ProgramModel {
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
      */
     constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
-                nodes: { [key: string]: ModelNode }, edges: { [key: string]: ModelEdge }) {
+                nodes: { [key: string]: ModelNode }, edges: { [key: string]: ProgramModelEdge }) {
         this.id = id;
         this.currentState = startNode;
         this.startNode = startNode;

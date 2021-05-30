@@ -1,8 +1,8 @@
-
 // Model errors
 import {ProgramModel} from "../components/ProgramModel";
 import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
+import {UserModel} from "../components/UserModel";
 
 function getEffectFailedOutput(effect: Effect) {
     let edge = effect.edge;
@@ -10,7 +10,7 @@ function getEffectFailedOutput(effect: Effect) {
         + effect.toString();
 }
 
-function getErrorOnEdgeOutput(model: ProgramModel, edge:ModelEdge, error: string) {
+function getErrorOnEdgeOutput(model: ProgramModel | UserModel, edge: ModelEdge, error: string) {
     return "Error was thrown. Model=" + model.id + ". Edge=" + edge.id + ": " + error;
 }
 
@@ -22,8 +22,6 @@ function getConstraintsFailedError(failedConstraints: string) {
     return new Error("Constraints failed! " + failedConstraints + "\n-> Model stopped for this test after" +
         " constraint checks!");
 }
-
-
 
 
 // Variables, sprites, attributes not found and other initialization errors

@@ -1,11 +1,11 @@
 import {Condition, setUpCondition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
-import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
+import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import {expect} from "@jest/globals";
 
 describe('Condition', () => {
     test("no arguments", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Condition(dummyEdge, CheckName.Key, true, []);
         }).toThrow();
@@ -50,7 +50,7 @@ describe('Condition', () => {
     })
 
     test("not enough arguments: sprite color", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Condition(dummyEdge, CheckName.SpriteColor, true, ["test"])
         }).toThrow();
@@ -76,7 +76,7 @@ describe('Condition', () => {
     })
 
     test("not enough arguments: sprite touching", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Condition(dummyEdge, CheckName.SpriteTouching, true, ["test"]);
         }).toThrow()
@@ -89,7 +89,7 @@ describe('Condition', () => {
     })
 
     test("not enough arguments: variable effect", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Condition(dummyEdge, CheckName.VarComp, true, ["test"]);
         }).toThrow()
@@ -114,7 +114,7 @@ describe('Condition', () => {
     })
 
     test("not enough arguments: attribute comparison", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Condition(dummyEdge, CheckName.AttrComp, true, ["test"]);
         }).toThrow()
@@ -139,7 +139,7 @@ describe('Condition', () => {
     })
 
     test("not enough arguments: variable change", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Condition(dummyEdge, CheckName.VarChange, true, ["test"]);
         }).toThrow()
@@ -159,7 +159,7 @@ describe('Condition', () => {
     })
 
     test("not enough arguments: attribute change", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Condition(dummyEdge, CheckName.AttrChange, true, ["test"]);
         }).toThrow()
@@ -178,7 +178,7 @@ describe('Condition', () => {
     })
 
     test("conditions", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             let condition = new Condition(dummyEdge, CheckName.Key, true, ["test"]);
             condition.toString();
@@ -207,7 +207,7 @@ describe('Condition', () => {
     })
 
     test("get condition", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let condString = "AttrChange:Cat:x:+";
         expect(() => {
             setUpCondition(dummyEdge, condString);
@@ -230,4 +230,5 @@ describe('Condition', () => {
         }).toThrow();
     })
 
+    // todo insert test for expr condition
 });

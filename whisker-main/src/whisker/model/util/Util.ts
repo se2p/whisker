@@ -168,11 +168,8 @@ export abstract class Util {
         let subexpression;
         let index = 0;
 
-        // console.log("starting output", toEval);
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
-            // console.log("startIndex", startIndex);
             endIndex = toEval.indexOf(this.EXPR_END);
-            // console.log("endIndex", endIndex);
 
             if (endIndex == -1) {
                 throw getExpressionEndTagMissingError();
@@ -181,18 +178,13 @@ export abstract class Util {
             }
 
             expression += toEval.substring(0, startIndex);
-            // console.log(expression);
 
             subexpression = toEval.substring(startIndex + 2, endIndex);
             toEval = toEval.substring(endIndex + 1, toEval.length);
-            // console.log("subexpression= " + subexpression);
-            // console.log("new to eval", +toEval);
             let parts = subexpression.split(".");
-            // console.log("parts", parts);
 
             let spriteString = this.getSpriteString(index, parts[0]);
             inits += spriteString;
-            // console.log(inits);
 
             if (this.isAnAttribute(parts[1])) {
                 expression += "sprite" + index + "['" + parts[1] + "']";
@@ -200,14 +192,12 @@ export abstract class Util {
                 inits += this.getVariableString(index, parts[1]);
                 expression += "variable" + index;
             }
-            // console.log("expression new", expression);
 
             index++;
         }
         // rest of the toEval
         expression += toEval;
         expression = inits + expression + ";\n}";
-        // console.log("resulting expression", expression);
 
         // test it beforehand
         try {

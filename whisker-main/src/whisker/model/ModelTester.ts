@@ -11,12 +11,10 @@ import {Effect} from "./components/Effect";
 export class ModelTester extends EventEmitter {
 
     /**
-     * For checking initialisation values for all sprites and constraints afterwards. Can also stay undefined if
+     * For checking initialisation values for all sprites and constraints afterwards. Can also stay empty if
      * there are none.
-     * @private
      */
-    private constraintsModel: ProgramModel;
-
+    private constraintsModels: ProgramModel[];
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
@@ -35,7 +33,7 @@ export class ModelTester extends EventEmitter {
     load(modelsString) {
         try {
             const result = new ModelLoaderXML().loadModels(modelsString);
-            this.constraintsModel = result.constraintsModel;
+            this.constraintsModels = result.constraintsModels;
             this.programModels = result.programModels;
             this.userModels = result.userModels;
         } catch (e) {
@@ -72,9 +70,11 @@ export class ModelTester extends EventEmitter {
             model.reset();
             model.registerComponents(this.checkUtility, testDriver, this.result);
         });
-        if (this.constraintsModel) {
-            this.constraintsModel.reset();
-            this.constraintsModel.registerComponents(this.checkUtility, testDriver, this.result);
+        if (this.constraintsModels) {
+            this.constraintsModels.forEach(model => {
+                model.reset();
+                model.registerComponents(this.checkUtility, testDriver, this.result);
+            });
         }
 
         // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).
@@ -98,20 +98,25 @@ export class ModelTester extends EventEmitter {
         let endTimer = 1; // effects can be delayed one step
 
         let constraintFunction = () => {
-            let edge = this.constraintsModel.makeOneTransition(testDriver, this.result);
-            try {
-                if (edge != null) {
-                    this.checkUtility.checkEffectsConstraint(edge, this.result);
+            this.constraintsModels.forEach(model => {
+                if (model.stopped()) {
+                    constraintCallback.disable(); // there are no more to check
+                    return;
                 }
-            } catch (e) {
-                console.error(e);
-                constraintCallback.disable();
-                modelStepCallback.disable();
-                modelStoppedCallback.disable();
-            }
-            if (this.constraintsModel.stopped()) {
-                constraintCallback.disable(); // there are no more to check
-            }
+            });
+            this.constraintsModels.forEach(model => {
+                let edge = model.makeOneTransition(testDriver, this.result);
+                try {
+                    if (edge != null) {
+                        this.checkUtility.checkEffectsConstraint(edge, this.result);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    // constraintCallback.disable(); todo test
+                    // modelStepCallback.disable();
+                    // modelStoppedCallback.disable();
+                }
+            })
         };
         let modelStepFunction = () => {
             this.programModels.forEach(model => {
@@ -146,7 +151,7 @@ export class ModelTester extends EventEmitter {
             if (endTimer == 0) {
                 modelStoppedCallback.disable();
                 beforeStepCallback.disable();
-                if (this.constraintsModel) {
+                if (this.constraintsModels) {
                     constraintCallback.disable();
                 }
             } else {
@@ -157,7 +162,7 @@ export class ModelTester extends EventEmitter {
         }
 
         // the actual callbacks
-        if (this.constraintsModel) {
+        if (this.constraintsModels) {
             constraintCallback = testDriver.addModelCallback(constraintFunction, true, "constraints");
         }
 
@@ -218,8 +223,11 @@ export class ModelTester extends EventEmitter {
         this.emit(ModelTester.MODEL_LOG, "--- Model Coverage");
         let coverages = {};
 
-        if (this.constraintsModel) {
-            coverages["constraints"] = this.constraintsModel.getCoverageCurrentRun();
+        if (this.constraintsModels) {
+            this.constraintsModels.forEach(model => {
+                coverages[model.id] = model.getCoverageCurrentRun();
+                this.result.coverage[model.id] = coverages[model.id];
+            })
         }
         this.programModels.forEach(model => {
             coverages[model.id] = model.getCoverageCurrentRun();
@@ -236,8 +244,10 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage() {
         const coverage = {};
-        if (this.constraintsModel) {
-            coverage[this.constraintsModel.id] = this.constraintsModel.getTotalCoverage();
+        if (this.constraintsModels) {
+            this.constraintsModels.forEach(model => {
+                coverage[model.id] = model.getTotalCoverage();
+            });
         }
         this.programModels.forEach(model => {
             coverage[model.id] = model.getTotalCoverage();

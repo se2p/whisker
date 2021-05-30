@@ -1,10 +1,11 @@
 import * as xmljs from 'xml-js';
 import {ModelNode} from "../components/ModelNode";
-import {ModelEdge} from "../components/ModelEdge";
+import {ProgramModelEdge, UserModelEdge} from "../components/ModelEdge";
 import {ProgramModel} from "../components/ProgramModel";
 import {UserModel} from "../components/UserModel";
 import {setUpCondition} from "../components/Condition";
 import {setUpEffect} from "../components/Effect";
+import {setUpInputEffect} from "../components/InputEffect";
 
 /**
  * Load models from a xml file.
@@ -44,10 +45,11 @@ export class ModelLoaderXML {
     private stopNodes: { [key: string]: ModelNode };
     private nodesMap: { [key: string]: ModelNode };
     private hasAStopNode: boolean;
-    private edgesMap: { [key: string]: ModelEdge };
+    private edgesMapProgram: { [key: string]: ProgramModelEdge };
+    private edgesMapUser: { [key: string]: UserModelEdge };
     private graphIDs: string[];
 
-    private constraints: ProgramModel;
+    private constraintsModels: ProgramModel[];
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
@@ -55,17 +57,19 @@ export class ModelLoaderXML {
      * Load the models from a string file content.
      * @param xmlText Content of a xml file containing the models.
      */
-    loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModel: ProgramModel } {
+    loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModels: ProgramModel[] } {
         const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].model;
         this.graphIDs = [];
         this.programModels = [];
         this.userModels = [];
+        this.constraintsModels = [];
 
         graphs.forEach(graph => {
             this.startNode = undefined;
             this.stopNodes = {};
             this.nodesMap = {};
-            this.edgesMap = {};
+            this.edgesMapProgram = {};
+            this.edgesMapUser = {};
             this.loadModel(graph);
         })
 
@@ -76,7 +80,7 @@ export class ModelLoaderXML {
         return {
             programModels: this.programModels,
             userModels: this.userModels,
-            constraintsModel: this.constraints
+            constraintsModels: this.constraintsModels
         };
     }
 
@@ -99,7 +103,11 @@ export class ModelLoaderXML {
 
         try {
             graphNodes.forEach(node => this.loadNode(graphID, node['_attributes']));
-            graphEdges.forEach(edge => this.loadEdge(graphID, edge['_attributes']));
+            if (graph._attributes.usage == ModelLoaderXML.USER_MODEL_ID) {
+                graphEdges.forEach(edge => this.loadUserEdge(graphID, edge['_attributes']));
+            } else {
+                graphEdges.forEach(edge => this.loadProgramEdge(graphID, edge['_attributes']));
+            }
         } catch (e) {
             throw new Error("Graph '" + graphID + "':\n" + e.message);
         }
@@ -113,25 +121,25 @@ export class ModelLoaderXML {
 
         this.graphIDs.push(graphID);
 
+        let model;
         switch (graph._attributes.usage) {
             case ModelLoaderXML.PROGRAM_MODEL_ID:
-                let model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
-                    this.edgesMap)
+                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
+                    this.edgesMapProgram)
                 this.programModels.push(model);
-                for (let edgesMapKey in this.edgesMap) {
-                    this.edgesMap[edgesMapKey].registerProgramModel(model);
-                }
+
                 break;
             case ModelLoaderXML.USER_MODEL_ID:
-                this.userModels.push(new UserModel(graphID));// todo
+                model = new UserModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapUser);
+                this.userModels.push(model);
                 break;
             case ModelLoaderXML.CONSTRAINTS_MODEL_ID:
-                this.constraints = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
-                    this.edgesMap);
-                for (let edgesMapKey in this.edgesMap) {
-                    this.edgesMap[edgesMapKey].registerProgramModel(this.constraints);
-                }
+                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
+                this.constraintsModels.push(model);
                 break;
+        }
+        for (let edgesMapKey in this.edgesMapProgram) {
+            this.edgesMapProgram[edgesMapKey].registerModel(model);
         }
     }
 
@@ -164,18 +172,18 @@ export class ModelLoaderXML {
     }
 
     /**
-     * Load an edge and save it in the edge map.
+     * Load an edge and save it in the edge map of the program edges.
      * @param graphID ID of the graph.
      * @param edgeAttr attributes of the edge: id, source: (nodeid as string), target: (nodeid as string),
      * condition: string, effect: string
      * @private
      */
-    private loadEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
+    private loadProgramEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
         const edgeID = graphID + "-" + edgeAttr.id;
         const startID = edgeAttr.source;
         const endID = edgeAttr.target;
 
-        if ((this.edgesMap)[edgeID]) {
+        if ((this.edgesMapProgram)[edgeID]) {
             throw new Error("ID '" + edgeAttr.id + "' already defined.");
         }
 
@@ -194,7 +202,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Unknown node id '" + endID + "'.");
         }
 
-        const newEdge = new ModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
+        const newEdge = new ProgramModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
 
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
@@ -206,6 +214,46 @@ export class ModelLoaderXML {
         }
 
         (this.nodesMap)[startID].addOutgoingEdge(newEdge);
-        this.edgesMap[edgeID] = newEdge;
+        this.edgesMapProgram[edgeID] = newEdge;
+    }
+
+    private loadUserEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
+        const edgeID = graphID + "-" + edgeAttr.id;
+        const startID = edgeAttr.source;
+        const endID = edgeAttr.target;
+
+        if ((this.edgesMapProgram)[edgeID]) {
+            throw new Error("ID '" + edgeAttr.id + "' already defined.");
+        }
+
+        if (startID == undefined) {
+            throw new Error("Edge '" + edgeID + "': source node not defined.");
+        }
+
+        if (endID == undefined) {
+            throw new Error("Edge '" + edgeID + "': target node not defined.");
+        }
+
+        if (!(this.nodesMap)[startID]) {
+            throw new Error("Edge '" + edgeID + "': Unknown node id '" + startID + "'.");
+        }
+        if (!(this.nodesMap)[endID]) {
+            throw new Error("Edge '" + edgeID + "': Unknown node id '" + endID + "'.");
+        }
+
+        const newEdge = new UserModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
+
+        if (!edgeAttr.condition) {
+            throw new Error("Edge '" + edgeID + "': Condition not given.");
+        }
+        if (!edgeAttr.effect) {
+            throw new Error("Edge '" + edgeID + "': Input effect not given.");
+        }
+
+        setUpCondition(newEdge, edgeAttr.condition);
+        setUpInputEffect(newEdge, edgeAttr.effect);
+
+        (this.nodesMap)[startID].addOutgoingEdge(newEdge);
+        this.edgesMapUser[edgeID] = newEdge;
     }
 }

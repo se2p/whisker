@@ -1,10 +1,10 @@
 import {Effect, setUpEffect} from "../../../../src/whisker/model/components/Effect";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
-import {ModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
+import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 
 describe('Effect', () => {
     test("no arguments", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Effect(dummyEdge, CheckName.Output, true, [])
         }).toThrow();
@@ -36,7 +36,7 @@ describe('Effect', () => {
     })
 
     test("not enough arguments: output", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Effect(dummyEdge, CheckName.Output, true, ["test"])
         }).toThrow();
@@ -51,7 +51,7 @@ describe('Effect', () => {
     })
 
     test("not enough arguments: variable change", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Effect(dummyEdge, CheckName.VarChange, true, ["test"]);
         }).toThrow()
@@ -71,7 +71,7 @@ describe('Effect', () => {
     })
 
     test("not enough arguments: attribute change", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Effect(dummyEdge, CheckName.AttrChange, true, ["test"]);
         }).toThrow()
@@ -90,7 +90,7 @@ describe('Effect', () => {
     })
 
     test("not enough arguments: variable comparison", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Effect(dummyEdge, CheckName.VarComp, true, ["test"]);
         }).toThrow()
@@ -115,7 +115,7 @@ describe('Effect', () => {
     })
 
     test("not enough arguments: attribute comparison", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             new Effect(dummyEdge, CheckName.AttrComp, true, ["test"]);
         }).toThrow()
@@ -140,7 +140,7 @@ describe('Effect', () => {
     })
 
     test("effects", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
             let effect = new Effect(dummyEdge, CheckName.Output, true, ["test", "hallo"]);
             effect.toString();
@@ -170,7 +170,7 @@ describe('Effect', () => {
     })
 
     test("contradictions I", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let effects = [];
         effects.push(new Effect(dummyEdge, CheckName.Output, true, ["sprite", "hi"]));
         effects.push(new Effect(dummyEdge, CheckName.VarChange, true, ["test", "var", "+"]));
@@ -196,7 +196,7 @@ describe('Effect', () => {
     })
 
     test("contradictions output", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let output = new Effect(dummyEdge, CheckName.Output, true, ["sprite", "hi"]);
         let output2 = new Effect(dummyEdge, CheckName.Output, true, ["sprite1", "hi"]);
         expect(output.contradicts(output2)).toBeFalsy();
@@ -207,7 +207,7 @@ describe('Effect', () => {
     })
 
     test("contradictions function", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let functionE = new Effect(dummyEdge, CheckName.Function, true, ["test"]);
         let functionE2 = new Effect(dummyEdge, CheckName.Function, true, ["testblabla"]);
         expect(functionE.contradicts(functionE2)).toBeFalsy();
@@ -216,7 +216,7 @@ describe('Effect', () => {
     })
 
     test("contradictions background", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let background = new Effect(dummyEdge, CheckName.BackgroundChange, true, ["test"]);
         let background2 = new Effect(dummyEdge, CheckName.BackgroundChange, true, ["test"]);
         expect(background.contradicts(background2)).toBeFalsy();
@@ -226,7 +226,7 @@ describe('Effect', () => {
 
     test("contradiction: variable change and comparison", () => {
         // not the same sprite
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let varChange = new Effect(dummyEdge, CheckName.VarChange, true, ["test", "var", "+"]);
         let varComp = new Effect(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">", "0"]);
         expect(varChange.contradicts(varComp)).toBeFalsy();
@@ -331,7 +331,7 @@ describe('Effect', () => {
 
     test("contradiction: attribute comparison and change", () => {
         // not the same sprite
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let attrChange = new Effect(dummyEdge, CheckName.AttrChange, true, ["test", "var", "+"]);
         let attrComp = new Effect(dummyEdge, CheckName.AttrComp, true, ["sprite", "var", ">", "0"]);
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
@@ -436,7 +436,7 @@ describe('Effect', () => {
     })
 
     test("contradictions: var/attr change", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let varChange = new Effect(dummyEdge, CheckName.VarChange, true, ['sprite', 'var', '+']);
         let varChange2 = new Effect(dummyEdge, CheckName.VarChange, true, ['sprite', 'var', '+']);
         expect(varChange.contradicts(varChange2)).toBeFalsy();
@@ -501,7 +501,7 @@ describe('Effect', () => {
     })
 
     test("contradictions: variable comparison", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let varComp = new Effect(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">", "0"]);
         let varComp2 = new Effect(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">", "1"]);
         expect(varComp.contradicts(varComp2)).toBeFalsy();
@@ -635,7 +635,7 @@ describe('Effect', () => {
     })
 
     test("get effect", () => {
-        let dummyEdge = new ModelEdge("1", null, null);
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         let effectString = "AttrChange:Cat:x:+";
         expect(() => {
             setUpEffect(dummyEdge, effectString);

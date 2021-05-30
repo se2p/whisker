@@ -327,4 +327,19 @@ export abstract class CheckGenerator {
             return negated;
         }
     }
+
+    /**
+     * todo
+     * @param t
+     * @param negated
+     * @param expression
+     */
+    static getExpressionCheck(t: TestDriver, negated: boolean, expression: string) {
+        return () => {
+            if (Util.getExpressionForEval(t, expression)) {
+                return !negated;
+            }
+            return negated;
+        }
+    }
 }
