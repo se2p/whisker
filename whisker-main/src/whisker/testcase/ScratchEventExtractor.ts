@@ -24,7 +24,6 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "./events/ScratchEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {Container} from "../utils/Container";
-import {KeyDownEvent} from "./events/KeyDownEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {MouseMoveToEvent} from "./events/MouseMoveToEvent";
 import {MouseDownEvent} from "./events/MouseDownEvent";
@@ -105,17 +104,16 @@ export abstract class ScratchEventExtractor {
         }
 
         switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed': {  // Key press
+            case 'event_whenkeypressed': {  // Key press in HatBlocks
                 const fields = target.blocks.getFields(block);
                 eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 // one event per concrete key for which there is a hat block
                 break;
             }
-            case 'sensing_keypressed': {
+            case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
-                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
+                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 break;
             }
             case 'sensing_mousex':

@@ -386,11 +386,11 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getPressDuration(): number {
-        if ("press-duration" in this.dict) {
-            return this.dict["press-duration"]
+    public getPressDurationUpperBound(): number {
+        if ("pressDurationUpperBound" in this.dict) {
+            return this.dict["pressDurationUpperBound"]
         } else {
-            return 10;
+            return 50;
         }
     }
 

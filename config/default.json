@@ -14,15 +14,10 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
-        "gaussianMutationPower": 5,
-        "maxMutationCountStart": null,
-        "maxMutationCountFocusedPhase": null
+        "gaussianMutationPower": 5
     },
     "selection": {
-        "operator": "rank",
-        "size": 2,
-        "randomSelectionProbabilityStart": null,
-        "randomSelectionProbabilityFocusedPhase": null
+        "operator": "rank"
     },
     "fitness-function": {
         "type": "statement",
@@ -44,12 +39,11 @@
         "maxArchiveSizeStart": null,
         "maxArchiveSizeFocusedPhase": null
     },
-    "startOfFocusedPhase": null,
     "integerRange": {
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 200,
+    "waitStepUpperBound": 100,
     "click-duration": 3,
-    "press-duration": 3
+    "pressDurationUpperBound": 50
 }
