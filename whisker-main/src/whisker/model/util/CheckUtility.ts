@@ -178,16 +178,10 @@ export class CheckUtility {
      * Register the effects of an edge in this listener to test them later on.
      * @param takenEdge The taken edge of a model.
      */
-    registerEffectCheck(takenEdge: ModelEdge) {
-        if (takenEdge instanceof ProgramModelEdge) {
-            takenEdge.effects.forEach(effect => {
-                this.effectChecks.push(effect);
-            })
-        }else {
-            console.error("something went wrong while testing edge effects, not a program model edge effect")
-            throw new Error("something went wrong while testing edge effects, not a program model edge" +
-                " effect")
-        }
+    registerEffectCheck(takenEdge: ProgramModelEdge) {
+        takenEdge.effects.forEach(effect => {
+            this.effectChecks.push(effect);
+        })
     }
 
     /**
@@ -195,25 +189,20 @@ export class CheckUtility {
      * @param edge The taken edge of the constraints model.
      * @param modelResult To save errors into.
      */
-    checkEffectsConstraint(edge: ModelEdge, modelResult: ModelResult) {
-        if (edge instanceof ProgramModelEdge) {
-            let effects = edge.effects;
-            let hadError = false;
-            let output = [];
-            for (let i = 0; i < effects.length; i++) {
-                if (!effects[i].check()) {
-                    let error = getConstraintFailedOutput(effects[i]);
-                    modelResult.addError(error);
-                    output.push(error);
-                    hadError = true;
-                }
+    checkEffectsConstraint(edge: ProgramModelEdge, modelResult: ModelResult) {
+        let effects = edge.effects;
+        let hadError = false;
+        let output = [];
+        for (let i = 0; i < effects.length; i++) {
+            if (!effects[i].check()) {
+                let error = getConstraintFailedOutput(effects[i]);
+                modelResult.addError(error);
+                output.push(error);
+                hadError = true;
             }
-            if (hadError && edge.getEndNode().isStopNode) {
-                throw getConstraintsFailedError(output.join("/n"));
-            }
-        } else {
-            console.error("something went wrong while testing edge effects, not a program model edge effect")
-            throw new Error("something went wrong while testing edge effects, not a program model edge effect");
+        }
+        if (hadError && edge.getEndNode().isStopNode) {
+            throw getConstraintsFailedError(output.join("/n"));
         }
     }
 

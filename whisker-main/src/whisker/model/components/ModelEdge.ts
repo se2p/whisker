@@ -9,18 +9,19 @@ import {getErrorOnEdgeOutput} from "../util/ModelError";
 import {UserModel} from "./UserModel";
 import {InputEffect} from "./InputEffect";
 
-export class ModelEdge {
+export abstract class ModelEdge {
     readonly id: string;
     protected readonly startNode: ModelNode;
     conditions: Condition[] = [];
     protected readonly endNode: ModelNode;
     protected model: ProgramModel | UserModel;
 
-    constructor(id, startNode, endNode) {
+    protected constructor(id: string, startNode: ModelNode, endNode: ModelNode) {
         this.id = id;
         this.startNode = startNode;
         this.endNode = endNode;
     }
+
     /**
      * Test whether the conditions on this edge are fulfilled.
      * @Returns the failed conditions.
@@ -57,6 +58,7 @@ export class ModelEdge {
     getEndNode(): ModelNode {
         return this.endNode;
     }
+
     /**
      * Add a condition to the edge. Conditions in the evaluation all need to be fulfilled for the effect to be valid.
      * @param condition Condition function as a string.
@@ -64,6 +66,7 @@ export class ModelEdge {
     addCondition(condition: Condition): void {
         this.conditions.push(condition);
     }
+
     /**
      * Register the check listener and test driver.
      */
@@ -73,9 +76,7 @@ export class ModelEdge {
         })
     }
 
-    reset() {
-        // in subtypes overwritten?
-    }
+    abstract reset();
 
     /**
      * Register a model that this edge belongs to.
@@ -93,7 +94,7 @@ export class ModelEdge {
 /**
  * Edge structure for a model with effects that can be triggered based on its conditions.
  */
-export class ProgramModelEdge extends ModelEdge{
+export class ProgramModelEdge extends ModelEdge {
     effects: Effect[] = [];
     failedEffects: Effect[] = [];
 
@@ -149,6 +150,10 @@ export class UserModelEdge extends ModelEdge {
      */
     addInputEffect(effect: InputEffect): void {
         this.inputEffects.push(effect);
+    }
+
+    reset() {
+        // nothing to reset
     }
 
     /**

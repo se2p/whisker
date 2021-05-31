@@ -5,7 +5,7 @@ import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import {ModelResult} from "../../test-runner/test-result";
-import {ModelEdge} from "./components/ModelEdge";
+import {ProgramModelEdge} from "./components/ModelEdge";
 import {Effect} from "./components/Effect";
 
 export class ModelTester extends EventEmitter {
@@ -107,13 +107,13 @@ export class ModelTester extends EventEmitter {
             this.constraintsModels.forEach(model => {
                 let edge = model.makeOneTransition(testDriver, this.result);
                 try {
-                    if (edge != null) {
+                    if (edge != null && edge instanceof ProgramModelEdge) {
                         this.checkUtility.checkEffectsConstraint(edge, this.result);
                     }
                 } catch (e) {
                     console.error(e);
-                    // constraintCallback.disable(); todo test
-                    // modelStepCallback.disable();
+                    constraintCallback.disable();
+                    // modelStepCallback.disable();todo test
                     // modelStoppedCallback.disable();
                 }
             })
@@ -132,7 +132,7 @@ export class ModelTester extends EventEmitter {
                 this.checkUtility.checkFailedEffects(this.result);
                 this.programModels.forEach(model => {
                     let takenEdge = model.makeOneTransition(testDriver, this.result);
-                    if (takenEdge != null) {
+                    if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
                         this.checkUtility.registerEffectCheck(takenEdge);
                         this.edgeTrace(takenEdge, testDriver);
                     }
@@ -174,24 +174,24 @@ export class ModelTester extends EventEmitter {
         modelStoppedCallback.disable(); // is started when models stop
     }
 
-    private edgeTrace(transition: ModelEdge, testDriver: TestDriver) {
-        // if (!transition.id.startsWith("bowl")) { // todo change this later on
-        //     let edgeID = transition.id;
-        //     let conditions = transition.conditions;
-        //     let edgeTrace = "'" + edgeID + "':";
-        //     for (let i = 0; i < conditions.length; i++) {
-        //         edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
-        //     }
-        //     if (transition.effects.length > 0) {
-        //         edgeTrace = edgeTrace + " => ";
-        //         for (let i = 0; i < transition.effects.length; i++) {
-        //             edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
-        //         }
-        //     }
-        //     this.result.edgeTrace.push(edgeTrace); //todo
-        //     this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-        //     console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
-        // }
+    private edgeTrace(transition: ProgramModelEdge, testDriver: TestDriver) {
+        if (!transition.id.startsWith("bowl")) { // todo change this later on
+            let edgeID = transition.id;
+            let conditions = transition.conditions;
+            let edgeTrace = "'" + edgeID + "':";
+            for (let i = 0; i < conditions.length; i++) {
+                edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
+            }
+            if (transition.effects.length > 0) {
+                edgeTrace = edgeTrace + " => ";
+                for (let i = 0; i < transition.effects.length; i++) {
+                    edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
+                }
+            }
+            this.result.edgeTrace.push(edgeTrace); //todo
+            this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
+            console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
+        }
     }
 
     /**

@@ -329,14 +329,15 @@ export abstract class CheckGenerator {
     }
 
     /**
-     * todo
-     * @param t
-     * @param negated
-     * @param expression
+     * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
+     * @param t Instance of the test driver.
+     * @param negated Whether this check is negated.
+     * @param expression The expression string.
      */
     static getExpressionCheck(t: TestDriver, negated: boolean, expression: string) {
+        let toEval = Util.getExpressionForEval(t, expression);
         return () => {
-            if (Util.getExpressionForEval(t, expression)) {
+            if (eval(toEval)(t)) {
                 return !negated;
             }
             return negated;

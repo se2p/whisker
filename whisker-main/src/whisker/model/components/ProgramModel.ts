@@ -15,7 +15,7 @@ import {ModelResult} from "../../../test-runner/test-result";
  * - Only one start node, unique
  * - Not every program model needs to have a stop node. (but one of the program nodes has one)
  * - Each edge has a condition (input event, condition for a variable,....) -> or at least an always true condition
- * - Effects can also occur at a later VM step, therefore its tested 3 successive steps long for occurrence.
+ * - Effects can also occur at a later VM step, therefore its tested 2 successive steps long for occurrence.
  */
 export class ProgramModel {
 

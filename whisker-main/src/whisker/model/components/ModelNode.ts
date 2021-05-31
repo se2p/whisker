@@ -9,7 +9,7 @@ import {CheckUtility} from "../util/CheckUtility";
 export class ModelNode {
 
     private readonly id: string;
-    edges: ModelEdge[] = [];
+    edges: ModelEdge[] = []; //outgoing edges
 
     isStartNode = false;
     isStopNode = false;

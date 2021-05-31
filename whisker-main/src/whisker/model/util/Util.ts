@@ -146,6 +146,12 @@ export abstract class Util {
             || attrName === "sayText";
     }
 
+    /**
+     * Returns a function needing a test driver instance that evaluates the expression by getting the correct
+     * sprites and their attributes or values and combining the original expression parts.
+     * @param t Instance of the test driver.
+     * @param toEval Expression to evaluate and make into a function.
+     */
     static getExpressionForEval(t: TestDriver, toEval: string) : string {
         if (toEval.indexOf((this.EXPR_START)) == -1) {
             try {
