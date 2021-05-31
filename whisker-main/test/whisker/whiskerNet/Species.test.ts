@@ -9,8 +9,8 @@ import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {KeyDownEvent} from "../../../src/whisker/testcase/events/KeyDownEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
+import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 
 describe("Species Test", () => {
 
@@ -33,8 +33,8 @@ describe("Species Test", () => {
             1.5, 0.1, 3, 0.1);
         inputs = new Map<string, number[]>();
         inputs.set("First", [1, 2, 3, 4, 5, 6]);
-        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
-            new KeyDownEvent("right arrow", true), new MouseMoveEvent()]);
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
         generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, inputs, events,0.4)
         population = new List<NetworkChromosome>();
         populationSize = 50;

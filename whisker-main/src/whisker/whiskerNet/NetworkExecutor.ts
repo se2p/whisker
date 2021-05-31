@@ -14,8 +14,7 @@ import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {ParameterTypes} from "../testcase/events/ParameterTypes";
-
-const Runtime = require('scratch-vm/src/engine/runtime');
+import Runtime from "scratch-vm/src/engine/runtime"
 
 export class NetworkExecutor {
 
@@ -118,12 +117,6 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
-
-            // If a key is still pressed release the key before another event is sent to the VM
-            if (this._vmWrapper.inputs.isAnyKeyDown()) {
-                this._vmWrapper.inputs.resetKeyboard();
-            }
-
             // Collect the currently available events
             this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
@@ -160,9 +153,6 @@ export class NetworkExecutor {
 
             // Get the classification results by using the softmax function over the outputNode values
             const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            // TODO: Remove this check at at some point
-            if(output.length != this.availableEvents.size())
-                console.error(output, this.availableEvents)
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce(
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
@@ -171,7 +161,7 @@ export class NetworkExecutor {
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
             if (nextEvent.getNumVariableParameters() > 0) {
-                const args = this.getArgs(nextEvent, network);
+                const args = NetworkExecutor.getArgs(nextEvent, network);
                 nextEvent.setParameter(args, ParameterTypes.REGRESSION);
             }
             events.add([nextEvent, []]);
@@ -239,7 +229,7 @@ export class NetworkExecutor {
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(randomIndex)
             if (nextEvent.getNumVariableParameters() > 0) {
-                const args = this.getArgs(nextEvent, network);
+                const args = NetworkExecutor.getArgs(nextEvent, network);
                 nextEvent.setParameter(args, ParameterTypes.REGRESSION);
             }
             events.add([nextEvent, []]);
@@ -277,26 +267,12 @@ export class NetworkExecutor {
         return this._projectRunning = false;
     }
 
-    private getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
+    private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
         const args = []
-        for (const node of network.regressionNodes.get(event.constructor.name)) {
+        for (const node of network.regressionNodes.get(event.stringIdentifier())) {
             args.push(node.activationValue);
         }
         return args;
-    }
-
-    public attach(observer: EventObserver): void {
-        const isExist = this.eventObservers.includes(observer);
-        if (!isExist) {
-            this.eventObservers.push(observer);
-        }
-    }
-
-    public detach(observer: EventObserver): void {
-        const observerIndex = this.eventObservers.indexOf(observer);
-        if (observerIndex !== -1) {
-            this.eventObservers.splice(observerIndex, 1);
-        }
     }
 
     private notify(event: ScratchEvent, args: number[]): void {

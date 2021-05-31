@@ -11,9 +11,9 @@ import {List} from "../../../src/whisker/utils/List";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {KeyDownEvent} from "../../../src/whisker/testcase/events/KeyDownEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
+import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 
 
 describe("Test NeatMutation", () => {
@@ -32,8 +32,8 @@ describe("Test NeatMutation", () => {
             0.1, 3, 0.1);
         genInputs = new Map<string, number[]>();
         genInputs.set("First", [1, 2, 3, 4, 5, 6]);
-        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
-            new KeyDownEvent("right arrow", true), new MouseMoveEvent()])
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
         networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events, 0.4);
         networkChromosome = networkChromosomeGenerator.get();
     })

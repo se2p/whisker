@@ -6,7 +6,7 @@ import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
-import {KeyDownEvent} from "../../../../src/whisker/testcase/events/KeyDownEvent";
+import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 
 describe('Test NetworkChromosomeGeneratorSparse', () => {
 
@@ -26,8 +26,8 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         genInputs.set("Second", [4,5,6]);
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
-        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
-            new KeyDownEvent("right arrow", true), new MouseMoveEvent()])
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
         generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, events, 0.4);
     })
 
@@ -36,12 +36,12 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         generator.setMutationOperator(mutationOp);
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(17); // +1 for Bias
-        expect(neatChromosome.connections.size() % 7).toBe(0);
+        expect(neatChromosome.allNodes.size()).toBe(19); // +1 for Bias
+        expect(neatChromosome.connections.size() % 9).toBe(0);
         expect(neatChromosome.connections.size()).toBeGreaterThan(0);
-        expect(neatChromosome.outputNodes.size()).toEqual(7);
+        expect(neatChromosome.outputNodes.size()).toEqual(9);
         expect(neatChromosome.classificationNodes.size).toBe(4);
-        expect(neatChromosome.regressionNodes.size).toBe(2);
+        expect(neatChromosome.regressionNodes.size).toBe(4);
     })
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {

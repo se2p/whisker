@@ -18,8 +18,8 @@ import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctio
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
-import {KeyDownEvent} from "../../../../src/whisker/testcase/events/KeyDownEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
+import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 
 
 describe('Test RandomNeuroevolution', () => {
@@ -51,8 +51,8 @@ describe('Test RandomNeuroevolution', () => {
         genInputs.set("Second", [4,5,6]);
         genInputs.set("Third", [7,8]);
         genInputs.set("Fourth", [9]);
-        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
-            new KeyDownEvent("right arrow", true), new MouseMoveEvent()]);
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
         generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, events, 0.4);
 
         builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM_NEUROEVOLUTION);

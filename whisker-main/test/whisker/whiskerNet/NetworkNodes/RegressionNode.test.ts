@@ -5,6 +5,9 @@ import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene"
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {List} from "../../../../src/whisker/utils/List";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
+import {MouseMoveToEvent} from "../../../../src/whisker/testcase/events/MouseMoveToEvent";
+import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 
 
 describe("regressionNode Tests", () => {
@@ -12,13 +15,13 @@ describe("regressionNode Tests", () => {
     let regressionNodeRelu: RegressionNode;
 
     beforeEach(() => {
-        regressionNodeNone = new RegressionNode(1, "WaitEvent-Duration", ActivationFunction.NONE);
-        regressionNodeRelu = new RegressionNode(2, "WaitEvent-Duration", ActivationFunction.RELU);
+        regressionNodeNone = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.NONE);
+        regressionNodeRelu = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.RELU);
     })
 
     test("Constructor Test", () => {
 
-        const regressionNode = new RegressionNode(10, "WaitEvent-Duration", ActivationFunction.NONE);
+        const regressionNode = new RegressionNode(10, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode.id).toBe(10);
         expect(regressionNode.activationFunction).toBe(ActivationFunction.NONE);
         expect(regressionNode.type).toBe(NodeType.OUTPUT);
@@ -29,7 +32,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNode.activationCount).toBe(0);
         expect(regressionNode.traversed).toBe(false)
         expect(regressionNode.incomingConnections.size()).toBe(0);
-        expect(regressionNode.eventParameter).toEqual("WaitEvent-Duration")
+        expect(regressionNode.eventParameter).toEqual("Duration")
     })
 
     test("Reset Node", () => {
@@ -49,17 +52,20 @@ describe("regressionNode Tests", () => {
     })
 
     test("Equals Test", () => {
-        const regressionNode2 = new RegressionNode(1, "WaitEvent-Duration", ActivationFunction.NONE);
+        const regressionNode2 = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode2.equals(regressionNodeNone)).toBeTruthy();
 
-        const regressionNode3 = new RegressionNode(2, "WaitEvent-Duration", ActivationFunction.NONE);
+        const regressionNode3 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode3.equals(regressionNodeNone)).toBeFalsy();
 
-        const regressionNode4 = new RegressionNode(1, "MouseMoveEvent-X", ActivationFunction.NONE)
+        const regressionNode4 = new RegressionNode(1, new MouseMoveEvent(0,0), "Duration", ActivationFunction.NONE)
         expect(regressionNode4.equals(regressionNodeNone)).toBeFalsy();
 
-        const regressionNode5 = new RegressionNode(1, "WaitEvent-Duration", ActivationFunction.RELU);
+        const regressionNode5 = new RegressionNode(1, new WaitEvent, "Steps", ActivationFunction.NONE)
         expect(regressionNode5.equals(regressionNodeNone)).toBeFalsy();
+
+        const regressionNode6 = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.RELU);
+        expect(regressionNode6.equals(regressionNodeNone)).toBeFalsy();
 
         const biasNode = new BiasNode(1);
         expect(regressionNodeNone.equals(biasNode)).toBeFalsy();
@@ -87,7 +93,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNodeNone.getActivationValue()).toBe(0);
         expect(regressionNodeNone.activationValue).toBe(0);
 
-        const regressionNodeNone2 = new RegressionNode(2, "WaitEvent-Duration", ActivationFunction.NONE);
+        const regressionNodeNone2 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
         regressionNodeNone2.nodeValue = 5;
         regressionNodeNone2.activationCount = 10;
         expect(regressionNodeNone2.getActivationValue()).toBe(5);
@@ -98,7 +104,7 @@ describe("regressionNode Tests", () => {
     })
 
     test("Test getEventName", () => {
-        expect(regressionNodeNone.getEventName()).toEqual("WaitEvent")
+        expect(regressionNodeNone.event instanceof WaitEvent).toBeTruthy;
     })
 
     test("toString Test", () => {
@@ -108,9 +114,11 @@ describe("regressionNode Tests", () => {
         incomingList.add(connection);
         regressionNodeNone.incomingConnections = incomingList;
         const out = regressionNodeNone.toString();
-        expect(out).toContain("RegressionNode{ID: " + 1 +
+        expect(out).toContain(" RegressionNode{ID: " + 1 +
             ", Value: " + 0 +
             ", ActivationFunction: " + 0 +
-            ", InputConnections: " + connection.toString() + "}")
+            ", InputConnections: " + connection.toString() +
+            ", Event: " + "WaitEvent" +
+            ", Parameter " + "Duration" + "}")
     })
 })

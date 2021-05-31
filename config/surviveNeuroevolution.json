@@ -53,5 +53,5 @@
     },
     "waitStepUpperBound": 50,
     "click-duration": 1,
-    "press-duration": 1
+    "pressDurationUpperBound": 50
 }

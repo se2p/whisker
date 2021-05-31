@@ -19,8 +19,8 @@ import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/Neuroevo
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
-import {KeyDownEvent} from "../../../src/whisker/testcase/events/KeyDownEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
+import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 
 describe('Test NetworkChromosome', () => {
 
@@ -39,19 +39,19 @@ describe('Test NetworkChromosome', () => {
             1.5, 0.1, 3, 0.1);
         genInputs = new Map<string, number[]>();
         genInputs.set("First", [1, 2, 3, 4, 5, 6])
-        events = new List<ScratchEvent>([new WaitEvent(), new KeyDownEvent("left arrow", true),
-            new KeyDownEvent("right arrow", true), new MouseMoveEvent()])
+        events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
         generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, events, 0.4)
         chromosome = generator.get();
         properties = new NeuroevolutionProperties<NetworkChromosome>(10)
     })
 
     test('Constructor Test', () => {
-        expect(chromosome.allNodes.size()).toBe(genInputs.get("First").length + 1 + 7);
-        expect(chromosome.outputNodes.size()).toBe(7);
+        expect(chromosome.allNodes.size()).toBe(16);
+        expect(chromosome.outputNodes.size()).toBe(9);
         expect(chromosome.classificationNodes.size).toEqual(4);
-        expect(chromosome.regressionNodes.size).toEqual(2);
-        expect(chromosome.connections.size()).toBe(42);
+        expect(chromosome.regressionNodes.size).toEqual(4);
+        expect(chromosome.connections.size()).toBe(54); // Fully connected since there is only one Sprite
         expect(chromosome.getCrossoverOperator()).toBe(crossoverOp);
         expect(chromosome.getMutationOperator()).toBe(mutationOp);
         expect(chromosome.networkFitness).toBe(0);
@@ -225,7 +225,7 @@ describe('Test NetworkChromosome', () => {
         chromosome.connections.add(new ConnectionGene(deepHiddenNode, outputNode, 0.2, true, 10, false));
         chromosome.generateNetwork();
         // InputNodes + Bias + hiddenNodes + classificationNodes + RegressionNodes
-        expect(chromosome.allNodes.size()).toBe(6 + 1 + 2 + 4 + 3);
+        expect(chromosome.allNodes.size()).toBe(6 + 1 + 2 + 4 + 5);
         expect(hiddenNode.incomingConnections.size()).toBe(1);
         expect(deepHiddenNode.incomingConnections.size()).toBe(1);
         expect(chromosome.regressionNodes.get(new WaitEvent().constructor.name).size()).toEqual(1)
@@ -361,8 +361,8 @@ describe('Test NetworkChromosome', () => {
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(3, new WaitEvent, ActivationFunction.SIGMOID))
         nodes.add(new ClassificationNode(4, new ClickStageEvent(),ActivationFunction.SIGMOID))
-        nodes.add(new RegressionNode(5, new WaitEvent().constructor.name, ActivationFunction.NONE));
-        nodes.add(new RegressionNode(6, new MouseMoveEvent().constructor.name, ActivationFunction.NONE));
+        nodes.add(new RegressionNode(5, new WaitEvent(), "Duration", ActivationFunction.NONE));
+        nodes.add(new RegressionNode(6, new MouseMoveEvent(), "X", ActivationFunction.NONE));
 
 
         // Create Connections

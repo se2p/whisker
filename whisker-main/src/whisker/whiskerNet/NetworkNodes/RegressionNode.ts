@@ -2,25 +2,33 @@ import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 
 export class RegressionNode extends NodeGene {
 
     /**
-     * The event parameter this regression node serves.
+     * The event this regression node serves.
+     */
+    private readonly _event: ScratchEvent
+
+    /**
+     * The event parameter this regression node produces values for
      */
     private readonly _eventParameter: string
 
     /**
      * Constructs a new regression Node
      * @param id the identification number of the node within the network
-     * @param eventParameter the event parameter to which this regression node creates values for
+     * @param event the event to which this regression node produces values for
+     * @param eventParameter specifies the parameter of the given event, this node produces values for
      * @param activationFunction the activation function of the regression node
      */
-    constructor(id: number, eventParameter: string, activationFunction: ActivationFunction) {
+    constructor(id: number, event: ScratchEvent, eventParameter: string, activationFunction: ActivationFunction) {
         super(id, activationFunction, NodeType.OUTPUT);
         this.nodeValue = 0;
         this.lastActivationValue = 0;
         this.activationValue = 0;
+        this._event = event;
         this._eventParameter = eventParameter;
     }
 
@@ -28,11 +36,12 @@ export class RegressionNode extends NodeGene {
         if (!(other instanceof RegressionNode)) return false;
         return this.id === other.id
             && this.eventParameter === other.eventParameter
+            && this.event.stringIdentifier() === other.event.stringIdentifier()
             && this.activationFunction === other.activationFunction;
     }
 
     clone(): RegressionNode {
-        return new RegressionNode(this.id, this.eventParameter, this.activationFunction)
+        return new RegressionNode(this.id, this.event, this.eventParameter, this.activationFunction)
     }
 
     getActivationValue(): number {
@@ -54,18 +63,17 @@ export class RegressionNode extends NodeGene {
         return this._eventParameter;
     }
 
-    /**
-     * Returns the Name of the event, omitting the parameter names.
-     */
-    public getEventName(): string {
-        return this.eventParameter.split("-")[0];
+    get event(): ScratchEvent {
+        return this._event;
     }
 
     toString(): string {
         return " RegressionNode{ID: " + this.id +
             ", Value: " + this.activationValue +
             ", ActivationFunction: " + this.activationFunction +
-            ", InputConnections: " + this.incomingConnections + "}";
+            ", InputConnections: " + this.incomingConnections +
+            ", Event: " + this.event.stringIdentifier() +
+            ", Parameter " + this.eventParameter + "}";
     }
 
 }

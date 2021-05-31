@@ -66,9 +66,6 @@ export class WaitEvent extends ScratchEvent {
                 break;
         }
         this.steps %= Container.config.getWaitStepUpperBound();
-        // Waits of 0 steps lead to an endless loop.
-        if (this.steps == 0)
-            this.steps = 1;
     }
 
     stringIdentifier(): string {

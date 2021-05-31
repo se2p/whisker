@@ -245,7 +245,7 @@ export class NetworkChromosome extends Chromosome {
                 this.allNodes.add(classificationNode);
                 this.connectOutputNode(classificationNode);
                 for (const parameter of event.getVariableParameterNames()) {
-                    const regressionNode = new RegressionNode(this.allNodes.size(), event.constructor.name + "-" + parameter, ActivationFunction.NONE)
+                    const regressionNode = new RegressionNode(this.allNodes.size(), event, parameter, ActivationFunction.NONE)
                     this.allNodes.add(regressionNode);
                     this.connectOutputNode(regressionNode);
                 }
@@ -309,12 +309,12 @@ export class NetworkChromosome extends Chromosome {
             }
             // Add Regression nodes to the RegressionNode-Map
             if (node instanceof RegressionNode) {
-                if (this.regressionNodes.get(node.getEventName()) === undefined) {
+                if (this.regressionNodes.get(node.event.stringIdentifier()) === undefined) {
                     const newParameterVector = new List<RegressionNode>();
                     newParameterVector.add(node);
-                    this.regressionNodes.set(node.getEventName(), newParameterVector);
-                } else if (!this.regressionNodes.get(node.getEventName()).contains(node))
-                    this.regressionNodes.get(node.getEventName()).add(node);
+                    this.regressionNodes.set(node.event.stringIdentifier(), newParameterVector);
+                } else if (!this.regressionNodes.get(node.event.stringIdentifier()).contains(node))
+                    this.regressionNodes.get(node.event.stringIdentifier()).add(node);
             }
             // Add output nodes to the OutputNode-Map
             if (node.type === NodeType.OUTPUT && !this.outputNodes.contains(node))

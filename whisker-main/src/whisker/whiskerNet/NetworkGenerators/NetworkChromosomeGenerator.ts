@@ -111,7 +111,7 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
         for (const event of parameterizedEvents) {
             for (const parameter of event.getVariableParameterNames()) {
                 // Create the regression Node and add it to the NodeList
-                const regressionNode = new RegressionNode(nodeId++, event.constructor.name + "-" + parameter, ActivationFunction.NONE)
+                const regressionNode = new RegressionNode(nodeId++, event, parameter, ActivationFunction.NONE)
                 allNodes.add(regressionNode)
             }
         }
