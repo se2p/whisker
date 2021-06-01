@@ -27,9 +27,9 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
     private _crossoverOp: Crossover<NetworkChromosome>;
 
     /**
-     * A map which maps each sprite to its input feature-vector
+     * A map which maps each sprite to its feature map.
      */
-    private readonly _inputs: Map<string, number[]>;
+    private readonly _inputs: Map<string, Map<string, number>>;
 
     /**
      * All Scratch-Events the given Scratch project handles.
@@ -44,7 +44,7 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
      * @param scratchEvents all Scratch-Events the given Scratch-Project handles
      */
     constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
-                inputs: Map<string, number[]>, scratchEvents: List<ScratchEvent>) {
+                inputs: Map<string, Map<string, number>>, scratchEvents: List<ScratchEvent>) {
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
         this._inputs = inputs;
@@ -63,10 +63,10 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
         // Create the Input Nodes and add them to the nodes list;
         // Sprites can have a different amount of infos i.e different amount of feature vector sizes.
         const inputList = new List<List<NodeGene>>()
-        this._inputs.forEach((value, key) => {
+        this._inputs.forEach((value, spriteKey) => {
             const spriteList = new List<NodeGene>();
-            value.forEach(() => {
-                const iNode = new InputNode(nodeId++, key);
+            value.forEach((value, featureKey) => {
+                const iNode = new InputNode(nodeId++, spriteKey, featureKey);
                 spriteList.add(iNode)
                 allNodes.add(iNode);
             })

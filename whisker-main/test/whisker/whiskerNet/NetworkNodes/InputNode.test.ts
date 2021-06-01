@@ -3,35 +3,32 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNode
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
 import {List} from "../../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
-import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 
 
 describe("InputNode Tests", () => {
-    let inputNode: NodeGene
+    let inputNode: InputNode
 
     beforeEach(() => {
-        inputNode = new InputNode(1,"Test");
+        inputNode = new InputNode(1, "Sprite1", "X-Position");
     })
 
     test("Constructor Test", () => {
-
-        const inputNode = new InputNode(10,"Test");
-
-        expect(inputNode.id).toBe(10);
-        expect(inputNode.activationFunction).toBe(ActivationFunction.NONE);
-        expect(inputNode.type).toBe(NodeType.INPUT);
-        expect(inputNode.nodeValue).toBe(0);
-        expect(inputNode.lastActivationValue).toBe(0);
-        expect(inputNode.activationValue).toBe(0)
-        expect(inputNode.activatedFlag).toBe(false)
-        expect(inputNode.activationCount).toBe(0);
-        expect(inputNode.traversed).toBe(false)
-        expect(inputNode.incomingConnections.size()).toBe(0);
-        expect(inputNode.sprite).toBe("Test");
+        expect(inputNode.id).toEqual(1);
+        expect(inputNode.activationFunction).toEqual(ActivationFunction.NONE);
+        expect(inputNode.type).toEqual(NodeType.INPUT);
+        expect(inputNode.nodeValue).toEqual(0);
+        expect(inputNode.lastActivationValue).toEqual(0);
+        expect(inputNode.activationValue).toEqual(0)
+        expect(inputNode.activatedFlag).toBeFalsy();
+        expect(inputNode.activationCount).toEqual(0);
+        expect(inputNode.traversed).toBeFalsy();
+        expect(inputNode.incomingConnections.size()).toEqual(0);
+        expect(inputNode.sprite).toEqual("Sprite1");
+        expect(inputNode.feature).toEqual("X-Position");
     })
 
-    test("Reset Node", () =>{
+    test("Reset Node", () => {
         inputNode.activationCount = 10;
         inputNode.activationValue = 2;
         inputNode.nodeValue = 10;
@@ -39,44 +36,53 @@ describe("InputNode Tests", () => {
         inputNode.activatedFlag = true;
         inputNode.traversed = true;
         inputNode.reset();
-        expect(inputNode.activationCount).toBe(0)
-        expect(inputNode.activationValue).toBe(0)
-        expect(inputNode.nodeValue).toBe(0)
-        expect(inputNode.lastActivationValue).toBe(0)
-        expect(inputNode.activatedFlag).toBe(false)
-        expect(inputNode.traversed).toBe(false)
+        expect(inputNode.activationCount).toEqual(0)
+        expect(inputNode.activationValue).toEqual(0)
+        expect(inputNode.nodeValue).toEqual(0)
+        expect(inputNode.lastActivationValue).toEqual(0)
+        expect(inputNode.activatedFlag).toBeFalsy();
+        expect(inputNode.traversed).toBeFalsy();
 
     })
 
     test("Clone Test", () => {
         const clone = inputNode.clone();
-        expect(clone.id).toBe(inputNode.id);
-        expect(clone.equals(inputNode)).toBe(true);
-        expect(clone === inputNode).toBe(false);
+        expect(clone.id).toEqual(inputNode.id);
+        expect(clone.equals(inputNode)).toBeTruthy();
+        expect(clone === inputNode).toBeFalsy();
     })
 
-    test("Equals Test", () =>{
-        const inputNode2 = new InputNode(1,"Test");
-        expect(inputNode2.equals(inputNode)).toBe(true)
+    test("Equals Test", () => {
+        const inputNode2 = new InputNode(1, "Sprite1", "X-Position");
+        expect(inputNode2.equals(inputNode)).toBeTruthy();
 
-        const inputNode3 = new InputNode(2,"Test");
-        expect(inputNode3.equals(inputNode)).toBe(false)
+        const inputNode3 = new InputNode(2, "Sprite1", "X-Position");
+        expect(inputNode3.equals(inputNode)).toBeFalsy();
+
+        const inputNode4 = new InputNode(2, "Sprite2", "X-Position");
+        expect(inputNode4.equals(inputNode)).toBeFalsy();
+
+        const inputNode5 = new InputNode(2, "Sprite1", "Y-Position");
+        expect(inputNode5.equals(inputNode)).toBeFalsy();
 
         const biasNode = new BiasNode(1);
-        expect(biasNode.equals(inputNode)).toBe(false)
+        expect(biasNode.equals(inputNode)).toBeFalsy();
     })
 
     test("getActivationValue Test", () => {
-        expect(inputNode.getActivationValue()).toBe(0);
-        expect(inputNode.activationValue).toBe(0)
+        expect(inputNode.getActivationValue()).toEqual(0);
+        expect(inputNode.activationValue).toEqual(0)
         inputNode.nodeValue = 10;
-        expect(inputNode.getActivationValue()).toBe(10);
-        expect(inputNode.activationValue).toBe(10)
+        expect(inputNode.getActivationValue()).toEqual(10);
+        expect(inputNode.activationValue).toEqual(10)
     })
 
     test("toString Test", () => {
         const out = inputNode.toString();
-        expect(out).toContain("InputNode{ID: " + 1 + ", Value: " + 0 +
-            ", InputConnections: " + new List<ConnectionGene>() + "}")
+        expect(out).toContain("InputNode{ID: " + 1 +
+            ", Value: " + 0 +
+            ", InputConnections: " + new List<ConnectionGene>() +
+            ", Sprite: " + "Sprite1" +
+            ", Feature: " + "X-Position" + "}")
     })
 })

@@ -30,7 +30,7 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
      * @param inputRate the probability multiple input features are connected to the network
      */
     constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
-                inputs: Map<string, number[]>, scratchEvents: List<ScratchEvent>,
+                inputs: Map<string, Map<string, number>>, scratchEvents: List<ScratchEvent>,
                 inputRate: number) {
         super(mutationOp, crossoverOp, inputs, scratchEvents)
         this._inputRate = inputRate;

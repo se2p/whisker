@@ -8,31 +8,30 @@ const twgl = require('twgl.js');
 export class InputExtraction {
 
     /**
-     * The sprites map saves for each sprite the extracted information vector.
-     * Note that the size of the keys as well as the size of the information vector
-     * may change during the execution of the project (-> whenever we encounter new sprites/clones).
-     */
-    public static sprites = new Map<string, number[]>();
-
-    /**
      * Extracts pieces of information from all Sprites of the given Scratch project.
      * @param vm the Scratch VM.
-     * @return Returns a map where each sprite maps to the extracted sprite feature vector.
+     * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
     // TODO: It might be necessary to not only distinguish original sprites but also cloned sprites.
     //  Currently if and only if two cloned sprites of the same parent Sprite occur in differing temporal orders,
     //  the inputNodes are not correctly assigned to the corresponding clones.
-    static extractSpriteInfo(vm: VirtualMachine): Map<string, number[]> {
-        // Clear the collectedSpriteVectors
-        this.sprites.forEach((value, key) => this.sprites.set(key, []));
+    static extractSpriteInfo(vm: VirtualMachine): Map<string, Map<string, number>> {
+        // Clear the collected sprite information.
+        const spriteMap = new Map<string, Map<string, number>>();
 
-        // Go through each sprite and collect input features from them; we save them in the sprites Map.
+        // Go through each sprite and collect input features from them.
         for (const target of vm.runtime.targets) {
+            let cloneCounter = 0;
             if (!target.isStage && target.hasOwnProperty('blocks')) {
-                this._extractInfoFromSprite(target, vm)
+                const spriteFeatures = this._extractInfoFromSprite(target, vm);
+                if (target.isOriginal) {
+                    spriteMap.set(target.sprite.name, spriteFeatures);
+                } else {
+                    spriteMap.set(target.sprite.name + "-" + cloneCounter++, spriteFeatures);
+                }
             }
         }
-        return this.sprites;
+        return spriteMap;
     }
 
     /**
@@ -41,34 +40,27 @@ export class InputExtraction {
      * @param vm the Scratch-VM of the given project
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    private static _extractInfoFromSprite(sprite: RenderedTarget, vm: VirtualMachine): void {
-        const spriteVector = []
+    private static _extractInfoFromSprite(sprite: RenderedTarget, vm: VirtualMachine): Map<string, number> {
+        const spriteFeatures = new Map<string, number>();
         // stageWidth and stageHeight used for normalisation
         const stageWidth = sprite.renderer._nativeSize[0];
         const stageHeight = sprite.renderer._nativeSize[1];
 
-        // Collect Coordinates
+        // Collect Coordinates and normalize
         let x = sprite.x / (stageWidth / 2.);
         let y = sprite.y / (stageHeight / 2.);
 
-        // Due to the size of the Sprite we might overshoot the Stage
-        if (x < -1)
-            x = -1;
-        else if (x > 1)
-            x = 1;
+        // Clamp within the stage
+        x = Math.max(-1, Math.min(x, 1))
+        y = Math.max(-1, Math.min(y, 1))
 
-        spriteVector.push(x);
+        spriteFeatures.set("X-Position", x);
+        spriteFeatures.set("Y-Position", y);
 
-        if (y < -1)
-            y = -1;
-        else if (y > 1)
-            y = 1;
-
-        spriteVector.push(y);
-
-        // Collect the currently selected costume if the given sprite can change its costume
+        // TODO: Check this via searching for changeCostume blocks
+        // Collect the currently selected costume iff the given sprite can change its costume.
         if (sprite.sprite.costumes_.length > 1) {
-            spriteVector.push(sprite.currentCostume / sprite.sprite.costumes_.length);
+            spriteFeatures.set("Costume", sprite.currentCostume / sprite.sprite.costumes_.length);
         }
 
         // Collect additional information based on the behaviour of the sprite
@@ -80,7 +72,8 @@ export class InputExtraction {
                         if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
                             const distances = this.calculateDistancesSigned(sprite.x, target.x, sprite.y, target.y,
                                 stageWidth, stageHeight);
-                            spriteVector.push(distances.dx, distances.dy);
+                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-X", distances.dx)
+                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-Y", distances.dy)
                         }
                     }
                     break;
@@ -89,22 +82,14 @@ export class InputExtraction {
                     const distances = this.calculateColorDistance(sprite, sensedColor);
                     // We only want to add distances if we found the color within the scan radius.
                     if (distances.dx && distances.dy) {
-                        spriteVector.push(distances.dx, distances.dy);
+                        spriteFeatures.set("DistanceTo" + sensedColor + "-X", distances.dx)
+                        spriteFeatures.set("DistanceTo" + sensedColor + "-Y", distances.dy)
                     }
                     break;
                 }
             }
         }
-
-        // If we do not have a copy put the sprite vector into the right place of the sprite map
-        if (sprite.isOriginal) {
-            this.sprites.set(sprite.sprite.name, spriteVector)
-        }
-        // Otherwise, if we have a clone append the spriteVector of the clone to the sprite vector of the original
-        else {
-            const cloneAddedVector = this.sprites.get(sprite.sprite.name).concat(spriteVector)
-            this.sprites.set(sprite.sprite.name, cloneAddedVector)
-        }
+        return spriteFeatures;
     }
 
     /**
