@@ -16,9 +16,9 @@ const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./wi
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, scratchPath, testPath, modelPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile,
-    configPath, isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch,
-    isGenerateWitnessTestOnly
+    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, errorWitnessPath, addRandomInputs,
+    accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage,
+    isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -81,23 +81,37 @@ async function init () {
 }
 
 async function runTestsOnFile (browser, targetProject, modelPath) {
-    const paths = prepareTestFiles(testPath);
     const csvs = [];
-    await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject, modelPath)))
-        .then(results => {
-            // browser.close();
-            const summaries = results.map(({summary}) => summary);
-            const coverages = results.map(({coverage}) => coverage);
-            const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
-            csvs.push(...results.map(({csv}) => csv));
+    if (testPath) {
+        const paths = prepareTestFiles(testPath);
+        await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject, modelPath)))
+            .then(results => {
+                // browser.close();
+                const summaries = results.map(({summary}) => summary);
+                const coverages = results.map(({coverage}) => coverage);
+                const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
+                csvs.push(...results.map(({csv}) => csv));
 
-            printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-                modelCoverage[0]);
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-        })
-        .catch(errors => logger.error('Error on executing tests: ', errors))
-        .finally(() => rimraf.sync(tmpDir));
+                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+                    modelCoverage[0]);
+                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+            })
+            .catch(errors => logger.error('Error on executing tests: ', errors))
+            .finally(() => rimraf.sync(tmpDir));
 
+    } else {
+        // model path given, test only by model
+        await runTests(undefined, browser, 0, targetProject, modelPath)
+            .then(result => {
+                csvs.push(result.csv);
+
+                printTestResultsFromCoverageGenerator([result.summary],
+                    CoverageGenerator.mergeCoverage([result.coverage]), result.modelCoverage);
+                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+            })
+            .catch(errors => logger.error('Error on executing tests: ', errors))
+            .finally(() => rimraf.sync(tmpDir));
+    }
     return csvs;
 }
 
@@ -227,9 +241,13 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
-        await (await page.$('#fileselect-tests')).uploadFile(path);
+        if (testPath) {
+            await (await page.$('#fileselect-tests')).uploadFile(path);
+        }
         if (modelPath) {
             await (await page.$('#fileselect-models')).uploadFile(modelPath);
+            await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, modelRepetition);
+            await page.evaluate(factor => document.querySelector('#model-duration').value = factor, modelDuration);
         }
         await (await page.$('#toggle-advanced')).click();
         await (await page.$('#toggle-tap')).click();

@@ -25,8 +25,9 @@ const validateCommandLineArguments = args => {
         process.exit(1);
     }
 
-    if (!args.testPath && !args.isGeneticSearch) {
-        logger.error('No path to a test file was given, please use the -t option');
+    if (!args.testPath && !args.isGeneticSearch && !args.modelPath) {
+        logger.error('No path to a test or model file was given, please use the -t option for a test, -m option for' +
+            ' a model');
         process.exit(1);
     }
 
@@ -46,6 +47,8 @@ const cli = {
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-m, --modelPath <Path>', 'Model to test with', false)
+            .option('-mr, --modelRepetition <Integer>', 'Repetition of the test with only a model', "1")
+            .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run', "30")
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
@@ -66,6 +69,8 @@ const cli = {
             scratchPath,
             testPath,
             modelPath,
+            modelRepetition,
+            modelDuration,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -87,6 +92,8 @@ const cli = {
             scratchPath,
             testPath,
             modelPath,
+            modelRepetition,
+            modelDuration,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
