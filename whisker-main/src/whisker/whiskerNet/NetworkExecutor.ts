@@ -91,18 +91,10 @@ export class NetworkExecutor {
 
         seedScratch(String(Randomness.getInitialSeed()))
 
-        // Extract the inputs form the current state of the VM and check if we have to add additional InputNodes.
-        const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
-        spriteInfo.forEach((v, k) => {
-            if (!network.inputNodes.has(k) || network.inputNodes.get(k).size() !== v.length)
-                network.addInputNode(spriteInfo)
-        })
-
-
         // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
         network.flushNodeValues();
         for (let i = 0; i < stabilizeCounter + 1; i++) {
-            workingNetwork = network.activateNetwork(spriteInfo);
+            workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vm));
         }
 
         // Set up the Scratch-VM and start the game
@@ -125,14 +117,11 @@ export class NetworkExecutor {
             }
 
             // Load the inputs into the Network
-            const spriteInfo = InputExtraction.extractSpriteInfo(this._vmWrapper.vm)
+            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper.vm);
 
             // Check if we encountered additional input features during the playthrough.
             // If we did so add InputNodes to the network.
-            spriteInfo.forEach((v, k) => {
-                if (!network.inputNodes.has(k) || network.inputNodes.get(k).size() !== v.length)
-                    network.addInputNode(spriteInfo)
-            })
+            network.updateInputNodes(spriteFeatures);
 
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
@@ -140,14 +129,14 @@ export class NetworkExecutor {
 
             // If we have a recurrent network we do not flush the nodes and only activate it once
             if (network.isRecurrent) {
-                workingNetwork = network.activateNetwork(spriteInfo)
+                workingNetwork = network.activateNetwork(spriteFeatures);
             }
 
             // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
             else {
                 network.flushNodeValues();
                 for (let i = 0; i < stabilizeCounter + 1; i++) {
-                    workingNetwork = network.activateNetwork(spriteInfo);
+                    workingNetwork = network.activateNetwork(spriteFeatures);
                 }
             }
 
@@ -166,12 +155,12 @@ export class NetworkExecutor {
             }
             events.add([nextEvent, []]);
             this.notify(nextEvent, []);
-            await nextEvent.apply()
+            await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // Add a waitEvent in the end of each round.
             const waitEvent = new WaitEvent(1);
-            events.add([waitEvent, []])
+            events.add([waitEvent, []]);
             await waitEvent.apply();
             timer = Date.now();
         }

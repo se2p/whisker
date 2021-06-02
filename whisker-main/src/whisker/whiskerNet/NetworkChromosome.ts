@@ -249,7 +249,7 @@ export class NetworkChromosome extends Chromosome {
     public updateOutputNodes(events: List<ScratchEvent>): void {
         let updated = false;
         for (const event of events) {
-            if (this.classificationNodes.get(event.stringIdentifier()) === undefined) {
+            if (!this.classificationNodes.has(event.stringIdentifier())) {
                 updated = true;
                 const classificationNode = new ClassificationNode(this.allNodes.size(), event, ActivationFunction.SIGMOID);
                 this.allNodes.add(classificationNode);
@@ -313,13 +313,13 @@ export class NetworkChromosome extends Chromosome {
             }
             // Add classification nodes to the Classification-Map
             if (node instanceof ClassificationNode) {
-                if (this.classificationNodes.get(node.event.stringIdentifier()) === undefined) {
+                if (!this.classificationNodes.has(node.event.stringIdentifier())) {
                     this.classificationNodes.set(node.event.stringIdentifier(), node);
                 }
             }
             // Add Regression nodes to the RegressionNode-Map
             if (node instanceof RegressionNode) {
-                if (this.regressionNodes.get(node.event.stringIdentifier()) === undefined) {
+                if (!this.regressionNodes.has(node.event.stringIdentifier())) {
                     const newParameterVector = new List<RegressionNode>();
                     newParameterVector.add(node);
                     this.regressionNodes.set(node.event.stringIdentifier(), newParameterVector);

@@ -1,6 +1,7 @@
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
+import {List} from "../utils/List";
 
 const twgl = require('twgl.js');
 
@@ -72,8 +73,8 @@ export class InputExtraction {
                         if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
                             const distances = this.calculateDistancesSigned(sprite.x, target.x, sprite.y, target.y,
                                 stageWidth, stageHeight);
-                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-X", distances.dx)
-                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-Y", distances.dy)
+                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-X", distances.dx);
+                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-Y", distances.dy);
                         }
                     }
                     break;
@@ -82,8 +83,8 @@ export class InputExtraction {
                     const distances = this.calculateColorDistance(sprite, sensedColor);
                     // We only want to add distances if we found the color within the scan radius.
                     if (distances.dx && distances.dy) {
-                        spriteFeatures.set("DistanceTo" + sensedColor + "-X", distances.dx)
-                        spriteFeatures.set("DistanceTo" + sensedColor + "-Y", distances.dy)
+                        spriteFeatures.set("DistanceTo" + sensedColor + "-X", distances.dx);
+                        spriteFeatures.set("DistanceTo" + sensedColor + "-Y", distances.dy);
                     }
                     break;
                 }
