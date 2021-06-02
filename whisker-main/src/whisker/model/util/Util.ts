@@ -193,7 +193,7 @@ export abstract class Util {
             inits += spriteString;
 
             if (this.isAnAttribute(parts[1])) {
-                expression += "sprite" + index + "['" + parts[1] + "']";
+                expression += "sprite" + index + "." + parts[1];
             } else {
                 inits += this.getVariableString(index, parts[1]);
                 expression += "variable" + index;

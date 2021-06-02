@@ -8,14 +8,13 @@ import {ModelResult} from "../../../test-runner/test-result";
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
  *
- *
- * (later also an user model representing the user behaviour when using the Scratch program ??)
- *
  * ############# Assumptions ##################
  * - Only one start node, unique
- * - Not every program model needs to have a stop node. (but one of the program nodes has one)
+ * - Not every program model needs to have a stop node. (but one of the program models has one)
  * - Each edge has a condition (input event, condition for a variable,....) -> or at least an always true condition
  * - Effects can also occur at a later VM step, therefore its tested 2 successive steps long for occurrence.
+ * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
+ * taken. So that it not gets ambiguous.
  */
 export class ProgramModel {
 
@@ -48,6 +47,9 @@ export class ProgramModel {
         this.stopNodes = stopNodes;
         this.nodes = nodes;
         this.edges = edges;
+        for (let edgesMapKey in edges) {
+            edges[edgesMapKey].registerModel(this);
+        }
     }
 
     /**
@@ -102,7 +104,7 @@ export class ProgramModel {
     }
 
     /**
-     * The models stops when a stop node is reached.
+     * Whether the model is in a stop state.
      */
     stopped() {
         return this.currentState.isStopNode;

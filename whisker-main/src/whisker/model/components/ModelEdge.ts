@@ -9,12 +9,15 @@ import {getErrorOnEdgeOutput} from "../util/ModelError";
 import {UserModel} from "./UserModel";
 import {InputEffect} from "./InputEffect";
 
+/**
+ * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
+ * here).
+ */
 export abstract class ModelEdge {
     readonly id: string;
     protected readonly startNode: ModelNode;
     conditions: Condition[] = [];
     protected readonly endNode: ModelNode;
-    protected model: ProgramModel | UserModel;
 
     protected constructor(id: string, startNode: ModelNode, endNode: ModelNode) {
         this.id = id;
@@ -68,7 +71,7 @@ export abstract class ModelEdge {
     }
 
     /**
-     * Register the check listener and test driver.
+     * Register the check listener and test driver on the edge's conditions.
      */
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult): void {
         this.conditions.forEach(cond => {
@@ -76,27 +79,30 @@ export abstract class ModelEdge {
         })
     }
 
-    abstract reset();
+    /**
+     * Reset subtype specific states.
+     */
+    abstract reset(): void;
 
     /**
      * Register a model that this edge belongs to.
      * @param model The model..
      */
-    registerModel(model: ProgramModel | UserModel) {
-        this.model = model;
-    }
+    abstract registerModel(model);
 
-    getModel() {
-        return this.model;
-    }
+    /**
+     * Get the model of this edge.
+     */
+    abstract getModel();
 }
 
 /**
- * Edge structure for a model with effects that can be triggered based on its conditions.
+ * Edge structure for a program model with effects that can be triggered based on its conditions.
  */
 export class ProgramModelEdge extends ModelEdge {
     effects: Effect[] = [];
     failedEffects: Effect[] = [];
+    private model: ProgramModel;
 
     /**
      * Create a new edge.
@@ -121,7 +127,7 @@ export class ProgramModelEdge extends ModelEdge {
     }
 
     /**
-     * Register the check listener and test driver.
+     * Register the check listener and test driver on the conditions and effects.
      */
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult): void {
         super.registerComponents(checkListener, testDriver, result);
@@ -129,10 +135,28 @@ export class ProgramModelEdge extends ModelEdge {
             effect.registerComponents(testDriver, result);
         })
     }
+
+    /**
+     * Register a program model that this edge belongs to.
+     */
+    registerModel(model: ProgramModel) {
+        this.model = model;
+    }
+
+    /**
+     * Get the program model this edge belongs to.
+     */
+    getModel(): ProgramModel {
+        return this.model;
+    }
 }
 
+/**
+ * Edge structure that has input effects triggered if the conditions are fulfilled.
+ */
 export class UserModelEdge extends ModelEdge {
     inputEffects: InputEffect[] = [];
+    private model: UserModel;
 
     /**
      * Create a new edge.
@@ -157,11 +181,35 @@ export class UserModelEdge extends ModelEdge {
     }
 
     /**
-     * todo
+     * Start the input effects of this edge.
      */
     inputImmediate(t: TestDriver) {
         this.inputEffects.forEach(inputEffect => {
             inputEffect.inputImmediate(t);
         })
+    }
+
+    /**
+     *  Register the check listener and test driver on the conditions and input effects.
+     */
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult): void {
+        super.registerComponents(checkListener, testDriver, result);
+        this.inputEffects.forEach(effect => {
+            effect.registerComponents(testDriver);
+        })
+    }
+
+    /**
+     * Register a user model that this edge belongs to.
+     */
+    registerModel(model: UserModel) {
+        this.model = model;
+    }
+
+    /**
+     * Get the user model this edge belongs to.
+     */
+    getModel(): UserModel {
+        return this.model;
     }
 }

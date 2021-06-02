@@ -13,7 +13,7 @@ export function setUpEffect(newEdge: ProgramModelEdge, effectString: string) {
 
     try {
         effects.forEach(effect => {
-            newEdge.addEffect(getEffect(newEdge, effect));
+            newEdge.addEffect(getEffect(newEdge, effect.trim()));
         })
     } catch (e) {
         throw new Error("Edge '" + newEdge.id + "': " + e.message);
@@ -21,9 +21,10 @@ export function setUpEffect(newEdge: ProgramModelEdge, effectString: string) {
 }
 
 /**
- * Converts a single effect for an edge into a function that can be evaluated.
+ * Get an effect object for a single effect string. Tests for negation with '!' at the beginning. Splits the
+ * effect string based on ':'.
  * @param parentEdge Parent edge.
- * @param effectString String defining the effect, f.e. Output:Hmm
+ * @param effectString String defining the effect, f.e. Output:Cat:Hmm
  */
 export function getEffect(parentEdge: ProgramModelEdge, effectString): Effect {
     let isANegation = false;
@@ -85,6 +86,10 @@ export class Effect extends Check {
         }
     }
 
+    /**
+     * Get the effect function that evaluates whether the effect is fulfilled. This function is fixed on (and depends)
+     * on the test driver that was given by registerComponents(..) previously.
+     */
     get effect(): () => boolean {
         return this._effect;
     }

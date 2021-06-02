@@ -1,7 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelEdge} from "./ModelEdge";
-import {CheckName, Check} from "./Check";
+import {Check, CheckName} from "./Check";
 import {ModelResult} from "../../../test-runner/test-result";
 
 /**
@@ -14,7 +14,7 @@ export function setUpCondition(newEdge: ModelEdge, condString: string) {
 
     try {
         conditions.forEach(cond => {
-            newEdge.addCondition(getCondition(newEdge, cond));
+            newEdge.addCondition(getCondition(newEdge, cond.trim()));
         })
     } catch (e) {
         throw new Error("Edge '" + newEdge.id + "': " + e.message);
@@ -22,9 +22,9 @@ export function setUpCondition(newEdge: ModelEdge, condString: string) {
 }
 
 /**
- * Converts a single condition for an edge into a function that can be evaluated. Single condition could be f.e.
- * 'Key:space'.
- * @param edge Edge with the given condition.
+ * Converts a single condition string e.g. 'Key:space' for an edge into a condition object. Tests for negation with
+ * '!' at the beginning. Splits the condition string based on ':'.
+ * @param edge Edge with the given condition string.
  * @param condString String part on the edge of the xml file that is the condition.
  */
 export function getCondition(edge: ModelEdge, condString): Condition {
@@ -88,6 +88,10 @@ export class Condition extends Check {
         return this._condition();
     }
 
+    /**
+     * Get the condition function that evaluates whether the condition holds. This function is fixed on (and depends)
+     * on the test driver that was given by registerComponents(..) previously.
+     */
     get condition(): () => boolean {
         return this._condition;
     }

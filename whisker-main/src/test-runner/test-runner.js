@@ -123,7 +123,7 @@ class TestRunner extends EventEmitter {
         testDriver.seedScratch(Random.INITIAL_SEED);
 
         if (modelTester && modelTester.programModelsDefined()) {
-            await modelTester.prepareModel(testDriver);
+            await modelTester.prepareModel(testDriver, true); // modelProps.useUserModel); // todo include in html
         }
 
         if (test) {
@@ -145,7 +145,7 @@ class TestRunner extends EventEmitter {
         } else if (modelTester && modelTester.programModelsDefined()) {
             // Start the test run with either a maximal duration or until the program stops
             await testDriver.runUntil(() => {
-                return !testDriver.isProjectRunning() || this.modelsStopped;
+                return !testDriver.isProjectRunning();
             }, modelProps.duration);
         }
 

@@ -7,7 +7,6 @@ import {CheckUtility} from "../util/CheckUtility";
  * Node structure for a model.
  */
 export class ModelNode {
-
     private readonly id: string;
     edges: ModelEdge[] = []; //outgoing edges
 
@@ -40,6 +39,7 @@ export class ModelNode {
 
         for (let i = 0; i < this.edges.length; i++) {
             const result = this.edges[i].checkConditions(testDriver, modelResult);
+
             if (result && result.length == 0) {
                 return this.edges[i];
             }
@@ -57,6 +57,9 @@ export class ModelNode {
         })
     }
 
+    /**
+     * Reset all edge's states that belong to one test run.
+     */
     reset() {
         this.edges.forEach(edge => {
             edge.reset();

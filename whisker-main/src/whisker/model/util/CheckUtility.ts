@@ -1,7 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelResult} from "../../../test-runner/test-result";
 import {Effect} from "../components/Effect";
-import {ModelEdge, ProgramModelEdge} from "../components/ModelEdge";
+import {ProgramModelEdge} from "../components/ModelEdge";
 import {
     getConstraintFailedOutput,
     getConstraintsFailedError,

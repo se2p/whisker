@@ -5,7 +5,16 @@ import {ModelResult} from "../../../test-runner/test-result";
 import {CheckUtility} from "../util/CheckUtility";
 
 /**
- * todo
+ *  Graph structure for a user model representing the user's behaviour when playing a Scratch program.
+ *
+ * ############# Assumptions ##################
+ * - Only one start node, unique
+ * - Does not need a stop node. A stop node stops all other user models too. Stopping only one with a normal node
+ *    without outgoing edges
+ * - Each edge has a condition (input event, condition for a variable,....) -> or at least an always true condition
+ * - Input effects are immediate inputs in the step the condition holds.
+ * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
+ * taken. So that it not gets ambiguous.
  */
 export class UserModel {
 
@@ -25,6 +34,9 @@ export class UserModel {
         this.stopNodes = stopNodes;
         this.nodes = nodes;
         this.edges = edges;
+        for (let edgesMapKey in edges) {
+            edges[edgesMapKey].registerModel(this);
+        }
     }
 
     /**
@@ -40,7 +52,7 @@ export class UserModel {
     }
 
     /**
-     * The models stops when a stop node is reached.
+     * Whether the model is in a stop state.
      */
     stopped() {
         return this.currentState.isStopNode;
@@ -57,7 +69,7 @@ export class UserModel {
     }
 
     /**
-     * Register the check listener and test driver.
+     * Register the check listener and test driver on all node's edges.
      */
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult) {
         Object.values(this.nodes).forEach(node => {

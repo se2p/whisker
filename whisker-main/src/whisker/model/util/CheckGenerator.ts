@@ -120,12 +120,10 @@ export abstract class CheckGenerator {
             && comparison != "<=") {
             throw getComparisonNotKnownError(comparison);
         }
-        const currentValueEval = "sprite." + attrName;
-        const oldValueEval = "sprite.old." + attrName;
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            const value = eval(currentValueEval);
-            const oldValue = eval(oldValueEval);
+            const value = sprite[attrName];
+            const oldValue = sprite.old[attrName];
 
             let result;
             try {

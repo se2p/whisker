@@ -124,10 +124,8 @@ export class ModelLoaderXML {
         let model;
         switch (graph._attributes.usage) {
             case ModelLoaderXML.PROGRAM_MODEL_ID:
-                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap,
-                    this.edgesMapProgram)
+                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
                 this.programModels.push(model);
-
                 break;
             case ModelLoaderXML.USER_MODEL_ID:
                 model = new UserModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapUser);
@@ -137,9 +135,6 @@ export class ModelLoaderXML {
                 model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
                 this.constraintsModels.push(model);
                 break;
-        }
-        for (let edgesMapKey in this.edgesMapProgram) {
-            this.edgesMapProgram[edgesMapKey].registerModel(model);
         }
     }
 
@@ -222,7 +217,7 @@ export class ModelLoaderXML {
         const startID = edgeAttr.source;
         const endID = edgeAttr.target;
 
-        if ((this.edgesMapProgram)[edgeID]) {
+        if ((this.edgesMapUser)[edgeID]) {
             throw new Error("ID '" + edgeAttr.id + "' already defined.");
         }
 
@@ -246,12 +241,11 @@ export class ModelLoaderXML {
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
         }
-        if (!edgeAttr.effect) {
-            throw new Error("Edge '" + edgeID + "': Input effect not given.");
-        }
 
         setUpCondition(newEdge, edgeAttr.condition);
-        setUpInputEffect(newEdge, edgeAttr.effect);
+        if (edgeAttr.effect) {
+            setUpInputEffect(newEdge, edgeAttr.effect);
+        }
 
         (this.nodesMap)[startID].addOutgoingEdge(newEdge);
         this.edgesMapUser[edgeID] = newEdge;
