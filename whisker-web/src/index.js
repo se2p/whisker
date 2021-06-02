@@ -40,6 +40,7 @@ const initialParams = new URLSearchParams(window.location.search); // This is on
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 const loadModelFromString = function (models) {
+    console.log("load new model")
     try {
         Whisker.modelTester.load(models);
     } catch (err) {
@@ -48,6 +49,14 @@ const loadModelFromString = function (models) {
         const message = `${err.name}: ${err.message}`;
         showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
         throw err;
+    }
+
+    if (Whisker.modelTester.userModelsLoaded()) {
+        console.log("user models loaded")
+        $('#model-user-loaded').text(i18next.t("model-output-user-model"));
+    } else {
+        console.log("no user models")
+        $('#model-user-loaded').text(i18next.t("model-output-no-user-model"));
     }
 }
 
@@ -119,7 +128,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             {duration, repetitions});
         coverage = CoverageGenerator.getCoverage();
 
-        if (Whisker.modelTester.programModelsDefined()) {
+        if (Whisker.modelTester.programModelsLoaded()) {
             coverageModels = Whisker.modelTester.getTotalCoverage();
         }
 
@@ -129,7 +138,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             const blockIdsPerSprite =
                 [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
             let modelCoverage = [];
-            if (Whisker.modelTester.programModelsDefined()) {
+            if (Whisker.modelTester.programModelsLoaded()) {
                 for (const modelName in coverageModels) {
                     let content = [];
                     const elem = coverageModels[modelName];
@@ -181,30 +190,8 @@ const runTests = async function (tests) {
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
 };
 
-const runModelTest = async function () {
-    if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
-        showModal(i18next.t("model-test-run"), i18next.t("no-project"));
-        return;
-    } else if (Whisker.modelTester === undefined) {
-        showModal(i18next.t("model-test-run"), i18next.t("no-model"));
-        return;
-    }
-
-    Whisker.scratch.stop();
-    Whisker.outputRun.clear();
-    Whisker.outputLog.clear();
-    for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
-        const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
-        Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, undefined);
-        Whisker.outputRun.println();
-        Whisker.outputLog.println();
-    }
-}
-
 const runAllTests = async function () {
-    if (Whisker.tests === undefined || Whisker.tests.length === 0) {
+    if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         return;
     } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
@@ -429,7 +416,6 @@ const initEvents = function () {
                 );
             }
         });
-    $('#run-only-model-test').on('click', runModelTest);
     _addFileListeners();
 };
 

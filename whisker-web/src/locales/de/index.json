@@ -50,7 +50,7 @@
     "no-file" : "Keine Datei ausgewählt.",
     "default" : "default.json",
     "browse" : "Durchsuchen...",
-    "no-tests" : "Keine Tests geladen",
+    "no-tests" : "Keine Tests oder Modelle geladen",
     "test-execution" : "Testausführung",
     "no-project" : "Kein Scratch Projekt geladen",
     "uploaded-tests": "Hochgeladene Tests",
@@ -70,10 +70,11 @@
     "error-operator" : "Operator",
     "error-actual" : "Tatsächlicher Wert",
     "model": "Dein Modell",
-    "test-model": "Starte Modell",
     "no-model": "Kein Modell geladen",
     "model-test-run": "Modell Test",
     "model-duration": "Maximale Zeit (s)",
     "model-repetitions": "Wiederholungen",
-    "model-logs-checkbox": "Modell Logs einschalten"
+    "model-logs-checkbox": "Modell Logs einschalten",
+    "model-output-no-user-model": "Kein User Modell für Input Generierung gefunden",
+    "model-output-user-model": "Input Generierung mit User Modell"
 }
