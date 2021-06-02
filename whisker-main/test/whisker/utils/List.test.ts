@@ -69,6 +69,10 @@ describe("List", () => {
         expect(list.get(0)).toBe(1);
     });
 
+    test("Find element", () => {
+        expect(list.findElement(3)).toBe(2);
+    });
+
     test("Filter list", () => {
         const list = new List([13,21,9,33,77,35,11,20,62,81])
         const filteredList = list.filter(value => value < 30);

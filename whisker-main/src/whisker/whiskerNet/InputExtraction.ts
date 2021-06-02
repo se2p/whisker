@@ -1,6 +1,7 @@
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
+import {List} from "../utils/List";
 
 const twgl = require('twgl.js');
 
@@ -12,22 +13,20 @@ export class InputExtraction {
      * @param vm the Scratch VM.
      * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
-    // TODO: It might be necessary to not only distinguish original sprites but also cloned sprites.
-    //  Currently if and only if two cloned sprites of the same parent Sprite occur in differing temporal orders,
-    //  the inputNodes are not correctly assigned to the corresponding clones.
     static extractSpriteInfo(vm: VirtualMachine): Map<string, Map<string, number>> {
-        // Clear the collected sprite information.
-        const spriteMap = new Map<string, Map<string, number>>();
-
+        // The position of a clone in the cloneMap determines its unique identifier.
+        const cloneMap = this.assignCloneIds(vm);
         // Go through each sprite and collect input features from them.
+        const spriteMap = new Map<string, Map<string, number>>();
         for (const target of vm.runtime.targets) {
-            let cloneCounter = 0;
             if (!target.isStage && target.hasOwnProperty('blocks')) {
-                const spriteFeatures = this._extractInfoFromSprite(target, vm);
+                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vm);
                 if (target.isOriginal) {
                     spriteMap.set(target.sprite.name, spriteFeatures);
                 } else {
-                    spriteMap.set(target.sprite.name + "-" + cloneCounter++, spriteFeatures);
+                    const distanceID = this.distanceFromOrigin(target);
+                    const cloneID = cloneMap.get(target.sprite.name).findElement(distanceID);
+                    spriteMap.set(target.sprite.name + "Clone" + cloneID, spriteFeatures);
                 }
             }
         }
@@ -35,12 +34,40 @@ export class InputExtraction {
     }
 
     /**
+     * Assign each clone an ID which is determined by its distance to the origin on the stage
+     * This sorting criterion is chosen arbitrarily but enables us to uniquely identify clones.
+     * @param vm the VM of the given Scratch-Project
+     * @return A map mapping each original sprite having clones to a list of its clone distances.
+     */
+    private static assignCloneIds(vm: VirtualMachine): Map<string, List<number>> {
+        const cloneMap = new Map<string, List<number>>();
+        for (const target of vm.runtime.targets) {
+            // Get the original and traverse through the clones
+            if (target.isOriginal) {
+                const cloneDistances = new List<number>();
+                for (const clone of target.sprite.clones) {
+                    // Check again for clones since the original itself is also saved in the clones list
+                    if (!clone.isOriginal) {
+                        cloneDistances.add(this.distanceFromOrigin(clone));
+                    }
+                }
+                // Sort the found cloneDistances and save them in the cloneMap.
+                cloneDistances.sort((a, b) => a - b);
+                cloneMap.set(target.sprite.name, cloneDistances);
+            }
+        }
+        return cloneMap;
+    }
+
+    /**
      * Extracts the pieces of information of the given sprite and normalises in the range [-1, 1]
      * @param sprite the RenderTarget (-> Sprite) from which information is gathered
      * @param vm the Scratch-VM of the given project
+     * @param cloneMap The position of a clone in the cloneMap determines its unique identifier.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    private static _extractInfoFromSprite(sprite: RenderedTarget, vm: VirtualMachine): Map<string, number> {
+    private static _extractInfoFromSprite(sprite: RenderedTarget, cloneMap: Map<string, List<number>>,
+                                          vm: VirtualMachine): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // stageWidth and stageHeight used for normalisation
         const stageWidth = sprite.renderer._nativeSize[0];
@@ -68,8 +95,15 @@ export class InputExtraction {
                         if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
                             const distances = this.calculateDistancesSigned(sprite.x, target.x, sprite.y, target.y,
                                 stageWidth, stageHeight);
-                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-X", distances.dx);
-                            spriteFeatures.set("DistanceTo" + target.sprite.name + "-Y", distances.dy);
+                            if (target.isOriginal) {
+                                spriteFeatures.set("DistanceTo" + target.sprite.name + "-X", distances.dx);
+                                spriteFeatures.set("DistanceTo" + target.sprite.name + "-Y", distances.dy);
+                            } else {
+                                const distanceId = this.distanceFromOrigin(target);
+                                const cloneId = cloneMap.get(target.sprite.name).findElement(distanceId);
+                                spriteFeatures.set("DistanceTo" + target.sprite.name + "Clone" + cloneId + "-X", distances.dx);
+                                spriteFeatures.set("DistanceTo" + target.sprite.name + "Clone" + cloneId + "-Y", distances.dy);
+                            }
                         }
                     }
                     break;
@@ -213,6 +247,15 @@ export class InputExtraction {
         return (color1[0] & 0b11111000) === (color2[0] & 0b11111000) &&
             (color1[1] & 0b11111000) === (color2[1] & 0b11111000) &&
             (color1[2] & 0b11110000) === (color2[2] & 0b11110000);
+    }
+
+    /**
+     * Calculate the distance of a sprite from the origin (0,0) of the Stage.
+     * @param sprite the sprite to calculate the distance from
+     * @return distance from stage origin
+     */
+    private static distanceFromOrigin(sprite: RenderedTarget): number {
+        return Math.sqrt(Math.pow(sprite.x, 2) + Math.pow(sprite.y, 2));
     }
 }
 

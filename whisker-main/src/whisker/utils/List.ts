@@ -117,6 +117,14 @@ export class List<T> implements Iterable<T> {
     }
 
     /**
+     * Returns the index of the specified item's first occurence in the list.
+     * @param element the element whose position should be determined.
+     */
+    findElement(element: T):number{
+        return this._items.findIndex(item => item === element);
+    }
+
+    /**
      * Filters the elements of a List given a predicate function
      * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the list.
      */
