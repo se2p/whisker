@@ -1,7 +1,6 @@
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
-import {List} from "../utils/List";
 
 const twgl = require('twgl.js');
 
@@ -58,16 +57,12 @@ export class InputExtraction {
         spriteFeatures.set("X-Position", x);
         spriteFeatures.set("Y-Position", y);
 
-        // TODO: Check this via searching for changeCostume blocks
-        // Collect the currently selected costume iff the given sprite can change its costume.
-        if (sprite.sprite.costumes_.length > 1) {
-            spriteFeatures.set("Costume", sprite.currentCostume / sprite.sprite.costumes_.length);
-        }
-
         // Collect additional information based on the behaviour of the sprite
         for (const blockId of Object.keys(sprite.blocks._blocks)) {
             const block = sprite.blocks.getBlock(blockId);
             switch (sprite.blocks.getOpcode(block)) {
+
+                // Check if the sprite interacts with another sprite.
                 case "sensing_touchingobjectmenu":
                     for (const target of vm.runtime.targets) {
                         if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
@@ -78,6 +73,8 @@ export class InputExtraction {
                         }
                     }
                     break;
+
+                // Check if the sprite interacts with a color on the screen or on a sprite.
                 case "sensing_touchingcolor": {
                     const sensedColor = sprite.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
                     const distances = this.calculateColorDistance(sprite, sensedColor);
@@ -88,6 +85,11 @@ export class InputExtraction {
                     }
                     break;
                 }
+
+                // Check if the sprite is capable of switching his costume.
+                case "looks_switchcostumeto":
+                    spriteFeatures.set("Costume", sprite.currentCostume / sprite.sprite.costumes_.length);
+                    break;
             }
         }
         return spriteFeatures;

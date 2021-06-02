@@ -227,14 +227,14 @@ describe("NeuroevolutionUtil Tests", () => {
         const chromosome = generator.get();
         for(const connection of chromosome.connections)
             connectionList.add(connection);
-        const inNode = new InputNode(100,"Sprite1", "X-Position");
+        const inNode = new InputNode(100,"Sprite2", "X-Position");
         const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID);
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
         expect(NeuroevolutionUtil.findConnection(connectionList, newConnection)).toBe(null);
     })
 
     test("Test Assign innovation number of a new connection", () =>{
-        const inNode = new InputNode(100,"Sprite1", "X-Position");
+        const inNode = new InputNode(100,"Sprite3", "X-Position");
         const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID);
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
         NeuroevolutionUtil.assignInnovationNumber(newConnection);
@@ -244,8 +244,10 @@ describe("NeuroevolutionUtil Tests", () => {
     test("Test Assign innovation number of a new connection which is similar to an existing one", () =>{
         const chromosome = generator.get();
         const existingConnection = chromosome.connections.get(0);
-        const inNode = new InputNode(existingConnection.source.id,"Sprite1", "X-Position");
-        const outNode = new ClassificationNode(existingConnection.target.id, new MouseMoveEvent(), ActivationFunction.SIGMOID);
+        const existingInode= existingConnection.source as InputNode;
+        const existingOnode= existingConnection.target as ClassificationNode;
+        const inNode = new InputNode(existingInode.id, existingInode.sprite, existingInode.feature);
+        const outNode = new ClassificationNode(existingOnode.id, existingOnode.event, existingOnode.activationFunction);
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
         NeuroevolutionUtil.assignInnovationNumber(newConnection);
         expect(newConnection.innovation).toBe(existingConnection.innovation);
