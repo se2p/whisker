@@ -39,7 +39,8 @@ export class BiasNode extends NodeGene {
     }
 
     toString(): string {
-        return "BiasNode{ID: " + this.id + ", Value: " + this.activationValue +
-            ", InputConnections: " + this.incomingConnections + "}";
+        return `BiasNode{ID: ${this.id}\
+, Value: ${this.activationValue}\
+, InputConnections: ${this.incomingConnections}}`;
     }
 }

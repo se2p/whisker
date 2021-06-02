@@ -68,12 +68,12 @@ export class RegressionNode extends NodeGene {
     }
 
     toString(): string {
-        return " RegressionNode{ID: " + this.id +
-            ", Value: " + this.activationValue +
-            ", ActivationFunction: " + this.activationFunction +
-            ", InputConnections: " + this.incomingConnections +
-            ", Event: " + this.event.stringIdentifier() +
-            ", Parameter " + this.eventParameter + "}";
+        return `RegressionNode{ID: ${this.id}\
+, Value: ${this.activationValue}\
+, ActivationFunction: ${this.activationFunction}\
+, InputConnections: ${this.incomingConnections}\
+, Event: ${this.event.stringIdentifier()}\
+, Parameter ${this.eventParameter}}`;
     }
 
 }

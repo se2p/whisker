@@ -24,17 +24,7 @@ import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEve
 
 describe('Test RandomNeuroevolution', () => {
 
-    let properties: NeuroevolutionProperties<NetworkChromosome>;
-    let searchAlgorithm: SearchAlgorithm<NetworkChromosome>;
-    let builder: SearchAlgorithmBuilder<NetworkChromosome>;
-    let iterations: number;
-    let populationSize: number;
-    let mutationOp: NeatMutation;
-    let crossoverOp: NeatCrossover;
-    let generator: NetworkChromosomeGeneratorSparse;
-    let genInputs: Map<string, number[]>;
-    let events: List<ScratchEvent>;
-    let random : Randomness;
+    let searchAlgorithm: SearchAlgorithm<Chromosome>;
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
@@ -42,24 +32,34 @@ describe('Test RandomNeuroevolution', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        crossoverOp = new NeatCrossover(0.4);
-        mutationOp = new NeatMutation(0.03, 0.1, 30,
+        const crossoverOp = new NeatCrossover(0.4);
+        const mutationOp = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1, 3,0.1);
-        genInputs = new Map<string, number[]>();
-        genInputs.set("First", [1,2,3]);
-        genInputs.set("Second", [4,5,6]);
-        genInputs.set("Third", [7,8]);
-        genInputs.set("Fourth", [9]);
-        events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
-            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, events, 0.4);
+        const genInputs = new Map<string, Map<string, number>>();
+        const sprite1 = new Map<string, number>();
+        sprite1.set("X-Position", 1);
+        sprite1.set("Y-Position", 2);
+        sprite1.set("Costume", 3);
+        sprite1.set("DistanceToSprite2-X", 4);
+        sprite1.set("DistanceToSprite2-y", 5);
+        genInputs.set("Sprite1", sprite1);
 
-        builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM_NEUROEVOLUTION);
-        iterations = 20;
-        populationSize = 100;
-        random = Randomness.getInstance();
-        properties = new NeuroevolutionProperties(populationSize);
+        const sprite2 = new Map<string, number>();
+        sprite2.set("X-Position", 6);
+        sprite2.set("Y-Position", 7);
+        sprite2.set("DistanceToWhite-X", 8);
+        sprite2.set("DistanceToWhite-Y", 9);
+        genInputs.set("Sprite2", sprite2);
+        const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
+        const generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp,genInputs, events, 0.4);
+
+        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM_NEUROEVOLUTION);
+        const iterations = 20;
+        const populationSize = 100;
+        const random = Randomness.getInstance();
+        const properties = new NeuroevolutionProperties(populationSize);
 
         properties.networkFitness = new class implements NetworkFitnessFunction<NetworkChromosome> {
             compare(value1: number, value2: number): number {
@@ -67,28 +67,28 @@ describe('Test RandomNeuroevolution', () => {
             }
 
             getFitness(network:NetworkChromosome): Promise<number> {
-                const fitness = random.nextInt(1, 100)
+                const fitness = random.nextInt(1, 100);
                 network.networkFitness = fitness;
                 return Promise.resolve(fitness);
             }
 
             getFitnessWithoutPlaying(network: NetworkChromosome): number {
-                const fitness = random.nextInt(1, 100)
+                const fitness = random.nextInt(1, 100);
                 network.networkFitness = fitness;
                 return fitness;
             }
 
             getRandomFitness(network: NetworkChromosome): Promise<number> {
-                const fitness = random.nextInt(1, 100)
+                const fitness = random.nextInt(1, 100);
                 network.networkFitness = fitness;
                 return Promise.resolve(fitness);
             }
         }
         properties.stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
         properties.timeout = 25000;
-        properties.ageSignificance = 1.0
-        properties.parentsPerSpecies = 0.2
-        properties.mutationWithoutCrossover = 0.3
+        properties.ageSignificance = 1.0;
+        properties.parentsPerSpecies = 0.2;
+        properties.mutationWithoutCrossover = 0.3;
         properties.interspeciesMating = 0.1;
         properties.distanceThreshold = 3;
         properties.excessCoefficient = 1;

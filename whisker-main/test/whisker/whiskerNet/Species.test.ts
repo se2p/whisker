@@ -14,29 +14,37 @@ import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent"
 
 describe("Species Test", () => {
 
-    let crossOver: NeatCrossover;
-    let mutation: NeatMutation;
-    let inputs: Map<string, number[]>;
-    let events: List<ScratchEvent>;
     let generator: NetworkChromosomeGeneratorSparse
     let species: Species<NetworkChromosome>;
-    let population: List<NetworkChromosome>;
     let populationSize: number;
     let random: Randomness;
     let champion: NetworkChromosome;
     let properties: NeuroevolutionProperties<NetworkChromosome>
 
     beforeEach(() => {
-        crossOver = new NeatCrossover(0.4);
-        mutation = new NeatMutation(0.03, 0.1, 30,
+        const crossOver = new NeatCrossover(0.4);
+        const mutation = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8,
             1.5, 0.1, 3, 0.1);
-        inputs = new Map<string, number[]>();
-        inputs.set("First", [1, 2, 3, 4, 5, 6]);
-        events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
+        const genInputs = new Map<string, Map<string, number>>();
+        const sprite1 = new Map<string, number>();
+        sprite1.set("X-Position", 1);
+        sprite1.set("Y-Position", 2);
+        sprite1.set("Costume", 3);
+        sprite1.set("DistanceToSprite2-X", 4);
+        sprite1.set("DistanceToSprite2-y", 5);
+        genInputs.set("Sprite1", sprite1);
+
+        const sprite2 = new Map<string, number>();
+        sprite2.set("X-Position", 6);
+        sprite2.set("Y-Position", 7);
+        sprite2.set("DistanceToWhite-X", 8);
+        sprite2.set("DistanceToWhite-Y", 9);
+        genInputs.set("Sprite2", sprite2);
+        const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
-        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, inputs, events,0.4)
-        population = new List<NetworkChromosome>();
+        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events,0.4)
+        const population = new List<NetworkChromosome>();
         populationSize = 50;
         properties = new NeuroevolutionProperties(populationSize);
         properties.ageSignificance = 1.0

@@ -21,10 +21,10 @@ describe("NeuroevolutionUtil Tests", () => {
     let populationSize: number;
     let crossOver: NeatCrossover;
     let mutation: NeatMutation;
-    let genInputs: Map<string, number[]>;
+    let genInputs: Map<string, Map<string, number>>;
     let events: List<ScratchEvent>;
-    let generator: NetworkChromosomeGeneratorSparse
-    let properties: NeuroevolutionProperties<NetworkChromosome>
+    let generator: NetworkChromosomeGeneratorSparse;
+    let properties: NeuroevolutionProperties<NetworkChromosome>;
 
 
     beforeEach(() => {
@@ -32,18 +32,28 @@ describe("NeuroevolutionUtil Tests", () => {
         mutation = new NeatMutation(0.03, 0.1, 30,
             0.2, 0.01, 0.8, 1.5,
             0.1,3, 0.1);
-        genInputs = new Map<string, number[]>();
-        genInputs.set("First", [1,2,3]);
-        genInputs.set("Second", [4,5,6]);
-        genInputs.set("Third", [7,8]);
-        genInputs.set("Fourth", [9]);
+        genInputs = new Map<string, Map<string, number>>();
+        const sprite1 = new Map<string, number>();
+        sprite1.set("X-Position", 1);
+        sprite1.set("Y-Position", 2);
+        sprite1.set("Costume", 3);
+        sprite1.set("DistanceToSprite2-X", 4);
+        sprite1.set("DistanceToSprite2-y", 5);
+        genInputs.set("Sprite1", sprite1);
+
+        const sprite2 = new Map<string, number>();
+        sprite2.set("X-Position", 6);
+        sprite2.set("Y-Position", 7);
+        sprite2.set("DistanceToWhite-X", 8);
+        sprite2.set("DistanceToWhite-Y", 9);
+        genInputs.set("Sprite2", sprite2);
         populationSize = 50;
         properties = new NeuroevolutionProperties<NetworkChromosome>(populationSize);
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
-        events = new List<ScratchEvent>([new MouseMoveEvent()])
-        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events,0.4)
+        events = new List<ScratchEvent>([new MouseMoveEvent()]);
+        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events,0.4);
     })
 
     test("Test Speciation when a new Population gets created", () => {
@@ -59,7 +69,7 @@ describe("NeuroevolutionUtil Tests", () => {
         expect(population.species.size()).toBeGreaterThanOrEqual(1);
         // With this low threshold every unique connection leads to compatDistance above the Threshold
         // Therefore, we cannot have more than inputNodes * outputNodes connections
-        expect(population.species.size()).toBeLessThanOrEqual(populationSize)
+        expect(population.species.size()).toBeLessThanOrEqual(populationSize);
     })
 
     test("Test Speciation when a new Population gets created and a high speciation Threshold", () => {
@@ -69,30 +79,30 @@ describe("NeuroevolutionUtil Tests", () => {
         expect(population.species.size()).toBeGreaterThanOrEqual(1);
         // With this low threshold every unique connection leads to compatDistance above the Threshold
         // Therefore, we cannot have more than inputNodes * outputNodes connections
-        expect(population.species.size()).toBeLessThanOrEqual(populationSize)
+        expect(population.species.size()).toBeLessThanOrEqual(populationSize);
     })
 
     test("Test Speciation with a chromosome mutated several times", () => {
-        population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties)
+        population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
         const chromosome = generator.get();
         const mutant = chromosome.clone();
         for (let i = 0; i < 100; i++) {
             mutant.mutate();
-            NeuroevolutionUtil.speciate(mutant, population, properties)
+            NeuroevolutionUtil.speciate(mutant, population, properties);
         }
-        expect(population.speciesCount).toBeGreaterThan(1)
+        expect(population.speciesCount).toBeGreaterThan(1);
     })
 
     test("Test Compatibility Distance of clones", () => {
         const chromosome1 = generator.get();
         const chromosome2 = chromosome1.clone();
-        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
-        expect(compatDistance).toBe(0)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
+        expect(compatDistance).toBe(0);
     })
 
     test("Test Compatibility Distance of Chromosomes with disjoint connections", () => {
-        const inputNode1 = new InputNode(0,"Test");
-        const inputNode2 = new InputNode(1,"Test");
+        const inputNode1 = new InputNode(0,"Sprite1", "X-Position");
+        const inputNode2 = new InputNode(1,"Sprite2", "Y-Position");
         const outputNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
@@ -104,23 +114,22 @@ describe("NeuroevolutionUtil Tests", () => {
         const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
         const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1, false);
 
-        const connections1 = new List<ConnectionGene>()
+        const connections1 = new List<ConnectionGene>();
         connections1.add(connection1);
 
-        const connections2 = new List<ConnectionGene>()
+        const connections2 = new List<ConnectionGene>();
         connections2.add(connection2);
 
-        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver)
-        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver)
+        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver);
+        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver);
 
-        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
-        // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(1)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
+        expect(compatDistance).toBe(1);
     })
 
     test("Test Compatibility Distance of Chromosomes with disjoint connections switched", () => {
-        const inputNode1 = new InputNode(0,"Test");
-        const inputNode2 = new InputNode(1,"Test");
+        const inputNode1 = new InputNode(0,"Sprite1", "X-Position");
+        const inputNode2 = new InputNode(1,"Sprite2", "Y-Position");
         const outputNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
@@ -132,17 +141,16 @@ describe("NeuroevolutionUtil Tests", () => {
         const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
         const connection2 = new ConnectionGene(inputNode2, outputNode, 0.5, true, 1, false);
 
-        const connections1 = new List<ConnectionGene>()
+        const connections1 = new List<ConnectionGene>();
         connections1.add(connection1);
 
-        const connections2 = new List<ConnectionGene>()
+        const connections2 = new List<ConnectionGene>();
         connections2.add(connection2);
 
-        const chromosome1 = new NetworkChromosome(connections2, nodes, mutation, crossOver)
-        const chromosome2 = new NetworkChromosome(connections1, nodes, mutation, crossOver)
+        const chromosome1 = new NetworkChromosome(connections2, nodes, mutation, crossOver);
+        const chromosome2 = new NetworkChromosome(connections1, nodes, mutation, crossOver);
 
-        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
-        // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
         expect(compatDistance).toBe(1)
     })
 
@@ -150,17 +158,16 @@ describe("NeuroevolutionUtil Tests", () => {
         const chromosome1 = generator.get();
         const chromosome2 = chromosome1.clone();
 
-        const node1 = chromosome1.inputNodes.get("First").get(0);
+        const node1 = chromosome1.inputNodes.get("Sprite1").get("X-Position");
         const node2 = chromosome1.outputNodes.get(1);
         chromosome2.connections.add(new ConnectionGene(node1, node2, 1, true, 1000, false));
-        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
-        // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(1)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
+        expect(compatDistance).toBe(1);
     })
 
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {
-        const inputNode1 = new InputNode(0,"Test");
-        const inputNode2 = new InputNode(1,"Test");
+        const inputNode1 = new InputNode(0,"Sprite1", "X-Position");
+        const inputNode2 = new InputNode(1,"Sprite2", "Y-Position");
         const outputNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
 
         const nodes = new List<NodeGene>();
@@ -172,24 +179,23 @@ describe("NeuroevolutionUtil Tests", () => {
         const connection1 = new ConnectionGene(inputNode1, outputNode, 1, true, 0, false);
         const connection2 = new ConnectionGene(inputNode1, outputNode, 0.5, true, 0, false);
 
-        const connections1 = new List<ConnectionGene>()
+        const connections1 = new List<ConnectionGene>();
         connections1.add(connection1);
 
-        const connections2 = new List<ConnectionGene>()
+        const connections2 = new List<ConnectionGene>();
         connections2.add(connection2);
 
-        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver)
-        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver)
-        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
-        // Greater than 0 because with a small chance we could get the exact same Chromosome from the generator.
-        expect(compatDistance).toBe(0.4 * 0.5)
+        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver);
+        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver);
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
+        expect(compatDistance).toBe(0.4 * 0.5);
     })
 
     test("Test Compatibility Distance of undefined chromosome", () => {
         const chromosome1 = generator.get();
         const chromosome2 = undefined;
-        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4)
-        expect(compatDistance).toBe(Number.MAX_SAFE_INTEGER)
+        const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
+        expect(compatDistance).toBe(Number.MAX_SAFE_INTEGER);
     })
 
     test("Test Softmax calculation", () =>{
@@ -213,35 +219,35 @@ describe("NeuroevolutionUtil Tests", () => {
         const chromosome = generator.get();
         for(const connection of chromosome.connections)
             connectionList.add(connection);
-        expect(NeuroevolutionUtil.findConnection(connectionList, chromosome.connections.get(0))).toBe(chromosome.connections.get(0))
+        expect(NeuroevolutionUtil.findConnection(connectionList, chromosome.connections.get(0))).toBe(chromosome.connections.get(0));
     })
 
     test("Test findConnection for connection which is not inside the list", () =>{
-        const connectionList = new List<ConnectionGene>()
+        const connectionList = new List<ConnectionGene>();
         const chromosome = generator.get();
         for(const connection of chromosome.connections)
             connectionList.add(connection);
-        const inNode = new InputNode(100,"Test")
-        const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID)
-        const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
-        expect(NeuroevolutionUtil.findConnection(connectionList, newConnection)).toBe(null)
+        const inNode = new InputNode(100,"Sprite1", "X-Position");
+        const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID);
+        const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
+        expect(NeuroevolutionUtil.findConnection(connectionList, newConnection)).toBe(null);
     })
 
     test("Test Assign innovation number of a new connection", () =>{
-        const inNode = new InputNode(100,"Test")
-        const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID)
-        const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
-        NeuroevolutionUtil.assignInnovationNumber(newConnection)
-        expect(newConnection.innovation).toBeLessThan(100)
+        const inNode = new InputNode(100,"Sprite1", "X-Position");
+        const outNode = new ClassificationNode(101, new WaitEvent(), ActivationFunction.SIGMOID);
+        const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
+        NeuroevolutionUtil.assignInnovationNumber(newConnection);
+        expect(newConnection.innovation).toBeLessThan(100);
     })
 
     test("Test Assign innovation number of a new connection which is similar to an existing one", () =>{
         const chromosome = generator.get();
-        const existingConnection = chromosome.connections.get(0)
-        const inNode = new InputNode(existingConnection.source.id,"Test")
-        const outNode = new ClassificationNode(existingConnection.target.id, new MouseMoveEvent(), ActivationFunction.SIGMOID)
-        const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false)
-        NeuroevolutionUtil.assignInnovationNumber(newConnection)
-        expect(newConnection.innovation).toBe(existingConnection.innovation)
+        const existingConnection = chromosome.connections.get(0);
+        const inNode = new InputNode(existingConnection.source.id,"Sprite1", "X-Position");
+        const outNode = new ClassificationNode(existingConnection.target.id, new MouseMoveEvent(), ActivationFunction.SIGMOID);
+        const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
+        NeuroevolutionUtil.assignInnovationNumber(newConnection);
+        expect(newConnection.innovation).toBe(existingConnection.innovation);
     })
 })

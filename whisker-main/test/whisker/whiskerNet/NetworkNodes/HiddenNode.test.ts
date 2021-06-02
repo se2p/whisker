@@ -91,7 +91,8 @@ describe("hiddenNode Tests", () => {
 
     test("toString Test", () => {
         const out = hiddenNode.toString();
-        expect(out).toContain("HiddenNode{ID: " + 1 + ", Value: " + 0 +
-            ", InputConnections: " + new List<ConnectionGene>() + "}")
+        expect(out).toContain(`HiddenNode{ID: 1\
+, Value: 0\
+, InputConnections: ${new List<ConnectionGene>()}}`)
     })
 })

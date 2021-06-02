@@ -58,7 +58,7 @@ describe("regressionNode Tests", () => {
         const regressionNode3 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode3.equals(regressionNodeNone)).toBeFalsy();
 
-        const regressionNode4 = new RegressionNode(1, new MouseMoveEvent(0,0), "Duration", ActivationFunction.NONE)
+        const regressionNode4 = new RegressionNode(1, new MouseMoveEvent(0, 0), "Duration", ActivationFunction.NONE)
         expect(regressionNode4.equals(regressionNodeNone)).toBeFalsy();
 
         const regressionNode5 = new RegressionNode(1, new WaitEvent, "Steps", ActivationFunction.NONE)
@@ -108,17 +108,17 @@ describe("regressionNode Tests", () => {
     })
 
     test("toString Test", () => {
-        const inputNode = new InputNode(5, "Test");
+        const inputNode = new InputNode(5, "Sprite1", "Position-X");
         const connection = new ConnectionGene(inputNode, regressionNodeNone, 2, true, 1, false);
         const incomingList = new List<ConnectionGene>();
         incomingList.add(connection);
         regressionNodeNone.incomingConnections = incomingList;
         const out = regressionNodeNone.toString();
-        expect(out).toContain(" RegressionNode{ID: " + 1 +
-            ", Value: " + 0 +
-            ", ActivationFunction: " + 0 +
-            ", InputConnections: " + connection.toString() +
-            ", Event: " + "WaitEvent" +
-            ", Parameter " + "Duration" + "}")
+        expect(out).toContain(`RegressionNode{ID: 1\
+, Value: 0\
+, ActivationFunction: 0\
+, InputConnections: ${connection.toString()}\
+, Event: WaitEvent\
+, Parameter Duration}`)
     })
 })

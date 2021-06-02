@@ -18,58 +18,59 @@ describe("BiasNode Tests", () => {
 
         const biasNode = new BiasNode(10);
 
-        expect(biasNode.id).toBe(10);
-        expect(biasNode.activationFunction).toBe(ActivationFunction.NONE);
-        expect(biasNode.type).toBe(NodeType.BIAS);
-        expect(biasNode.nodeValue).toBe(1);
-        expect(biasNode.lastActivationValue).toBe(1);
-        expect(biasNode.activationValue).toBe(1)
-        expect(biasNode.activatedFlag).toBe(true)
-        expect(biasNode.activationCount).toBe(1);
-        expect(biasNode.traversed).toBe(false)
-        expect(biasNode.incomingConnections.size()).toBe(0);
+        expect(biasNode.id).toEqual(10);
+        expect(biasNode.activationFunction).toEqual(ActivationFunction.NONE);
+        expect(biasNode.type).toEqual(NodeType.BIAS);
+        expect(biasNode.nodeValue).toEqual(1);
+        expect(biasNode.lastActivationValue).toEqual(1);
+        expect(biasNode.activationValue).toEqual(1)
+        expect(biasNode.activatedFlag).toBeTruthy()
+        expect(biasNode.activationCount).toEqual(1);
+        expect(biasNode.traversed).toBeFalsy()
+        expect(biasNode.incomingConnections.size()).toEqual(0);
     })
 
     test("Reset Node", () =>{
         biasNode.reset();
-        expect(biasNode.activationCount).toBe(1)
-        expect(biasNode.activationValue).toBe(1)
-        expect(biasNode.nodeValue).toBe(1)
-        expect(biasNode.lastActivationValue).toBe(1)
-        expect(biasNode.activatedFlag).toBe(true)
-        expect(biasNode.traversed).toBe(false)
+        expect(biasNode.activationCount).toEqual(1)
+        expect(biasNode.activationValue).toEqual(1)
+        expect(biasNode.nodeValue).toEqual(1)
+        expect(biasNode.lastActivationValue).toEqual(1)
+        expect(biasNode.activatedFlag).toBeTruthy()
+        expect(biasNode.traversed).toBeFalsy()
 
     })
 
     test("Equals Test", () =>{
         const biasNode2 = new BiasNode(1);
-        expect(biasNode2.equals(biasNode)).toBe(true)
+        expect(biasNode2.equals(biasNode)).toBeTruthy()
 
-        const inputNode3 = new InputNode(2,"Test");
-        expect(inputNode3.equals(biasNode)).toBe(false)
+        const biasNode3 = new BiasNode(2);
+        expect(biasNode3.equals(biasNode)).toBeFalsy()
 
-        const inputNode = new InputNode(1,"Test");
-        expect(inputNode.equals(biasNode)).toBe(false)
+        const inputNode = new InputNode(1,"Sprite1", "X-Position");
+        expect(inputNode.equals(biasNode)).toBeFalsy()
     })
 
     test("Clone Test", () => {
         const clone = biasNode.clone();
-        expect(clone.id).toBe(biasNode.id);
-        expect(clone.equals(biasNode)).toBe(true);
-        expect(clone === biasNode).toBe(false);
+        expect(clone.id).toEqual(biasNode.id);
+        expect(clone.equals(biasNode)).toBeTruthy();
+        expect(clone === biasNode).toBeFalsy();
     })
 
     test("getActivationValue Test", () => {
-        expect(biasNode.getActivationValue()).toBe(1);
-        expect(biasNode.activationValue).toBe(1)
+        expect(biasNode.getActivationValue()).toEqual(1);
+        expect(biasNode.activationValue).toEqual(1)
         biasNode.reset()
-        expect(biasNode.getActivationValue()).toBe(1);
-        expect(biasNode.activationValue).toBe(1)
+        expect(biasNode.getActivationValue()).toEqual(1);
+        expect(biasNode.activationValue).toEqual(1)
     })
 
     test("toString Test", () => {
         const out = biasNode.toString();
-        expect(out).toContain("BiasNode{ID: " + 1 + ", Value: " + 1 +
-            ", InputConnections: " + new List<ConnectionGene>() + "}")
+        expect(out).toContain(`BiasNode{ID: 1\
+, Value: 1\
+, InputConnections: ${new List<ConnectionGene>()}}`)
     })
 })

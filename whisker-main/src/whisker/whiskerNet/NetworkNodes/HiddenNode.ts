@@ -42,8 +42,9 @@ export class HiddenNode extends NodeGene {
     }
 
     toString(): string {
-        return " HiddenNode{ID: " + this.id + ", Value: " + this.activationValue +
-            ", InputConnections: " + this.incomingConnections + "}";
+        return `HiddenNode{ID: ${this.id}\
+, Value: ${this.activationValue}\
+, InputConnections: ${this.incomingConnections}}`;
     }
 
 }

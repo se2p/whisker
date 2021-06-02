@@ -53,8 +53,9 @@ export class ClassificationNode extends NodeGene {
     }
 
     toString(): string {
-        return " ClassificationNode{ID: " + this.id + ", Value: " + this.activationValue +
-            ", InputConnections: " + this.incomingConnections + "}";
+        return `ClassificationNode{ID: ${this.id}\
+, Value: ${this.activationValue}\
+, InputConnections: ${this.incomingConnections}}`;
     }
 
     get event(): ScratchEvent {

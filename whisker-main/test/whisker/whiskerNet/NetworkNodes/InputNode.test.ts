@@ -79,10 +79,10 @@ describe("InputNode Tests", () => {
 
     test("toString Test", () => {
         const out = inputNode.toString();
-        expect(out).toContain("InputNode{ID: " + 1 +
-            ", Value: " + 0 +
-            ", InputConnections: " + new List<ConnectionGene>() +
-            ", Sprite: " + "Sprite1" +
-            ", Feature: " + "X-Position" + "}")
+        expect(out).toContain(`InputNode{ID: 1\
+, Value: 0\
+, InputConnections: ${new List<ConnectionGene>()}\
+, Sprite: Sprite1\
+, Feature: X-Position}`)
     })
 })

@@ -97,7 +97,9 @@ describe("classificationNode Tests", () => {
 
     test("toString Test", () => {
         const out = classificationNode.toString();
-        expect(out).toContain("ClassificationNode{ID: " + 1 + ", Value: " + 0 +
-            ", InputConnections: " + new List<ConnectionGene>() + "}")
+        expect(out).toContain(
+`ClassificationNode{ID: 1\
+, Value: 0\
+, InputConnections: ${new List<ConnectionGene>()}}`)
     })
 })

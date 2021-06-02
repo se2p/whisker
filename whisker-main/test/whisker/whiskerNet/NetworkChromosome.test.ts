@@ -281,7 +281,7 @@ describe('Test NetworkChromosome', () => {
         expect(counter).toEqual(-1);
     })
 
-    test('Network activation without hidden layer and regression', () => {
+    test('Network activation without hidden layer', () => {
         // Create input Nodes
         const nodes = new List<NodeGene>();
         nodes.add(new InputNode(0, "Sprite1", "X-Position"));
@@ -297,16 +297,16 @@ describe('Test NetworkChromosome', () => {
 
         // Create Connections
         const connections = new List<ConnectionGene>();
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.1, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.2, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.3, false, 1, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 0.4, false, 1, false));
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.5, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.6, false, 1, false));
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(5), 0.7, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(6), 0.8, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(5), 0.9, false, 1, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(6), 1, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.1, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(5), 0.2, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 0.3, false, 1, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(5), 0.4, false, 1, false));
+        connections.add(new ConnectionGene(nodes.get(3), nodes.get(4), 0.5, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(3), nodes.get(5), 0.6, false, 1, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(6), 0.7, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(7), 0.8, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(6), 0.9, false, 1, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(7), 1, true, 1, false));
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp);
         const inputs = new Map<string, Map<string, number>>();
@@ -320,10 +320,10 @@ describe('Test NetworkChromosome', () => {
         for (let i = 0; i < softmaxOutput.length; i++) {
             softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
         }
-        expect(nodes.get(5).nodeValue).toEqual(0.6);
-        expect(nodes.get(6).nodeValue).toEqual(0.2);
-        expect(nodes.get(7).nodeValue).toEqual(0.7)
-        expect(nodes.get(8).nodeValue).toEqual(2.8)
+        expect(chromosome.outputNodes.get(0).nodeValue).toEqual(0.6);
+        expect(chromosome.outputNodes.get(1).nodeValue).toEqual(0.2);
+        expect(chromosome.outputNodes.get(2).nodeValue).toEqual(0.7)
+        expect(chromosome.outputNodes.get(3).nodeValue).toEqual(2.8)
         expect(softmaxOutput).toEqual([0.599, 0.401]);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
     })
@@ -331,8 +331,8 @@ describe('Test NetworkChromosome', () => {
     test('Network activation with hidden layer', () => {
         const nodes = new List<NodeGene>();
         nodes.add(new InputNode(0, "Sprite1", "X-Position"));
-        nodes.add(new InputNode(1, "Sprite1", "Y-Position"));
-        nodes.add(new InputNode(2, "Sprite1", "Costumes"));
+        nodes.add(new InputNode(1, "Sprite2", "X-Position"));
+        nodes.add(new InputNode(2, "Sprite2", "Costumes"));
         nodes.add(new BiasNode(3));
 
         // Create classification Output Nodes
@@ -346,22 +346,24 @@ describe('Test NetworkChromosome', () => {
 
         // Create Connections
         const connections = new List<ConnectionGene>();
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.1, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.2, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.3, false, 1, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 0.4, false, 1, false));
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.5, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.6, false, 1, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.1, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(5), 0.2, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 0.3, false, 1, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(5), 0.4, false, 1, false));
+        connections.add(new ConnectionGene(nodes.get(3), nodes.get(4), 0.5, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(3), nodes.get(5), 0.6, false, 1, false));
         connections.add(new ConnectionGene(nodes.get(1), hiddenNode, 0.7, true, 1, false));
         connections.add(new ConnectionGene(hiddenNode, deepHiddenNode, 0.8, true, 1, false));
-        connections.add(new ConnectionGene(deepHiddenNode, nodes.get(4), 0.9, true, 1, false));
+        connections.add(new ConnectionGene(deepHiddenNode, nodes.get(5), 0.9, true, 1, false));
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
         const inputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
+        const sprite2 = new Map<string, number>();
         sprite1.set("X-Position", 1);
-        sprite1.set("Y-Position", 2);
+        sprite2.set("X-Position", 2);
         inputs.set("Sprite1", sprite1);
+        inputs.set("Sprite2", sprite2);
         chromosome.activateNetwork(inputs);
         chromosome.flushNodeValues();
         for (let i = 0; i < 5; i++) {
@@ -376,8 +378,8 @@ describe('Test NetworkChromosome', () => {
         expect(Number(hiddenNode.activationValue.toFixed(3))).toEqual(0.999)
         expect(Number(deepHiddenNode.nodeValue.toFixed(3))).toEqual(0.799)
         expect(Number(deepHiddenNode.activationValue.toFixed(3))).toEqual(0.980)
-        expect(Number(nodes.get(6).nodeValue.toFixed(3))).toEqual(1.082)
-        expect(nodes.get(5).nodeValue).toEqual(0.6)
+        expect(Number(nodes.get(7).nodeValue.toFixed(3))).toEqual(1.082)
+        expect(nodes.get(6).nodeValue).toEqual(0.6)
         expect(softmaxOutput).toEqual([0.382, 0.618]);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
     })
@@ -461,28 +463,28 @@ describe('Test NetworkChromosome', () => {
 
         // Create Connections
         const connections = new List<ConnectionGene>();
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(3), 0.2, true, 1, false));
-        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.5, false, 2, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(3), 0.2, false, 3, false));
-        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 1, true, 4, false));
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(3), 0.2, true, 5, false));
-        connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true, 6, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(4), 0.2, true, 1, false));
+        connections.add(new ConnectionGene(nodes.get(0), nodes.get(5), 0.5, false, 2, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(4), 0.2, false, 3, false));
+        connections.add(new ConnectionGene(nodes.get(1), nodes.get(5), 1, true, 4, false));
+        connections.add(new ConnectionGene(nodes.get(3), nodes.get(4), 0.2, true, 5, false));
+        connections.add(new ConnectionGene(nodes.get(3), nodes.get(5), 0.7, true, 6, false));
         connections.add(new ConnectionGene(nodes.get(0), hiddenNode, 0.3, true, 7, false));
-        connections.add(new ConnectionGene(hiddenNode, nodes.get(3), 0.7, true, 8, false));
+        connections.add(new ConnectionGene(hiddenNode, nodes.get(4), 0.7, true, 8, false));
         connections.add(new ConnectionGene(hiddenNode, deepHiddenNode, 0.3, true, 9, false));
         connections.add(new ConnectionGene(deepHiddenNode, hiddenNode, 1, true, 10, true));
-        connections.add(new ConnectionGene(deepHiddenNode, nodes.get(4), 1, true, 11, false));
+        connections.add(new ConnectionGene(deepHiddenNode, nodes.get(5), 1, true, 11, false));
         connections.add(new ConnectionGene(deepHiddenNode, deepHiddenNode, 1, true, 12, true));
-        connections.add(new ConnectionGene(nodes.get(4), deepHiddenNode, 1, true, 13, true));
+        connections.add(new ConnectionGene(nodes.get(5), deepHiddenNode, 1, true, 13, true));
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp);
         const threshold = chromosome.allNodes.size() * chromosome.allNodes.size();
         expect(chromosome.isRecurrentPath(deepHiddenNode, hiddenNode, 0, threshold)).toBeTruthy();
         expect(chromosome.isRecurrentPath(deepHiddenNode, deepHiddenNode, 0, threshold)).toBeTruthy();
         expect(chromosome.isRecurrentPath(hiddenNode, deepHiddenNode, 0, threshold)).toBeFalsy();
-        expect(chromosome.isRecurrentPath(nodes.get(4), deepHiddenNode, 0, threshold)).toBeTruthy();
-        expect(chromosome.isRecurrentPath(nodes.get(0), nodes.get(3), 0, threshold)).toBeFalsy();
-        expect(chromosome.isRecurrentPath(nodes.get(3), nodes.get(0), 0, threshold)).toBeTruthy();
+        expect(chromosome.isRecurrentPath(nodes.get(5), deepHiddenNode, 0, threshold)).toBeTruthy();
+        expect(chromosome.isRecurrentPath(nodes.get(0), nodes.get(4), 0, threshold)).toBeFalsy();
+        expect(chromosome.isRecurrentPath(nodes.get(4), nodes.get(0), 0, threshold)).toBeTruthy();
         expect(chromosome.isRecurrentPath(nodes.get(0), nodes.get(1), 0, threshold)).toBeFalsy();
     })
 
