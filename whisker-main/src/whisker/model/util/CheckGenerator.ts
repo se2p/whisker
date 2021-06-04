@@ -10,6 +10,7 @@ import {
     getRGBRangeError,
     getVariableNotFoundError
 } from "./ModelError";
+import {Randomness} from "../../utils/Randomness";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -353,7 +354,7 @@ export abstract class CheckGenerator {
         let prob = Number(probability.toString());
 
         return () => {
-            if (Math.random() <= prob) {
+            if (Randomness.getInstance().nextDouble() <= prob) {
                 return !negated;
             }
             return negated;

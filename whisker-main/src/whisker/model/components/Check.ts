@@ -17,7 +17,8 @@ export enum CheckName {
     VarComp = "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
     Expr = "Expr", // evaluate an expression, args: expression
     Probability = "Probability" // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks
-    // rand<=prob)
+    // rand<=prob) (but this probability depends on the other edge conditions tested before -> edge conditions are
+    // tested one for one and not tested if another edge is taken before it)
 }
 
 /**
