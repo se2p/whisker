@@ -7,6 +7,7 @@ import {CheckUtility} from "./util/CheckUtility";
 import {ModelResult} from "../../test-runner/test-result";
 import {ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
 import {Effect} from "./components/Effect";
+import {Container} from "../utils/Container";
 
 export class ModelTester extends EventEmitter {
 
@@ -69,6 +70,7 @@ export class ModelTester extends EventEmitter {
      */
     async prepareModel(testDriver: TestDriver) {
         console.log("----Preparing model----");
+        Container.testDriver = testDriver;
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this.checkUtility = new CheckUtility(testDriver);
         this.result = new ModelResult();
@@ -162,7 +164,7 @@ export class ModelTester extends EventEmitter {
             if (endTimer == 0) {
                 modelStoppedCallback.disable();
                 beforeStepCallback.disable();
-                if (this.constraintsModels) {
+                if (this.constraintsModels.length > 0) {
                     constraintCallback.disable();
                 }
             } else {

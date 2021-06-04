@@ -2,6 +2,20 @@ import TestDriver from "../../../test/test-driver";
 import Util from "../../../vm/util";
 import {UserModelEdge} from "./ModelEdge";
 import {ModelUtil} from "../util/ModelUtil";
+import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
+import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
+import {MouseDownEvent} from "../../testcase/events/MouseDownEvent";
+import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
+import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
+
+export enum InputEffectName {
+    InputClickSprite = "InputClickSprite", // sprite name
+    InputClickStage = "InputClickStage", // nothing
+    InputKey = "InputKey", // key name, isDown | durationValue (optional), IsDownValue (if isDown) | durationValue (if isDuration)
+    InputMouseDown = "InputMouseDown", // true | false
+    InputMouseMove = "InputMouseMove", // x, y
+    InputText = "InputText" // answer| text
+}
 
 /**
  * Evaluate and set up the input effect of the given edge string.
@@ -26,15 +40,9 @@ export function setUpInputEffect(newEdge: UserModelEdge, effect: string) {
  * @param parentEdge Parent edge.
  * @param effect String defining the effect, f.e. Output:Hmm
  */
-function getInputEffect(parentEdge: UserModelEdge, effect: string) {
+function getInputEffect(parentEdge: UserModelEdge, effect) {
     const parts = effect.split(":");
-    if (parts[0] != "InputImmediate") {
-        throw new Error("User model can only have InputImmediate effects.");
-    }
-    if (parts.length < 2) {
-        throw new Error("Edge input effect not correctly formatted. ':' missing.");
-    }
-    return new InputEffect(parentEdge, parts.splice(1, parts.length));
+    return new InputEffect(parentEdge, parts[0], parts.splice(1, parts.length));
 }
 
 
@@ -43,49 +51,59 @@ function getInputEffect(parentEdge: UserModelEdge, effect: string) {
  */
 export class InputEffect {
     id: string;
+    name: InputEffectName;
     private inputEffect: (t: TestDriver) => void;
     edge: UserModelEdge;
     private readonly args: any[];
 
     /**
-     * Get an input effect. Checks the length of the arguments based on the input type, e.g. "key".
+     * Get an input effect. Checks the length of the arguments based on the input type.
      * @param edge Parent edge this input effect belongs to.
+     * @param name Type of the input effect
      * @param args Arguments for this input effect.
      */
-    constructor(edge: UserModelEdge, args: any[]) {
+    constructor(edge: UserModelEdge, name: InputEffectName, args: any[]) {
         this.edge = edge;
+        this.name = name;
         this.id = edge.id + ".inputEffect" + edge.inputEffects.length;
         this.args = args;
 
         let _testArgs = function (length) {
-            let error = new Error("Wrong number of arguments for input effect " + args[0] + ".");
             if (args.length != length) {
-                throw error;
+                return false;
             }
 
             for (let i = 0; i < length; i++) {
                 if (args[i] == undefined) {
-                    throw error;
+                    return false;
                 }
             }
+            return true;
         }
-        switch (args[0].toLowerCase()) {
-            case 'key':
-                _testArgs(4);
+        let isOK = true;
+        switch (name) {
+            case InputEffectName.InputKey:
+                isOK = _testArgs(3) || _testArgs(5);
                 break;
-            case 'mouse':
-            case 'text':
-                _testArgs(2);
+            case InputEffectName.InputClickSprite:
+            case InputEffectName.InputText:
+            case InputEffectName.InputMouseDown:
+                isOK = _testArgs(1);
                 break;
-            case 'drag':
-                _testArgs(3);
+            case InputEffectName.InputClickStage:
+                isOK = _testArgs(0);
                 break;
+            case InputEffectName.InputMouseMove:
+                isOK = _testArgs(2);
+                break;
+        }
+        if (!isOK) {
+            throw  new Error("Wrong number of arguments for input effect " + name + ".");
         }
     }
 
     /**
      * Input the saved input effects of this instance to the test driver.
-     * @param t Instance of the test driver.
      */
     inputImmediate(t: TestDriver) {
         this.inputEffect(t);
@@ -96,51 +114,66 @@ export class InputEffect {
      * @param t Instance of the test driver.
      */
     registerComponents(t: TestDriver) {
-        this.inputEffect = InputEffect.getInputDataObject(t, this.args);
+        this.inputEffect = this.getInputDataFunction(t, this.args);
     }
 
-    private static getInputDataObject(t: TestDriver, arg: any[]): (t: TestDriver) => void {
-        let type = arg[0];
-        switch (type.toLowerCase()) {
-            case 'key':
-                return InputEffect.getKeyDataObject(t, arg);
-            case 'mouse':
-                ModelUtil.checkSpriteExistence(t, arg[1]);
-                return (t: TestDriver) => {
-                    console.log("input mouse", arg);
-                    t.inputImmediate({device: type, sprite: arg[1]});
-                }; // todo how does this look like?
-            case 'text':
-                return (t: TestDriver) => {
-                    t.inputImmediate({device: type, answer: arg[1]});
+    private getInputDataFunction(t: TestDriver, arg: any[]) {
+        console.log(arg);
+        switch (this.name) {
+            case InputEffectName.InputKey:
+                return this.getKeyDataObject(t, arg);
+            case InputEffectName.InputMouseMove:
+                ModelUtil.testNumber(arg[0]);
+                ModelUtil.testNumber(arg[1]);
+                let mouseEvent = new MouseMoveEvent(arg[0],arg[1])
+                return () => {
+                    mouseEvent.apply();
+                };
+            case InputEffectName.InputText:
+                let textEvent = new TypeTextEvent(arg[0]);
+                return () => {
+                    textEvent.apply();
                 }
-            case 'drag':
-                return (t: TestDriver) => {
-                    console.log("drag ", arg);
-                    t.inputImmediate({device: type, x: arg[1], y: arg[2]});
-                }// todo how does this look like?
+            case InputEffectName.InputMouseDown:
+                let boolVal = arg[0] == "true";
+                let mouseDownEvent = new MouseDownEvent(boolVal);
+                return () => {
+                    mouseDownEvent.apply();
+                }
+            case InputEffectName.InputClickStage:
+                let clickStageEvent = new ClickStageEvent();
+                return () => {
+                    clickStageEvent.apply();
+                }
+            case InputEffectName.InputClickSprite:
+                let sprite = ModelUtil.checkSpriteExistence(t, arg[0]);
+                let clickSpriteEvent = new ClickSpriteEvent(sprite._target);
+                return () => {
+                    clickSpriteEvent.apply();
+                }
             default:
-                throw new Error(`Invalid device for input ${type}`);
+                // should not happen
+                throw new Error("Input type not recognized: " + this.name);
         }
     }
 
-    private static getKeyDataObject(t: TestDriver, arg: any[]): (t: TestDriver) => void {
-        let key = Util.getScratchKey(t.vm, arg[1]);
+    private getKeyDataObject(t: TestDriver, arg: any[]): (t: TestDriver) => void {
+        let key = Util.getScratchKey(t.vm, arg[0]);
 
         let boolValue = true;
-        if (arg[3] === "false") {
+        if (arg[2] === "false") {
             boolValue = false;
         }
         let data;
-        if (arg[2].toLowerCase() == "isdown") {
+        if (arg[1].toLowerCase() == "isdown") {
             data = {device: "keyboard", key: key, isDown: boolValue};
         } else if (arg[1].toLowerCase() == "duration") {
-            data = {device: "keyboard", key: key, duration: boolValue};
+            data = {device: "keyboard", key: key, steps: arg[2]};
         } else {
-            throw new Error("input effect: " + arg[2] + " not known");
+            throw new Error("input effect: " + arg[1] + " not known");
         }
 
-        let contraKey = InputEffect.getContradictingKey(arg[1]);
+        let contraKey = InputEffect.getContradictingKey(arg[0]);
         if (contraKey != null) {
             contraKey = (Util.getScratchKey(t.vm, contraKey));
             return (t: TestDriver) => {
