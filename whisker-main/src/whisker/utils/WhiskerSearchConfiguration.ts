@@ -49,6 +49,7 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor";
 import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
+import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 
 class ConfigException implements Error {
     message: string;
@@ -310,6 +311,8 @@ export class WhiskerSearchConfiguration {
             return new StatementNetworkFitness();
         else if (networkFitnessDef === 'survive')
             return new SurviveFitness();
+        else if (networkFitnessDef === 'target')
+            return new TargetFitness(fitnessFunction['player'], fitnessFunction['target']);
         else if (networkFitnessDef === 'combined') {
             const fitnessFunctions = fitnessFunction["functions"];
             const comb: NetworkFitnessFunction<NetworkChromosome>[] = [];

@@ -14,8 +14,9 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         const start = Date.now();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
-        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
+        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 1000);
         network.networkFitness = surviveTime;
+        executor.resetState();
         return surviveTime;
     }
 
@@ -29,8 +30,9 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.executeRandom(network);
         // Round due to small variances in runtime
-        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
+        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 1000);
         network.networkFitness = surviveTime;
+        executor.resetState();
         return surviveTime;
     }
 

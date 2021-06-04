@@ -22,6 +22,7 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NetworkCh
         await executor.execute(network);
         const statementScore = StatementNetworkFitness.getNumberReachedBlocks(network);
         network.networkFitness = statementScore;
+        executor.resetState();
         return Promise.resolve(statementScore);
     }
 
@@ -36,6 +37,7 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NetworkCh
         await executor.executeRandom(network);
         const statementScore = StatementNetworkFitness.getNumberReachedBlocks(network);
         network.networkFitness = statementScore;
+        executor.resetState();
         return Promise.resolve(statementScore);
     }
 

@@ -33,6 +33,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             score = 0.01
         }
         network.networkFitness = score + this.offset;
+        executor.resetState();
         return network.networkFitness;
     }
 
@@ -49,6 +50,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             score = 0.01
         }
         network.networkFitness = score + this.offset;
+        executor.resetState();
         return network.networkFitness;
     }
 

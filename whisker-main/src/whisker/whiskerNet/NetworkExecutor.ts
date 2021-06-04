@@ -119,10 +119,6 @@ export class NetworkExecutor {
             // Load the inputs into the Network
             const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper.vm);
 
-            // Check if we encountered additional input features during the playthrough.
-            // If we did so add InputNodes to the network.
-            network.updateInputNodes(spriteFeatures);
-
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
             network.updateOutputNodes(this.availableEvents);
@@ -172,7 +168,6 @@ export class NetworkExecutor {
         // End and reset the VM.
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this.resetState();
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
@@ -240,7 +235,6 @@ export class NetworkExecutor {
         // End and reset the VM.
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this.resetState();
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
@@ -294,7 +288,7 @@ export class NetworkExecutor {
     /**
      * Resets the Scratch-VM to the initial state
      */
-    private resetState() {
+    public resetState() {
         // Delete clones
         const clones = [];
         for (const targetsKey in this._vm.runtime.targets) {

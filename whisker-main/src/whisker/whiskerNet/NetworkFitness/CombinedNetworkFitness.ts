@@ -32,6 +32,7 @@ export class CombinedNetworkFitness implements NetworkFitnessFunction<NetworkChr
         await executor.execute(network);
         const fitness = this.calculateCombinedFitness(network, start);
         network.networkFitness = fitness;
+        executor.resetState();
         return Promise.resolve(fitness);
     }
 
@@ -46,6 +47,7 @@ export class CombinedNetworkFitness implements NetworkFitnessFunction<NetworkChr
         await executor.executeRandom(network);
         const fitness = this.calculateCombinedFitness(network, start);
         network.networkFitness = fitness;
+        executor.resetState();
         return Promise.resolve(fitness);
     }
 

@@ -202,7 +202,7 @@ export class NetworkChromosome extends Chromosome {
      * Adds additional input Nodes if we have encountered a new Sprite during the playthrough
      * @param sprites a map which maps each sprite to its input feature vector
      */
-    public updateInputNodes(sprites: Map<string, Map<string, number>>): void {
+    private updateInputNodes(sprites: Map<string, Map<string, number>>): void {
         let updated = false;
         sprites.forEach((spriteFeatures, spriteKey) => {
             // Check if we have encountered a new Sprite
@@ -474,6 +474,8 @@ export class NetworkChromosome extends Chromosome {
      * @param inputs a map which maps each sprite to its input feature vector
      */
     private setUpInputs(inputs: Map<string, Map<string, number>>): void {
+        // First check if we encountered new nodes.
+        this.updateInputNodes(inputs);
         inputs.forEach((spriteValue, spriteKey) => {
             spriteValue.forEach((featureValue, featureKey) => {
                 const iNode = this.inputNodes.get(spriteKey).get(featureKey);
