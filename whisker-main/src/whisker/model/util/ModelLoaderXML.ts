@@ -53,6 +53,9 @@ export class ModelLoaderXML {
     private programModels: ProgramModel[];
     private userModels: UserModel[];
 
+    private idUndefined = 0;
+    private static readonly ID_UNDEFINED = "id_undefined";
+
     /**
      * Load the models from a string file content.
      * @param xmlText Content of a xml file containing the models.
@@ -93,12 +96,15 @@ export class ModelLoaderXML {
         // Get the nodes and edges..
         const graphEdges = graph.edge;
         const graphNodes = graph.node;
-        const graphID = graph._attributes.id;
+        let graphID = graph._attributes.id;
 
         if (graphID == undefined) {
-            throw new Error("Graph id not given.");
+            graphID = ModelLoaderXML.ID_UNDEFINED + this.idUndefined;
+            this.idUndefined++;
+            console.warn("Model Loader: A graph id was not given.");
         } else if (this.graphIDs.indexOf(graphID) != -1) {
-            throw new Error("Model id '" + graphID + "' already defined.");
+            graphID = graphID + "_dup" + this.graphIDs.length;
+            console.warn("Model Loader: Model id '" + graph._attributes.id + "' already defined.");
         }
 
         try {
@@ -174,13 +180,21 @@ export class ModelLoaderXML {
      * @private
      */
     private loadProgramEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
-        const edgeID = graphID + "-" + edgeAttr.id;
+        let edgeID;
+        if (!edgeAttr.id) {
+            edgeID = graphID + "-edge-undef-" + this.idUndefined;
+            this.idUndefined++;
+        } else {
+            if ((this.edgesMapProgram)[edgeAttr.id]) {
+                edgeID =  graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
+                console.warn("Model Loader: ID '" + edgeAttr.id + "' already defined.");
+            } else {
+                edgeID = graphID + "-" + edgeAttr.id;
+            }
+        }
+
         const startID = edgeAttr.source;
         const endID = edgeAttr.target;
-
-        if ((this.edgesMapProgram)[edgeID]) {
-            throw new Error("ID '" + edgeAttr.id + "' already defined.");
-        }
 
         if (startID == undefined) {
             throw new Error("Edge '" + edgeID + "': source node not defined.");
@@ -213,13 +227,20 @@ export class ModelLoaderXML {
     }
 
     private loadUserEdge(graphID: string, edgeAttr: { [key: string]: string }): void {
-        const edgeID = graphID + "-" + edgeAttr.id;
+        let edgeID;
+        if (!edgeAttr.id) {
+            edgeID = graphID + "-edge-undef-" + this.idUndefined;
+            this.idUndefined++;
+        } else {
+            if ((this.edgesMapUser)[edgeAttr.id]) {
+                edgeID =  graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapUser).length;
+                console.warn("Model Loader: ID '" + edgeAttr.id + "' already defined.");
+            } else {
+                edgeID = graphID + "-" + edgeAttr.id;
+            }
+        }
         const startID = edgeAttr.source;
         const endID = edgeAttr.target;
-
-        if ((this.edgesMapUser)[edgeID]) {
-            throw new Error("ID '" + edgeAttr.id + "' already defined.");
-        }
 
         if (startID == undefined) {
             throw new Error("Edge '" + edgeID + "': source node not defined.");

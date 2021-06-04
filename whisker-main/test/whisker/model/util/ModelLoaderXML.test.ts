@@ -22,7 +22,7 @@ describe('ModelLoaderXML', () => {
         const loader = new ModelLoaderXML();
         expect(function () {
             loader.loadModels(text)
-        }).toThrow();
+        }).not.toThrow();
     });
 
     test('Duplicated node id', () => {
@@ -38,7 +38,7 @@ describe('ModelLoaderXML', () => {
         const loader = new ModelLoaderXML();
         expect(function () {
             loader.loadModels(text)
-        }).toThrow();
+        }).not.toThrow();
     });
 
     test('No condition on edge.', () => {
@@ -95,5 +95,21 @@ describe('ModelLoaderXML', () => {
         expect(function () {
             loader.loadModels(text)
         }).toThrow();
+    });
+
+    test('No node id', () => {
+        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-node-id.xml', 'utf8');
+        const loader = new ModelLoaderXML();
+        expect(function () {
+            loader.loadModels(text)
+        }).toThrow();
+    });
+
+    test('No edge id.', () => {
+        const text = readFileSync('test/whisker/model/util/SimpleGraph-noterror-no-edge-id.xml', 'utf8');
+        const loader = new ModelLoaderXML();
+        expect(function () {
+            loader.loadModels(text)
+        }).not.toThrow();
     });
 });
