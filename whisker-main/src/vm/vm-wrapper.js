@@ -168,8 +168,8 @@ class VMWrapper {
         }
 
         condition = condition || (() => false);
-        timeout = timeout || Infinity;
-        steps = steps || Infinity;
+        timeout = timeout === undefined ? Infinity : timeout;
+        steps = steps === undefined ? Infinity : steps;
 
         this.running = true;
         this.runStartTime = Date.now();
@@ -198,15 +198,15 @@ class VMWrapper {
         }
 
         this.running = false;
-        const timeElapsed = this.getRunTimeElapsed();
+        const stepsExecuted = this.getRunStepsExecuted();
 
-        this.inputs.updateInputs(timeElapsed);
+        this.inputs.updateInputs(stepsExecuted);
 
         if (constraintError && this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL) {
             throw constraintError;
         }
 
-        return timeElapsed;
+        return stepsExecuted;
     }
 
     /**
@@ -419,6 +419,16 @@ class VMWrapper {
             width,
             height
         };
+    }
+
+    /**
+     * Converts the unit of time into the unit of steps
+     * @param {number} timeDuration .
+     * @return {number} .
+     */
+    convertFromTimeToSteps(timeDuration){
+        const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
+        return Math.ceil(timeDuration / stepDuration);
     }
 
     /**

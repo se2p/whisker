@@ -1,12 +1,11 @@
 import VMWrapper = require("../../vm/vm-wrapper.js");
 import {List} from "../utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
-import {ScratchEvent} from "../testcase/ScratchEvent";
+import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {EventObserver} from "../testcase/EventObserver";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
 import {seedScratch} from "../../util/random"
-import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NetworkChromosome} from "./NetworkChromosome";
@@ -14,6 +13,8 @@ import {MouseMoveEvent} from "../testcase/events/MouseMoveEvent";
 import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
+import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 
@@ -60,6 +61,11 @@ export class NetworkExecutor {
     private _random: Randomness;
 
     /**
+     * Extractor to determine possible events
+     */
+    private _eventExtractor: ScratchEventExtractor;
+
+    /**
      * Constructs a new NetworkExecutor object.
      * @param vmWrapper the wrapper of the Scratch-VM.
      * @param timeout timeout after which each playthrough is halted.
@@ -69,6 +75,7 @@ export class NetworkExecutor {
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
         this._random = Randomness.getInstance();
+        this._eventExtractor = new StaticScratchEventExtractor(this._vm);
         this.recordInitialState();
     }
 
@@ -76,6 +83,7 @@ export class NetworkExecutor {
      * Lets a neural network play the given Scratch game.
      * @param network the network which should play the given game.
      */
+    //TODO: Adjust to the new event model -> Use RegressionNodes to determine Parameters;
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         let workingNetwork = false;
@@ -112,7 +120,7 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
+            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
@@ -152,23 +160,23 @@ export class NetworkExecutor {
             // Update the VM with the given event. No args given since only MouseMove events take params currently.
             events.add([nextEvent, []]);
             this.notify(nextEvent, []);
-            await nextEvent.apply(this._vm, [])
+            await nextEvent.apply()
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // If we have a regression Node evaluate it.
             if (network.hasRegression) {
                 const mouseCoords = NetworkExecutor.getMouseCoordinates(network);
-                const mouseMoveEvent = new MouseMoveEvent();
+                const mouseMoveEvent = new MouseMoveEvent(0,0);
                 events.add([mouseMoveEvent, mouseCoords]);
                 this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply(this._vm, mouseCoords)
+                await mouseMoveEvent.apply()
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
             // Add a waitEvent in the end of each round.
-            const waitEvent = new WaitEvent();
+            const waitEvent = new WaitEvent(1);
             events.add([waitEvent, []])
-            await waitEvent.apply(this._vm);
+            await waitEvent.apply();
             timer = Date.now();
         }
 
@@ -196,6 +204,7 @@ export class NetworkExecutor {
      * Plays a Scratch-Game by choosing an event randomly in each iteration
      * @param network the network to evaluate
      */
+    //TODO: Adjust to the new event model -> Use RegressionNodes to determine Parameters;
     async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         const codons = new List<number>()
@@ -212,7 +221,7 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
-            this.availableEvents = ScratchEventExtractor.extractEvents(this._vmWrapper.vm)
+            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 continue;
@@ -224,23 +233,23 @@ export class NetworkExecutor {
             const nextEvent: ScratchEvent = this.availableEvents.get(randomIndex)
             events.add([nextEvent, []]);
             this.notify(nextEvent, []);
-            await nextEvent.apply(this._vm, [])
+            await nextEvent.apply()
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // If we have a regression Node randomise this output as-well
             if (network.hasRegression) {
                 const mouseCoords = [this._random.nextInt(-240, 240), this._random.nextInt(-180, 180)]
-                const mouseMoveEvent = new MouseMoveEvent();
+                const mouseMoveEvent = new MouseMoveEvent(0,0);
                 events.add([mouseMoveEvent, mouseCoords]);
                 this.notify(mouseMoveEvent, mouseCoords);
-                await mouseMoveEvent.apply(this._vm, mouseCoords)
+                await mouseMoveEvent.apply()
                 StatisticsCollector.getInstance().incrementEventsCount();
             }
 
             // Add a wait event in the end of each iteration.
-            const waitEvent = new WaitEvent();
+            const waitEvent = new WaitEvent(1);
             events.add([waitEvent, []])
-            await waitEvent.apply(this._vm);
+            await waitEvent.apply();
             timer = Date.now();
         }
 

@@ -1,6 +1,7 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 30000 : 20000;
+const timeout = process.env.SLOWMO ? 80000 : 70000;
+const ACCELERATION = 3;
 
 async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
@@ -68,7 +69,7 @@ beforeEach(async() => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtest.json");
+    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtestMOSA.json");
 });
 
 
@@ -185,8 +186,35 @@ describe('Basic event handling', () => {
         await expect(coverage).toBe("1.00");
     }, timeout);
 
+    test('Test moving mouse to sprite', async () => {
+        await loadProject('test/integration/touchingMousePointer/TouchingMousePointerTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test moving mouse to and from', async () => {
+        await loadProject('test/integration/mouseMoveDistance/MouseMoveDistanceTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
     test('Test wait', async () => {
         await loadProject('test/integration/waitEvent/WaitEventTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test Draw with PenBlock', async () => {
+        await loadProject('test/integration/penBlock/Draw.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
@@ -222,27 +250,5 @@ describe('Multiple event handling', () => {
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
         await expect(coverage).toBe("1.00");
-    }, timeout);
-});
-
-describe('Fitness tests',  ()=>{
-    test('Test touching color branch distance', async () => {
-        await loadProject('test/integration/branchDistance/TouchingColorDistance.sb3')
-        await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
-        let log = await readFitnessLog();
-        let longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;
-        let shorterDistanceBranchDistance = log.uncoveredBlocks[1].BranchDistance;
-        await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
-    }, timeout);
-
-    test('Test CFG distance', async () => {
-        await loadProject('test/integration/cfgDistance/MoveWithConditions.sb3')
-        await (await page.$('#run-search')).click();
-        await waitForSearchCompletion();
-        let log = await readFitnessLog();
-        let cfg1 = log.uncoveredBlocks[0].CFGDistance;
-        let cfg2 = log.uncoveredBlocks[1].CFGDistance;
-        await expect(cfg1).toBe(1) && expect(cfg2).toBe(2);
     }, timeout);
 });

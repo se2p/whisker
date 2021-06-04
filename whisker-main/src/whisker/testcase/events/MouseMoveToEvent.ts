@@ -18,42 +18,51 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class KeyDownEvent implements ScratchEvent {
+export class MouseMoveToEvent extends ScratchEvent {
 
-    private readonly _keyOption: string;
-    private readonly _value: boolean;
 
-    constructor(keyOption: string, value: boolean) {
-        this._keyOption = keyOption;
-        this._value = value;
+    private readonly x: number;
+    private readonly y: number;
+
+    constructor(x: number, y: number) {
+        super();
+        this.x = x;
+        this.y = y;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
-            device: 'keyboard',
-            key: this._keyOption,
-            isDown: this._value
+            device: 'mouse',
+            x: Math.trunc(this.x),
+            y: Math.trunc(this.y)
         });
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
-    device: 'keyboard',
-    key: '${this._keyOption}',
-    isDown: ${this._value}
-});`;
+    device: 'mouse',
+    x: ${Math.trunc(this.x)},
+    y: ${Math.trunc(this.y)}
+});`
     }
 
-    public toString(args: number[]): string {
-        return "KeyDown " + this._keyOption+": "+this._value;
+    public toString(): string {
+        return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 
     getNumParameters(): number {
         return 0;
+    }
+
+    getParameter(): number[] {
+        return [this.x, this.y];
+    }
+
+    setParameter(): void {
+        return;
     }
 }

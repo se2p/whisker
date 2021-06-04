@@ -18,33 +18,34 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class ClickStageEvent implements ScratchEvent {
+export class ClickStageEvent extends ScratchEvent {
 
-    private readonly _target: string;
-
-    constructor(target: string) {
-        this._target = target;
-    }
-
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         // TODO: Is there a better solution than simply activating the hats?
         // TODO: Find an empty spot to click on to click the stage?
         Container.testDriver.clickStage();
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return 't.clickStage()';
     }
 
-    public toString(args: number[]): string {
+    public toString(): string {
         return "ClickStage"
     }
 
     getNumParameters(): number {
         return 0;
+    }
+
+    setParameter(): void {
+        return;
+    }
+
+    getParameter(): [] {
+        return [];
     }
 }

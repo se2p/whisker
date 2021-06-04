@@ -6,6 +6,7 @@
     "chromosome-length": 30,
     "minVarChromosomeLength": 2,
     "maxVarChromosomeLength": 30,
+    "extractor": "dynamic",
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
@@ -13,19 +14,10 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
-        "removeProb": 0.3,
-        "changeProb": 0.7,
-        "gaussianMutationPower": 5,
-        "insertProb": 0.3,
-        "alpha": 0.5,
-        "maxMutationCountStart": null,
-        "maxMutationCountFocusedPhase": null
+        "gaussianMutationPower": 5
     },
     "selection": {
-        "operator": "rank",
-        "size": 2,
-        "randomSelectionProbabilityStart": null,
-        "randomSelectionProbabilityFocusedPhase": null
+        "operator": "rank"
     },
     "fitness-function": {
         "type": "statement",
@@ -47,13 +39,11 @@
         "maxArchiveSizeStart": null,
         "maxArchiveSizeFocusedPhase": null
     },
-    "startOfFocusedPhase": null,
     "integerRange": {
         "min": 0,
         "max": 480
     },
-    "wait-duration": 50,
-    "waitDurationAfterExecution": 250,
-    "click-duration": 20,
-    "press-duration": 20
+    "waitStepUpperBound": 100,
+    "click-duration": 3,
+    "pressDurationUpperBound": 50
 }

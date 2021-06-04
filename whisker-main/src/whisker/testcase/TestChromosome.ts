@@ -39,7 +39,7 @@ export class TestChromosome extends IntegerListChromosome {
     }
 
     async evaluate(): Promise<void> {
-        const executor = new TestExecutor(Container.vmWrapper);
+        const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor());
         await executor.execute(this);
         assert (this.trace != null);
     }
@@ -84,7 +84,7 @@ export class TestChromosome extends IntegerListChromosome {
         assert (this._trace != null);
         let text = "";
         for (const [scratchEvent, args] of this._trace.events) {
-            text += scratchEvent.toString(args) + "\n";
+            text += scratchEvent.toString() + "\n";
         }
 
         return text;

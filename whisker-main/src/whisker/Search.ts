@@ -31,14 +31,14 @@ import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
 import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
-import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {ExecutionTrace} from "./testcase/ExecutionTrace";
-import {ScratchEvent} from "./testcase/ScratchEvent";
+import {ScratchEvent} from "./testcase/events/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
 import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "./search/stoppingconditions/OneOfStoppingCondition";
+import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 
 export class Search {
 
@@ -153,8 +153,6 @@ export class Search {
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
-        ScratchEventExtractor.extractAvailableTextSnippets(this.vm);
-        ScratchEventExtractor.extractAvailableDurations(this.vm);
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }

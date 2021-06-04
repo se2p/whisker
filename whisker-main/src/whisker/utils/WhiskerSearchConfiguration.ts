@@ -34,7 +34,7 @@ import {NetworkChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGen
 import {NeatMutation} from "../whiskerNet/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/NeatCrossover";
 import {Container} from "./Container";
-import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
 import {NeuroevolutionProperties} from "../whiskerNet/NeuroevolutionProperties";
 import {StatementNetworkFitness} from "../whiskerNet/NetworkFitness/StatementNetworkFitness";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
@@ -45,6 +45,10 @@ import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetwo
 import {InputExtraction} from "../whiskerNet/InputExtraction";
 import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
 import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/FitnessEvaluationStoppingCondition";
+import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
+import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
+import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor";
+import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
 
 class ConfigException implements Error {
     message: string;
@@ -193,9 +197,7 @@ export class WhiskerSearchConfiguration {
                 return new BitflipMutation();
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome-length'], this.dict['mutation']['removeProb'],
-                    this.dict['mutation']['changeProb'], this.dict['mutation']['gaussianMutationPower'],
-                    this.dict['mutation']['insertProb'], this.dict['mutation']['alpha']);
+                    this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(
                     this.dict['mutation']['mutationAddConnection'] as number,
@@ -236,6 +238,20 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getEventExtractor(): ScratchEventExtractor {
+        switch (this.dict['extractor']) {
+            case 'naive':
+                return new NaiveScratchEventExtractor(Container.vm);
+            case 'wait':
+                return new JustWaitScratchEventExtractor(Container.vm);
+            case 'static':
+                return new StaticScratchEventExtractor(Container.vm);
+            case 'dynamic':
+            default:
+                return new DynamicScratchEventExtractor(Container.vm);
+        }
+    }
+
     public getChromosomeGenerator(): ChromosomeGenerator<any> {
         switch (this.dict['chromosome']) {
             case 'bitstring':
@@ -252,16 +268,20 @@ export class WhiskerSearchConfiguration {
                     this._getCrossoverOperator(),
                     this.dict['minVarChromosomeLength'],
                     this.dict['maxVarChromosomeLength']);
-            case 'sparseNetwork':
+            case 'sparseNetwork': {
+                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    ScratchEventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
-                    ScratchEventExtractor.hasMouseEvent(Container.vm))
-            case 'fullyConnectedNetwork':
+                    eventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
+                    eventExtractor.hasMouseEvent(Container.vm));
+            }
+            case 'fullyConnectedNetwork': {
+                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this._getMutationOperator(), this._getCrossoverOperator(),
                     InputExtraction.extractSpriteInfo(Container.vm),
-                    ScratchEventExtractor.extractEvents(Container.vm).size(),
-                    ScratchEventExtractor.hasMouseEvent(Container.vm))
+                    eventExtractor.extractEvents(Container.vm).size(),
+                    eventExtractor.hasMouseEvent(Container.vm));
+            }
             case 'test':
             default:
                 return new TestChromosomeGenerator(this.getSearchAlgorithmProperties(),
@@ -359,19 +379,19 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getWaitDurationAfterExecution(): number {
-        if ("waitDurationAfterExecution" in this.dict) {
-            return this.dict["waitDurationAfterExecution"]
+    public getWaitStepUpperBound(): number {
+        if ("waitStepUpperBound" in this.dict) {
+            return this.dict["waitStepUpperBound"]
         } else {
-            return 250;
+            return 200;
         }
     }
 
-    public getPressDuration(): number {
-        if ("press-duration" in this.dict) {
-            return this.dict["press-duration"]
+    public getPressDurationUpperBound(): number {
+        if ("pressDurationUpperBound" in this.dict) {
+            return this.dict["pressDurationUpperBound"]
         } else {
-            return 10;
+            return 50;
         }
     }
 

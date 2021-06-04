@@ -18,26 +18,26 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "../ScratchEvent";
+import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 
-export class MouseDownEvent implements ScratchEvent {
+export class MouseDownEvent extends ScratchEvent {
 
     private readonly _value: boolean;
 
     constructor(value: boolean) {
+        super();
         this._value = value;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'mouse',
             isDown: this._value
         });
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'mouse',
@@ -45,11 +45,20 @@ export class MouseDownEvent implements ScratchEvent {
 });`;
     }
 
-    public toString = (args: number[]) : string => {
+    public toString = () : string => {
         return "MouseDown " + this._value;
     }
 
     getNumParameters(): number {
         return 0;
+    }
+
+    getParameter(): number[] {
+        // 0 returns False in JS/TS
+        return [this._value ? 1 : 0];
+    }
+
+    setParameter(): void {
+        return;
     }
 }

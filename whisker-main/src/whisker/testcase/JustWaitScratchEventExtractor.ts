@@ -18,15 +18,22 @@
  *
  */
 
+import {List} from '../utils/List';
+
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import {ScratchEvent} from "./events/ScratchEvent";
+import {WaitEvent} from "./events/WaitEvent";
+import {ScratchEventExtractor} from "./ScratchEventExtractor";
 
-export interface ScratchEvent {
+export class JustWaitScratchEventExtractor extends ScratchEventExtractor {
 
-    apply(vm: VirtualMachine, args: number[]) : Promise<void>;
+    constructor (vm: VirtualMachine) {
+        super(vm);
+    }
 
-    toJavaScript(args: number[]) : string;
-
-    toString(args: number[]) : string;
-
-    getNumParameters(): number;
+    public extractEvents(vm: VirtualMachine): List<ScratchEvent> {
+        const eventList = new List<ScratchEvent>();
+        eventList.add(new WaitEvent());
+        return eventList;
+    }
 }
