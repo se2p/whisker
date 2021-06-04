@@ -155,31 +155,6 @@ describe('Test NetworkChromosome', () => {
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
     })
 
-    test("Test add inputNode with new Sprite", () => {
-        const sprite3 = new Map<string, number>();
-        sprite3.set("X-Position", 10);
-        sprite3.set("Y-Position", 11);
-        genInputs.set("Sprite3", sprite3);
-        chromosome.updateInputNodes(genInputs);
-        expect(chromosome.inputNodes.get("Sprite1").size).toEqual(5);
-        expect(chromosome.inputNodes.get("Sprite2").size).toEqual(4);
-        expect(chromosome.inputNodes.get("Sprite3").size).toEqual(2);
-    })
-
-    test("Test add inputNode with new feature of existing sprite", () => {
-        const sprite2 = new Map<string, number>();
-        sprite2.set("X-Position", 6);
-        sprite2.set("Y-Position", 7);
-        sprite2.set("DistanceToWhite-X", 8);
-        sprite2.set("DistanceToWhite-Y", 9);
-        sprite2.set("Costume", 1);
-        genInputs.set("Sprite2", sprite2);
-        chromosome.updateInputNodes(genInputs);
-        expect(chromosome.inputNodes.get("Sprite1").size).toEqual(5);
-        expect(chromosome.inputNodes.get("Sprite2").size).toEqual(5);
-        expect(chromosome.inputNodes.has("Sprite3")).toBeFalsy();
-    })
-
     test('Test generateNetwork with hidden Layer', () => {
         const inputNode = chromosome.inputNodes.get("Sprite1").get("X-Position");
         const outputNode = chromosome.outputNodes.get(0);
