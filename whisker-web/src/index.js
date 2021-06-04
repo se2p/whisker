@@ -40,7 +40,6 @@ const initialParams = new URLSearchParams(window.location.search); // This is on
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 const loadModelFromString = function (models) {
-    console.log("load new model")
     try {
         Whisker.modelTester.load(models);
     } catch (err) {
@@ -52,10 +51,8 @@ const loadModelFromString = function (models) {
     }
 
     if (Whisker.modelTester.userModelsLoaded()) {
-        console.log("user models loaded")
         $('#model-user-loaded').text(i18next.t("model-output-user-model"));
     } else {
-        console.log("no user models")
         $('#model-user-loaded').text(i18next.t("model-output-no-user-model"));
     }
 }

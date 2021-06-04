@@ -1,6 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import Util from "../../../vm/util";
 import {UserModelEdge} from "./ModelEdge";
+import {ModelUtil} from "../util/ModelUtil";
 
 /**
  * Evaluate and set up the input effect of the given edge string.
@@ -104,16 +105,19 @@ export class InputEffect {
             case 'key':
                 return InputEffect.getKeyDataObject(t, arg);
             case 'mouse':
+                ModelUtil.checkSpriteExistence(t, arg[1]);
                 return (t: TestDriver) => {
-                    t.inputImmediate({device: type, sprite: arg[0]});
+                    console.log("input mouse", arg);
+                    t.inputImmediate({device: type, sprite: arg[1]});
                 }; // todo how does this look like?
             case 'text':
                 return (t: TestDriver) => {
-                    t.inputImmediate({device: type, answer: arg[0]});
-                }// todo how does this look like?
+                    t.inputImmediate({device: type, answer: arg[1]});
+                }
             case 'drag':
                 return (t: TestDriver) => {
-                    t.inputImmediate({device: type, x: arg[0], y: arg[1]});
+                    console.log("drag ", arg);
+                    t.inputImmediate({device: type, x: arg[1], y: arg[2]});
                 }// todo how does this look like?
             default:
                 throw new Error(`Invalid device for input ${type}`);

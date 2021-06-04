@@ -1,18 +1,18 @@
 import Sprite from "../../../vm/sprite";
 import TestDriver from "../../../test/test-driver";
 import {
+    geExprEvalError,
     getAttributeNotFoundError,
     getChangeComparisonNotKnownError,
     getComparisonNotKnownError,
     getEmptyExpressionError,
     getExpressionEndTagMissingError,
     getExpressionEnterError,
-    getFunctionEvalError,
     getNotNumericalValueError,
     getSpriteNotFoundError
 } from "./ModelError";
 
-export abstract class Util {
+export abstract class ModelUtil {
 
     /**
      * Check the existence of a sprite.
@@ -33,7 +33,7 @@ export abstract class Util {
      */
     static checkAttributeExistence(testDriver: TestDriver, spriteName: string, attrName: string) {
         try {
-            let sprite = Util.checkSpriteExistence(testDriver, spriteName);
+            let sprite = ModelUtil.checkSpriteExistence(testDriver, spriteName);
             eval("sprite." + attrName);
         } catch (e) {
             throw getAttributeNotFoundError(attrName, spriteName);
@@ -153,11 +153,18 @@ export abstract class Util {
      * @param toEval Expression to evaluate and make into a function.
      */
     static getExpressionForEval(t: TestDriver, toEval: string) : string {
+        // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
         if (toEval.indexOf((this.EXPR_START)) == -1) {
+            if (!toEval.startsWith("'")) {
+                toEval = "'" + toEval + "'";
+            } else if (!toEval.endsWith("'")) {
+                toEval = toEval + "'";
+            }
+
             try {
                 eval(toEval);
             } catch (e) {
-                throw getFunctionEvalError(e);
+                throw geExprEvalError(e);
             }
             return "(t) => {return " + toEval + "}";
         }

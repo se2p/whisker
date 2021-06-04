@@ -15,7 +15,9 @@ export enum CheckName {
     SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
     VarChange = "VarChange", // sprite name, var name, ( + | - | = )
     VarComp = "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
-    Expr = "Expr" // evaluate an expression, args: expression
+    Expr = "Expr", // evaluate an expression, args: expression
+    Probability = "Probability" // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks
+    // rand<=prob)
 }
 
 /**
@@ -66,6 +68,7 @@ export abstract class Check {
             case CheckName.Function:
             case CheckName.Key:
             case CheckName.Click:
+            case CheckName.Probability:
             case CheckName.Expr:
                 _testArgs(1);
                 break;
@@ -123,6 +126,8 @@ export abstract class Check {
                 return CheckGenerator.getSpriteClickedCheck(t, this._negated, this._args[0]);
             case CheckName.Expr:
                 return CheckGenerator.getExpressionCheck(t, this._negated, this._args[0]);
+            case CheckName.Probability:
+                return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             default:
                 return undefined;
         }

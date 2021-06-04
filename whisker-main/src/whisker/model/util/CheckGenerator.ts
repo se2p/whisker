@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
-import {Util} from "./Util";
+import {ModelUtil} from "./ModelUtil";
 import Sprite from "../../../vm/sprite";
 import {
     getComparisonNotKnownError,
@@ -53,7 +53,7 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      */
     static getSpriteClickedCheck(t: TestDriver, negated: boolean, spriteName: string): () => boolean {
-        Util.checkSpriteExistence(t, spriteName);
+        ModelUtil.checkSpriteExistence(t, spriteName);
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             if (t.isMouseDown() && sprite.isTouchingMouse()) {
@@ -75,7 +75,7 @@ export abstract class CheckGenerator {
      */
     static getVariableComparisonCheck(t: TestDriver, negated: boolean, spriteName: string, varName: string,
                                       comparison: string, varValue: string): () => boolean {
-        let sprite = Util.checkSpriteExistence(t, spriteName);
+        let sprite = ModelUtil.checkSpriteExistence(t, spriteName);
         let variable = sprite.getVariable(varName);
 
         if (variable == undefined) {
@@ -91,7 +91,7 @@ export abstract class CheckGenerator {
 
             let result;
             try {
-                result = Util.compare(variable.value, varValue, comparison);
+                result = ModelUtil.compare(variable.value, varValue, comparison);
             } catch (e) {
                 throw getErrorForVariable(spriteName, varName, e.message);
             }
@@ -115,7 +115,7 @@ export abstract class CheckGenerator {
      */
     static getAttributeComparisonCheck(t: TestDriver, negated: boolean, spriteName: string, attrName: string,
                                        comparison: string, varValue: string): () => boolean {
-        Util.checkAttributeExistence(t, spriteName, attrName);
+        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
             throw getComparisonNotKnownError(comparison);
@@ -127,7 +127,7 @@ export abstract class CheckGenerator {
 
             let result;
             try {
-                result = Util.compare(value, oldValue, comparison);
+                result = ModelUtil.compare(value, oldValue, comparison);
             } catch (e) {
                 throw getErrorForAttribute(spriteName, attrName, e.message);
             }
@@ -145,7 +145,7 @@ export abstract class CheckGenerator {
      * @param negated Whether it should be negated.
      * @param f the function as a string.
      */
-    static getFunctionCheck(t: TestDriver, negated: boolean, f): () => boolean {
+    static getFunctionCheck(t: TestDriver, negated: boolean, f: string): () => boolean {
         try {
             eval(f);
         } catch (e) {
@@ -170,8 +170,8 @@ export abstract class CheckGenerator {
      */
     static getSpriteTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName1: string,
                                   spriteName2: string): () => boolean {
-        Util.checkSpriteExistence(t, spriteName1);
-        Util.checkSpriteExistence(t, spriteName2);
+        ModelUtil.checkSpriteExistence(t, spriteName1);
+        ModelUtil.checkSpriteExistence(t, spriteName2);
         cu.registerTouching(spriteName1, spriteName2);
         return () => {
             const areTouching = cu.areTouching(spriteName1, spriteName2);
@@ -195,7 +195,7 @@ export abstract class CheckGenerator {
      */
     static getSpriteColorTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName: string,
                                        r: number, g: number, b: number): () => boolean {
-        Util.checkSpriteExistence(t, spriteName);
+        ModelUtil.checkSpriteExistence(t, spriteName);
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw getRGBRangeError();
         }
@@ -217,8 +217,8 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      */
     static getOutputOnSpriteCheck(t: TestDriver, negated: boolean, spriteName: string, output: string): () => boolean {
-        Util.checkSpriteExistence(t, spriteName);
-        let expression = Util.getExpressionForEval(t, output);
+        ModelUtil.checkSpriteExistence(t, spriteName);
+        let expression = ModelUtil.getExpressionForEval(t, output);
 
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
@@ -240,18 +240,18 @@ export abstract class CheckGenerator {
      */
     static getVariableChangeCheck(t: TestDriver, negated: boolean, spriteName: string, varName: string, change: string):
         () => boolean {
-        const sprite = Util.checkSpriteExistence(t, spriteName);
+        const sprite = ModelUtil.checkSpriteExistence(t, spriteName);
         const variable = sprite.getVariable(varName);
         if (variable == undefined) {
             throw getVariableNotFoundError(varName, spriteName);
         }
         return () => {
-            const sprite = Util.checkSpriteExistence(t, spriteName);
+            const sprite = ModelUtil.checkSpriteExistence(t, spriteName);
             const variable = sprite.getVariable(varName);
             let result;
 
             try {
-                result = Util.testChange(variable.old.value, variable.value, change);
+                result = ModelUtil.testChange(variable.old.value, variable.value, change);
             } catch (e) {
                 throw getErrorForVariable(spriteName, varName, e.message);
             }
@@ -275,7 +275,7 @@ export abstract class CheckGenerator {
      */
     static getAttributeChangeCheck(t: TestDriver, negated: boolean, spriteName: string, attrName: string, change: string):
         () => boolean {
-        Util.checkAttributeExistence(t, spriteName, attrName);
+        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
         const currentValueEval = "sprite." + attrName;
         const oldValueEval = "sprite.old." + attrName;
 
@@ -290,7 +290,7 @@ export abstract class CheckGenerator {
 
             let result;
             try {
-                result = Util.testChange(oldValue, newValue, change);
+                result = ModelUtil.testChange(oldValue, newValue, change);
             } catch (e) {
                 throw getErrorForAttribute(spriteName, attrName, e.message);
             }
@@ -333,9 +333,27 @@ export abstract class CheckGenerator {
      * @param expression The expression string.
      */
     static getExpressionCheck(t: TestDriver, negated: boolean, expression: string) {
-        let toEval = Util.getExpressionForEval(t, expression);
+        let toEval = ModelUtil.getExpressionForEval(t, expression);
         return () => {
             if (eval(toEval)(t)) {
+                return !negated;
+            }
+            return negated;
+        }
+    }
+
+    /**
+     * Get a method that checks whether a random number is greater than the probability given. For randomness...
+     * @param t Instance of the test driver.
+     * @param negated Whether this check is negated.
+     * @param probability The probability e.g. 0.5.
+     */
+    static getProbabilityCheck(t: TestDriver, negated: boolean, probability: string) {
+        ModelUtil.testNumber(probability);
+        let prob = Number(probability.toString());
+
+        return () => {
+            if (Math.random() <= prob) {
                 return !negated;
             }
             return negated;

@@ -46,6 +46,10 @@ function getFunctionEvalError(error: Error) {
     return new Error("Function cannot be evaluated:\n" + error.message);
 }
 
+function geExprEvalError(error: Error) {
+    return new Error("Expression cannot be evaluated:\n" + error.message);
+}
+
 function getExpressionEndTagMissingError() {
     return new Error("Sprite/variable expression missing closing tag ')'");
 }
@@ -86,6 +90,7 @@ export {
     getVariableNotFoundError,
     getAttributeNotFoundError,
     getSpriteNotFoundError,
+    geExprEvalError,
     getComparisonNotKnownError,
     getFunctionEvalError,
     getEmptyExpressionError,
