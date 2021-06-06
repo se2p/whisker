@@ -13,6 +13,11 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     private readonly player: RenderedTarget;
 
     /**
+     * The starting position of the player.
+     */
+    private readonly playerStart: { x: number, y: number };
+
+    /**
      * The target which has to be reached by the player sprite.
      * The target can be a color in hex representation or a name of a Sprite.
      */
@@ -40,6 +45,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         if (!this.player) {
             throw new Error("Player Sprite not found. Please check your config file.");
         }
+        this.playerStart = {x: this.player.x, y: this.player.y}
         this.target = target;
         this.travelDistanceWeight = travelDistanceWeight;
     }
@@ -51,9 +57,8 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      */
     async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        const playerStart = {x: this.player.x, y: this.player.y}
         await executor.execute(network);
-        const fitness = this.getTargetDistanceFitness(network, playerStart);
+        const fitness = this.getTargetDistanceFitness(network);
         executor.resetState();
         network.networkFitness = fitness;
         return fitness;
@@ -66,9 +71,8 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      */
     async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        const playerStart = {x: this.player.x, y: this.player.y}
         await executor.executeRandom(network);
-        const fitness = this.getTargetDistanceFitness(network, playerStart);
+        const fitness = this.getTargetDistanceFitness(network);
         executor.resetState();
         network.networkFitness = fitness;
         return fitness;
@@ -78,8 +82,8 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      * Used for CombinedNetworkFitness.
      * Value is calculated within CombinedNetworkFitness, hence returns 0.0
      */
-    getFitnessWithoutPlaying(): number {
-        return 0.0;
+    getFitnessWithoutPlaying(network: NetworkChromosome): number {
+        return this.getTargetDistanceFitness(network);
     }
 
     /**
@@ -94,10 +98,9 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     /**
      * Calculates the distance from the player to the target including the player's travel distance.
      * @param network the network used for gathering the final position of the player
-     * @param playerStart the starting position of the player
      * @return Returns the targetFitness value
      */
-    private getTargetDistanceFitness(network: NetworkChromosome, playerStart: { x: number, y: number }): number {
+    private getTargetDistanceFitness(network: NetworkChromosome): number {
         // We want to maximize fitness, hence subtract the distance from the maximum stage distance of 600.
         let fitnessDistance = 600.01 - this.extractDistanceToTarget(network.trace.blockTraces);
         // Reward the player according to the distances travelled. This might help overcoming local optima.
@@ -107,7 +110,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
             y: network.inputNodes.get(this.player.sprite.name).get("Y-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().height / 2)
         }
-        fitnessDistance += this.travelDistanceWeight * TargetFitness.distanceTravelled(playerStart, playerEnd);
+        fitnessDistance += this.travelDistanceWeight * this.distanceTravelled(playerEnd);
         return fitnessDistance
     }
 
@@ -153,11 +156,11 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     /**
      * Calculates the travel distance of the player. The travel distance influences the final fitness value based on
      * a predefined weight. The travel distance can be used to overcome local optima.
-     * @param playerStart the starting position of the player.
      * @param playerEnd the final position of the player after executing the project.
      * @return Returns the travelled distance of the player.
      */
-    private static distanceTravelled(playerStart: { x: number, y: number }, playerEnd: { x: number, y: number }) {
-        return Math.sqrt(Math.pow(playerStart.x - playerEnd.x, 2) + Math.pow(playerStart.y - playerEnd.y, 2));
+    private distanceTravelled(playerEnd: { x: number, y: number }) {
+        return Math.sqrt(Math.pow(this.playerStart.x - playerEnd.x, 2) +
+            Math.pow(this.playerStart.y - playerEnd.y, 2));
     }
 }
