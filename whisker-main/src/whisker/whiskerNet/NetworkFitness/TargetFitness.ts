@@ -54,7 +54,6 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         const playerStart = {x: this.player.x, y: this.player.y}
         await executor.execute(network);
         const fitness = this.getTargetDistanceFitness(network, playerStart);
-        console.log("Fitness: ", fitness)
         executor.resetState();
         network.networkFitness = fitness;
         return fitness;
@@ -108,7 +107,6 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
             y: network.inputNodes.get(this.player.sprite.name).get("Y-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().height / 2)
         }
-        console.log("DistanceTravelled: ", TargetFitness.distanceTravelled(playerStart, playerEnd))
         fitnessDistance += this.travelDistanceWeight * TargetFitness.distanceTravelled(playerStart, playerEnd);
         return fitnessDistance
     }
