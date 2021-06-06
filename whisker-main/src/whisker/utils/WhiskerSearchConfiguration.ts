@@ -312,7 +312,8 @@ export class WhiskerSearchConfiguration {
         else if (networkFitnessDef === 'survive')
             return new SurviveFitness();
         else if (networkFitnessDef === 'target')
-            return new TargetFitness(fitnessFunction['player'], fitnessFunction['target']);
+            return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
+                fitnessFunction['travelWeight']);
         else if (networkFitnessDef === 'combined') {
             const fitnessFunctions = fitnessFunction["functions"];
             const comb: NetworkFitnessFunction<NetworkChromosome>[] = [];
