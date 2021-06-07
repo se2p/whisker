@@ -110,7 +110,6 @@ export class WhiskerSearchConfiguration {
 
         const crossoverWithoutMutation = this.dict['crossover']['crossoverWithoutMutation'] as number
         const interspeciesMating = this.dict['crossover']['interspeciesRate'] as number
-        const weightAverageRate = this.dict['crossover']['weightAverageRate'] as number
 
         const mutationWithoutCrossover = this.dict['mutation']['mutationWithoutCrossover'] as number
         const mutationAddConnection = this.dict['mutation']['mutationAddConnection'] as number
@@ -140,7 +139,6 @@ export class WhiskerSearchConfiguration {
 
         properties.crossoverWithoutMutation = crossoverWithoutMutation;
         properties.interspeciesMating = interspeciesMating;
-        properties.crossoverAverageWeights = weightAverageRate;
 
         properties.mutationWithoutCrossover = mutationWithoutCrossover;
         properties.mutationAddConnection = mutationAddConnection;
@@ -200,17 +198,7 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
-                return new NeatMutation(
-                    this.dict['mutation']['mutationAddConnection'] as number,
-                    this.dict['mutation']['recurrentConnection'] as number,
-                    this.dict['mutation']['addConnectionTries'] as number,
-                    this.dict['mutation']['populationChampionConnectionMutation'] as number,
-                    this.dict['mutation']['mutationAddNode'] as number,
-                    this.dict['mutation']['mutateWeights'] as number,
-                    this.dict['mutation']['perturbationPower'] as number,
-                    this.dict['mutation']['mutateToggleEnableConnection'] as number,
-                    this.dict['mutation']['toggleEnableConnectionTimes'] as number,
-                    this.dict['mutation']['mutateEnableConnection'] as number)
+                return new NeatMutation(this.dict['mutation'])
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
@@ -222,7 +210,7 @@ export class WhiskerSearchConfiguration {
             case 'singlepointrelative':
                 return new SinglePointRelativeCrossover();
             case 'neatCrossover':
-                return new NeatCrossover(this.dict['crossover']['weightAverageRate'] as number);
+                return new NeatCrossover(this.dict['crossover']);
             case 'singlepoint':
             default:
                 return new SinglePointCrossover();
@@ -271,16 +259,14 @@ export class WhiskerSearchConfiguration {
                     this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork': {
                 const eventExtractor = new StaticScratchEventExtractor(Container.vm);
-                return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
-                    InputExtraction.extractSpriteInfo(Container.vm),
-                    eventExtractor.extractEvents(Container.vm),
+                return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
+                    InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm),
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
                 const eventExtractor = new StaticScratchEventExtractor(Container.vm);
-                return new NetworkChromosomeGeneratorFullyConnected(this._getMutationOperator(), this._getCrossoverOperator(),
-                    InputExtraction.extractSpriteInfo(Container.vm),
-                    eventExtractor.extractEvents(Container.vm));
+                return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
+                    InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
             default:

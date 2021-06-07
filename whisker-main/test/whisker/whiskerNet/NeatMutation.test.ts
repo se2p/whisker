@@ -20,13 +20,35 @@ describe("Test NeatMutation", () => {
 
     let networkChromosome: NetworkChromosome;
     let mutation: NeatMutation;
-    let crossOver: NeatCrossover;
+    let crossoverOp: NeatCrossover;
+    let mutationConfig: Record<string, (string | number)>
 
     beforeEach(() => {
-        crossOver = new NeatCrossover(0.4);
-        mutation = new NeatMutation(0.1, 0.1, 30,
-            0.2, 0.1, 0.8, 1.5,
-            0.1, 3, 0.1);
+        const crossoverConfig = {
+            "operator": "neatCrossover",
+            "crossoverWithoutMutation": 0.2,
+            "interspeciesRate": 0.001,
+            "weightAverageRate": 0.4
+        };
+        crossoverOp = new NeatCrossover(crossoverConfig);
+
+        mutationConfig = {
+            "operator": "neatMutation",
+            "mutationWithoutCrossover": 0.25,
+            "mutationAddConnection": 0.2,
+            "recurrentConnection": 0.1,
+            "addConnectionTries": 20,
+            "populationChampionNumberOffspring": 10,
+            "populationChampionNumberClones": 5,
+            "populationChampionConnectionMutation": 0.3,
+            "mutationAddNode": 0.1,
+            "mutateWeights": 0.6,
+            "perturbationPower": 2.5,
+            "mutateToggleEnableConnection": 0.1,
+            "toggleEnableConnectionTimes": 3,
+            "mutateEnableConnection": 0.03
+        };
+        mutation = new NeatMutation(mutationConfig);
         const genInputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -37,7 +59,7 @@ describe("Test NeatMutation", () => {
         genInputs.set("Sprite1", sprite1);
         const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
-        const networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events, 0.4);
+        const networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
         networkChromosome = networkChromosomeGenerator.get();
     })
 
@@ -98,9 +120,9 @@ describe("Test NeatMutation", () => {
         const allNodes = new List<NodeGene>();
         const iNode = new InputNode(0, "Sprite1", "X-Position");
         allNodes.add(iNode);
-        const oNode1 = new ClassificationNode(1, new WaitEvent(),ActivationFunction.SIGMOID);
+        const oNode1 = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
         allNodes.add(oNode1);
-        const oNode2 = new ClassificationNode(2, new ClickStageEvent(),ActivationFunction.SIGMOID);
+        const oNode2 = new ClassificationNode(2, new ClickStageEvent(), ActivationFunction.SIGMOID);
         allNodes.add(oNode2);
 
 
@@ -109,11 +131,8 @@ describe("Test NeatMutation", () => {
         connectionList.add(connection1);
         const connection2 = new ConnectionGene(iNode, oNode2, 2, true, 1, false);
         connectionList.add(connection2);
-
-        mutation = new NeatMutation(0.03, 1, 30,
-            0.2, 0.01, 0.8, 1.5,
-            0.1, 3, 0.1);
-        networkChromosome = new NetworkChromosome(connectionList, allNodes, mutation, crossOver);
+        mutation = new NeatMutation(mutationConfig);
+        networkChromosome = new NetworkChromosome(connectionList, allNodes, mutation, crossoverOp);
         const originalConnectionsSize = networkChromosome.connections.size();
 
         mutation.mutateAddConnection(networkChromosome, 30);

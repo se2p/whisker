@@ -27,7 +27,6 @@ describe("Test NeuroevolutionProperties", () => {
         properties.toggleEnableConnectionTimes = 3;
         properties.mutateEnableConnection = 0.01;
         properties.crossoverWithoutMutation = 0.4;
-        properties.crossoverAverageWeights = 0.4;
         properties.interspeciesMating = 0.01;
         properties.distanceThreshold = 3;
         properties.disjointCoefficient = 1;
@@ -54,7 +53,6 @@ describe("Test NeuroevolutionProperties", () => {
         expect(properties.toggleEnableConnectionTimes).toBe(3);
         expect(properties.mutateEnableConnection).toBe(0.01);
         expect(properties.crossoverWithoutMutation).toBe(0.4);
-        expect(properties.crossoverAverageWeights).toBe(0.4);
         expect(properties.interspeciesMating).toBe(0.01);
         expect(properties.distanceThreshold).toBe(3);
         expect(properties.disjointCoefficient).toBe(1);

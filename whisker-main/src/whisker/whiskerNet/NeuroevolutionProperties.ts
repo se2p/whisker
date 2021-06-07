@@ -110,11 +110,6 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _crossoverWithoutMutation: number
 
     /**
-     * Defines how to handle connection weights during Crossover
-     */
-    private _crossoverAverageWeights: number
-
-    /**
      * Defines how often organisms mate outside of their species
      */
     private _interspeciesMating: number
@@ -318,14 +313,6 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     set crossoverWithoutMutation(value: number) {
         this._crossoverWithoutMutation = value;
-    }
-
-    get crossoverAverageWeights(): number {
-        return this._crossoverAverageWeights;
-    }
-
-    set crossoverAverageWeights(value: number) {
-        this._crossoverAverageWeights = value;
     }
 
     get interspeciesMating(): number {

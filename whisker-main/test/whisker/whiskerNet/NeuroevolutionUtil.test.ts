@@ -19,7 +19,7 @@ describe("NeuroevolutionUtil Tests", () => {
 
     let population: NeatPopulation<NetworkChromosome>;
     let populationSize: number;
-    let crossOver: NeatCrossover;
+    let crossoverOp: NeatCrossover;
     let mutation: NeatMutation;
     let genInputs: Map<string, Map<string, number>>;
     let events: List<ScratchEvent>;
@@ -28,10 +28,31 @@ describe("NeuroevolutionUtil Tests", () => {
 
 
     beforeEach(() => {
-        crossOver = new NeatCrossover(0.4);
-        mutation = new NeatMutation(0.03, 0.1, 30,
-            0.2, 0.01, 0.8, 1.5,
-            0.1,3, 0.1);
+        const crossoverConfig = {
+            "operator": "neatCrossover",
+            "crossoverWithoutMutation": 0.2,
+            "interspeciesRate": 0.001,
+            "weightAverageRate": 0.4
+        };
+        crossoverOp = new NeatCrossover(crossoverConfig);
+
+        const mutationConfig = {
+            "operator": "neatMutation",
+            "mutationWithoutCrossover": 0.25,
+            "mutationAddConnection": 0.2,
+            "recurrentConnection": 0.1,
+            "addConnectionTries": 20,
+            "populationChampionNumberOffspring": 10,
+            "populationChampionNumberClones": 5,
+            "populationChampionConnectionMutation": 0.3,
+            "mutationAddNode": 0.1,
+            "mutateWeights": 0.6,
+            "perturbationPower": 2.5,
+            "mutateToggleEnableConnection": 0.1,
+            "toggleEnableConnectionTimes": 3,
+            "mutateEnableConnection": 0.03
+        };
+        mutation = new NeatMutation(mutationConfig);
         genInputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -53,7 +74,7 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
         events = new List<ScratchEvent>([new MouseMoveEvent()]);
-        generator = new NetworkChromosomeGeneratorSparse(mutation, crossOver, genInputs, events,0.4);
+        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events,0.4);
     })
 
     test("Test Speciation when a new Population gets created", () => {
@@ -120,8 +141,8 @@ describe("NeuroevolutionUtil Tests", () => {
         const connections2 = new List<ConnectionGene>();
         connections2.add(connection2);
 
-        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver);
-        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver);
+        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossoverOp);
+        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossoverOp);
 
         const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
         expect(compatDistance).toBe(1);
@@ -147,8 +168,8 @@ describe("NeuroevolutionUtil Tests", () => {
         const connections2 = new List<ConnectionGene>();
         connections2.add(connection2);
 
-        const chromosome1 = new NetworkChromosome(connections2, nodes, mutation, crossOver);
-        const chromosome2 = new NetworkChromosome(connections1, nodes, mutation, crossOver);
+        const chromosome1 = new NetworkChromosome(connections2, nodes, mutation, crossoverOp);
+        const chromosome2 = new NetworkChromosome(connections1, nodes, mutation, crossoverOp);
 
         const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
         expect(compatDistance).toBe(1)
@@ -185,8 +206,8 @@ describe("NeuroevolutionUtil Tests", () => {
         const connections2 = new List<ConnectionGene>();
         connections2.add(connection2);
 
-        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossOver);
-        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossOver);
+        const chromosome1 = new NetworkChromosome(connections1, nodes, mutation, crossoverOp);
+        const chromosome2 = new NetworkChromosome(connections2, nodes, mutation, crossoverOp);
         const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
         expect(compatDistance).toBe(0.4 * 0.5);
     })

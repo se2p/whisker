@@ -22,10 +22,31 @@ describe("Test NeatCrossover", () => {
     let nodes2: List<NodeGene>;
 
     beforeEach(() => {
-        crossoverOp = new NeatCrossover(0.4);
-        mutationOp = new NeatMutation(0.03, 0.1, 30,
-            0.2, 0.01, 0.8, 1.5,
-            0.1, 3, 0.1);
+        const crossoverConfig = {
+            "operator": "neatCrossover",
+            "crossoverWithoutMutation": 0.2,
+            "interspeciesRate": 0.001,
+            "weightAverageRate": 0.4
+        };
+        crossoverOp = new NeatCrossover(crossoverConfig);
+
+        const mutationConfig = {
+            "operator": "neatMutation",
+            "mutationWithoutCrossover": 0.25,
+            "mutationAddConnection": 0.2,
+            "recurrentConnection": 0.1,
+            "addConnectionTries": 20,
+            "populationChampionNumberOffspring": 10,
+            "populationChampionNumberClones": 5,
+            "populationChampionConnectionMutation": 0.3,
+            "mutationAddNode": 0.1,
+            "mutateWeights": 0.6,
+            "perturbationPower": 2.5,
+            "mutateToggleEnableConnection": 0.1,
+            "toggleEnableConnectionTimes": 3,
+            "mutateEnableConnection": 0.03
+        };
+        mutationOp = new NeatMutation(mutationConfig);
 
         // Create Nodes of first network
         nodes1 = new List<NodeGene>();
@@ -40,7 +61,6 @@ describe("Test NeatCrossover", () => {
         nodes1.add(oNode1);
         const hiddenNode1 = new HiddenNode(3, ActivationFunction.SIGMOID);
         nodes1.add(hiddenNode1);
-
 
         // Create Connections of first parent
         parent1Connections = new List<ConnectionGene>();
@@ -63,10 +83,8 @@ describe("Test NeatCrossover", () => {
         const oNode2 = oNode1.clone();
         nodes2.add(oNode2);
 
-
         const hiddenNode2 = hiddenNode1.clone();
         const hiddenNode3 = new HiddenNode(5, ActivationFunction.SIGMOID);
-
 
         // Create Connections of second parent
         parent2Connections = new List<ConnectionGene>();

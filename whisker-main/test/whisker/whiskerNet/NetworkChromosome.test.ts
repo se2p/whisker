@@ -25,6 +25,8 @@ import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent"
 describe('Test NetworkChromosome', () => {
 
     let mutationOp: Mutation<NetworkChromosome>;
+    let mutationConfig: Record<string, (string | number)>;
+    let crossoverConfig: Record<string, (string | number)>;
     let crossoverOp: Crossover<NetworkChromosome>;
     let genInputs: Map<string, Map<string, number>>;
     let generator: NetworkChromosomeGeneratorSparse;
@@ -32,10 +34,31 @@ describe('Test NetworkChromosome', () => {
     let properties: NeuroevolutionProperties<NetworkChromosome>;
 
     beforeEach(() => {
-        crossoverOp = new NeatCrossover(0.4);
-        mutationOp = new NeatMutation(0.03, 0.1,
-            30, 0.2, 0.01, 0.8,
-            1.5, 0.1, 3, 0.1);
+        crossoverConfig = {
+            "operator": "neatCrossover",
+            "crossoverWithoutMutation": 0.2,
+            "interspeciesRate": 0.001,
+            "weightAverageRate": 0.4
+        };
+        crossoverOp = new NeatCrossover(crossoverConfig);
+
+        mutationConfig = {
+            "operator": "neatMutation",
+            "mutationWithoutCrossover": 0.25,
+            "mutationAddConnection": 0.2,
+            "recurrentConnection": 0.1,
+            "addConnectionTries": 20,
+            "populationChampionNumberOffspring": 10,
+            "populationChampionNumberClones": 5,
+            "populationChampionConnectionMutation": 0.3,
+            "mutationAddNode": 0.1,
+            "mutateWeights": 0.6,
+            "perturbationPower": 2.5,
+            "mutateToggleEnableConnection": 0.1,
+            "toggleEnableConnectionTimes": 3,
+            "mutateEnableConnection": 0.03
+        };
+        mutationOp = new NeatMutation(mutationConfig);
 
         genInputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
@@ -54,7 +77,7 @@ describe('Test NetworkChromosome', () => {
         genInputs.set("Sprite2", sprite2);
         const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, events, 0.4)
+        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4)
         chromosome = generator.get();
         properties = new NeuroevolutionProperties<NetworkChromosome>(10)
     })
@@ -97,7 +120,7 @@ describe('Test NetworkChromosome', () => {
         chromosome.expectedOffspring = 1;
         chromosome.numberOffspringPopulationChamp = 2;
         chromosome.trace = undefined;
-        chromosome.codons = new List<number>([1,2,3]);
+        chromosome.codons = new List<number>([1, 2, 3]);
         chromosome.isRecurrent = true;
         chromosome.coverage = new Set<string>("B")
 
@@ -110,7 +133,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.expectedOffspring).toEqual(1)
         expect(chromosome.numberOffspringPopulationChamp).toEqual(2)
         expect(chromosome.trace).toEqual(undefined)
-        expect(chromosome.codons.getElements()).toEqual([1,2,3])
+        expect(chromosome.codons.getElements()).toEqual([1, 2, 3])
         expect(chromosome.getLength()).toEqual(3)
         expect(chromosome.isRecurrent).toBeTruthy()
         expect(chromosome.coverage).toContain("B")
@@ -183,7 +206,7 @@ describe('Test NetworkChromosome', () => {
 
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(3, new WaitEvent, ActivationFunction.SIGMOID))
-        nodes.add(new ClassificationNode(4, new ClickStageEvent(),ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, new ClickStageEvent(), ActivationFunction.SIGMOID))
 
         // Create Connections
         const connections = new List<ConnectionGene>();
@@ -207,7 +230,7 @@ describe('Test NetworkChromosome', () => {
 
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(3, new WaitEvent, ActivationFunction.SIGMOID))
-        nodes.add(new ClassificationNode(4, new ClickStageEvent(),ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, new ClickStageEvent(), ActivationFunction.SIGMOID))
 
         const hiddenNode = new HiddenNode(5, ActivationFunction.SIGMOID)
         const deepHiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID)
@@ -240,7 +263,7 @@ describe('Test NetworkChromosome', () => {
 
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(3, new WaitEvent, ActivationFunction.SIGMOID))
-        nodes.add(new ClassificationNode(4, new ClickStageEvent(),ActivationFunction.SIGMOID))
+        nodes.add(new ClassificationNode(4, new ClickStageEvent(), ActivationFunction.SIGMOID))
 
         // Create Connections
         const connections = new List<ConnectionGene>();
@@ -266,7 +289,7 @@ describe('Test NetworkChromosome', () => {
 
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(4, new WaitEvent, ActivationFunction.SIGMOID));
-        nodes.add(new ClassificationNode(5, new ClickStageEvent(),ActivationFunction.SIGMOID));
+        nodes.add(new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID));
         nodes.add(new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE));
         nodes.add(new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE));
 
@@ -312,7 +335,7 @@ describe('Test NetworkChromosome', () => {
 
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(4, new WaitEvent, ActivationFunction.SIGMOID));
-        nodes.add(new ClassificationNode(5, new ClickStageEvent(),ActivationFunction.SIGMOID));
+        nodes.add(new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID));
 
         const hiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID);
         const deepHiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
@@ -369,7 +392,7 @@ describe('Test NetworkChromosome', () => {
 
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(4, new WaitEvent, ActivationFunction.SIGMOID));
-        nodes.add(new ClassificationNode(5, new ClickStageEvent(),ActivationFunction.SIGMOID));
+        nodes.add(new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID));
 
         const hiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID);
         const deepHiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
@@ -429,7 +452,7 @@ describe('Test NetworkChromosome', () => {
 
         // Create classification Output Nodes
         nodes.add(new ClassificationNode(4, new WaitEvent, ActivationFunction.SIGMOID));
-        nodes.add(new ClassificationNode(5, new ClickStageEvent(),ActivationFunction.SIGMOID));
+        nodes.add(new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID));
 
         const hiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID);
         const deepHiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
@@ -464,7 +487,7 @@ describe('Test NetworkChromosome', () => {
     })
 
     test("Test getRegressionNodes", () => {
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs,
+        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
             new List<ScratchEvent>([new WaitEvent(), new MouseMoveEvent()]), 0.5);
         chromosome = generator.get();
         const regressionNodes = chromosome.regressionNodes;
@@ -472,8 +495,8 @@ describe('Test NetworkChromosome', () => {
         expect(regressionNodes.get("MouseMoveEvent").size()).toEqual(2);
     })
 
-    test("Test updateOutputNodes", () =>{
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs,
+    test("Test updateOutputNodes", () => {
+        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
             new List<ScratchEvent>([new WaitEvent()]), 0.5);
         chromosome = generator.get();
         const oldNodeSize = chromosome.allNodes.size();

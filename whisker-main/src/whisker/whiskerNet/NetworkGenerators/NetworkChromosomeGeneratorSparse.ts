@@ -3,16 +3,13 @@ import {NodeGene} from "../NetworkNodes/NodeGene";
 import {ConnectionGene} from "../ConnectionGene";
 import {Randomness} from "../../utils/Randomness";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
-import {NetworkChromosomeGenerator} from "./NetworkChromosomeGenerator";
-import {Mutation} from "../../search/Mutation";
-import {NetworkChromosome} from "../NetworkChromosome";
-import {Crossover} from "../../search/Crossover";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
+import {NetworkChromosomeGeneratorFullyConnected} from "./NetworkChromosomeGeneratorFullyConnected";
 
-export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator {
+export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGeneratorFullyConnected {
 
     /**
-     * The probability multiple input features are connected to the network
+     * The probability that multiple input features are connected to the network
      */
     protected readonly _inputRate: number;
 
@@ -23,16 +20,16 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
 
     /**
      * Constructs a new NetworkGenerator
-     * @param mutationOp the used mutation operator
-     * @param crossoverOp the used crossover operator
+     * @param mutationConfig the configuration parameters for the mutation operator
+     * @param crossoverConfig the configuration parameters for the crossover operator
      * @param inputs a map which maps each sprite to its input feature-vector
      * @param scratchEvents all Scratch-Events the given project handles
      * @param inputRate the probability multiple input features are connected to the network
      */
-    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
+    constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
                 inputs: Map<string, Map<string, number>>, scratchEvents: List<ScratchEvent>,
                 inputRate: number) {
-        super(mutationOp, crossoverOp, inputs, scratchEvents)
+        super(mutationConfig, crossoverConfig, inputs, scratchEvents);
         this._inputRate = inputRate;
     }
 

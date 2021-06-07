@@ -25,63 +25,60 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
     /**
      * Probability for applying the addConnection mutation
      */
-    private readonly _mutationAddConnection;
+    private readonly _mutationAddConnection: number;
 
     /**
      * Probability for adding a recurrent connection during the addConnection mutation
      */
-    private readonly _recurrentConnection;
+    private readonly _recurrentConnection: number;
 
     /**
      * Number of tries for adding a new connection during the addConnection mutation
      */
-    private readonly _addConnectionTries;
+    private readonly _addConnectionTries: number;
 
     /**
      * Probability for applying an addConnection mutation to a population champ (otherwise we only perturb its weights)
      */
-    private readonly _populationChampionConnectionMutation;
-    private readonly _mutationAddNode;
+    private readonly _populationChampionConnectionMutation: number;
+    private readonly _mutationAddNode: number;
 
     /**
      * Probability for applying a weight mutation
      */
-    private readonly _mutateWeights;
+    private readonly _mutateWeights: number;
 
     /**
      * Power of the weight perturbation
      */
-    private readonly _perturbationPower;
+    private readonly _perturbationPower: number;
 
     /**
      * Probability for applying the toggleEnableConnection mutation
      */
-    private readonly _mutateToggleEnableConnection;
+    private readonly _mutateToggleEnableConnection: number;
 
     /**
      * Defines how many connections are toggled during the toggleEnableConnection mutation
      */
-    private readonly _toggleEnableConnectionTimes;
+    private readonly _toggleEnableConnectionTimes: number;
 
     /**
      * Probability for applying the mutateConnectionReenable mutation
      */
-    private readonly _mutateEnableConnection;
+    private readonly _mutateEnableConnection: number;
 
-    constructor(mutationAddConnection: number, recurrentConnection: number, addConnectionTries: number,
-                populationChampionConnectionMutation: number, mutationAddNode: number, mutateWeights: number,
-                perturbationPower: number, mutateToggleEnableConnection: number, toggleEnableConnectionTimes: number,
-                mutateEnableConnection: number) {
-        this._mutationAddConnection = mutationAddConnection;
-        this._recurrentConnection = recurrentConnection;
-        this._addConnectionTries = addConnectionTries;
-        this._populationChampionConnectionMutation = populationChampionConnectionMutation;
-        this._mutationAddNode = mutationAddNode;
-        this._mutateWeights = mutateWeights;
-        this._perturbationPower = perturbationPower;
-        this._mutateToggleEnableConnection = mutateToggleEnableConnection;
-        this._toggleEnableConnectionTimes = toggleEnableConnectionTimes;
-        this._mutateEnableConnection = mutateEnableConnection;
+    constructor(mutationConfig: Record<string, (string | number)>) {
+        this._mutationAddConnection = mutationConfig.mutationAddConnection as number;
+        this._recurrentConnection = mutationConfig.recurrentConnection as number;
+        this._addConnectionTries = mutationConfig.addConnectionTries as number;
+        this._populationChampionConnectionMutation = mutationConfig.populationChampionConnectionMutation as number;
+        this._mutationAddNode = mutationConfig.mutationAddNode as number;
+        this._mutateWeights = mutationConfig.mutateWeights as number;
+        this._perturbationPower = mutationConfig.perturbationPower as number;
+        this._mutateToggleEnableConnection = mutationConfig.mutateToggleEnableConnection as number;
+        this._toggleEnableConnectionTimes = mutationConfig.toggleEnableConnectionTimes as number;
+        this._mutateEnableConnection = mutationConfig.mutateEnableConnection as number;
     }
 
     /**

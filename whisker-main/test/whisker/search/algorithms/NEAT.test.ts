@@ -7,8 +7,6 @@ import {NeuroevolutionProperties} from "../../../../src/whisker/whiskerNet/Neuro
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
-import {NeatMutation} from "../../../../src/whisker/whiskerNet/NeatMutation";
-import {NeatCrossover} from "../../../../src/whisker/whiskerNet/NeatCrossover";
 import {NetworkChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
@@ -32,10 +30,29 @@ describe('Test NEAT', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        const crossoverOp = new NeatCrossover(0.4);
-        const mutationOp = new NeatMutation(0.03, 0.1, 30,
-            0.2, 0.01, 0.8, 1.5,
-            0.1, 3, 0.1);
+        const crossoverConfig = {
+            "operator": "neatCrossover",
+            "crossoverWithoutMutation": 0.2,
+            "interspeciesRate": 0.001,
+            "weightAverageRate": 0.4
+        };
+
+        const mutationConfig = {
+            "operator": "neatMutation",
+            "mutationWithoutCrossover": 0.25,
+            "mutationAddConnection": 0.2,
+            "recurrentConnection": 0.1,
+            "addConnectionTries": 20,
+            "populationChampionNumberOffspring": 10,
+            "populationChampionNumberClones": 5,
+            "populationChampionConnectionMutation": 0.3,
+            "mutationAddNode": 0.1,
+            "mutateWeights": 0.6,
+            "perturbationPower": 2.5,
+            "mutateToggleEnableConnection": 0.1,
+            "toggleEnableConnectionTimes": 3,
+            "mutateEnableConnection": 0.03
+        };
         const genInputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -53,7 +70,7 @@ describe('Test NEAT', () => {
         genInputs.set("Sprite2", sprite2);
         const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
-        const generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, genInputs, events, 0.4);
+        const generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         const iterations = 20;
