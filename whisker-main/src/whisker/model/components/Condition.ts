@@ -2,7 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {ModelEdge} from "./ModelEdge";
 import {Check, CheckName} from "./Check";
-import {ModelResult} from "../../../test-runner/test-result";
+import ModelResult from "../../../test-runner/model-result";
 
 /**
  * Evaluate the conditions for the given edge.

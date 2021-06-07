@@ -1,6 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {ProgramModelEdge} from "./ModelEdge";
-import {ModelResult} from "../../../test-runner/test-result";
+import ModelResult from "../../../test-runner/model-result";
 import {Check, CheckName} from "./Check";
 
 /**

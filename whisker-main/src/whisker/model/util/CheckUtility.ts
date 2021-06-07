@@ -1,5 +1,5 @@
 import TestDriver from "../../../test/test-driver";
-import {ModelResult} from "../../../test-runner/test-result";
+import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
 import {ProgramModelEdge} from "../components/ModelEdge";
 import {

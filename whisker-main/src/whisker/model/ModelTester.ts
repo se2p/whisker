@@ -4,7 +4,7 @@ import {UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
-import {ModelResult} from "../../test-runner/test-result";
+import ModelResult from "../../test-runner/model-result";
 import {ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
 import {Effect} from "./components/Effect";
 import {Container} from "../utils/Container";

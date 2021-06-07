@@ -2,7 +2,7 @@ import {ModelNode} from "./ModelNode";
 import {ModelEdge, ProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelResult} from "../../../test-runner/test-result";
+import ModelResult from "../../../test-runner/model-result";
 
 
 /**

@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 const Test = require('./test');
-const {TestResult} = require('./test-result');
+const TestResult = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
 const {assert, assume} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');

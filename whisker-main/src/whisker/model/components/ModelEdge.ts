@@ -2,7 +2,7 @@ import {ModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {Effect} from "./Effect";
 import {Condition} from "./Condition";
-import {ModelResult} from "../../../test-runner/test-result";
+import ModelResult from "../../../test-runner/model-result";
 import {ProgramModel} from "./ProgramModel";
 import {CheckUtility} from "../util/CheckUtility";
 import {getErrorOnEdgeOutput} from "../util/ModelError";
