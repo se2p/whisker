@@ -5,16 +5,20 @@ import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {NetworkChromosomeGenerator} from "./NetworkChromosomeGenerator";
 import {NetworkChromosome} from "../NetworkChromosome";
 
-export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeGenerator {
+export class NetworkChromosomeGeneratorExistingNetwork extends NetworkChromosomeGenerator {
 
-    private networkTemplate: Record<string, (string | number | boolean)>
+    /**
+     * The template of the existing Network
+     */
+    private networkTemplate: Record<string, Record<string, (string| number)>>
 
     /**
      * Constructs a new NetworkGenerator
-     * @param networkTemplate
+     * @param networkTemplate the template of the existing network from which we want to create a population of.
      */
     constructor(networkTemplate: Record<string, Record<string, (string| number)>>) {
         super(networkTemplate.mutation, networkTemplate.crossover);
+        this.networkTemplate = networkTemplate;
     }
 
     /**
@@ -47,6 +51,4 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
         }
         return connections;
     }
-
-
 }

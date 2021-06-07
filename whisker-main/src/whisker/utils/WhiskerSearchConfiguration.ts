@@ -50,6 +50,7 @@ import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtract
 import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor";
 import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
+import {NetworkChromosomeGeneratorExistingNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorExistingNetwork";
 
 class ConfigException implements Error {
     message: string;
@@ -267,6 +268,9 @@ export class WhiskerSearchConfiguration {
                 const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm));
+            }
+            case 'templateNetwork':{
+                return new NetworkChromosomeGeneratorExistingNetwork(this.dict['networkTemplate']);
             }
             case 'test':
             default:

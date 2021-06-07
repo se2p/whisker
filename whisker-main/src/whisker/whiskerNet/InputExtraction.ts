@@ -94,18 +94,18 @@ export class InputExtraction {
 
                 // Check if the target interacts with another target.
                 case "sensing_touchingobjectmenu":
-                    for (const target of vm.runtime.targets) {
-                        if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
-                            const distances = this.calculateDistancesSigned(target.x, target.x, target.y, target.y,
+                    for (const sensingTarget of vm.runtime.targets) {
+                        if (sensingTarget.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
+                            const distances = this.calculateDistancesSigned(target.x, sensingTarget.x, target.y, sensingTarget.y,
                                 stageWidth, stageHeight);
                             if (target.isOriginal) {
-                                spriteFeatures.set("DistanceTo" + target.sprite.name + "-X", distances.dx);
-                                spriteFeatures.set("DistanceTo" + target.sprite.name + "-Y", distances.dy);
+                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-X", distances.dx);
+                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-Y", distances.dy);
                             } else {
-                                const distanceId = this.distanceFromOrigin(target);
-                                const cloneId = cloneMap.get(target.sprite.name).findElement(distanceId);
-                                spriteFeatures.set("DistanceTo" + target.sprite.name + "Clone" + cloneId + "-X", distances.dx);
-                                spriteFeatures.set("DistanceTo" + target.sprite.name + "Clone" + cloneId + "-Y", distances.dy);
+                                const distanceId = this.distanceFromOrigin(sensingTarget);
+                                const cloneId = cloneMap.get(sensingTarget.sprite.name).findElement(distanceId);
+                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-X", distances.dx);
+                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-Y", distances.dy);
                             }
                         }
                     }
@@ -149,7 +149,7 @@ export class InputExtraction {
                                             stageWidth: number, stageHeight: number): { dx: number, dy: number } {
         // Calculate the normalised distance of the x-Dimension
         let dx = Math.abs(x1 - x2);
-        if (x1 < x2)
+        if (x1 > x2)
             dx *= -1;
         if (Math.sign(x1) === Math.sign(x2))
             dx /= (stageWidth / 2.);
@@ -157,15 +157,9 @@ export class InputExtraction {
             dx /= stageWidth;
         }
 
-        // We might overshoot the stage
-        if (dx < -1)
-            dx = -1;
-        else if (dx > 1)
-            dx = 1;
-
         // Calculate the normalised distance of the y-Dimension
         let dy = Math.abs(y1 - y2);
-        if (y1 < y2)
+        if (y1 > y2)
             dy *= -1;
         if (Math.sign(y1) === Math.sign(y2))
             dy /= (stageHeight / 2.);
@@ -173,11 +167,9 @@ export class InputExtraction {
             dy /= stageHeight;
         }
 
-        // We might overshoot the Stage due to the size of the x and y sources.
-        if (dy < -1)
-            dy = -1;
-        else if (dy > 1)
-            dy = 1;
+        // Clamp within the stage
+        dx = Math.max(-1, Math.min(dx, 1))
+        dy = Math.max(-1, Math.min(dy, 1))
 
         return {dx, dy};
     }
@@ -209,8 +201,13 @@ export class InputExtraction {
         // sensed color. We stop if the radius is greater than maxRadius.
         const point = twgl.v3.create();
         const color = new Uint8ClampedArray(4);
-        let r = 1;
-        const maxRadius = 100
+        let r = sprite.size + 1;
+        let rPrev = 1;
+        let rIncrease = 1;
+        const maxRadius = Math.sqrt(
+            Math.pow((renderer._xRight - renderer._xLeft), 2) +
+            Math.pow((renderer._yTop - renderer._yBottom), 2)
+        );
         while (r < maxRadius) {
             const coordinates = [];
             for (const x of [-r, r]) {
@@ -232,13 +229,16 @@ export class InputExtraction {
 
                 // Check if we found an object carrying the correct color.
                 if (this.isColorMatching(color, color3b)) {
-                    return this.calculateDistancesSigned(point[0], x, point[1], y,
+                    return this.calculateDistancesSigned(sprite.x, point[0], sprite.y, point[1],
                         sprite.renderer._nativeSize[0], sprite.renderer._nativeSize[1]);
                 }
             }
-            // Increase the scan radius.
-            r++;
+            // Increase the scan radius in a recursive fashion.
+            rIncrease += rPrev;
+            rPrev = (rIncrease / 5);
+            r += (rIncrease / 2);
         }
+        // At this point we didn't find the color
         return {dx: undefined, dy: undefined};
     }
 

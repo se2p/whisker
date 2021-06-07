@@ -19,7 +19,7 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
     private _random = Randomness.getInstance();
 
     /**
-     * Constructs a new NetworkGenerator
+     * Constructs a new SparseNetworkGenerator, only connecting some input sprites to the output nodes.
      * @param mutationConfig the configuration parameters for the mutation operator
      * @param crossoverConfig the configuration parameters for the crossover operator
      * @param inputs a map which maps each sprite to its input feature-vector

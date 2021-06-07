@@ -88,7 +88,7 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
     }
 
     /**
-     * Creates connections between input and output nodes according to the inputRate
+     * Creates connections between input and output nodes.
      * @param inputNodes all inputNodes of the network sorted according to the sprites they represent
      * @param outputNodes all outputNodes of the network
      * @return the connectionGene List
