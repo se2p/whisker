@@ -60,22 +60,22 @@ export class InputExtraction {
     }
 
     /**
-     * Extracts the pieces of information of the given sprite and normalises in the range [-1, 1]
-     * @param sprite the RenderTarget (-> Sprite) from which information is gathered
+     * Extracts the pieces of information of the given target and normalises in the range [-1, 1]
+     * @param target the RenderTarget (-> Sprite) from which information is gathered
      * @param vm the Scratch-VM of the given project
      * @param cloneMap The position of a clone in the cloneMap determines its unique identifier.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    private static _extractInfoFromSprite(sprite: RenderedTarget, cloneMap: Map<string, List<number>>,
+    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, List<number>>,
                                           vm: VirtualMachine): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // stageWidth and stageHeight used for normalisation
-        const stageWidth = sprite.renderer._nativeSize[0];
-        const stageHeight = sprite.renderer._nativeSize[1];
+        const stageWidth = target.renderer._nativeSize[0];
+        const stageHeight = target.renderer._nativeSize[1];
 
         // Collect Coordinates and normalize
-        let x = sprite.x / (stageWidth / 2.);
-        let y = sprite.y / (stageHeight / 2.);
+        let x = target.x / (stageWidth / 2.);
+        let y = target.y / (stageHeight / 2.);
 
         // Clamp within the stage
         x = Math.max(-1, Math.min(x, 1))
@@ -84,16 +84,19 @@ export class InputExtraction {
         spriteFeatures.set("X-Position", x);
         spriteFeatures.set("Y-Position", y);
 
-        // Collect additional information based on the behaviour of the sprite
-        for (const blockId of Object.keys(sprite.blocks._blocks)) {
-            const block = sprite.blocks.getBlock(blockId);
-            switch (sprite.blocks.getOpcode(block)) {
+        // Collect direction of Sprite
+        spriteFeatures.set("Direction", target.direction/180);
 
-                // Check if the sprite interacts with another sprite.
+        // Collect additional information based on the behaviour of the target
+        for (const blockId of Object.keys(target.blocks._blocks)) {
+            const block = target.blocks.getBlock(blockId);
+            switch (target.blocks.getOpcode(block)) {
+
+                // Check if the target interacts with another target.
                 case "sensing_touchingobjectmenu":
                     for (const target of vm.runtime.targets) {
                         if (target.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
-                            const distances = this.calculateDistancesSigned(sprite.x, target.x, sprite.y, target.y,
+                            const distances = this.calculateDistancesSigned(target.x, target.x, target.y, target.y,
                                 stageWidth, stageHeight);
                             if (target.isOriginal) {
                                 spriteFeatures.set("DistanceTo" + target.sprite.name + "-X", distances.dx);
@@ -108,10 +111,10 @@ export class InputExtraction {
                     }
                     break;
 
-                // Check if the sprite interacts with a color on the screen or on a sprite.
+                // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
-                    const sensedColor = sprite.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                    const distances = this.calculateColorDistance(sprite, sensedColor);
+                    const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
+                    const distances = this.calculateColorDistance(target, sensedColor);
                     // We only want to add distances if we found the color within the scan radius.
                     if (distances.dx && distances.dy) {
                         spriteFeatures.set("DistanceTo" + sensedColor + "-X", distances.dx);
@@ -120,9 +123,10 @@ export class InputExtraction {
                     break;
                 }
 
-                // Check if the sprite is capable of switching his costume.
+                // Check if the target is capable of switching his costume.
+                    //TODO: Clump into [-1,1] range. Currently set in range [0,1]
                 case "looks_switchcostumeto":
-                    spriteFeatures.set("Costume", sprite.currentCostume / sprite.sprite.costumes_.length);
+                    spriteFeatures.set("Costume", target.currentCostume / target.sprite.costumes_.length);
                     break;
             }
         }
