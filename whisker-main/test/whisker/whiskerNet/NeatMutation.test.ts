@@ -131,6 +131,7 @@ describe("Test NeatMutation", () => {
         connectionList.add(connection1);
         const connection2 = new ConnectionGene(iNode, oNode2, 2, true, 1, false);
         connectionList.add(connection2);
+        mutationConfig.recurrentConnection = 1;
         mutation = new NeatMutation(mutationConfig);
         networkChromosome = new NetworkChromosome(connectionList, allNodes, mutation, crossoverOp);
         const originalConnectionsSize = networkChromosome.connections.size();

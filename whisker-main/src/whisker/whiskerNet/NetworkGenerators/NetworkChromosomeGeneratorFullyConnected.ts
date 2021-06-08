@@ -83,7 +83,7 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
 
         // Perturb the weights
         const mutationOp = chromosome.getMutationOperator() as NeatMutation;
-        mutationOp.mutateWeight(chromosome, 1, 1);
+        mutationOp.mutateWeight(chromosome, 2.5, 1);
         return chromosome;
     }
 

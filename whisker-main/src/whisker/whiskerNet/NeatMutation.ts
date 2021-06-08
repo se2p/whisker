@@ -128,10 +128,16 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         let node2: NodeGene;
 
         // Collect all nodes to which a new connection can point -> all nodes except the input and bias nodes
-        const recurrentNodes = new List<NodeGene>();
+        const targetNodes = new List<NodeGene>();
+        const loopRecurrentNodes = new List<HiddenNode>();
         for (const node of chromosome.allNodes) {
-            if ((node.type !== NodeType.INPUT) && (node.type !== NodeType.BIAS))
-                recurrentNodes.add(node);
+            if ((node.type !== NodeType.INPUT) && (node.type !== NodeType.BIAS)) {
+                targetNodes.add(node);
+            }
+            // LoopRecurrency in outputNodes lead to defect network since they never stabilize
+            if (node instanceof HiddenNode) {
+                loopRecurrentNodes.add(node);
+            }
         }
 
         // Decide if we want a recurrent Connection
@@ -143,30 +149,29 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         // Checks if we found a connection to add
         let foundConnection = false;
         while (rounds < tries) {
-
             // Recurrent connection
             if (recurrentConnection) {
                 //Decide between loop and normal recurrency
                 let loopRecurrency = false
-                if (this._random.nextDouble() < 0.25) {
+                if (!loopRecurrentNodes.isEmpty() && this._random.nextDouble() < 0.25) {
                     loopRecurrency = true
                 }
                 // Loop: The node points to itself X -> X
                 if (loopRecurrency) {
-                    node1 = this._random.pickRandomElementFromList(recurrentNodes);
+                    node1 = this._random.pickRandomElementFromList(loopRecurrentNodes);
                     node2 = node1;
                 }
                 // Normal Recurrency: Y -> X
                 else {
-                    node1 = this._random.pickRandomElementFromList(recurrentNodes);
-                    node2 = this._random.pickRandomElementFromList(recurrentNodes);
+                    node1 = this._random.pickRandomElementFromList(targetNodes);
+                    node2 = this._random.pickRandomElementFromList(targetNodes);
                 }
             }
 
             // No recurrent connection
             else {
                 node1 = this._random.pickRandomElementFromList(chromosome.allNodes);
-                node2 = this._random.pickRandomElementFromList(recurrentNodes);
+                node2 = this._random.pickRandomElementFromList(targetNodes);
             }
 
             // Verify if the new connection already exists
@@ -204,7 +209,7 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         // Finally, add it to the chromosome's connectionGene List
         if (foundConnection) {
             const posNeg = this._random.randomBoolean() ? +1 : -1;
-            const weight = posNeg * this._random.nextDouble() * 10.0;
+            const weight = posNeg * this._random.nextDouble() * this._perturbationPower;
             const newConnection = new ConnectionGene(node1, node2, weight, true, 0, recurrentConnection);
             NeuroevolutionUtil.assignInnovationNumber(newConnection);
             chromosome.connections.add(newConnection);
