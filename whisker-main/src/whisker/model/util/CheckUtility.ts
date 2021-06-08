@@ -64,17 +64,20 @@ export class CheckUtility {
      * @param b RGB blue value.
      */
     registerColor(spriteName: string, r: number, g: number, b: number): void {
-        let colorString = CheckUtility.getColorString(spriteName, r, g, b);
-
-        if (!this.colorTouched[colorString]) {
-            this.colorTouched[colorString] = false;
-
-            this.testDriver.addModelSpriteMoved((sprite) => {
-                if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
-                    this.colorTouched[colorString] = true;
-                }
-            });
-        }
+        // todo removed for now, as the testdriver.isTouchingColor is enough at the moment. if it does give errors
+        //  again insert this again and change isTouchingColor
+        // console.log("register color: ", spriteName);
+        // let colorString = CheckUtility.getColorString(spriteName, r, g, b);
+        //
+        // if (!this.colorTouched[colorString]) {
+        //     this.colorTouched[colorString] = false;
+        //
+        //     this.testDriver.addModelSpriteMoved((sprite) => {
+        //         if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
+        //             this.colorTouched[colorString] = true;
+        //         }
+        //     });
+        // }
     }
 
     /**
@@ -133,8 +136,9 @@ export class CheckUtility {
      * Check whether a sprite is touching a color.
      */
     isTouchingColor(spriteName: string, r: number, g: number, b: number): boolean {
-        return (this.colorTouched[CheckUtility.getColorString(spriteName, r, g, b)]
-            || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]));
+        // return (this.colorTouched[CheckUtility.getColorString(spriteName, r, g, b)]
+        //             || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]));
+        return this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]);
     }
 
     /**
