@@ -16,9 +16,9 @@ const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./wi
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, errorWitnessPath, addRandomInputs,
-    accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage,
-    isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
+    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, errorWitnessPath,
+    addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
+    isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -248,6 +248,9 @@ async function runTests (path, browser, index, targetProject, modelPath) {
             await (await page.$('#fileselect-models')).uploadFile(modelPath);
             await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, modelRepetition);
             await page.evaluate(factor => document.querySelector('#model-duration').value = factor, modelDuration);
+            if (modelCaseSensitive) {
+                await (await page.$('#model-case-sensitive')).click();
+            }
         }
         await (await page.$('#toggle-advanced')).click();
         await (await page.$('#toggle-tap')).click();

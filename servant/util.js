@@ -49,6 +49,7 @@ const cli = {
             .option('-m, --modelPath <Path>', 'Model to test with', false)
             .option('-mr, --modelRepetition <Integer>', 'Repetition of the test with only a model', "1")
             .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run', "30")
+            .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
@@ -71,6 +72,7 @@ const cli = {
             modelPath,
             modelRepetition,
             modelDuration,
+            modelCaseSensitive,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -94,6 +96,7 @@ const cli = {
             modelPath,
             modelRepetition,
             modelDuration,
+            modelCaseSensitive,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
