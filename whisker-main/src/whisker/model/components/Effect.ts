@@ -77,9 +77,9 @@ export class Effect extends Check {
     /**
      * Register the check listener and test driver and check the effect for errors.
      */
-    registerComponents(t: TestDriver, result: ModelResult) {
+    registerComponents(t: TestDriver, result: ModelResult, caseSensitive: boolean) {
         try {
-            this._effect = this.checkArgsWithTestDriver(t, null);
+            this._effect = this.checkArgsWithTestDriver(t, null, caseSensitive);
         } catch (e) {
             console.error(e);
             result.addError(e.message);

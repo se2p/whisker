@@ -111,21 +111,19 @@ export class InputEffect {
 
     /**
      * Register the test driver and convert the saved input arguments to an executable input function for fast input.
-     * @param t Instance of the test driver.
      */
-    registerComponents(t: TestDriver) {
-        this.inputEffect = this.getInputDataFunction(t, this.args);
+    registerComponents(t: TestDriver, caseSensitive: boolean) {
+        this.inputEffect = this.getInputDataFunction(t, caseSensitive, this.args);
     }
 
-    private getInputDataFunction(t: TestDriver, arg: any[]) {
-        console.log(arg);
+    private getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: any[]) {
         switch (this.name) {
             case InputEffectName.InputKey:
                 return this.getKeyDataObject(t, arg);
             case InputEffectName.InputMouseMove:
                 ModelUtil.testNumber(arg[0]);
                 ModelUtil.testNumber(arg[1]);
-                let mouseEvent = new MouseMoveEvent(arg[0],arg[1])
+                let mouseEvent = new MouseMoveEvent(arg[0], arg[1])
                 return () => {
                     mouseEvent.apply();
                 };
@@ -146,7 +144,7 @@ export class InputEffect {
                     clickStageEvent.apply();
                 }
             case InputEffectName.InputClickSprite:
-                let sprite = ModelUtil.checkSpriteExistence(t, arg[0]);
+                let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, arg[0]);
                 let clickSpriteEvent = new ClickSpriteEvent(sprite._target);
                 return () => {
                     clickSpriteEvent.apply();

@@ -67,8 +67,9 @@ export class ModelTester extends EventEmitter {
     /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      * @param testDriver Instance of the test driver for this test run.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    async prepareModel(testDriver: TestDriver) {
+    async prepareModel(testDriver: TestDriver, caseSensitive: boolean) {
         console.log("----Preparing model----");
         Container.testDriver = testDriver;
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
@@ -78,15 +79,15 @@ export class ModelTester extends EventEmitter {
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
         this.programModels.forEach(model => {
             model.reset();
-            model.registerComponents(this.checkUtility, testDriver, this.result);
+            model.registerComponents(this.checkUtility, testDriver, this.result, caseSensitive);
         });
         this.constraintsModels.forEach(model => {
             model.reset();
-            model.registerComponents(this.checkUtility, testDriver, this.result);
+            model.registerComponents(this.checkUtility, testDriver, this.result, caseSensitive);
         });
         this.userModels.forEach(model => {
             model.reset();
-            model.registerComponents(this.checkUtility, testDriver, this.result);
+            model.registerComponents(this.checkUtility, testDriver, this.result, caseSensitive);
         })
 
         // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).

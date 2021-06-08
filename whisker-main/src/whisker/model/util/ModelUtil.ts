@@ -9,34 +9,75 @@ import {
     getExpressionEndTagMissingError,
     getExpressionEnterError,
     getNotNumericalValueError,
-    getSpriteNotFoundError
+    getSpriteNotFoundError,
+    getVariableNotFoundError
 } from "./ModelError";
+import Variable from "../../../vm/variable";
 
 export abstract class ModelUtil {
 
     /**
      * Check the existence of a sprite.
      * @param testDriver Instance of the test driver.
+     * @param caseSensitive Whether the names should be checked with case sensitivity or not.
      * @param spriteName Name of the sprite.
      */
-    static checkSpriteExistence(testDriver: TestDriver, spriteName: string): Sprite {
+    static checkSpriteExistence(testDriver: TestDriver, caseSensitive: boolean, spriteName: string): Sprite {
         let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-        if (sprite == undefined) {
-            throw getSpriteNotFoundError(spriteName);
+        if (sprite) {
+            return sprite;
         }
-        return sprite;
+
+        if (caseSensitive) {
+            throw getSpriteNotFoundError(spriteName);
+        } else {
+            spriteName = spriteName.toLowerCase();
+            sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+            if (sprite == undefined) {
+                throw getSpriteNotFoundError(spriteName);
+            }
+            return sprite;
+        }
+    }
+
+    /**
+     * Check the existence of a variable on an existing sprite.
+     * @param t Instance of the test driver.
+     * @param caseSensitive Whether the names should be checked with case sensitivity or not.
+     * @param sprite Sprite instance.
+     * @param variableName Name of the variable.
+     */
+    static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, variableName: string): Variable {
+        let variable = sprite.getVariable(variableName, false);
+
+        if (variable) {
+            return variable;
+        }
+
+        // variable with this name not found
+        if (caseSensitive) {
+            throw getVariableNotFoundError(variableName, sprite.name);
+        } else {
+            variableName = variableName.toLowerCase();
+            variable = sprite.getVariable(variableName, false);
+            if (!variable) {
+                throw getVariableNotFoundError(variableName, sprite.name);
+            }
+            return variable;
+        }
     }
 
     /**
      * Check the attribute name.
-     * @private
+     * @param testDriver Instance of the test driver.
+     * @param sprite Sprite instance.
+     * @param attrName Name of the attribute e.g. x.
      */
-    static checkAttributeExistence(testDriver: TestDriver, spriteName: string, attrName: string) {
+    static checkAttributeExistence(testDriver: TestDriver, sprite: Sprite, attrName: string) {
         try {
-            let sprite = ModelUtil.checkSpriteExistence(testDriver, spriteName);
             eval("sprite." + attrName);
         } catch (e) {
-            throw getAttributeNotFoundError(attrName, spriteName);
+            throw getAttributeNotFoundError(attrName, sprite.name);
         }
     }
 
@@ -128,15 +169,18 @@ export abstract class ModelUtil {
     static readonly EXPR_START = "$(";
     static readonly EXPR_END = ")";
 
-    private static getSpriteString(index, name) {
-        return "const sprite" + index + "= t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
-            + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + name + "');\n}\n";
+    private static getSpriteString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string) {
+        spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
+        return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + spriteName + "'), false)[0];\n"
+            + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + spriteName + "');\n}\n";
     }
 
-    private static getVariableString(index, varName: string) {
-        return "const variable" + index + "= sprite" + index + ".getVariable('" + varName + "', false).value;\n if" +
+    private static getVariableString(t: TestDriver, caseSensitive: boolean, index, spriteName: string, varName: string) {
+        let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
+        varName = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).name;
+        return "const variable" + index + " = sprite" + index + ".getVariable('" + varName + "', false).value;\n if" +
             " (variable" + index
-            + "== undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
+            + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
     }
 
     private static isAnAttribute(attrName) {
@@ -152,7 +196,7 @@ export abstract class ModelUtil {
      * @param t Instance of the test driver.
      * @param toEval Expression to evaluate and make into a function.
      */
-    static getExpressionForEval(t: TestDriver, toEval: string) : string {
+    static getExpressionForEval(t: TestDriver, caseSensitive: boolean, toEval: string): string {
         // todo Umlaute werden gekillt -> ß ist nicht normal dargestellt, sondern als irgendein Sonderzeichen
         if (toEval.indexOf((this.EXPR_START)) == -1) {
             if (!toEval.startsWith("'")) {
@@ -196,13 +240,13 @@ export abstract class ModelUtil {
             toEval = toEval.substring(endIndex + 1, toEval.length);
             let parts = subexpression.split(".");
 
-            let spriteString = this.getSpriteString(index, parts[0]);
+            let spriteString = this.getSpriteString(t, caseSensitive, index, parts[0]);
             inits += spriteString;
 
             if (this.isAnAttribute(parts[1])) {
                 expression += "sprite" + index + "." + parts[1];
             } else {
-                inits += this.getVariableString(index, parts[1]);
+                inits += this.getVariableString(t, caseSensitive, index, parts[0], parts[1]);
                 expression += "variable" + index;
             }
 

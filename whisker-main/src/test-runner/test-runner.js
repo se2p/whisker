@@ -87,12 +87,11 @@ class TestRunner extends EventEmitter {
      * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
      *
-     * @param {duration:number,repetitions:number} modelProps
+     * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest(vm, project, test, modelTester, props,
-                       modelProps) {
+    async _executeTest(vm, project, test, modelTester, props, modelProps) {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project);
@@ -123,7 +122,7 @@ class TestRunner extends EventEmitter {
         testDriver.seedScratch(Random.INITIAL_SEED);
 
         if (modelTester && modelTester.someModelLoaded()) {
-            await modelTester.prepareModel(testDriver);
+            await modelTester.prepareModel(testDriver, modelProps.caseSensitive);
         }
 
         if (test) {
@@ -143,10 +142,12 @@ class TestRunner extends EventEmitter {
                 }
             }
         } else if (modelTester && modelTester.someModelLoaded()) {
+            // todo output model repeition nbr #
             // Start the test run with either a maximal duration or until the program stops
             await testDriver.runUntil(() => {
                 return !testDriver.isProjectRunning();
             }, modelProps.duration);
+            // todo output the model errors
         }
 
         if (modelTester && modelTester.someModelLoaded()) {

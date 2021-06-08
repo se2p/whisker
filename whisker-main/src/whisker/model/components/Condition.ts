@@ -72,9 +72,9 @@ export class Condition extends Check {
     /**
      * Register the check listener and test driver and check the condition for errors.
      */
-    registerComponents(cu: CheckUtility, t: TestDriver, result: ModelResult) {
+    registerComponents(cu: CheckUtility, t: TestDriver, result: ModelResult, caseSensitive: boolean) {
         try {
-            this._condition = this.checkArgsWithTestDriver(t, cu);
+            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
             console.error(e);
             result.addError(e.message);

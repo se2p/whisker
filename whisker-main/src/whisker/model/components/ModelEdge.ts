@@ -73,9 +73,9 @@ export abstract class ModelEdge {
     /**
      * Register the check listener and test driver on the edge's conditions.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult): void {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean): void {
         this.conditions.forEach(cond => {
-            cond.registerComponents(checkListener, testDriver, result);
+            cond.registerComponents(checkListener, testDriver, result, caseSensitive);
         })
     }
 
@@ -129,10 +129,10 @@ export class ProgramModelEdge extends ModelEdge {
     /**
      * Register the check listener and test driver on the conditions and effects.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult): void {
-        super.registerComponents(checkListener, testDriver, result);
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean): void {
+        super.registerComponents(checkListener, testDriver, result, caseSensitive);
         this.effects.forEach(effect => {
-            effect.registerComponents(testDriver, result);
+            effect.registerComponents(testDriver, result, caseSensitive);
         })
     }
 
@@ -192,10 +192,10 @@ export class UserModelEdge extends ModelEdge {
     /**
      *  Register the check listener and test driver on the conditions and input effects.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult): void {
-        super.registerComponents(checkListener, testDriver, result);
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean): void {
+        super.registerComponents(checkListener, testDriver, result, caseSensitive);
         this.inputEffects.forEach(effect => {
-            effect.registerComponents(testDriver);
+            effect.registerComponents(testDriver, caseSensitive);
         })
     }
 

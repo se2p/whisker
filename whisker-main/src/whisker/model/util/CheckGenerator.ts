@@ -7,8 +7,7 @@ import {
     getErrorForAttribute,
     getErrorForVariable,
     getFunctionEvalError,
-    getRGBRangeError,
-    getVariableNotFoundError
+    getRGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
 
@@ -52,9 +51,11 @@ export abstract class CheckGenerator {
      * @param t Instance of the test driver.
      * @param spriteName Name of the sprite.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getSpriteClickedCheck(t: TestDriver, negated: boolean, spriteName: string): () => boolean {
-        ModelUtil.checkSpriteExistence(t, spriteName);
+    static getSpriteClickedCheck(t: TestDriver, negated: boolean, caseSensitive: boolean,
+                                 spriteName: string): () => boolean {
+        spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             if (t.isMouseDown() && sprite.isTouchingMouse()) {
@@ -73,15 +74,14 @@ export abstract class CheckGenerator {
      * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
      * @param varValue Value to compare to the variable's current value.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getVariableComparisonCheck(t: TestDriver, negated: boolean, spriteName: string, varName: string,
-                                      comparison: string, varValue: string): () => boolean {
-        let sprite = ModelUtil.checkSpriteExistence(t, spriteName);
-        let variable = sprite.getVariable(varName);
+    static getVariableComparisonCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteName: string,
+                                      varName: string, comparison: string, varValue: string): () => boolean {
+        let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
+        spriteName = sprite.name;
+        varName = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).name;
 
-        if (variable == undefined) {
-            throw getVariableNotFoundError(varName, spriteName);
-        }
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
             && comparison != "<" && comparison != "<=") {
             throw getComparisonNotKnownError(comparison);
@@ -113,10 +113,16 @@ export abstract class CheckGenerator {
      * @param comparison  Mode of comparison, e.g. =, <, >, <=, >=
      * @param varValue Value to compare to the variable's current value.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getAttributeComparisonCheck(t: TestDriver, negated: boolean, spriteName: string, attrName: string,
-                                       comparison: string, varValue: string): () => boolean {
-        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
+    static getAttributeComparisonCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteName: string,
+                                       attrName: string, comparison: string, varValue: string): () => boolean {
+        attrName = attrName.toLowerCase();
+
+        let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
+        spriteName = sprite.name;
+        ModelUtil.checkAttributeExistence(t, sprite, attrName);
+
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
             throw getComparisonNotKnownError(comparison);
@@ -168,11 +174,12 @@ export abstract class CheckGenerator {
      * @param spriteName1 Name of the first sprite.
      * @param spriteName2 Name of the second sprite.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getSpriteTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName1: string,
-                                  spriteName2: string): () => boolean {
-        ModelUtil.checkSpriteExistence(t, spriteName1);
-        ModelUtil.checkSpriteExistence(t, spriteName2);
+    static getSpriteTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
+                                  spriteName1: string, spriteName2: string): () => boolean {
+        spriteName1 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName1).name;
+        spriteName2 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName2).name;
         cu.registerTouching(spriteName1, spriteName2);
         return () => {
             const areTouching = cu.areTouching(spriteName1, spriteName2);
@@ -193,10 +200,11 @@ export abstract class CheckGenerator {
      * @param g RGB green color value.
      * @param b RGB blue color value.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getSpriteColorTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName: string,
-                                       r: number, g: number, b: number): () => boolean {
-        ModelUtil.checkSpriteExistence(t, spriteName);
+    static getSpriteColorTouchingCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
+                                       spriteName: string, r: number, g: number, b: number): () => boolean {
+        spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw getRGBRangeError();
         }
@@ -216,10 +224,12 @@ export abstract class CheckGenerator {
      * @param spriteName Name of the sprite.
      * @param output Output to say.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getOutputOnSpriteCheck(t: TestDriver, negated: boolean, spriteName: string, output: string): () => boolean {
-        ModelUtil.checkSpriteExistence(t, spriteName);
-        let expression = ModelUtil.getExpressionForEval(t, output);
+    static getOutputOnSpriteCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteName: string,
+                                  output: string): () => boolean {
+        spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
+        const expression = ModelUtil.getExpressionForEval(t, caseSensitive, output);
 
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
@@ -238,16 +248,16 @@ export abstract class CheckGenerator {
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
      * "+=" for increase or staying the same."-=" for decrease or staying the same.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getVariableChangeCheck(t: TestDriver, negated: boolean, spriteName: string, varName: string, change: string):
-        () => boolean {
-        const sprite = ModelUtil.checkSpriteExistence(t, spriteName);
-        const variable = sprite.getVariable(varName);
-        if (variable == undefined) {
-            throw getVariableNotFoundError(varName, spriteName);
-        }
+    static getVariableChangeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteName: string,
+                                  varName: string, change: string): () => boolean {
+        const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
+        spriteName = sprite.name;
+        varName = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).name;
+
         return () => {
-            const sprite = ModelUtil.checkSpriteExistence(t, spriteName);
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const variable = sprite.getVariable(varName);
             let result;
 
@@ -273,17 +283,20 @@ export abstract class CheckGenerator {
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
      * "+=" for increase or staying the same."-=" for decrease or staying the same.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getAttributeChangeCheck(t: TestDriver, negated: boolean, spriteName: string, attrName: string, change: string):
-        () => boolean {
-        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
-        const currentValueEval = "sprite." + attrName;
-        const oldValueEval = "sprite.old." + attrName;
+    static getAttributeChangeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteName: string,
+                                   attrName: string, change: string): () => boolean {
+        attrName = attrName.toLowerCase();
+
+        let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
+        spriteName = sprite.name;
+        ModelUtil.checkAttributeExistence(t, sprite, attrName);
 
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            const newValue = eval(currentValueEval);
-            const oldValue = eval(oldValueEval);
+            const newValue = sprite[attrName];
+            const oldValue = sprite.old[attrName];
 
             if (CheckGenerator.cannotMoveOnEdge(sprite, attrName, newValue, oldValue, change)) {
                 return !negated;
@@ -331,10 +344,11 @@ export abstract class CheckGenerator {
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
      * @param t Instance of the test driver.
      * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param expression The expression string.
      */
-    static getExpressionCheck(t: TestDriver, negated: boolean, expression: string) {
-        let toEval = ModelUtil.getExpressionForEval(t, expression);
+    static getExpressionCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, expression: string) {
+        let toEval = ModelUtil.getExpressionForEval(t, caseSensitive, expression);
         return () => {
             if (eval(toEval)(t)) {
                 return !negated;

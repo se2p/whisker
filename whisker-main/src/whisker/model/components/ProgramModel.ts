@@ -126,9 +126,9 @@ export class ProgramModel {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult) {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean) {
         Object.values(this.nodes).forEach(node => {
-            node.registerComponents(checkListener, testDriver, result);
+            node.registerComponents(checkListener, testDriver, result, caseSensitive);
         })
     }
 }

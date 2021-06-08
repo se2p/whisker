@@ -97,36 +97,41 @@ export abstract class Check {
      * arguments are not in the correct range (e.g. x coordinate) or a sprite/var/attribute is not defined.
      * @param t Instance of the test driver.
      * @param cu Instance of the check utility for listening and checking more complex events.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility) {
+    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean) {
         switch (this._name) {
             case CheckName.AttrComp:
-                return CheckGenerator.getAttributeComparisonCheck(t, this._negated, this._args[0], this._args[1],
-                    this._args[2], this._args[3]);
+                return CheckGenerator.getAttributeComparisonCheck(t, this._negated, caseSensitive, this._args[0],
+                    this._args[1], this._args[2], this._args[3]);
             case CheckName.AttrChange:
-                return CheckGenerator.getAttributeChangeCheck(t, this._negated, this._args[0], this._args[1], this._args[2]);
+                return CheckGenerator.getAttributeChangeCheck(t, this._negated, caseSensitive, this._args[0],
+                    this._args[1], this._args[2]);
             case CheckName.BackgroundChange:
                 return CheckGenerator.getBackgroundChangeCheck(t, this._negated, this._args[0]);
             case CheckName.Function:
                 return CheckGenerator.getFunctionCheck(t, this._negated, this._args[0]);
             case CheckName.Output:
-                return CheckGenerator.getOutputOnSpriteCheck(t, this._negated, this._args[0], this._args[1]);
+                return CheckGenerator.getOutputOnSpriteCheck(t, this._negated, caseSensitive, this._args[0],
+                    this._args[1]);
             case CheckName.VarChange:
-                return CheckGenerator.getVariableChangeCheck(t, this._negated, this._args[0], this._args[1], this._args[2]);
+                return CheckGenerator.getVariableChangeCheck(t, this._negated, caseSensitive, this._args[0],
+                    this._args[1], this._args[2]);
             case CheckName.VarComp:
-                return CheckGenerator.getVariableComparisonCheck(t, this._negated, this._args[0], this._args[1],
-                    this._args[2], this._args[3]);
+                return CheckGenerator.getVariableComparisonCheck(t, this._negated, caseSensitive, this._args[0],
+                    this._args[1], this._args[2], this._args[3]);
             case CheckName.SpriteTouching:
-                return CheckGenerator.getSpriteTouchingCheck(t, cu, this._negated, this._args[0], this._args[1]);
+                return CheckGenerator.getSpriteTouchingCheck(t, cu, this._negated, caseSensitive, this._args[0],
+                    this._args[1]);
             case CheckName.SpriteColor:
-                return CheckGenerator.getSpriteColorTouchingCheck(t, cu, this._negated, this._args[0], this._args[1],
-                    this._args[2], this._args[3]);
+                return CheckGenerator.getSpriteColorTouchingCheck(t, cu, this._negated, caseSensitive, this._args[0],
+                    this._args[1], this._args[2], this._args[3]);
             case CheckName.Key:
                 return CheckGenerator.getKeyDownCheck(t, cu, this._negated, this._args[0]);
             case CheckName.Click:
-                return CheckGenerator.getSpriteClickedCheck(t, this._negated, this._args[0]);
+                return CheckGenerator.getSpriteClickedCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.Expr:
-                return CheckGenerator.getExpressionCheck(t, this._negated, this._args[0]);
+                return CheckGenerator.getExpressionCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.Probability:
                 return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             default:

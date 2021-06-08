@@ -114,6 +114,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         duration = duration * 1000;
     }
     const repetitions = Number(document.querySelector('#model-repetitions').value);
+    const caseSensitive = $('#model-case-sensitive').is(':checked');
 
     try {
         await Whisker.scratch.vm.loadProject(project);
@@ -122,7 +123,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         // if a model is loaded then the project is tested against the model and the tests.
         summary = await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester, {accelerationFactor},
-            {duration, repetitions});
+            {duration, repetitions, caseSensitive});
         coverage = CoverageGenerator.getCoverage();
 
         if (Whisker.modelTester.programModelsLoaded()) {
