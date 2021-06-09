@@ -193,11 +193,11 @@ export abstract class ModelUtil {
             + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
     }
 
-    private static isAnAttribute(attrName) {
+    private static isAnAttribute(attrName: string) {
         return attrName === "effects" || attrName === "x" || attrName === "y" || attrName === "pos"
             || attrName === "direction" || attrName === "visible" || attrName === "size"
             || attrName === "currentCostume" || attrName === "volume" || attrName === "layerOrder"
-            || attrName === "sayText";
+            || attrName === "sayText" || attrName.startsWith('old');
     }
 
     /**
@@ -244,19 +244,25 @@ export abstract class ModelUtil {
                 throw getEmptyExpressionError();
             }
 
-            expression += toEval.substring(0, startIndex);
+            let fillerBetween = toEval.substring(0, startIndex);
+            if (fillerBetween == "=") {
+                fillerBetween += "=";
+            }
+            expression += fillerBetween;
 
             subexpression = toEval.substring(startIndex + 2, endIndex);
             toEval = toEval.substring(endIndex + 1, toEval.length);
-            let parts = subexpression.split(".");
+            let pointIndex = subexpression.indexOf(".");
+            let spriteName = subexpression.substring(0, pointIndex);
+            let attrName = subexpression.substring(pointIndex + 1, subexpression.length);
 
-            let spriteString = this.getSpriteString(t, caseSensitive, index, parts[0]);
+            let spriteString = this.getSpriteString(t, caseSensitive, index, spriteName);
             inits += spriteString;
 
-            if (this.isAnAttribute(parts[1])) {
-                expression += "sprite" + index + "." + parts[1];
+            if (this.isAnAttribute(attrName)) {
+                expression += "sprite" + index + "." + attrName;
             } else {
-                inits += this.getVariableString(t, caseSensitive, index, parts[0], parts[1]);
+                inits += this.getVariableString(t, caseSensitive, index, spriteName, attrName);
                 expression += "variable" + index;
             }
 
