@@ -74,7 +74,7 @@ function getErrorForAttribute(spriteName: string, attrName: string, error: strin
     return new Error(spriteName + "." + attrName + ": " + error);
 }
 
-function getNotNumericalValueError(value: string) {
+function getNotANumericalValueError(value: string) {
     return new Error("Is not a numerical value to compare:" + value);
 }
 
@@ -99,6 +99,6 @@ export {
     getRGBRangeError,
     getErrorForVariable,
     getErrorForAttribute,
-    getNotNumericalValueError,
+    getNotANumericalValueError,
     getChangeComparisonNotKnownError
 };

@@ -4,7 +4,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {CheckGenerator} from "../util/CheckGenerator";
 
 export enum CheckName {
-    AttrChange = "AttrChange", // sprite name, attr name, ( + | - | = )
+    AttrChange = "AttrChange", // sprite name, attr name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
     AttrComp = "AttrComp",// args: sprite name, attribute name, comparison (=,>,<...), value to compare to
     BackgroundChange = "BackgroundChange",
     Click = "Click", // args: sprite name
@@ -13,7 +13,7 @@ export enum CheckName {
     Output = "Output", // sprite name, string output
     SpriteColor = "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
     SpriteTouching = "SpriteTouching", // two sprites touching each other, args: two sprite names
-    VarChange = "VarChange", // sprite name, var name, ( + | - | = )
+    VarChange = "VarChange", // sprite name, var name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
     VarComp = "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
     Expr = "Expr", // evaluate an expression, args: expression
     Probability = "Probability" // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks

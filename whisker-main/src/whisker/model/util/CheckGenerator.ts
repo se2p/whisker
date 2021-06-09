@@ -130,11 +130,10 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const value = sprite[attrName];
-            const oldValue = sprite.old[attrName];
 
             let result;
             try {
-                result = ModelUtil.compare(value, oldValue, comparison);
+                result = ModelUtil.compare(value, varValue, comparison);
             } catch (e) {
                 throw getErrorForAttribute(spriteName, attrName, e.message);
             }
@@ -246,12 +245,13 @@ export abstract class CheckGenerator {
      * @param spriteName Name of the sprite having the variable.
      * @param varName Name of the variable.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
-     * "+=" for increase or staying the same."-=" for decrease or staying the same.
+     * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
+     * change by an exact value '+<number>' or '<number>' or '-<number>'.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getVariableChangeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteName: string,
-                                  varName: string, change: string): () => boolean {
+                                  varName: string, change): () => boolean {
         const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
         spriteName = sprite.name;
         varName = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).name;
@@ -260,6 +260,11 @@ export abstract class CheckGenerator {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const variable = sprite.getVariable(varName);
             let result;
+
+            // not yet changed
+            if (!variable.old.value) {
+                return true;
+            }
 
             try {
                 result = ModelUtil.testChange(variable.old.value, variable.value, change);
@@ -281,12 +286,13 @@ export abstract class CheckGenerator {
      * @param spriteName Name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
-     * "+=" for increase or staying the same."-=" for decrease or staying the same.
+     * "+=" for increase or staying the same."-=" for decrease or staying the same. For a numerical
+     * change by an exact value '+<number>' or '<number>' or '-<number>'.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     static getAttributeChangeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteName: string,
-                                   attrName: string, change: string): () => boolean {
+                                   attrName: string, change): () => boolean {
         attrName = attrName.toLowerCase();
 
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
@@ -297,6 +303,11 @@ export abstract class CheckGenerator {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const newValue = sprite[attrName];
             const oldValue = sprite.old[attrName];
+
+            // not yet changed
+            if (!oldValue) {
+                return true;
+            }
 
             if (CheckGenerator.cannotMoveOnEdge(sprite, attrName, newValue, oldValue, change)) {
                 return !negated;

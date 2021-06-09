@@ -8,7 +8,7 @@ import {
     getEmptyExpressionError,
     getExpressionEndTagMissingError,
     getExpressionEnterError,
-    getNotNumericalValueError,
+    getNotANumericalValueError,
     getSpriteNotFoundError,
     getVariableNotFoundError
 } from "./ModelError";
@@ -85,15 +85,14 @@ export abstract class ModelUtil {
      * Test whether a value changed.
      * @param oldValue Old value.
      * @param newValue New value.
-     * @param change For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='.
+     * @param change For increase '+' or '++'. For decrease '-' or '--'. For no change '=' or '=='. "+=" for
+     * increase or staying the same."-=" for decrease or staying the same. For a numerical
+     * change by an exact value '+<number>' or '<number>' or '-<number>'.
      * "+=" for increase or staying the same."-=" for decrease or staying the same.
      */
     static testChange(oldValue, newValue, change) {
-        if (oldValue == null) {
-            throw getNotNumericalValueError("null or undefined");
-        }
-        if (newValue == null) {
-            throw getNotNumericalValueError("null or undefined");
+        if (oldValue == undefined || newValue == undefined || change == undefined) {
+            throw new Error("Undefined value.");
         }
 
         if (change == '=' || change == '==') {
@@ -102,17 +101,28 @@ export abstract class ModelUtil {
         this.testNumber(oldValue);
         this.testNumber(newValue);
 
+        oldValue = Number(oldValue.toString());
+        newValue = Number(newValue.toString())
+
+        if (change != "" && change.startsWith("+") && change.length > 1) {
+            change = change.substring(1, change.length);
+        }
+
+        if (!isNaN(Number(change.toString()))) {
+            return oldValue + Number(change) === newValue;
+        }
+
         switch (change) {
             case '+':
             case '++':
-                return Number(oldValue.toString()) < Number(newValue.toString());
+                return oldValue < newValue;
             case '-':
             case '--':
-                return Number(oldValue.toString()) > Number(newValue.toString());
+                return oldValue > newValue;
             case '+=':
-                return Number(oldValue.toString()) <= Number(newValue.toString());
+                return oldValue <= newValue;
             case '-=':
-                return Number(oldValue.toString()) >= Number(newValue.toString());
+                return oldValue >= newValue;
             default:
                 throw getChangeComparisonNotKnownError(change);
         }
@@ -123,7 +133,7 @@ export abstract class ModelUtil {
      */
     static testNumber(value) {
         if (!((value != null) && (value !== '') && !isNaN(Number(value.toString())))) {
-            throw getNotNumericalValueError(value);
+            throw getNotANumericalValueError(value);
         }
     }
 
