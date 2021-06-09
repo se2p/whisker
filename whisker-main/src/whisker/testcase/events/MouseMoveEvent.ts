@@ -75,8 +75,8 @@ export class MouseMoveEvent extends ScratchEvent {
                 break;
             }
             case ParameterTypes.REGRESSION: {
-                this._x = (args[0] * 240) % 240;
-                this._y = (args[1] * 180) % 180;
+                this._x = Math.tanh(args[0]) * 240;
+                this._y = Math.tanh(args[1]) * 180;
                 break;
             }
         }
