@@ -174,17 +174,26 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
                 node2 = this._random.pickRandomElementFromList(targetNodes);
             }
 
-            // Verify if the new connection already exists
+            // Verify if the new connection is a valid one
             let skip = false;
-            for (const connection of chromosome.connections) {
-                if (connection.source === node1 && connection.target === node2 && connection.recurrent && recurrentConnection) {
-                    skip = true;
-                    break;
-                }
 
-                if (connection.source === node1 && connection.target === node2 && !connection.recurrent && !recurrentConnection) {
-                    skip = true;
-                    break;
+            // By chance we could get a recurrent loop connection even though we don't want one.
+            if(!recurrentConnection && node1 === node2){
+                skip = true;
+            }
+
+            // Verify if we truly found a new connection.
+            if(!skip) {
+                for (const connection of chromosome.connections) {
+                    if (connection.source === node1 && connection.target === node2 && connection.recurrent && recurrentConnection) {
+                        skip = true;
+                        break;
+                    }
+
+                    if (connection.source === node1 && connection.target === node2 && !connection.recurrent && !recurrentConnection) {
+                        skip = true;
+                        break;
+                    }
                 }
             }
 
