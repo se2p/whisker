@@ -38,29 +38,32 @@ class TestRunner extends EventEmitter {
             }
 
             for (let i = 0; i < modelProps.repetitions; i++) {
-                results.push(await this._executeTest(vm, project, undefined, modelTester, props, modelProps));
+                let result = await this._executeTest(vm, project, undefined, modelTester, props, modelProps);
+                result.modelResult.testNbr = i;
+                this.emit(TestRunner.TEST_MODEL, result);
+                results.push(result);
             }
         } else {
             // test by both, tests and model
             for (const test of tests) {
                 let result;
 
-            if (test.skip) {
-                result = new TestResult(test);
-                result.status = Test.SKIP;
-                this.emit(TestRunner.TEST_SKIP, result);
+                if (test.skip) {
+                    result = new TestResult(test);
+                    result.status = Test.SKIP;
+                    this.emit(TestRunner.TEST_SKIP, result);
 
-            } else {
-                result = await this._executeTest(vm, project, test, modelTester, props, modelProps);
-                switch (result.status) {
-                case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
-                case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
-                case Test.ERROR: this.emit(TestRunner.TEST_ERROR, result); break;
-                case Test.SKIP: this.emit(TestRunner.TEST_SKIP, result); break;
+                } else {
+                    result = await this._executeTest(vm, project, test, modelTester, props, modelProps);
+                    switch (result.status) {
+                       case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
+                       case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
+                       case Test.ERROR: this.emit(TestRunner.TEST_ERROR, result); break;
+                       case Test.SKIP: this.emit(TestRunner.TEST_SKIP, result); break;
+                    }
                 }
-            }
 
-            results.push(result);
+                results.push(result);
 
                 if (this.aborted) {
                     return null;
@@ -142,12 +145,10 @@ class TestRunner extends EventEmitter {
                 }
             }
         } else if (modelTester && modelTester.someModelLoaded()) {
-            // todo output model repeition nbr #
             // Start the test run with either a maximal duration or until the program stops
             await testDriver.runUntil(() => {
                 return !testDriver.isProjectRunning();
             }, modelProps.duration);
-            // todo output the model errors
         }
 
         if (modelTester && modelTester.someModelLoaded()) {
@@ -200,6 +201,13 @@ class TestRunner extends EventEmitter {
      */
     static get TEST_START () {
         return 'testStart';
+    }
+
+    /**
+     * @return {string}
+     */
+    static get TEST_MODEL () {
+        return 'testModel';
     }
 
     /**

@@ -1,9 +1,9 @@
 class ModelResult {
     constructor() {
         /**
-         * @type {?string}
+         * @type {number}
          */
-        this.status = null;
+        this.testNbr = undefined;
 
         /**
          * @type {string[]}

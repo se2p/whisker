@@ -26,11 +26,13 @@ class TAP13Listener {
 
         this._onRunStart = this.onRunStart.bind(this);
         this._onTestDone = this.onTestDone.bind(this);
+        this._onModelTestDone = this.onModelTestDone.bind(this);
         this._onRunCancel = this.onRunCancel.bind(this);
 
         testRunner.on(TestRunner.RUN_START, this._onRunStart);
         testRunner.on(TestRunner.RUN_CANCEL, this._onRunCancel);
         testRunner.on(TestRunner.TEST_PASS, this._onTestDone);
+        testRunner.on(TestRunner.TEST_MODEL, this._onModelTestDone);
         testRunner.on(TestRunner.TEST_FAIL, this._onTestDone);
         testRunner.on(TestRunner.TEST_ERROR, this._onTestDone);
         testRunner.on(TestRunner.TEST_SKIP, this._onTestDone);
@@ -46,6 +48,7 @@ class TAP13Listener {
         this.testRunner.off(TestRunner.RUN_START, this._onRunStart);
         this.testRunner.off(TestRunner.RUN_CANCEL, this._onRunCancel);
         this.testRunner.off(TestRunner.TEST_PASS, this._onTestDone);
+        this.testRunner.off(TestRunner.TEST_MODEL, this._onModelTestDone);
         this.testRunner.off(TestRunner.TEST_FAIL, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_ERROR, this._onTestDone);
         this.testRunner.off(TestRunner.TEST_SKIP, this._onTestDone);
@@ -69,6 +72,29 @@ class TAP13Listener {
                 ].join('\n')
             );
         }
+    }
+
+    /**
+     * @param {TestResult} result .
+     */
+    onModelTestDone(result) {
+        let success = result.modelResult.errors.length === 0;
+        const testIndex = result.modelResult.testNbr;
+        const testName = "model-test"
+        const yamlOutput = {};
+        if (!success) {
+            yamlOutput.severity = result.status;
+        }
+
+        if (result.modelResult.errors.length > 0) {
+            yamlOutput.modelErrors = result.modelResult.errors;
+        }
+        const output = [`${success ? 'ok' : 'not ok'} ${testName} #${testIndex} `];
+        if (Object.keys(yamlOutput).length) {
+            output.push(TAP13Formatter.descriptionToYAML(yamlOutput));
+        }
+
+        this.print(output.join('\n'));
     }
 
     /**
