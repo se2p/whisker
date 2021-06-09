@@ -227,7 +227,8 @@ export class ModelTester extends EventEmitter {
         }
         this.result.edgeTrace.push(edgeTrace);
         this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-        console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
+        // if (!transition.id.toLowerCase().startsWith("bowl"))
+        //     console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
     }
 
     /**

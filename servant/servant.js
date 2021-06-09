@@ -248,7 +248,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
             await (await page.$('#fileselect-models')).uploadFile(modelPath);
             await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, modelRepetition);
             await page.evaluate(factor => document.querySelector('#model-duration').value = factor, modelDuration);
-            if (modelCaseSensitive) {
+            if (modelCaseSensitive === "true") {
                 await (await page.$('#model-case-sensitive')).click();
             }
         }
