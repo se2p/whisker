@@ -186,7 +186,7 @@ export class ModelLoaderXML {
             this.idUndefined++;
         } else {
             if ((this.edgesMapProgram)[edgeAttr.id]) {
-                edgeID =  graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
+                edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
                 console.warn("Model Loader: ID '" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
@@ -217,7 +217,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
         }
 
-        setUpCondition(newEdge, edgeAttr.condition);
+        setUpCondition(newEdge, edgeAttr.condition, edgeAttr.forceTestAfter, edgeAttr.forceTestAt);
         if (edgeAttr.effect) {
             setUpEffect(newEdge, edgeAttr.effect);
         }
@@ -233,7 +233,7 @@ export class ModelLoaderXML {
             this.idUndefined++;
         } else {
             if ((this.edgesMapUser)[edgeAttr.id]) {
-                edgeID =  graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapUser).length;
+                edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapUser).length;
                 console.warn("Model Loader: ID '" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
@@ -263,7 +263,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
         }
 
-        setUpCondition(newEdge, edgeAttr.condition);
+        setUpCondition(newEdge, edgeAttr.condition, edgeAttr.forceTestAfter, edgeAttr.forceTestAt);
         if (edgeAttr.effect) {
             setUpInputEffect(newEdge, edgeAttr.effect);
         }

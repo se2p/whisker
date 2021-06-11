@@ -3,19 +3,25 @@ import {ProgramModel} from "../components/ProgramModel";
 import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
 import {UserModel} from "../components/UserModel";
+import {Condition} from "../components/Condition";
 
 function getEffectFailedOutput(effect: Effect) {
-    let edge = effect.edge;
-    return "Effect failed! Model=" + edge.getModel().id + ". Edge=" + edge.id + ". Effect="
-        + effect.toString();
+    return "Effect failed! Edge=" + effect.edge.id + ". Effect=" + effect.toString();
+}
+
+export const TIME_LIMIT_ERROR = "Condition time limit failed! Edge=";
+function getTimeLimitFailedError(condition: Condition) {
+    return new Error(TIME_LIMIT_ERROR + condition.edge.id + ". Condition=" + condition.toString());
 }
 
 function getErrorOnEdgeOutput(model: ProgramModel | UserModel, edge: ModelEdge, error: string) {
-    return "Error was thrown. Model=" + model.id + ". Edge=" + edge.id + ": " + error;
+    return "Error was thrown. Edge=" + edge.id + ": " + error;
 }
 
 function getConstraintFailedOutput(effect: Effect) {
-    return "Constraint failed! " + effect.toString();
+    let edge = effect.edge;
+    return "Constraint failed! Edge=" + edge.id + ". Effect="
+        + effect.toString();
 }
 
 function getConstraintsFailedError(failedConstraints: string) {
@@ -94,6 +100,7 @@ export {
     getComparisonNotKnownError,
     getFunctionEvalError,
     getEmptyExpressionError,
+    getTimeLimitFailedError,
     getExpressionEndTagMissingError,
     getExpressionEnterError,
     getRGBRangeError,

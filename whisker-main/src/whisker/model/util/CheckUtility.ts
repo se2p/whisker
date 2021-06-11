@@ -197,17 +197,12 @@ export class CheckUtility {
         let effects = edge.effects;
         let hadError = false;
         let output = [];
-        function makeFailedOutput(testDriver, effect) {
-            let output = getConstraintFailedOutput(effect);
-            console.error(output);
-            modelResult.addError(output);
-            return output;
-        }
-
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check()) {
-                makeFailedOutput(this.testDriver, effects[i]);
-                output.push(getConstraintFailedOutput(effects[i]));
+                let error = getConstraintFailedOutput(effects[i]);
+                modelResult.addError(error);
+                output.push(error);
+                console.error(error, this.testDriver.getTotalStepsExecuted());
                 hadError = true;
             }
         }

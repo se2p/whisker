@@ -16,9 +16,10 @@ export enum CheckName {
     VarChange = "VarChange", // sprite name, var name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
     VarComp = "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
     Expr = "Expr", // evaluate an expression, args: expression
-    Probability = "Probability" // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks
+    Probability = "Probability", // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks
     // rand<=prob) (but this probability depends on the other edge conditions tested before -> edge conditions are
     // tested one for one and not tested if another edge is taken before it)
+    TimeElapsed = "TimeElapsed" // time in seconds
 }
 
 /**
@@ -71,6 +72,7 @@ export abstract class Check {
             case CheckName.Click:
             case CheckName.Probability:
             case CheckName.Expr:
+            case CheckName.TimeElapsed:
                 _testArgs(1);
                 break;
             case CheckName.Output:
@@ -134,6 +136,8 @@ export abstract class Check {
                 return CheckGenerator.getExpressionCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.Probability:
                 return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
+            case CheckName.TimeElapsed:
+                return CheckGenerator.getTimeElapsedCheck(t, this._negated, this._args[0]);
             default:
                 return undefined;
         }

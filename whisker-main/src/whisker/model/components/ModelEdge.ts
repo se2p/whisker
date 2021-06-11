@@ -5,7 +5,7 @@ import {Condition} from "./Condition";
 import ModelResult from "../../../test-runner/model-result";
 import {ProgramModel} from "./ProgramModel";
 import {CheckUtility} from "../util/CheckUtility";
-import {getErrorOnEdgeOutput} from "../util/ModelError";
+import {getErrorOnEdgeOutput, TIME_LIMIT_ERROR} from "../util/ModelError";
 import {UserModel} from "./UserModel";
 import {InputEffect} from "./InputEffect";
 
@@ -34,14 +34,20 @@ export abstract class ModelEdge {
 
         for (let i = 0; i < this.conditions.length; i++) {
             try {
-                if (!this.conditions[i].check()) {
+                if (!this.conditions[i].check(testDriver)) {
                     failedConditions.push(this.conditions[i]);
                 }
             } catch (e) {
-                let error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
-                console.error(error);
-                failedConditions.push(this.conditions[i]);
-                modelResult.addError(error);
+                if (e.message.startsWith(TIME_LIMIT_ERROR)) {
+                    modelResult.addError(e.message);
+                    failedConditions.push(this.conditions[i]); // still do not take this edge...
+                    console.error(e.message);
+                    this.resetTimeStamps();
+                } else {
+                    let error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
+                    console.error(error);
+                    modelResult.addError(error);
+                }
             }
         }
 
@@ -94,6 +100,15 @@ export abstract class ModelEdge {
      * Get the model of this edge.
      */
     abstract getModel();
+
+    /**
+     * Reset the time condition time stamps.
+     */
+    resetTimeStamps() {
+        this.conditions.forEach(cond => {
+            cond.reset();
+        })
+    }
 }
 
 /**
@@ -177,7 +192,9 @@ export class UserModelEdge extends ModelEdge {
     }
 
     reset() {
-        // nothing to reset
+        this.conditions.forEach(cond => {
+            cond.reset();
+        })
     }
 
     /**

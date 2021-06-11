@@ -7,226 +7,221 @@ describe('Condition', () => {
     test("no arguments", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Condition(dummyEdge, CheckName.Key, true, []);
+            new Condition(dummyEdge, CheckName.Key, true, undefined, undefined, []);
         }).toThrow();
         expect(() => {
-            new Condition(dummyEdge, CheckName.Key, true, [undefined])
+            new Condition(dummyEdge, CheckName.Key, true, undefined, undefined, [undefined])
         }).toThrow();
 
         expect(() => {
-            new Condition(dummyEdge, CheckName.Click, true, []);
+            new Condition(dummyEdge, CheckName.Click, true, undefined, undefined, []);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.Click, true, [undefined]);
-        }).toThrow()
-
-        expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, []);
-        }).toThrow()
-        expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteTouching, true, []);
+            new Condition(dummyEdge, CheckName.Click, true, undefined, undefined, [undefined]);
         }).toThrow()
 
         expect(() => {
-            new Condition(dummyEdge, CheckName.Function, true, []);
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, []);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.Function, true, [undefined]);
-        }).toThrow()
-
-        expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, []);
-        }).toThrow()
-        expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, []);
+            new Condition(dummyEdge, CheckName.SpriteTouching, true, undefined, undefined, []);
         }).toThrow()
 
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarChange, true, []);
+            new Condition(dummyEdge, CheckName.Function, true, undefined, undefined, []);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrChange, true, []);
+            new Condition(dummyEdge, CheckName.Function, true, undefined, undefined, [undefined]);
+        }).toThrow()
+
+        expect(() => {
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, []);
+        }).toThrow()
+        expect(() => {
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, []);
+        }).toThrow()
+
+        expect(() => {
+            new Condition(dummyEdge, CheckName.VarChange, true, undefined, undefined, []);
+        }).toThrow()
+        expect(() => {
+            new Condition(dummyEdge, CheckName.AttrChange, true, undefined, undefined, []);
         }).toThrow()
     })
 
     test("not enough arguments: sprite color", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, ["test"])
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, ["test"])
         }).toThrow();
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, ["test", "0"])
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, ["test", "0"])
         }).toThrow();
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, ["test", "0", "1"])
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, ["test", "0", "1"])
         }).toThrow();
 
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, [undefined, "test", "0", "1"])
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, [undefined, undefined, "test", "0", "1"])
         }).toThrow();
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, ["test", undefined, "0", "1"])
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, ["test", undefined, undefined, "0", "1"])
         }).toThrow();
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, ["test", "0", undefined, "1"])
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, ["test", "0", undefined, undefined, "1"])
         }).toThrow();
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteColor, true, ["test", "0", "2", undefined])
+            new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, ["test", "0", "2", undefined])
         }).toThrow();
     })
 
     test("not enough arguments: sprite touching", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteTouching, true, ["test"]);
+            new Condition(dummyEdge, CheckName.SpriteTouching, true, undefined, undefined, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteTouching, true, ["test", undefined]);
+            new Condition(dummyEdge, CheckName.SpriteTouching, true, undefined, undefined, ["test", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.SpriteTouching, true, [undefined, "test"]);
+            new Condition(dummyEdge, CheckName.SpriteTouching, true, undefined, undefined, [undefined, undefined, "test"]);
         }).toThrow()
     })
 
     test("not enough arguments: variable effect", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, ["test"]);
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, ["test", "test2"]);
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, ["test", "test2", ">"]);
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, ["test", "test2", ">"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, ["test", "test2", ">", undefined]);
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, ["test", "test2", ">", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, ["test", "test2", undefined]);
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, ["test", undefined, "test2"]);
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, ["test", undefined, undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarComp, true, [undefined, "test", "test2"]);
+            new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, [undefined, undefined, "test", "test2"]);
         }).toThrow()
     })
 
     test("not enough arguments: attribute comparison", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, ["test"]);
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, ["test", "test2"]);
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, ["test", "test2", ">"]);
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, ["test", "test2", ">"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, ["test", "test2", ">", undefined]);
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, ["test", "test2", ">", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, ["test", "test2", undefined]);
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, ["test", undefined, "test2"]);
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, ["test", undefined, undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrComp, true, [undefined, "test", "test2"]);
+            new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, [undefined, undefined, "test", "test2"]);
         }).toThrow()
     })
 
     test("not enough arguments: variable change", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarChange, true, ["test"]);
+            new Condition(dummyEdge, CheckName.VarChange, true, undefined, undefined, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarChange, true, ["test", "test2"]);
+            new Condition(dummyEdge, CheckName.VarChange, true, undefined, undefined, ["test", "test2"]);
         }).toThrow()
 
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarChange, true, ["test", "test2", undefined]);
+            new Condition(dummyEdge, CheckName.VarChange, true, undefined, undefined, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarChange, true, [undefined, "test", "test2"]);
+            new Condition(dummyEdge, CheckName.VarChange, true, undefined, undefined, [undefined, undefined, "test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.VarChange, true, ["test", undefined, "test2"]);
+            new Condition(dummyEdge, CheckName.VarChange, true, undefined, undefined, ["test", undefined, undefined, "test2"]);
         }).toThrow()
     })
 
     test("not enough arguments: attribute change", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrChange, true, ["test"]);
+            new Condition(dummyEdge, CheckName.AttrChange, true, undefined, undefined, ["test"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrChange, true, ["test", "test2"]);
+            new Condition(dummyEdge, CheckName.AttrChange, true, undefined, undefined, ["test", "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrChange, true, ["test", "test2", undefined]);
+            new Condition(dummyEdge, CheckName.AttrChange, true, undefined, undefined, ["test", "test2", undefined]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrChange, true, ["test", undefined, "test2"]);
+            new Condition(dummyEdge, CheckName.AttrChange, true, undefined, undefined, ["test", undefined, undefined, "test2"]);
         }).toThrow()
         expect(() => {
-            new Condition(dummyEdge, CheckName.AttrChange, true, [undefined, "test", "test2"]);
+            new Condition(dummyEdge, CheckName.AttrChange, true, undefined, undefined, [undefined, undefined, "test", "test2"]);
         }).toThrow()
     })
 
     test("conditions", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            let condition = new Condition(dummyEdge, CheckName.Key, true, ["test"]);
+            let condition = new Condition(dummyEdge, CheckName.Key, true, undefined, undefined, ["test"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.Click, true, ["test"]);
+            condition = new Condition(dummyEdge, CheckName.Click, true, undefined, undefined, ["test"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.SpriteColor, true, ["test", "0", "1", "2"]);
+            condition = new Condition(dummyEdge, CheckName.SpriteColor, true, undefined, undefined, ["test", "0", "1", "2"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.SpriteTouching, true, ["test", "test2"]);
+            condition = new Condition(dummyEdge, CheckName.SpriteTouching, true, undefined, undefined, ["test", "test2"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.Function, true, ["()=>{return null;}"]);
+            condition = new Condition(dummyEdge, CheckName.Function, true, undefined, undefined, ["()=>{return null;}"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">", "0"]);
+            condition = new Condition(dummyEdge, CheckName.VarComp, true, undefined, undefined, ["sprite", "var", ">", "0"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
+            condition = new Condition(dummyEdge, CheckName.AttrComp, true, undefined, undefined, ["sprite", "attr", ">", "0"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.VarChange, true, ["test", "var", "+"]);
+            condition = new Condition(dummyEdge, CheckName.VarChange, true, undefined, undefined, ["test", "var", "+"]);
             condition.toString();
-            condition = new Condition(dummyEdge, CheckName.AttrChange, false, ["test", "attr", "-"]);
+            condition = new Condition(dummyEdge, CheckName.AttrChange, false, undefined, undefined, ["test", "attr", "-"]);
             condition.toString();
         }).not.toThrow();
-
-        expect(() => {
-            let condition = new Condition(dummyEdge, CheckName.Key, true, ["test"]);
-            condition.check();
-        }).toThrow();
     })
 
     test("get condition", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         let condString = "AttrChange:Cat:x:+";
         expect(() => {
-            setUpCondition(dummyEdge, condString);
+            setUpCondition(dummyEdge, condString, undefined, undefined);
         }).not.toThrow();
         condString = "Function:()=>{return true;}";
         expect(() => {
-            setUpCondition(dummyEdge, condString);
+            setUpCondition(dummyEdge, condString, undefined, undefined);
         }).not.toThrow();
         condString = "!AttrChange:Cat:x:+";
         expect(() => {
-            setUpCondition(dummyEdge, condString);
+            setUpCondition(dummyEdge, condString, undefined, undefined);
         }).not.toThrow();
         expect(() => {
-            setUpCondition(null, condString);
+            setUpCondition(null, condString, undefined, undefined);
         }).toThrow();
 
         condString = "AttrChange"
         expect(() => {
-            setUpCondition(dummyEdge, condString);
+            setUpCondition(dummyEdge, condString, undefined, undefined);
         }).toThrow();
     })
 

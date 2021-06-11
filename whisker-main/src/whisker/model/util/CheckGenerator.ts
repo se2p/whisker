@@ -375,11 +375,27 @@ export abstract class CheckGenerator {
      * @param probability The probability e.g. 0.5.
      */
     static getProbabilityCheck(t: TestDriver, negated: boolean, probability: string) {
-        ModelUtil.testNumber(probability);
-        let prob = Number(probability.toString());
+        let prob = ModelUtil.testNumber(probability);
 
         return () => {
             if (Randomness.getInstance().nextDouble() <= prob) {
+                return !negated;
+            }
+            return negated;
+        }
+    }
+
+    /**
+     * Get a method that checks whether enough time has elapsed since the test runner started the test.
+     * @param t Instance of the test driver.
+     * @param negated Whether this check is negated.
+     * @param timeInMS Time in milliseconds.
+     */
+    static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string) {
+        let time = ModelUtil.testNumber(timeInMS);
+
+        return () => {
+            if (time <= t.getTotalTimeElapsed()) {
                 return !negated;
             }
             return negated;

@@ -98,11 +98,8 @@ export abstract class ModelUtil {
         if (change == '=' || change == '==') {
             return oldValue == newValue;
         }
-        this.testNumber(oldValue);
-        this.testNumber(newValue);
-
-        oldValue = Number(oldValue.toString());
-        newValue = Number(newValue.toString())
+        oldValue = this.testNumber(oldValue);
+        newValue = this.testNumber(newValue);
 
         if (change != "" && change.startsWith("+") && change.length > 1) {
             change = change.substring(1, change.length);
@@ -131,10 +128,11 @@ export abstract class ModelUtil {
     /**
      * Test whether a value is a number.
      */
-    static testNumber(value) {
+    static testNumber(value): number {
         if (!((value != null) && (value !== '') && !isNaN(Number(value.toString())))) {
             throw getNotANumericalValueError(value);
         }
+        return Number(value.toString());
     }
 
     /**
@@ -157,10 +155,8 @@ export abstract class ModelUtil {
             }
             return value1 == value2;
         }
-        this.testNumber(value1);
-        this.testNumber(value2);
-        value1 = Number(value1.toString());
-        value2 = Number(value2.toString());
+        value1 = this.testNumber(value1);
+        value2 = this.testNumber(value2);
 
         if (comparison === ">") {
             return value1 > value2;
@@ -204,6 +200,7 @@ export abstract class ModelUtil {
      * Returns a function needing a test driver instance that evaluates the expression by getting the correct
      * sprites and their attributes or values and combining the original expression parts.
      * @param t Instance of the test driver.
+     * @param caseSensitive Whether the names of sprites and variables should be tested case sensitive.
      * @param toEval Expression to evaluate and make into a function.
      */
     static getExpressionForEval(t: TestDriver, caseSensitive: boolean, toEval: string): string {
@@ -223,17 +220,33 @@ export abstract class ModelUtil {
             return "(t) => {return " + toEval + "}";
         }
 
-        let startIndex;
-        let endIndex;
+
 
         if (toEval.indexOf("\n") != -1) {
             throw getExpressionEnterError();
         }
 
+        let expression = this._getExpression(t, caseSensitive, toEval);
+
+        // test it beforehand
+        try {
+            eval(expression)(t);
+        } catch (e) {
+            throw e;
+        }
+
+        return expression;
+    }
+
+    private static _getExpression(t: TestDriver, caseSensitive: boolean, toEval: string): string {
+        let startIndex;
+        let endIndex;
         let expression = "return ";
         let inits = "(t) => {\n";
         let subexpression;
         let index = 0;
+
+        let spriteMap: {[key: string]: number} = {};
 
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
             endIndex = toEval.indexOf(this.EXPR_END);
@@ -245,7 +258,7 @@ export abstract class ModelUtil {
             }
 
             let fillerBetween = toEval.substring(0, startIndex);
-            if (fillerBetween == "=") {
+            if (fillerBetween == "=" || (fillerBetween.endsWith("=") && !fillerBetween.endsWith("=="))) {
                 fillerBetween += "=";
             }
             expression += fillerBetween;
@@ -256,29 +269,24 @@ export abstract class ModelUtil {
             let spriteName = subexpression.substring(0, pointIndex);
             let attrName = subexpression.substring(pointIndex + 1, subexpression.length);
 
-            let spriteString = this.getSpriteString(t, caseSensitive, index, spriteName);
-            inits += spriteString;
+            if (spriteMap[spriteName] == undefined) {
+                let spriteString = this.getSpriteString(t, caseSensitive, index, spriteName);
+                spriteMap[spriteName] = index;
+                inits += spriteString;
+                index++;
+            }
 
             if (this.isAnAttribute(attrName)) {
-                expression += "sprite" + index + "." + attrName;
+                expression += "sprite" + spriteMap[spriteName] + "." + attrName;
             } else {
-                inits += this.getVariableString(t, caseSensitive, index, spriteName, attrName);
+                inits += this.getVariableString(t, caseSensitive, spriteMap[spriteName], spriteName, attrName);
                 expression += "variable" + index;
             }
 
-            index++;
         }
         // rest of the toEval
         expression += toEval;
         expression = inits + expression + ";\n}";
-
-        // test it beforehand
-        try {
-            eval(expression)(t);
-        } catch (e) {
-            throw e;
-        }
-
         return expression;
     }
 }

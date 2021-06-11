@@ -3,18 +3,33 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelEdge} from "./ModelEdge";
 import {Check, CheckName} from "./Check";
 import ModelResult from "../../../test-runner/model-result";
+import {getTimeLimitFailedError} from "../util/ModelError";
 
 /**
  * Evaluate the conditions for the given edge.
  * @param newEdge Edge with the given condition.
  * @param condString String representing the conditions.
+ * @param forceTestAfter Force testing this condition after given amount of milliseconds.
+ * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
  */
-export function setUpCondition(newEdge: ModelEdge, condString: string) {
+export function setUpCondition(newEdge: ModelEdge, condString: string, forceTestAfter, forceTestAt) {
     const conditions = condString.split(",");
+
+    if (forceTestAfter == undefined) {
+        forceTestAfter = -1;
+    } else {
+        forceTestAfter = Number(forceTestAfter.toString());
+    }
+
+    if (forceTestAt == undefined) {
+        forceTestAt = -1;
+    } else {
+        forceTestAt = Number(forceTestAt.toString());
+    }
 
     try {
         conditions.forEach(cond => {
-            newEdge.addCondition(getCondition(newEdge, cond.trim()));
+            newEdge.addCondition(getCondition(newEdge, cond.trim(), forceTestAfter, forceTestAt));
         })
     } catch (e) {
         throw new Error("Edge '" + newEdge.id + "': " + e.message);
@@ -26,8 +41,10 @@ export function setUpCondition(newEdge: ModelEdge, condString: string) {
  * '!' at the beginning. Splits the condition string based on ':'.
  * @param edge Edge with the given condition string.
  * @param condString String part on the edge of the xml file that is the condition.
+ * @param forceTestAfter Force testing this condition after given amount of milliseconds.
+ * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
  */
-export function getCondition(edge: ModelEdge, condString): Condition {
+export function getCondition(edge: ModelEdge, condString, forceTestAfter: number, forceTestAt: number): Condition {
     let negated = false;
     if (condString.startsWith("!")) {
         negated = true;
@@ -41,14 +58,14 @@ export function getCondition(edge: ModelEdge, condString): Condition {
         for (let i = 1; i < parts.length; i++) {
             theFunction += parts[i];
         }
-        return new Condition(edge, CheckName.Function, negated, [theFunction]);
+        return new Condition(edge, CheckName.Function, negated, forceTestAfter, forceTestAt, [theFunction]);
     }
 
 
     if (parts.length < 2) {
         throw new Error("Edge condition not correctly formatted. ':' missing.");
     }
-    return new Condition(edge, parts[0], negated, parts.splice(1, parts.length));
+    return new Condition(edge, parts[0], negated, forceTestAfter, forceTestAt, parts.splice(1, parts.length));
 }
 
 /**
@@ -56,17 +73,27 @@ export function getCondition(edge: ModelEdge, condString): Condition {
  */
 export class Condition extends Check {
     private _condition: () => boolean;
+    private readonly forceTestAfter: number;
+    private readonly forceTestAt: number;
+    private firstCheck: boolean;
+    private timeStamp: number;
 
     /**
      * Get a condition instance. Checks the number of arguments for a condition type.
      * @param edge Parent edge.
      * @param name Type name of the condition.
      * @param negated Whether the condition is negated.
+     * @param forceTestAfter Force testing this condition after given amount of milliseconds.
+     * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
      * @param args The arguments for the condition to check later on.
      */
-    constructor(edge: ModelEdge, name: CheckName, negated: boolean, args: any[]) {
+    constructor(edge: ModelEdge, name: CheckName, negated: boolean, forceTestAfter: number, forceTestAt: number,
+                args: any[]) {
         let newID = edge.id + ".condition" + (edge.conditions.length + 1);
         super(newID, edge, name, args, negated);
+        this.forceTestAfter = forceTestAfter;
+        this.forceTestAt = forceTestAt;
+        this.firstCheck = true;
     }
 
     /**
@@ -84,7 +111,15 @@ export class Condition extends Check {
     /**
      * Check the edge condition.
      */
-    check(): boolean {
+    check(t: TestDriver): boolean {
+        if (this.firstCheck) {
+            this.firstCheck = false;
+            this.timeStamp = t.getTotalTimeElapsed();
+        }
+        if ((this.forceTestAt != -1 && this.forceTestAt <= t.getTotalTimeElapsed())
+            || (this.forceTestAfter != -1 && this.forceTestAfter <= (t.getTotalTimeElapsed() - this.timeStamp))) {
+            throw getTimeLimitFailedError(this);
+        }
         return this._condition();
     }
 
@@ -94,6 +129,11 @@ export class Condition extends Check {
      */
     get condition(): () => boolean {
         return this._condition;
+    }
+
+    reset() {
+        this.firstCheck = true;
+        this.timeStamp = undefined;
     }
 
     /**
