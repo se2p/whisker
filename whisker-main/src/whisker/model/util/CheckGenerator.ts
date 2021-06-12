@@ -10,6 +10,7 @@ import {
     getRGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
+import {ModelEdge} from "../components/ModelEdge";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -396,6 +397,17 @@ export abstract class CheckGenerator {
 
         return () => {
             if (time <= t.getTotalTimeElapsed()) {
+                return !negated;
+            }
+            return negated;
+        }
+    }
+
+    static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
+        let time = ModelUtil.testNumber(timeInMS);
+        let model = edge.getModel();
+        return () => {
+            if (time <= (t.getTotalTimeElapsed() - model.timeStampLastTransition)) {
                 return !negated;
             }
             return negated;

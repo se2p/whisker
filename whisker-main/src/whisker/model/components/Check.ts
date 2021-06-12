@@ -19,7 +19,8 @@ export enum CheckName {
     Probability = "Probability", // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks
     // rand<=prob) (but this probability depends on the other edge conditions tested before -> edge conditions are
     // tested one for one and not tested if another edge is taken before it)
-    TimeElapsed = "TimeElapsed" // time in seconds
+    TimeElapsed = "TimeElapsed", // time from the test start on, time in milliseconds
+    TimeBetween = "TimeBetween" //  time from the last edge transition in the model, in milliseconds
 }
 
 /**
@@ -73,6 +74,7 @@ export abstract class Check {
             case CheckName.Probability:
             case CheckName.Expr:
             case CheckName.TimeElapsed:
+            case CheckName.TimeBetween:
                 _testArgs(1);
                 break;
             case CheckName.Output:
@@ -138,6 +140,8 @@ export abstract class Check {
                 return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             case CheckName.TimeElapsed:
                 return CheckGenerator.getTimeElapsedCheck(t, this._negated, this._args[0]);
+            case CheckName.TimeBetween:
+                return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0], this.edge);
             default:
                 return undefined;
         }

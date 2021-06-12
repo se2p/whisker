@@ -17,7 +17,6 @@ import ModelResult from "../../../test-runner/model-result";
  * taken. So that it not gets ambiguous.
  */
 export class ProgramModel {
-
     readonly id: string;
     protected readonly startNode: ModelNode;
     protected currentState: ModelNode;
@@ -28,6 +27,8 @@ export class ProgramModel {
 
     protected coverageCurrentRun: { [key: string]: boolean } = {};
     protected coverageTotal: { [key: string]: boolean } = {};
+
+    private _timeStampLastTransition: number;
 
     /**
      * Construct a program model (graph) with a string identifier. Sets up the start node and stop nodes for
@@ -62,6 +63,7 @@ export class ProgramModel {
             this.coverageCurrentRun[edge.id] = true;
             this.coverageTotal[edge.id] = true;
             this.currentState = edge.getEndNode();
+            this._timeStampLastTransition = testDriver.getTotalTimeElapsed();
         }
         return edge;
     }
@@ -130,5 +132,12 @@ export class ProgramModel {
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(checkListener, testDriver, result, caseSensitive);
         })
+    }
+
+    /**
+     * Get the elapsed time that the last edge was taken in this model.
+     */
+    get timeStampLastTransition(): number {
+        return this._timeStampLastTransition;
     }
 }

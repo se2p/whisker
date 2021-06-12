@@ -118,7 +118,11 @@ export class Condition extends Check {
         }
         if ((this.forceTestAt != -1 && this.forceTestAt <= t.getTotalTimeElapsed())
             || (this.forceTestAfter != -1 && this.forceTestAfter <= (t.getTotalTimeElapsed() - this.timeStamp))) {
-            throw getTimeLimitFailedError(this);
+            if (!this._condition()) {
+                throw getTimeLimitFailedError(this);
+            } else {
+                return true;
+            }
         }
         return this._condition();
     }
@@ -140,7 +144,7 @@ export class Condition extends Check {
      * Get a compact representation for this condition for edge tracing.
      */
     toString() {
-        let result = this.name + "(";
+        let result = this._negated ? "!" : "" + this.name + "(";
 
         if (this.args.length == 1) {
             result = result + this.args[0];
@@ -149,8 +153,11 @@ export class Condition extends Check {
         }
 
         result = result + ")";
-        if (this._negated) {
-            result = result + " (negated)";
+        if (this.forceTestAt != -1) {
+            result += " at " + this.forceTestAt + "ms";
+        }
+        if (this.forceTestAfter != -1) {
+            result += " after " + this.forceTestAfter + "ms";
         }
         return result;
     }
