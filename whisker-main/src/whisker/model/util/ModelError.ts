@@ -24,13 +24,8 @@ function getConstraintFailedOutput(effect: Effect) {
         + effect.toString();
 }
 
-function getConstraintsFailedError(failedConstraints: string) {
-    return new Error("Constraints failed! " + failedConstraints + "\n-> Model stopped for this test after" +
-        " constraint checks!");
-}
 
-
-// Variables, sprites, attributes not found and other initialization errors
+// ----- Variables, sprites, attributes not found and other initialization errors
 
 function getVariableNotFoundError(variableName: string, spriteName: string) {
     return new Error("Variable not found: " + spriteName + "." + variableName);
@@ -92,7 +87,6 @@ export {
     getEffectFailedOutput,
     getErrorOnEdgeOutput,
     getConstraintFailedOutput,
-    getConstraintsFailedError,
     getVariableNotFoundError,
     getAttributeNotFoundError,
     getSpriteNotFoundError,

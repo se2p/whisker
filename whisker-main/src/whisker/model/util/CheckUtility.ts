@@ -4,7 +4,6 @@ import {Effect} from "../components/Effect";
 import {ProgramModelEdge} from "../components/ModelEdge";
 import {
     getConstraintFailedOutput,
-    getConstraintsFailedError,
     getEffectFailedOutput,
     getErrorOnEdgeOutput
 } from "./ModelError";
@@ -195,21 +194,11 @@ export class CheckUtility {
      */
     checkEffectsConstraint(edge: ProgramModelEdge, modelResult: ModelResult) {
         let effects = edge.effects;
-        let hadError = false;
-        let output = [];
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check()) {
                 let error = getConstraintFailedOutput(effects[i]);
                 modelResult.addError(error);
-                output.push(error);
-                console.error(error, this.testDriver.getTotalStepsExecuted());
-                hadError = true;
             }
-        }
-        if (hadError && edge.getEndNode().isStopNode) {
-            let error = getConstraintsFailedError(output.join("/n"));
-            console.error(error.message);
-            throw error;
         }
     }
 

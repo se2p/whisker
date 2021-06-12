@@ -102,77 +102,48 @@ export class ModelTester extends EventEmitter {
     private async addCallbacks(testDriver: TestDriver) {
         let constraintCallback;
         let modelStepCallback;
-        let modelStoppedCallback;
-        let modelStopped = false;
-        let endTimer = 1; // effects can be delayed one step
         this.userInputGen(testDriver, this.result);
 
-        let beforeStepCallback = testDriver.addModelCallback(() => {
-            this.checkUtility.testsBeforeStep();
-        }, false, "testKeys");
-
+        let checkConstraintsModel = [...this.constraintsModels];
         let constraintFunction = () => {
-            this.constraintsModels.forEach(model => {
-                if (model.stopped()) {
-                    constraintCallback.disable(); // there are no more to check
-                    return;
-                }
-            });
-            this.constraintsModels.forEach(model => {
+            let notStoppedModels = [];
+            checkConstraintsModel.forEach(model => {
                 let edge = model.makeOneTransition(testDriver, this.result);
-                try {
-                    if (edge != null && edge instanceof ProgramModelEdge) {
-                        this.checkUtility.checkEffectsConstraint(edge, this.result);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    constraintCallback.disable();
-                    // modelStepCallback.disable();todo test
-                    // modelStoppedCallback.disable();
+                if (edge != null && edge instanceof ProgramModelEdge) {
+                    this.checkUtility.checkEffectsConstraint(edge, this.result);
+                }
+                if (!model.stopped()) {
+                    notStoppedModels.push(model);
                 }
             })
+            checkConstraintsModel = notStoppedModels;
         };
+        let checkProgramModels = [...this.programModels];
         let modelStepFunction = () => {
-            this.programModels.forEach(model => {
-                if (model.stopped()) {
-                    modelStopped = true;
+            this.checkUtility.checkFailedEffects(this.result);
+            let notStoppedModels = [];
+            checkProgramModels.forEach(model => {
+                let takenEdge = model.makeOneTransition(testDriver, this.result);
+                if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
+                    this.checkUtility.registerEffectCheck(takenEdge);
+                    this.edgeTrace(takenEdge, testDriver);
+                }
+                if (!model.stopped()) {
+                    notStoppedModels.push(model);
                 }
             });
+            checkProgramModels = notStoppedModels;
 
-            if (modelStopped) {
-                modelStepCallback.disable();
-                modelStoppedCallback.enable();
-            } else {
-                this.checkUtility.checkFailedEffects(this.result);
-                this.programModels.forEach(model => {
-                    let takenEdge = model.makeOneTransition(testDriver, this.result);
-                    if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
-                        this.checkUtility.registerEffectCheck(takenEdge);
-                        this.edgeTrace(takenEdge, testDriver);
-                    }
-                });
-                let contradictingEffects = this.checkUtility.checkEffects(this.result);
-                if (contradictingEffects && contradictingEffects.length > 0) {
-                    let output = this.contradictingEffectsOutput(contradictingEffects);
-                    console.error("EFFECTS CONTRADICTING", output);
-                    this.result.log.push("EFFECTS CONTRADICTING" + output);
-                    this.emit(ModelTester.MODEL_WARNING, output);
-                }
+            // check the effects of all taken edges
+            let contradictingEffects = this.checkUtility.checkEffects(this.result);
+            if (contradictingEffects && contradictingEffects.length > 0) {
+                let output = this.contradictingEffectsOutput(contradictingEffects);
+                console.error("EFFECTS CONTRADICTING", output);
+                this.result.log.push("EFFECTS CONTRADICTING" + output);
+                this.emit(ModelTester.MODEL_WARNING, output);
             }
+            // }
             this.checkUtility.reset();
-        }
-        let stoppedFunction = () => {
-            if (endTimer == 0) {
-                modelStoppedCallback.disable();
-                beforeStepCallback.disable();
-                if (this.constraintsModels.length > 0) {
-                    constraintCallback.disable();
-                }
-            } else {
-                this.checkUtility.checkFailedEffects(this.result);
-                this.checkUtility.reset();
-                endTimer--;
-            }
         }
 
         // if there is a constraint model loaded add the callback
@@ -186,8 +157,6 @@ export class ModelTester extends EventEmitter {
         // if there is a program model loaded add the callbacks. There is either a program or constraint model!
         if (this.programModels.length > 0) {
             modelStepCallback = testDriver.addModelCallback(modelStepFunction, true, "modelStep");
-            modelStoppedCallback = testDriver.addModelCallback(stoppedFunction, true, "modelStopped");
-            modelStoppedCallback.disable(); // is started when models stop
         }
     }
 
@@ -195,6 +164,8 @@ export class ModelTester extends EventEmitter {
         if (this.userModelsLoaded()) {
             let userInputCallback;
             let userInputFun = () => {
+                // todo temporary bug fix, as steps in key input does not release the key
+                // t.resetKeyboard();
                 this.programModels.forEach(model => {
                     if (model.stopped()) {
                         userInputCallback.disable();
