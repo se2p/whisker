@@ -243,6 +243,13 @@ export class WhiskerSearchConfiguration {
     public getLocalSearchOperators(): List<LocalSearch<any>> {
         const operators = new List<LocalSearch<any>>();
         const localSearchOperators = this.dict['localSearch'];
+
+        // If there are no local search operators defined return an empty list.
+        if(!localSearchOperators) {
+            return new List<LocalSearch<any>>();
+        }
+
+        // Otherwise add the defined local search operators
         for (const operator of localSearchOperators) {
             let type: LocalSearch<any>;
             switch (operator['type']) {

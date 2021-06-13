@@ -237,7 +237,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private async applyLocalSearch() {
         // Maybe we already have found a solution at this point. If this is the case no need to apply local Search
-        if (this._stoppingCondition.isFinished(this))
+        if (this._stoppingCondition.isFinished(this) || this._localSearchOperators.size() === 0)
             return;
 
         // Go through all members of the archive and apply local search to them
