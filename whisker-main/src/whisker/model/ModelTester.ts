@@ -26,6 +26,7 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG = "ModelLog";
     static readonly MODEL_WARNING = "ModelWarning";
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
+    static readonly TIME_LEEWAY = 250;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -102,7 +103,12 @@ export class ModelTester extends EventEmitter {
     private async addCallbacks(testDriver: TestDriver) {
         let constraintCallback;
         let modelStepCallback;
+        let stopAll = false;
         this.userInputGen(testDriver, this.result);
+
+        let beforeStepCallback = testDriver.addModelCallback(() => {
+            this.checkUtility.testsBeforeStep();
+        }, false, "testKeys");
 
         let checkConstraintsModel = [...this.constraintsModels];
         let constraintFunction = () => {
@@ -114,6 +120,9 @@ export class ModelTester extends EventEmitter {
                 }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
+                }
+                if (model.shouldHaltAllModels()) {
+                    stopAll = true;
                 }
             })
             checkConstraintsModel = notStoppedModels;
@@ -131,6 +140,9 @@ export class ModelTester extends EventEmitter {
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
                 }
+                if (model.shouldHaltAllModels()) {
+                    stopAll = true;
+                }
             });
             checkProgramModels = notStoppedModels;
 
@@ -145,6 +157,21 @@ export class ModelTester extends EventEmitter {
             // }
             this.checkUtility.reset();
         }
+        // stop all if any model had a stopAllModels node reached
+        let checkStop = testDriver.addModelCallback(() => {
+            if (stopAll) {
+                this.checkUtility.checkFailedEffects(this.result);
+                this.checkUtility.reset();
+                if (this.programModels.length > 0) {
+                    modelStepCallback.disable();
+                }
+                if (this.constraintsModels.length > 0) {
+                    constraintCallback.disable();
+                }
+                beforeStepCallback.disable();
+                checkStop.disable();
+            }
+        }, true, "stopModelsCheck");
 
         // if there is a constraint model loaded add the callback
         if (this.constraintsModels.length > 0) {

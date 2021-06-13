@@ -4,6 +4,7 @@ import {ModelEdge} from "./ModelEdge";
 import {Check, CheckName} from "./Check";
 import ModelResult from "../../../test-runner/model-result";
 import {getTimeLimitFailedError} from "../util/ModelError";
+import {ModelTester} from "../ModelTester";
 
 /**
  * Evaluate the conditions for the given edge.
@@ -92,7 +93,13 @@ export class Condition extends Check {
         let newID = edge.id + ".condition" + (edge.conditions.length + 1);
         super(newID, edge, name, args, negated);
         this.forceTestAfter = forceTestAfter;
+        if (this.forceTestAfter != -1) {
+            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY;
+        }
         this.forceTestAt = forceTestAt;
+        if (this.forceTestAt != -1) {
+            this.forceTestAt = forceTestAt + ModelTester.TIME_LEEWAY;
+        }
         this.firstCheck = true;
     }
 
@@ -121,7 +128,7 @@ export class Condition extends Check {
             if (!this._condition()) {
                 throw getTimeLimitFailedError(this);
             } else {
-                return true;
+                return this.negated;
             }
         }
         return this._condition();
@@ -144,7 +151,7 @@ export class Condition extends Check {
      * Get a compact representation for this condition for edge tracing.
      */
     toString() {
-        let result = this._negated ? "!" : "" + this.name + "(";
+        let result = (this._negated ? "!" : "") + this.name + "(";
 
         if (this.args.length == 1) {
             result = result + this.args[0];

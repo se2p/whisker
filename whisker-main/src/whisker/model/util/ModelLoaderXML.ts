@@ -22,7 +22,7 @@ import {setUpInputEffect} from "../components/InputEffect";
  *
  * ############ Assumptions ############
  * - only one start node per graph
- * - needs to have start and stop nodes marked
+ * - needs to have start node
  * - edge has a condition and effect noted.
  * - multiple conditions on an edge have to all be fulfilled for the condition to be true
  * - edges that have the same source and target but different conditions are alternatives
@@ -44,7 +44,6 @@ export class ModelLoaderXML {
     private startNode: ModelNode;
     private stopNodes: { [key: string]: ModelNode };
     private nodesMap: { [key: string]: ModelNode };
-    private hasAStopNode: boolean;
     private edgesMapProgram: { [key: string]: ProgramModelEdge };
     private edgesMapUser: { [key: string]: UserModelEdge };
     private graphIDs: string[];
@@ -75,10 +74,6 @@ export class ModelLoaderXML {
             this.edgesMapUser = {};
             this.loadModel(graph);
         })
-
-        if (!this.hasAStopNode) {
-            throw new Error("Graphs have no stop nodes.");
-        }
 
         return {
             programModels: this.programModels,
@@ -120,9 +115,6 @@ export class ModelLoaderXML {
 
         if (!this.startNode) {
             throw new Error("Graph '" + graphID + "':\n" + "Start node not marked.");
-        }
-        if (Object.keys(this.stopNodes).length != 0) {
-            this.hasAStopNode = true;
         }
 
         this.graphIDs.push(graphID);
@@ -169,6 +161,10 @@ export class ModelLoaderXML {
         if (nodeAttr.stopNode && nodeAttr.stopNode == "true") {
             this.stopNodes[nodeAttr.id] = (this.nodesMap[nodeAttr.id]);
             this.nodesMap[nodeAttr.id].isStopNode = true;
+        }
+
+        if (nodeAttr.stopAllModels && nodeAttr.stopAllModels == "true") {
+            this.nodesMap[nodeAttr.id].stopAllModels = true;
         }
     }
 

@@ -221,7 +221,6 @@ export abstract class ModelUtil {
         }
 
 
-
         if (toEval.indexOf("\n") != -1) {
             throw getExpressionEnterError();
         }
@@ -246,7 +245,7 @@ export abstract class ModelUtil {
         let subexpression;
         let index = 0;
 
-        let spriteMap: {[key: string]: number} = {};
+        let spriteMap: { [key: string]: number } = {};
 
         while ((startIndex = toEval.indexOf(this.EXPR_START)) != -1) {
             endIndex = toEval.indexOf(this.EXPR_END);

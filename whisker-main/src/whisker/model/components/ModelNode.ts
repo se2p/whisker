@@ -12,6 +12,7 @@ export class ModelNode {
 
     isStartNode = false;
     isStopNode = false;
+    stopAllModels = false;
 
     /**
      * Node of a graph with an unique id identifier.

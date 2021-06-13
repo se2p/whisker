@@ -98,7 +98,7 @@ export class Effect extends Check {
      * Get a readable output for an failed effect trace.
      */
     toString() {
-        let result = this.negated ? "!" : "" + this.name + "(";
+        let result = (this.negated ? "!" : "") + this.name + "(";
 
         if (this.args.length == 1) {
             result = result + this.args[0];

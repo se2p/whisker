@@ -11,6 +11,7 @@ import {
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
 import {ModelEdge} from "../components/ModelEdge";
+import {ModelTester} from "../ModelTester";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -234,6 +235,10 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             if (sprite.sayText && sprite.sayText != "" && sprite.sayText.indexOf(eval(expression)(t)) != -1) {
+
+                if (!negated) {
+                    console.log(sprite.sayText, t.getTotalTimeElapsed(), t.getTotalStepsExecuted());
+                }
                 return !negated;
             }
             return negated;
@@ -391,25 +396,35 @@ export abstract class CheckGenerator {
      * @param t Instance of the test driver.
      * @param negated Whether this check is negated.
      * @param timeInMS Time in milliseconds.
+     * @param edge The parent edge of the check.
      */
-    static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string) {
-        let time = ModelUtil.testNumber(timeInMS);
-
+    static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
+        let time = ModelUtil.testNumber(timeInMS) - ModelTester.TIME_LEEWAY;
+        let model = edge.getModel();
         return () => {
-            if (time <= t.getTotalTimeElapsed()) {
+            if (time <= model.timeStampLastTransition) {
                 return !negated;
             }
             return negated;
         }
     }
 
+    /**
+     * Get a method that checks whether enough time has elapsed since the last edge transition in the current model.
+     * @param t Instance of the test driver.
+     * @param negated Whether this check is negated.
+     * @param timeInMS Time in milliseconds.
+     * @param edge The parent edge of the check.
+     */
     static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
-        let time = ModelUtil.testNumber(timeInMS);
+        let time = ModelUtil.testNumber(timeInMS) - ModelTester.TIME_LEEWAY;
         let model = edge.getModel();
         return () => {
-            if (time <= (t.getTotalTimeElapsed() - model.timeStampLastTransition)) {
+            if (time <= (model.timeStampLastTransition - model.timeStampPreviousTransition)) {
                 return !negated;
             }
+            console.log(time, model.timeStampPreviousTransition, model.timeStampLastTransition,
+                model.timeStampLastTransition - model.timeStampPreviousTransition);
             return negated;
         }
     }

@@ -28,7 +28,8 @@ export class ProgramModel {
     protected coverageCurrentRun: { [key: string]: boolean } = {};
     protected coverageTotal: { [key: string]: boolean } = {};
 
-    private _timeStampLastTransition: number;
+    private _timeStampLastTransition: number = 0;
+    private _timeStampPreviousTransition: number = 0;
 
     /**
      * Construct a program model (graph) with a string identifier. Sets up the start node and stop nodes for
@@ -63,6 +64,7 @@ export class ProgramModel {
             this.coverageCurrentRun[edge.id] = true;
             this.coverageTotal[edge.id] = true;
             this.currentState = edge.getEndNode();
+            this._timeStampPreviousTransition = this._timeStampLastTransition;
             this._timeStampLastTransition = testDriver.getTotalTimeElapsed();
         }
         return edge;
@@ -113,10 +115,19 @@ export class ProgramModel {
     }
 
     /**
+     * Whether all models should stop.
+     */
+    shouldHaltAllModels() {
+        return this.currentState.stopAllModels;
+    }
+
+    /**
      * Reset the graph to the start state.
      */
     reset(): void {
         this.currentState = this.startNode;
+        this._timeStampPreviousTransition = 0;
+        this._timeStampLastTransition = 0;
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
@@ -139,5 +150,12 @@ export class ProgramModel {
      */
     get timeStampLastTransition(): number {
         return this._timeStampLastTransition;
+    }
+
+    /**
+     * Get the elapsed time from the second last transition in this model.
+     */
+    get timeStampPreviousTransition(): number {
+        return this._timeStampPreviousTransition;
     }
 }

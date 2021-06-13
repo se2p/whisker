@@ -26,6 +26,9 @@ export class UserModel {
     protected readonly nodes: { [key: string]: ModelNode };
     protected readonly edges: { [key: string]: UserModelEdge };
 
+    private _timeStampLastTransition: number = 0;
+    private _timeStampPreviousTransition: number = 0;
+
     constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
                 nodes: { [key: string]: ModelNode }, edges: { [key: string]: UserModelEdge }) {
         this.id = id;
@@ -47,6 +50,8 @@ export class UserModel {
 
         if (edge != null) {
             this.currentState = edge.getEndNode();
+            this._timeStampPreviousTransition = this._timeStampLastTransition;
+            this._timeStampLastTransition = testDriver.getTotalTimeElapsed();
         }
         return edge;
     }
@@ -63,6 +68,8 @@ export class UserModel {
      */
     reset(): void {
         this.currentState = this.startNode;
+        this._timeStampPreviousTransition = 0;
+        this._timeStampLastTransition = 0;
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
@@ -75,5 +82,12 @@ export class UserModel {
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(checkListener, testDriver, result, caseSensitive);
         })
+    }
+
+    get timeStampPreviousTransition(): number {
+        return this._timeStampPreviousTransition;
+    }
+    get timeStampLastTransition(): number {
+        return this._timeStampLastTransition;
     }
 }

@@ -41,11 +41,11 @@ export abstract class ModelEdge {
                 if (e.message.startsWith(TIME_LIMIT_ERROR)) {
                     modelResult.addError(e.message);
                     failedConditions.push(this.conditions[i]); // still do not take this edge...
-                    console.error(e.message);
+                    console.error(e.message, testDriver.getTotalStepsExecuted(), testDriver.getStage().getVariable("Zeit").value, testDriver.getTotalTimeElapsed());
                     this.resetTimeStamps();
                 } else {
                     let error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
-                    console.error(error);
+                    console.error(error, testDriver.getTotalStepsExecuted());
                     modelResult.addError(error);
                 }
             }
