@@ -75,11 +75,21 @@ export class List<T> implements Iterable<T> {
     }
 
     /**
+     * Replaces the oldElement with the newElement.
+     * @param oldElement the element to replace
+     * @param newElement the element, oldElement gets replaced with
+     */
+    replace(oldElement: T, newElement: T): void {
+        const index = this._items.findIndex(element => element === oldElement);
+        this.replaceAt(newElement, index);
+    }
+
+    /**
      * Replaces the element at the given position with the specified element.
-     * @param newElement the new element to replace the old element with
+     * @param newElement the new element to replaceAt the old element with
      * @param position the position at which the old element should be replaced with the new element
      */
-    replace(newElement: T, position: number): void {
+    replaceAt(newElement: T, position: number): void {
         this._items[position] = newElement;
     }
 
@@ -120,7 +130,7 @@ export class List<T> implements Iterable<T> {
      * Filters the elements of a List given a predicate function
      * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the list.
      */
-    filter(predicate: (value: T, index: number, array: T[]) => boolean):List<T> {
+    filter(predicate: (value: T, index: number, array: T[]) => boolean): List<T> {
         return new List<T>(this._items.filter(predicate));
     }
 
@@ -237,6 +247,14 @@ export class List<T> implements Iterable<T> {
      */
     reverse(): void {
         this._items.reverse();
+    }
+
+    /**
+     * Applies the given function to each member of the list
+     * @param callbackfn the function that should be applied to each member of the list
+     */
+    map<U>(callbackfn: (value: T, index: number, array: T[]) => U): List<U> {
+        return new List<U>(this._items.map(callbackfn));
     }
 
     /**

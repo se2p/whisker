@@ -18,24 +18,25 @@
  *
  */
 
-import {List} from '../utils/List';
-import {Randomness} from '../utils/Randomness';
-import {TestChromosome} from "./TestChromosome";
-import {seedScratch} from "../../util/random";
+import {List} from '../../../utils/List';
+import {Randomness} from '../../../utils/Randomness';
+import {TestChromosome} from "../../../testcase/TestChromosome";
+import {seedScratch} from "../../../../util/random";
 import {GraphNode, ControlFlowGraph} from 'scratch-analysis'
-import {WaitEvent} from "./events/WaitEvent";
-import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {WaitEvent} from "../../../testcase/events/WaitEvent";
+import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
-import {ScratchEventExtractor} from "./ScratchEventExtractor";
-import VMWrapper = require("../../vm/vm-wrapper.js")
-import {Container} from "../utils/Container";
-import {ScratchEvent} from "./ScratchEvent";
-import {IntegerListChromosome} from "../integerlist/IntegerListChromosome";
-import {Chromosome} from "../search/Chromosome";
-import {ExecutionTrace} from "./ExecutionTrace";
+import {ScratchEventExtractor} from "../../../testcase/ScratchEventExtractor";
+import VMWrapper = require("../../../../vm/vm-wrapper.js")
+import {Container} from "../../../utils/Container";
+import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
+import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
+import {generateCFG} from 'scratch-analysis'
+import {LocalSearch} from "./LocalSearch";
+import {FitnessFunction} from "../../FitnessFunction";
 
 
-export class ExtensionMutation  {
+export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
 
     /**
      * Lower bound for integer values
@@ -53,37 +54,34 @@ export class ExtensionMutation  {
     private readonly _length: number;
 
     /**
-     * Random number generator.
+     * The relative amount of depleted resources, determining at which point in time local search should be applied.
      */
-    private readonly _random: Randomness
+    private readonly _depletedResourcesThreshold: number
 
     private readonly _cfg: ControlFlowGraph;
     private readonly _vm: VirtualMachine;
     private _vmWrapper: VMWrapper;
     private readonly _eventExtractor: ScratchEventExtractor;
 
-    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, cfg: ControlFlowGraph) {
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, depletedResourcesThreshold: number) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._eventExtractor = eventExtractor;
-        this._cfg = cfg;
+        this._depletedResourcesThreshold = depletedResourcesThreshold;
+        this._cfg = generateCFG(this._vm);
         this._min = Container.config.getSearchAlgorithmProperties().getMinIntRange();
         this._max = Container.config.getSearchAlgorithmProperties().getMinIntRange();
         this._length = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
     }
 
-    canBeExtended(chromosome: Chromosome): boolean {
-        if (!(chromosome instanceof TestChromosome)) {
+    isApplicable(chromosome: TestChromosome, depletedResources:number): boolean {
+        console.log("Depleted Resources: ", depletedResources);
+        if(this._depletedResourcesThreshold > depletedResources)
             return false;
-        }
         return this._hasReachableSuccessors(chromosome.coverage);
     }
 
-    async apply(chromosome: Chromosome): Promise<Chromosome> {
-        if (!(chromosome instanceof TestChromosome)) {
-            return chromosome;
-        }
-
+    async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         const newCodons = new List<number>();
         newCodons.addList(chromosome.getGenes());
 
@@ -93,7 +91,7 @@ export class ExtensionMutation  {
         await this._extendGenes(newCodons);
         this._vmWrapper.end();
 
-        console.log("Original chromosome had "+chromosome.getLength()+" codons, extended to "+newCodons.size());
+        //console.log("Original chromosome had " + chromosome.getLength() + " codons, extended to " + newCodons.size());
         const newChromosome = chromosome.cloneWith(newCodons);
 
         // FIXME: Collect actual events
@@ -108,7 +106,7 @@ export class ExtensionMutation  {
 
     private async _extendGenes(codons: List<number>): Promise<void> {
 
-        console.log("Starting extension");
+        //console.log("Starting extension");
 
         let done = false;
 
@@ -119,26 +117,26 @@ export class ExtensionMutation  {
                 break;
             }
             let numEvent = 0;
-            console.log("Current length: "+codons.size());
+            //console.log("Current length: " + codons.size());
 
             // FIXME: This assumes there's always a wait event somewhere in there
             // FIXME: It always picks the first one.
             for (const nextEvent of availableEvents) {
                 if (nextEvent instanceof WaitEvent) {
                     codons.add(numEvent);
-                    console.log("Adding wait of num "+numEvent);
+                    //console.log("Adding wait of num " + numEvent);
                     // Wait events don't use arguments in this branch yet
-                    await nextEvent.apply(this._vm);
+                    await nextEvent.apply();
 
                     const waitEvent = new WaitEvent();
-                    await waitEvent.apply(this._vm);
+                    await waitEvent.apply();
                 }
                 numEvent++;
             }
             // Did coverage increase?
             // Are there reachable uncovered blocks in the executing scripts?
             if (!this._hasReachableSuccessors(this._vm.runtime.traceInfo.tracer.coverage as Set<string>)) {
-                console.log("No more reachable coverable states");
+                //console.log("No more reachable coverable states");
                 done = true;
             }
         }
@@ -150,7 +148,7 @@ export class ExtensionMutation  {
             const availableEvents = this._eventExtractor.extractEvents(this._vm);
 
             if (availableEvents.isEmpty()) {
-                console.log("Whisker-Main: No events available for project.");
+                //console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
@@ -159,11 +157,11 @@ export class ExtensionMutation  {
             const args = this._getArgs(nextEvent, codons, numCodon);
             numCodon += nextEvent.getNumParameters() + 1;
 
-            await nextEvent.apply(this._vm, args);
+            await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount()
 
             const waitEvent = new WaitEvent();
-            await waitEvent.apply(this._vm);
+            await waitEvent.apply();
         }
     }
 
@@ -197,32 +195,32 @@ export class ExtensionMutation  {
         const successors = new Set<string>();
 
         for (const nodeId of coverage) {
-            console.log("Checking covered node: "+nodeId);
+            //console.log("Checking covered node: " + nodeId);
             const succNode = this._cfg.getNode(nodeId);
             if (!succNode) {
-                console.log("Found no node for "+nodeId);
+                //console.log("Found no node for " + nodeId);
             } else {
                 for (const succ of this._getDefiniteSuccessors(succNode, visited)) {
                     if (!coverage.has(succ)) {
-                        console.log("Successor " + succ + " is not covered");
+                        //console.log("Successor " + succ + " is not covered");
                         successors.add(succ);
                     } else {
-                        console.log("Successor " + succ + " is already covered");
+                        //console.log("Successor " + succ + " is already covered");
                     }
                 }
             }
         }
-        console.log("Reachable, uncovered successors: "+successors.size);
+        //console.log("Reachable, uncovered successors: " + successors.size);
         for (const succ of successors) {
-            console.log("Reachable uncovered: "+succ);
+            //console.log("Reachable uncovered: " + succ);
         }
 
         return successors;
     }
 
-    private _getDefiniteSuccessors(node: GraphNode, visited: Set<string> ): Set<string> {
+    private _getDefiniteSuccessors(node: GraphNode, visited: Set<string>): Set<string> {
         const successors = new Set<string>();
-        console.log("Current node: "+node);
+        //console.log("Current node: " + node);
 
         // Opcode is only known if this corresponds to a block
         // CFG nodes might be pseudo nodes without block
@@ -254,5 +252,12 @@ export class ExtensionMutation  {
             }
         }
         return successors;
+    }
+
+    hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome,
+                fitnessFunction: FitnessFunction<TestChromosome>): boolean {
+        const fitnessOriginal = originalChromosome.getFitness(fitnessFunction);
+        const fitnessModified = modifiedChromosome.getFitness(fitnessFunction)
+        return fitnessFunction.compare(fitnessOriginal, fitnessModified) > 0;
     }
 }

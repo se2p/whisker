@@ -20,6 +20,8 @@
 
 import {List} from "../../../src/whisker/utils/List";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 
 describe("List", () => {
 
@@ -49,8 +51,13 @@ describe("List", () => {
         expect(list.getElements()).toEqual([1, 4, 2, 3]);
     });
 
+    test("Replace oldElement with a new one", () => {
+        list.replace(2, 5)
+        expect(list.getElements()).toEqual([1, 5, 3]);
+    });
+
     test("Replace element given an index", () => {
-        list.replace(4, 1)
+        list.replaceAt(4, 1)
         expect(list.getElements()).toEqual([1, 4, 3]);
     });
 
@@ -145,6 +152,13 @@ describe("List", () => {
         const list = new List([new ClickStageEvent(), new ClickStageEvent(), new ClickStageEvent()]);
         const distinct = list.distinctObjects();
         expect(distinct.size()).toBe(1);
+    });
+
+    test("Test map", () => {
+        const expected = new List<number>();
+        for(const x of list)
+            expected.add(x * 2);
+        expect(list.map(x => x * 2)).toEqual(expected);
     });
 
     test("Test toString", () => {

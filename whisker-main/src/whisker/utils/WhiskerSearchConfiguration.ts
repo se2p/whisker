@@ -49,6 +49,8 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor";
 import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
+import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
+import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 
 class ConfigException implements Error {
     message: string;
@@ -236,6 +238,20 @@ export class WhiskerSearchConfiguration {
             default:
                 return new RankSelection();
         }
+    }
+
+    public getLocalSearchOperators(): List<LocalSearch<any>> {
+        const operators = new List<LocalSearch<any>>();
+        const localSearchOperators = this.dict['localSearch'];
+        for (const operator of localSearchOperators) {
+            let type: LocalSearch<any>;
+            switch (operator['type']) {
+                case "Extension":
+                    type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(), operator['depletedResources']);
+            }
+            operators.add(type);
+        }
+        return operators;
     }
 
     public getEventExtractor(): ScratchEventExtractor {
