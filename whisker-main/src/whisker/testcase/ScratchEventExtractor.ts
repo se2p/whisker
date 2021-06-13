@@ -21,11 +21,9 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "./ScratchEvent";
-import {WaitEvent} from "./events/WaitEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {Container} from "../utils/Container";
-import {KeyDownEvent} from "./events/KeyDownEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {MouseMoveToEvent} from "./events/MouseMoveToEvent";
 import {MouseDownEvent} from "./events/MouseDownEvent";
@@ -39,11 +37,9 @@ import {Randomness} from "../utils/Randomness";
 export abstract class ScratchEventExtractor {
 
     protected availableTextSnippets = new List<string>();
-    protected availableWaitDurations = new List<number>();
     protected proceduresMap = new Map<string, List<ScratchEvent>>();
 
     constructor(vm: VirtualMachine) {
-        this.extractAvailableDurations(vm);
         this.extractAvailableTextSnippets(vm);
         this.extractProcedures(vm);
     }
@@ -96,14 +92,8 @@ export abstract class ScratchEventExtractor {
                     foundEvents.addList(this.proceduresMap.get(block.mutation.proccode))
                 }
             }
-
-            // WaitEvents
-            const duration = this._extractWaitDurations(target, block);
-            if (duration > 0) {
-                foundEvents.add(new WaitEvent(duration));
-            }
             block = target.blocks.getBlock(block.next);
-        };
+        }
     }
 
 
@@ -115,23 +105,22 @@ export abstract class ScratchEventExtractor {
         }
 
         switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed': {  // Key press
+            case 'event_whenkeypressed': {  // Key press in HatBlocks
                 const fields = target.blocks.getFields(block);
                 eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 // one event per concrete key for which there is a hat block
                 break;
             }
-            case 'sensing_keypressed': {
+            case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                const isKeyDown = Container.testDriver.isKeyDown(fields.KEY_OPTION.value);
-                eventList.add(new KeyDownEvent(fields.KEY_OPTION.value, !isKeyDown));
+                eventList.add(new KeyPressEvent(fields.KEY_OPTION.value));
                 break;
             }
             case 'sensing_mousex':
             case 'sensing_mousey': {
                 // Mouse move
-                eventList.add(new MouseMoveEvent()); // TODO: Any hints on position?
+                eventList.add(new MouseMoveEvent());
                 break;
             }
             case 'sensing_touchingobject': {
@@ -163,12 +152,18 @@ export abstract class ScratchEventExtractor {
             case 'sensing_mousedown': {
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
-                eventList.add(new MouseDownEvent(!isMouseDown)); // TODO: Any hints on position?
+                eventList.add(new MouseDownEvent(!isMouseDown));
+                break;
+            }
+            case 'pen_penDown':{
+                eventList.add(new MouseMoveEvent())
                 break;
             }
             case 'sensing_askandwait':
                 // Type text
-                eventList.addList(this._getTypeTextEvents());
+                if (Container.vmWrapper.isQuestionAsked()) {
+                    eventList.addList(this._getTypeTextEvents());
+                }
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
@@ -178,15 +173,11 @@ export abstract class ScratchEventExtractor {
                 break;
             case 'event_whenstageclicked':
                 // Click stage
-                eventList.add(new ClickStageEvent(target));
+                eventList.add(new ClickStageEvent());
                 break;
             case 'event_whengreaterthan':
                 // Sound
-                eventList.add(new SoundEvent()); // TODO: Volume as parameter
-                break;
-            case 'event_whenlessthan':
-                // Wait duration
-                eventList.add(new WaitEvent()); // TODO: Duration as parameter
+                eventList.add(new SoundEvent());
                 break;
         }
         return eventList;
@@ -232,24 +223,6 @@ export abstract class ScratchEventExtractor {
             }
         }
     }
-
-    /**
-     * Collects all available durations that can be used for wait events
-     */
-    public extractAvailableDurations(vm: VirtualMachine): void {
-        this.availableWaitDurations = new List<number>();
-
-        for (const target of vm.runtime.targets) {
-            if (target.hasOwnProperty('blocks')) {
-                for (const blockId of Object.keys(target.blocks._blocks)) {
-                    const duration = this._extractWaitDurations(target, target.blocks.getBlock(blockId));
-                    if (duration > 0 && !this.availableWaitDurations.contains(duration))
-                        this.availableWaitDurations.add(duration);
-                }
-            }
-        }
-    }
-
 
     protected _randomText(length: number): string {
         let answer = '';

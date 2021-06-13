@@ -1,6 +1,7 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 30000 : 20000;
+const timeout = process.env.SLOWMO ? 80000 : 70000;
+const ACCELERATION = 3;
 
 async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
@@ -205,6 +206,15 @@ describe('Basic event handling', () => {
 
     test('Test wait', async () => {
         await loadProject('test/integration/waitEvent/WaitEventTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test Draw with PenBlock', async () => {
+        await loadProject('test/integration/penBlock/Draw.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();

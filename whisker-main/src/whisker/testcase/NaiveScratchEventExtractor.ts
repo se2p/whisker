@@ -21,14 +21,13 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {MouseDownEvent} from "./events/MouseDownEvent";
 import {MouseMoveEvent} from "./events/MouseMoveEvent";
 import {KeyPressEvent} from "./events/KeyPressEvent";
 import {SoundEvent} from "./events/SoundEvent";
-import {KeyDownEvent} from "./events/KeyDownEvent";
 import {TypeTextEvent} from "./events/TypeTextEvent";
 
 export class NaiveScratchEventExtractor extends ScratchEventExtractor {
@@ -54,8 +53,6 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         // eventList.add(new SoundEvent()); // Not implemented yet
 
         for (const key of this.KEYS) {
-            eventList.add(new KeyDownEvent(key, false));
-            eventList.add(new KeyDownEvent(key, true));
             eventList.add(new KeyPressEvent(key));
         }
         return eventList.distinctObjects();

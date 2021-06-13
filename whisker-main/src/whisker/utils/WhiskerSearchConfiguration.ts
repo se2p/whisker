@@ -197,9 +197,7 @@ export class WhiskerSearchConfiguration {
                 return new BitflipMutation();
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome-length'], this.dict['mutation']['removeProb'],
-                    this.dict['mutation']['changeProb'], this.dict['mutation']['gaussianMutationPower'],
-                    this.dict['mutation']['insertProb'], this.dict['mutation']['alpha']);
+                    this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(
                     this.dict['mutation']['mutationAddConnection'] as number,
@@ -381,19 +379,19 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getWaitDurationAfterExecution(): number {
-        if ("waitDurationAfterExecution" in this.dict) {
-            return this.dict["waitDurationAfterExecution"]
+    public getWaitStepUpperBound(): number {
+        if ("waitStepUpperBound" in this.dict) {
+            return this.dict["waitStepUpperBound"]
         } else {
-            return 250;
+            return 200;
         }
     }
 
-    public getPressDuration(): number {
-        if ("press-duration" in this.dict) {
-            return this.dict["press-duration"]
+    public getPressDurationUpperBound(): number {
+        if ("pressDurationUpperBound" in this.dict) {
+            return this.dict["pressDurationUpperBound"]
         } else {
-            return 10;
+            return 50;
         }
     }
 

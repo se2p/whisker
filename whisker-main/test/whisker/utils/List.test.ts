@@ -23,83 +23,100 @@ import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEv
 
 describe("List", () => {
 
+    let list: List<number>
+
+    beforeEach(() => {
+        list = new List<number>([1, 2, 3])
+    })
+
     test("Get size of list", () => {
-        let list = new List([1, 2, 3]);
         expect(list.size()).toBe(3);
     });
 
     test("Is list empty", () => {
-        let list = new List([1, 2, 3]);
-        let emptyList = new List([]);
+        const emptyList = new List([]);
         expect(list.isEmpty()).toBeFalsy();
         expect(emptyList.isEmpty()).toBeTruthy();
     });
 
     test("Add element to list", () => {
-        let list = new List([1, 2, 3]);
         list.add(4);
         expect(list.size()).toBe(4);
     });
 
+    test("Insert element to list", () => {
+        list.insert(4, 1)
+        expect(list.getElements()).toEqual([1, 4, 2, 3]);
+    });
+
+    test("Replace element given an index", () => {
+        list.replace(4, 1)
+        expect(list.getElements()).toEqual([1, 4, 3]);
+    });
+
     test("Add array to list", () => {
-        let list = new List([1, 2, 3]);
         list.addAll([4, 5]);
         expect(list.size()).toBe(5);
     });
 
     test("Add list to list", () => {
-        let list = new List([1, 2, 3]);
-        let list2 = new List([4, 5]);
+        const list2 = new List<number>([4, 5]);
         list.addList(list2);
         expect(list.size()).toBe(5);
     });
 
     test("Get element of list", () => {
-        let list = new List([1, 2, 3]);
         expect(list.get(0)).toBe(1);
     });
 
+    test("Filter list", () => {
+        const list = new List([13,21,9,33,77,35,11,20,62,81])
+        const filteredList = list.filter(value => value < 30);
+        expect(filteredList.getElements()).toEqual([13,21,9,11,20]);
+        expect(list.getElements()).toEqual([13,21,9,33,77,35,11,20,62,81])
+    });
+
     test("Clear list", () => {
-        let list = new List([1, 2, 3]);
         list.clear();
         expect(list.size()).toBe(0);
     });
 
     test("Clone list", () => {
-        let list = new List([1, 2, 3]);
-        let clone = list.clone();
+        const clone = list.clone();
         list.clear();
         expect(clone.size()).toBe(3);
     });
 
     test("Remove element from list", () => {
-        let list = new List([1, 2, 3]);
         list.remove(2);
         expect(list.get(1)).toBe(3);
     });
 
+    test("Remove element from list given an index", () => {
+        list.removeAt(1);
+        expect(list.get(1)).toBe(3);
+    });
+
     test("List contains element", () => {
-        let list = new List([1, 2, 3]);
         expect(list.contains(1)).toBeTruthy();
         expect(list.contains(4)).toBeFalsy();
     });
 
     test("Get sublist of list", () => {
-        let list = new List([1, 2, 3]);
-        let sublist = list.subList(0, 1);
+        const sublist = list.subList(0, 1);
         expect(sublist.size()).toBe(1);
         expect(sublist.get(0)).toBe(1);
     });
 
     test("Get distinct list", () => {
-        let list = new List([1, 2, 3, 3]);
-        let distinct = list.distinct();
+        const list = new List([1, 2, 3, 3]);
+        const distinct = list.distinct();
         expect(distinct.size()).toBe(3);
     });
 
     test("Shuffle list", () => {
-        let list = new List([0, 1, 2, 3, 4]);
-        let changed = [false, false, false, false, false];
+        const list = new List([0, 1, 2, 3, 4]);
+        const changed = [false, false, false, false, false];
         for (let i = 0; i < 100; i++) {
             list.shuffle();
             for (let position = 0; position < list.size(); position++) {
@@ -112,13 +129,12 @@ describe("List", () => {
     });
 
     test("Sort list", () => {
-        let list = new List([4, 3, 2, 1]);
+        const list = new List<number>([4, 3, 2, 1]);
         list.sort((a, b) => a - b);
         expect(list.get(0)).toBe(1);
     });
 
     test("Reverse list", () => {
-        let list = new List([1, 2, 3]);
         list.reverse();
         expect(list.get(0)).toBe(3);
         expect(list.get(1)).toBe(2);
@@ -126,9 +142,13 @@ describe("List", () => {
     });
 
     test("Distinct objects", () => {
-        let list = new List([new ClickStageEvent("x"), new ClickStageEvent("x"), new ClickStageEvent("x")]);
-        let distinct = list.distinctObjects();
+        const list = new List([new ClickStageEvent(), new ClickStageEvent(), new ClickStageEvent()]);
+        const distinct = list.distinctObjects();
         expect(distinct.size()).toBe(1);
+    });
+
+    test("Test toString", () => {
+        expect(list.toString()).toEqual("1,2,3");
     });
 
 });

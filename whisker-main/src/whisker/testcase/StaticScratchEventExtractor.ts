@@ -21,7 +21,7 @@
 import {List} from '../utils/List';
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {ScratchEvent} from "./ScratchEvent";
+import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 
@@ -44,14 +44,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             }
         }
 
-        // TODO: In some programs without event handlers no waits are chosen
-        //       maybe because the execution of the greenflag scripts
-        //       is too quick? A nicer solution would be good.
-        if (eventList.isEmpty() && !this.availableWaitDurations.isEmpty()) {
-            for (const duration of this.availableWaitDurations) {
-                eventList.add(new WaitEvent(duration));
-            }
-        }
+        eventList.add(new WaitEvent())
 
         return eventList.distinctObjects();
     }
