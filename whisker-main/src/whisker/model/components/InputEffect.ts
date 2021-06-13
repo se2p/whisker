@@ -1,5 +1,4 @@
 import TestDriver from "../../../test/test-driver";
-import Util from "../../../vm/util";
 import {UserModelEdge} from "./ModelEdge";
 import {ModelUtil} from "../util/ModelUtil";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
@@ -83,7 +82,7 @@ export class InputEffect {
         let isOK = true;
         switch (name) {
             case InputEffectName.InputKey:
-                isOK = _testArgs(3) || _testArgs(5);
+                isOK = _testArgs(1);
                 break;
             case InputEffectName.InputClickSprite:
             case InputEffectName.InputText:
@@ -121,8 +120,8 @@ export class InputEffect {
             case InputEffectName.InputKey:
                 return this.getKeyDataObject(t, arg);
             case InputEffectName.InputMouseMove:
-                ModelUtil.testNumber(arg[0]);
-                ModelUtil.testNumber(arg[1]);
+                arg[0] = ModelUtil.testNumber(arg[0]);
+                arg[1] = ModelUtil.testNumber(arg[1]);
                 let mouseEvent = new MouseMoveEvent(arg[0], arg[1])
                 return () => {
                     mouseEvent.apply();
@@ -155,33 +154,21 @@ export class InputEffect {
         }
     }
 
-    private getKeyDataObject(t: TestDriver, arg: any[]): (t: TestDriver) => void {
-        let key = Util.getScratchKey(t.vm, arg[0]);
+    private getKeyDataObject(t: TestDriver, arg: any[]): () => void {
+        let key = arg[0];
+        let data = {device: "keyboard", key: key, steps: 1};
 
-        let boolValue = true;
-        if (arg[2] === "false") {
-            boolValue = false;
-        }
-        let data;
-        if (arg[1].toLowerCase() == "isdown") {
-            data = {device: "keyboard", key: key, isDown: boolValue};
-        } else if (arg[1].toLowerCase() == "duration") {
-            data = {device: "keyboard", key: key, steps: arg[2]};
-        } else {
-            throw new Error("input effect: " + arg[1] + " not known");
-        }
-
-        let contraKey = InputEffect.getContradictingKey(arg[0]);
+        let contraKey = InputEffect.getContradictingKey(key);
         if (contraKey != null) {
-            contraKey = (Util.getScratchKey(t.vm, contraKey));
-            return (t: TestDriver) => {
+            return () => {
                 if (t.isKeyDown(contraKey)) {
                     t.inputImmediate({device: "keyboard", key: contraKey, isDown: false});
                 }
+                // console.log("input ", data, t.getTotalStepsExecuted());
                 t.inputImmediate(data);
             }
         } else {
-            return (t: TestDriver) => {
+            return () => {
                 t.inputImmediate(data);
             }
         }
