@@ -1,6 +1,7 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 30000 : 20000;
+const timeout = process.env.SLOWMO ? 70000 : 80000;
+const ACCELERATION = 10;
 
 async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
