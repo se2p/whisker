@@ -4,8 +4,8 @@
     "chromosome": "variablelengthtest",
     "population-size": 10,
     "chromosome-length": 30,
-    "minVarChromosomeLength": 2,
-    "maxVarChromosomeLength": 30,
+    "minVarChromosomeLength": 5,
+    "maxVarChromosomeLength": 20,
     "extractor": "dynamic",
     "crossover": {
         "operator": "singlepointrelative",
@@ -16,6 +16,13 @@
         "probability": 1,
         "gaussianMutationPower": 5
     },
+    "localSearch": [
+        {
+            "type": "Extension",
+            "depletedResources": 0.1,
+            "interval": 1
+        }
+    ],
     "selection": {
         "operator": "rank"
     },

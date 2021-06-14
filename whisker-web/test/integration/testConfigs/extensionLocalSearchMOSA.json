@@ -19,7 +19,8 @@
     "localSearch": [
         {
             "type": "Extension",
-            "depletedResources": 0.1
+            "depletedResources": 0.1,
+            "interval": 1
         }
     ],
     "selection": {
