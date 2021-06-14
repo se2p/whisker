@@ -3,7 +3,7 @@
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
     "population-size": 3,
-    "chromosome-length": 30,
+    "chromosome-length": 50,
     "minVarChromosomeLength": 2,
     "maxVarChromosomeLength": 2,
     "extractor": "dynamic",
@@ -19,7 +19,7 @@
     "localSearch": [
         {
             "type": "Extension",
-            "depletedResources": 0.5
+            "depletedResources": 0.1
         }
     ],
     "selection": {
