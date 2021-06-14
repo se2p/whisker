@@ -62,9 +62,21 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     private readonly _depletedResourcesThreshold: number
 
     /**
+     * Defines, in terms of generations, how often the operator is used.
+     * @private
+     */
+    private readonly _generationInterval: number
+
+    /**
      * The chromosome's upper bound of the gene size.
      */
     private readonly _upperLengthBound: number;
+
+    /**
+     * Set collecting the covered nodes. This helps us not wasting time on discovering already covered blocks by
+     * other chromosomes.
+     */
+    private readonly _discoveredBlocks: Set<string>;
 
     /**
      * Random number generator
@@ -77,14 +89,18 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * @param eventExtractor the eventExtractor used to obtain the currently available set of events.
      * @param depletedResourcesThreshold the relative amount of depleted resources after which
      * this local search operator gets used.
+     * @param generationInterval defines, in terms of generations, how often the operator is used.
      */
-    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, depletedResourcesThreshold: number) {
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, depletedResourcesThreshold: number,
+                generationInterval: number) {
         this._vmWrapper = vmWrapper;
         this._cfg = generateCFG(this._vmWrapper.vm);
         this._eventExtractor = eventExtractor;
         this._testExecutor = new TestExecutor(vmWrapper, eventExtractor);
         this._depletedResourcesThreshold = depletedResourcesThreshold;
+        this._generationInterval = generationInterval;
         this._upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
+        this._discoveredBlocks = new Set<string>();
         this._random = Randomness.getInstance();
     }
 
@@ -93,10 +109,12 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * specified resource budget and if the chromosome can increase its coverage simply by waiting.
      * @param chromosome the chromosome local search should be applied to
      * @param depletedResources determines the amount of depleted resources after which local search will be applied
+     * @param generation the current generation of the search algorithm
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
-    isApplicable(chromosome: TestChromosome, depletedResources: number): boolean {
-        if (this._depletedResourcesThreshold > depletedResources || depletedResources >= 1)
+    isApplicable(chromosome: TestChromosome, depletedResources: number, generation: number): boolean {
+        if (this._depletedResourcesThreshold > depletedResources || depletedResources >= 1 ||
+            generation % this._generationInterval != 0)
             return false;
         return this._hasReachableSuccessors(chromosome.coverage);
     }
@@ -124,7 +142,14 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
         this._vmWrapper.end();
         this._testExecutor.resetState();
-        console.log("Result of ExtensionLocalSearch: ", newChromosome);
+
+        // If we found an improved version of the original chromosome, update the discovered blocks set
+        if (this.hasImproved(chromosome, newChromosome)) {
+            new Set([...newChromosome.coverage].filter(block => !chromosome.coverage.has(block))).forEach(
+                this._discoveredBlocks.add, this._discoveredBlocks
+            );
+        }
+        console.log("ExtensionLocalSearch Result: ", newChromosome);
         return newChromosome;
     }
 
@@ -164,7 +189,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
             const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
             codons.add(waitEventCodon);
             // Select a waitDuration randomly and add it to the list of codons.
-            const waitDurationCodon = this._random.nextInt(1, Container.config.getWaitStepUpperBound());
+            const waitDurationCodon = Container.config.getWaitStepUpperBound();
             codons.add(waitDurationCodon);
 
             // Send the waitEvent with the specified stepDuration to the VM
@@ -202,7 +227,9 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
             // Check if we have an existing block. (There are pseudo nodes in the CFG).
             if (succNode) {
                 for (const succ of this._getDefiniteSuccessors(succNode, visited)) {
-                    if (!coverage.has(succ)) {
+                    //console.log("Succ: ", succ)
+                    if (!coverage.has(succ) && !this._discoveredBlocks.has(succ)) {
+                        //console.log("Added: ", succ)
                         successors.add(succ);
                     }
                 }
@@ -219,10 +246,15 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      */
     private _getDefiniteSuccessors(node: GraphNode, visited: Set<string>): Set<string> {
         const successors = new Set<string>();
+
+        // Opcode is only known if this corresponds to a block
+        // CFG nodes might be pseudo nodes without block
+        if (!node.block) {
+            return successors;
+        }
         const opcode = node.block.opcode;
 
         switch (opcode) {
-
             // Stop if we hit branches.
             case 'control_repeat_until':
             case 'control_wait_until':

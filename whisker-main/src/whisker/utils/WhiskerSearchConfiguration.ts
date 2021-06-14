@@ -254,7 +254,8 @@ export class WhiskerSearchConfiguration {
             let type: LocalSearch<any>;
             switch (operator['type']) {
                 case "Extension":
-                    type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(), operator['depletedResources']);
+                    type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
+                        operator['depletedResources'], operator['interval']);
             }
             operators.add(type);
         }

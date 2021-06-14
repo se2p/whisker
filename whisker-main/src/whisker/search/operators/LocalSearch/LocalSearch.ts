@@ -19,9 +19,10 @@ export interface LocalSearch<C extends Chromosome> {
      * Determines whether local search can be applied to this chromosome
      * @param chromosome the chromosome local search should be applied to
      * @param depletedResourceThreshold determines the amount of depleted resources after which local search will be applied
+     * @param generation the current generation of the search algorithm
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
-    isApplicable(chromosome: C, depletedResourceThreshold:number): boolean;
+    isApplicable(chromosome: C, depletedResourceThreshold:number, generation:number): boolean;
 
     /**
      * Determines whether the local search operator improved the original chromosome. If this is the case, the modified
