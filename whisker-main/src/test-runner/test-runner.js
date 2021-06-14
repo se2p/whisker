@@ -120,6 +120,8 @@ class TestRunner extends EventEmitter {
             }
 
         } finally {
+            this.emit(TestRunner.TEST_DUMP,
+                testDriver.vmWrapper.trace);
             util.end();
         }
 
@@ -134,6 +136,16 @@ class TestRunner extends EventEmitter {
     _log (test, message) {
         this.emit(TestRunner.TEST_LOG, test, message);
     }
+    /**
+     * @param {string} sprite .
+     * @param {string} message .
+     * @param {string} blockId .
+     * @private
+     */
+    _dump (sprite, message, blockId) {
+        this.emit(TestRunner.TEST_DUMP, sprite, message, blockId);
+    }
+
 
     abort() {
         this.aborted = true;
@@ -203,6 +215,13 @@ class TestRunner extends EventEmitter {
      */
     static get TEST_LOG () {
         return 'testLog';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static get TEST_DUMP() {
+        return 'testDump';
     }
 }
 

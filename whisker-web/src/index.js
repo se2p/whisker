@@ -80,7 +80,7 @@ const runSearch = async function () {
     return res[0];
 };
 
-const _runTestsWithCoverage = async function (vm, project, tests) {
+const _runTestsWithCoverage = async function (vm, project, tests, testRunner) {
     $('#green-flag').prop('disabled', true);
     $('#reset').prop('disabled', true);
     let running = i18next.t("running");
@@ -93,7 +93,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
     try {
         await Whisker.scratch.vm.loadProject(project);
-        CoverageGenerator.prepareClasses({Thread});
+        CoverageGenerator.prepareClasses({Thread}, testRunner);
         CoverageGenerator.prepareVM(vm);
 
         summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
@@ -209,6 +209,35 @@ const initComponents = function () {
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
+
+    Whisker.trace = [];
+    Whisker.testRunner.on(TestRunner.TEST_DUMP,
+        (message, object) => {
+            console.log('Testing');
+            if (message) {
+                // Whisker.outputLog.println(message);
+            } else if (object) {
+                if (object.type === 'block') {
+                    // const aBlock = object;
+                    // Whisker.outputLog.println(`target:${aBlock.name} op:${aBlock.opcode}`);
+                    // Whisker.outputLog.println(`op:${aBlock.opcode}`);
+                    Whisker.trace.push({
+                        clockTime: object.clockTime,
+                        block: object.block,
+                        target: object.target,
+                        allDrawables: object.allDrawables,
+                        stageVariables: object.stageVariables,
+                        keysDown: object.keysDown
+                    });
+                } else if (object.type === 'sprites') {
+                    // if (object.sprites[1].touchesSprites.length > 0) {
+                    //    alert(object.sprites[1].touchesSprites[0]);
+                    // }
+                    Whisker.trace.push({sprites: object.sprites, keysDown: object.keysDown});
+                }
+            }
+        });
+
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
     Whisker.testTable = new TestTable($('#test-table')[0], runTests, Whisker.testRunner);
