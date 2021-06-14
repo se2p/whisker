@@ -69,7 +69,7 @@ beforeEach(async() => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtestMIO.json");
+    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
 });
 
 

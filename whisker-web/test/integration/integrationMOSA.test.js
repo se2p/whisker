@@ -69,7 +69,7 @@ beforeEach(async() => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtestMOSA.json");
+    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMOSA.json");
 });
 
 
@@ -250,5 +250,18 @@ describe('Multiple event handling', () => {
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
         await expect(coverage).toBe("1.00");
+    }, timeout);
+});
+
+describe('LocalSearch', () => {
+    test('Test ExtensionLocalSearch', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
+        await loadProject('test/integration/localSearch/ExtensionTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+
     }, timeout);
 });
