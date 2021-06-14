@@ -79,21 +79,8 @@ export class TestExecutor {
                 break;
             }
 
-            // Select the next Event and set its parameter
-            const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon++) % availableEvents.size())
-            const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
-            nextEvent.setParameter(args);
-            events.add([nextEvent, args]);
-            numCodon += nextEvent.getNumParameters();
-            this.notify(nextEvent, args);
-            // Send the chosen Event including its parameters to the VM
-            await nextEvent.apply();
-            StatisticsCollector.getInstance().incrementEventsCount()
-
-            // Send a WaitEvent to the VM
-            const waitEvent = new WaitEvent(1);
-            events.add([waitEvent, []]);
-            await waitEvent.apply();
+            // Select and send the next Event to the VM.
+            numCodon = await this.selectAndSendEvent(codons, numCodon, availableEvents, events);
         }
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
@@ -101,6 +88,34 @@ export class TestExecutor {
         this.resetState();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return testChromosome.trace;
+    }
+
+    /**
+     * Selects and sends the next Event to the VM
+     * @param codons the list of codons deciding which event and parameters to take
+     * @param numCodon the current position in the codon list
+     * @param availableEvents the set of available events to choose from
+     * @param events collects the chosen events including its parameters
+     * @return returns the current position in the codon list
+     */
+    public async selectAndSendEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>,
+                                     events: List<[ScratchEvent, number[]]>): Promise<number> {
+        // Select the next Event and set its parameter
+        const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon++) % availableEvents.size())
+        const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
+        nextEvent.setParameter(args);
+        events.add([nextEvent, args]);
+        numCodon += nextEvent.getNumParameters();
+        this.notify(nextEvent, args);
+        // Send the chosen Event including its parameters to the VM
+        await nextEvent.apply();
+        StatisticsCollector.getInstance().incrementEventsCount()
+
+        // Send a WaitEvent to the VM
+        const waitEvent = new WaitEvent(1);
+        events.add([waitEvent, []]);
+        await waitEvent.apply();
+        return numCodon;
     }
 
     /**
@@ -152,7 +167,7 @@ export class TestExecutor {
         return events.filter(event => !(event instanceof WaitEvent)).size() > 0;
     }
 
-    private resetState() {
+    public resetState() {
         // Delete clones
         const clones = [];
         for (const targetsKey in this._vm.runtime.targets) {

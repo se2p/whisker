@@ -24,8 +24,6 @@ import {TestChromosome} from "../../../testcase/TestChromosome";
 import {seedScratch} from "../../../../util/random";
 import {GraphNode, ControlFlowGraph} from 'scratch-analysis'
 import {WaitEvent} from "../../../testcase/events/WaitEvent";
-import {StatisticsCollector} from "../../../utils/StatisticsCollector";
-import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEventExtractor} from "../../../testcase/ScratchEventExtractor";
 import VMWrapper = require("../../../../vm/vm-wrapper.js")
 import {Container} from "../../../utils/Container";
@@ -33,212 +31,207 @@ import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
 import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
 import {generateCFG} from 'scratch-analysis'
 import {LocalSearch} from "./LocalSearch";
-import {FitnessFunction} from "../../FitnessFunction";
+import {TestExecutor} from "../../../testcase/TestExecutor";
 
 
 export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
 
     /**
-     * Lower bound for integer values
+     * The vmWrapper wrapped around the Scratch-VM.
      */
-    private readonly _min: number;
+    private _vmWrapper: VMWrapper;
 
     /**
-     * Upper bound for integer values
+     * The control flow graph of the given Scratch project.
      */
-    private readonly _max: number;
+    private readonly _cfg: ControlFlowGraph;
 
     /**
-     * Upper bound for IntegerList size.
+     * The ScratchEventExtractor used to obtain the currently available Events.
      */
-    private readonly _length: number;
+    private readonly _eventExtractor: ScratchEventExtractor;
+
+    /**
+     * The TestExecutor responsible for executing codons and resetting the state of the VM.
+     */
+    private readonly _testExecutor: TestExecutor;
 
     /**
      * The relative amount of depleted resources, determining at which point in time local search should be applied.
      */
     private readonly _depletedResourcesThreshold: number
 
-    private readonly _cfg: ControlFlowGraph;
-    private readonly _vm: VirtualMachine;
-    private _vmWrapper: VMWrapper;
-    private readonly _eventExtractor: ScratchEventExtractor;
+    /**
+     * The chromosome's upper bound of the gene size.
+     */
+    private readonly _upperLengthBound: number;
 
+    /**
+     * Random number generator
+     */
+    private readonly _random: Randomness;
+
+    /**
+     * Constructs a new ExtensionLocalSearch object.
+     * @param vmWrapper the vmWrapper containing the Scratch-VM.
+     * @param eventExtractor the eventExtractor used to obtain the currently available set of events.
+     * @param depletedResourcesThreshold the relative amount of depleted resources after which
+     * this local search operator gets used.
+     */
     constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, depletedResourcesThreshold: number) {
         this._vmWrapper = vmWrapper;
-        this._vm = vmWrapper.vm;
+        this._cfg = generateCFG(this._vmWrapper.vm);
         this._eventExtractor = eventExtractor;
+        this._testExecutor = new TestExecutor(vmWrapper, eventExtractor);
         this._depletedResourcesThreshold = depletedResourcesThreshold;
-        this._cfg = generateCFG(this._vm);
-        this._min = Container.config.getSearchAlgorithmProperties().getMinIntRange();
-        this._max = Container.config.getSearchAlgorithmProperties().getMinIntRange();
-        this._length = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
+        this._upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
+        this._random = Randomness.getInstance();
     }
 
-    isApplicable(chromosome: TestChromosome, depletedResources:number): boolean {
-        console.log("Depleted Resources: ", depletedResources);
-        if(this._depletedResourcesThreshold > depletedResources)
+    /**
+     * Determines whether local search can be applied to this chromosome. This is the case if we have depleted the
+     * specified resource budget and if the chromosome can increase its coverage simply by waiting.
+     * @param chromosome the chromosome local search should be applied to
+     * @param depletedResources determines the amount of depleted resources after which local search will be applied
+     * @return boolean whether the local search operator can be applied to the given chromosome.
+     */
+    isApplicable(chromosome: TestChromosome, depletedResources: number): boolean {
+        if (this._depletedResourcesThreshold > depletedResources || depletedResources >= 1)
             return false;
         return this._hasReachableSuccessors(chromosome.coverage);
     }
 
+    /**
+     * Applies the Extension local search operator which extends the chromosome's gene with WaitEvents,
+     * in order to cover blocks reachable by waiting.
+     * @param chromosome the chromosome that should be modified by the Extension local search operator.
+     * @returns the modified chromosome wrapped in a Promise.
+     */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
+        console.log("ExtensionLocalSearch on: ", chromosome);
         const newCodons = new List<number>();
+        const events = new List<[ScratchEvent, number[]]>();
         newCodons.addList(chromosome.getGenes());
-
         seedScratch(String(Randomness.getInitialSeed()));
         this._vmWrapper.start();
-        await this._executeGenes(newCodons);
-        await this._extendGenes(newCodons);
-        this._vmWrapper.end();
-
-        //console.log("Original chromosome had " + chromosome.getLength() + " codons, extended to " + newCodons.size());
+        // Execute the original codons to obtain the state of the VM after executing the original chromosome.
+        await this._executeGenes(newCodons, events);
+        // Now extend the codons of the original chromosome to increase coverage.
+        await this._extendGenes(newCodons, events);
         const newChromosome = chromosome.cloneWith(newCodons);
 
-        // FIXME: Collect actual events
-        const events = new List<[ScratchEvent, number[]]>();
-        newChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
-        newChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-
-        // FIXME: State is not reset after execution
-
+        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
+        newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        this._vmWrapper.end();
+        this._testExecutor.resetState();
+        console.log("Result of ExtensionLocalSearch: ", newChromosome);
         return newChromosome;
     }
 
-    private async _extendGenes(codons: List<number>): Promise<void> {
-
-        //console.log("Starting extension");
-
-        let done = false;
-
-        while (codons.size() < this._length && !done) {
-            const availableEvents = this._eventExtractor.extractEvents(this._vm);
+    /**
+     * Executes the given codons and saves the selected events.
+     * @param codons the codons to execute.
+     * @param events the list of events saving the selected events including its parameters.
+     */
+    private async _executeGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>): Promise<void> {
+        let numCodon = 0;
+        while (numCodon < codons.size()) {
+            const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
-            let numEvent = 0;
-            //console.log("Current length: " + codons.size());
+            // Selects and sends the next Event ot the VM.
+            numCodon = await this._testExecutor.selectAndSendEvent(codons, numCodon, availableEvents, events);
+        }
+    }
 
-            // FIXME: This assumes there's always a wait event somewhere in there
-            // FIXME: It always picks the first one.
-            for (const nextEvent of availableEvents) {
-                if (nextEvent instanceof WaitEvent) {
-                    codons.add(numEvent);
-                    //console.log("Adding wait of num " + numEvent);
-                    // Wait events don't use arguments in this branch yet
-                    await nextEvent.apply();
-
-                    const waitEvent = new WaitEvent();
-                    await waitEvent.apply();
-                }
-                numEvent++;
+    /**
+     * Extends the chromosome's codon with WaitEvents to increase its block coverage. Waits are appended until either
+     * no more blocks can be reached by waiting or until the maximum codon size has been reached.
+     * @param codons the codons which should be extended by waits.
+     * @param events the list of events saving the selected events including its parameters.
+     */
+    private async _extendGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>): Promise<void> {
+        let done = false;
+        while (codons.size() < this._upperLengthBound && !done) {
+            const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
+            if (availableEvents.isEmpty()) {
+                console.log("Whisker-Main: No events available for project.");
+                break;
             }
-            // Did coverage increase?
-            // Are there reachable uncovered blocks in the executing scripts?
-            if (!this._hasReachableSuccessors(this._vm.runtime.traceInfo.tracer.coverage as Set<string>)) {
-                //console.log("No more reachable coverable states");
+            // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
+            const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
+            codons.add(waitEventCodon);
+            // Select a waitDuration randomly and add it to the list of codons.
+            const waitDurationCodon = this._random.nextInt(1, Container.config.getWaitStepUpperBound());
+            codons.add(waitDurationCodon);
+
+            // Send the waitEvent with the specified stepDuration to the VM
+            const waitEvent = new WaitEvent(waitDurationCodon);
+            events.add([waitEvent, [waitDurationCodon]]);
+            await waitEvent.apply();
+
+            // Are there reachable successors left? If so keep on adding waits!
+            if (!this._hasReachableSuccessors(this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>)) {
                 done = true;
             }
         }
     }
 
-    private async _executeGenes(codons: List<number>): Promise<void> {
-        let numCodon = 0;
-        while (numCodon < codons.size()) {
-            const availableEvents = this._eventExtractor.extractEvents(this._vm);
-
-            if (availableEvents.isEmpty()) {
-                //console.log("Whisker-Main: No events available for project.");
-                break;
-            }
-
-            const nextEvent = availableEvents.get(codons.get(numCodon) % availableEvents.size())
-
-            const args = this._getArgs(nextEvent, codons, numCodon);
-            numCodon += nextEvent.getNumParameters() + 1;
-
-            await nextEvent.apply();
-            StatisticsCollector.getInstance().incrementEventsCount()
-
-            const waitEvent = new WaitEvent();
-            await waitEvent.apply();
-        }
-    }
-
-    private _getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
-        const args = [];
-        for (let i = 0; i < event.getNumParameters(); i++) {
-            // Get next codon, but wrap around if length exceeded
-            const codon = codons.get(++codonPosition % codons.size());
-            args.push(codon)
-        }
-        return args;
-    }
-
-    private _getRandomArgs(event: ScratchEvent, codons: List<number>): number[] {
-        const args = [];
-        for (let i = 0; i < event.getNumParameters(); i++) {
-            // Get next codon, but wrap around if length exceeded
-            const codon = Randomness.getInstance().nextInt(this._min, this._max);
-            codons.add(codon);
-            args.push(codon)
-        }
-        return args;
-    }
-
+    /**
+     * Determines whether there are blocks reachable by adding WaitEvents only.
+     * @param coverage the blocks covered so far.
+     * @return boolean determining if there are blocks reachable by adding WaitEvents.
+     */
     private _hasReachableSuccessors(coverage): boolean {
         return this._getReachableSuccessors(coverage).size > 0;
     }
 
+    /**
+     * Gathers the set of blocks, reachable by adding WaitEvents only.
+     * @param coverage coverage the blocks covered so far.
+     * @return Set of block id's, reachable by adding WaitEvents only.
+     */
     private _getReachableSuccessors(coverage): Set<string> {
         const visited = new Set<string>();
         const successors = new Set<string>();
-
+        // Go through each covered block and check if it has nodes that are reachable by waiting.
         for (const nodeId of coverage) {
-            //console.log("Checking covered node: " + nodeId);
             const succNode = this._cfg.getNode(nodeId);
-            if (!succNode) {
-                //console.log("Found no node for " + nodeId);
-            } else {
+            // Check if we have an existing block. (There are pseudo nodes in the CFG).
+            if (succNode) {
                 for (const succ of this._getDefiniteSuccessors(succNode, visited)) {
                     if (!coverage.has(succ)) {
-                        //console.log("Successor " + succ + " is not covered");
                         successors.add(succ);
-                    } else {
-                        //console.log("Successor " + succ + " is already covered");
                     }
                 }
             }
         }
-        //console.log("Reachable, uncovered successors: " + successors.size);
-        for (const succ of successors) {
-            //console.log("Reachable uncovered: " + succ);
-        }
-
         return successors;
     }
 
+    /**
+     * Extracts not yet covered successor blocks of a given node, reachable by waiting.
+     * @param node the starting node from which on we search for valid successor blocks.
+     * @param visited collects the visited nodes to avoid traversing the same nodes multiple times.
+     * @return the set of successor blocks reachable by adding WaitEvents.
+     */
     private _getDefiniteSuccessors(node: GraphNode, visited: Set<string>): Set<string> {
         const successors = new Set<string>();
-        //console.log("Current node: " + node);
-
-        // Opcode is only known if this corresponds to a block
-        // CFG nodes might be pseudo nodes without block
-        let opcode = "undefined";
-        if (node.block) {
-            opcode = node.block.opcode;
-        }
+        const opcode = node.block.opcode;
 
         switch (opcode) {
+
+            // Stop if we hit branches.
             case 'control_repeat_until':
             case 'control_wait_until':
             case 'control_if':
             case 'control_if_else':
-                // Do not follow successors
                 break;
 
+            // Otherwise collect successor nodes reachable by waiting.
             default: {
-                // Default: add all successors
                 for (const succ of this._cfg.successors(node.id)) {
                     if (!visited.has(succ.id) && succ !== this._cfg.exit()) {
                         visited.add(succ.id);
@@ -254,10 +247,14 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         return successors;
     }
 
-    hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome,
-                fitnessFunction: FitnessFunction<TestChromosome>): boolean {
-        const fitnessOriginal = originalChromosome.getFitness(fitnessFunction);
-        const fitnessModified = modifiedChromosome.getFitness(fitnessFunction)
-        return fitnessFunction.compare(fitnessOriginal, fitnessModified) > 0;
+    /**
+     * Determines whether the Extension local search operator improved the original chromosome.
+     * If this is the case, the modified chromosome should replace the original chromosome.
+     * @param originalChromosome the chromosome Extension local search has been applied to.
+     * @param modifiedChromosome the resulting chromosome after Extension local search has been applied to the original.
+     * @return boolean whether the local search operator improved the original chromosome.
+     */
+    hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome): boolean {
+        return originalChromosome.coverage.size < modifiedChromosome.coverage.size;
     }
 }

@@ -224,6 +224,13 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return JSON.stringify({'uncoveredBlocks': summary});
     }
 
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - IterationCount
+     *  - createdTestsTo
+     * @private
+     */
     private updateStatistics() {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
@@ -235,25 +242,18 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
     }
 
+    /**
+     * Applies the specified local search operators to the best performing chromosomes in the testSuite.
+     */
     private async applyLocalSearch() {
-        // Maybe we already have found a solution at this point. If this is the case no need to apply local Search
-        if (this._stoppingCondition.isFinished(this) || this._localSearchOperators.size() === 0)
-            return;
-
-        // Go through all members of the archive and apply local search to them
-        for (const fitnessFunctionKey of this._archive.keys()) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            const chromosome = this._archive.get(fitnessFunctionKey);
+        // Check if local search is applicable to any member of the current test suite.
+        for(const chromosome of this._bestIndividuals){
             for (const localSearch of this._localSearchOperators) {
-                // We apply local search only if we have a suitable chromosome at hand
-                // and have depleted the specified resources budget
                 if (localSearch.isApplicable(chromosome, this._stoppingCondition.getProgress(this))) {
-                    console.log("Applied")
                     const modifiedChromosome = await localSearch.apply(chromosome);
-                    if (localSearch.hasImproved(chromosome, modifiedChromosome, fitnessFunction)) {
-                        console.log("Replaced")
-                        this._archive.set(fitnessFunctionKey, modifiedChromosome);
-                        this._bestIndividuals.replace(chromosome, modifiedChromosome);
+                    if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
+                        this.updateArchive(modifiedChromosome);
+                        this.updateStatistics();
                     }
                 }
             }

@@ -135,6 +135,25 @@ export class List<T> implements Iterable<T> {
     }
 
     /**
+     * Returns the index of the first element in the array where predicate is true, and -1 otherwise.
+     * @param predicate the predicate is called for each element in the list until an element return true is found.
+     * @return number representing the index of the element passing the predicate function,
+     * or -1 if no element passing the predicate function was found.
+     */
+    findIndex(predicate: (value: T, index: number, obj: T[]) => unknown): number {
+        return this._items.findIndex(predicate);
+    }
+
+    /**
+     * Returns the index of the first element int the list which is equal (===) to the given targetElement.
+     * @param targetElement the element which should be found in the list
+     * @return number representing the index of the found element, or -1 if the searched element wasn't found.
+     */
+    findElement(targetElement: T): number {
+        return this.findIndex(element => element === targetElement);
+    }
+
+    /**
      * Remove all elements in the list
      */
     clear(): void {

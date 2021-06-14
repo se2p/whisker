@@ -1,5 +1,4 @@
 import {Chromosome} from "../../Chromosome";
-import {FitnessFunction} from "../../FitnessFunction";
 
 /**
  * LocalSearch implementations are plugged into a SearchAlgorithm and help improve chromosomes according to a
@@ -29,8 +28,7 @@ export interface LocalSearch<C extends Chromosome> {
      * chromosome should replace the original chromosome.
      * @param originalChromosome the chromosome local search is applied to
      * @param modifiedChromosome the resulting chromosome after local search has been applied to the original
-     * @param fitnessFunction the measure which decided if one chromosome is better than another
      * @return boolean whether the local search operator improved the original chromosome.
      */
-    hasImproved(originalChromosome: C, modifiedChromosome: C, fitnessFunction: FitnessFunction<C>): boolean
+    hasImproved(originalChromosome: C, modifiedChromosome: C): boolean
 }

@@ -394,14 +394,6 @@ export class WhiskerSearchConfiguration {
         throw new ConfigException("Unknown Algorithm " + this.dict["test-generator"]);
     }
 
-    public getWaitDuration(): number {
-        if ("wait-duration" in this.dict) {
-            return this.dict["wait-duration"]
-        } else {
-            return 10;
-        }
-    }
-
     public getWaitStepUpperBound(): number {
         if ("waitStepUpperBound" in this.dict) {
             return this.dict["waitStepUpperBound"]
