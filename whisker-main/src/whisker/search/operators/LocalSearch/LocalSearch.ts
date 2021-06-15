@@ -1,4 +1,5 @@
 import {Chromosome} from "../../Chromosome";
+import {SearchAlgorithm} from "../../SearchAlgorithm";
 
 /**
  * LocalSearch implementations are plugged into a SearchAlgorithm and help improve chromosomes according to a
@@ -19,10 +20,9 @@ export interface LocalSearch<C extends Chromosome> {
      * Determines whether local search can be applied to this chromosome
      * @param chromosome the chromosome local search should be applied to
      * @param depletedResourceThreshold determines the amount of depleted resources after which local search will be applied
-     * @param generation the current generation of the search algorithm
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
-    isApplicable(chromosome: C, depletedResourceThreshold:number, generation:number): boolean;
+    isApplicable(chromosome: C, depletedResourceThreshold:number): boolean;
 
     /**
      * Determines whether the local search operator improved the original chromosome. If this is the case, the modified
@@ -32,4 +32,10 @@ export interface LocalSearch<C extends Chromosome> {
      * @return boolean whether the local search operator improved the original chromosome.
      */
     hasImproved(originalChromosome: C, modifiedChromosome: C): boolean
+
+    /**
+     * Sets the algorithm, the local search operator will be called from.
+     * @param algorithm the searchAlgorithm calling the local search operator.
+     */
+    setAlgorithm(algorithm: SearchAlgorithm<C>):void
 }

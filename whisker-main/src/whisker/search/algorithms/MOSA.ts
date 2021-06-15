@@ -81,6 +81,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
         this._localSearchOperators = localSearchOperators;
+        for (const localSearchOperator of localSearchOperators) {
+            localSearchOperator.setAlgorithm(this);
+        }
     }
 
     getNumberOfIterations(): number {
@@ -247,9 +250,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      */
     private async applyLocalSearch() {
         // Check if local search is applicable to any member of the current test suite.
-        for(const chromosome of this._bestIndividuals){
+        for (const chromosome of this._bestIndividuals) {
             for (const localSearch of this._localSearchOperators) {
-                if (localSearch.isApplicable(chromosome, this._stoppingCondition.getProgress(this), this._iterations)) {
+                if (localSearch.isApplicable(chromosome, this._stoppingCondition.getProgress(this))) {
                     const modifiedChromosome = await localSearch.apply(chromosome);
                     if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
                         this.updateArchive(modifiedChromosome);
