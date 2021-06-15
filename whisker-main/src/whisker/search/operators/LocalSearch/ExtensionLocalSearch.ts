@@ -70,6 +70,12 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
      * wasting time on applying the local search on the same chromosome twice.
      */
+    private readonly _modifiedChromosomes: TestChromosome[] = [];
+
+    /**
+     * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
+     * wasting time on applying the local search on the same chromosome twice.
+     */
     private readonly _targetedChromosomes = new List<TestChromosome>();
 
     /**
@@ -106,7 +112,8 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         return this._depletedResourcesThreshold < depletedResources &&
             depletedResources < 1 &&
             this._algorithm.getNumberOfIterations() % this._generationInterval === 0 &&
-            !this._targetedChromosomes.contains(chromosome);
+            !this._targetedChromosomes.contains(chromosome) &&
+            this.calculateFitnessValues(chromosome).length > 0;
     }
 
     /**
@@ -118,8 +125,9 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._targetedChromosomes.add(chromosome);
 
-        // Save the initial trace of the chromosome to recover it later.
+        // Save the initial trace and coverage of the chromosome to recover them later.
         const trace = chromosome.trace;
+        const coverage = chromosome.coverage;
 
         // Apply extension local search.
         const newCodons = new List<number>();
@@ -127,8 +135,10 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         newCodons.addList(chromosome.getGenes());
         seedScratch(String(Randomness.getInitialSeed()));
         this._vmWrapper.start();
+
         // Execute the original codons to obtain the state of the VM after executing the original chromosome.
         await this._executeGenes(newCodons, events);
+
         // Now extend the codons of the original chromosome to increase coverage.
         await this._extendGenes(newCodons, events, chromosome);
         this._vmWrapper.end();
@@ -138,9 +148,11 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        this._modifiedChromosomes.push(newChromosome);
 
-        // Reset the trace of the original chromosome
+        // Reset the trace and coverage of the original chromosome
         chromosome.trace = trace;
+        chromosome.coverage = coverage;
         return newChromosome;
     }
 
@@ -167,12 +179,13 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * no more blocks can be reached by waiting or until the maximum codon size has been reached.
      * @param codons the codons which should be extended by waits.
      * @param events the list of events saving the selected events including its parameters.
-     * @param chromosome the chromosome carrying the trace used to calculating branch distances to uncovered blocks
+     * @param chromosome the chromosome carrying the trace used to calculate fitness values of uncovered blocks
      */
     private async _extendGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>,
                                chromosome: TestChromosome): Promise<void> {
-        let branchDistances = this.calculateBranchDistances(chromosome);
-        let branchDistancesUnchanged = 0;
+        let fitnessValues = this.calculateFitnessValues(chromosome);
+        let fitnessValuesUnchanged = 0;
+        const cfgMarker = 0.5;
         while (codons.size() < this._upperLengthBound) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.isEmpty()) {
@@ -191,41 +204,48 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
             events.add([waitEvent, [waitDurationCodon]]);
             await waitEvent.apply();
 
-            // Set the trace for the current state of the VM to properly calculate the branchDistance.
+            // Set the trace for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
-            const newBranchDistances = this.calculateBranchDistances(chromosome);
+            chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+            const newFitnessValues = this.calculateFitnessValues(chromosome);
 
-            // If we have no change in the branchDistances increase the counter.
-            if (newBranchDistances.every(((value, index) => value >= branchDistances[index]))) {
-                branchDistancesUnchanged++;
+            // If we obtained smaller fitnessValues or have blocks reachable without branches in between
+            // reset the counter.
+            if (newFitnessValues.some(((value, index) => value < fitnessValues[index])) ||
+                newFitnessValues.includes(cfgMarker)) {
+                fitnessValuesUnchanged = 0;
             }
-            // Otherwise reset the counter.
+            // Otherwise increase the counter.
             else {
-                branchDistancesUnchanged = 0;
+                fitnessValuesUnchanged++;
             }
 
-            // If we see no improvements after adding three Waits or if we have covered all blocks we stop.
-            if (branchDistancesUnchanged >= 3 || newBranchDistances.length === 0) {
+            // If we see no improvements after adding five Waits or if we have covered all blocks we stop.
+            if (fitnessValuesUnchanged >= 5 || newFitnessValues.length === 0) {
                 break;
             }
-            branchDistances = newBranchDistances;
+            fitnessValues = newFitnessValues;
         }
     }
 
     /**
-     * Calculates the branch distances for each uncovered block. This helps us deciding if it makes sense adding
+     * Gathers the fitness value for each uncovered block. This helps us deciding if it makes sense adding
      * additional waits.
-     * @param chromosome the chromosome carrying the block trace used to calculate the branch distances
-     * @return Returns an array of discovered branch distances.
+     * @param chromosome the chromosome carrying the block trace used to calculate the fitness value
+     * @return Returns an array of discovered fitness values.
      */
-    private calculateBranchDistances(chromosome: TestChromosome): number[] {
-        const branchDistances: number[] = []
+    private calculateFitnessValues(chromosome: TestChromosome): number[] {
+        const fitnessValues: number[] = []
         for (const fitnessFunction of this._algorithm.getFitnessFunctions()) {
-            if (!fitnessFunction.isOptimal(fitnessFunction.getFitness(chromosome))) {
-                branchDistances.push(fitnessFunction.getBranchDistance(chromosome));
+            // Only look at fitnessValues originating from uncovered blocks AND
+            // not already covered by previous chromosomes
+            const fitness = fitnessFunction.getFitness(chromosome);
+            if (!fitnessFunction.isOptimal(fitness) &&
+                !this._modifiedChromosomes.some(value => fitnessFunction.isOptimal(fitnessFunction.getFitness(value)))) {
+                fitnessValues.push(fitnessFunction.getFitness(chromosome));
             }
         }
-        return branchDistances;
+        return fitnessValues;
     }
 
     /**
@@ -240,7 +260,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     }
 
     /**
-     * Sets the algorithm, the Dxtension local search operator will be called from.
+     * Sets the algorithm, the Extension local search operator will be called from.
      * @param algorithm the searchAlgorithm calling the Extension local search operator.
      */
     setAlgorithm(algorithm: SearchAlgorithm<TestChromosome>): void {

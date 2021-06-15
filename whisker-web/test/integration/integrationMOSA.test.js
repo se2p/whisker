@@ -254,9 +254,20 @@ describe('Multiple event handling', () => {
 });
 
 describe('LocalSearch', () => {
-    test('Test ExtensionLocalSearch', async () => {
+    test('Test ExtensionLocalSearch without Branches', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
         await loadProject('test/integration/localSearch/ExtensionTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+
+    }, timeout);
+
+    test('Test ExtensionLocalSearch with repeat until block', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
+        await loadProject('test/integration/localSearch/ExtensionTestRepeatUntil.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();
