@@ -129,7 +129,6 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_touchingobject': {
-                // MouseMoveToEvent
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
                 const value = field.TOUCHINGOBJECTMENU.value;

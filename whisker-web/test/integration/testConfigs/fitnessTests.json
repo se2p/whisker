@@ -53,7 +53,7 @@
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 1,
+    "waitStepUpperBound": 50,
     "click-duration": 3,
     "press-duration": 3
 }
