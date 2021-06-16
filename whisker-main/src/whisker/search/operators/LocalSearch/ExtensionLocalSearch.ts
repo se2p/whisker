@@ -124,6 +124,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._targetedChromosomes.add(chromosome);
+        console.log("Start Extension Local Search");
 
         // Save the initial trace and coverage of the chromosome to recover them later.
         const trace = chromosome.trace;
@@ -186,7 +187,8 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
         const cfgMarker = 0.5;
-        while (codons.size() < this._upperLengthBound) {
+        let done = false;
+        while (codons.size() < this._upperLengthBound && !done) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -222,7 +224,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
 
             // If we see no improvements after adding five Waits or if we have covered all blocks we stop.
             if (fitnessValuesUnchanged >= 5 || newFitnessValues.length === 0) {
-                break;
+                done = true;
             }
             fitnessValues = newFitnessValues;
         }

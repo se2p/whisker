@@ -252,7 +252,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         // Check if local search is applicable to any member of the current test suite.
         for (const chromosome of this._bestIndividuals) {
             for (const localSearch of this._localSearchOperators) {
-                if (localSearch.isApplicable(chromosome, this._stoppingCondition.getProgress(this))) {
+                if (localSearch.isApplicable(chromosome, this._stoppingCondition.getProgress(this)) &&
+                    !this._stoppingCondition.isFinished(this)){
                     const modifiedChromosome = await localSearch.apply(chromosome);
                     if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
                         this.updateArchive(modifiedChromosome);
