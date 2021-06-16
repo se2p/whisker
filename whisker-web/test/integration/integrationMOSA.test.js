@@ -221,6 +221,24 @@ describe('Basic event handling', () => {
         let coverage = await readCoverageOutput();
         await expect(coverage).toBe("1.00");
     }, timeout);
+
+    test('Test Drag Sprite to another Sprite', async () => {
+        await loadProject('test/integration/dragSpriteEvent/DragSpriteToSpriteTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test Drag Sprite to Color', async () => {
+        await loadProject('test/integration/dragSpriteEvent/DragSpriteToColorTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
 });
 
 describe('Multiple event handling', () => {
