@@ -96,7 +96,7 @@ export class TestExecutor {
      * @param numCodon the current position in the codon list
      * @param availableEvents the set of available events to choose from
      * @param events collects the chosen events including its parameters
-     * @return returns the current position in the codon list
+     * @return returns the new position in the codon list after selecting an event and its parameters.
      */
     public async selectAndSendEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>,
                                      events: List<[ScratchEvent, number[]]>): Promise<number> {

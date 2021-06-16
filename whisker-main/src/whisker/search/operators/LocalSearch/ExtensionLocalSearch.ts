@@ -108,15 +108,17 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     }
 
     /**
-     * Determines whether local search can be applied to this chromosome. This is the case if we have depleted the
-     * specified resource budget and if the chromosome can increase its coverage simply by waiting.
+     * Determines whether local search can be applied to this chromosome.
+     * This is the case if we have depleted the specified resource budget AND
+     * if we have waited for generationInterval generations AND
+     * if we have not modified the given chromosome by local search already in the past AND
+     * if the chromosome can actually discover previously uncovered blocks.
      * @param chromosome the chromosome local search should be applied to
      * @param depletedResources determines the amount of depleted resources after which local search will be applied
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome, depletedResources: number): boolean {
-        return this._depletedResourcesThreshold < depletedResources &&
-            depletedResources < 1 &&
+        return this._depletedResourcesThreshold < depletedResources && depletedResources < 1 &&
             this._algorithm.getNumberOfIterations() % this._generationInterval === 0 &&
             !this._targetedChromosomes.contains(chromosome) &&
             this.calculateFitnessValues(chromosome).length > 0;
@@ -130,7 +132,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._targetedChromosomes.add(chromosome);
-        console.log("Start Extension Local Search");
+        console.log(`Start Extension Local Search`);
 
         // Save the initial trace and coverage of the chromosome to recover them later.
         const trace = chromosome.trace;
@@ -192,8 +194,11 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
                                chromosome: TestChromosome): Promise<void> {
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
+        // Uncovered blocks without branches between themselves and already covered blocks have a fitness of 0.5.
         const cfgMarker = 0.5;
         let done = false;
+
+        // Monitor if the Scratch-VM is still running. If it isn't stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
         this._vmWrapper.vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -206,22 +211,22 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
             // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
             const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
             codons.add(waitEventCodon);
-            // Select a waitDuration randomly and add it to the list of codons.
+            // Set the waitDuration to the specified upper bound.
+            // Always using the same waitDuration ensures determinism within the local search.
             const waitDurationCodon = Container.config.getWaitStepUpperBound();
-            codons.add(waitDurationCodon);
+            codons.add(Container.config.getWaitStepUpperBound());
 
             // Send the waitEvent with the specified stepDuration to the VM
             const waitEvent = new WaitEvent(waitDurationCodon);
             events.add([waitEvent, [waitDurationCodon]]);
             await waitEvent.apply();
 
-            // Set the trace for the current state of the VM to properly calculate the fitnessValues.
+            // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
             const newFitnessValues = this.calculateFitnessValues(chromosome);
 
-            // If we obtained smaller fitnessValues or have blocks reachable without branches in between
-            // reset the counter.
+            // Reset counter if we obtained smaller fitnessValues, or have blocks reachable without branches.
             if (newFitnessValues.some(((value, index) => value < fitnessValues[index])) ||
                 newFitnessValues.includes(cfgMarker)) {
                 fitnessValuesUnchanged = 0;
@@ -231,7 +236,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
                 fitnessValuesUnchanged++;
             }
 
-            // If we see no improvements after adding five Waits or if we have covered all blocks we stop.
+            // If we see no improvements after adding three Waits, or if we have covered all blocks we stop.
             if (fitnessValuesUnchanged >= 3 || newFitnessValues.length === 0) {
                 done = true;
             }
@@ -240,7 +245,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     }
 
     /**
-     * Gathers the fitness value for each uncovered block. This helps us deciding if it makes sense adding
+     * Gathers the fitness value for each uncovered block. This helps us in deciding if it makes sense adding
      * additional waits.
      * @param chromosome the chromosome carrying the block trace used to calculate the fitness value
      * @return Returns an array of discovered fitness values.
@@ -249,7 +254,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         const fitnessValues: number[] = []
         for (const fitnessFunction of this._algorithm.getFitnessFunctions()) {
             // Only look at fitnessValues originating from uncovered blocks AND
-            // not already covered by previous chromosomes
+            // blocks not already covered by previous chromosomes modified by local search.
             const fitness = fitnessFunction.getFitness(chromosome);
             if (!fitnessFunction.isOptimal(fitness) &&
                 !this._modifiedChromosomes.some(value => fitnessFunction.isOptimal(fitnessFunction.getFitness(value)))) {
@@ -261,7 +266,6 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
 
     /**
      * Determines whether the Extension local search operator improved the original chromosome.
-     * If this is the case, the modified chromosome should replace the original chromosome.
      * @param originalChromosome the chromosome Extension local search has been applied to.
      * @param modifiedChromosome the resulting chromosome after Extension local search has been applied to the original.
      * @return boolean whether the local search operator improved the original chromosome.
@@ -279,7 +283,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     }
 
     /**
-     * Event listener checking if the project is still running.
+     * Event listener observing if the project is still running.
      */
     private projectStopped() {
         return this._projectRunning = false;
