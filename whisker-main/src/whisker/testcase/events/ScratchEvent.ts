@@ -18,29 +18,55 @@
  *
  */
 
-import {List} from "../../utils/List";
+import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
+import {Container} from "../../utils/Container";
+
 
 export abstract class ScratchEvent {
 
-    private static readonly STAGE_WIDTH = 420;
-    private static readonly STAGE_HEIGHT = 360;
+    /**
+     * Applies the event to the VM stored in the Container using the parameters stored in the attributes.
+     */
+    abstract apply(): Promise<void>;
 
-    public abstract apply(vm, args: number[]) : Promise<void>;
+    /**
+     * Returns the number of parameters required by this event.
+     */
+    abstract getNumParameters(): number;
 
-    public abstract toJavaScript(args: number[]) : string;
+    /**
+     * Sets the parameter(s) of this event using the given arguments.
+     * @param args the values to which the parameters of this event should be set to
+     */
+    abstract setParameter(args: number[]): void;
 
-    public abstract toString(args: number[]) : string;
+    /**
+     * Returns the parameter(s) of this event.
+     */
+    abstract getParameter(): (number | string | RenderedTarget) [];
 
-    public abstract getNumParameters(): number;
+    /**
+     * Transforms the event into an executable Whisker-Test statement.
+     */
+    abstract toJavaScript(): string;
 
-    public abstract setParameter(codons: List<number>, codonPosition: number): void;
+    /**
+     * Transforms the event into a string representation.
+     */
+    abstract toString(): string;
 
-    public abstract getParameter(): number[];
-
-    protected fitCoordinates(x: number, y: number): { x:number, y: number }{
-        x = (x % ScratchEvent.STAGE_WIDTH) - (ScratchEvent.STAGE_WIDTH / 2);
-        y = (y % ScratchEvent.STAGE_HEIGHT) - (ScratchEvent.STAGE_HEIGHT / 2);
-        return {x,y}
+    /**
+     * Fits the given coordinates to the Scratch-Stage.
+     * @param x the x-coordinate to fit into the range [-StageWidth/2, StageWidth/2]
+     * @param y the y-coordinate to fit into the range [-StageHeight/2, StageHeight]
+     */
+    protected fitCoordinates(x: number, y: number): { x: number, y: number } {
+        const width = Container.vmWrapper.getStageSize().width;
+        const height = Container.vmWrapper.getStageSize().height;
+        x = (x % width) - (width / 2);
+        y = (y % height) - (height / 2);
+        return {x, y};
     }
-
 }
+
+

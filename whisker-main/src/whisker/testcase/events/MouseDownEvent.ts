@@ -26,7 +26,7 @@ export class MouseDownEvent extends ScratchEvent {
     private readonly _value: boolean;
 
     constructor(value: boolean) {
-        super()
+        super();
         this._value = value;
     }
 

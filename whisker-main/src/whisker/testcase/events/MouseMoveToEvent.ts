@@ -25,7 +25,6 @@ export class MouseMoveToEvent extends ScratchEvent {
 
 
     private readonly x: number;
-
     private readonly y: number;
 
     constructor(x: number, y: number) {
@@ -34,8 +33,7 @@ export class MouseMoveToEvent extends ScratchEvent {
         this.y = y;
     }
 
-    async apply(args: number[]): Promise<void> {
-        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    async apply(): Promise<void> {
         Container.testDriver.inputImmediate({
             device: 'mouse',
             x: Math.trunc(this.x),
@@ -43,18 +41,16 @@ export class MouseMoveToEvent extends ScratchEvent {
         });
     }
 
-    public toJavaScript(args: number[]): string {
-        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    public toJavaScript(): string {
         return '' +
-            `t.inputImmediate({
+`t.inputImmediate({
     device: 'mouse',
     x: ${Math.trunc(this.x)},
     y: ${Math.trunc(this.y)}
 });`
     }
 
-    public toString(args: number[]): string {
-        // const {x, y} = Container.vmWrapper.getScratchCoords(args[0], args[1])
+    public toString(): string {
         return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 

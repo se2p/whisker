@@ -23,13 +23,6 @@ import {Container} from "../../utils/Container";
 
 export class ClickStageEvent extends ScratchEvent {
 
-    private readonly _target: string;
-
-    constructor(target: string) {
-        super()
-        this._target = target;
-    }
-
     async apply(): Promise<void> {
         // TODO: Is there a better solution than simply activating the hats?
         // TODO: Find an empty spot to click on to click the stage?
@@ -52,7 +45,7 @@ export class ClickStageEvent extends ScratchEvent {
         return;
     }
 
-    getParameter(): number[] {
+    getParameter(): [] {
         return [];
     }
 }

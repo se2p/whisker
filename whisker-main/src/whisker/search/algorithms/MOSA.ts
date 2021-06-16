@@ -29,6 +29,7 @@ import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {TestChromosome} from "../../testcase/TestChromosome";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -58,6 +59,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _fullCoverageReached = false;
 
+    private _localSearchOperators = new List<LocalSearch<C>>();
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -74,6 +77,13 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setSelectionOperator(selectionOperator: Selection<C>): void {
         this._selectionOperator = selectionOperator;
+    }
+
+    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
+        this._localSearchOperators = localSearchOperators;
+        for (const localSearchOperator of localSearchOperators) {
+            localSearchOperator.setAlgorithm(this);
+        }
     }
 
     getNumberOfIterations(): number {
@@ -130,6 +140,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
+        await this.applyLocalSearch();
 
         if (this._stoppingCondition.isFinished(this)) {
             this.updateStatistics();
@@ -138,6 +149,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
+            await this.applyLocalSearch();
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);
@@ -195,8 +207,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         branchDistance = fitnessFunction.getBranchDistance(chromosome);
                         if (approachLevel === 0 && branchDistance === 0) {
                             CFGDistance = fitnessFunction.getCFGDistance(chromosome);
-                        }
-                        else {
+                        } else {
                             CFGDistance = Number.MAX_VALUE;
                             //this means that it was unnecessary to calculate cfg distance, since
                             //approach level or branch distance was not 0;
@@ -207,7 +218,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 curSummary['BranchDistance'] = branchDistance;
                 curSummary['CFGDistance'] = CFGDistance;
                 curSummary['Fitness'] = fitness;
-                if (Object.keys(curSummary).length > 0){
+                if (Object.keys(curSummary).length > 0) {
                     summary.push(curSummary);
                 }
             }
@@ -216,6 +227,13 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return JSON.stringify({'uncoveredBlocks': summary});
     }
 
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - IterationCount
+     *  - createdTestsTo
+     * @private
+     */
     private updateStatistics() {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
@@ -224,6 +242,25 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
                 (this._iterations + 1) * this._properties.getPopulationSize();
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+        }
+    }
+
+    /**
+     * Applies the specified local search operators to the best performing chromosomes in the testSuite.
+     */
+    private async applyLocalSearch() {
+        // Check if local search is applicable to any member of the current test suite.
+        for (const chromosome of this._bestIndividuals) {
+            for (const localSearch of this._localSearchOperators) {
+                if (localSearch.isApplicable(chromosome, this._stoppingCondition.getProgress(this)) &&
+                    !this._stoppingCondition.isFinished(this)){
+                    const modifiedChromosome = await localSearch.apply(chromosome);
+                    if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
+                        this.updateArchive(modifiedChromosome);
+                        this.updateStatistics();
+                    }
+                }
+            }
         }
     }
 
@@ -284,23 +321,23 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param candidateChromosome The candidate chromosome for the archive.
      */
     private updateArchive(candidateChromosome: C): void {
-            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                let bestLength = this._archive.has(fitnessFunctionKey)
-                    ? this._archive.get(fitnessFunctionKey).getLength()
-                    : Number.MAX_SAFE_INTEGER;
-                const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
-                const candidateLength = candidateChromosome.getLength();
-                if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
-                    bestLength = candidateLength;
-                    if (!this._archive.has(fitnessFunctionKey)) {
-                        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
-                    }
-                    this._archive.set(fitnessFunctionKey, candidateChromosome);
-                    this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
-                    console.log(`Found test for goal: ${fitnessFunction}`);
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestLength = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).getLength()
+                : Number.MAX_SAFE_INTEGER;
+            const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+            const candidateLength = candidateChromosome.getLength();
+            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                bestLength = candidateLength;
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                 }
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
+                this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+                console.log(`Found test for goal: ${fitnessFunction}`);
             }
+        }
     }
 
     /**

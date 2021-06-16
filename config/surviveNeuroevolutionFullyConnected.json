@@ -47,7 +47,7 @@
         "type": "fixed-iteration",
         "iterations": 300
     },
-    "wait-duration": 50,
-    "click-duration": 20,
-    "press-duration": 20
+    "waitStepUpperBound": 200,
+    "click-duration": 1,
+    "press-duration": 1
 }

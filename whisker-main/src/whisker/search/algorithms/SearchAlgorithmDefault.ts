@@ -26,6 +26,7 @@ import {FitnessFunction} from "./../FitnessFunction";
 import {Selection} from "./../Selection";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -74,6 +75,10 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     }
 
     setSelectionOperator(selectionOperator: Selection<C>): void {
+        throw new NotSupportedFunctionException();
+    }
+
+    setLocalSearchOperators(localSearchOperators:List<LocalSearch<C>>):void {
         throw new NotSupportedFunctionException();
     }
 

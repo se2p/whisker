@@ -35,7 +35,7 @@ export class FixedTimeStoppingCondition<T extends Chromosome> implements Stoppin
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        return this._maxTime - (Date.now() - algorithm.getStartTime());
+        return (Date.now() - algorithm.getStartTime()) / this._maxTime;
     }
 
     get maxTime(): number {

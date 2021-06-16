@@ -1,6 +1,7 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 50000 : 40000;
+const timeout = process.env.SLOWMO ? 80000 : 70000;
+const ACCELERATION = 10;
 
 async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
@@ -68,7 +69,7 @@ beforeEach(async() => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtestMIO.json");
+    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
 });
 
 
@@ -205,6 +206,15 @@ describe('Basic event handling', () => {
 
     test('Test wait', async () => {
         await loadProject('test/integration/waitEvent/WaitEventTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
+
+    test('Test Draw with PenBlock', async () => {
+        await loadProject('test/integration/penBlock/Draw.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();

@@ -20,7 +20,6 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {List} from "../../utils/List";
 
 export class MouseMoveEvent extends ScratchEvent {
 
@@ -29,37 +28,28 @@ export class MouseMoveEvent extends ScratchEvent {
 
     constructor(x = 0, y = 0) {
         super();
-            this._x = x;
-            this._y = y;
-    }
-
-    async applyWithCoordinates(args: number[]): Promise<void> {
-        this._x = args[0];
-        this._y = args[1];
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            x: Math.trunc(args[0]),
-            y: Math.trunc(args[1])
-        });
+        this._x = x;
+        this._y = y;
     }
 
     async apply(): Promise<void> {
-        const fittedCoordinates = this.fitCoordinates(this._x, this._y)
-        this._x =fittedCoordinates.x
-        this._y = fittedCoordinates.y
-        await this.applyWithCoordinates([this._x, this._y])
+        Container.testDriver.inputImmediate({
+            device: 'mouse',
+            x: Math.trunc(this._x),
+            y: Math.trunc(this._y)
+        });
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'mouse',
-    x: ${Math.trunc(args[0])},
-    y: ${Math.trunc(args[1])}
+    x: ${Math.trunc(this._x)},
+    y: ${Math.trunc(this._y)}
 });`
     }
 
-    public toString(args: number[]): string {
+    public toString(): string {
         return "MouseMove " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
@@ -71,9 +61,9 @@ export class MouseMoveEvent extends ScratchEvent {
         return [this._x, this._y];
     }
 
-    setParameter(codons: List<number>, codonPosition: number): void {
-        this._x = codons.get(codonPosition % codons.size());
-        codonPosition++;
-        this._y = codons.get(codonPosition % codons.size());
+    setParameter(args:number[]): void {
+        const fittedCoordinates = this.fitCoordinates(args[0], args[1])
+        this._x = fittedCoordinates.x;
+        this._y = fittedCoordinates.y;
     }
 }

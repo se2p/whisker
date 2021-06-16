@@ -20,19 +20,17 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
-
+import {RenderedTarget} from'scratch-vm/src/sprites/rendered-target';
 
 export class ClickSpriteEvent extends ScratchEvent {
 
     private readonly _target: RenderedTarget;
-
-    private readonly _timeout: number;
+    private readonly _steps: number;
 
     constructor(target: RenderedTarget) {
-        super();
-        this._target = target
-        this._timeout = Container.config.getClickDuration() / Container.acceleration;
+        super()
+        this._target = target;
+        this._steps = Container.config.getClickDuration();
     }
 
     async apply(): Promise<void> {
@@ -42,7 +40,7 @@ export class ClickSpriteEvent extends ScratchEvent {
                 device: 'mouse',
                 sprite: Container.testDriver.getSprite(this._target.sprite.name),
                 isDown: true,
-                duration: this._timeout
+                steps: this._steps
             });
         } else {
             // Click on clone
@@ -51,7 +49,7 @@ export class ClickSpriteEvent extends ScratchEvent {
                 x: this._target.x,
                 y: this._target.y,
                 isDown: true,
-                duration: this._timeout
+                steps: this._steps
             });
         }
     }
@@ -59,11 +57,11 @@ export class ClickSpriteEvent extends ScratchEvent {
     public toJavaScript(): string {
         if (this._target.isOriginal) {
             return '' +
-                `t.inputImmediate({
+`t.inputImmediate({
     device: 'mouse',
     sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
-    duration: ${Container.config.getClickDuration()}
+    steps: ${Container.config.getClickDuration()}
   });`;
         } else {
             return '' +
@@ -72,7 +70,7 @@ export class ClickSpriteEvent extends ScratchEvent {
     x: ${this._target.x},
     y: ${this._target.y},
     isDown: true,
-    duration: ${Container.config.getClickDuration()}
+    steps: ${Container.config.getClickDuration()}
   });`;
         }
     }
@@ -93,7 +91,7 @@ export class ClickSpriteEvent extends ScratchEvent {
         return;
     }
 
-    getParameter(): number[] {
-        return [];
+    getParameter(): (number | RenderedTarget)[] {
+        return [this._target, this._steps];
     }
 }

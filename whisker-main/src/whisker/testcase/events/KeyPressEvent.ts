@@ -18,55 +18,68 @@
  *
  */
 
-import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {List} from "../../utils/List";
+import {WaitEvent} from "./WaitEvent";
 
 export class KeyPressEvent extends ScratchEvent {
 
     private readonly _keyOption: string;
+    private _steps: number;
 
-    private _timeout: number;
-
-    constructor(keyOption: string) {
+    constructor(keyOption: string, steps = 1) {
         super();
         this._keyOption = keyOption;
-        this._timeout = Container.config.getPressDuration() / Container.acceleration;
+        this._steps = steps;
     }
 
-    async apply(vm: VirtualMachine): Promise<void> {
+    async apply(): Promise<void> {
+        // Press the specified key
         Container.testDriver.inputImmediate({
             device: 'keyboard',
             key: this._keyOption,
-            isDown: true,
-            duration: this._timeout
+            isDown: true
+        });
+
+        // Keep the key pressed for this._steps steps.
+        await new WaitEvent(this._steps).apply();
+
+        // Release the key
+        Container.testDriver.inputImmediate({
+            device: 'keyboard',
+            key: this._keyOption,
+            isDown: false
         });
     }
 
-    public toJavaScript(args: number[]): string {
+    public toJavaScript(): string {
         return '' +
 `t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
-    isDown: true,
-    duration: ${Container.config.getPressDuration()}
-  });`;
+    isDown: 'true'
+});`+ `\n`+
+new WaitEvent(this._steps).toJavaScript() + `\n` +
+`t.inputImmediate({
+    device: 'keyboard',
+    key: '${this._keyOption}',
+    isDown: 'false'
+});`
     }
 
-    public toString(args: number[]): string {
-        return "KeyPress " + this._keyOption;
+    public toString(): string {
+        return "KeyPress " + this._keyOption + ": " + this._steps;
     }
 
     getNumParameters(): number {
-        return 0;
+        return 1;
     }
 
     getParameter(): number[] {
-        return [];
+        return [this._steps];
     }
 
-    setParameter(): void {
-       return;
+    setParameter(args: number[]): void {
+        this._steps = args[0] % Container.config.getPressDurationUpperBound();
     }
 }

@@ -20,8 +20,6 @@
 
 import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
-import {List} from '../utils/List';
-import {WhiskerTest} from './WhiskerTest';
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 /**
@@ -31,6 +29,7 @@ import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 export class ManyObjectiveTestGenerator extends TestGenerator {
 
     async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary> {
+
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this.buildSearchAlgorithm(true);
 

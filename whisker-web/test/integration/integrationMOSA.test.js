@@ -1,6 +1,7 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 50000 : 40000;
+const timeout = process.env.SLOWMO ? 80000 : 70000;
+const ACCELERATION = 10;
 
 async function loadProject (scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
@@ -68,7 +69,7 @@ beforeEach(async() => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
-    await (await page.$('#fileselect-config')).uploadFile("../config/integrationtestMOSA.json");
+    await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMOSA.json");
 });
 
 
@@ -211,6 +212,15 @@ describe('Basic event handling', () => {
         let coverage = await readCoverageOutput();
         await expect(coverage).toBe("1.00");
     }, timeout);
+
+    test('Test Draw with PenBlock', async () => {
+        await loadProject('test/integration/penBlock/Draw.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+    }, timeout);
 });
 
 describe('Multiple event handling', () => {
@@ -240,5 +250,29 @@ describe('Multiple event handling', () => {
         await (await page.$('#run-all-tests')).click();
         let coverage = await readCoverageOutput();
         await expect(coverage).toBe("1.00");
+    }, timeout);
+});
+
+describe('LocalSearch', () => {
+    test('Test ExtensionLocalSearch without Branches', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
+        await loadProject('test/integration/localSearch/ExtensionTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+
+    }, timeout);
+
+    test('Test ExtensionLocalSearch with repeat until block', async () => {
+        await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
+        await loadProject('test/integration/localSearch/ExtensionRepeatUntilTest.sb3')
+        await (await page.$('#run-search')).click();
+        await waitForSearchCompletion();
+        await (await page.$('#run-all-tests')).click();
+        let coverage = await readCoverageOutput();
+        await expect(coverage).toBe("1.00");
+
     }, timeout);
 });
