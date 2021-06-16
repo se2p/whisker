@@ -96,10 +96,10 @@ export class ModelLoaderXML {
         if (graphID == undefined) {
             graphID = ModelLoaderXML.ID_UNDEFINED + this.idUndefined;
             this.idUndefined++;
-            console.warn("Model Loader: A graph id was not given.");
+            console.error("Warning: A graph id was not given. Defining as " + graphID);
         } else if (this.graphIDs.indexOf(graphID) != -1) {
             graphID = graphID + "_dup" + this.graphIDs.length;
-            console.warn("Model Loader: Model id '" + graph._attributes.id + "' already defined.");
+            console.error("Warning: Model id '" + graph._attributes.id + "' already defined.");
         }
 
         try {
@@ -143,7 +143,7 @@ export class ModelLoaderXML {
      * @private
      */
     private loadNode(graphID: string, nodeAttr: { [key: string]: string }): void {
-        if ((this.nodesMap)[nodeAttr.id]) {
+        if ((this.nodesMap)[graphID + "-" + nodeAttr.id]) {
             throw new Error("Node id '" + nodeAttr.id + "' already defined.");
         }
 
@@ -181,9 +181,9 @@ export class ModelLoaderXML {
             edgeID = graphID + "-edge-undef-" + this.idUndefined;
             this.idUndefined++;
         } else {
-            if ((this.edgesMapProgram)[edgeAttr.id]) {
+            if ((this.edgesMapProgram)[graphID + "-" + edgeAttr.id]) {
                 edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
-                console.warn("Model Loader: ID '" + edgeAttr.id + "' already defined.");
+                console.error("Warning: ID '" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
             }
@@ -228,9 +228,9 @@ export class ModelLoaderXML {
             edgeID = graphID + "-edge-undef-" + this.idUndefined;
             this.idUndefined++;
         } else {
-            if ((this.edgesMapUser)[edgeAttr.id]) {
+            if ((this.edgesMapUser)[graphID + "-" + edgeAttr.id]) {
                 edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapUser).length;
-                console.warn("Model Loader: ID '" + edgeAttr.id + "' already defined.");
+                console.error("Warning: ID '" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
             }

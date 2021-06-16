@@ -76,8 +76,8 @@ export class Condition extends Check {
     private _condition: () => boolean;
     private readonly forceTestAfter: number;
     private readonly forceTestAt: number;
-    private firstCheck: boolean;
     private timeStamp: number;
+    private failedForcedTest: boolean;
 
     /**
      * Get a condition instance. Checks the number of arguments for a condition type.
@@ -100,7 +100,7 @@ export class Condition extends Check {
         if (this.forceTestAt != -1) {
             this.forceTestAt = forceTestAt + ModelTester.TIME_LEEWAY;
         }
-        this.firstCheck = true;
+        this.failedForcedTest = false;
     }
 
     /**
@@ -110,7 +110,8 @@ export class Condition extends Check {
         try {
             this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
-            console.error(e);
+            console.error(e + ". This condition will be considered as not fulfilled in test run.");
+            this._condition = () => false;
             result.addError(e.message);
         }
     }
@@ -119,13 +120,16 @@ export class Condition extends Check {
      * Check the edge condition.
      */
     check(t: TestDriver): boolean {
-        if (this.firstCheck) {
-            this.firstCheck = false;
+        if (this.failedForcedTest) {
+            return false;
+        }
+        if (this.timeStamp == undefined) {
             this.timeStamp = t.getTotalTimeElapsed();
         }
         if ((this.forceTestAt != -1 && this.forceTestAt <= t.getTotalTimeElapsed())
             || (this.forceTestAfter != -1 && this.forceTestAfter <= (t.getTotalTimeElapsed() - this.timeStamp))) {
             if (!this._condition()) {
+                this.failedForcedTest = true;
                 throw getTimeLimitFailedError(this);
             } else {
                 return this.negated;
@@ -143,7 +147,11 @@ export class Condition extends Check {
     }
 
     reset() {
-        this.firstCheck = true;
+        this.timeStamp = undefined;
+        this.failedForcedTest = false;
+    }
+
+    resetTimeStamp()  {
         this.timeStamp = undefined;
     }
 

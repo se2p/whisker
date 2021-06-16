@@ -6,7 +6,6 @@ import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
 import {ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
-import {Effect} from "./components/Effect";
 import {Container} from "../utils/Container";
 
 export class ModelTester extends EventEmitter {
@@ -27,6 +26,8 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_WARNING = "ModelWarning";
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
     static readonly TIME_LEEWAY = 250;
+
+    running = false;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -91,12 +92,6 @@ export class ModelTester extends EventEmitter {
             model.registerComponents(this.checkUtility, testDriver, this.result, caseSensitive);
         })
 
-        // There was already an error as conditions or effects could not be evaluated (e.g. missing sprites).
-        if (this.result.errors.length > 0) {
-            console.error("errors in conditions/effects before test run");
-            return;
-        }
-
         await this.addCallbacks(testDriver);
     }
 
@@ -125,7 +120,7 @@ export class ModelTester extends EventEmitter {
                     stopAll = true;
                 }
             })
-            checkConstraintsModel = notStoppedModels;
+            checkConstraintsModel = [...notStoppedModels];
         };
         let checkProgramModels = [...this.programModels];
         let modelStepFunction = () => {
@@ -144,17 +139,8 @@ export class ModelTester extends EventEmitter {
                     stopAll = true;
                 }
             });
-            checkProgramModels = notStoppedModels;
-
-            // check the effects of all taken edges
-            let contradictingEffects = this.checkUtility.checkEffects(this.result);
-            if (contradictingEffects && contradictingEffects.length > 0) {
-                let output = this.contradictingEffectsOutput(contradictingEffects);
-                console.error("EFFECTS CONTRADICTING", output);
-                this.result.log.push("EFFECTS CONTRADICTING" + output);
-                this.emit(ModelTester.MODEL_WARNING, output);
-            }
-            // }
+            this.checkEffects();
+            checkProgramModels = [...notStoppedModels];
             this.checkUtility.reset();
         }
         // stop all if any model had a stopAllModels node reached
@@ -170,6 +156,7 @@ export class ModelTester extends EventEmitter {
                 }
                 beforeStepCallback.disable();
                 checkStop.disable();
+                this.running = false;
             }
         }, true, "stopModelsCheck");
 
@@ -233,14 +220,26 @@ export class ModelTester extends EventEmitter {
      * Get the result of the test run as a ModelResult.
      */
     getModelStates(testDriver: TestDriver) {
-        this.programModels.forEach(model => {
-            if (model.stopped()) {
-                console.log("Model '" + model.id + "' stopped.");
-                this.result.log.push("Model '" + model.id + "' stopped.");
-                this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
+        let models = [...this.programModels, ...this.constraintsModels];
+        let stoppedByOne = false;
+        models.forEach(model => {
+            if (model.shouldHaltAllModels()) {
+                stoppedByOne = true;
+                console.log("Model '" + model.id + "' stopped all other models.");
+                this.result.log.push("Model '" + model.id + "' stopped all other models.");
+                this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped all other models.");
             }
         });
-        const sprites = testDriver.getSprites(undefined, false);
+        if (!stoppedByOne) {
+            models.forEach(model => {
+                if (model.stopped()) {
+                    console.log("Model '" + model.id + "' stopped.");
+                    this.result.log.push("Model '" + model.id + "' stopped.");
+                    this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
+                }
+            });
+        }
+        const sprites = testDriver.getSprites(() => true, false);
         let log = [];
         log.push("--- State of variables:");
 
@@ -286,11 +285,23 @@ export class ModelTester extends EventEmitter {
         return coverage;
     }
 
-    private contradictingEffectsOutput(contradictingEffects: Effect[]): string {
-        let output = "Model had to check contradicting effects! Skipping these.";
-        contradictingEffects.forEach(effect => {
-            output += "\n -- " + effect.toString();
-        })
-        return output;
+    private checkEffects() {
+        let contradictingEffects = this.checkUtility.checkEffects(this.result);
+        if (contradictingEffects && contradictingEffects.length > 0) {
+            let output = "Model had to check contradicting effects! Skipping these.";
+            contradictingEffects.forEach(effect => {
+                output += "\n -- " + effect.toString();
+            })
+            console.error("EFFECTS CONTRADICTING", output);
+            this.result.log.push("EFFECTS CONTRADICTING" + output);
+            this.emit(ModelTester.MODEL_WARNING, output);
+        }
+    }
+
+    modelsToJSON() {
+        if (this.someModelLoaded()) {
+
+        }
+        return null;
     }
 }

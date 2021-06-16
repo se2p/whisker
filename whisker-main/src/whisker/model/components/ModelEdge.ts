@@ -41,7 +41,7 @@ export abstract class ModelEdge {
                 if (e.message.startsWith(TIME_LIMIT_ERROR)) {
                     modelResult.addError(e.message);
                     failedConditions.push(this.conditions[i]); // still do not take this edge...
-                    console.error(e.message, testDriver.getTotalStepsExecuted(), testDriver.getStage().getVariable("Zeit").value, testDriver.getTotalTimeElapsed());
+                    console.error(e.message, testDriver.getTotalStepsExecuted());
                     this.resetTimeStamps();
                 } else {
                     let error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
@@ -106,7 +106,7 @@ export abstract class ModelEdge {
      */
     resetTimeStamps() {
         this.conditions.forEach(cond => {
-            cond.reset();
+            cond.resetTimeStamp();
         })
     }
 }
@@ -131,6 +131,9 @@ export class ProgramModelEdge extends ModelEdge {
 
     reset(): void {
         this.failedEffects = [];
+        this.conditions.forEach(cond => {
+            cond.reset();
+        })
     }
 
     /**

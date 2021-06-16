@@ -81,7 +81,8 @@ export class Effect extends Check {
         try {
             this._effect = this.checkArgsWithTestDriver(t, null, caseSensitive);
         } catch (e) {
-            console.error(e);
+            console.error(e + ". This effect will be considered as not fulfilled in test run.");
+            this._effect = () => false;
             result.addError(e.message);
         }
     }

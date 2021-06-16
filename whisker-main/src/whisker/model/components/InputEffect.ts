@@ -10,7 +10,7 @@ import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 export enum InputEffectName {
     InputClickSprite = "InputClickSprite", // sprite name
     InputClickStage = "InputClickStage", // nothing
-    InputKey = "InputKey", // key name, isDown | durationValue (optional), IsDownValue (if isDown) | durationValue (if isDuration)
+    InputKey = "InputKey", // key name (input for one step)
     InputMouseDown = "InputMouseDown", // true | false
     InputMouseMove = "InputMouseMove", // x, y
     InputText = "InputText" // answer| text
