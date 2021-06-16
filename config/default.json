@@ -19,7 +19,7 @@
     "localSearch": [
         {
             "type": "Extension",
-            "depletedResources": 0.1,
+            "consumedResources": 0.5,
             "interval": 1
         }
     ],
@@ -50,7 +50,7 @@
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 100,
+    "waitStepUpperBound": 200,
     "click-duration": 3,
     "pressDurationUpperBound": 50
 }

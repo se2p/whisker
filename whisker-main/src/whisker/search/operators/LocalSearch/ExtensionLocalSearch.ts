@@ -52,9 +52,9 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     private readonly _testExecutor: TestExecutor;
 
     /**
-     * The relative amount of depleted resources, determining at which point in time local search should be applied.
+     * The relative amount of consumed resources, determining at which point in time local search should be applied.
      */
-    private readonly _depletedResourcesThreshold: number
+    private readonly _consumedResources: number
 
     /**
      * Defines, in terms of generations, how often the operator is used.
@@ -93,32 +93,32 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * Constructs a new ExtensionLocalSearch object.
      * @param vmWrapper the vmWrapper containing the Scratch-VM.
      * @param eventExtractor the eventExtractor used to obtain the currently available set of events.
-     * @param depletedResourcesThreshold the relative amount of depleted resources after which
+     * @param consumedResources the relative amount of consumed resources after which
      * this local search operator gets used.
      * @param generationInterval defines, in terms of generations, how often the operator is used.
      */
-    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, depletedResourcesThreshold: number,
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, consumedResources: number,
                 generationInterval: number) {
         this._vmWrapper = vmWrapper;
         this._eventExtractor = eventExtractor;
         this._testExecutor = new TestExecutor(vmWrapper, eventExtractor);
-        this._depletedResourcesThreshold = depletedResourcesThreshold;
+        this._consumedResources = consumedResources;
         this._generationInterval = generationInterval;
         this._upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
     }
 
     /**
      * Determines whether local search can be applied to this chromosome.
-     * This is the case if we have depleted the specified resource budget AND
+     * This is the case if we have consumed the specified resource budget AND
      * if we have waited for generationInterval generations AND
      * if we have not modified the given chromosome by local search already in the past AND
      * if the chromosome can actually discover previously uncovered blocks.
      * @param chromosome the chromosome local search should be applied to
-     * @param depletedResources determines the amount of depleted resources after which local search will be applied
+     * @param consumedResources determines the amount of consumed resources after which local search will be applied
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
-    isApplicable(chromosome: TestChromosome, depletedResources: number): boolean {
-        return this._depletedResourcesThreshold < depletedResources && depletedResources < 1 &&
+    isApplicable(chromosome: TestChromosome, consumedResources: number): boolean {
+        return this._consumedResources < consumedResources && consumedResources < 1 &&
             this._algorithm.getNumberOfIterations() % this._generationInterval === 0 &&
             !this._targetedChromosomes.contains(chromosome) &&
             this.calculateFitnessValues(chromosome).length > 0;

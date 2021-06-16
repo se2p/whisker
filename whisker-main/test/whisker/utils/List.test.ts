@@ -54,13 +54,27 @@ describe("List", () => {
     });
 
     test("Replace oldElement with a new one", () => {
-        list.replace(2, 5)
+        const wasSuccessFull = list.replace(2, 5);
+        expect(wasSuccessFull).toBeTruthy();
         expect(list.getElements()).toEqual([1, 5, 3]);
     });
 
+    test("Try to replace a non existing oldElement with a new one", () => {
+        const wasSuccessFull = list.replace(-1, 5);
+        expect(wasSuccessFull).toBeFalsy();
+        expect(list.getElements()).toEqual([1,2,3]);
+    });
+
     test("Replace element given an index", () => {
-        list.replaceAt(4, 1)
+        const wasSuccessFull = list.replaceAt(4, 1);
+        expect(wasSuccessFull).toBeTruthy();
         expect(list.getElements()).toEqual([1, 4, 3]);
+    });
+
+    test("Try to replace element given a non valid index", () => {
+        const wasSuccessFull = list.replaceAt(4, -1);
+        expect(wasSuccessFull).toBeFalsy();
+        expect(list.getElements()).toEqual([1, 2, 3]);
     });
 
     test("Add array to list", () => {

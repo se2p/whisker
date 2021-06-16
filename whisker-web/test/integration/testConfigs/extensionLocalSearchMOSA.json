@@ -19,7 +19,7 @@
     "localSearch": [
         {
             "type": "Extension",
-            "depletedResources": 0,
+            "consumedResources": 0,
             "interval": 1
         }
     ],

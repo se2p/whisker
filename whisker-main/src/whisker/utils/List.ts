@@ -76,21 +76,30 @@ export class List<T> implements Iterable<T> {
 
     /**
      * Replaces the oldElement with the newElement.
-     * @param oldElement the element to replace
-     * @param newElement the element, oldElement gets replaced with
+     * @param oldElement the element to replace.
+     * @param newElement the element, oldElement gets replaced with.
+     * @return Returns true if the operation was successful and false otherwise.
      */
-    replace(oldElement: T, newElement: T): void {
+    replace(oldElement: T, newElement: T): boolean {
         const index = this._items.findIndex(element => element === oldElement);
+        if(index === -1)
+            return false;
         this.replaceAt(newElement, index);
+        return true;
     }
 
     /**
      * Replaces the element at the given position with the specified element.
-     * @param newElement the new element to replaceAt the old element with
-     * @param position the position at which the old element should be replaced with the new element
+     * @param newElement the new element to replaceAt the old element with.
+     * @param position the position at which the old element should be replaced with the new element.
+     * @return Returns true if the operation was successful and false otherwise.
      */
-    replaceAt(newElement: T, position: number): void {
+    replaceAt(newElement: T, position: number): boolean {
+        if(position < 0 || position > this.size() - 1){
+            return false;
+        }
         this._items[position] = newElement;
+        return true;
     }
 
     /**
