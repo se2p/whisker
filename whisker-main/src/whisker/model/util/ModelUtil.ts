@@ -16,28 +16,49 @@ import Variable from "../../../vm/variable";
 
 export abstract class ModelUtil {
 
+    private static getRegexParts(caseSensitive: boolean, regex: string) {
+        if (regex.indexOf("/") == -1) {
+            return [regex, caseSensitive ? "" : "i"];
+        }
+
+        let firstPart = regex.substring(1, regex.length);
+        let secondSlashIndex = firstPart.indexOf("/");
+        if (secondSlashIndex == -1) {
+            return [firstPart, caseSensitive ? "" : "i"];
+        }
+        firstPart = firstPart.substring(0, secondSlashIndex);
+        let flags = regex.substring(secondSlashIndex + 2, regex.length);
+        if (!caseSensitive && flags == "") {
+            flags = "i";
+        }
+        return [firstPart, flags];
+    }
+
     /**
      * Check the existence of a sprite.
      * @param testDriver Instance of the test driver.
      * @param caseSensitive Whether the names should be checked with case sensitivity or not.
-     * @param spriteName Name of the sprite.
+     * @param spriteNameRegex Name of the sprite.
      */
-    static checkSpriteExistence(testDriver: TestDriver, caseSensitive: boolean, spriteName: string): Sprite {
-        let sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-        if (sprite) {
-            return sprite;
+    static checkSpriteExistence(testDriver: TestDriver, caseSensitive: boolean, spriteNameRegex: string): Sprite {
+        if (spriteNameRegex.indexOf("Stage") != -1 || spriteNameRegex.indexOf("stage") != -1) {
+            return testDriver.getStage();
         }
+        let regexParts = ModelUtil.getRegexParts(caseSensitive, spriteNameRegex);
+        // console.log(regexParts);
 
-        if (caseSensitive) {
-            throw getSpriteNotFoundError(spriteName);
-        } else {
-            spriteName = spriteName.toLowerCase();
-            sprite = testDriver.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            if (sprite == undefined) {
-                throw getSpriteNotFoundError(spriteName);
+        const regex = new RegExp(regexParts[0], regexParts[1]);
+        let sprite = testDriver.getSprites(s => {
+            if (caseSensitive) {
+                return s.isOriginal && s.name.match(regex);
+            } else {
+                return s.isOriginal && s.name.toLowerCase().match(regex);
             }
-            return sprite;
+        })[0];
+        if (!sprite) {
+            throw getSpriteNotFoundError(spriteNameRegex);
         }
+        return sprite;
     }
 
     /**
@@ -45,26 +66,39 @@ export abstract class ModelUtil {
      * @param t Instance of the test driver.
      * @param caseSensitive Whether the names should be checked with case sensitivity or not.
      * @param sprite Sprite instance.
-     * @param variableName Name of the variable.
+     * @param variableNameRegex Name of the variable.
      */
-    static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, variableName: string): Variable {
-        let variable = sprite.getVariable(variableName, false);
+    static checkVariableExistence(t: TestDriver, caseSensitive: boolean, sprite: Sprite, variableNameRegex: string):
+        { sprite: Sprite, variable: Variable } {
+        let regexParts = ModelUtil.getRegexParts(caseSensitive, variableNameRegex);
+
+        function getVariable(variable) {
+            if (caseSensitive) {
+                return variable.name.match(regex);
+            } else {
+                return variable.name.toLowerCase().match(regex);
+            }
+        }
+        const regex = new RegExp(regexParts[0], regexParts[1]);
+        let variable = sprite.getVariables(getVariable)[0];
 
         if (variable) {
-            return variable;
+            return {sprite, variable};
         }
 
-        // variable with this name not found
-        if (caseSensitive) {
-            throw getVariableNotFoundError(variableName, sprite.name);
-        } else {
-            variableName = variableName.toLowerCase();
-            variable = sprite.getVariable(variableName, false);
-            if (!variable) {
-                throw getVariableNotFoundError(variableName, sprite.name);
+        // The variable is not defined on the sprite, search for the same variable name on other sprites and
+        // take that one....
+        let sprites = t.getSprites(() => true, false);
+        for (let i = 0; i < sprites.length; i++) {
+            let sprite = sprites[i];
+            variable = sprite.getVariables(getVariable)[0];
+            if (variable) {
+                return {sprite, variable};
             }
-            return variable;
         }
+
+        // There is no variable with that regex name on any sprite...
+        throw getVariableNotFoundError(variableNameRegex, sprite.name);
     }
 
     /**
@@ -183,7 +217,7 @@ export abstract class ModelUtil {
 
     private static getVariableString(t: TestDriver, caseSensitive: boolean, index, spriteName: string, varName: string) {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
-        varName = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).name;
+        varName = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).variable.name;
         return "const variable" + index + " = sprite" + index + ".getVariable('" + varName + "', false).value;\n if" +
             " (variable" + index
             + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
