@@ -31,6 +31,7 @@ import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
 import {LocalSearch} from "./LocalSearch";
 import {TestExecutor} from "../../../testcase/TestExecutor";
 import {SearchAlgorithm} from "../../SearchAlgorithm";
+import Runtime from "scratch-vm/src/engine/runtime";
 
 
 export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
@@ -82,6 +83,11 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * The algorithm calling the extension search operator.
      */
     private _algorithm: SearchAlgorithm<TestChromosome>;
+
+    /**
+     * Observes if the the Scratch-VM is still running
+     */
+    private _projectRunning: boolean;
 
     /**
      * Constructs a new ExtensionLocalSearch object.
@@ -188,7 +194,10 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         let fitnessValuesUnchanged = 0;
         const cfgMarker = 0.5;
         let done = false;
-        while (codons.size() < this._upperLengthBound && !done) {
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vmWrapper.vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        while (codons.size() < this._upperLengthBound && this._projectRunning && !done) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -223,7 +232,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
             }
 
             // If we see no improvements after adding five Waits or if we have covered all blocks we stop.
-            if (fitnessValuesUnchanged >= 5 || newFitnessValues.length === 0) {
+            if (fitnessValuesUnchanged >= 3 || newFitnessValues.length === 0) {
                 done = true;
             }
             fitnessValues = newFitnessValues;
@@ -267,5 +276,12 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      */
     setAlgorithm(algorithm: SearchAlgorithm<TestChromosome>): void {
         this._algorithm = algorithm;
+    }
+
+    /**
+     * Event listener checking if the project is still running.
+     */
+    private projectStopped() {
+        return this._projectRunning = false;
     }
 }
