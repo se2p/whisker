@@ -139,7 +139,7 @@ const runTests = async function (tests) {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
 };
 
 const runAllTests = async function () {
@@ -158,7 +158,7 @@ const runAllTests = async function () {
         const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
         Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
         Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, Whisker.testRunner);
         Whisker.outputRun.println();
         Whisker.outputLog.println();
     }
@@ -194,6 +194,8 @@ const initComponents = function () {
     Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
     Whisker.outputLog.hide();
+    Whisker.executionTrace = new Output($('#execution-trace')[0]);
+    // Whisker.executionTrace.hide();
 
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
@@ -214,21 +216,23 @@ const initComponents = function () {
     Whisker.testRunner.on(TestRunner.TEST_DUMP,
         (message, object) => {
             console.log('Testing');
+            console.log(object);
             if (message) {
                 // Whisker.outputLog.println(message);
             } else if (object) {
                 if (object.type === 'block') {
+                    console.log('type block')
                     // const aBlock = object;
                     // Whisker.outputLog.println(`target:${aBlock.name} op:${aBlock.opcode}`);
                     // Whisker.outputLog.println(`op:${aBlock.opcode}`);
-                    Whisker.trace.push({
+                    Whisker.executionTrace.println(JSON.stringify({
                         clockTime: object.clockTime,
                         block: object.block,
                         target: object.target,
                         allDrawables: object.allDrawables,
                         stageVariables: object.stageVariables,
                         keysDown: object.keysDown
-                    });
+                    }));
                 } else if (object.type === 'sprites') {
                     // if (object.sprites[1].touchesSprites.length > 0) {
                     //    alert(object.sprites[1].touchesSprites[0]);

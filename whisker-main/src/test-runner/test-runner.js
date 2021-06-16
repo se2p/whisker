@@ -142,7 +142,7 @@ class TestRunner extends EventEmitter {
      * @param {string} blockId .
      * @private
      */
-    _dump (sprite, message, blockId) {
+    dump (sprite, message, blockId) {
         this.emit(TestRunner.TEST_DUMP, sprite, message, blockId);
     }
 

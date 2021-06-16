@@ -109,9 +109,9 @@ class CoverageGenerator {
                 const block = target.blocks.getBlock(this.peekStack());
                 const opcode = target.blocks.getOpcode(block);
 
-                console.log('target: ', target);
-                console.log('opcode: ', opcode);
-                console.log('target.constructor.name: ', target.constructor.name);
+                // console.log('target: ', target);
+                // console.log('opcode: ', opcode);
+                // console.log('target.constructor.name: ', target.constructor.name);
 
 
                 if (opcode) {
@@ -175,7 +175,7 @@ class CoverageGenerator {
                         allDrawableCopy.push(propertiesToLog);
                     }
 
-                    console.log('allDrawableCopy: ', JSON.stringify(allDrawableCopy));
+                    // console.log('allDrawableCopy: ', JSON.stringify(allDrawableCopy));
 
                     testRunner.dump(false,
                         {

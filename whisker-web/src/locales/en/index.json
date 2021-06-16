@@ -63,6 +63,7 @@
     "pass" : "Test passed",
     "error" : "Test threw an error",
     "test-editor" : "Test editor",
+    "execution-trace" : "Execution trace",
     "project" : "Your project",
     "error-name": "Error",
     "error-message" : "Error message",
