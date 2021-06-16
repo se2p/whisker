@@ -267,7 +267,7 @@ describe('LocalSearch', () => {
 
     test('Test ExtensionLocalSearch with repeat until block', async () => {
         await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/extensionLocalSearchMOSA.json");
-        await loadProject('test/integration/localSearch/ExtensionTestRepeatUntil.sb3')
+        await loadProject('test/integration/localSearch/ExtensionRepeatUntilTest.sb3')
         await (await page.$('#run-search')).click();
         await waitForSearchCompletion();
         await (await page.$('#run-all-tests')).click();

@@ -9,17 +9,17 @@
     "extractor": "dynamic",
     "crossover": {
         "operator": "singlepointrelative",
-        "probability": 0.8
+        "probability": 0
     },
     "mutation": {
         "operator": "variablelength",
-        "probability": 1,
+        "probability": 0,
         "gaussianMutationPower": 5
     },
     "localSearch": [
         {
             "type": "Extension",
-            "depletedResources": 0.1,
+            "depletedResources": 0,
             "interval": 1
         }
     ],
