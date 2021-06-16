@@ -137,19 +137,15 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        console.log("Starting MIO");
         this.setStartValues();
         let chromosome: C;
         while (!(this._stoppingCondition.isFinished(this))) {
-            console.log("Not finished yet");
             if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
-                console.log("Applying mutation");
                 const mutatedChromosome = chromosome.mutate();
                 await mutatedChromosome.evaluate();
                 this._mutationCounter++;
                 this.updateArchive(mutatedChromosome);
             } else {
-                console.log("Getting new chromosome");
                 chromosome = this.getNewChromosome();
                 await chromosome.evaluate();
                 this._mutationCounter = 0;

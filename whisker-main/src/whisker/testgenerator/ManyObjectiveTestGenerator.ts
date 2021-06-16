@@ -33,10 +33,6 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this.buildSearchAlgorithm(true);
 
-        const properties = this._config.getSearchAlgorithmProperties();
-        properties.setChromosomeLength(length);
-        searchAlgorithm.setProperties(properties);
-
         // TODO: Assuming there is at least one solution?
         const testChromosomes = await searchAlgorithm.findSolution();
 
