@@ -99,11 +99,6 @@ export class ModelTester extends EventEmitter {
         let constraintCallback;
         let modelStepCallback;
         let stopAll = false;
-        this.userInputGen(testDriver, this.result);
-
-        let beforeStepCallback = testDriver.addModelCallback(() => {
-            this.checkUtility.testsBeforeStep();
-        }, false, "testKeys");
 
         let checkConstraintsModel = [...this.constraintsModels];
         let constraintFunction = () => {
@@ -154,7 +149,6 @@ export class ModelTester extends EventEmitter {
                 if (this.constraintsModels.length > 0) {
                     constraintCallback.disable();
                 }
-                beforeStepCallback.disable();
                 checkStop.disable();
                 this.running = false;
             }
@@ -172,6 +166,7 @@ export class ModelTester extends EventEmitter {
         if (this.programModels.length > 0) {
             modelStepCallback = testDriver.addModelCallback(modelStepFunction, true, "modelStep");
         }
+        this.userInputGen(testDriver, this.result);
     }
 
     private userInputGen(t: TestDriver, modelResult: ModelResult) {
@@ -193,7 +188,7 @@ export class ModelTester extends EventEmitter {
                     }
                 })
             }
-            userInputCallback = t.addModelCallback(userInputFun, false, "inputOfUserModel");
+            userInputCallback = t.addModelCallback(userInputFun, true, "inputOfUserModel");
         }
     }
 

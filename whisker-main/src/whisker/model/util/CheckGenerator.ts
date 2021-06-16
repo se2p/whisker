@@ -39,7 +39,6 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      */
     static getKeyDownCheck(t: TestDriver, cu: CheckUtility, negated: boolean, key: string): () => boolean {
-        cu.registerKeyCheck(key);
         return () => {
             if (cu.isKeyDown(key)) {
                 return !negated;

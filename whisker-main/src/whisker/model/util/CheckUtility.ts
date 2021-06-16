@@ -13,11 +13,9 @@ import {
  */
 export class CheckUtility {
     private readonly testDriver: TestDriver;
-    private checks: (() => void)[] = [];
 
     private touched: { [key: string]: boolean } = {};
     private colorTouched: { [key: string]: boolean } = {};
-    private keyBeforeStep: { [key: string]: boolean } = {};
 
     private effectChecks: Effect[] = [];
     private failedChecks: Effect[] = [];
@@ -80,31 +78,6 @@ export class CheckUtility {
     }
 
     /**
-     * Register a key for checking for activeness before a step.
-     * @param keyName Name of the key.
-     */
-    registerKeyCheck(keyName: string) {
-        if (!this.keyBeforeStep[keyName]) {
-            this.keyBeforeStep[keyName] = false;
-
-            this.checks.push(() => {
-                if (this.testDriver.isKeyDown(keyName)) {
-                    this.keyBeforeStep[keyName] = true;
-                }
-            })
-        }
-    }
-
-    /**
-     * Test the keys that are active before a step and save them.
-     */
-    testsBeforeStep() {
-        this.checks.forEach(fun => {
-            fun()
-        });
-    }
-
-    /**
      * Reset the fulfilled checks of the last step.
      */
     reset() {
@@ -113,9 +86,6 @@ export class CheckUtility {
         }
         for (const colorKey in this.colorTouched) {
             this.colorTouched[colorKey] = false;
-        }
-        for (const keyBeforeStepKey in this.keyBeforeStep) {
-            this.keyBeforeStep[keyBeforeStepKey] = false;
         }
     }
 
@@ -145,14 +115,7 @@ export class CheckUtility {
      * @param keyName Name of the key.
      */
     isKeyDown(keyName: string) {
-        if (this.areExcludingOnesActive(keyName))
-            return false;
-
-        return this._isKeyDown(keyName);
-    }
-
-    private _isKeyDown(keyName: string) {
-        return this.keyBeforeStep[keyName] && this.testDriver.isKeyDown(keyName);
+        return this.testDriver.isKeyDown(keyName);
     }
 
     private static getTouchingString(sprite1: string, sprite2: string): string {
@@ -161,20 +124,6 @@ export class CheckUtility {
 
     private static getColorString(spriteName: string, r: number, g: number, b: number): string {
         return spriteName + ":" + r + ":" + g + ":" + b;
-    }
-
-    private areExcludingOnesActive(keyName: string) {
-        switch (keyName) {
-            case "left arrow":
-                return this._isKeyDown("right arrow");
-            case "right arrow":
-                return this._isKeyDown("left arrow");
-            case "up arrow":
-                return this._isKeyDown("down arrow");
-            case "down arrow":
-                return this._isKeyDown("up arrow");
-        }
-        return false;
     }
 
     /**
