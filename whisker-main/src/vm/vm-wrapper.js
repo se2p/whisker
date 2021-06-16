@@ -95,11 +95,6 @@ class VMWrapper {
          */
         this.question = null;
 
-        /**
-         * @type {Array}
-         */
-        this.trace = [];
-
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
         this._onQuestion = this.onQuestion.bind(this);
@@ -131,13 +126,6 @@ class VMWrapper {
         await this._yield();
 
         this.sprites.update();
-        await this._yield();
-
-        this.trace.push(
-            this.sprites
-                .getSprites()
-                .map(aSprite =>
-                    ({name: aSprite.name, id: aSprite.id, x: aSprite.x, y: aSprite.y})));
         await this._yield();
 
         this.vm.runtime._step();
@@ -358,7 +346,6 @@ class VMWrapper {
 
         this.vm.greenFlag();
         this.startTime = Date.now();
-        this.trace = [];
 
         this.aborted = false;
     }

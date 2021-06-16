@@ -195,7 +195,6 @@ const initComponents = function () {
     Whisker.outputLog = new Output($('#output-log')[0]);
     Whisker.outputLog.hide();
     Whisker.executionTrace = new Output($('#execution-trace')[0]);
-    // Whisker.executionTrace.hide();
 
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
@@ -212,19 +211,10 @@ const initComponents = function () {
     Whisker.testRunner.on(TestRunner.TEST_LOG,
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
 
-    Whisker.trace = [];
     Whisker.testRunner.on(TestRunner.TEST_DUMP,
         (message, object) => {
-            console.log('Testing');
-            console.log(object);
-            if (message) {
-                // Whisker.outputLog.println(message);
-            } else if (object) {
+            if (object) {
                 if (object.type === 'block') {
-                    console.log('type block')
-                    // const aBlock = object;
-                    // Whisker.outputLog.println(`target:${aBlock.name} op:${aBlock.opcode}`);
-                    // Whisker.outputLog.println(`op:${aBlock.opcode}`);
                     Whisker.executionTrace.println(JSON.stringify({
                         clockTime: object.clockTime,
                         block: object.block,
@@ -233,11 +223,6 @@ const initComponents = function () {
                         stageVariables: object.stageVariables,
                         keysDown: object.keysDown
                     }));
-                } else if (object.type === 'sprites') {
-                    // if (object.sprites[1].touchesSprites.length > 0) {
-                    //    alert(object.sprites[1].touchesSprites[0]);
-                    // }
-                    Whisker.trace.push({sprites: object.sprites, keysDown: object.keysDown});
                 }
             }
         });

@@ -1,6 +1,7 @@
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
 const _blockDescriptions = new Map();
+const {Input} = require('../vm/inputs');
 const cloneDeep = require('lodash.clonedeep');
 
 
@@ -109,11 +110,6 @@ class CoverageGenerator {
                 const block = target.blocks.getBlock(this.peekStack());
                 const opcode = target.blocks.getOpcode(block);
 
-                // console.log('target: ', target);
-                // console.log('opcode: ', opcode);
-                // console.log('target.constructor.name: ', target.constructor.name);
-
-
                 if (opcode) {
 
                     const otherSpritesName = target.runtime.targets
@@ -134,8 +130,6 @@ class CoverageGenerator {
                     const variables = cloneDeep(target.variables);
 
                     const renderer = target.renderer;
-                    // console.log('renderer: ', renderer);
-                    // console.log('renderer.allDrawables: ', renderer._allDrawables);
                     const allDrawableCopy = [];
 
                     for (const drawable of renderer._allDrawables) {
@@ -143,21 +137,6 @@ class CoverageGenerator {
                             continue;
                         }
                         const propertiesToLog = {};
-                        // const allProperties = Object.getOwnPropertyNames(drawable);
-                        // for (const p of allProperties) {
-                        //     if (p === '_skin') {
-                        //         // propertiesToLog[p] = {};
-                        //         // for (const p2 of Object.getOwnPropertyNames(drawable[p])) {
-                        //         //     if (p2 !== '_renderer' && p2 !== '_silhouette') {
-                        //         //         // console.log('not renderer');
-                        //         //         // console.log(p, p2);
-                        //         //         propertiesToLog[p][p2] = drawable[p][p2];
-                        //         //     }
-                        //         // }
-                        //     } else {
-                        //         propertiesToLog[p] = drawable[p];
-                        //     }
-                        // }
                         propertiesToLog.id = drawable._id;
                         propertiesToLog.posx = drawable._position[0];
                         propertiesToLog.posy = drawable._position[1];
@@ -174,8 +153,6 @@ class CoverageGenerator {
                         propertiesToLog.ghost = drawable._uniforms.u_ghost;
                         allDrawableCopy.push(propertiesToLog);
                     }
-
-                    // console.log('allDrawableCopy: ', JSON.stringify(allDrawableCopy));
 
                     testRunner.dump(false,
                         {
