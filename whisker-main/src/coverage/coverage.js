@@ -154,9 +154,8 @@ class CoverageGenerator {
                         allDrawableCopy.push(propertiesToLog);
                     }
 
-                    testRunner.dump(false,
+                    testRunner.dump(
                         {
-                            type: 'block',
                             clockTime: clockTime,
                             block: {
                                 id: block.id,

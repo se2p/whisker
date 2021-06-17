@@ -132,6 +132,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, testRunner) {
         summaryString,
         coverageString
     ].join('\n'));
+    Whisker.executionTrace.println(']');
 };
 
 const runTests = async function (tests) {
@@ -195,7 +196,7 @@ const initComponents = function () {
     Whisker.outputLog = new Output($('#output-log')[0]);
     Whisker.outputLog.hide();
     Whisker.executionTrace = new Output($('#execution-trace')[0]);
-
+    Whisker.executionTrace.print('[');
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();
     Whisker.testEditor.show();
@@ -212,20 +213,18 @@ const initComponents = function () {
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
 
     Whisker.testRunner.on(TestRunner.TEST_DUMP,
-        (message, object) => {
-            if (object) {
-                if (object.type === 'block') {
-                    Whisker.executionTrace.println(JSON.stringify({
-                        clockTime: object.clockTime,
-                        block: object.block,
-                        target: object.target,
-                        allDrawables: object.allDrawables,
-                        stageVariables: object.stageVariables,
-                        keysDown: object.keysDown
-                    }));
-                }
-            }
+        object => {
+            Whisker.executionTrace.print(JSON.stringify({
+                clockTime: object.clockTime,
+                block: object.block,
+                target: object.target,
+                allDrawables: object.allDrawables,
+                stageVariables: object.stageVariables,
+                keysDown: object.keysDown
+            }));
+            Whisker.executionTrace.println(',');
         });
+
 
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.error(result.error));
 
