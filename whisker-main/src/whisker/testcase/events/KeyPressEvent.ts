@@ -53,18 +53,17 @@ export class KeyPressEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return '' +
-`t.inputImmediate({
+        return `t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
     isDown: 'true'
-});`+ `\n`+
+  });`+ `\n `+
 new WaitEvent(this._steps).toJavaScript() + `\n` +
-`t.inputImmediate({
+` t.inputImmediate({
     device: 'keyboard',
     key: '${this._keyOption}',
     isDown: 'false'
-});`
+  });`;
     }
 
     public toString(): string {

@@ -45,13 +45,12 @@ export class DragSpriteEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return '' +
-`for(const target of t.vm.runtime.targets){
+        return `for(const target of t.vm.runtime.targets){
     if(target.sprite.name === '${this._spriteName}'){
-        target.setXY(${this._x}, ${this._y}, ${true});
+        target.setXY(${this._x}, ${this._y}, true);
         break;
     }
- }`
+  }`;
     }
 
     public toString(): string {
