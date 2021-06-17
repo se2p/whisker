@@ -56,7 +56,8 @@ const cli = {
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
-            .option('-g, --isGeneticSearch', 'If new tests should be generated via genetic search', false);
+            .option('-g, --isGeneticSearch', 'If new tests should be generated via genetic search', false)
+            .option('-x, --isExecutionTraceSaved', 'If the execution trace should be saved at the end of the testing', false);
 
         commander.parse(process.argv);
 
@@ -75,7 +76,8 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            isGeneticSearch
+            isGeneticSearch,
+            isExecutionTraceSaved
         } = commander;
 
         validateCommandLineArguments(commander);
@@ -95,7 +97,8 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            isGeneticSearch
+            isGeneticSearch,
+            isExecutionTraceSaved
         };
     }
 };

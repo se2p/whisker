@@ -76,6 +76,7 @@ Options:
   -o, --isLiveOutputCoverage          If new output of the coverage should be printed regularly (default: false)
   -l, --isLiveLogEnabled              If the new output of the log should be printed regularly (default: false)
   -g, --isGeneticSearch               If new tests should be generated via genetic search (default: false)
+  -x, --isExecutionTraceSaved         If the execution trace should be saved at the end of the testing (default: false)
   -h, --help                          display help for command
 ```
 

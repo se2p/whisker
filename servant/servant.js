@@ -17,7 +17,8 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
-    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch,
+    isExecutionTraceSaved, isGenerateWitnessTestOnly
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -98,17 +99,6 @@ async function runTestsOnFile (browser, targetProject) {
     return csvs;
 }
 
-async function configureWhiskerWebInstance (page) {
-    await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
-    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    await (await page.$('#fileselect-config')).uploadFile(configPath);
-    await (await page.$('#toggle-advanced')).click();
-    await (await page.$('#toggle-tap')).click();
-    await (await page.$('#toggle-log')).click();
-    await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
-    console.log('Whisker-Web: Web Instance Configuration Complete');
-}
-
 async function runGeneticSearch (browser) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
@@ -127,7 +117,16 @@ async function runGeneticSearch (browser) {
         }
     }
 
-
+    async function configureWhiskerWebInstance () {
+        await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
+        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        await (await page.$('#fileselect-config')).uploadFile(configPath);
+        await (await page.$('#toggle-advanced')).click();
+        await (await page.$('#toggle-tap')).click();
+        await (await page.$('#toggle-log')).click();
+        await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
+        console.log('Whisker-Web: Web Instance Configuration Complete');
+    }
 
     async function readTestOutput () {
         const coverageOutput = await page.$('#output-run .output-content');
@@ -185,7 +184,7 @@ async function runGeneticSearch (browser) {
 
     try {
         optionallyEnableConsoleForward();
-        await configureWhiskerWebInstance(page);
+        await configureWhiskerWebInstance();
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
@@ -239,6 +238,15 @@ async function runTests (path, browser, index, targetProject) {
         await (await page.$('#run-all-tests')).click();
     }
 
+    async function downloadExecutionTrace () {
+        await page._client.send('Page.setDownloadBehavior', {
+            behavior: 'allow',
+            downloadPath: './'
+        });
+        await (await page.$('#execution-trace .output-save')).click();
+        await page.waitForTimeout(5000);
+    }
+
     /**
      * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
      * run is over.
@@ -281,6 +289,9 @@ async function runTests (path, browser, index, targetProject) {
             await page.waitForTimeout(1000);
         }
 
+        if (isExecutionTraceSaved) {
+            await downloadExecutionTrace();
+        }
         let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
         return {csvRow, coverageLog};
     }
