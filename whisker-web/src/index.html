@@ -176,10 +176,63 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-3">
-                                    <div class="row">
+                                    <div class="row spacer10">
                                         <div class="col-lg-12 label-padding">
                                             <label id="model-user-loaded"
                                                    data-i18n="model-output-no-user-model"></label>
+                                        </div>
+                                    </div>
+
+                                    <div class="btn-group-toggle" data-toggle="buttons">
+                                        <label class="btn btn-main btn-sm">
+                                            <input id="toggle-model-editor" class="checkbox-button" type="checkbox"
+                                                   autocomplete="off">
+                                            <div data-i18n="model-editor"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="model-editor" class="hide spacer50">
+                        <h3 class="col-lg-12" data-i18n="modelEditor:title"></h3>
+                        <div class="form col-lg-12">
+                            <div class="row tab-model-editor">
+                                <button id="model-editor-first-tab" class="active">Modell 1</button>
+                                <button id="model-editor-add-tab"> <b>+</b> </button>
+                            </div>
+                            <div class="row spacer10">
+                                <div class="col col-lg-8">
+                                    <div id="model-editor-canvas" class="row model-editor-canvas"></div>
+                                </div>
+                                <div class="col col-lg-4">
+                                    <div data-i18n="model-editor:placeholder" id="model-editor-placeholder"></div>
+                                    <div id="model-editor-configuration">
+                                        <div  class="row">
+                                            <h3 data-i18n="modelEditor:right-title"></h3>
+                                            <h3 id="model-editor-operation"></h3>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <label for="editor-id">ID</label>
+                                                        <input id="editor-id">
+                                                    </div>
+                                                    <div class="col">
+                                                        <label for="editor-label">Name</label>
+                                                        <input id="editor-label">
+                                                    </div>
+                                                </div>
+                                                <div class="row" style="align-content: center">
+                                                    <div class="col">
+                                                        <input type="button" value="save" id="saveButton" />
+                                                    </div>
+                                                    <div class="col">
+                                                        <input type="button" value="cancel" id="cancelButton" />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -78,5 +78,6 @@
     "model-case-sensitive": "Case sensitive",
     "model-case-sensitive-hover": "When deactivating this option model test ignores upper/lower case differences of names.",
     "model-output-no-user-model": "No user model for input generation found",
-    "model-output-user-model": "Input generation with user model"
+    "model-output-user-model": "Input generation with user model",
+    "model-editor": "Open model editor"
 }

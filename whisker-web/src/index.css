@@ -892,3 +892,50 @@ img {vertical-align: middle;}
     position: absolute;
     right: 0;
 }
+
+.model-editor-canvas {
+    border: 1px solid lightgray;
+    height: 500px;
+    margin-right: 5px;
+}
+
+.model-editor-canvas canvas {
+    background: white;
+}
+
+.model-editor-canvas .vis-manipulation {
+    position:absolute;
+    top:5px;
+    align-content: center;
+}
+
+.model-editor-canvas .vis-close {
+    display: none;
+}
+
+.tab-model-editor {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab-model-editor button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab-model-editor button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab-model-editor button.active {
+    background-color: #ccc;
+}

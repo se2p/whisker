@@ -13,6 +13,8 @@ const imprintDE = require('./locales/de/imprint.json');
 const imprintEN = require('./locales/en/imprint.json');
 const privacyDE = require('./locales/de/privacy.json');
 const privacyEN = require('./locales/en/privacy.json');
+const modelEditorDE = require('./locales/de/modelEditor.json');
+const modelEditorEN = require('./locales/en/modelEditor.json');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
@@ -27,6 +29,7 @@ const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
+const ModelEditor = require('./components/model-editor');
 
 const {showModal, escapeHtml} = require('./utils.js');
 
@@ -274,6 +277,8 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
+    Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
+    Whisker.modelEditor.drawModelEditor();
 
     document.querySelector('#acceleration-factor').value = DEFAULT_ACCELERATION_FACTOR;
 };
@@ -364,6 +369,21 @@ const initEvents = function () {
                 .parent()
                 .removeClass('active');
             $('#scratch-controls').hide();
+        }
+    });
+    $('#toggle-model-editor').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            $('#model-editor').show();
+            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+            location.href = '#model-editor'
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#model-editor').hide();
         }
     });
     $('#toggle-tap').on('change', event => {
@@ -520,7 +540,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
+        ns: ['index', 'faq', 'contact', 'imprint', 'modelEditor', 'privacy'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false,
@@ -531,6 +551,7 @@ i18next
                 faq: faqDE,
                 contact: contactDE,
                 imprint: imprintDE,
+                modelEditor: modelEditorDE,
                 privacy: privacyDE
             },
             en: {
@@ -538,6 +559,7 @@ i18next
                 faq: faqEN,
                 contact: contactEN,
                 imprint: imprintEN,
+                modelEditor: modelEditorEN,
                 privacy: privacyEN
             }
         }
