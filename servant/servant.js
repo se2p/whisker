@@ -98,6 +98,17 @@ async function runTestsOnFile (browser, targetProject) {
     return csvs;
 }
 
+async function configureWhiskerWebInstance (page) {
+    await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
+    await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+    await (await page.$('#fileselect-config')).uploadFile(configPath);
+    await (await page.$('#toggle-advanced')).click();
+    await (await page.$('#toggle-tap')).click();
+    await (await page.$('#toggle-log')).click();
+    await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
+    console.log('Whisker-Web: Web Instance Configuration Complete');
+}
+
 async function runGeneticSearch (browser) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
@@ -116,16 +127,7 @@ async function runGeneticSearch (browser) {
         }
     }
 
-    async function configureWhiskerWebInstance () {
-        await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
-        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-        await (await page.$('#fileselect-config')).uploadFile(configPath);
-        await (await page.$('#toggle-advanced')).click();
-        await (await page.$('#toggle-tap')).click();
-        await (await page.$('#toggle-log')).click();
-        await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, accelerationFactor);
-        console.log('Whisker-Web: Web Instance Configuration Complete');
-    }
+
 
     async function readTestOutput () {
         const coverageOutput = await page.$('#output-run .output-content');
@@ -183,7 +185,7 @@ async function runGeneticSearch (browser) {
 
     try {
         optionallyEnableConsoleForward();
-        await configureWhiskerWebInstance();
+        await configureWhiskerWebInstance(page);
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
