@@ -137,10 +137,27 @@ export abstract class ScratchEventExtractor {
                     eventList.add(new MouseMoveToEvent(target.x, target.y));
                     eventList.add(new MouseMoveEvent());
                 }
-                // Target senses another Sprite
-                else {
-                    const sensingSpriteTarget = Container.testDriver.getSprite(value)
-                    eventList.add(new DragSpriteEvent(target.sprite.name, sensingSpriteTarget.x, sensingSpriteTarget.y))
+                // Target senses edge
+                else if (value === "_edge_") {
+                    const random = Randomness.getInstance();
+                    let x: number;
+                    let y: number;
+                    if (random.randomBoolean()) {
+                        // Snap to the left or right edge and randomly select the y-coordinate
+                        x = random.pick([-240, 240]);
+                        y = random.nextInt(-180, 180);
+                    } else {
+                        // Snap to upper or lower edge and randomly select the x-coordinate
+                        x = random.nextInt(-240, 240);
+                        y = random.pick([-180, 180])
+                    }
+                    eventList.add(new DragSpriteEvent(target.sprite.name, x, y));
+                } else {
+                    // Target senses another sprite
+                    const sensingSpriteTarget = Container.testDriver.getSprite(value);
+                    if (sensingSpriteTarget) {
+                        eventList.add(new DragSpriteEvent(target.sprite.name, sensingSpriteTarget.x, sensingSpriteTarget.y));
+                    }
                 }
                 break;
             }
