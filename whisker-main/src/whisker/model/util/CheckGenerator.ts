@@ -429,10 +429,10 @@ export abstract class CheckGenerator {
      * @param edge The parent edge of the check.
      */
     static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
-        let time = ModelUtil.testNumber(timeInMS) - ModelTester.TIME_LEEWAY;
+        let time = ModelUtil.testNumber(timeInMS);
         let model = edge.getModel();
         return () => {
-            if (time <= (model.timeStampLastTransition - model.timeStampPreviousTransition)) {
+            if (time <= (t.getTotalTimeElapsed() - model.timeStampLastTransition)) {
                 return !negated;
             }
             return negated;

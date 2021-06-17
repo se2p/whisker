@@ -34,6 +34,7 @@ export class ModelLoaderXML {
     private static readonly PROGRAM_MODEL_ID = "program";
     private static readonly CONSTRAINTS_MODEL_ID = "constraints";
     private static readonly USER_MODEL_ID = "user";
+    private static readonly ON_TEST_END_ID = "end";
 
     private xmlOptions = {
         compact: true,
@@ -51,6 +52,7 @@ export class ModelLoaderXML {
     private constraintsModels: ProgramModel[];
     private programModels: ProgramModel[];
     private userModels: UserModel[];
+    private onTestEndModels: ProgramModel[];
 
     private idUndefined = 0;
     private static readonly ID_UNDEFINED = "id_undefined";
@@ -59,12 +61,13 @@ export class ModelLoaderXML {
      * Load the models from a string file content.
      * @param xmlText Content of a xml file containing the models.
      */
-    loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModels: ProgramModel[] } {
+    loadModels(xmlText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModels: ProgramModel[], onTestEndModels: ProgramModel[] } {
         const graphs = JSON.parse(xmljs.xml2json(xmlText, this.xmlOptions)).models[0].model;
         this.graphIDs = [];
         this.programModels = [];
         this.userModels = [];
         this.constraintsModels = [];
+        this.onTestEndModels = [];
 
         graphs.forEach(graph => {
             this.startNode = undefined;
@@ -78,7 +81,8 @@ export class ModelLoaderXML {
         return {
             programModels: this.programModels,
             userModels: this.userModels,
-            constraintsModels: this.constraintsModels
+            constraintsModels: this.constraintsModels,
+            onTestEndModels: this.onTestEndModels
         };
     }
 
@@ -133,6 +137,10 @@ export class ModelLoaderXML {
                 model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
                 this.constraintsModels.push(model);
                 break;
+            case ModelLoaderXML.ON_TEST_END_ID:
+                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
+                this.onTestEndModels.push(model);
+                break;
         }
     }
 
@@ -144,7 +152,7 @@ export class ModelLoaderXML {
      */
     private loadNode(graphID: string, nodeAttr: { [key: string]: string }): void {
         if ((this.nodesMap)[graphID + "-" + nodeAttr.id]) {
-            throw new Error("Node id '" + nodeAttr.id + "' already defined.");
+            throw new Error("Node id '" + graphID + "-" + nodeAttr.id + "' already defined.");
         }
 
         (this.nodesMap)[nodeAttr.id] = new ModelNode(graphID + "-" + nodeAttr.id);
@@ -183,7 +191,7 @@ export class ModelLoaderXML {
         } else {
             if ((this.edgesMapProgram)[graphID + "-" + edgeAttr.id]) {
                 edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
-                console.error("Warning: ID '" + edgeAttr.id + "' already defined.");
+                console.error("Warning: ID '" + graphID + "-" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
             }
@@ -230,7 +238,7 @@ export class ModelLoaderXML {
         } else {
             if ((this.edgesMapUser)[graphID + "-" + edgeAttr.id]) {
                 edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapUser).length;
-                console.error("Warning: ID '" + edgeAttr.id + "' already defined.");
+                console.error("Warning: ID '" + graphID + "-" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
             }

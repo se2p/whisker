@@ -7,6 +7,7 @@ import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
 import {ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
 import {Container} from "../utils/Container";
+import {Callback} from "../../vm/callbacks"
 
 export class ModelTester extends EventEmitter {
 
@@ -17,6 +18,7 @@ export class ModelTester extends EventEmitter {
     private constraintsModels: ProgramModel[] = [];
     private programModels: ProgramModel[] = [];
     private userModels: UserModel[] = [];
+    private onTestEndModels: ProgramModel[] = [];
 
     private checkUtility: CheckUtility;
     private result: ModelResult;
@@ -27,7 +29,11 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
     static readonly TIME_LEEWAY = 250;
 
-    running = false;
+    private constraintCallback: Callback;
+    private modelStepCallback: Callback;
+    private onTestEndCallback: Callback;
+    private haltAllCallback: Callback;
+    private checkLastFailedCallback: Callback;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -39,6 +45,7 @@ export class ModelTester extends EventEmitter {
             this.constraintsModels = result.constraintsModels;
             this.programModels = result.programModels;
             this.userModels = result.userModels;
+            this.onTestEndModels = result.onTestEndModels;
         } catch (e) {
             this.emit(ModelTester.MODEL_LOAD_ERROR, "Model Loader: " + e.message);
             throw new Error("Model Loader: " + e.message);
@@ -66,6 +73,11 @@ export class ModelTester extends EventEmitter {
         return this.userModels.length != 0;
     }
 
+    running() {
+        return this.modelStepCallback.isActive() || this.constraintCallback.isActive()
+            || this.onTestEndCallback.isActive();
+    }
+
     /**
      * Prepare the model before a test run. Resets the models and adds the callbacks to the test driver.
      * @param testDriver Instance of the test driver for this test run.
@@ -78,121 +90,172 @@ export class ModelTester extends EventEmitter {
         this.checkUtility = new CheckUtility(testDriver);
         this.result = new ModelResult();
 
+        let allModels = [...this.programModels, ...this.constraintsModels, ...this.userModels, ...this.onTestEndModels];
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
-        this.programModels.forEach(model => {
+        allModels.forEach(model => {
             model.reset();
             model.registerComponents(this.checkUtility, testDriver, this.result, caseSensitive);
         });
-        this.constraintsModels.forEach(model => {
-            model.reset();
-            model.registerComponents(this.checkUtility, testDriver, this.result, caseSensitive);
-        });
-        this.userModels.forEach(model => {
-            model.reset();
-            model.registerComponents(this.checkUtility, testDriver, this.result, caseSensitive);
-        })
 
         await this.addCallbacks(testDriver);
     }
 
-    private async addCallbacks(testDriver: TestDriver) {
-        let constraintCallback;
-        let modelStepCallback;
-        let stopAll = false;
+    private async addCallbacks(t: TestDriver) {
+        this.constraintCallback = t.addModelCallback(this.getConstraintFunction(t), true, "constraints");
 
+        if (this.constraintsModels.length == 0) {
+            this.constraintCallback.disable();
+        }
+
+        // run the test driver for one step as inputs can be in the first step but the vm does nothing yet.
+        await t.runForSteps(1);
+
+        this.modelStepCallback = t.addModelCallback(this.getModelStepFunction(t), true, "modelStep");
+        this.onTestEndCallback = t.addModelCallback(this.getOnTestEndFunction(t), true, "stopModelsCheck");
+        this.haltAllCallback = t.addModelCallback(this.checkForHaltAll(t), true, "checkForHalt");
+        this.checkLastFailedCallback = t.addModelCallback(() => {
+            this.checkUtility.checkFailedEffects(this.result);
+            this.checkLastFailedCallback.disable();
+        }, true, "checkForFailedEffects")
+
+        if (this.programModels.length == 0) {
+            this.modelStepCallback.disable();
+        }
+        this.onTestEndCallback.disable();
+        this.checkLastFailedCallback.disable();
+        this.userInputGen(t, this.result);
+    }
+
+    private getConstraintFunction(t: TestDriver) {
         let checkConstraintsModel = [...this.constraintsModels];
-        let constraintFunction = () => {
+        return () => {
             let notStoppedModels = [];
             checkConstraintsModel.forEach(model => {
-                let edge = model.makeOneTransition(testDriver, this.result);
+                let edge = model.makeOneTransition(t, this.result);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     this.checkUtility.checkEffectsConstraint(edge, this.result);
                 }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
                 }
-                if (model.shouldHaltAllModels()) {
-                    stopAll = true;
-                }
             })
             checkConstraintsModel = [...notStoppedModels];
+
+            if (checkConstraintsModel == []) {
+                this.constraintCallback.disable();
+            }
         };
+    }
+
+    private getModelStepFunction(t: TestDriver) {
         let checkProgramModels = [...this.programModels];
-        let modelStepFunction = () => {
+        return () => {
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
             checkProgramModels.forEach(model => {
-                let takenEdge = model.makeOneTransition(testDriver, this.result);
+                let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
                     this.checkUtility.registerEffectCheck(takenEdge);
-                    this.edgeTrace(takenEdge, testDriver);
+                    this.edgeTrace(takenEdge);
                 }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
-                }
-                if (model.shouldHaltAllModels()) {
-                    stopAll = true;
                 }
             });
             this.checkEffects();
             checkProgramModels = [...notStoppedModels];
             this.checkUtility.reset();
-        }
-        // stop all if any model had a stopAllModels node reached
-        let checkStop = testDriver.addModelCallback(() => {
-            if (stopAll) {
-                this.checkUtility.checkFailedEffects(this.result);
-                this.checkUtility.reset();
-                if (this.programModels.length > 0) {
-                    modelStepCallback.disable();
-                }
-                if (this.constraintsModels.length > 0) {
-                    constraintCallback.disable();
-                }
-                checkStop.disable();
-                this.running = false;
+
+            if (checkProgramModels == []) {
+                this.modelStepCallback.disable();
             }
-        }, true, "stopModelsCheck");
-
-        // if there is a constraint model loaded add the callback
-        if (this.constraintsModels.length > 0) {
-            constraintCallback = testDriver.addModelCallback(constraintFunction, true, "constraints");
         }
+    }
 
-        // run the test driver for one step as inputs can be in the first step but the vm does nothing yet.
-        await testDriver.runForSteps(1);
+    private checkForHaltAll(t: TestDriver) {
+        let models = [...this.constraintsModels, ...this.programModels];
+        return () => {
+            if (!this.modelStepCallback.isActive() && !this.constraintCallback.isActive()) {
+                this.stopAll(t);
+            } else if (!this.modelStepCallback.isActive()) {
+                models = [...this.constraintsModels];
+            } else if (!this.constraintCallback.isActive()) {
+                models = [...this.programModels];
+            }
 
-        // if there is a program model loaded add the callbacks. There is either a program or constraint model!
-        if (this.programModels.length > 0) {
-            modelStepCallback = testDriver.addModelCallback(modelStepFunction, true, "modelStep");
+            models.forEach(model => {
+                if (model.haltAllModels()) {
+                    this.stopAll(t);
+                }
+            })
         }
-        this.userInputGen(testDriver, this.result);
+    }
+
+    private stopAll(t: TestDriver) {
+        this.constraintCallback.disable();
+        this.modelStepCallback.disable();
+        this.haltAllCallback.disable();
+        this.checkLastFailedCallback.enable();
+        if (this.onTestEndModels.length > 0) {
+            let time = t.getTotalTimeElapsed();
+            this.onTestEndModels.forEach(model => {
+                model.timeStampLastTransition = time;
+            })
+            this.onTestEndCallback.enable();
+        }
+    }
+
+    private getOnTestEndFunction(t: TestDriver) {
+        let afterStopModels = [...this.onTestEndModels];
+        return () => {
+            let notStoppedModels = [];
+            afterStopModels.forEach(model => {
+                let takenEdge = model.makeOneTransition(t, this.result);
+                if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
+                    this.checkUtility.registerEffectCheck(takenEdge);
+                }
+                if (model.haltAllModels()) {
+                    this.onTestEndCallback.disable();
+                    return;
+                }
+                if (!model.stopped()) {
+                    notStoppedModels.push(model);
+                }
+            })
+            if (notStoppedModels == []) {
+                this.onTestEndCallback.disable();
+            }
+            afterStopModels = [...notStoppedModels];
+        };
     }
 
     private userInputGen(t: TestDriver, modelResult: ModelResult) {
         if (this.userModelsLoaded()) {
-            let userInputCallback;
+            let userModels = [...this.userModels];
             let userInputFun = () => {
                 // todo temporary bug fix, as steps in key input does not release the key
                 // t.resetKeyboard();
-                this.programModels.forEach(model => {
-                    if (model.stopped()) {
-                        userInputCallback.disable();
-                        return;
-                    }
-                });
-                this.userModels.forEach(model => {
+
+                let notStoppedUserModels = [];
+                userModels.forEach(model => {
                     let edge = model.makeOneTransition(t, modelResult);
                     if (edge != null && edge instanceof UserModelEdge) {
                         edge.inputImmediate(t);
                     }
+                    if (!model.stopped()) {
+                        notStoppedUserModels.push(model);
+                    }
                 })
+                userModels = notStoppedUserModels;
+                if (userModels == []) {
+                    console.log("Input generation per user models stopped.");
+                }
             }
-            userInputCallback = t.addModelCallback(userInputFun, true, "inputOfUserModel");
+            return t.addModelCallback(userInputFun, true, "inputOfUserModel");
         }
     }
 
-    private edgeTrace(transition: ProgramModelEdge, testDriver: TestDriver) {
+    private edgeTrace(transition: ProgramModelEdge) {
         let edgeID = transition.id;
         let conditions = transition.conditions;
         let edgeTrace = "'" + edgeID + "':";
@@ -215,25 +278,14 @@ export class ModelTester extends EventEmitter {
      * Get the result of the test run as a ModelResult.
      */
     getModelStates(testDriver: TestDriver) {
-        let models = [...this.programModels, ...this.constraintsModels];
-        let stoppedByOne = false;
+        let models = [...this.programModels, ...this.constraintsModels, ...this.onTestEndModels];
         models.forEach(model => {
-            if (model.shouldHaltAllModels()) {
-                stoppedByOne = true;
-                console.log("Model '" + model.id + "' stopped all other models.");
-                this.result.log.push("Model '" + model.id + "' stopped all other models.");
-                this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped all other models.");
+            if (model.stopped()) {
+                console.log("Model '" + model.id + "' stopped.");
+                this.result.log.push("Model '" + model.id + "' stopped.");
+                this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
             }
         });
-        if (!stoppedByOne) {
-            models.forEach(model => {
-                if (model.stopped()) {
-                    console.log("Model '" + model.id + "' stopped.");
-                    this.result.log.push("Model '" + model.id + "' stopped.");
-                    this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
-                }
-            });
-        }
         const sprites = testDriver.getSprites(() => true, false);
         let log = [];
         log.push("--- State of variables:");
@@ -252,11 +304,8 @@ export class ModelTester extends EventEmitter {
         this.emit(ModelTester.MODEL_LOG, "--- Model Coverage");
         let coverages = {};
 
-        this.constraintsModels.forEach(model => {
-            coverages[model.id] = model.getCoverageCurrentRun();
-            this.result.coverage[model.id] = coverages[model.id];
-        })
-        this.programModels.forEach(model => {
+        let programModels = [...this.programModels, ...this.constraintsModels, ...this.onTestEndModels];
+        programModels.forEach(model => {
             coverages[model.id] = model.getCoverageCurrentRun();
             this.result.coverage[model.id] = coverages[model.id];
         })
@@ -271,12 +320,10 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage() {
         const coverage = {};
-        this.constraintsModels.forEach(model => {
+        let programModels = [...this.programModels, ...this.constraintsModels, ...this.onTestEndModels];
+        programModels.forEach(model => {
             coverage[model.id] = model.getTotalCoverage();
         });
-        this.programModels.forEach(model => {
-            coverage[model.id] = model.getTotalCoverage();
-        })
         return coverage;
     }
 
@@ -291,12 +338,5 @@ export class ModelTester extends EventEmitter {
             this.result.log.push("EFFECTS CONTRADICTING" + output);
             this.emit(ModelTester.MODEL_WARNING, output);
         }
-    }
-
-    modelsToJSON() {
-        if (this.someModelLoaded()) {
-
-        }
-        return null;
     }
 }
