@@ -177,6 +177,10 @@ p {
 
 /* ==== Basic Body Structure ==== */
 
+.head-spacer20 {
+    margin-top: 20px;
+}
+
 .headline-spacer {
     margin-top: 50px;
 }
@@ -265,22 +269,24 @@ p {
     position: relative;
 }
 
+.slide-container {
+    padding-top: 8px;
+    padding-left: 8%;
+    width: 100%;
+}
+
 .but {
-    height: 40px;
-    width: 100px;
-    position: absolute;
+    position: inherit;
     bottom: 0;
     right: 0;
 }
 
-.slide-container {
-    padding-top: 8px;
-    padding-left: 25%;
-    width: 100%;
+.but1 {
+    margin-left: 35%;
 }
 
-.slider:hover {
-    opacity: 1;
+.but2 {
+    margin-left: 1%;
 }
 
 .slider {
@@ -290,10 +296,10 @@ p {
     border-radius: 5px;
     background: var(--subColor);
     outline: none;
-    opacity: 0.7;
+    opacity: 0.9;
     -webkit-transition: .2s;
     transition: opacity .2s;
-    margin-bottom: 8px;
+    margin-top: 8px;
 }
 
 .slider::-webkit-slider-thumb {
@@ -315,7 +321,7 @@ p {
 }
 
 #acceleration {
-    padding-left: 25%;
+    padding-left: 5%;
 }
 
 #acceleration-value {
