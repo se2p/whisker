@@ -52,20 +52,9 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
     private readonly _testExecutor: TestExecutor;
 
     /**
-     * The relative amount of consumed resources, determining at which point in time local search should be applied.
+     * Defines the probability of applying Extension Local Search.
      */
-    private readonly _consumedResources: number
-
-    /**
-     * Defines, in terms of generations, how often the operator is used.
-     * @private
-     */
-    private readonly _generationInterval: number
-
-    /**
-     * The chromosome's upper bound of the gene size.
-     */
-    private readonly _upperLengthBound: number;
+    private readonly _probability: number
 
     /**
      * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
@@ -93,35 +82,23 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * Constructs a new ExtensionLocalSearch object.
      * @param vmWrapper the vmWrapper containing the Scratch-VM.
      * @param eventExtractor the eventExtractor used to obtain the currently available set of events.
-     * @param consumedResources the relative amount of consumed resources after which
-     * this local search operator gets used.
-     * @param generationInterval defines, in terms of generations, how often the operator is used.
+     * @param probability Defines the probability of applying Extension Local Search.
      */
-    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, consumedResources: number,
-                generationInterval: number) {
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, probability: number) {
         this._vmWrapper = vmWrapper;
         this._eventExtractor = eventExtractor;
         this._testExecutor = new TestExecutor(vmWrapper, eventExtractor);
-        this._consumedResources = consumedResources;
-        this._generationInterval = generationInterval;
-        this._upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
+        this._probability = probability;
     }
 
     /**
      * Determines whether local search can be applied to this chromosome.
-     * This is the case if we have consumed the specified resource budget AND
-     * if we have waited for generationInterval generations AND
-     * if we have not modified the given chromosome by local search already in the past AND
-     * if the chromosome can actually discover previously uncovered blocks.
+     * This is the case if the chromosome can actually discover previously uncovered blocks.
      * @param chromosome the chromosome local search should be applied to
-     * @param consumedResources determines the amount of consumed resources after which local search will be applied
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
-    isApplicable(chromosome: TestChromosome, consumedResources: number): boolean {
-        return this._consumedResources < consumedResources && consumedResources < 1 &&
-            this._algorithm.getNumberOfIterations() % this._generationInterval === 0 &&
-            !this._targetedChromosomes.contains(chromosome) &&
-            this.calculateFitnessValues(chromosome).length > 0;
+    isApplicable(chromosome: TestChromosome): boolean {
+        return this.calculateFitnessValues(chromosome).length > 0;
     }
 
     /**
@@ -197,12 +174,13 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
         // Uncovered blocks without branches between themselves and already covered blocks have a fitness of 0.5.
         const cfgMarker = 0.5;
         let done = false;
+        const upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
 
         // Monitor if the Scratch-VM is still running. If it isn't stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
         this._vmWrapper.vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
-        while (codons.size() < this._upperLengthBound && this._projectRunning && !done) {
+        while (codons.size() < upperLengthBound && this._projectRunning && !done) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -257,7 +235,8 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
             // blocks not already covered by previous chromosomes modified by local search.
             const fitness = fitnessFunction.getFitness(chromosome);
             if (!fitnessFunction.isOptimal(fitness) &&
-                !this._modifiedChromosomes.some(value => fitnessFunction.isOptimal(fitnessFunction.getFitness(value)))) {
+                !this._modifiedChromosomes.some(modifiedChromosome =>
+                    fitnessFunction.isOptimal(fitnessFunction.getFitness(modifiedChromosome)))) {
                 fitnessValues.push(fitnessFunction.getFitness(chromosome));
             }
         }
@@ -280,6 +259,10 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      */
     setAlgorithm(algorithm: SearchAlgorithm<TestChromosome>): void {
         this._algorithm = algorithm;
+    }
+
+    getProbability(): number {
+        return this._probability;
     }
 
     /**

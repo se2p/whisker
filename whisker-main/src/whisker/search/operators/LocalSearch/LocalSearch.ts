@@ -19,11 +19,9 @@ export interface LocalSearch<C extends Chromosome> {
     /**
      * Determines whether local search can be applied to this chromosome.
      * @param chromosome the chromosome local search should be applied to.
-     * @param consumedResources determines the amount of depleted resources
-     * after which local search will be applied.
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
-    isApplicable(chromosome: C, consumedResources: number): boolean;
+    isApplicable(chromosome: C): boolean;
 
     /**
      * Determines whether the local search operator improved the original chromosome.
@@ -38,4 +36,10 @@ export interface LocalSearch<C extends Chromosome> {
      * @param algorithm the searchAlgorithm calling the local search operator.
      */
     setAlgorithm(algorithm: SearchAlgorithm<C>): void
+
+    /**
+     * Returns the probability of applying the given local search operator.
+     * @return the probability of applying local search
+     */
+    getProbability(): number
 }
