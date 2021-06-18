@@ -2,11 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
 import {ProgramModelEdge} from "../components/ModelEdge";
-import {
-    getConstraintFailedOutput,
-    getEffectFailedOutput,
-    getErrorOnEdgeOutput
-} from "./ModelError";
+import {getConstraintFailedOutput, getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -36,13 +32,12 @@ export class CheckUtility {
      */
     registerTouching(spriteName1: string, spriteName2: string): void {
         this._registerTouching(spriteName1, spriteName2);
-        this._registerTouching(spriteName2, spriteName1);
     }
 
     private _registerTouching(spriteName1: string, spriteName2: string): void {
         let touchingString = CheckUtility.getTouchingString(spriteName1, spriteName2);
 
-        if (!this.touched[touchingString]) {
+        if (this.touched[touchingString] == undefined) {
             this.touched[touchingString] = false;
 
             this.testDriver.addModelSpriteMoved((sprite) => {
@@ -61,20 +56,23 @@ export class CheckUtility {
      * @param b RGB blue value.
      */
     registerColor(spriteName: string, r: number, g: number, b: number): void {
-        // todo removed for now, as the testdriver.isTouchingColor is enough at the moment. if it does give errors
-        //  again insert this again and change isTouchingColor
-        // console.log("register color: ", spriteName);
-        // let colorString = CheckUtility.getColorString(spriteName, r, g, b);
-        //
-        // if (!this.colorTouched[colorString]) {
-        //     this.colorTouched[colorString] = false;
-        //
-        //     this.testDriver.addModelSpriteMoved((sprite) => {
-        //         if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b])) {
-        //             this.colorTouched[colorString] = true;
-        //         }
-        //     });
-        // }
+        let colorString = CheckUtility.getColorString(spriteName, r, g, b);
+
+        if (this.colorTouched[colorString] == undefined) {
+
+            this.colorTouched[colorString] = false;
+
+            this.testDriver.addModelSpriteMoved((sprite) => {
+                // this test gets all very short touches with a color (when in the same step e.g. the sprites is
+                // moved again and a test isTouchingColor would not register it after step). as this also created
+                // the problem that even if the sprite is hidden, moves (touches randomly the color), and is then
+                // made visible again it triggers this, test for visibility here too. this could also fail in some
+                // cases...
+                if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b]) && sprite.visible) {
+                    this.colorTouched[colorString] = true;
+                }
+            });
+        }
     }
 
     /**
@@ -105,9 +103,8 @@ export class CheckUtility {
      * Check whether a sprite is touching a color.
      */
     isTouchingColor(spriteName: string, r: number, g: number, b: number): boolean {
-        // return (this.colorTouched[CheckUtility.getColorString(spriteName, r, g, b)]
-        //             || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]));
-        return this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]);
+        return (this.colorTouched[CheckUtility.getColorString(spriteName, r, g, b)]
+            || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]));
     }
 
     /**
@@ -146,6 +143,7 @@ export class CheckUtility {
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check()) {
                 let error = getConstraintFailedOutput(effects[i]);
+                console.error(error, this.testDriver.getTotalStepsExecuted());
                 modelResult.addError(error);
             }
         }
