@@ -159,7 +159,7 @@ class VMWrapper {
      * @param {Function?} condition .
      * @param {number=} timeout .
      * @param {number=} steps .
-     * @returns {number} .
+     * @returns {number} runtime in ms.
      */
     async run (condition, timeout, steps) {
         if (this.isRunning()) {
@@ -206,12 +206,12 @@ class VMWrapper {
             throw constraintError;
         }
 
-        return stepsExecuted;
+        return this.getRunTimeElapsed();
     }
 
     /**
      * @param {number} time .
-     * @returns {number} .
+     * @returns {number} runtime in ms.
      */
     async runForTime (time) {
         return await this.run(null, time);
@@ -220,7 +220,7 @@ class VMWrapper {
     /**
      * @param {Function} condition .
      * @param {number=} timeout .
-     * @returns {number} .
+     * @returns {number} runtime in ms.
      */
     async runUntil (condition, timeout) {
         return await this.run(condition, timeout);
@@ -229,7 +229,7 @@ class VMWrapper {
     /**
      * @param {Function} callback .
      * @param {number=} timeout .
-     * @returns {number} .
+     * @returns {number} runtime in ms .
      */
     async runUntilChanges (callback, timeout) {
         const initialValue = callback();
@@ -239,10 +239,10 @@ class VMWrapper {
     /**
      * @param {number} steps .
      * @param {number=} timeout .
-     * @returns {number} .
+     * @returns {number} runtime in steps.
      */
     async runForSteps (steps, timeout) {
-        return await this.run(null, timeout, steps);
+        return this.convertFromTimeToSteps(await this.run(null, timeout, steps));
     }
 
     cancelRun () {
