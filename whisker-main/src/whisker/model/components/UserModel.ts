@@ -26,7 +26,8 @@ export class UserModel {
     protected readonly nodes: { [key: string]: ModelNode };
     protected readonly edges: { [key: string]: UserModelEdge };
 
-    private _timeStampLastTransition: number = 0;
+    lastTransitionStep: number = 0;
+    secondLastTransitionStep: number = 0;
 
     constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
                 nodes: { [key: string]: ModelNode }, edges: { [key: string]: UserModelEdge }) {
@@ -49,7 +50,8 @@ export class UserModel {
 
         if (edge != null) {
             this.currentState = edge.getEndNode();
-            this._timeStampLastTransition = testDriver.getTotalTimeElapsed();
+            this.secondLastTransitionStep = this.lastTransitionStep;
+            this.lastTransitionStep = testDriver.getTotalStepsExecuted();
         }
         return edge;
     }
@@ -66,7 +68,8 @@ export class UserModel {
      */
     reset(): void {
         this.currentState = this.startNode;
-        this._timeStampLastTransition = 0;
+        this.lastTransitionStep = 0;
+        this.secondLastTransitionStep = 0;
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
@@ -81,11 +84,8 @@ export class UserModel {
         })
     }
 
-    get timeStampLastTransition(): number {
-        return this._timeStampLastTransition;
-    }
-
-    set timeStampLastTransition(value: number) {
-        this._timeStampLastTransition = value;
+    setTransitionsStartTo(steps: number) {
+        this.lastTransitionStep = steps;
+        this.secondLastTransitionStep = steps;
     }
 }

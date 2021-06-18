@@ -75,8 +75,10 @@ export function getCondition(edge: ModelEdge, condString, forceTestAfter: number
 export class Condition extends Check {
     private _condition: () => boolean;
     private readonly forceTestAfter: number;
+    private forceTestAfterSteps: number;
     private readonly forceTestAt: number;
-    private timeStamp: number;
+    private forceTestAtSteps: number;
+    private stepFirstCheck: number;
     private failedForcedTest: boolean;
 
     /**
@@ -94,7 +96,7 @@ export class Condition extends Check {
         super(newID, edge, name, args, negated);
         this.forceTestAfter = forceTestAfter;
         if (this.forceTestAfter != -1) {
-            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY;
+            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY
         }
         this.forceTestAt = forceTestAt;
         if (this.forceTestAt != -1) {
@@ -108,6 +110,12 @@ export class Condition extends Check {
      */
     registerComponents(cu: CheckUtility, t: TestDriver, result: ModelResult, caseSensitive: boolean) {
         try {
+            if (this.forceTestAt != -1) {
+                this.forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt);
+            }
+            if (this.forceTestAfter != -1) {
+                this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter);
+            }
             this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
             console.error(e + ". This condition will be considered as not fulfilled in test run.");
@@ -123,11 +131,11 @@ export class Condition extends Check {
         if (this.failedForcedTest) {
             return false;
         }
-        if (this.timeStamp == undefined) {
-            this.timeStamp = t.getTotalTimeElapsed();
+        if (this.stepFirstCheck == undefined) {
+            this.stepFirstCheck = t.getTotalStepsExecuted();
         }
-        if ((this.forceTestAt != -1 && this.forceTestAt <= t.getTotalTimeElapsed())
-            || (this.forceTestAfter != -1 && this.forceTestAfter <= (t.getTotalTimeElapsed() - this.timeStamp))) {
+        if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
+            || (this.forceTestAfterSteps && this.forceTestAfterSteps <= (t.getTotalStepsExecuted() - this.stepFirstCheck))) {
             if (!this._condition()) {
                 this.failedForcedTest = true;
                 throw getTimeLimitFailedError(this);
@@ -147,12 +155,14 @@ export class Condition extends Check {
     }
 
     reset() {
-        this.timeStamp = undefined;
+        this.stepFirstCheck = undefined;
         this.failedForcedTest = false;
+        this.forceTestAtSteps = undefined;
+        this.forceTestAfterSteps = undefined;
     }
 
-    resetTimeStamp()  {
-        this.timeStamp = undefined;
+    resetTimeStamp() {
+        this.stepFirstCheck = undefined;
     }
 
     /**

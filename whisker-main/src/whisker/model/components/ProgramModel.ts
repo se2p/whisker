@@ -28,7 +28,8 @@ export class ProgramModel {
     protected coverageCurrentRun: { [key: string]: boolean } = {};
     protected coverageTotal: { [key: string]: boolean } = {};
 
-    private _timeStampLastTransition: number = 0;
+    stepNbrOfLastTransition: number = 0;
+    stepNbrOfScndLastTransition: number = 0;
 
     /**
      * Construct a program model (graph) with a string identifier. Sets up the start node and stop nodes for
@@ -63,7 +64,8 @@ export class ProgramModel {
             this.coverageCurrentRun[edge.id] = true;
             this.coverageTotal[edge.id] = true;
             this.currentState = edge.getEndNode();
-            this._timeStampLastTransition = testDriver.getTotalTimeElapsed();
+            this.stepNbrOfScndLastTransition = this.stepNbrOfLastTransition;
+            this.stepNbrOfLastTransition = testDriver.getTotalStepsExecuted();
         }
         return edge;
     }
@@ -124,7 +126,8 @@ export class ProgramModel {
      */
     reset(): void {
         this.currentState = this.startNode;
-        this._timeStampLastTransition = 0;
+        this.stepNbrOfLastTransition = 0;
+        this.stepNbrOfScndLastTransition = 0;
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
@@ -142,14 +145,8 @@ export class ProgramModel {
         })
     }
 
-    /**
-     * Get the elapsed time that the last edge was taken in this model.
-     */
-    get timeStampLastTransition(): number {
-        return this._timeStampLastTransition;
-    }
-
-    set timeStampLastTransition(value: number) {
-        this._timeStampLastTransition = value;
+    setTransitionsStartTo(steps: number) {
+        this.stepNbrOfLastTransition = steps;
+        this.stepNbrOfScndLastTransition = steps;
     }
 }

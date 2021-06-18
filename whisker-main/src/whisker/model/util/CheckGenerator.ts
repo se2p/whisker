@@ -11,7 +11,8 @@ import {
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
 import {ModelEdge} from "../components/ModelEdge";
-import {ModelTester} from "../ModelTester";
+import {Check} from "../components/Check";
+import {Condition} from "../components/Condition";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -411,10 +412,11 @@ export abstract class CheckGenerator {
      * @param edge The parent edge of the check.
      */
     static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
-        let time = ModelUtil.testNumber(timeInMS) - ModelTester.TIME_LEEWAY;
+        let time = ModelUtil.testNumber(timeInMS) - 100;
+        let steps = t.vmWrapper.convertFromTimeToSteps(time);
         let model = edge.getModel();
         return () => {
-            if (time <= model.timeStampLastTransition) {
+            if (steps <= model.stepNbrOfLastTransition) {
                 return !negated;
             }
             return negated;
@@ -426,13 +428,46 @@ export abstract class CheckGenerator {
      * @param t Instance of the test driver.
      * @param negated Whether this check is negated.
      * @param timeInMS Time in milliseconds.
-     * @param edge The parent edge of the check.
+     * @param check The check containing this function as check later on.
      */
-    static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
+    static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, check: Check) {
         let time = ModelUtil.testNumber(timeInMS);
-        let model = edge.getModel();
+        let steps = t.vmWrapper.convertFromTimeToSteps(time) - 1;
+        let model = check.edge.getModel();
+        if (check instanceof Condition) {
+            return () => {
+                if (steps <= (t.getTotalStepsExecuted() - model.stepNbrOfLastTransition)) {
+                    return !negated;
+                }
+                return negated;
+            }
+        } else {
+            // instance of effect, as effect check is tested later on it needs the the time stamps of two last steps
+            return () => {
+                if (steps <= (model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition)) {
+                    return !negated;
+                }
+                return negated;
+            }
+        }
+    }
+
+    /**
+     * Get a method to check how many clones of a sprite are there.
+     * @param t Instance of the test driver.
+     * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
+     * @param spriteNameRegex Regex defining the sprite name.
+     * @param nbr Number of clones.
+     */
+    static getNumberOfClonesCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string, nbr: string) {
+        let toCheckNbr = ModelUtil.testNumber(nbr);
+        let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
+        let spriteName = sprite.name;
+
         return () => {
-            if (time <= (t.getTotalTimeElapsed() - model.timeStampLastTransition)) {
+            const sprites = t.getSprites(sprite => sprite.name.includes(spriteName));
+            if (sprites.length == toCheckNbr) {
                 return !negated;
             }
             return negated;

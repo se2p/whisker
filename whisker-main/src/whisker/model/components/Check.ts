@@ -20,7 +20,8 @@ export enum CheckName {
     // rand<=prob) (but this probability depends on the other edge conditions tested before -> edge conditions are
     // tested one for one and not tested if another edge is taken before it)
     TimeElapsed = "TimeElapsed", // time from the test start on, time in milliseconds
-    TimeBetween = "TimeBetween" //  time from the last edge transition in the model, in milliseconds
+    TimeBetween = "TimeBetween", //  time from the last edge transition in the model, in milliseconds
+    NbrOfClones = "NbrOfClones" // sprite name, number
 }
 
 /**
@@ -79,6 +80,7 @@ export abstract class Check {
                 break;
             case CheckName.Output:
             case CheckName.SpriteTouching:
+            case CheckName.NbrOfClones:
                 _testArgs(2);
                 break;
             case CheckName.VarChange:
@@ -141,7 +143,9 @@ export abstract class Check {
             case CheckName.TimeElapsed:
                 return CheckGenerator.getTimeElapsedCheck(t, this._negated, this._args[0], this.edge);
             case CheckName.TimeBetween:
-                return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0], this.edge);
+                return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0], this);
+            case CheckName.NbrOfClones:
+                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, this._args[0], this._args[1]);
             default:
                 return undefined;
         }

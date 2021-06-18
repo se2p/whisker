@@ -27,7 +27,7 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG = "ModelLog";
     static readonly MODEL_WARNING = "ModelWarning";
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
-    static readonly TIME_LEEWAY = 250;
+    static readonly TIME_LEEWAY = 1000;
 
     private constraintCallback: Callback;
     private modelStepCallback: Callback;
@@ -197,9 +197,9 @@ export class ModelTester extends EventEmitter {
         this.haltAllCallback.disable();
         this.checkLastFailedCallback.enable();
         if (this.onTestEndModels.length > 0) {
-            let time = t.getTotalTimeElapsed();
+            let steps = t.getTotalStepsExecuted();
             this.onTestEndModels.forEach(model => {
-                model.timeStampLastTransition = time;
+                model.setTransitionsStartTo(steps);
             })
             this.onTestEndCallback.enable();
         }
