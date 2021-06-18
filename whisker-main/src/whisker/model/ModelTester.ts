@@ -75,7 +75,7 @@ export class ModelTester extends EventEmitter {
 
     running() {
         return this.modelStepCallback.isActive() || this.constraintCallback.isActive()
-            || this.onTestEndCallback.isActive();
+            || this.onTestEndCallback.isActive() || this.checkLastFailedCallback.isActive();
     }
 
     /**
@@ -156,7 +156,7 @@ export class ModelTester extends EventEmitter {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
                     this.checkUtility.registerEffectCheck(takenEdge);
-                    this.edgeTrace(takenEdge);
+                    this.edgeTrace(takenEdge, t);
                 }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
@@ -255,7 +255,7 @@ export class ModelTester extends EventEmitter {
         }
     }
 
-    private edgeTrace(transition: ProgramModelEdge) {
+    private edgeTrace(transition: ProgramModelEdge, t: TestDriver) {
         let edgeID = transition.id;
         let conditions = transition.conditions;
         let edgeTrace = "'" + edgeID + "':";
