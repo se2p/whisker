@@ -152,6 +152,18 @@ export class ModelTester extends EventEmitter {
         return () => {
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
+            // let sprite = t.getSprite("Bowl").sayText; // todo program with second last test
+            // if (t.getTotalStepsExecuted() > 920) {
+            //     console.log(t.getTotalStepsExecuted());
+            // }
+            // if (sprite != undefined && sprite != "") {
+            //     console.log("bowl says", sprite, t.getTotalTimeElapsed(), t.getTotalStepsExecuted(), t.getStage().getVariable("Zeit").value);
+            //
+            //     let models = [...this.programModels, ...this.constraintsModels, ...this.userModels,...this.onTestEndModels];
+            //     models.forEach(model => {
+            //         console.log(model.id, model.currentState.id, model.currentState.isStopNode, model.currentState.stopAllModels);
+            //     })
+            // }
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
@@ -175,6 +187,14 @@ export class ModelTester extends EventEmitter {
     private checkForHaltAll(t: TestDriver) {
         let models = [...this.constraintsModels, ...this.programModels];
         return () => {
+            // if (t.getTotalStepsExecuted() > 920) {
+            //     console.log("check for halt all", t.getTotalStepsExecuted())
+            //
+            //     let models = [...this.programModels, ...this.constraintsModels, ...this.userModels,...this.onTestEndModels];
+            //     models.forEach(model => {
+            //         console.log(model.id, model.currentState.id, model.currentState.isStopNode, model.currentState.stopAllModels);
+            //     })
+            // }
             if (!this.modelStepCallback.isActive() && !this.constraintCallback.isActive()) {
                 this.stopAll(t);
             } else if (!this.modelStepCallback.isActive()) {
@@ -192,6 +212,7 @@ export class ModelTester extends EventEmitter {
     }
 
     private stopAll(t: TestDriver) {
+        // console.log("stop all", t.getTotalStepsExecuted());
         this.constraintCallback.disable();
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
@@ -234,7 +255,7 @@ export class ModelTester extends EventEmitter {
             let userModels = [...this.userModels];
             let userInputFun = () => {
                 // todo temporary bug fix, as steps in key input does not release the key
-                // t.resetKeyboard();
+                t.resetKeyboard();
 
                 let notStoppedUserModels = [];
                 userModels.forEach(model => {
