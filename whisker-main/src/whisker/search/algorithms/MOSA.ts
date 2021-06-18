@@ -142,9 +142,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
-        console.log("Population before: ", parentPopulation)
         await this.applyLocalSearch(parentPopulation);
-        console.log("Population after: ", parentPopulation)
 
 
         if (this._stoppingCondition.isFinished(this)) {
@@ -154,9 +152,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
-            console.log("Population before: ", offspringPopulation)
             await this.applyLocalSearch(offspringPopulation);
-            console.log("Population after: ", offspringPopulation)
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);
@@ -266,8 +262,6 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     const modifiedChromosome = await localSearch.apply(chromosome);
                     // If local search improved the original chromosome; replace it.
                     if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
-                        console.log("Old chromosome: ", chromosome);
-                        console.log("New chromosome: ", modifiedChromosome);
                         population.replace(chromosome, modifiedChromosome);
                         this.updateArchive(modifiedChromosome);
                         this.updateStatistics();
