@@ -23,73 +23,20 @@ import {Randomness} from '../../../utils/Randomness';
 import {TestChromosome} from "../../../testcase/TestChromosome";
 import {seedScratch} from "../../../../util/random";
 import {WaitEvent} from "../../../testcase/events/WaitEvent";
-import {ScratchEventExtractor} from "../../../testcase/ScratchEventExtractor";
-import VMWrapper = require("../../../../vm/vm-wrapper.js")
 import {Container} from "../../../utils/Container";
 import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
 import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
 import {LocalSearch} from "./LocalSearch";
-import {TestExecutor} from "../../../testcase/TestExecutor";
-import {SearchAlgorithm} from "../../SearchAlgorithm";
 import Runtime from "scratch-vm/src/engine/runtime";
 
 
-export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
-
-    /**
-     * The vmWrapper wrapped around the Scratch-VM.
-     */
-    private _vmWrapper: VMWrapper;
-
-    /**
-     * The ScratchEventExtractor used to obtain the currently available Events.
-     */
-    private readonly _eventExtractor: ScratchEventExtractor;
-
-    /**
-     * The TestExecutor responsible for executing codons and resetting the state of the VM.
-     */
-    private readonly _testExecutor: TestExecutor;
-
-    /**
-     * Defines the probability of applying Extension Local Search.
-     */
-    private readonly _probability: number
+export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
     /**
      * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
      * wasting time on applying the local search on the same chromosome twice.
      */
     private readonly _modifiedChromosomes: TestChromosome[] = [];
-
-    /**
-     * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
-     * wasting time on applying the local search on the same chromosome twice.
-     */
-    private readonly _targetedChromosomes = new List<TestChromosome>();
-
-    /**
-     * The algorithm calling the extension search operator.
-     */
-    private _algorithm: SearchAlgorithm<TestChromosome>;
-
-    /**
-     * Observes if the the Scratch-VM is still running
-     */
-    private _projectRunning: boolean;
-
-    /**
-     * Constructs a new ExtensionLocalSearch object.
-     * @param vmWrapper the vmWrapper containing the Scratch-VM.
-     * @param eventExtractor the eventExtractor used to obtain the currently available set of events.
-     * @param probability Defines the probability of applying Extension Local Search.
-     */
-    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, probability: number) {
-        this._vmWrapper = vmWrapper;
-        this._eventExtractor = eventExtractor;
-        this._testExecutor = new TestExecutor(vmWrapper, eventExtractor);
-        this._probability = probability;
-    }
 
     /**
      * Determines whether local search can be applied to this chromosome.
@@ -108,7 +55,7 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      * @returns the modified chromosome wrapped in a Promise.
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
-        this._targetedChromosomes.add(chromosome);
+        this._modifiedChromosomes.push(chromosome);
         console.log(`Start Extension Local Search`);
 
         // Save the initial trace and coverage of the chromosome to recover them later.
@@ -251,24 +198,5 @@ export class ExtensionLocalSearch implements LocalSearch<TestChromosome> {
      */
     hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome): boolean {
         return originalChromosome.coverage.size < modifiedChromosome.coverage.size;
-    }
-
-    /**
-     * Sets the algorithm, the Extension local search operator will be called from.
-     * @param algorithm the searchAlgorithm calling the Extension local search operator.
-     */
-    setAlgorithm(algorithm: SearchAlgorithm<TestChromosome>): void {
-        this._algorithm = algorithm;
-    }
-
-    getProbability(): number {
-        return this._probability;
-    }
-
-    /**
-     * Event listener observing if the project is still running.
-     */
-    private projectStopped() {
-        return this._projectRunning = false;
     }
 }

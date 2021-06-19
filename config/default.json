@@ -19,8 +19,7 @@
     "localSearch": [
         {
             "type": "Extension",
-            "consumedResources": 0.5,
-            "interval": 1
+            "probability": 0.3
         }
     ],
     "selection": {
