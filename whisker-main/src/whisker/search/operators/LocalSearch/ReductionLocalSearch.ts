@@ -32,7 +32,7 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._originalChromosomes.push(chromosome);
-        console.log(`Start ReductionLocalSearch`, chromosome);
+        console.log(`Start ReductionLocalSearch`);
 
         // Save the initial trace and coverage of the chromosome to recover them later.
         const originalTrace = chromosome.trace;
