@@ -32,7 +32,7 @@
         "conditions": [
             {
                 "type": "fixed-time",
-                "duration": 60000
+                "duration": 1000000
             },
             {
                 "type": "optimal"
