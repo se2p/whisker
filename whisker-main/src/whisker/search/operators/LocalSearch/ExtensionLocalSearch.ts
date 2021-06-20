@@ -33,10 +33,16 @@ import Runtime from "scratch-vm/src/engine/runtime";
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
     /**
-     * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
-     * wasting time on applying the local search on the same chromosome twice.
+     * Collects the chromosomes, the extension local search has already modified. This helps us to prevent
+     * wasting time on trying to discover already discovered blocks.
      */
     private readonly _modifiedChromosomes: TestChromosome[] = [];
+
+    /**
+     * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
+     * wasting time by not applying the local search on the same chromosome twice.
+     */
+    private readonly _originalChromosomes: TestChromosome[] = [];
 
     /**
      * Determines whether local search can be applied to this chromosome.
@@ -45,7 +51,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return this.calculateFitnessValues(chromosome).length > 0;
+        return chromosome.getGenes().size() < Container.config.getSearchAlgorithmProperties().getChromosomeLength() &&
+            this._originalChromosomes.indexOf(chromosome) < 0 && this.calculateFitnessValues(chromosome).length > 0;
     }
 
     /**
@@ -55,7 +62,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @returns the modified chromosome wrapped in a Promise.
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
-        this._modifiedChromosomes.push(chromosome);
+        this._originalChromosomes.push(chromosome);
         console.log(`Start Extension Local Search`);
 
         // Save the initial trace and coverage of the chromosome to recover them later.
@@ -173,7 +180,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * Gathers the fitness value for each uncovered block. This helps us in deciding if it makes sense adding
      * additional waits.
      * @param chromosome the chromosome carrying the block trace used to calculate the fitness value
-     * @return Returns an array of discovered fitness values.
+     * @return Returns an array of discovered fitness values for uncovered blocks only.
      */
     private calculateFitnessValues(chromosome: TestChromosome): number[] {
         const fitnessValues: number[] = []
