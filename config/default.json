@@ -20,6 +20,10 @@
         {
             "type": "Extension",
             "probability": 0.3
+        },
+        {
+            "type": "Reduction",
+            "probability": 1
         }
     ],
     "selection": {
@@ -34,7 +38,7 @@
         "conditions": [
             {
                 "type": "fixed-time",
-                "duration": 100000
+                "duration": 1000000
             },
             {
                 "type": "optimal"

@@ -51,6 +51,8 @@ import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor
 import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
+import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+
 
 class ConfigException implements Error {
     message: string;
@@ -256,7 +258,12 @@ export class WhiskerSearchConfiguration {
                 case "Extension":
                     type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
                         operator['probability']);
+                    break;
+                case"Reduction":
+                    type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
+                        operator['probability']);
             }
+
             operators.add(type);
         }
         return operators;

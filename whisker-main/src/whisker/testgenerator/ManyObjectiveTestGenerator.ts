@@ -21,6 +21,8 @@
 import {TestGenerator} from './TestGenerator';
 import {ScratchProject} from '../scratch/ScratchProject';
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
+import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+import {Container} from "../utils/Container";
 
 /**
  * A many-objective search algorithm can generate tests
@@ -35,6 +37,17 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
 
         // TODO: Assuming there is at least one solution?
         const testChromosomes = await searchAlgorithm.findSolution();
+
+        // Check if we can remove unnecessary events in our final testSuite.
+        const reductionOperator = new ReductionLocalSearch(Container.vmWrapper, Container.config.getEventExtractor(), 1);
+        for (const chromosome of testChromosomes) {
+            if (reductionOperator.isApplicable(chromosome)) {
+                const reducedChromosome = await reductionOperator.apply(chromosome);
+                if (reductionOperator.hasImproved(chromosome, reducedChromosome)) {
+                    testChromosomes.replace(chromosome, reducedChromosome);
+                }
+            }
+        }
 
         const testSuite = await this.getTestSuite(testChromosomes);
 
