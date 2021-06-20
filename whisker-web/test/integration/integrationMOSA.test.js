@@ -3,13 +3,13 @@ const fileUrl = require('file-url');
 const timeout = process.env.SLOWMO ? 80000 : 70000;
 const ACCELERATION = 10;
 
-async function loadProject (scratchPath) {
+async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#toggle-advanced')).click();
     await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, ACCELERATION);
 }
 
-async function getLogAfterSearch () {
+async function getLogAfterSearch() {
     const output = await page.$('#output-log .output-content');
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
@@ -22,7 +22,7 @@ async function getLogAfterSearch () {
     }
 }
 
-beforeEach(async() => {
+beforeEach(async () => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
