@@ -2,7 +2,7 @@
     "test-generator": "many-objective",
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
-    "population-size": 10,
+    "population-size": 5,
     "chromosome-length": 30,
     "minVarChromosomeLength": 5,
     "maxVarChromosomeLength": 20,
@@ -20,6 +20,10 @@
         {
             "type": "Extension",
             "probability": 0.3
+        },
+        {
+            "type": "Reduction",
+            "probability": 1
         }
     ],
     "selection": {
@@ -34,7 +38,7 @@
         "conditions": [
             {
                 "type": "fixed-time",
-                "duration": 100000
+                "duration": 1000000
             },
             {
                 "type": "optimal"
