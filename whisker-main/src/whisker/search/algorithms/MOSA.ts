@@ -61,6 +61,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _localSearchOperators = new List<LocalSearch<C>>();
 
+    private readonly _random = Randomness.getInstance();
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -140,7 +142,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
-        await this.applyLocalSearch();
+        await this.applyLocalSearch(parentPopulation);
+
 
         if (this._stoppingCondition.isFinished(this)) {
             this.updateStatistics();
@@ -149,7 +152,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
-            await this.applyLocalSearch();
+            await this.applyLocalSearch(offspringPopulation);
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);
@@ -248,14 +251,18 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Applies the specified local search operators to the best performing chromosomes in the testSuite.
      */
-    private async applyLocalSearch() {
-        // Check if local search is applicable to any member of the current test suite.
+    private async applyLocalSearch(population: List<C>) {
+        // Go through the best performing chromosomes of the population.
         for (const chromosome of this._bestIndividuals) {
+            // Go through each localSearch operator
             for (const localSearch of this._localSearchOperators) {
-                if (localSearch.isApplicable(chromosome, this._stoppingCondition.getProgress(this)) &&
-                    !this._stoppingCondition.isFinished(this)){
+                // Check if the given localSearchOperator is applicable to the chosen chromosome
+                if (localSearch.isApplicable(chromosome) && !this._stoppingCondition.isFinished(this) &&
+                    this._random.nextDouble() < localSearch.getProbability()) {
                     const modifiedChromosome = await localSearch.apply(chromosome);
+                    // If local search improved the original chromosome; replace it.
                     if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
+                        population.replace(chromosome, modifiedChromosome);
                         this.updateArchive(modifiedChromosome);
                         this.updateStatistics();
                     }
@@ -280,15 +287,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
             let child1 = parent1.clone() as C;
             let child2 = parent2.clone() as C;
-            if (Randomness.getInstance().nextDouble() < this._properties.getCrossoverProbability()) {
+            if (this._random.nextDouble() < this._properties.getCrossoverProbability()) {
                 const crossover = parent1.crossover(parent2);
                 child1 = crossover.getFirst();
                 child2 = crossover.getSecond();
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbablity()) {
+            if (this._random.nextDouble() < this._properties.getMutationProbablity()) {
                 child1 = child1.mutate();
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbablity()) {
+            if (this._random.nextDouble() < this._properties.getMutationProbablity()) {
                 child2 = child2.mutate();
             }
             offspringPopulation.add(child1);
@@ -310,7 +317,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         if (useRankSelection) {
             return this._selectionOperator.apply(population);
         } else {
-            const randomIndex = Randomness.getInstance().nextInt(0, population.size());
+            const randomIndex = this._random.nextInt(0, population.size());
             return population.get(randomIndex);
         }
     }
