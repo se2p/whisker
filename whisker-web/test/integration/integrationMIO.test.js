@@ -9,6 +9,10 @@ async function loadProject (scratchPath) {
     await page.evaluate(factor => document.querySelector('#acceleration-factor').value = factor, ACCELERATION);
 }
 
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function waitForSearchCompletion () {
     const coverageOutput = await page.$('#output-run .output-content');
 
@@ -18,6 +22,8 @@ async function waitForSearchCompletion () {
             break;
         }
     }
+
+    await sleep(3000);
 }
 
 /**
