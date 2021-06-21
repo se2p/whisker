@@ -6,8 +6,8 @@ import {Chromosome} from "../../Chromosome";
 
 
 /**
- * LocalSearch implementations are plugged into a SearchAlgorithm and help improve chromosomes according to a
- * predefined fitness function by modifying the given chromosome in place.
+ * LocalSearch implementations can be plugged into a SearchAlgorithm. They improve chromosomes in various ways
+ * by modifying the given chromosome in place.
  *
  * @param <C> the type of chromosomes supported by this LocalSearch operator.
  */
@@ -29,12 +29,12 @@ export abstract class LocalSearch<C extends Chromosome> {
     protected readonly _testExecutor: TestExecutor;
 
     /**
-     * The algorithm calling the local search operator.
+     * The algorithm calling the LocalSearch operator.
      */
     protected _algorithm: SearchAlgorithm<C>;
 
     /**
-     * Defines the probability of applying the concrete Local Search operator.
+     * Defines the probability of applying the LocalSearch operator.
      */
     protected readonly _probability: number
 
@@ -46,8 +46,8 @@ export abstract class LocalSearch<C extends Chromosome> {
     /**
      * Constructs a new LocalSearch object.
      * @param vmWrapper the vmWrapper containing the Scratch-VM.
-     * @param eventExtractor the eventExtractor used to obtain the currently available set of events.
-     * @param probability Defines the probability of applying the concrete Local Search operator.
+     * @param eventExtractor obtains the currently available set of events.
+     * @param probability defines the probability of applying the concrete LocalSearch operator.
      */
     constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, probability: number) {
         this._vmWrapper = vmWrapper;
@@ -57,38 +57,38 @@ export abstract class LocalSearch<C extends Chromosome> {
     }
 
     /**
-     * Applies local search to the specified chromosome.
-     * @param chromosome the chromosome that should be modified by local search.
+     * Applies LocalSearch to the specified chromosome.
+     * @param chromosome the chromosome that will be modified by LocalSearch.
      * @returns the modified chromosome wrapped in a Promise.
      */
     abstract apply(chromosome: C): Promise<C>;
 
     /**
-     * Determines whether local search can be applied to this chromosome.
-     * @param chromosome the chromosome local search should be applied to.
-     * @return boolean whether the local search operator can be applied to the given chromosome.
+     * Determines whether LocalSearch can be applied to this chromosome.
+     * @param chromosome the chromosome LocalSearch should be applied to.
+     * @return boolean determining whether the LocalSearch operator can be applied to the given chromosome.
      */
     abstract isApplicable(chromosome: C): boolean;
 
     /**
-     * Determines whether the local search operator improved the original chromosome.
-     * @param originalChromosome the chromosome local search is applied on.
-     * @param modifiedChromosome the resulting chromosome after local search has been applied to the original.
-     * @return boolean whether the local search operator improved the original chromosome.
+     * Determines whether the LocalSearch operator improved the original chromosome.
+     * @param originalChromosome the chromosome LocalSearch is applied on.
+     * @param modifiedChromosome the resulting chromosome after LocalSearch has been applied to the original.
+     * @return boolean whether the LocalSearch operator improved the original chromosome.
      */
     abstract hasImproved(originalChromosome: C, modifiedChromosome: C): boolean
 
     /**
-     * Sets the algorithm, the local search operator will be called from.
-     * @param algorithm the searchAlgorithm calling the local search operator.
+     * Sets the algorithm, the LocalSearch operator will be called from.
+     * @param algorithm the SearchAlgorithm calling the LocalSearch operator.
      */
     setAlgorithm(algorithm: SearchAlgorithm<C>): void {
         this._algorithm = algorithm;
     }
 
     /**
-     * Returns the probability of applying the given local search operator.
-     * @return the probability of applying local search
+     * Returns the probability of applying the given LocalSearch operator.
+     * @returns the probability of applying LocalSearch
      */
     getProbability(): number {
         return this._probability;

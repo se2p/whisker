@@ -26,7 +26,8 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
     }
 
     /**
-     *
+     * Executes the given chromosome until it has reached all its previously covered blocks.
+     * Afterwards, a new chromosome is being created, containing necessary genes only.
      * @param chromosome the chromosome being modified by ReductionLocalSearch.
      * @returns the modified chromosome wrapped in a Promise.
      */
@@ -38,15 +39,17 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
         const originalTrace = chromosome.trace;
         const originalCoverage = chromosome.coverage;
 
-        // Execute the Chromosome and stop as soon as we have reached the same coverage size as the original Chromosome.
+        // Execute the chromosome and stop as soon as we have reached
+        // the same amount of blocks as the original Chromosome.
         const events = new List<[ScratchEvent, number[]]>();
         const reducedSize = await this.reduceGenes(chromosome, events);
 
-        // Create the modified Chromosome
+        // Create the reduced chromosome.
         const newCodons = chromosome.getGenes().subList(0, reducedSize);
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
         // Reset the trace and coverage of the original chromosome
         chromosome.trace = originalTrace;
         chromosome.coverage = originalCoverage;
@@ -54,11 +57,11 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
     }
 
     /**
-     * Executes the genes of the given chromosome until either all chromosomes have been executed or until
-     * we have reached the same amount of blocks as the given chromosome has.
+     * Executes the genes of the given chromosome until either all genes have been executed,
+     * or until we have reached the same amount of blocks as the given chromosome has.
      * @param chromosome the original chromosome which will be reduced in its gene size if possible
-     * @param events the events executed by the reduced chromosome.
-     * @return returns the stopping point of chromosome execution. This number lets us cut off unnecessary codons.
+     * @param events the events including their parameters executed by the reduced chromosome.
+     * @returns the stopping point of the chromosome execution.
      */
     private async reduceGenes(chromosome: TestChromosome, events: List<[ScratchEvent, number[]]>): Promise<number> {
         // Set up the VM.
@@ -68,9 +71,11 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
         let numCodon = 0;
         const originalCoverage = chromosome.coverage;
         const codons = chromosome.getGenes();
+        let done = false;
 
-        // Execute the genes as long as we didn't reach the block coverage of the original Chromosome.
-        while (numCodon < codons.size() - 1) {
+        // Execute the genes until either we executed all genes and there are no genes to remove,
+        // or until we have reached all the blocks covered by the original chromosome.
+        while (numCodon < codons.size() - 1 && !done) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
@@ -79,9 +84,10 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
             // Selects and sends the next Event ot the VM.
             numCodon = await this._testExecutor.selectAndSendEvent(codons, numCodon, availableEvents, events);
             const currentCoverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-            // If we have reached the same amount of blocks as the original Chromosome we can stop.
+
+            // If we have reached the same amount of blocks as the original chromosome has, we can stop.
             if (currentCoverage.size >= originalCoverage.size) {
-                break;
+                done = true;
             }
         }
         // Stop and reset the VM.
@@ -92,10 +98,10 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
 
     /**
      * ReductionLocalSearch has improved the original Chromosome if the modified chromosome covers at least as much
-     * blocks as the original one and if the modified gene size is smaller than the original gene size.
+     * blocks as the original one, and if the modified gene size is smaller than the original gene size.
      * @param originalChromosome the chromosome ReductionLocalSearch has been applied to.
      * @param modifiedChromosome the resulting chromosome after ReductionLocalSearch has been applied to the original.
-     * @return boolean whether ReductionLocalSearch has improved the original chromosome.
+     * @return boolean determining whether ReductionLocalSearch has improved the original chromosome.
      */
     hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome): boolean {
         return originalChromosome.coverage <= modifiedChromosome.coverage &&

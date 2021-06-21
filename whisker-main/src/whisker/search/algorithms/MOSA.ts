@@ -233,8 +233,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Updates the StatisticsCollector on the following points:
      *  - bestTestSuiteSize
-     *  - IterationCount
-     *  - createdTestsTo
+     *  - iterationCount
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
      * @private
      */
     private updateStatistics() {
@@ -260,7 +261,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 if (localSearch.isApplicable(chromosome) && !this._stoppingCondition.isFinished(this) &&
                     this._random.nextDouble() < localSearch.getProbability()) {
                     const modifiedChromosome = await localSearch.apply(chromosome);
-                    // If local search improved the original chromosome; replace it.
+                    // If local search improved the original chromosome, replace it.
                     if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
                         population.replace(chromosome, modifiedChromosome);
                         this.updateArchive(modifiedChromosome);
