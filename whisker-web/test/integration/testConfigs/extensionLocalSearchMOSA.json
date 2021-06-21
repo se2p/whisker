@@ -19,7 +19,7 @@
     "localSearch": [
         {
             "type": "Extension",
-            "probability": 0.3
+            "probability": 1
         }
     ],
     "selection": {

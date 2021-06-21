@@ -247,7 +247,7 @@ export class WhiskerSearchConfiguration {
         const localSearchOperators = this.dict['localSearch'];
 
         // If there are no local search operators defined return an empty list.
-        if(!localSearchOperators) {
+        if (!localSearchOperators) {
             return new List<LocalSearch<any>>();
         }
 
@@ -259,7 +259,7 @@ export class WhiskerSearchConfiguration {
                     type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
                         operator['probability']);
                     break;
-                case"Reduction":
+                case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
                         operator['probability']);
             }
