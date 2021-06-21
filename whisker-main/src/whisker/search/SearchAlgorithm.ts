@@ -90,8 +90,8 @@ export interface SearchAlgorithm<C extends Chromosome> {
     setSelectionOperator(selectionOperator: Selection<C>): void;
 
     /**
-     * Sets the local search operators callable by the algorithm under certain circumstances.
-     * @param localSearchOperators the local search operators callable by the algorithm.
+     * Sets the LocalSearch operators callable by the algorithm under certain circumstances.
+     * @param localSearchOperators the LocalSearch operators callable by the algorithm.
      */
     setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void
 
