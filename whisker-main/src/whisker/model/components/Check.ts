@@ -141,7 +141,7 @@ export abstract class Check {
             case CheckName.Probability:
                 return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             case CheckName.TimeElapsed:
-                return CheckGenerator.getTimeElapsedCheck(t, this._negated, this._args[0], this.edge);
+                return CheckGenerator.getTimeElapsedCheck(t, this._negated, this._args[0]);
             case CheckName.TimeBetween:
                 return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0], this);
             case CheckName.NbrOfClones:

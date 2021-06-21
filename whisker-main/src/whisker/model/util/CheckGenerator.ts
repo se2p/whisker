@@ -10,7 +10,6 @@ import {
     getRGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
-import {ModelEdge} from "../components/ModelEdge";
 import {Check} from "../components/Check";
 import {Condition} from "../components/Condition";
 
@@ -411,12 +410,11 @@ export abstract class CheckGenerator {
      * @param timeInMS Time in milliseconds.
      * @param edge The parent edge of the check.
      */
-    static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
-        let time = ModelUtil.testNumber(timeInMS) - 100;
+    static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string) {
+        let time = ModelUtil.testNumber(timeInMS);
         let steps = t.vmWrapper.convertFromTimeToSteps(time);
-        let model = edge.getModel();
         return () => {
-            if (steps <= model.stepNbrOfLastTransition) {
+            if (steps <= t.getTotalStepsExecuted()) {
                 return !negated;
             }
             return negated;
@@ -432,7 +430,7 @@ export abstract class CheckGenerator {
      */
     static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, check: Check) {
         let time = ModelUtil.testNumber(timeInMS);
-        let steps = t.vmWrapper.convertFromTimeToSteps(time) - 1;
+        let steps = t.vmWrapper.convertFromTimeToSteps(time);
         let model = check.edge.getModel();
         if (check instanceof Condition) {
             return () => {

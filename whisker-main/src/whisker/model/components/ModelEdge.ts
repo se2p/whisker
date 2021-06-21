@@ -42,7 +42,6 @@ export abstract class ModelEdge {
                     modelResult.addError(e.message);
                     failedConditions.push(this.conditions[i]); // still do not take this edge...
                     console.error(e.message, testDriver.getTotalStepsExecuted());
-                    this.resetTimeStamps();
                 } else {
                     let error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
                     console.error(error, testDriver.getTotalStepsExecuted());
@@ -100,15 +99,6 @@ export abstract class ModelEdge {
      * Get the model of this edge.
      */
     abstract getModel();
-
-    /**
-     * Reset the time condition time stamps.
-     */
-    resetTimeStamps() {
-        this.conditions.forEach(cond => {
-            cond.resetTimeStamp();
-        })
-    }
 }
 
 /**

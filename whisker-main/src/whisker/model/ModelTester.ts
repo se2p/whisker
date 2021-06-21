@@ -233,7 +233,8 @@ export class ModelTester extends EventEmitter {
             afterStopModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
-                    this.checkUtility.registerEffectCheck(takenEdge);
+                    this.checkUtility.checkEffectsConstraint(takenEdge, this.result);
+                    this.edgeTrace(takenEdge, t);
                 }
                 if (model.haltAllModels()) {
                     this.onTestEndCallback.disable();

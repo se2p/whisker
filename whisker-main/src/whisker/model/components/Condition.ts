@@ -78,7 +78,6 @@ export class Condition extends Check {
     private forceTestAfterSteps: number;
     private readonly forceTestAt: number;
     private forceTestAtSteps: number;
-    private stepFirstCheck: number;
     private failedForcedTest: boolean;
 
     /**
@@ -131,16 +130,15 @@ export class Condition extends Check {
         if (this.failedForcedTest) {
             return false;
         }
-        if (this.stepFirstCheck == undefined) {
-            this.stepFirstCheck = t.getTotalStepsExecuted();
-        }
+        let timeStamp = this.edge.getModel().stepNbrOfLastTransition;
         if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
-            || (this.forceTestAfterSteps && this.forceTestAfterSteps <= (t.getTotalStepsExecuted() - this.stepFirstCheck))) {
+            || (this.forceTestAfterSteps && this.forceTestAfterSteps <= (t.getTotalStepsExecuted() - timeStamp))) {
+            console.error("force test condition");
             if (!this._condition()) {
                 this.failedForcedTest = true;
                 throw getTimeLimitFailedError(this);
             } else {
-                return this.negated;
+                return true; //todo
             }
         }
         return this._condition();
@@ -155,14 +153,9 @@ export class Condition extends Check {
     }
 
     reset() {
-        this.stepFirstCheck = undefined;
         this.failedForcedTest = false;
         this.forceTestAtSteps = undefined;
         this.forceTestAfterSteps = undefined;
-    }
-
-    resetTimeStamp() {
-        this.stepFirstCheck = undefined;
     }
 
     /**

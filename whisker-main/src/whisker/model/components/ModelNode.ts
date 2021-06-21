@@ -42,9 +42,6 @@ export class ModelNode {
             const result = this.edges[i].checkConditions(testDriver, modelResult);
 
             if (result && result.length == 0) {
-                this.edges.forEach(edge => {
-                    edge.resetTimeStamps();
-                } )
                 return this.edges[i];
             }
         }
