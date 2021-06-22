@@ -1,0 +1,9 @@
+{
+    "title": "Modell Editor",
+    "right-title": "Optionen: ",
+    "placeholder": "Zum Bearbeiten einen Knoten oder eine Kante anklicken.",
+    "addNode": "Zustand hinzufügen",
+    "editNode": "Zustand bearbeiten",
+    "addEdge": "Übergang hinzufügen",
+    "editEdge": "Übergang bearbeiten"
+}

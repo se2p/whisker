@@ -1,0 +1,9 @@
+{
+    "title": "Model Editor",
+    "right-title": "Options: ",
+    "placeholder": "To edit click on a node or edge.",
+    "addNode": "Add state",
+    "editNode": "Edit state",
+    "addEdge": "Add transition",
+    "editEdge": "Edit transition"
+}
