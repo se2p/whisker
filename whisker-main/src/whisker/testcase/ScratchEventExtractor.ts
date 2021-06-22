@@ -151,12 +151,12 @@ export abstract class ScratchEventExtractor {
                         x = random.nextInt(-240, 240);
                         y = random.pick([-180, 180])
                     }
-                    eventList.add(new DragSpriteEvent(target.sprite.name, x, y));
+                    eventList.add(new DragSpriteEvent(target, x, y));
                 } else {
                     // Target senses another sprite
                     const sensingSpriteTarget = Container.testDriver.getSprite(value);
                     if (sensingSpriteTarget) {
-                        eventList.add(new DragSpriteEvent(target.sprite.name, sensingSpriteTarget.x, sensingSpriteTarget.y));
+                        eventList.add(new DragSpriteEvent(target, sensingSpriteTarget.x, sensingSpriteTarget.y));
                     }
                 }
                 break;
@@ -166,7 +166,7 @@ export abstract class ScratchEventExtractor {
                 const colorPosition = ScratchEventExtractor.findColorOnCanvas(target, sensedColor);
                 // Only add the event if we actually found the color on the canvas.
                 if (colorPosition.x && colorPosition.y) {
-                    eventList.add(new DragSpriteEvent(target.sprite.name, colorPosition.x, colorPosition.y))
+                    eventList.add(new DragSpriteEvent(target, colorPosition.x, colorPosition.y))
                 }
                 break;
             }
