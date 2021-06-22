@@ -20,6 +20,7 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
+import {Container} from "../../utils/Container";
 
 
 export class DragSpriteEvent extends ScratchEvent {
@@ -76,8 +77,8 @@ export class DragSpriteEvent extends ScratchEvent {
             const horizontalSize = Math.abs(bounds.right - bounds.left);
 
             // Calculate the distorted distances and clamp it in the range of the stage size.
-            const stageWidth = this._target.renderer._nativeSize[0] / 2.;
-            const stageHeight = this._target.renderer._nativeSize[1] / 2.;
+            const stageWidth = Container.vmWrapper.getStageSize().width / 2;
+            const stageHeight = Container.vmWrapper.getStageSize().height / 2;
             this._x += Math.max(-stageWidth, Math.min(verticalSize * Math.cos(radians), stageWidth));
             this._y += Math.max(-stageHeight, Math.min(horizontalSize * Math.sin(radians), stageHeight));
         }

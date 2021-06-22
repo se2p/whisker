@@ -154,9 +154,19 @@ export abstract class ScratchEventExtractor {
                     eventList.add(new DragSpriteEvent(target, x, y));
                 } else {
                     // Target senses another sprite
-                    const sensingSpriteTarget = Container.testDriver.getSprite(value);
-                    if (sensingSpriteTarget) {
-                        eventList.add(new DragSpriteEvent(target, sensingSpriteTarget.x, sensingSpriteTarget.y));
+                    let sensingRenderedTarget = Container.vmWrapper.getTargetOfSprite(value);
+                    // If the renderedTarget is not visible. Check if we have clones that might be.
+                    if(!sensingRenderedTarget.visible) {
+                        for (const clone of sensingRenderedTarget.sprite.clones) {
+                            if (clone.visible) {
+                                sensingRenderedTarget = clone;
+                                break;
+                            }
+                        }
+                    }
+                    // We only create a DragEvent if we found the sensed Sprite and if its visible.
+                    if (sensingRenderedTarget.sprite && sensingRenderedTarget.visible) {
+                        eventList.add(new DragSpriteEvent(target, sensingRenderedTarget.x, sensingRenderedTarget.y));
                     }
                 }
                 break;

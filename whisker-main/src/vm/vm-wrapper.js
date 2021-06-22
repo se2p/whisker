@@ -420,6 +420,19 @@ class VMWrapper {
     }
 
     /**
+     * Finds the RenderedTarget instance of a sprite using the sprite's name.
+     * @param spriteName the name of the sprite we are searching the RenderedTarget instance for
+     * @return {RenderedTarget}
+     */
+    getTargetOfSprite(spriteName){
+        for(const target of this.vm.runtime.targets){
+            if(target.sprite.name === spriteName){
+                return target;
+            }
+        }
+    }
+
+    /**
      * Gets the answer given to the ask-and-wait block.
      *
      * @return {string} .
