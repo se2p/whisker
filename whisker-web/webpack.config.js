@@ -14,6 +14,7 @@ module.exports = [
                 require.resolve('codemirror/lib/codemirror.css'),
                 require.resolve('bootstrap/dist/css/bootstrap.css'),
                 require.resolve('bootstrap/dist/css/bootstrap-grid.css'),
+                require.resolve('bootstrap-slider/dist/css/bootstrap-slider.css'),
                 require.resolve('datatables.net-bs4/css/dataTables.bootstrap4.css'),
                 path.resolve(__dirname, 'src/index.css')
             ]
