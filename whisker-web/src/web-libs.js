@@ -6,6 +6,7 @@ require('datatables.net')(window, $);
 window.Popper = require('popper.js/dist/umd/popper.js').default;
 require('bootstrap/js/src/modal');
 require('bootstrap/js/src/tooltip');
+require('bootstrap-slider/src/js/bootstrap-slider');
 
 /* CodeMirror */
 const CodeMirror = require('codemirror');

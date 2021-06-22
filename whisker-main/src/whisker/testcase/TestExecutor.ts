@@ -70,6 +70,9 @@ export class TestExecutor {
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
+        let totalCoverageSize = 0;
+        let codonLastImproved = 0;
+        let lastImprovedTrace: ExecutionTrace;
 
         while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
@@ -81,9 +84,29 @@ export class TestExecutor {
 
             // Select and send the next Event to the VM.
             numCodon = await this.selectAndSendEvent(codons, numCodon, availableEvents, events);
+
+            // Check if the sent event increased the block coverage. If so save the state up to this point in time.
+            const currentCoverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+            if (currentCoverage.size > totalCoverageSize) {
+                codonLastImproved = numCodon;
+                totalCoverageSize = currentCoverage.size;
+                lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
+            }
         }
+
+        // Check if the last event had to use a codon from the start of the codon list.
+        // Extend the codon list by the required amount of codons by duplicating the first few codons.
+        if (codonLastImproved > codons.size()) {
+            const codonsToDuplicate = codonLastImproved - codons.size()
+            codons.addList(codons.subList(0, codonsToDuplicate));
+        }
+
+        // Set attributes of the testChromosome after executing its genes.
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        testChromosome.lastImprovedCodon = codonLastImproved;
+        testChromosome.lastImprovedTrace = lastImprovedTrace;
+
         this._vmWrapper.end();
         this.resetState();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
@@ -99,7 +122,7 @@ export class TestExecutor {
      * @returns the new position in the codon list after selecting an event and its parameters.
      */
     public async selectAndSendEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>,
-                                     events: List<[ScratchEvent, number[]]>): Promise<number> {
+                                    events: List<[ScratchEvent, number[]]>): Promise<number> {
         // Select the next Event and set its parameter
         const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon++) % availableEvents.size())
         const args = TestExecutor.getArgs(nextEvent, codons, numCodon);

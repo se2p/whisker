@@ -72,7 +72,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
 
     /**
      * Sets the map of fitness functions used by the search algorithm.
-     * @param fitnessFunction map of fitness functions used for the chromosome evaluation
+     * @param fitnessFunctions map of fitness functions used for the chromosome evaluation
      */
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
 

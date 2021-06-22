@@ -1,10 +1,5 @@
 import {LocalSearch} from "./LocalSearch";
 import {TestChromosome} from "../../../testcase/TestChromosome";
-import {List} from "../../../utils/List";
-import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
-import {seedScratch} from "../../../../util/random";
-import {Randomness} from "../../../utils/Randomness";
-import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
 
 export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
 
@@ -22,86 +17,32 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      * @return boolean determining whether ReductionLocalSearch can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return chromosome.getGenes().size() > 1 && this._originalChromosomes.indexOf(chromosome) < 0;
+        return chromosome.getGenes().size() > 1 && chromosome.getGenes().size() > chromosome.lastImprovedCodon &&
+            this._originalChromosomes.indexOf(chromosome) < 0;
     }
 
     /**
-     * Executes the given chromosome until it has reached all its previously covered blocks.
-     * Afterwards, a new chromosome is being created, containing necessary genes only.
+     *
      * @param chromosome the chromosome being modified by ReductionLocalSearch.
      * @returns the modified chromosome wrapped in a Promise.
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._originalChromosomes.push(chromosome);
-        console.log(`Start ReductionLocalSearch`);
-
-        // Save the initial trace and coverage of the chromosome to recover them later.
-        const originalTrace = chromosome.trace;
-        const originalCoverage = chromosome.coverage;
-
-        // Execute the chromosome and stop as soon as we have reached
-        // the same amount of blocks as the original Chromosome.
-        const events = new List<[ScratchEvent, number[]]>();
-        const reducedSize = await this.reduceGenes(chromosome, events);
-
-        // Create the reduced chromosome.
-        const newCodons = chromosome.getGenes().subList(0, reducedSize);
+        // Cut off the codons of the chromosome up to the point after which no more blocks have been covered.
+        const newCodons = chromosome.getGenes().subList(0, chromosome.lastImprovedCodon);
         const newChromosome = chromosome.cloneWith(newCodons);
-        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
-        newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-
-        // Reset the trace and coverage of the original chromosome
-        chromosome.trace = originalTrace;
-        chromosome.coverage = originalCoverage;
+        newChromosome.trace = chromosome.lastImprovedTrace;
+        newChromosome.coverage = new Set<string>(chromosome.coverage);
+        newChromosome.lastImprovedCodon = chromosome.lastImprovedCodon;
         return newChromosome;
     }
 
     /**
-     * Executes the genes of the given chromosome until either all genes have been executed,
-     * or until we have reached the same amount of blocks as the given chromosome has.
-     * @param chromosome the original chromosome which will be reduced in its gene size if possible
-     * @param events the events including their parameters executed by the reduced chromosome.
-     * @returns the stopping point of the chromosome execution.
-     */
-    private async reduceGenes(chromosome: TestChromosome, events: List<[ScratchEvent, number[]]>): Promise<number> {
-        // Set up the VM.
-        seedScratch(String(Randomness.getInitialSeed()));
-        this._vmWrapper.start();
-
-        let numCodon = 0;
-        const originalCoverage = chromosome.coverage;
-        const codons = chromosome.getGenes();
-        let done = false;
-
-        // Execute the genes until either we executed all genes and there are no genes to remove,
-        // or until we have reached all the blocks covered by the original chromosome.
-        while (numCodon < codons.size() - 1 && !done) {
-            const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
-            if (availableEvents.isEmpty()) {
-                console.log("Whisker-Main: No events available for project.");
-                break;
-            }
-            // Selects and sends the next Event ot the VM.
-            numCodon = await this._testExecutor.selectAndSendEvent(codons, numCodon, availableEvents, events);
-            const currentCoverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-
-            // If we have reached the same amount of blocks as the original chromosome has, we can stop.
-            if (currentCoverage.size >= originalCoverage.size) {
-                done = true;
-            }
-        }
-        // Stop and reset the VM.
-        this._vmWrapper.end();
-        this._testExecutor.resetState();
-        return numCodon;
-    }
-
-    /**
      * ReductionLocalSearch has improved the original Chromosome if the modified chromosome covers at least as much
-     * blocks as the original one, and if the modified gene size is smaller than the original gene size.
+     * blocks as the original one and if the modified gene size is smaller than the original gene size.
      * @param originalChromosome the chromosome ReductionLocalSearch has been applied to.
      * @param modifiedChromosome the resulting chromosome after ReductionLocalSearch has been applied to the original.
-     * @return boolean determining whether ReductionLocalSearch has improved the original chromosome.
+     * @return boolean whether ReductionLocalSearch has improved the original chromosome.
      */
     hasImproved(originalChromosome: TestChromosome, modifiedChromosome: TestChromosome): boolean {
         return originalChromosome.coverage <= modifiedChromosome.coverage &&
