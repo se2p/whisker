@@ -152,7 +152,6 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
-            await this.applyLocalSearch(offspringPopulation);
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);
@@ -168,6 +167,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 }
             }
             parentPopulation.reverse(); // reverse order from descending to ascending by quality for rank selection
+            await this.applyLocalSearch(parentPopulation);
             this._iterations++;
             this.updateStatistics();
         }
@@ -249,18 +249,19 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     }
 
     /**
-     * Applies the specified local search operators to the best performing chromosomes in the testSuite.
+     * Applies the specified LocalSearch operators to the given population.
+     * @param population The population to which LocalSearch should be applied to.
      */
     private async applyLocalSearch(population: List<C>) {
         // Go through the best performing chromosomes of the population.
-        for (const chromosome of this._bestIndividuals) {
+        for (const chromosome of population) {
             // Go through each localSearch operator
             for (const localSearch of this._localSearchOperators) {
                 // Check if the given localSearchOperator is applicable to the chosen chromosome
                 if (localSearch.isApplicable(chromosome) && !this._stoppingCondition.isFinished(this) &&
                     this._random.nextDouble() < localSearch.getProbability()) {
                     const modifiedChromosome = await localSearch.apply(chromosome);
-                    // If local search improved the original chromosome; replace it.
+                    // If local search improved the original chromosome, replace it.
                     if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
                         population.replace(chromosome, modifiedChromosome);
                         this.updateArchive(modifiedChromosome);

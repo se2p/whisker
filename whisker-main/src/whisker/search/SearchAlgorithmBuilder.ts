@@ -86,7 +86,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _selectionOperator: Selection<C>;
 
     /**
-     * The local search operators which can be used by the algorithm under certain circumstances.
+     * The LocalSearch operators which can be used by the algorithm under certain circumstances.
      */
     private _localSearchOperators = new List<LocalSearch<C>>();
 
@@ -199,8 +199,8 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     }
 
     /**
-     * Adds the local search operators callable by the given search algorithm
-     * @param localSearchOperators the local search operators to be used by the algorithm
+     * Adds the LocalSearch operators callable by the given search algorithm
+     * @param localSearchOperators the LocalSearch operators to be used by the algorithm
      */
     addLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): SearchAlgorithmBuilder<C> {
         this._localSearchOperators = localSearchOperators;

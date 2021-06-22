@@ -1,10 +1,5 @@
 import {LocalSearch} from "./LocalSearch";
 import {TestChromosome} from "../../../testcase/TestChromosome";
-import {List} from "../../../utils/List";
-import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
-import {seedScratch} from "../../../../util/random";
-import {Randomness} from "../../../utils/Randomness";
-import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
 
 export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
 
@@ -22,7 +17,8 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      * @return boolean determining whether ReductionLocalSearch can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return chromosome.getGenes().size() > 1 && this._originalChromosomes.indexOf(chromosome) < 0;
+        return chromosome.getGenes().size() > 1 && chromosome.getGenes().size() > chromosome.lastImprovedCodon &&
+            this._originalChromosomes.indexOf(chromosome) < 0;
     }
 
     /**
@@ -32,62 +28,13 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._originalChromosomes.push(chromosome);
-        console.log(`Start ReductionLocalSearch`);
-
-        // Save the initial trace and coverage of the chromosome to recover them later.
-        const originalTrace = chromosome.trace;
-        const originalCoverage = chromosome.coverage;
-
-        // Execute the Chromosome and stop as soon as we have reached the same coverage size as the original Chromosome.
-        const events = new List<[ScratchEvent, number[]]>();
-        const reducedSize = await this.reduceGenes(chromosome, events);
-
-        // Create the modified Chromosome
-        const newCodons = chromosome.getGenes().subList(0, reducedSize);
+        // Cut off the codons of the chromosome up to the point after which no more blocks have been covered.
+        const newCodons = chromosome.getGenes().subList(0, chromosome.lastImprovedCodon);
         const newChromosome = chromosome.cloneWith(newCodons);
-        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
-        newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        // Reset the trace and coverage of the original chromosome
-        chromosome.trace = originalTrace;
-        chromosome.coverage = originalCoverage;
+        newChromosome.trace = chromosome.lastImprovedTrace;
+        newChromosome.coverage = new Set<string>(chromosome.coverage);
+        newChromosome.lastImprovedCodon = chromosome.lastImprovedCodon;
         return newChromosome;
-    }
-
-    /**
-     * Executes the genes of the given chromosome until either all chromosomes have been executed or until
-     * we have reached the same amount of blocks as the given chromosome has.
-     * @param chromosome the original chromosome which will be reduced in its gene size if possible
-     * @param events the events executed by the reduced chromosome.
-     * @return returns the stopping point of chromosome execution. This number lets us cut off unnecessary codons.
-     */
-    private async reduceGenes(chromosome: TestChromosome, events: List<[ScratchEvent, number[]]>): Promise<number> {
-        // Set up the VM.
-        seedScratch(String(Randomness.getInitialSeed()));
-        this._vmWrapper.start();
-
-        let numCodon = 0;
-        const originalCoverage = chromosome.coverage;
-        const codons = chromosome.getGenes();
-
-        // Execute the genes as long as we didn't reach the block coverage of the original Chromosome.
-        while (numCodon < codons.size() - 1) {
-            const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
-            if (availableEvents.isEmpty()) {
-                console.log("Whisker-Main: No events available for project.");
-                break;
-            }
-            // Selects and sends the next Event ot the VM.
-            numCodon = await this._testExecutor.selectAndSendEvent(codons, numCodon, availableEvents, events);
-            const currentCoverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-            // If we have reached the same amount of blocks as the original Chromosome we can stop.
-            if (currentCoverage.size >= originalCoverage.size) {
-                break;
-            }
-        }
-        // Stop and reset the VM.
-        this._vmWrapper.end();
-        this._testExecutor.resetState();
-        return numCodon;
     }
 
     /**

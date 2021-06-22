@@ -63,11 +63,10 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         this._originalChromosomes.push(chromosome);
-        console.log(`Start Extension Local Search`);
 
         // Save the initial trace and coverage of the chromosome to recover them later.
-        const trace = chromosome.trace;
-        const coverage = chromosome.coverage;
+        const trace = chromosome.trace.clone();
+        const coverage = new Set<string>(chromosome.coverage);
 
         // Apply extension local search.
         const newCodons = new List<number>();
@@ -80,14 +79,18 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         await this._executeGenes(newCodons, events);
 
         // Now extend the codons of the original chromosome to increase coverage.
-        await this._extendGenes(newCodons, events, chromosome);
+        const lastImprovedResults = await this._extendGenes(newCodons, events, chromosome);
         this._vmWrapper.end();
         this._testExecutor.resetState();
 
         // Create the chromosome resulting from local search.
         const newChromosome = chromosome.cloneWith(newCodons);
-        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
+        newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events.clone());
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
+        newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
+
+        // Save the modified chromosome to fetch its covered blocks in another round of ExtensionLocalSearch.
         this._modifiedChromosomes.push(newChromosome);
 
         // Reset the trace and coverage of the original chromosome
@@ -122,13 +125,17 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @param chromosome the chromosome carrying the trace used to calculate fitness values of uncovered blocks
      */
     private async _extendGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>,
-                               chromosome: TestChromosome): Promise<void> {
+                               chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
+        const upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
+        let done = false;
+        let totalCoverageSize = chromosome.coverage.size;
+        let lastImprovedCodon = chromosome.lastImprovedCodon;
+        let lastImprovedTrace = chromosome.lastImprovedTrace.clone();
+
         // Uncovered blocks without branches between themselves and already covered blocks have a fitness of 0.5.
         const cfgMarker = 0.5;
-        let done = false;
-        const upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
 
         // Monitor if the Scratch-VM is still running. If it isn't stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
@@ -172,8 +179,17 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             if (fitnessValuesUnchanged >= 3 || newFitnessValues.length === 0) {
                 done = true;
             }
+
+            // Check if the sent event increased the block coverage. If so update the state up to this point in time.
+            const currentCoverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
+            if (currentCoverage.size > totalCoverageSize) {
+                lastImprovedCodon = codons.size();
+                totalCoverageSize = currentCoverage.size;
+                lastImprovedTrace = chromosome.trace.clone();
+            }
             fitnessValues = newFitnessValues;
         }
+        return {lastImprovedCodon, lastImprovedTrace};
     }
 
     /**

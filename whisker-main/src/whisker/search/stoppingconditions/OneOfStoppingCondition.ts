@@ -22,7 +22,6 @@ import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 import {List} from "../../utils/List";
-import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingCondition";
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
@@ -37,9 +36,7 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        // We do not count the OptimalStoppingCondition here as it does not indicate the remaining resource budget.
-        const progressConditions = this.conditions.filter(condition => !(condition instanceof OptimalSolutionStoppingCondition));
-        const progressCollection = progressConditions.map(condition => condition.getProgress(algorithm));
+        const progressCollection = this.conditions.map(condition => condition.getProgress(algorithm));
         progressCollection.sort((a, b) => b - a);       // Sorted in increasing order.
         return progressCollection.get(0);
     }
