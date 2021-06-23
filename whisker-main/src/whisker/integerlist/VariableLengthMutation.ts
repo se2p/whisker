@@ -102,7 +102,7 @@ export class VariableLengthMutation implements Mutation<IntegerListChromosome> {
                 }
                 break;
             case 1:
-                codons.replace(this.getRandomCodonGaussian(codons.get(index)), index);
+                codons.replaceAt(this.getRandomCodonGaussian(codons.get(index)), index);
                 break;
             case 2:
                 if (codons.size() > 1) {
