@@ -37,7 +37,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
 
     private readonly _text;
 
-    constructor (vm: VirtualMachine) {
+    constructor(vm: VirtualMachine) {
         super(vm);
         this._text = this._randomText(3);
     }
@@ -56,8 +56,8 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         for (const key of this.KEYS) {
             eventList.add(new KeyPressEvent(key));
         }
-        for(const target of vm.runtime.targets){
-            eventList.add(new DragSpriteEvent(target.sprite.name));
+        for (const target of vm.runtime.targets) {
+            eventList.add(new DragSpriteEvent(target));
         }
         return eventList.distinctObjects();
     }
