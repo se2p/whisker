@@ -73,14 +73,18 @@ export class DragSpriteEvent extends ScratchEvent {
             // Convert to Radians and fetch the sprite's horizontal and vertical size.
             const radians = this.angle / 180 * Math.PI;
             const bounds = this._target.getBounds();
-            const verticalSize = Math.abs(bounds.top - bounds.bottom);
             const horizontalSize = Math.abs(bounds.right - bounds.left);
+            const verticalSize = Math.abs(bounds.top - bounds.bottom);
 
-            // Calculate the distorted distances and clamp it in the range of the stage size.
+            // Calculate the distorted position.
             const stageWidth = Container.vmWrapper.getStageSize().width / 2;
             const stageHeight = Container.vmWrapper.getStageSize().height / 2;
-            this._x += Math.max(-stageWidth, Math.min(verticalSize * Math.cos(radians), stageWidth));
-            this._y += Math.max(-stageHeight, Math.min(horizontalSize * Math.sin(radians), stageHeight));
+            this._x += horizontalSize * Math.cos(radians);
+            this._y += verticalSize * Math.sin(radians);
+
+            // Clamp the new position within the stage size
+            this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
+            this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
     }
 }

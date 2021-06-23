@@ -142,21 +142,23 @@ export abstract class ScratchEventExtractor {
                     const random = Randomness.getInstance();
                     let x: number;
                     let y: number;
+                    const stageWidth = Container.vmWrapper.getStageSize().width / 2;
+                    const stageHeight = Container.vmWrapper.getStageSize().height / 2;
                     if (random.randomBoolean()) {
                         // Snap to the left or right edge and randomly select the y-coordinate
-                        x = random.pick([-240, 240]);
-                        y = random.nextInt(-180, 180);
+                        x = random.pick([-stageWidth, stageWidth]);
+                        y = random.nextInt(-stageHeight, stageHeight);
                     } else {
                         // Snap to upper or lower edge and randomly select the x-coordinate
-                        x = random.nextInt(-240, 240);
-                        y = random.pick([-180, 180])
+                        x = random.nextInt(-stageWidth, stageWidth);
+                        y = random.pick([-stageHeight, stageHeight])
                     }
                     eventList.add(new DragSpriteEvent(target, x, y));
                 } else {
                     // Target senses another sprite
                     let sensingRenderedTarget = Container.vmWrapper.getTargetOfSprite(value);
                     // If the renderedTarget is not visible. Check if we have clones that might be.
-                    if(!sensingRenderedTarget.visible) {
+                    if (!sensingRenderedTarget.visible) {
                         for (const clone of sensingRenderedTarget.sprite.clones) {
                             if (clone.visible) {
                                 sensingRenderedTarget = clone;
