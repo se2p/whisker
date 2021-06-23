@@ -233,8 +233,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Updates the StatisticsCollector on the following points:
      *  - bestTestSuiteSize
-     *  - IterationCount
-     *  - createdTestsTo
+     *  - iterationCount
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
      * @private
      */
     private updateStatistics() {

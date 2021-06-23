@@ -56,16 +56,14 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         if (this._target.isOriginal) {
-            return '' +
-`t.inputImmediate({
+            return `t.inputImmediate({
     device: 'mouse',
     sprite: t.getSprite('${this._target.sprite.name}'),
     isDown: true,
     steps: ${Container.config.getClickDuration()}
   });`;
         } else {
-            return '' +
-                `t.inputImmediate({
+            return `t.inputImmediate({
     device: 'mouse',
     x: ${this._target.x},
     y: ${this._target.y},

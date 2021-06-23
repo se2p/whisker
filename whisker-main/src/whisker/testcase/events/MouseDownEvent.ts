@@ -38,11 +38,10 @@ export class MouseDownEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return '' +
-`t.inputImmediate({
+        return `t.inputImmediate({
     device: 'mouse',
     isDown: ${this._value}
-});`;
+  });`;
     }
 
     public toString = () : string => {

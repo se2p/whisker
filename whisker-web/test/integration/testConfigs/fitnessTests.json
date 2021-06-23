@@ -3,6 +3,7 @@
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
     "population-size": 10,
+    "extractor": "wait",
     "minVarChromosomeLength": 2,
     "maxVarChromosomeLength": 40,
     "chromosome-length": 40,

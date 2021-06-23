@@ -154,6 +154,30 @@ describe('Basic event handling', () => {
         await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
+
+    test('Test Drag Sprite to another Sprite', async () => {
+        await loadProject('test/integration/dragSpriteEvent/DragSpriteToSpriteTest.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test Drag Sprite to Color', async () => {
+        await loadProject('test/integration/dragSpriteEvent/DragSpriteToColorTest.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test Drag Sprite to Edge', async () => {
+        await loadProject('test/integration/dragSpriteEvent/DragSpriteToEdgeTest.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
 });
 
 describe('Multiple event handling', () => {
