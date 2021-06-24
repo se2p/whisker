@@ -30,8 +30,27 @@ import assert from "assert";
 
 export class TestChromosome extends IntegerListChromosome {
 
+    /**
+     * The execution trace including the blockTraces and the sent events and their parameters after executing the whole
+     * chromosome.
+     */
     private _trace: ExecutionTrace;
+
+    /**
+     * The execution trace including the blockTraces and the sent events and their parameters after executing the
+     * chromosome up to that point after which no more blocks have been covered.
+     */
+    private _lastImprovedTrace: ExecutionTrace;
+
+    /**
+     * The covered blocks represented by their id.
+     */
     private _coverage = new Set<string>();
+
+    /**
+     * The position in the codons list after which no additional blocks have been covered.
+     */
+    private _lastImprovedCodon: number;
 
     constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
@@ -41,12 +60,11 @@ export class TestChromosome extends IntegerListChromosome {
     async evaluate(): Promise<void> {
         const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor());
         await executor.execute(this);
-        assert (this.trace != null);
+        assert(this.trace != null);
     }
 
     getFitness(fitnessFunction: FitnessFunction<this>): number {
-        const fitness = fitnessFunction.getFitness(this);
-        return fitness;
+        return fitnessFunction.getFitness(this);
     }
 
     get trace(): ExecutionTrace {
@@ -65,23 +83,39 @@ export class TestChromosome extends IntegerListChromosome {
         this._coverage = value;
     }
 
-    clone() {
+    get lastImprovedCodon(): number {
+        return this._lastImprovedCodon;
+    }
+
+    set lastImprovedCodon(value: number) {
+        this._lastImprovedCodon = value;
+    }
+
+    get lastImprovedTrace(): ExecutionTrace {
+        return this._lastImprovedTrace;
+    }
+
+    set lastImprovedTrace(value: ExecutionTrace) {
+        this._lastImprovedTrace = value;
+    }
+
+    clone(): TestChromosome {
         const clone = new TestChromosome(this.getGenes(), this.getMutationOperator(), this.getCrossoverOperator());
         clone.trace = this._trace;
         return clone;
     }
 
-    cloneWith(newGenes: List<number>) {
+    cloneWith(newGenes: List<number>): TestChromosome {
         return new TestChromosome(newGenes, this.getMutationOperator(), this.getCrossoverOperator());
     }
 
     public getNumEvents(): number {
-        assert (this._trace != null);
+        assert(this._trace != null);
         return this._trace.events.size();
     }
 
-    public toString = () : string => {
-        assert (this._trace != null);
+    public toString = (): string => {
+        assert(this._trace != null);
         let text = "";
         for (const [scratchEvent, args] of this._trace.events) {
             text += scratchEvent.toString() + "\n";

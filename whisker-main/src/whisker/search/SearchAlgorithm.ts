@@ -24,6 +24,7 @@ import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
 import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {FitnessFunction} from "./FitnessFunction";
 import {Selection} from "./Selection";
+import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -39,16 +40,16 @@ export interface SearchAlgorithm<C extends Chromosome> {
      */
     findSolution(): Promise<List<C>>;
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
+    /**
+     * Summarize the solution saved in _archive.
+     * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+     *        - Not covered: the statement that’s not covered by any
+     *        function in the _bestIndividuals.
+     *        - ApproachLevel: the approach level of that statement
+     *        - BranchDistance: the branch distance of that statement
+     *        - Fitness: the fitness value of that statement
+     * For other search algorithms, it returns an empty string.
+     */
     summarizeSolution(): string;
 
     /**
@@ -71,7 +72,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
 
     /**
      * Sets the map of fitness functions used by the search algorithm.
-     * @param fitnessFunction map of fitness functions used for the chromosome evaluation
+     * @param fitnessFunctions map of fitness functions used for the chromosome evaluation
      */
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void;
 
@@ -84,9 +85,15 @@ export interface SearchAlgorithm<C extends Chromosome> {
 
     /**
      * Sets the selection operator used by the search algorithm.
-     * @param selectionOperator the selction operator used by the algorithm
+     * @param selectionOperator the selection operator used by the algorithm
      */
     setSelectionOperator(selectionOperator: Selection<C>): void;
+
+    /**
+     * Sets the LocalSearch operators callable by the algorithm under certain circumstances.
+     * @param localSearchOperators the LocalSearch operators callable by the algorithm.
+     */
+    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void
 
     /**
      * Return the number of iterations currently performed

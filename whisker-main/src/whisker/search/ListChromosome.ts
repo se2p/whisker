@@ -33,7 +33,7 @@ export abstract class ListChromosome<T> extends Chromosome {
 
     constructor(genes: List<T>) {
         super();
-        this._genes = genes; // TODO: copy
+        this._genes = genes.clone();
     }
 
     /**
@@ -44,7 +44,11 @@ export abstract class ListChromosome<T> extends Chromosome {
     }
 
     getGenes(): List<T> {
-        return this._genes; // TODO: Immutable list?
+        return this._genes;
+    }
+
+    setGenes(genes: List<T>): void {
+        this._genes = genes;
     }
 
     public toString = () : string => {

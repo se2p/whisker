@@ -1,11 +1,11 @@
 {
     "test-generator": "many-objective",
-    "algorithm": "mosa",
+    "algorithm": "mio",
     "chromosome": "variablelengthtest",
     "population-size": 10,
-    "minVarChromosomeLength": 2,
-    "maxVarChromosomeLength": 40,
-    "chromosome-length": 40,
+    "minVarChromosomeLength": 30,
+    "maxVarChromosomeLength": 30,
+    "chromosome-length": 30,
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8
@@ -13,19 +13,15 @@
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
-        "removeProb": 0.3,
-        "changeProb": 0.7,
         "gaussianMutationPower": 5,
-        "insertProb": 0.3,
-        "alpha": 0.5,
-        "maxMutationCountStart": null,
-        "maxMutationCountFocusedPhase": null
+        "maxMutationCountStart": 3,
+        "maxMutationCountFocusedPhase": 10
     },
     "selection": {
         "operator": "rank",
         "size": 2,
-        "randomSelectionProbabilityStart": null,
-        "randomSelectionProbabilityFocusedPhase": null
+        "randomSelectionProbabilityStart": 0.5,
+        "randomSelectionProbabilityFocusedPhase": 0
     },
     "fitness-function": {
         "type": "statement",
@@ -36,7 +32,7 @@
         "conditions": [
             {
                 "type": "fixed-time",
-                "duration": 1000
+                "duration": 1000000
             },
             {
                 "type": "optimal"
@@ -44,10 +40,10 @@
         ]
     },
     "archive": {
-        "maxArchiveSizeStart": null,
-        "maxArchiveSizeFocusedPhase": null
+        "maxArchiveSizeStart": 10,
+        "maxArchiveSizeFocusedPhase": 1
     },
-    "startOfFocusedPhase": null,
+    "startOfFocusedPhase": 0.5,
     "integerRange": {
         "min": 0,
         "max": 480

@@ -21,6 +21,7 @@
 import {StoppingCondition} from "../StoppingCondition";
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
+import {Container} from "../../utils/Container";
 
 export class FixedTimeStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
@@ -31,14 +32,14 @@ export class FixedTimeStoppingCondition<T extends Chromosome> implements Stoppin
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        return (Date.now() - algorithm.getStartTime()) > this._maxTime;
+        return (Date.now() - algorithm.getStartTime()) > this.maxTime;
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        return this._maxTime - (Date.now() - algorithm.getStartTime());
+        return (Date.now() - algorithm.getStartTime()) / this.maxTime;
     }
 
     get maxTime(): number {
-        return this._maxTime;
+        return this._maxTime / Container.acceleration;
     }
 }
