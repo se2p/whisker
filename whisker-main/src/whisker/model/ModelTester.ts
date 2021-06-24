@@ -141,7 +141,7 @@ export class ModelTester extends EventEmitter {
             })
             checkConstraintsModel = [...notStoppedModels];
 
-            if (checkConstraintsModel == []) {
+            if (checkConstraintsModel.length == 0) {
                 this.constraintCallback.disable();
             }
         };
@@ -166,7 +166,7 @@ export class ModelTester extends EventEmitter {
             checkProgramModels = [...notStoppedModels];
             this.checkUtility.reset();
 
-            if (checkProgramModels == []) {
+            if (checkProgramModels.length == 0) {
                 this.modelStepCallback.disable();
             }
         }
@@ -176,22 +176,34 @@ export class ModelTester extends EventEmitter {
         let models = [...this.constraintsModels, ...this.programModels];
         return () => {
             if (!this.modelStepCallback.isActive() && !this.constraintCallback.isActive()) {
-                this.stopAll(t);
-            } else if (!this.modelStepCallback.isActive()) {
+                this.startOnTestEnd(t);
+                return;
+            }
+
+            if (!this.modelStepCallback.isActive()) {
                 models = [...this.constraintsModels];
             } else if (!this.constraintCallback.isActive()) {
                 models = [...this.programModels];
             }
 
+            let stopped = false;
             models.forEach(model => {
                 if (model.haltAllModels()) {
-                    this.stopAll(t);
+                    this.startOnTestEnd(t);
+                    stopped = true;
                 }
             })
+
+            if (!stopped && !t.isProjectRunning()) {
+                this.constraintCallback.disable();
+                this.modelStepCallback.disable();
+                this.haltAllCallback.disable();
+                this.checkLastFailedCallback.enable();
+            }
         }
     }
 
-    private stopAll(t: TestDriver) {
+    private startOnTestEnd(t: TestDriver) {
         this.constraintCallback.disable();
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
@@ -200,6 +212,7 @@ export class ModelTester extends EventEmitter {
             let steps = t.getTotalStepsExecuted();
             this.onTestEndModels.forEach(model => {
                 model.setTransitionsStartTo(steps);
+                model.stepNbrOfProgramEnd = steps;
             })
             this.onTestEndCallback.enable();
         }
@@ -223,7 +236,7 @@ export class ModelTester extends EventEmitter {
                     notStoppedModels.push(model);
                 }
             })
-            if (notStoppedModels == []) {
+            if (notStoppedModels.length == 0) {
                 this.onTestEndCallback.disable();
             }
             afterStopModels = [...notStoppedModels];
@@ -245,7 +258,7 @@ export class ModelTester extends EventEmitter {
                     }
                 })
                 userModels = notStoppedUserModels;
-                if (userModels == []) {
+                if (userModels.length == 0) {
                     console.log("Input generation per user models stopped.");
                 }
             }

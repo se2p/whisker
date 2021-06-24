@@ -476,4 +476,23 @@ export abstract class CheckGenerator {
             return negated;
         }
     }
+
+    /**
+     * Get a method that checks whether enough time has elapsed since the program ended.
+     * @param t Instance of the test driver.
+     * @param negated Whether this check is negated.
+     * @param timeInMS Time in milliseconds.
+     * @param check The check containing this function as check later on.
+     */
+    static getTimeAfterEndCheck(t: TestDriver, negated: boolean, timeInMS: string, check: Check) {
+        let time = ModelUtil.testNumber(timeInMS);
+        let steps = t.vmWrapper.convertFromTimeToSteps(time);
+        let model = check.edge.getModel();
+        return () => {
+            if (steps <= (t.getTotalStepsExecuted() - model.stepNbrOfProgramEnd)) {
+                return !negated;
+            }
+            return negated;
+        }
+    }
 }

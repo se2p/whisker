@@ -30,6 +30,7 @@ export class ProgramModel {
 
     stepNbrOfLastTransition: number = 0;
     stepNbrOfScndLastTransition: number = 0;
+    stepNbrOfProgramEnd: number;
 
     /**
      * Construct a program model (graph) with a string identifier. Sets up the start node and stop nodes for

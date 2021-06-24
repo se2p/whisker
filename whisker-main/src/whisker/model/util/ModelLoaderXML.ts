@@ -100,10 +100,10 @@ export class ModelLoaderXML {
         if (graphID == undefined) {
             graphID = ModelLoaderXML.ID_UNDEFINED + this.idUndefined;
             this.idUndefined++;
-            console.error("Warning: A graph id was not given. Defining as " + graphID);
+            console.warn("Warning: A graph id was not given. Defining as " + graphID);
         } else if (this.graphIDs.indexOf(graphID) != -1) {
             graphID = graphID + "_dup" + this.graphIDs.length;
-            console.error("Warning: Model id '" + graph._attributes.id + "' already defined.");
+            console.warn("Warning: Model id '" + graph._attributes.id + "' already defined.");
         }
 
         try {
@@ -188,10 +188,11 @@ export class ModelLoaderXML {
         if (!edgeAttr.id) {
             edgeID = graphID + "-edge-undef-" + this.idUndefined;
             this.idUndefined++;
+            console.warn("Warning: ID for an edge not given.");
         } else {
             if ((this.edgesMapProgram)[graphID + "-" + edgeAttr.id]) {
                 edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
-                console.error("Warning: ID '" + graphID + "-" + edgeAttr.id + "' already defined.");
+                console.warn("Warning: ID '" + graphID + "-" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
             }
@@ -234,11 +235,12 @@ export class ModelLoaderXML {
         let edgeID;
         if (!edgeAttr.id) {
             edgeID = graphID + "-edge-undef-" + this.idUndefined;
+            console.warn("Warning: ID for an edge not given.");
             this.idUndefined++;
         } else {
             if ((this.edgesMapUser)[graphID + "-" + edgeAttr.id]) {
                 edgeID = graphID + "-" + edgeAttr.id + "_dup_" + Object.keys(this.edgesMapUser).length;
-                console.error("Warning: ID '" + graphID + "-" + edgeAttr.id + "' already defined.");
+                console.warn("Warning: ID '" + graphID + "-" + edgeAttr.id + "' already defined.");
             } else {
                 edgeID = graphID + "-" + edgeAttr.id;
             }

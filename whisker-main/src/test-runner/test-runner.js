@@ -145,9 +145,9 @@ class TestRunner extends EventEmitter {
                 }
             }
         } else if (modelTester && modelTester.someModelLoaded()) {
-            // Start the test run with either a maximal duration or until the program stops
+            // Start the test run with either a maximal duration or until the model stops
             await testDriver.runUntil(() => {
-                return !testDriver.isProjectRunning() || !modelTester.running();
+                return !modelTester.running();
             }, modelProps.duration);
         }
 
