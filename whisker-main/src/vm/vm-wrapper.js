@@ -122,15 +122,15 @@ class VMWrapper {
         this.callbacks.callCallbacks(false);
         await this._yield();
 
-        this.modelCallbacks.callCallbacks(false);
-        await this._yield();
-
         if (!this.isRunning()) return;
 
         this.randomInputs.performRandomInput();
         await this._yield();
 
         this.inputs.performInputs();
+        await this._yield();
+
+        this.modelCallbacks.callCallbacks(false);
         await this._yield();
 
         this.sprites.update();

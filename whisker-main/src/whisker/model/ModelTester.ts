@@ -27,7 +27,7 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG = "ModelLog";
     static readonly MODEL_WARNING = "ModelWarning";
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
-    static readonly TIME_LEEWAY = 1000;
+    static readonly TIME_LEEWAY = 250;
 
     private constraintCallback: Callback;
     private modelStepCallback: Callback;
@@ -101,6 +101,7 @@ export class ModelTester extends EventEmitter {
     }
 
     private async addCallbacks(t: TestDriver) {
+        this.userInputGen(t, this.result);
         this.constraintCallback = t.addModelCallback(this.getConstraintFunction(t), true, "constraints");
 
         if (this.constraintsModels.length == 0) {
@@ -123,7 +124,6 @@ export class ModelTester extends EventEmitter {
         }
         this.onTestEndCallback.disable();
         this.checkLastFailedCallback.disable();
-        this.userInputGen(t, this.result);
     }
 
     private getConstraintFunction(t: TestDriver) {
@@ -152,18 +152,6 @@ export class ModelTester extends EventEmitter {
         return () => {
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
-            // let sprite = t.getSprite("Bowl").sayText; // todo program with second last test
-            // if (t.getTotalStepsExecuted() > 920) {
-            //     console.log(t.getTotalStepsExecuted());
-            // }
-            // if (sprite != undefined && sprite != "") {
-            //     console.log("bowl says", sprite, t.getTotalTimeElapsed(), t.getTotalStepsExecuted(), t.getStage().getVariable("Zeit").value);
-            //
-            //     let models = [...this.programModels, ...this.constraintsModels, ...this.userModels,...this.onTestEndModels];
-            //     models.forEach(model => {
-            //         console.log(model.id, model.currentState.id, model.currentState.isStopNode, model.currentState.stopAllModels);
-            //     })
-            // }
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
@@ -187,14 +175,6 @@ export class ModelTester extends EventEmitter {
     private checkForHaltAll(t: TestDriver) {
         let models = [...this.constraintsModels, ...this.programModels];
         return () => {
-            // if (t.getTotalStepsExecuted() > 920) {
-            //     console.log("check for halt all", t.getTotalStepsExecuted())
-            //
-            //     let models = [...this.programModels, ...this.constraintsModels, ...this.userModels,...this.onTestEndModels];
-            //     models.forEach(model => {
-            //         console.log(model.id, model.currentState.id, model.currentState.isStopNode, model.currentState.stopAllModels);
-            //     })
-            // }
             if (!this.modelStepCallback.isActive() && !this.constraintCallback.isActive()) {
                 this.stopAll(t);
             } else if (!this.modelStepCallback.isActive()) {
@@ -212,7 +192,6 @@ export class ModelTester extends EventEmitter {
     }
 
     private stopAll(t: TestDriver) {
-        // console.log("stop all", t.getTotalStepsExecuted());
         this.constraintCallback.disable();
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
@@ -255,9 +234,6 @@ export class ModelTester extends EventEmitter {
         if (this.userModelsLoaded()) {
             let userModels = [...this.userModels];
             let userInputFun = () => {
-                // todo temporary bug fix, as steps in key input does not release the key
-                t.resetKeyboard();
-
                 let notStoppedUserModels = [];
                 userModels.forEach(model => {
                     let edge = model.makeOneTransition(t, modelResult);
@@ -273,7 +249,7 @@ export class ModelTester extends EventEmitter {
                     console.log("Input generation per user models stopped.");
                 }
             }
-            return t.addModelCallback(userInputFun, true, "inputOfUserModel");
+            return t.addModelCallback(userInputFun, false, "inputOfUserModel");
         }
     }
 
@@ -293,7 +269,7 @@ export class ModelTester extends EventEmitter {
         this.result.edgeTrace.push(edgeTrace);
         this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
         // if (!transition.id.toLowerCase().startsWith("bowl"))
-        //     console.log("Edge trace: " + edgeTrace, testDriver.getTotalStepsExecuted());
+        //     console.log("Edge trace: " + edgeTrace, t.getTotalStepsExecuted());
     }
 
     /**

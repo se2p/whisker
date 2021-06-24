@@ -118,7 +118,9 @@ export class InputEffect {
     private getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: any[]) {
         switch (this.name) {
             case InputEffectName.InputKey:
-                return this.getKeyDataObject(t, arg);
+                return () => {
+                    t.inputImmediate({device: "keyboard", key: arg[0], isDown: true, steps: 1});
+                }
             case InputEffectName.InputMouseMove:
                 arg[0] = ModelUtil.testNumber(arg[0]);
                 arg[1] = ModelUtil.testNumber(arg[1]);
@@ -152,43 +154,5 @@ export class InputEffect {
                 // should not happen
                 throw new Error("Input type not recognized: " + this.name);
         }
-    }
-
-    private getKeyDataObject(t: TestDriver, arg: any[]): () => void {
-        let key = arg[0];
-        let data = {device: "keyboard", key: key, steps: 1};
-
-        let contraKey = InputEffect.getContradictingKey(key);
-        if (contraKey != null) {
-            return () => {
-                if (t.isKeyDown(contraKey)) {
-                    t.inputImmediate({device: "keyboard", key: contraKey, isDown: false});
-                }
-                // console.log("input ", data, t.getTotalStepsExecuted());
-                t.inputImmediate(data);
-            }
-        } else {
-            return () => {
-                t.inputImmediate(data);
-            }
-        }
-    }
-
-    private static getContradictingKey(keyName: string) {
-        switch (keyName) {
-            case "left arrow":
-            case "Left":
-                return "Right";
-            case "right arrow":
-            case "Right":
-                return "Left";
-            case "up arrow":
-            case "Up":
-                return "Down";
-            case "down arrow":
-            case "Down":
-                return "Up";
-        }
-        return null;
     }
 }
