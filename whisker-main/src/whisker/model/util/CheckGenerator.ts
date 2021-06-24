@@ -324,11 +324,8 @@ export abstract class CheckGenerator {
 
             // not yet changed
             if (!oldValue) {
+                //ignore for now
                 return true;
-            }
-
-            if (CheckGenerator.cannotMoveOnEdge(sprite, attrName, newValue, oldValue, change)) {
-                return !negated;
             }
 
             let result;
@@ -337,21 +334,12 @@ export abstract class CheckGenerator {
             } catch (e) {
                 throw getErrorForAttribute(spriteName, attrName, e.message);
             }
+
             if (result) {
                 return !negated;
             }
             return negated;
         }
-    }
-
-    private static cannotMoveOnEdge(sprite: Sprite, attrName: string, newValue: number, oldValue: number,
-                                    change: string): boolean {
-        if ((attrName === "x" || attrName === "y") && sprite.isTouchingEdge() && newValue === oldValue
-            && change != "=") {
-            return ((change == '+' || change == '++') && newValue > 0)
-                || ((change == '-' || change == '--') && newValue < 0);
-        }
-        return false;
     }
 
     /**
@@ -408,7 +396,6 @@ export abstract class CheckGenerator {
      * @param t Instance of the test driver.
      * @param negated Whether this check is negated.
      * @param timeInMS Time in milliseconds.
-     * @param edge The parent edge of the check.
      */
     static getTimeElapsedCheck(t: TestDriver, negated: boolean, timeInMS: string) {
         let time = ModelUtil.testNumber(timeInMS);
@@ -466,6 +453,24 @@ export abstract class CheckGenerator {
         return () => {
             const sprites = t.getSprites(sprite => sprite.name.includes(spriteName));
             if (sprites.length == toCheckNbr) {
+                return !negated;
+            }
+            return negated;
+        }
+    }
+
+    /**
+     * Get a method to check whether a sprite is touching an edge.
+     * @param t Test driver.
+     * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
+     * @param spriteNameRegex Regex defining the sprite name.
+     */
+    static getTouchingEdgeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string) {
+        let spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+        return () => {
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName))[0];
+            if (sprite.isTouchingEdge()) {
                 return !negated;
             }
             return negated;

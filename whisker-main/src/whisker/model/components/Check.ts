@@ -21,7 +21,8 @@ export enum CheckName {
     // tested one for one and not tested if another edge is taken before it)
     TimeElapsed = "TimeElapsed", // time from the test start on, time in milliseconds
     TimeBetween = "TimeBetween", //  time from the last edge transition in the model, in milliseconds
-    NbrOfClones = "NbrOfClones" // sprite name, number
+    NbrOfClones = "NbrOfClones", // sprite name, number
+    TouchingEdge = "TouchingEdge" // sprite name regex
 }
 
 /**
@@ -76,6 +77,7 @@ export abstract class Check {
             case CheckName.Expr:
             case CheckName.TimeElapsed:
             case CheckName.TimeBetween:
+            case CheckName.TouchingEdge:
                 _testArgs(1);
                 break;
             case CheckName.Output:
@@ -146,6 +148,8 @@ export abstract class Check {
                 return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0], this);
             case CheckName.NbrOfClones:
                 return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, this._args[0], this._args[1]);
+            case CheckName.TouchingEdge:
+                return CheckGenerator.getTouchingEdgeCheck(t, this._negated, caseSensitive, this._args[0]);
             default:
                 return undefined;
         }

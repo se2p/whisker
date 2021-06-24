@@ -29,24 +29,22 @@ export abstract class ModelEdge {
      * Test whether the conditions on this edge are fulfilled.
      * @Returns the failed conditions.
      */
-    checkConditions(testDriver: TestDriver, modelResult: ModelResult): Condition[] {
+    checkConditions(t: TestDriver, modelResult: ModelResult): Condition[] {
         let failedConditions = [];
 
         for (let i = 0; i < this.conditions.length; i++) {
             try {
-                if (!this.conditions[i].check(testDriver)) {
+                if (!this.conditions[i].check(t)) {
                     failedConditions.push(this.conditions[i]);
                 }
             } catch (e) {
-                if (e.message.startsWith(TIME_LIMIT_ERROR)) {
-                    modelResult.addError(e.message);
-                    failedConditions.push(this.conditions[i]); // still do not take this edge...
-                    console.error(e.message, testDriver.getTotalStepsExecuted());
-                } else {
-                    let error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
-                    console.error(error, testDriver.getTotalStepsExecuted());
-                    modelResult.addError(error);
+                let error = e.message;
+                if (!e.message.startsWith(TIME_LIMIT_ERROR)) {
+                    error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
                 }
+                console.error(error, t.getTotalStepsExecuted());
+                failedConditions.push(this.conditions[i]);
+                modelResult.addError(error);
             }
         }
 

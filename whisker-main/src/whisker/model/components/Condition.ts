@@ -95,7 +95,7 @@ export class Condition extends Check {
         super(newID, edge, name, args, negated);
         this.forceTestAfter = forceTestAfter;
         if (this.forceTestAfter != -1) {
-            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY
+            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY;
         }
         this.forceTestAt = forceTestAt;
         if (this.forceTestAt != -1) {
@@ -133,7 +133,6 @@ export class Condition extends Check {
         let timeStamp = this.edge.getModel().stepNbrOfLastTransition;
         if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
             || (this.forceTestAfterSteps && this.forceTestAfterSteps <= (t.getTotalStepsExecuted() - timeStamp))) {
-            console.error("force test condition");
             if (!this._condition()) {
                 this.failedForcedTest = true;
                 throw getTimeLimitFailedError(this);
