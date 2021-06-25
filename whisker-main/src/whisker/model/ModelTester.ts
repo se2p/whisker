@@ -152,6 +152,7 @@ export class ModelTester extends EventEmitter {
         return () => {
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
+            // console.log(t.vmWrapper.vm.runtime.ioDevices.keyboard._keysPressed, t.getTotalStepsExecuted());
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
@@ -186,20 +187,11 @@ export class ModelTester extends EventEmitter {
                 models = [...this.programModels];
             }
 
-            let stopped = false;
             models.forEach(model => {
                 if (model.haltAllModels()) {
                     this.startOnTestEnd(t);
-                    stopped = true;
                 }
             })
-
-            if (!stopped && !t.isProjectRunning()) {
-                this.constraintCallback.disable();
-                this.modelStepCallback.disable();
-                this.haltAllCallback.disable();
-                this.checkLastFailedCallback.enable();
-            }
         }
     }
 

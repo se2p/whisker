@@ -41,8 +41,8 @@ export abstract class ModelEdge {
                 let error = e.message;
                 if (!e.message.startsWith(TIME_LIMIT_ERROR)) {
                     error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
+                    console.error(error, t.getTotalStepsExecuted());
                 }
-                console.error(error, t.getTotalStepsExecuted());
                 failedConditions.push(this.conditions[i]);
                 modelResult.addError(error);
             }

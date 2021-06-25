@@ -143,7 +143,7 @@ export class CheckUtility {
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check()) {
                 let error = getConstraintFailedOutput(effects[i]);
-                console.error(error, this.testDriver.getTotalStepsExecuted());
+                // console.error(error, this.testDriver.getTotalStepsExecuted());
                 modelResult.addError(error);
             }
         }
@@ -201,7 +201,7 @@ export class CheckUtility {
 
         function makeFailedOutput(testDriver, effect) {
             let output = getEffectFailedOutput(effect);
-            console.error(output, testDriver.getTotalStepsExecuted());
+            // console.error(output, testDriver.getTotalStepsExecuted());
             modelResult.addError(output);
         }
 

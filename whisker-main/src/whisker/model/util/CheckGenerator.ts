@@ -1,7 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "./CheckUtility";
 import {ModelUtil} from "./ModelUtil";
-import Sprite from "../../../vm/sprite";
 import {
     getComparisonNotKnownError,
     getErrorForAttribute,
@@ -239,10 +238,6 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             if (sprite.sayText && sprite.sayText != "" && sprite.sayText.indexOf(eval(expression)(t)) != -1) {
-
-                if (!negated) {
-                    console.log(sprite.sayText, t.getTotalTimeElapsed(), t.getTotalStepsExecuted());
-                }
                 return !negated;
             }
             return negated;
@@ -276,14 +271,12 @@ export abstract class CheckGenerator {
             const variable = sprite.getVariable(variableName);
             let result;
 
-            // not yet changed
-            if (!variable.old.value) {
+            if (variable.old.value == undefined) {
+                // not yet changed
+                console.warn("VarChange: old value of variable is undefined")
                 return true;
             }
 
-            if (variable.old.value != variable.value && variableName == "punkte") {
-                console.log("VarChange", spriteNameRegex, variable.old.value, variable.value, t.getTotalStepsExecuted());
-            }
             try {
                 result = ModelUtil.testChange(variable.old.value, variable.value, change);
             } catch (e) {
@@ -323,8 +316,9 @@ export abstract class CheckGenerator {
             const oldValue = sprite.old[attrName];
 
             // not yet changed
-            if (!oldValue) {
+            if (oldValue == undefined) {
                 //ignore for now
+                console.warn("AttrChange: old value of attribute is undefined")
                 return true;
             }
 
@@ -443,16 +437,30 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param spriteNameRegex Regex defining the sprite name.
+     * @param clonesVisible Whether the clones have to be visible.
+     * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
      * @param nbr Number of clones.
      */
-    static getNumberOfClonesCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string, nbr: string) {
+    static getNumberOfClonesCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, clonesVisible: boolean,
+                                  spriteNameRegex: string, comparison: string, nbr: string) {
         let toCheckNbr = ModelUtil.testNumber(nbr);
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         let spriteName = sprite.name;
 
+        if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
+            && comparison != "<=") {
+            throw getComparisonNotKnownError(comparison);
+        }
+
+        let spriteCondition;
+        if (!clonesVisible) {
+            spriteCondition = sprite => sprite.name.includes(spriteName);
+        } else {
+            spriteCondition = sprite => sprite.name.includes(spriteName) && sprite.visible == true;
+        }
         return () => {
-            const sprites = t.getSprites(sprite => sprite.name.includes(spriteName));
-            if (sprites.length == toCheckNbr) {
+            const sprites = t.getSprites(spriteCondition);
+            if (ModelUtil.compare(sprites.length, toCheckNbr, comparison)) {
                 return !negated;
             }
             return negated;

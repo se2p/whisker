@@ -22,7 +22,8 @@ export enum CheckName {
     TimeElapsed = "TimeElapsed", // time from the test start on, time in milliseconds
     TimeBetween = "TimeBetween", //  time from the last edge transition in the model, in milliseconds
     TimeAfterEnd = "TimeAfterEnd", // time from program end (for after end models)
-    NbrOfClones = "NbrOfClones", // sprite name, number
+    NbrOfClones = "NbrOfClones", // sprite name, comparison, number
+    NbrOfVisibleClones = "NbrOfVisibleClones", // sprite name, comparison, number
     TouchingEdge = "TouchingEdge" // sprite name regex
 }
 
@@ -84,11 +85,12 @@ export abstract class Check {
                 break;
             case CheckName.Output:
             case CheckName.SpriteTouching:
-            case CheckName.NbrOfClones:
                 _testArgs(2);
                 break;
             case CheckName.VarChange:
             case CheckName.AttrChange:
+            case CheckName.NbrOfClones:
+            case CheckName.NbrOfVisibleClones:
                 _testArgs(3);
                 break;
             case CheckName.AttrComp:
@@ -149,7 +151,11 @@ export abstract class Check {
             case CheckName.TimeBetween:
                 return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0], this);
             case CheckName.NbrOfClones:
-                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, this._args[0], this._args[1]);
+                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, false,
+                    this._args[0], this._args[1], this._args[2]);
+            case CheckName.NbrOfVisibleClones:
+                return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, true,
+                    this._args[0], this._args[1], this._args[2]);
             case CheckName.TouchingEdge:
                 return CheckGenerator.getTouchingEdgeCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.TimeAfterEnd:
