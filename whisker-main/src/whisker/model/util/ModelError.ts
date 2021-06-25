@@ -6,22 +6,22 @@ import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 
 function getEffectFailedOutput(effect: Effect) {
-    return "Effect failed! Edge=" + effect.edge.id + ". Effect=" + effect.toString();
+    return effect.edge.id + ": " + effect.toString();
 }
 
-export const TIME_LIMIT_ERROR = "Condition time limit failed! Edge=";
+export const TIME_LIMIT_ERROR = "time limit:";
+
 function getTimeLimitFailedError(condition: Condition) {
-    return new Error(TIME_LIMIT_ERROR + condition.edge.id + ". Condition=" + condition.toString());
+    return new Error(TIME_LIMIT_ERROR + condition.edge.id + ": " + condition.toString());
 }
 
 function getErrorOnEdgeOutput(model: ProgramModel | UserModel, edge: ModelEdge, error: string) {
-    return "Error was thrown. Edge=" + edge.id + ": " + error;
+    return "Error was thrown. " + edge.id + ": " + error;
 }
 
 function getConstraintFailedOutput(effect: Effect) {
     let edge = effect.edge;
-    return "Constraint failed! Edge=" + edge.id + ". Effect="
-        + effect.toString();
+    return edge.id + ": " + effect.toString();
 }
 
 
