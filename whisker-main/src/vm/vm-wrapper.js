@@ -249,14 +249,14 @@ class VMWrapper {
      * @return {number} .
      */
     getTotalTimeElapsed () {
-        return (Date.now() - this.startTime) * this.accelerationFactor;
+        return this.getTotalStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
     /**
      * @return {number} .
      */
     getRunTimeElapsed () {
-        return (Date.now() - this.runStartTime) * this.accelerationFactor;
+        return this.getRunStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
     /**
