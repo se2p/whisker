@@ -57,14 +57,6 @@ describe('ModelLoaderXML', () => {
         }).toThrow();
     });
 
-    test('No stop nodes given.', () => {
-        const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-stopnodes.xml', 'utf8');
-        const loader = new ModelLoaderXML();
-        expect(function () {
-            loader.loadModels(text)
-        }).toThrow();
-    });
-
     test('Two start nodes given.', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-two-startnodes.xml', 'utf8');
         const loader = new ModelLoaderXML();

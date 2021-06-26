@@ -115,7 +115,7 @@ export class Condition extends Check {
             if (this.forceTestAfter != -1) {
                 this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter);
             }
-            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
+            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive, true);
         } catch (e) {
             console.error(e + ". This condition will be considered as not fulfilled in test run.");
             this._condition = () => false;

@@ -9,8 +9,7 @@ import {
     getRGBRangeError
 } from "./ModelError";
 import {Randomness} from "../../utils/Randomness";
-import {Check} from "../components/Check";
-import {Condition} from "../components/Condition";
+import {ModelEdge} from "../components/ModelEdge";
 
 // todo functions for clones
 // todo functions for counting check "wiederhole 10 mal"
@@ -407,13 +406,17 @@ export abstract class CheckGenerator {
      * @param t Instance of the test driver.
      * @param negated Whether this check is negated.
      * @param timeInMS Time in milliseconds.
-     * @param check The check containing this function as check later on.
+     * @param edge The edge the check belongs to.
+     * @param isACond Whether the check is an instance of a condition or not. When a condition tests the time
+     * between transitions it gets the difference of total steps executed and last transition of the model. When an
+     * effect tests the time between transitions it needs to get the difference between last transition and second
+     * last one.
      */
-    static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, check: Check) {
+    static getTimeBetweenCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge, isACond: boolean) {
         let time = ModelUtil.testNumber(timeInMS);
         let steps = t.vmWrapper.convertFromTimeToSteps(time);
-        let model = check.edge.getModel();
-        if (check instanceof Condition) {
+        let model = edge.getModel();
+        if (isACond) {
             return () => {
                 if (steps <= (t.getTotalStepsExecuted() - model.stepNbrOfLastTransition)) {
                     return !negated;
@@ -428,6 +431,25 @@ export abstract class CheckGenerator {
                 }
                 return negated;
             }
+        }
+    }
+
+    /**
+     * Get a method that checks whether enough time has elapsed since the program ended.
+     * @param t Instance of the test driver.
+     * @param negated Whether this check is negated.
+     * @param timeInMS Time in milliseconds.
+     * @param edge The edge the check belongs to.
+     */
+    static getTimeAfterEndCheck(t: TestDriver, negated: boolean, timeInMS: string, edge: ModelEdge) {
+        let time = ModelUtil.testNumber(timeInMS);
+        let steps = t.vmWrapper.convertFromTimeToSteps(time);
+        let model = edge.getModel();
+        return () => {
+            if (steps <= (t.getTotalStepsExecuted() - model.stepNbrOfProgramEnd)) {
+                return !negated;
+            }
+            return negated;
         }
     }
 
@@ -479,25 +501,6 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName))[0];
             if (sprite.isTouchingEdge()) {
-                return !negated;
-            }
-            return negated;
-        }
-    }
-
-    /**
-     * Get a method that checks whether enough time has elapsed since the program ended.
-     * @param t Instance of the test driver.
-     * @param negated Whether this check is negated.
-     * @param timeInMS Time in milliseconds.
-     * @param check The check containing this function as check later on.
-     */
-    static getTimeAfterEndCheck(t: TestDriver, negated: boolean, timeInMS: string, check: Check) {
-        let time = ModelUtil.testNumber(timeInMS);
-        let steps = t.vmWrapper.convertFromTimeToSteps(time);
-        let model = check.edge.getModel();
-        return () => {
-            if (steps <= (t.getTotalStepsExecuted() - model.stepNbrOfProgramEnd)) {
                 return !negated;
             }
             return negated;
