@@ -203,7 +203,6 @@ class VMWrapper {
      */
     async runForTime (time) {
         const steps = this.convertFromTimeToSteps(time);
-        console.log("Time: ", time, "Steps: ", steps);
         return await this.run(null, undefined, steps);
     }
 
