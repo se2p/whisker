@@ -202,7 +202,9 @@ class VMWrapper {
      * @returns {number} runtime in ms.
      */
     async runForTime (time) {
-        return await this.run(null, time);
+        const steps = this.convertFromTimeToSteps(time);
+        console.log("Time: ", time, "Steps: ", steps);
+        return await this.run(null, undefined, steps);
     }
 
     /**
@@ -211,7 +213,8 @@ class VMWrapper {
      * @returns {number} runtime in ms.
      */
     async runUntil (condition, timeout) {
-        return await this.run(condition, timeout);
+        const steps = this.convertFromTimeToSteps(timeout);
+        return await this.run(condition, undefined, steps);
     }
 
     /**
@@ -221,16 +224,16 @@ class VMWrapper {
      */
     async runUntilChanges (callback, timeout) {
         const initialValue = callback();
-        return await this.run(() => callback() !== initialValue, timeout);
+        const steps = this.convertFromTimeToSteps(timeout);
+        return await this.run(() => callback() !== initialValue, undefined, steps);
     }
 
     /**
      * @param {number} steps .
-     * @param {number=} timeout .
      * @returns {number} runtime in steps.
      */
-    async runForSteps (steps, timeout) {
-        return this.convertFromTimeToSteps(await this.run(null, timeout, steps));
+    async runForSteps (steps) {
+        return this.convertFromTimeToSteps(await this.run(null, undefined, steps));
     }
 
     cancelRun () {
