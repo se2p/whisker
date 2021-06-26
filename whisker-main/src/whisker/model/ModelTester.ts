@@ -252,9 +252,11 @@ export class ModelTester extends EventEmitter {
                 userModels = notStoppedUserModels;
                 if (userModels.length == 0) {
                     console.log("Input generation per user models stopped.");
+                    callback.disable();
                 }
             }
-            return t.addModelCallback(userInputFun, false, "inputOfUserModel");
+            let callback = t.addModelCallback(userInputFun, false, "inputOfUserModel");
+            return callback;
         }
     }
 
