@@ -55,12 +55,17 @@ const TAP13Formatter = {
         const error = summary.filter(result => result.status === Test.ERROR).length;
         const skip = summary.filter(result => result.status === Test.SKIP).length;
         let allErrors = [];
+        let allFails = [];
         summary.forEach(result => {
             if (result.modelResult && result.modelResult.errors.length > 0) {
                 allErrors = [...allErrors, ...result.modelResult.errors];
             }
+            if (result.modelResult && result.modelResult.fails.length > 0) {
+                allFails = [...allFails, ...result.modelResult.fails];
+            }
         })
         let uniqueErrors = [...new Set(allErrors)];
+        let uniqueFails = [...new Set(allFails)];
 
         return {
             tests,
@@ -68,7 +73,10 @@ const TAP13Formatter = {
             fail,
             error,
             skip,
-            errors_in_model: uniqueErrors.length
+            errors_in_model: uniqueErrors.length,
+            errors_in_model_text: uniqueErrors,
+            fails_in_model: uniqueFails.length,
+            fails_in_model_text: uniqueFails
         };
     },
 

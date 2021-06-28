@@ -131,8 +131,9 @@ export class Condition extends Check {
             return false;
         }
         let timeStamp = this.edge.getModel().stepNbrOfLastTransition;
-        if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
-            || (this.forceTestAfterSteps && this.forceTestAfterSteps <= (t.getTotalStepsExecuted() - timeStamp))) {
+        if ((this.forceTestAtSteps && this.forceTestAtSteps < t.getTotalStepsExecuted())
+            || (this.forceTestAfterSteps && this.forceTestAfterSteps < (t.getTotalStepsExecuted() - timeStamp))) {
+
             if (!this._condition()) {
                 this.failedForcedTest = true;
                 throw getTimeLimitFailedError(this);

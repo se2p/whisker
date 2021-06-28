@@ -39,12 +39,14 @@ export abstract class ModelEdge {
                 }
             } catch (e) {
                 let error = e.message;
-                if (!e.message.startsWith(TIME_LIMIT_ERROR)) {
+                failedConditions.push(this.conditions[i]);
+                if (e.message.startsWith(TIME_LIMIT_ERROR)) {
+                    modelResult.addFail(error);
+                } else {
                     error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
                     console.error(error, t.getTotalStepsExecuted());
+                    modelResult.addError(error);
                 }
-                failedConditions.push(this.conditions[i]);
-                modelResult.addError(error);
             }
         }
 

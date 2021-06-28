@@ -78,14 +78,17 @@ class TAP13Listener {
      * @param {TestResult} result .
      */
     onModelTestDone(result) {
-        let success = result.modelResult.errors.length === 0;
+        let success = result.modelResult.errors.length === 0 && result.modelResult.fails.length === 0;
         const testIndex = result.modelResult.testNbr;
-        const testName = "model-test"
+        const testName = "model-test";
         const yamlOutput = {};
         if (!success) {
             yamlOutput.severity = result.status;
         }
 
+        if (result.modelResult.fails.length > 0) {
+            yamlOutput.modelFails = result.modelResult.fails;
+        }
         if (result.modelResult.errors.length > 0) {
             yamlOutput.modelErrors = result.modelResult.errors;
         }
@@ -125,8 +128,14 @@ class TAP13Listener {
             yamlOutput.coverage = TAP13Formatter.formatCoverage(result.coverage);
         }
 
-        if (result.modelResult && result.modelResult.errors.length > 0) {
-            yamlOutput.modelErrors = result.modelResult.errors;
+        if (result.modelResult) {
+            if (result.modelResult.errors.length > 0) {
+                yamlOutput.modelErrors = result.modelResult.errors;
+            }
+
+            if (result.modelResult.fails.length > 0) {
+                yamlOutput.modelFails = result.modelResult.fails;
+            }
         }
 
         const output = [`${success ? 'ok' : 'not ok'} ${testIndex}${testName}`];

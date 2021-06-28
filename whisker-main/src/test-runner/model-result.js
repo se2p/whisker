@@ -11,6 +11,11 @@ class ModelResult {
         this.errors = [];
 
         /**
+         * @type {string[]}
+         */
+        this.fails = [];
+
+        /**
          * type {[key:string]:number}
          */
         this.coverage = {};
@@ -38,6 +43,15 @@ class ModelResult {
     addError(error) {
         if (this.errors.indexOf(error) === -1) {
             this.errors.push(error);
+        }
+    }
+
+    /**
+     * @param {string} fail failed constraint / effect / time limit
+     */
+    addFail(fail) {
+        if (this.fails.indexOf(fail) === -1) {
+            this.fails.push(fail);
         }
     }
 }
