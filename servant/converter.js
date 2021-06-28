@@ -22,7 +22,7 @@ const convertToCsv = function (str) {
         };
 
         parser.on('assert', test => {
-            console.log(test);
+            // console.log(test); todo expection on next line as diag is missing on some model results
             const status = test.ok ? 'pass' : test.diag.severity;
 
             if (!testNames.has(test.id)) {
