@@ -156,7 +156,9 @@ class VMWrapper {
         }
 
         condition = condition || (() => false);
-        timeout = timeout === undefined ? Infinity : timeout;
+        if(timeout !== undefined && steps === undefined){
+            steps = this.convertFromTimeToSteps(timeout);
+        }
         steps = steps === undefined ? Infinity : steps;
 
         this.running = true;
@@ -165,10 +167,7 @@ class VMWrapper {
 
         let constraintError = null;
 
-        while (this.isRunning() &&
-               this.getRunTimeElapsed() < timeout &&
-               this.getRunStepsExecuted() < steps &&
-               !condition()) {
+        while (this.isRunning() && this.getRunStepsExecuted() < steps && !condition()) {
 
             constraintError = await this.stepper.step(this.step.bind(this));
 
@@ -187,7 +186,6 @@ class VMWrapper {
 
         this.running = false;
         const stepsExecuted = this.getRunStepsExecuted();
-
         this.inputs.updateInputs(stepsExecuted);
 
         if (constraintError && this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL) {
@@ -202,8 +200,7 @@ class VMWrapper {
      * @returns {number} runtime in ms.
      */
     async runForTime (time) {
-        const steps = this.convertFromTimeToSteps(time);
-        return await this.run(null, undefined, steps);
+        return await this.run(null, time);
     }
 
     /**
@@ -212,8 +209,7 @@ class VMWrapper {
      * @returns {number} runtime in ms.
      */
     async runUntil (condition, timeout) {
-        const steps = this.convertFromTimeToSteps(timeout);
-        return await this.run(condition, undefined, steps);
+        return await this.run(condition, timeout);
     }
 
     /**
@@ -223,8 +219,7 @@ class VMWrapper {
      */
     async runUntilChanges (callback, timeout) {
         const initialValue = callback();
-        const steps = this.convertFromTimeToSteps(timeout);
-        return await this.run(() => callback() !== initialValue, undefined, steps);
+        return await this.run(() => callback() !== initialValue, timeout);
     }
 
     /**
