@@ -63,11 +63,6 @@ class VMWrapper {
         /**
          * @type {number}
          */
-        this.runStartTime = 0;
-
-        /**
-         * @type {number}
-         */
         this.stepsExecuted = 0;
 
         /**
@@ -162,7 +157,6 @@ class VMWrapper {
         steps = steps === undefined ? Infinity : steps;
 
         this.running = true;
-        this.runStartTime = Date.now();
         this.runStartStepsExecuted = this.getTotalStepsExecuted();
 
         let constraintError = null;
@@ -200,7 +194,7 @@ class VMWrapper {
      * @returns {number} runtime in ms.
      */
     async runForTime (time) {
-        return await this.run(null, time);
+        return await this.run(undefined, time);
     }
 
     /**
@@ -227,7 +221,7 @@ class VMWrapper {
      * @returns {number} runtime in steps.
      */
     async runForSteps (steps) {
-        return this.convertFromTimeToSteps(await this.run(null, undefined, steps));
+        return this.convertFromTimeToSteps(await this.run(undefined, undefined, steps));
     }
 
     cancelRun () {
