@@ -121,6 +121,9 @@ export class Effect extends Check {
         }
 
         switch (this.name) {
+            case CheckName.Click:
+                // you cant click on two different sprites at the same time
+                return this.args[0] != effect.args[0];
             case CheckName.BackgroundChange: // contradict if different costume names
                 return this.args[0] != effect.args[0];
             case CheckName.Output:
@@ -137,33 +140,40 @@ export class Effect extends Check {
                 if (this.args[0] != effect.args[0] || this.args[1] != effect.args[1]) {
                     return false;
                 }
-
-                // same sprite and same variable/attribute
-                let compOp1 = this.args[2];
-                let compValue1 = this.args[3];
-                let compOp2 = effect.args[2];
-                let compValue2 = effect.args[3];
-
-                if (compOp1 == compOp2 && compValue1 == compValue2) {
-                    return false; // same effect checks
-                }
-
-                // =
-                if ((compOp1 == '=' || compOp2 == '==') && (compOp2 == '=' || compOp2 == '==')) {
-                    return compValue1 != compValue2;
-                } else if (compOp1 == '=' || compOp1 == '==') {
-                    return !eval(compValue1 + compOp2 + compValue2);
-                } else if (compOp2 == '=' || compOp2 == '==') {
-                    return !eval(compValue2 + compOp1 + compValue1);
-                }
-                // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-                if (compOp1.startsWith(compOp2) || compOp2.startsWith(compOp1)) {
+                return Effect.checkComparison(this.args[2], effect.args[2], this.args[3], effect.args[3]);
+            case CheckName.NbrOfVisibleClones:
+            case CheckName.NbrOfClones:
+                if (this.args[0] != effect.args[0]) {
                     return false;
                 }
-
-                return !eval(compValue2 + compOp1 + compValue1) || !eval(compValue1 + compOp2 + compValue2);
+                return Effect.checkComparison(this.args[1], effect.args[1], this.args[2], effect.args[2]);
             default:
                 return false;
         }
+    }
+
+    private static checkComparison(comparison1: string, comparison2: string, value1: string, value2: string): boolean {
+        if (comparison1 == comparison2 && value1 == value2) {
+            return false; // same effect checks
+        }
+
+        // =
+        if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
+            return value1 != value2;
+        } else if (comparison1 == '=' || comparison1 == '==') {
+            return !eval(value1 + comparison2 + value2);
+        } else if (comparison2 == '=' || comparison2 == '==') {
+            return !eval(value2 + comparison1 + value1);
+        }
+        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
+        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
+            return false;
+        }
+
+        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
+    }
+
+    simplifyForSave() {
+        //todo
     }
 }

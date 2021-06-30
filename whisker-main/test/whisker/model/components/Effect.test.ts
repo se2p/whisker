@@ -5,34 +5,63 @@ import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEd
 describe('Effect', () => {
     test("no arguments", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
+        for (const checkNameKey in CheckName) {
+            expect(() => {
+                new Effect(dummyEdge, CheckName[checkNameKey], true, []);
+            }).toThrow()
+        }
+    })
+
+    test("not enough arguments: sprite events", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            new Effect(dummyEdge, CheckName.Output, true, [])
+            new Effect(dummyEdge, CheckName.SpriteColor, true, ["spritename"])
         }).toThrow();
         expect(() => {
-            new Effect(dummyEdge, CheckName.VarChange, true, []);
-        }).toThrow()
+            new Effect(dummyEdge, CheckName.SpriteColor, true, ["spritename", "1"])
+        }).toThrow();
         expect(() => {
-            new Effect(dummyEdge, CheckName.AttrChange, true, []);
-        }).toThrow()
-        expect(() => {
-            new Effect(dummyEdge, CheckName.BackgroundChange, true, []);
-        }).toThrow()
-        expect(() => {
-            new Effect(dummyEdge, CheckName.BackgroundChange, true, [undefined]);
-        }).toThrow()
-        expect(() => {
-            new Effect(dummyEdge, CheckName.Function, true, []);
-        }).toThrow()
-        expect(() => {
-            new Effect(dummyEdge, CheckName.Function, true, [undefined]);
-        }).toThrow()
+            new Effect(dummyEdge, CheckName.SpriteColor, true, ["spritename", "1", "2"])
+        }).toThrow();
 
         expect(() => {
-            new Effect(dummyEdge, CheckName.VarComp, true, []);
-        }).toThrow()
+            new Effect(dummyEdge, CheckName.SpriteColor, true, ["spritename", "1", "2", undefined])
+        }).toThrow();
         expect(() => {
-            new Effect(dummyEdge, CheckName.AttrComp, true, []);
-        }).toThrow()
+            new Effect(dummyEdge, CheckName.SpriteColor, true, [undefined, "spritename", "1", "2"])
+        }).toThrow();
+        expect(() => {
+            new Effect(dummyEdge, CheckName.SpriteColor, true, ["spritename", undefined, "1", "2"])
+        }).toThrow();
+        expect(() => {
+            new Effect(dummyEdge, CheckName.SpriteColor, true, ["spritename", "1", undefined, "2"])
+        }).toThrow();
+
+        expect(() => {
+            new Effect(dummyEdge, CheckName.SpriteTouching, true, ["spritename"])
+        }).toThrow();
+        expect(() => {
+            new Effect(dummyEdge, CheckName.SpriteTouching, true, ["spritename", undefined])
+        }).toThrow();
+        expect(() => {
+            new Effect(dummyEdge, CheckName.SpriteTouching, true, [undefined, "spritename"])
+        }).toThrow();
+    })
+
+    test("not enough argument: nbrofclones", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        expect(() => {
+            new Effect(dummyEdge, CheckName.NbrOfClones, true, ["spritename"])
+        }).toThrow();
+        expect(() => {
+            new Effect(dummyEdge, CheckName.NbrOfClones, true, ["spritename", "="])
+        }).toThrow();
+        expect(() => {
+            new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["spritename"])
+        }).toThrow();
+        expect(() => {
+            new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["spritename", "="])
+        }).toThrow();
     })
 
     test("not enough arguments: output", () => {
@@ -142,19 +171,44 @@ describe('Effect', () => {
     test("effects", () => {
         let dummyEdge = new ProgramModelEdge("1", null, null);
         expect(() => {
-            let effect = new Effect(dummyEdge, CheckName.Output, true, ["test", "hallo"]);
-            effect.toString();
-            effect = new Effect(dummyEdge, CheckName.VarChange, true, ["test", "var", "+"]);
-            effect.toString();
+            let effect;
             effect = new Effect(dummyEdge, CheckName.AttrChange, true, ["test", "attr", "-"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.AttrComp, false, ["sprite", "attr", ">", "0"]);
             effect.toString();
             effect = new Effect(dummyEdge, CheckName.BackgroundChange, true, ["test"]);
             effect.toString();
+            effect = new Effect(dummyEdge, CheckName.Click, true, ["sprite"]);
+            effect.toString();
             effect = new Effect(dummyEdge, CheckName.Function, true, ["test"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.Key, true, ["test"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.Output, true, ["test", "hallo"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.SpriteColor, true, ["sprite", "0", "0", "0"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.SpriteTouching, true, ["sprite1", "sprite2"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.VarChange, true, ["test", "var", "+"]);
             effect.toString();
             effect = new Effect(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">", "0"]);
             effect.toString();
-            effect = new Effect(dummyEdge, CheckName.AttrComp, false, ["sprite", "attr", ">", "0"]);
+            effect = new Effect(dummyEdge, CheckName.Expr, true, ["test"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.Probability, true, ["0"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.TimeElapsed, true, ["1000"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.TimeBetween, true, ["1000"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.TimeAfterEnd, true, ["1000"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.NbrOfClones, true, ["sprite", "=", "1"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"]);
+            effect.toString();
+            effect = new Effect(dummyEdge, CheckName.TouchingEdge, true, ["sprite"]);
             effect.toString();
         }).not.toThrow();
 
@@ -165,7 +219,7 @@ describe('Effect', () => {
 
         expect(() => {
             let effect = new Effect(dummyEdge, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
-            effect.check();
+            effect.check(0, 0);
         }).toThrow();
     })
 
@@ -177,12 +231,20 @@ describe('Effect', () => {
         effects.push(new Effect(dummyEdge, CheckName.AttrChange, true, ["test", "attr", "-"]));
         effects.push(new Effect(dummyEdge, CheckName.BackgroundChange, true, ["test"]));
         effects.push(new Effect(dummyEdge, CheckName.Function, true, ["test"]));
-        effects.push( new Effect(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">", "0"]));
-        effects.push( new Effect(dummyEdge, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]));
+        effects.push(new Effect(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">", "0"]));
+        effects.push(new Effect(dummyEdge, CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]));
         effects.push(new Effect(dummyEdge, CheckName.Key, true, ["right arrow"]));
         effects.push(new Effect(dummyEdge, CheckName.Click, true, ["sprite"]));
-        effects.push(new Effect(dummyEdge, CheckName.SpriteColor, true, ["sprite", 255,0,0]));
+        effects.push(new Effect(dummyEdge, CheckName.SpriteColor, true, ["sprite", 255, 0, 0]));
         effects.push(new Effect(dummyEdge, CheckName.SpriteTouching, true, ["sprite", "sprite1"]));
+        effects.push(new Effect(dummyEdge, CheckName.TouchingEdge, true, ["sprite"]));
+        effects.push(new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"]));
+        effects.push(new Effect(dummyEdge, CheckName.NbrOfClones, true, ["sprite", "=", "1"]));
+        effects.push(new Effect(dummyEdge, CheckName.TimeAfterEnd, true, ["1000"]));
+        effects.push(new Effect(dummyEdge, CheckName.TimeBetween, true, ["1000"]));
+        effects.push(new Effect(dummyEdge, CheckName.TimeElapsed, true, ["1000"]));
+        effects.push(new Effect(dummyEdge, CheckName.Probability, true, ["0"]));
+        effects.push(new Effect(dummyEdge, CheckName.Expr, true, ["test"]));
 
         for (let i = 0; i < effects.length; i++) {
             for (let j = i + 1; j < effects.length; j++) {
@@ -632,6 +694,136 @@ describe('Effect', () => {
         varComp2 = new Effect(dummyEdge, CheckName.VarComp, true, ["sprite", "var", ">=", "1"]);
         expect(varComp.contradicts(varComp2)).toBeTruthy();
         expect(varComp2.contradicts(varComp)).toBeTruthy();
+    })
+
+    test("contradiction: click", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.Click, true, ["sprite1"]);
+        let effect2 = new Effect(dummyEdge, CheckName.Click, true, ["sprite2"]);
+        expect(effect1.contradicts(effect2)).toBeTruthy();
+        expect(effect2.contradicts(effect1)).toBeTruthy();
+        effect2 = new Effect(dummyEdge, CheckName.Click, true, ["sprite1"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+    })
+
+    test("contradiction: key", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.Key, true, ["left"]);
+        let effect2 = new Effect(dummyEdge, CheckName.Key, true, ["right"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.Key, true, ["left"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+    })
+
+    test("contradiction: sprite color", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.SpriteColor, true, ["sprite1", "0", "0", "0"]);
+        let effect2 = new Effect(dummyEdge, CheckName.SpriteColor, true, ["sprite2", "0", "0", "0"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        // it can touch multiple colors at the same time
+        effect2 = new Effect(dummyEdge, CheckName.SpriteColor, true, ["sprite1", "0", "0", "1"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+    })
+
+    test("contradiction: sprite touching", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.SpriteTouching, true, ["sprite1", "sprite2"]);
+        let effect2 = new Effect(dummyEdge, CheckName.SpriteTouching, true, ["sprite2", "sprite3"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.SpriteTouching, true, ["sprite1", "sprite3"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+    })
+
+    test("contradiction: expr", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.Expr, true, ["whatever"]);
+        let effect2 = new Effect(dummyEdge, CheckName.Expr, true, ["whatever2"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.Click, true, ["whatever"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+    })
+
+    // actually an effect with probability result is quite dumb to have....
+    test("contradiction: probability", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.Probability, true, ["1"]);
+        let effect2 = new Effect(dummyEdge, CheckName.Probability, true, ["9"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.Probability, true, ["1"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+    })
+
+    test("contradiction: time", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.TimeElapsed, true, ["1000"]);
+        let effect2 = new Effect(dummyEdge, CheckName.TimeElapsed, true, ["2000"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.TimeElapsed, true, ["1000"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect1 = new Effect(dummyEdge, CheckName.TimeBetween, true, ["1000"]);
+        effect2 = new Effect(dummyEdge, CheckName.TimeBetween, true, ["2000"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.TimeBetween, true, ["1000"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect1 = new Effect(dummyEdge, CheckName.TimeAfterEnd, true, ["1000"]);
+        effect2 = new Effect(dummyEdge, CheckName.TimeAfterEnd, true, ["2000"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.TimeAfterEnd, true, ["1000"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+    })
+
+    test("contradiction: clones", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.NbrOfClones, true, ["sprite", "=", "1"]);
+        let effect2 = new Effect(dummyEdge, CheckName.NbrOfClones, true, ["sprite2", "=", "2"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.NbrOfClones, true, ["sprite", "=", "1"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.NbrOfClones, true, ["sprite", "=", "2"]);
+        expect(effect1.contradicts(effect2)).toBeTruthy();
+        expect(effect2.contradicts(effect1)).toBeTruthy();
+        effect1 = new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"]);
+        effect2 = new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["sprite2", "=", "2"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["sprite", "=", "1"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.NbrOfVisibleClones, true, ["sprite", "=", "2"]);
+        expect(effect1.contradicts(effect2)).toBeTruthy();
+        expect(effect2.contradicts(effect1)).toBeTruthy();
+
+        // other comparisons are valid as long as AttrComp and VarComp tests are ok (same comparison)
+    })
+
+    test("contradiction: expr", () => {
+        let dummyEdge = new ProgramModelEdge("1", null, null);
+        let effect1 = new Effect(dummyEdge, CheckName.TouchingEdge, true, ["sprite"]);
+        let effect2 = new Effect(dummyEdge, CheckName.TouchingEdge, true, ["sprite2"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
+        effect2 = new Effect(dummyEdge, CheckName.TouchingEdge, true, ["sprite"]);
+        expect(effect1.contradicts(effect2)).toBeFalsy();
+        expect(effect2.contradicts(effect1)).toBeFalsy();
     })
 
     test("get effect", () => {
