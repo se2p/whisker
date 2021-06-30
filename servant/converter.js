@@ -12,17 +12,16 @@ const convertToCsv = function (str) {
     return new Promise((resolve, reject) => {
         const parser = new Parser();
         let modelErrors = new Set();
+        let modelFails = new Set();
         const result = {
             passed: 0,
             failed: 0,
             error: 0,
             skip: 0,
-            modelErrors: modelErrors,
             testResults: new Map()
         };
 
         parser.on('assert', test => {
-            // console.log(test); todo expection on next line as diag is missing on some model results
             const status = test.ok ? 'pass' : test.diag.severity;
 
             if (!testNames.has(test.id)) {
@@ -32,10 +31,17 @@ const convertToCsv = function (str) {
                 process.exit(1);
             }
 
-            if (test.diag && test.diag.modelErrors) {
-                test.diag.modelErrors.forEach(error => {
-                    result.modelErrors.add(error);
-                })
+            if (test.diag) {
+                if (test.diag.modelErrors) {
+                    test.diag.modelErrors.forEach(error => {
+                        modelErrors.add(error);
+                    })
+                }
+                if (test.diag.modelFails) {
+                    test.diag.modelFails.forEach(error => {
+                        modelFails.add(error);
+                    })
+                }
                 console.log("new error list", result.modelErrors);
             }
 
@@ -57,6 +63,8 @@ const convertToCsv = function (str) {
         });
 
         parser.on('complete', () => {
+            result.modelFails = modelFails.size ? modelFails.size : 0;
+            result.modelErrors = modelErrors.size ? modelErrors.size : 0;
             resolve(result);
         });
 
@@ -89,10 +97,10 @@ const getModelCoverage = function (str, row) {
     coverageString = coverageString.replace(/^# /gm, '');
     const coverage = yaml.safeLoad(coverageString);
     row.modelCoverage = coverage.combined.match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
-    for (const individualKey in coverage.individual) {
-        row[individualKey + "ModelCoverage"] = coverage.individual[individualKey].match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
-    }
-    row.modelErrors = row.modelErrors.size;
+    // too much for the csv....
+    // for (const individualKey in coverage.individual) {
+    //     row[individualKey + "ModelCoverage"] = coverage.individual[individualKey].match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
+    // }
 }
 
 const getName = function (str) {
@@ -135,6 +143,7 @@ const rowsToCsv = function (rows) {
     csvHeader.push('skip');
     csvHeader.push('coverage');
     csvHeader.push('modelErrors');
+    csvHeader.push('modelFails');
     csvHeader.push('modelCoverage');
 
     const modelCoverageIDs = [];
@@ -166,6 +175,7 @@ const rowsToCsv = function (rows) {
         csvLine.push(row.skip);
         csvLine.push(row.coverage);
         csvLine.push(row.modelErrors);
+        csvLine.push(row.modelFails);
         csvLine.push(row.modelCoverage);
         modelCoverageIDs.forEach(id => {
             csvLine.push(row[id]);

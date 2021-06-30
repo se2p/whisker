@@ -33,8 +33,11 @@ class TestRunner extends EventEmitter {
         if (modelTester && (!tests || tests.length === 0)) {
             // test only by model
 
-            if (!modelProps || !modelProps.repetitions) {
+            if (!modelProps.repetitions) {
                 modelProps.repetitions = 1;
+            }
+            if (!modelProps.duration) {
+                modelProps.duration = 35000;
             }
 
             for (let i = 0; i < modelProps.repetitions; i++) {

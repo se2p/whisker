@@ -66,6 +66,17 @@ const TAP13Formatter = {
         })
         let uniqueErrors = [...new Set(allErrors)];
         let uniqueFails = [...new Set(allFails)];
+        let sort = (a,b) => {
+            if (a < b) {
+                return -1;
+            } else if (b < a) {
+                return 1;
+            }
+            return 0;
+        };
+
+        uniqueFails.sort(sort);
+        uniqueErrors.sort(sort);
 
         return {
             tests,
