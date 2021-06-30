@@ -7,7 +7,7 @@ import {CheckUtility} from "../util/CheckUtility";
  * Node structure for a model.
  */
 export class ModelNode {
-    private readonly id: string;
+    readonly id: string;
     edges: ModelEdge[] = []; //outgoing edges
 
     isStartNode = false;

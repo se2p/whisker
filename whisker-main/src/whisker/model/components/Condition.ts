@@ -3,7 +3,7 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelEdge} from "./ModelEdge";
 import {Check, CheckName} from "./Check";
 import ModelResult from "../../../test-runner/model-result";
-import {getTimeLimitFailedError} from "../util/ModelError";
+import {TIME_LIMIT_ERROR} from "../util/ModelError";
 import {ModelTester} from "../ModelTester";
 
 /**
@@ -52,6 +52,7 @@ export function getCondition(edge: ModelEdge, condString, forceTestAfter: number
         condString = condString.substr(1, condString.length);
     }
 
+    let newID = edge.id + ".condition" + (edge.conditions.length + 1);
     const parts = condString.split(":");
     if (parts[0] == CheckName.Function) {
         // append all elements again as the function could contain a :
@@ -59,14 +60,15 @@ export function getCondition(edge: ModelEdge, condString, forceTestAfter: number
         for (let i = 1; i < parts.length; i++) {
             theFunction += parts[i];
         }
-        return new Condition(edge, CheckName.Function, negated, forceTestAfter, forceTestAt, [theFunction]);
+
+        return new Condition(newID, CheckName.Function, negated, forceTestAfter, forceTestAt, [theFunction]);
     }
 
 
     if (parts.length < 2) {
         throw new Error("Edge condition not correctly formatted. ':' missing.");
     }
-    return new Condition(edge, parts[0], negated, forceTestAfter, forceTestAt, parts.splice(1, parts.length));
+    return new Condition(newID, parts[0], negated, forceTestAfter, forceTestAt, parts.splice(1, parts.length));
 }
 
 /**
@@ -82,17 +84,15 @@ export class Condition extends Check {
 
     /**
      * Get a condition instance. Checks the number of arguments for a condition type.
-     * @param edge Parent edge.
+     * @param id Id of the condition
      * @param name Type name of the condition.
      * @param negated Whether the condition is negated.
      * @param forceTestAfter Force testing this condition after given amount of milliseconds.
      * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
      * @param args The arguments for the condition to check later on.
      */
-    constructor(edge: ModelEdge, name: CheckName, negated: boolean, forceTestAfter: number, forceTestAt: number,
-                args: any[]) {
-        let newID = edge.id + ".condition" + (edge.conditions.length + 1);
-        super(newID, edge, name, args, negated);
+    constructor(id: string, name: CheckName, negated: boolean, forceTestAfter: number, forceTestAt: number, args: any[]) {
+        super(id, name, args, negated);
         this.forceTestAfter = forceTestAfter;
         if (this.forceTestAfter != -1) {
             this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY;
@@ -138,7 +138,7 @@ export class Condition extends Check {
 
             if (!this._condition(stepsSinceLastTransition, stepsSinceEnd)) {
                 this.failedForcedTest = true;
-                throw getTimeLimitFailedError(this);
+                throw new Error(TIME_LIMIT_ERROR);
             } else {
                 return true; //todo
             }

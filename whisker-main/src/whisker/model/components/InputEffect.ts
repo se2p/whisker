@@ -41,7 +41,8 @@ export function setUpInputEffect(newEdge: UserModelEdge, effect: string) {
  */
 function getInputEffect(parentEdge: UserModelEdge, effect) {
     const parts = effect.split(":");
-    return new InputEffect(parentEdge, parts[0], parts.splice(1, parts.length));
+    let id = parentEdge.id + ".inputEffect" + parentEdge.inputEffects.length;
+    return new InputEffect(id, parts[0], parts.splice(1, parts.length));
 }
 
 
@@ -52,19 +53,17 @@ export class InputEffect {
     id: string;
     name: InputEffectName;
     private inputEffect: (t: TestDriver) => void;
-    edge: UserModelEdge;
     private readonly args: any[];
 
     /**
      * Get an input effect. Checks the length of the arguments based on the input type.
-     * @param edge Parent edge this input effect belongs to.
+     * @param id Id for this effect.
      * @param name Type of the input effect
      * @param args Arguments for this input effect.
      */
-    constructor(edge: UserModelEdge, name: InputEffectName, args: any[]) {
-        this.edge = edge;
+    constructor(id: string, name: InputEffectName, args: any[]) {
         this.name = name;
-        this.id = edge.id + ".inputEffect" + edge.inputEffects.length;
+        this.id = id;
         this.args = args;
 
         let _testArgs = function (length) {

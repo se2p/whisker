@@ -63,7 +63,7 @@ export class ProgramModel {
         if (edge != null) {
             this.coverageCurrentRun[edge.id] = true;
             this.coverageTotal[edge.id] = true;
-            this.currentState = edge.getEndNode();
+            this.currentState = this.nodes[edge.getEndNodeId()];
             this.stepNbrOfScndLastTransition = this.stepNbrOfLastTransition;
             this.stepNbrOfLastTransition = testDriver.getTotalStepsExecuted();
         }

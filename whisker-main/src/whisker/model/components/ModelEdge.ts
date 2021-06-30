@@ -1,10 +1,9 @@
-import {ModelNode} from "./ModelNode";
 import TestDriver from "../../../test/test-driver";
 import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
-import {getErrorOnEdgeOutput, TIME_LIMIT_ERROR} from "../util/ModelError";
+import {getErrorOnEdgeOutput, getTimeLimitFailedOutput, TIME_LIMIT_ERROR} from "../util/ModelError";
 import {InputEffect} from "./InputEffect";
 
 /**
@@ -13,14 +12,14 @@ import {InputEffect} from "./InputEffect";
  */
 export abstract class ModelEdge {
     readonly id: string;
-    protected readonly startNode: ModelNode;
+    readonly from: string;
+    readonly to: string;
     conditions: Condition[] = [];
-    protected readonly endNode: ModelNode;
 
-    protected constructor(id: string, startNode: ModelNode, endNode: ModelNode) {
+    protected constructor(id: string, from: string, to: string) {
         this.id = id;
-        this.startNode = startNode;
-        this.endNode = endNode;
+        this.from = from;
+        this.to = to;
     }
 
     /**
@@ -41,7 +40,7 @@ export abstract class ModelEdge {
                 let error = e.message;
                 failedConditions.push(this.conditions[i]);
                 if (e.message.startsWith(TIME_LIMIT_ERROR)) {
-                    modelResult.addFail(error.substring(TIME_LIMIT_ERROR.length + 1, error.length));
+                    modelResult.addFail(getTimeLimitFailedOutput(this, this.conditions[i]));
                 } else {
                     error = getErrorOnEdgeOutput(this, e.message);
                     console.error(error, t.getTotalStepsExecuted());
@@ -53,20 +52,13 @@ export abstract class ModelEdge {
         return failedConditions;
     }
 
-    /**
-     * Get the start node of the edge.
-     */
-    getStartNode(): ModelNode {
-        return this.startNode;
-    }
 
     /**
-     * Get the end node of the edge
+     * Returns the id of the target node of this edge.
      */
-    getEndNode(): ModelNode {
-        return this.endNode;
+    getEndNodeId() {
+        return this.to;
     }
-
     /**
      * Add a condition to the edge. Conditions in the evaluation all need to be fulfilled for the effect to be valid.
      * @param condition Condition function as a string.
@@ -100,11 +92,11 @@ export class ProgramModelEdge extends ModelEdge {
     /**
      * Create a new edge.
      * @param id ID of the edge.
-     * @param startNode Start node of the edge
-     * @param endNode End node of the edge
+     * @param from Index of the source node.
+     * @param to Index of the target node.
      */
-    constructor(id: string, startNode: ModelNode, endNode: ModelNode) {
-        super(id, startNode, endNode);
+    constructor(id: string, from: string, to: string) {
+        super(id, from, to);
     }
 
     reset(): void {
@@ -142,11 +134,11 @@ export class UserModelEdge extends ModelEdge {
     /**
      * Create a new edge.
      * @param id ID of the edge.
-     * @param startNode Start node of the edge
-     * @param endNode End node of the edge
+     * @param from Index of the source node.
+     * @param to Index of the target node.
      */
-    constructor(id: string, startNode: ModelNode, endNode: ModelNode) {
-        super(id, startNode, endNode);
+    constructor(id: string, from: string, to: string) {
+        super(id, from, to);
     }
 
     /**

@@ -146,7 +146,7 @@ export class CheckUtility {
         let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                let error = getConstraintFailedOutput(effects[i]);
+                let error = getConstraintFailedOutput(edge, effects[i]);
                 // console.error(error, this.testDriver.getTotalStepsExecuted());
                 modelResult.addFail(error);
             }
@@ -205,8 +205,8 @@ export class CheckUtility {
             return;
         }
 
-        function makeFailedOutput(effect) {
-            let output = getEffectFailedOutput(effect);
+        function makeFailedOutput(edge, effect) {
+            let output = getEffectFailedOutput(edge, effect);
             // console.error(output, this.testDriver.getTotalStepsExecuted());
             modelResult.addFail(output);
         }
@@ -217,10 +217,10 @@ export class CheckUtility {
             try {
                 if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
                     model.stepNbrOfProgramEnd)) {
-                    makeFailedOutput(effect);
+                    makeFailedOutput(this.failedChecks[i].edge, effect);
                 }
             } catch (e) {
-                makeFailedOutput(effect);
+                makeFailedOutput(this.failedChecks[i].edge, effect);
             }
         }
         this.failedChecks = [];

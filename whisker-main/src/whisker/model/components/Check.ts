@@ -33,7 +33,6 @@ export enum CheckName {
  */
 export abstract class Check {
     protected readonly _id: string;
-    protected readonly _edge: ModelEdge;
     protected readonly _name: CheckName;
     protected readonly _args: any[];
     protected readonly _negated: boolean;
@@ -47,11 +46,10 @@ export abstract class Check {
      * @param negated Whether the check is negated.
      * @protected
      */
-    protected constructor(id: string, edge: ModelEdge, name: CheckName, args: any[], negated: boolean) {
-        if (!id || !edge) {
-            throw new Error("No id or edge given.");
+    protected constructor(id: string, name: CheckName, args: any[], negated: boolean) {
+        if (!id) {
+            throw new Error("No id given.");
         }
-        this._edge = edge;
         this._name = name;
         this._args = args;
         this._negated = negated;
@@ -163,10 +161,6 @@ export abstract class Check {
             default:
                 return undefined;
         }
-    }
-
-    get edge(): ModelEdge {
-        return this._edge;
     }
 
     get id(): string {

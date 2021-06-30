@@ -34,19 +34,20 @@ export function getEffect(parentEdge: ProgramModelEdge, effectString): Effect {
     }
     const parts = effectString.split(":");
 
+    let newID = parentEdge.id + ".effect" + (parentEdge.effects.length + 1);
     if (parts[0] == CheckName.Function) {
         // append all elements again as the function could contain a :
         let theFunction = "";
         for (let i = 1; i < parts.length; i++) {
             theFunction += parts[i];
         }
-        return new Effect(parentEdge, CheckName.Function, isANegation, [theFunction]);
+        return new Effect(newID, CheckName.Function, isANegation, [theFunction]);
     }
 
     if (parts.length < 2) {
         throw new Error("Edge effect not correctly formatted. ':' missing.");
     }
-    return new Effect(parentEdge, parts[0], isANegation, parts.splice(1, parts.length));
+    return new Effect(newID, parts[0], isANegation, parts.splice(1, parts.length));
 }
 
 /**
@@ -57,14 +58,13 @@ export class Effect extends Check {
 
     /**
      * Get an effect representation, checks the arguments.
-     * @param edge Parent edge.
+     * @param id  Id for this effect.
      * @param name Name of the effect type.
      * @param negated Whether the effect is negated (e.g. it does not output "hello")
      * @param args Arguments for the effect e.g. sprite names.
      */
-    constructor(edge: ProgramModelEdge, name: CheckName, negated: boolean, args: any[]) {
-        let newID = edge.id + ".effect" + (edge.effects.length + 1);
-        super(newID, edge, name, args, negated);
+    constructor(id: string, name: CheckName, negated: boolean, args: any[]) {
+        super(id, name, args, negated);
     }
 
     /**

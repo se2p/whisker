@@ -49,7 +49,7 @@ export class UserModel {
             modelResult);
 
         if (edge != null) {
-            this.currentState = edge.getEndNode();
+            this.currentState = this.nodes[edge.getEndNodeId()];
             this.secondLastTransitionStep = this.lastTransitionStep;
             this.lastTransitionStep = testDriver.getTotalStepsExecuted();
         }

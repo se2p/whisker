@@ -3,22 +3,21 @@ import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
 import {Condition} from "../components/Condition";
 
-function getEffectFailedOutput(effect: Effect) {
-    return effect.edge.id + ": " + effect.toString();
+function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
+    return edge.id + ": " + effect.toString();
 }
 
 export const TIME_LIMIT_ERROR = "time limit:";
 
-function getTimeLimitFailedError(condition: Condition) {
-    return new Error(TIME_LIMIT_ERROR + condition.edge.id + ": " + condition.toString());
+function getTimeLimitFailedOutput(edge: ModelEdge, condition: Condition) {
+    return edge.id + ": " + condition.toString();
 }
 
 function getErrorOnEdgeOutput(edge: ModelEdge, error: string) {
     return "Error was thrown. " + edge.id + ": " + error;
 }
 
-function getConstraintFailedOutput(effect: Effect) {
-    let edge = effect.edge;
+function getConstraintFailedOutput(edge: ModelEdge, effect: Effect) {
     return edge.id + ": " + effect.toString();
 }
 
@@ -92,7 +91,7 @@ export {
     getComparisonNotKnownError,
     getFunctionEvalError,
     getEmptyExpressionError,
-    getTimeLimitFailedError,
+    getTimeLimitFailedOutput,
     getExpressionEndTagMissingError,
     getExpressionEnterError,
     getRGBRangeError,

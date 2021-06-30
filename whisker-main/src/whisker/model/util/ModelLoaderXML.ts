@@ -216,7 +216,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Unknown node id '" + endID + "'.");
         }
 
-        const newEdge = new ProgramModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
+        const newEdge = new ProgramModelEdge(edgeID, (this.nodesMap)[startID].id, (this.nodesMap)[endID].id);
 
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
@@ -263,7 +263,7 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Unknown node id '" + endID + "'.");
         }
 
-        const newEdge = new UserModelEdge(edgeID, (this.nodesMap)[startID], (this.nodesMap)[endID]);
+        const newEdge = new UserModelEdge(edgeID, (this.nodesMap)[startID].id, (this.nodesMap)[endID].id);
 
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
