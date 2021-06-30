@@ -133,7 +133,8 @@ export class ModelTester extends EventEmitter {
             checkConstraintsModel.forEach(model => {
                 let edge = model.makeOneTransition(t, this.result);
                 if (edge != null && edge instanceof ProgramModelEdge) {
-                    this.checkUtility.checkEffectsConstraint(edge, this.result);
+                    this.checkUtility.checkEffectsConstraint(edge, model, this.result);
+                    // this.edgeTrace(edge, t);
                 }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
@@ -156,7 +157,7 @@ export class ModelTester extends EventEmitter {
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
-                    this.checkUtility.registerEffectCheck(takenEdge);
+                    this.checkUtility.registerEffectCheck(takenEdge, model);
                     this.edgeTrace(takenEdge, t);
                 }
                 if (!model.stopped()) {
@@ -206,6 +207,9 @@ export class ModelTester extends EventEmitter {
                 model.setTransitionsStartTo(steps);
                 model.stepNbrOfProgramEnd = steps;
             })
+            this.userModels.forEach(model => {
+                model.stepNbrOfProgramEnd = steps;
+            })
             this.onTestEndCallback.enable();
         }
     }
@@ -217,7 +221,7 @@ export class ModelTester extends EventEmitter {
             afterStopModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
-                    this.checkUtility.checkEffectsConstraint(takenEdge, this.result);
+                    this.checkUtility.checkEffectsConstraint(takenEdge, model, this.result);
                     this.edgeTrace(takenEdge, t);
                 }
                 if (model.haltAllModels()) {

@@ -32,14 +32,16 @@ export class ModelNode {
 
     /**
      * Returns an model edge if one has its conditions for traversing the edge fulfilled or else null.
+     * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
+     * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    testEdgeConditions(testDriver: TestDriver, modelResult: ModelResult) {
+    testEdgeConditions(testDriver: TestDriver, stepsSinceLastTransition: number, stepsSinceEnd: number, modelResult: ModelResult) {
         if (this.edges.length == 0) {
             return null;
         }
 
         for (let i = 0; i < this.edges.length; i++) {
-            const result = this.edges[i].checkConditions(testDriver, modelResult);
+            const result = this.edges[i].checkConditions(testDriver, stepsSinceLastTransition, stepsSinceEnd, modelResult);
 
             if (result && result.length == 0) {
                 return this.edges[i];

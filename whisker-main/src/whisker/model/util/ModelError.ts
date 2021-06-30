@@ -1,8 +1,6 @@
 // Model errors
-import {ProgramModel} from "../components/ProgramModel";
 import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
-import {UserModel} from "../components/UserModel";
 import {Condition} from "../components/Condition";
 
 function getEffectFailedOutput(effect: Effect) {
@@ -15,7 +13,7 @@ function getTimeLimitFailedError(condition: Condition) {
     return new Error(TIME_LIMIT_ERROR + condition.edge.id + ": " + condition.toString());
 }
 
-function getErrorOnEdgeOutput(model: ProgramModel | UserModel, edge: ModelEdge, error: string) {
+function getErrorOnEdgeOutput(edge: ModelEdge, error: string) {
     return "Error was thrown. " + edge.id + ": " + error;
 }
 

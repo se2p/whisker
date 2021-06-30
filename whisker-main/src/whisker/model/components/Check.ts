@@ -110,9 +110,8 @@ export abstract class Check {
      * @param t Instance of the test driver.
      * @param cu Instance of the check utility for listening and checking more complex events.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
-     * @param isACond Whether this is an instance of a condition or effect.
      */
-    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, isACond: boolean) {
+    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean) {
         switch (this._name) {
             case CheckName.AttrComp:
                 return CheckGenerator.getAttributeComparisonCheck(t, this._negated, caseSensitive, this._args[0],
@@ -150,7 +149,7 @@ export abstract class Check {
             case CheckName.TimeElapsed:
                 return CheckGenerator.getTimeElapsedCheck(t, this._negated, this._args[0]);
             case CheckName.TimeBetween:
-                return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0], this.edge, isACond);
+                return CheckGenerator.getTimeBetweenCheck(t, this._negated, this._args[0]);
             case CheckName.NbrOfClones:
                 return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, false,
                     this._args[0], this._args[1], this._args[2]);
@@ -160,7 +159,7 @@ export abstract class Check {
             case CheckName.TouchingEdge:
                 return CheckGenerator.getTouchingEdgeCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.TimeAfterEnd:
-                return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0], this.edge);
+                return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
             default:
                 return undefined;
         }

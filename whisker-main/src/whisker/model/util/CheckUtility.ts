@@ -3,6 +3,7 @@ import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
 import {ProgramModelEdge} from "../components/ModelEdge";
 import {getConstraintFailedOutput, getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
+import {ProgramModel} from "../components/ProgramModel";
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -13,8 +14,8 @@ export class CheckUtility {
     private touched: { [key: string]: boolean } = {};
     private colorTouched: { [key: string]: boolean } = {};
 
-    private effectChecks: Effect[] = [];
-    private failedChecks: Effect[] = [];
+    private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
+    private failedChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
 
     /**
      * Get an instance of a condition state saver.
@@ -126,22 +127,25 @@ export class CheckUtility {
     /**
      * Register the effects of an edge in this listener to test them later on.
      * @param takenEdge The taken edge of a model.
+     * @param model Model of the edge.
      */
-    registerEffectCheck(takenEdge: ProgramModelEdge) {
+    registerEffectCheck(takenEdge: ProgramModelEdge, model: ProgramModel) {
         takenEdge.effects.forEach(effect => {
-            this.effectChecks.push(effect);
+            this.effectChecks.push({effect: effect, edge: takenEdge, model: model});
         })
     }
 
     /**
      * Check the effects of an edge immediately and throw an error if they are not fulfilled. For the constraints model.
      * @param edge The taken edge of the constraints model.
+     * @param model Model of the edge.
      * @param modelResult To save errors into.
      */
-    checkEffectsConstraint(edge: ProgramModelEdge, modelResult: ModelResult) {
+    checkEffectsConstraint(edge: ProgramModelEdge, model: ProgramModel, modelResult: ModelResult) {
         let effects = edge.effects;
+        let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
         for (let i = 0; i < effects.length; i++) {
-            if (!effects[i].check()) {
+            if (!effects[i].check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
                 let error = getConstraintFailedOutput(effects[i]);
                 // console.error(error, this.testDriver.getTotalStepsExecuted());
                 modelResult.addFail(error);
@@ -157,22 +161,24 @@ export class CheckUtility {
 
         // check for contradictions in effects
         for (let i = 0; i < this.effectChecks.length; i++) {
+            let effect = this.effectChecks[i].effect;
 
             for (let j = i + 1; j < this.effectChecks.length; j++) {
-                if (this.effectChecks[i].contradicts(this.effectChecks[j])) {
+                if (effect.contradicts(this.effectChecks[j].effect)) {
                     doNotCheck[i] = true;
                     doNotCheck[j] = true;
                 }
             }
 
             if (!doNotCheck[i]) {
+                let model = this.effectChecks[i].model;
+                let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
                 try {
-                    if (!this.effectChecks[i].check()) {
+                    if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
                         this.failedChecks.push(this.effectChecks[i]);
                     }
                 } catch (e) {
-                    let error = getErrorOnEdgeOutput(this.effectChecks[i].edge.getModel(),
-                        this.effectChecks[i].edge, e.message);
+                    let error = getErrorOnEdgeOutput(this.effectChecks[i].edge, e.message);
                     console.error(error);
                     this.failedChecks.push(this.effectChecks[i]);
                     modelResult.addError(error);
@@ -184,7 +190,7 @@ export class CheckUtility {
         let contradictingEffects = [];
         for (let i = 0; i < this.effectChecks.length; i++) {
             if (doNotCheck[i]) {
-                contradictingEffects.push(this.effectChecks[i]);
+                contradictingEffects.push(this.effectChecks[i].effect);
             }
         }
         this.effectChecks = [];
@@ -199,21 +205,24 @@ export class CheckUtility {
             return;
         }
 
-        function makeFailedOutput(testDriver, effect) {
+        function makeFailedOutput(effect) {
             let output = getEffectFailedOutput(effect);
-            // console.error(output, testDriver.getTotalStepsExecuted());
+            // console.error(output, this.testDriver.getTotalStepsExecuted());
             modelResult.addFail(output);
         }
 
-        this.failedChecks.forEach(effect => {
+        for (let i = 0; i < this.failedChecks.length; i++) {
+            let effect = this.failedChecks[i].effect;
+            let model = this.failedChecks[i].model;
             try {
-                if (!effect.check()) {
-                    makeFailedOutput(this.testDriver, effect);
+                if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
+                    model.stepNbrOfProgramEnd)) {
+                    makeFailedOutput(effect);
                 }
             } catch (e) {
-                makeFailedOutput(this.testDriver, effect);
+                makeFailedOutput(effect);
             }
-        })
+        }
         this.failedChecks = [];
     }
 }

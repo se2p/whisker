@@ -50,16 +50,15 @@ export class ProgramModel {
         this.stopNodes = stopNodes;
         this.nodes = nodes;
         this.edges = edges;
-        for (let edgesMapKey in edges) {
-            edges[edgesMapKey].registerModel(this);
-        }
     }
 
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
     makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
-        let edge = this.currentState.testEdgeConditions(testDriver, modelResult);
+        let stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
+        let edge = this.currentState.testEdgeConditions(testDriver, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
+            modelResult);
 
         if (edge != null) {
             this.coverageCurrentRun[edge.id] = true;

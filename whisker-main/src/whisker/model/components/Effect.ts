@@ -53,7 +53,7 @@ export function getEffect(parentEdge: ProgramModelEdge, effectString): Effect {
  * Class representing the check of an edge effect.
  */
 export class Effect extends Check {
-    private _effect: () => boolean;
+    private _effect: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
 
     /**
      * Get an effect representation, checks the arguments.
@@ -69,9 +69,11 @@ export class Effect extends Check {
 
     /**
      * Check the edge effect has happened.
+     * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
+     * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    check(): boolean {
-        return this._effect();
+    check(stepsSinceLastTransition, stepsSinceEnd: number): boolean {
+        return this._effect(stepsSinceLastTransition, stepsSinceEnd);
     }
 
     /**
@@ -79,7 +81,7 @@ export class Effect extends Check {
      */
     registerComponents(t: TestDriver, result: ModelResult, caseSensitive: boolean) {
         try {
-            this._effect = this.checkArgsWithTestDriver(t, null, caseSensitive, false);
+            this._effect = this.checkArgsWithTestDriver(t, null, caseSensitive);
         } catch (e) {
             console.error(e + ". This effect will be considered as not fulfilled in test run.");
             this._effect = () => false;
@@ -91,7 +93,7 @@ export class Effect extends Check {
      * Get the effect function that evaluates whether the effect is fulfilled. This function is fixed on (and depends)
      * on the test driver that was given by registerComponents(..) previously.
      */
-    get effect(): () => boolean {
+    get effect(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         return this._effect;
     }
 

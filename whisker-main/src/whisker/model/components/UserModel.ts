@@ -28,6 +28,7 @@ export class UserModel {
 
     lastTransitionStep: number = 0;
     secondLastTransitionStep: number = 0;
+    stepNbrOfProgramEnd: number;
 
     constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
                 nodes: { [key: string]: ModelNode }, edges: { [key: string]: UserModelEdge }) {
@@ -37,16 +38,15 @@ export class UserModel {
         this.stopNodes = stopNodes;
         this.nodes = nodes;
         this.edges = edges;
-        for (let edgesMapKey in edges) {
-            edges[edgesMapKey].registerModel(this);
-        }
     }
 
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
     makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
-        let edge = this.currentState.testEdgeConditions(testDriver, modelResult);
+        let stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.lastTransitionStep;
+        let edge = this.currentState.testEdgeConditions(testDriver, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
+            modelResult);
 
         if (edge != null) {
             this.currentState = edge.getEndNode();

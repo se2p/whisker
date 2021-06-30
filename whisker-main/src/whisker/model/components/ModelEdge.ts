@@ -3,10 +3,8 @@ import TestDriver from "../../../test/test-driver";
 import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import ModelResult from "../../../test-runner/model-result";
-import {ProgramModel} from "./ProgramModel";
 import {CheckUtility} from "../util/CheckUtility";
 import {getErrorOnEdgeOutput, TIME_LIMIT_ERROR} from "../util/ModelError";
-import {UserModel} from "./UserModel";
 import {InputEffect} from "./InputEffect";
 
 /**
@@ -27,23 +25,25 @@ export abstract class ModelEdge {
 
     /**
      * Test whether the conditions on this edge are fulfilled.
+     * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
+     * @param stepsSinceEnd Number of steps since the after run model tests started.
      * @Returns the failed conditions.
      */
-    checkConditions(t: TestDriver, modelResult: ModelResult): Condition[] {
+    checkConditions(t: TestDriver, stepsSinceLastTransition: number, stepsSinceEnd: number, modelResult: ModelResult): Condition[] {
         let failedConditions = [];
 
         for (let i = 0; i < this.conditions.length; i++) {
             try {
-                if (!this.conditions[i].check(t)) {
+                if (!this.conditions[i].check(t.getTotalStepsExecuted(), stepsSinceLastTransition, stepsSinceEnd)) {
                     failedConditions.push(this.conditions[i]);
                 }
             } catch (e) {
                 let error = e.message;
                 failedConditions.push(this.conditions[i]);
                 if (e.message.startsWith(TIME_LIMIT_ERROR)) {
-                    modelResult.addFail(error);
+                    modelResult.addFail(error.substring(TIME_LIMIT_ERROR.length + 1, error.length));
                 } else {
-                    error = getErrorOnEdgeOutput(this.getModel(), this, e.message);
+                    error = getErrorOnEdgeOutput(this, e.message);
                     console.error(error, t.getTotalStepsExecuted());
                     modelResult.addError(error);
                 }
@@ -88,17 +88,6 @@ export abstract class ModelEdge {
      * Reset subtype specific states.
      */
     abstract reset(): void;
-
-    /**
-     * Register a model that this edge belongs to.
-     * @param model The model..
-     */
-    abstract registerModel(model);
-
-    /**
-     * Get the model of this edge.
-     */
-    abstract getModel();
 }
 
 /**
@@ -107,7 +96,6 @@ export abstract class ModelEdge {
 export class ProgramModelEdge extends ModelEdge {
     effects: Effect[] = [];
     failedEffects: Effect[] = [];
-    private model: ProgramModel;
 
     /**
      * Create a new edge.
@@ -143,20 +131,6 @@ export class ProgramModelEdge extends ModelEdge {
             effect.registerComponents(testDriver, result, caseSensitive);
         })
     }
-
-    /**
-     * Register a program model that this edge belongs to.
-     */
-    registerModel(model: ProgramModel) {
-        this.model = model;
-    }
-
-    /**
-     * Get the program model this edge belongs to.
-     */
-    getModel(): ProgramModel {
-        return this.model;
-    }
 }
 
 /**
@@ -164,7 +138,6 @@ export class ProgramModelEdge extends ModelEdge {
  */
 export class UserModelEdge extends ModelEdge {
     inputEffects: InputEffect[] = [];
-    private model: UserModel;
 
     /**
      * Create a new edge.
@@ -207,19 +180,5 @@ export class UserModelEdge extends ModelEdge {
         this.inputEffects.forEach(effect => {
             effect.registerComponents(testDriver, caseSensitive);
         })
-    }
-
-    /**
-     * Register a user model that this edge belongs to.
-     */
-    registerModel(model: UserModel) {
-        this.model = model;
-    }
-
-    /**
-     * Get the user model this edge belongs to.
-     */
-    getModel(): UserModel {
-        return this.model;
     }
 }

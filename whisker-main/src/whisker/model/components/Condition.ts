@@ -73,7 +73,7 @@ export function getCondition(edge: ModelEdge, condString, forceTestAfter: number
  * Defining an edge condition.
  */
 export class Condition extends Check {
-    private _condition: () => boolean;
+    private _condition: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
     private readonly forceTestAfter: number;
     private forceTestAfterSteps: number;
     private readonly forceTestAt: number;
@@ -115,7 +115,7 @@ export class Condition extends Check {
             if (this.forceTestAfter != -1) {
                 this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter);
             }
-            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive, true);
+            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
             console.error(e + ". This condition will be considered as not fulfilled in test run.");
             this._condition = () => false;
@@ -125,30 +125,32 @@ export class Condition extends Check {
 
     /**
      * Check the edge condition.
+     * @param totalStepsExecuted Number of steps since the test runner started.
+     * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
+     * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    check(t: TestDriver): boolean {
+    check(totalStepsExecuted: number, stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
         if (this.failedForcedTest) {
             return false;
         }
-        let timeStamp = this.edge.getModel().stepNbrOfLastTransition;
-        if ((this.forceTestAtSteps && this.forceTestAtSteps < t.getTotalStepsExecuted())
-            || (this.forceTestAfterSteps && this.forceTestAfterSteps < (t.getTotalStepsExecuted() - timeStamp))) {
+        if ((this.forceTestAtSteps && this.forceTestAtSteps < totalStepsExecuted)
+            || (this.forceTestAfterSteps && this.forceTestAfterSteps < stepsSinceLastTransition)) {
 
-            if (!this._condition()) {
+            if (!this._condition(stepsSinceLastTransition, stepsSinceEnd)) {
                 this.failedForcedTest = true;
                 throw getTimeLimitFailedError(this);
             } else {
                 return true; //todo
             }
         }
-        return this._condition();
+        return this._condition(stepsSinceLastTransition, stepsSinceEnd);
     }
 
     /**
      * Get the condition function that evaluates whether the condition holds. This function is fixed on (and depends)
      * on the test driver that was given by registerComponents(..) previously.
      */
-    get condition(): () => boolean {
+    get condition(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         return this._condition;
     }
 
