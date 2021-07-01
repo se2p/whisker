@@ -63,7 +63,7 @@ export class ModelTester extends EventEmitter {
      * Check if program models are loaded.
      */
     programModelsLoaded() {
-        return this.programModels.length != 0 && this.constraintsModels.length != 0;
+        return this.programModels.length != 0 || this.constraintsModels.length != 0;
     }
 
     /**

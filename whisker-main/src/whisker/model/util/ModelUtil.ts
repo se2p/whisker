@@ -210,15 +210,15 @@ export abstract class ModelUtil {
     static readonly EXPR_END = ")";
 
     private static getSpriteString(t: TestDriver, caseSensitive: boolean, index: number, spriteName: string) {
-        spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
-        return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + spriteName + "'), false)[0];\n"
+        let name = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName).name;
+        return "const sprite" + index + " = t.getSprites(sprite => sprite.name.includes('" + name + "'), false)[0];\n"
             + "if (sprite" + index + " == undefined) {\n    throw getSpriteNotFoundError('" + spriteName + "');\n}\n";
     }
 
     private static getVariableString(t: TestDriver, caseSensitive: boolean, index, spriteName: string, varName: string) {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName);
-        varName = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).variable.name;
-        return "const variable" + index + " = sprite" + index + ".getVariable('" + varName + "', false).value;\n if" +
+        let name = ModelUtil.checkVariableExistence(t, caseSensitive, sprite, varName).variable.name;
+        return "const variable" + index + " = sprite" + index + ".getVariable('" + name + "', false).value;\n if" +
             " (variable" + index
             + " == undefined) {\n   throw getVariableNotFoundError('" + varName + "');\n}\n";
     }
@@ -313,7 +313,7 @@ export abstract class ModelUtil {
                 expression += "sprite" + spriteMap[spriteName] + "." + attrName;
             } else {
                 inits += this.getVariableString(t, caseSensitive, spriteMap[spriteName], spriteName, attrName);
-                expression += "variable" + index;
+                expression += "variable" + spriteMap[spriteName];
             }
 
         }
