@@ -3,8 +3,9 @@ import {Effect} from "./Effect";
 import {Condition} from "./Condition";
 import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
-import {getErrorOnEdgeOutput, getTimeLimitFailedOutput, TIME_LIMIT_ERROR} from "../util/ModelError";
+import {getErrorOnEdgeOutput, getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {InputEffect} from "./InputEffect";
+import {ModelTester} from "../ModelTester";
 
 /**
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
@@ -12,44 +13,94 @@ import {InputEffect} from "./InputEffect";
  */
 export abstract class ModelEdge {
     readonly id: string;
+    /* Id of the source node */
     readonly from: string;
+    /* Id of the target node*/
     readonly to: string;
     conditions: Condition[] = [];
 
-    protected constructor(id: string, from: string, to: string) {
+    readonly forceTestAfter: number;
+    readonly forceTestAt: number;
+    private forceTestAfterSteps: number;
+    private forceTestAtSteps: number;
+    private failedForcedTest: boolean;
+
+    protected constructor(id: string, from: string, to: string, forceTestAfter: number, forceTestAt: number) {
         this.id = id;
         this.from = from;
         this.to = to;
+        this.forceTestAfter = forceTestAfter;
+        if (this.forceTestAfter != -1) {
+            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY;
+        }
+        this.forceTestAt = forceTestAt;
+        if (this.forceTestAt != -1) {
+            this.forceTestAt = forceTestAt + ModelTester.TIME_LEEWAY;
+        }
+        this.failedForcedTest = false;
     }
 
     /**
      * Test whether the conditions on this edge are fulfilled.
+     * @param t Instance of the test driver
      * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
      * @param stepsSinceEnd Number of steps since the after run model tests started.
+     * @param modelResult Saver of the result of the test (fails).
      * @Returns the failed conditions.
      */
     checkConditions(t: TestDriver, stepsSinceLastTransition: number, stepsSinceEnd: number, modelResult: ModelResult): Condition[] {
+        if (this.failedForcedTest) {
+            return this.conditions;
+        }
+
         let failedConditions = [];
 
-        for (let i = 0; i < this.conditions.length; i++) {
-            try {
-                if (!this.conditions[i].check(t.getTotalStepsExecuted(), stepsSinceLastTransition, stepsSinceEnd)) {
+        // times up... force testing of conditions and if they are not fulfilled make add as failed
+        if ((this.forceTestAtSteps && this.forceTestAtSteps < t.getTotalStepsExecuted())
+            || (this.forceTestAfterSteps && this.forceTestAfterSteps < stepsSinceLastTransition)) {
+
+            for (let i = 0; i < this.conditions.length; i++) {
+                try {
+                    if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
+                        this.failedForcedTest = true;
+                        failedConditions.push(this.conditions[i]);
+                        modelResult.addFail(this.getTimeLimitFailedOutput(this.conditions[i], t));
+                    }
+                } catch (e) {
+                    let error = e.message;
                     failedConditions.push(this.conditions[i]);
-                }
-            } catch (e) {
-                let error = e.message;
-                failedConditions.push(this.conditions[i]);
-                if (e.message.startsWith(TIME_LIMIT_ERROR)) {
-                    modelResult.addFail(getTimeLimitFailedOutput(this, this.conditions[i]));
-                } else {
                     error = getErrorOnEdgeOutput(this, e.message);
                     console.error(error, t.getTotalStepsExecuted());
                     modelResult.addError(error);
                 }
             }
+            return failedConditions;
+        }
+
+        // time limit not reached
+        for (let i = 0; i < this.conditions.length; i++) {
+            try {
+                if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
+                    failedConditions.push(this.conditions[i]);
+                }
+            } catch (e) {
+                let error = e.message;
+                failedConditions.push(this.conditions[i]);
+                error = getErrorOnEdgeOutput(this, e.message);
+                console.error(error, t.getTotalStepsExecuted());
+                modelResult.addError(error);
+            }
         }
 
         return failedConditions;
+    }
+
+    getTimeLimitFailedOutput(condition: Condition, t: TestDriver) {
+        if (this.forceTestAtSteps && this.forceTestAtSteps < t.getTotalStepsExecuted()) {
+            return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt)
+        } else {
+            return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter);
+        }
     }
 
 
@@ -59,6 +110,7 @@ export abstract class ModelEdge {
     getEndNodeId() {
         return this.to;
     }
+
     /**
      * Add a condition to the edge. Conditions in the evaluation all need to be fulfilled for the effect to be valid.
      * @param condition Condition function as a string.
@@ -70,16 +122,23 @@ export abstract class ModelEdge {
     /**
      * Register the check listener and test driver on the edge's conditions.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean): void {
+    registerComponents(checkListener: CheckUtility, t: TestDriver, result: ModelResult, caseSensitive: boolean): void {
+        if (this.forceTestAt != -1) {
+            this.forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt);
+        }
+        if (this.forceTestAfter != -1) {
+            this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter);
+        }
         this.conditions.forEach(cond => {
-            cond.registerComponents(checkListener, testDriver, result, caseSensitive);
+            cond.registerComponents(checkListener, t, result, caseSensitive);
         })
     }
 
-    /**
-     * Reset subtype specific states.
-     */
-    abstract reset(): void;
+    reset(): void {
+        this.failedForcedTest = false;
+        this.forceTestAtSteps = undefined;
+        this.forceTestAfterSteps = undefined;
+    }
 }
 
 /**
@@ -94,16 +153,16 @@ export class ProgramModelEdge extends ModelEdge {
      * @param id ID of the edge.
      * @param from Index of the source node.
      * @param to Index of the target node.
+     * @param forceTestAfter Force testing this condition after given amount of milliseconds.
+     * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
      */
-    constructor(id: string, from: string, to: string) {
-        super(id, from, to);
+    constructor(id: string, from: string, to: string, forceTestAfter: number, forceTestAt: number) {
+        super(id, from, to, forceTestAfter, forceTestAt);
     }
 
     reset(): void {
+        super.reset();
         this.failedEffects = [];
-        this.conditions.forEach(cond => {
-            cond.reset();
-        })
     }
 
     /**
@@ -136,9 +195,11 @@ export class UserModelEdge extends ModelEdge {
      * @param id ID of the edge.
      * @param from Index of the source node.
      * @param to Index of the target node.
+     * @param forceTestAfter Force testing this condition after given amount of milliseconds.
+     * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
      */
-    constructor(id: string, from: string, to: string) {
-        super(id, from, to);
+    constructor(id: string, from: string, to: string, forceTestAfter: number, forceTestAt: number) {
+        super(id, from, to, forceTestAfter, forceTestAt);
     }
 
     /**
@@ -147,12 +208,6 @@ export class UserModelEdge extends ModelEdge {
      */
     addInputEffect(effect: InputEffect): void {
         this.inputEffects.push(effect);
-    }
-
-    reset() {
-        this.conditions.forEach(cond => {
-            cond.reset();
-        })
     }
 
     /**

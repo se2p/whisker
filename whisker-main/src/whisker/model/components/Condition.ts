@@ -3,34 +3,18 @@ import {CheckUtility} from "../util/CheckUtility";
 import {ModelEdge} from "./ModelEdge";
 import {Check, CheckName} from "./Check";
 import ModelResult from "../../../test-runner/model-result";
-import {TIME_LIMIT_ERROR} from "../util/ModelError";
-import {ModelTester} from "../ModelTester";
 
 /**
  * Evaluate the conditions for the given edge.
  * @param newEdge Edge with the given condition.
  * @param condString String representing the conditions.
- * @param forceTestAfter Force testing this condition after given amount of milliseconds.
- * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
  */
-export function setUpCondition(newEdge: ModelEdge, condString: string, forceTestAfter, forceTestAt) {
+export function setUpCondition(newEdge: ModelEdge, condString: string) {
     const conditions = condString.split(",");
-
-    if (forceTestAfter == undefined) {
-        forceTestAfter = -1;
-    } else {
-        forceTestAfter = Number(forceTestAfter.toString());
-    }
-
-    if (forceTestAt == undefined) {
-        forceTestAt = -1;
-    } else {
-        forceTestAt = Number(forceTestAt.toString());
-    }
 
     try {
         conditions.forEach(cond => {
-            newEdge.addCondition(getCondition(newEdge, cond.trim(), forceTestAfter, forceTestAt));
+            newEdge.addCondition(getCondition(newEdge, cond.trim()));
         })
     } catch (e) {
         throw new Error("Edge '" + newEdge.id + "': " + e.message);
@@ -42,10 +26,8 @@ export function setUpCondition(newEdge: ModelEdge, condString: string, forceTest
  * '!' at the beginning. Splits the condition string based on ':'.
  * @param edge Edge with the given condition string.
  * @param condString String part on the edge of the xml file that is the condition.
- * @param forceTestAfter Force testing this condition after given amount of milliseconds.
- * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
  */
-export function getCondition(edge: ModelEdge, condString, forceTestAfter: number, forceTestAt: number): Condition {
+export function getCondition(edge: ModelEdge, condString): Condition {
     let negated = false;
     if (condString.startsWith("!")) {
         negated = true;
@@ -61,14 +43,13 @@ export function getCondition(edge: ModelEdge, condString, forceTestAfter: number
             theFunction += parts[i];
         }
 
-        return new Condition(newID, CheckName.Function, negated, forceTestAfter, forceTestAt, [theFunction]);
+        return new Condition(newID, CheckName.Function, negated, [theFunction]);
     }
-
 
     if (parts.length < 2) {
         throw new Error("Edge condition not correctly formatted. ':' missing.");
     }
-    return new Condition(newID, parts[0], negated, forceTestAfter, forceTestAt, parts.splice(1, parts.length));
+    return new Condition(newID, parts[0], negated, parts.splice(1, parts.length));
 }
 
 /**
@@ -76,32 +57,16 @@ export function getCondition(edge: ModelEdge, condString, forceTestAfter: number
  */
 export class Condition extends Check {
     private _condition: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
-    private readonly forceTestAfter: number;
-    private forceTestAfterSteps: number;
-    private readonly forceTestAt: number;
-    private forceTestAtSteps: number;
-    private failedForcedTest: boolean;
 
     /**
      * Get a condition instance. Checks the number of arguments for a condition type.
      * @param id Id of the condition
      * @param name Type name of the condition.
      * @param negated Whether the condition is negated.
-     * @param forceTestAfter Force testing this condition after given amount of milliseconds.
-     * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
      * @param args The arguments for the condition to check later on.
      */
-    constructor(id: string, name: CheckName, negated: boolean, forceTestAfter: number, forceTestAt: number, args: any[]) {
+    constructor(id: string, name: CheckName, negated: boolean, args: any[]) {
         super(id, name, args, negated);
-        this.forceTestAfter = forceTestAfter;
-        if (this.forceTestAfter != -1) {
-            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY;
-        }
-        this.forceTestAt = forceTestAt;
-        if (this.forceTestAt != -1) {
-            this.forceTestAt = forceTestAt + ModelTester.TIME_LEEWAY;
-        }
-        this.failedForcedTest = false;
     }
 
     /**
@@ -109,12 +74,6 @@ export class Condition extends Check {
      */
     registerComponents(cu: CheckUtility, t: TestDriver, result: ModelResult, caseSensitive: boolean) {
         try {
-            if (this.forceTestAt != -1) {
-                this.forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt);
-            }
-            if (this.forceTestAfter != -1) {
-                this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter);
-            }
             this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
             console.error(e + ". This condition will be considered as not fulfilled in test run.");
@@ -125,24 +84,10 @@ export class Condition extends Check {
 
     /**
      * Check the edge condition.
-     * @param totalStepsExecuted Number of steps since the test runner started.
      * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    check(totalStepsExecuted: number, stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
-        if (this.failedForcedTest) {
-            return false;
-        }
-        if ((this.forceTestAtSteps && this.forceTestAtSteps < totalStepsExecuted)
-            || (this.forceTestAfterSteps && this.forceTestAfterSteps < stepsSinceLastTransition)) {
-
-            if (!this._condition(stepsSinceLastTransition, stepsSinceEnd)) {
-                this.failedForcedTest = true;
-                throw new Error(TIME_LIMIT_ERROR);
-            } else {
-                return true; //todo
-            }
-        }
+    check(stepsSinceLastTransition: number, stepsSinceEnd: number): boolean {
         return this._condition(stepsSinceLastTransition, stepsSinceEnd);
     }
 
@@ -152,12 +97,6 @@ export class Condition extends Check {
      */
     get condition(): (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean {
         return this._condition;
-    }
-
-    reset() {
-        this.failedForcedTest = false;
-        this.forceTestAtSteps = undefined;
-        this.forceTestAfterSteps = undefined;
     }
 
     /**
@@ -172,13 +111,6 @@ export class Condition extends Check {
             result = result + this.args.concat();
         }
 
-        result = result + ")";
-        if (this.forceTestAt != -1) {
-            result += " at " + this.forceTestAt + "ms";
-        }
-        if (this.forceTestAfter != -1) {
-            result += " after " + this.forceTestAfter + "ms";
-        }
-        return result;
+        return result + ")";
     }
 }
