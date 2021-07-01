@@ -139,6 +139,21 @@ export abstract class ModelEdge {
         this.forceTestAtSteps = undefined;
         this.forceTestAfterSteps = undefined;
     }
+
+    simplifyForSave() {
+        let conditions = []
+        this.conditions.forEach(condition => {
+            conditions.push(condition.simplifyForSave());
+        })
+        return {
+            id: this.id.substring(this.id.indexOf("-") + 1, this.id.length),
+            from: this.from,
+            to: this.to,
+            forceTestAfter: this.forceTestAfter,
+            forceTestAt: this.forceTestAt,
+            conditions: conditions
+        }
+    }
 }
 
 /**
@@ -181,6 +196,17 @@ export class ProgramModelEdge extends ModelEdge {
         this.effects.forEach(effect => {
             effect.registerComponents(testDriver, result, caseSensitive);
         })
+    }
+
+    simplifyForSave() {
+        let effects = []
+        this.effects.forEach(effect => {
+            effects.push(effect.simplifyForSave());
+        })
+        return {
+            ...super.simplifyForSave(),
+            effects: effects
+        };
     }
 }
 
@@ -227,5 +253,16 @@ export class UserModelEdge extends ModelEdge {
         this.inputEffects.forEach(effect => {
             effect.registerComponents(testDriver, caseSensitive);
         })
+    }
+
+    simplifyForSave() {
+        let inputEffects = []
+        this.inputEffects.forEach(effect => {
+            inputEffects.push(effect.simplifyForSave());
+        })
+        return {
+            ...super.simplifyForSave(),
+            inputEffects: inputEffects
+        };
     }
 }

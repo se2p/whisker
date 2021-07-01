@@ -1,4 +1,3 @@
-import {ModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {CheckGenerator} from "../util/CheckGenerator";
@@ -177,5 +176,14 @@ export abstract class Check {
 
     get negated(): boolean {
         return this._negated;
+    }
+
+    simplifyForSave() {
+        return {
+            id: this.id,
+            name: this.name,
+            args: this.args,
+            negated: this.negated
+        }
     }
 }

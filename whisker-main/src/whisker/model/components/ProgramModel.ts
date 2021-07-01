@@ -4,13 +4,14 @@ import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import ModelResult from "../../../test-runner/model-result";
 
-
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
  *
  * ############# Assumptions ##################
  * - Only one start node, unique
- * - Not every program model needs to have a stop node. (but one of the program models has one)
+ * - Does not need a stop node.
+ * - A stop node stops the model it belongs to.
+ * - A stop all node stops all models of this type.
  * - Each edge has a condition (input event, condition for a variable,....) -> or at least an always true condition
  * - Effects can also occur at a later VM step, therefore its tested 2 successive steps long for occurrence.
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
@@ -18,10 +19,11 @@ import ModelResult from "../../../test-runner/model-result";
  */
 export class ProgramModel {
     readonly id: string;
-    protected readonly startNode: ModelNode;
-    protected currentState: ModelNode;
 
-    protected readonly stopNodes: { [key: string]: ModelNode }; // delete?
+    protected readonly startNodeId: string;
+    protected readonly stopNodeIds: string[];
+    protected readonly stopAllNodeIds: string[];
+
     protected readonly nodes: { [key: string]: ModelNode };
     protected readonly edges: { [key: string]: ProgramModelEdge };
 
@@ -31,25 +33,31 @@ export class ProgramModel {
     stepNbrOfLastTransition: number = 0;
     stepNbrOfScndLastTransition: number = 0;
     stepNbrOfProgramEnd: number;
+    currentState: ModelNode;
 
     /**
-     * Construct a program model (graph) with a string identifier. Sets up the start node and stop nodes for
-     * simulating transitions on the graph.
+     * Construct a program model (graph) with a string identifier. This model is executed in parallel to the program
+     * and simulates the correct behaviour.
      *
      * @param id ID of the model.
-     * @param startNode Start node for traversing the graph.
-     * @param stopNodes Nodes stopping the graph walk through.
+     * @param startNodeId Id of the start node
      * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
      * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
+     * @param stopNodeIds Ids of the stop nodes.
+     * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
      */
-    constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
-                nodes: { [key: string]: ModelNode }, edges: { [key: string]: ProgramModelEdge }) {
+    constructor(id: string, startNodeId: string, nodes: { [key: string]: ModelNode },
+                edges: { [key: string]: ProgramModelEdge }, stopNodeIds: string[], stopAllNodeIds: string[]) {
         this.id = id;
-        this.currentState = startNode;
-        this.startNode = startNode;
-        this.stopNodes = stopNodes;
+        this.startNodeId = startNodeId;
+        this.currentState = nodes[startNodeId];
+        if (this.currentState == undefined) {
+            console.error("udnefined")
+        }
         this.nodes = nodes;
         this.edges = edges;
+        this.stopNodeIds = stopNodeIds;
+        this.stopAllNodeIds = stopAllNodeIds;
     }
 
     /**
@@ -125,7 +133,7 @@ export class ProgramModel {
      * Reset the graph to the start state.
      */
     reset(): void {
-        this.currentState = this.startNode;
+        this.currentState = this.nodes[this.startNodeId];
         this.stepNbrOfLastTransition = 0;
         this.stepNbrOfScndLastTransition = 0;
         Object.values(this.nodes).forEach(node => {
@@ -148,5 +156,20 @@ export class ProgramModel {
     setTransitionsStartTo(steps: number) {
         this.stepNbrOfLastTransition = steps;
         this.stepNbrOfScndLastTransition = steps;
+    }
+
+    simplifyForSave() {
+        let edges = [];
+        for (let edgesKey in this.edges) {
+            edges.push(this.edges[edgesKey].simplifyForSave());
+        }
+        return {
+            id: this.id,
+            startNodeId: this.startNodeId,
+            stopNodeIds: this.stopNodeIds,
+            stopAllNodeIds: this.stopAllNodeIds,
+            nodesIds: Object.keys(this.nodes),
+            edges: edges
+        }
     }
 }

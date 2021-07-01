@@ -34,7 +34,7 @@ export function getCondition(edge: ModelEdge, condString): Condition {
         condString = condString.substr(1, condString.length);
     }
 
-    let newID = edge.id + ".condition" + (edge.conditions.length + 1);
+    let newID = "condition" + (edge.conditions.length + 1);
     const parts = condString.split(":");
     if (parts[0] == CheckName.Function) {
         // append all elements again as the function could contain a :

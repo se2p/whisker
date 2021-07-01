@@ -31,10 +31,10 @@ import {setUpInputEffect} from "../components/InputEffect";
  */
 export class ModelLoaderXML {
 
-    private static readonly PROGRAM_MODEL_ID = "program";
-    private static readonly CONSTRAINTS_MODEL_ID = "constraints";
-    private static readonly USER_MODEL_ID = "user";
-    private static readonly ON_TEST_END_ID = "end";
+    static readonly PROGRAM_MODEL_ID = "program";
+    static readonly CONSTRAINTS_MODEL_ID = "constraints";
+    static readonly USER_MODEL_ID = "user";
+    static readonly ON_TEST_END_ID = "end";
 
     private xmlOptions = {
         compact: true,
@@ -42,8 +42,10 @@ export class ModelLoaderXML {
         alwaysArray: true
     };
 
-    private startNode: ModelNode;
-    private stopNodes: { [key: string]: ModelNode };
+    private startNodeId: string;
+    private stopNodeIds: string[];
+    private stopAllNodeIds: string[]; // todo find them
+
     private nodesMap: { [key: string]: ModelNode };
     private edgesMapProgram: { [key: string]: ProgramModelEdge };
     private edgesMapUser: { [key: string]: UserModelEdge };
@@ -70,8 +72,9 @@ export class ModelLoaderXML {
         this.onTestEndModels = [];
 
         graphs.forEach(graph => {
-            this.startNode = undefined;
-            this.stopNodes = {};
+            this.startNodeId = undefined;
+            this.stopNodeIds = [];
+            this.stopAllNodeIds = [];
             this.nodesMap = {};
             this.edgesMapProgram = {};
             this.edgesMapUser = {};
@@ -117,7 +120,7 @@ export class ModelLoaderXML {
             throw new Error("Graph '" + graphID + "':\n" + e.message);
         }
 
-        if (!this.startNode) {
+        if (this.startNodeId == undefined) {
             throw new Error("Graph '" + graphID + "':\n" + "Start node not marked.");
         }
 
@@ -126,19 +129,23 @@ export class ModelLoaderXML {
         let model;
         switch (graph._attributes.usage) {
             case ModelLoaderXML.PROGRAM_MODEL_ID:
-                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
+                model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram,
+                    this.stopNodeIds, this.stopAllNodeIds);
                 this.programModels.push(model);
                 break;
             case ModelLoaderXML.USER_MODEL_ID:
-                model = new UserModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapUser);
+                model = new UserModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapUser, this.stopNodeIds,
+                    this.stopAllNodeIds);
                 this.userModels.push(model);
                 break;
             case ModelLoaderXML.CONSTRAINTS_MODEL_ID:
-                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
+                model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram, this.stopNodeIds,
+                    this.stopAllNodeIds)
                 this.constraintsModels.push(model);
                 break;
             case ModelLoaderXML.ON_TEST_END_ID:
-                model = new ProgramModel(graphID, this.startNode, this.stopNodes, this.nodesMap, this.edgesMapProgram)
+                model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram, this.stopNodeIds,
+                    this.stopAllNodeIds)
                 this.onTestEndModels.push(model);
                 break;
         }
@@ -155,24 +162,26 @@ export class ModelLoaderXML {
             throw new Error("Node id '" + graphID + "-" + nodeAttr.id + "' already defined.");
         }
 
-        (this.nodesMap)[nodeAttr.id] = new ModelNode(graphID + "-" + nodeAttr.id);
+        let nodeID = nodeAttr.id;
+        (this.nodesMap)[nodeID] = new ModelNode(nodeAttr.id);
 
-        if (nodeAttr.startNode && nodeAttr.startNode == "true") {
+        if (nodeAttr.startNode && nodeAttr.startNode == "true") { // todo removed
             // already defined start node
-            if (this.startNode) {
+            if (this.startNodeId != undefined) { // todo check that before
                 throw new Error("More than one start node!")
             }
-            this.startNode = this.nodesMap[nodeAttr.id];
-            this.nodesMap[nodeAttr.id].isStartNode = true;
+            this.startNodeId = nodeID;
+            this.nodesMap[nodeID].isStartNode = true;
         }
 
-        if (nodeAttr.stopNode && nodeAttr.stopNode == "true") {
-            this.stopNodes[nodeAttr.id] = (this.nodesMap[nodeAttr.id]);
-            this.nodesMap[nodeAttr.id].isStopNode = true;
+        if (nodeAttr.stopNode && nodeAttr.stopNode == "true") { // todo removed
+            this.stopNodeIds.push(nodeID); //todo give that
+            this.nodesMap[nodeID].isStopNode = true;
         }
 
-        if (nodeAttr.stopAllModels && nodeAttr.stopAllModels == "true") {
-            this.nodesMap[nodeAttr.id].stopAllModels = true;
+        if (nodeAttr.stopAllModels && nodeAttr.stopAllModels == "true") { // todo removed
+            this.nodesMap[nodeID].stopAllModels = true;
+            this.stopAllNodeIds.push(nodeID); // todo give that later on
         }
     }
 
@@ -216,13 +225,27 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Unknown node id '" + endID + "'.");
         }
 
-        const newEdge = new ProgramModelEdge(edgeID, (this.nodesMap)[startID].id, (this.nodesMap)[endID].id);
+        let forceTestAt, forceTestAfter;
+        if (edgeAttr.forceTestAfter == undefined) {
+            forceTestAfter = -1;
+        } else {
+            forceTestAfter = Number(edgeAttr.forceTestAfter.toString());
+        }
+
+        if (edgeAttr.forceTestAt == undefined) {
+            forceTestAt = -1;
+        } else {
+            forceTestAt = Number(edgeAttr.forceTestAt.toString());
+        }
+
+        const newEdge = new ProgramModelEdge(edgeID, (this.nodesMap)[startID].id, (this.nodesMap)[endID].id,
+            forceTestAfter, forceTestAt);
 
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
         }
 
-        setUpCondition(newEdge, edgeAttr.condition, edgeAttr.forceTestAfter, edgeAttr.forceTestAt);
+        setUpCondition(newEdge, edgeAttr.condition);
         if (edgeAttr.effect) {
             setUpEffect(newEdge, edgeAttr.effect);
         }
@@ -263,13 +286,27 @@ export class ModelLoaderXML {
             throw new Error("Edge '" + edgeID + "': Unknown node id '" + endID + "'.");
         }
 
-        const newEdge = new UserModelEdge(edgeID, (this.nodesMap)[startID].id, (this.nodesMap)[endID].id);
+        let forceTestAt, forceTestAfter;
+        if (edgeAttr.forceTestAfter == undefined) {
+            forceTestAfter = -1;
+        } else {
+            forceTestAfter = Number(edgeAttr.forceTestAfter.toString());
+        }
+
+        if (edgeAttr.forceTestAt == undefined) {
+            forceTestAt = -1;
+        } else {
+            forceTestAt = Number(edgeAttr.forceTestAt.toString());
+        }
+
+        const newEdge = new UserModelEdge(edgeID, (this.nodesMap)[startID].id, (this.nodesMap)[endID].id,
+            forceTestAfter, forceTestAt);
 
         if (!edgeAttr.condition) {
             throw new Error("Edge '" + edgeID + "': Condition not given.");
         }
 
-        setUpCondition(newEdge, edgeAttr.condition, edgeAttr.forceTestAfter, edgeAttr.forceTestAt);
+        setUpCondition(newEdge, edgeAttr.condition);
         if (edgeAttr.effect) {
             setUpInputEffect(newEdge, edgeAttr.effect);
         }

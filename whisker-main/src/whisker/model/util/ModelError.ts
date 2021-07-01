@@ -7,10 +7,12 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
     return edge.id + ": " + effect.toString();
 }
 
-export const TIME_LIMIT_ERROR = "time limit:";
+function getTimeLimitFailedAfterOutput(edge: ModelEdge, condition: Condition, ms: number) {
+    return edge.id + ": " + condition.toString() + " after " + ms + "ms";
+}
 
-function getTimeLimitFailedOutput(edge: ModelEdge, condition: Condition) {
-    return edge.id + ": " + condition.toString();
+function getTimeLimitFailedAtOutput(edge: ModelEdge, condition: Condition, ms: number) {
+    return edge.id + ": " + condition.toString() + " at " + ms + "ms";
 }
 
 function getErrorOnEdgeOutput(edge: ModelEdge, error: string) {
@@ -91,7 +93,8 @@ export {
     getComparisonNotKnownError,
     getFunctionEvalError,
     getEmptyExpressionError,
-    getTimeLimitFailedOutput,
+    getTimeLimitFailedAfterOutput,
+    getTimeLimitFailedAtOutput,
     getExpressionEndTagMissingError,
     getExpressionEnterError,
     getRGBRangeError,

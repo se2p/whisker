@@ -68,4 +68,13 @@ export class ModelNode {
             edge.reset();
         })
     }
+
+    simplifyForSave() {
+        return {
+            id: this.id,
+            isStartNode: this.isStartNode,
+            isStopNode: this.isStopNode,
+            stopAllModels: this.stopAllModels
+        }
+    }
 }

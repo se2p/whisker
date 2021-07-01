@@ -34,7 +34,7 @@ export function getEffect(parentEdge: ProgramModelEdge, effectString): Effect {
     }
     const parts = effectString.split(":");
 
-    let newID = parentEdge.id + ".effect" + (parentEdge.effects.length + 1);
+    let newID = "effect" + (parentEdge.effects.length + 1);
     if (parts[0] == CheckName.Function) {
         // append all elements again as the function could contain a :
         let theFunction = "";
@@ -173,9 +173,5 @@ export class Effect extends Check {
         }
 
         return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
-    }
-
-    simplifyForSave() {
-        //todo
     }
 }

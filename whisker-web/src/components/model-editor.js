@@ -1,4 +1,5 @@
-const {$} = require('../web-libs');
+const {ModelTester} = require('whisker-main');
+const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const {i18n} = require("../index");
 
@@ -8,6 +9,9 @@ class ModelEditor {
     static LABEL_FIELD = '#editor-label';
     static OP_NAME_FIELD = '#model-editor-operation';
 
+    /**
+     * @param {ModelTester} modelTester
+     */
     constructor(modelTester) {
         this.modelTester = modelTester;
         this.network = null;
@@ -71,8 +75,11 @@ class ModelEditor {
         //                     " Bowl.y == -145 & Apple.size == 50 && Bananas.size == 50"
         //Stage.Zeit <= 30 && Bowl.y == -145 && Apple.size == 50 &&" +
         //                     " Bananas.size == 50
-        this.loadModel(null);
+        this.data = {nodes: this.dummyNodes, edges: this.dummyEdges};
+        this.drawModelEditor();
         this.setUpButtons();
+
+        this.modelTester.on(ModelTester.ModelTester.MODEL_ON_LOAD, this.loadModel.bind(this));
 
     }
 
@@ -89,21 +96,20 @@ class ModelEditor {
             $('#editor-id').val("");
             $('#editor-label').val("");
         });
+        // todo is there a delay in the page even if the models are loaded and the editor is not shown?
     }
 
     // todo on click on a model tab
-    loadModel(model) {
+    loadModel() {
+        let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
+        const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
+        FileSaver.saveAs(blob, 'model.json');
 
-        if (model == null) {
-            this.data = {nodes: this.dummyNodes, edges: this.dummyEdges};
-        } else {
-            // todo get the nodes
-            // todo get the edges
+        // todo load into the first one
 
-            let nodes = [];
-            let edges = [];
-            this.data = {nodes: nodes, edges: edges};
-        }
+        let nodes = [];
+        let edges = [];
+        this.data = {nodes: nodes, edges: edges};
 
         this.drawModelEditor();
     }

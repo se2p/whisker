@@ -801,7 +801,7 @@ describe('Effect', () => {
     })
 
     test("get effect", () => {
-        let dummyEdge = new ProgramModelEdge("1", "0", "1");
+        let dummyEdge = new ProgramModelEdge("1", "0", "1", undefined, undefined);
         let effectString = "AttrChange:Cat:x:+";
         expect(() => {
             setUpEffect(dummyEdge, effectString);

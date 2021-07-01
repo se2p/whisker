@@ -114,6 +114,14 @@ export class InputEffect {
         this.inputEffect = this.getInputDataFunction(t, caseSensitive, this.args);
     }
 
+    simplifyForSave() {
+        return {
+            id: this.id,
+            name: this.name,
+            args: this.args
+        }
+    }
+
     private getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: any[]) {
         switch (this.name) {
             case InputEffectName.InputKey:

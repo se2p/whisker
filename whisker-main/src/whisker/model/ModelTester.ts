@@ -27,6 +27,7 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG = "ModelLog";
     static readonly MODEL_WARNING = "ModelWarning";
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
+    static readonly MODEL_ON_LOAD = "ModelOnLoad";
     static readonly TIME_LEEWAY = 250;
 
     private constraintCallback: Callback;
@@ -46,6 +47,7 @@ export class ModelTester extends EventEmitter {
             this.programModels = result.programModels;
             this.userModels = result.userModels;
             this.onTestEndModels = result.onTestEndModels;
+            this.emit(ModelTester.MODEL_ON_LOAD);
         } catch (e) {
             this.emit(ModelTester.MODEL_LOAD_ERROR, "Model Loader: " + e.message);
             throw new Error("Model Loader: " + e.message);
@@ -76,6 +78,27 @@ export class ModelTester extends EventEmitter {
     running() {
         return this.modelStepCallback.isActive() || this.constraintCallback.isActive()
             || this.onTestEndCallback.isActive() || this.checkLastFailedCallback.isActive();
+    }
+
+    getAllModels() {
+        let models = [];
+        this.programModels.forEach(model => {
+            let shortened = model.simplifyForSave();
+            models.push({usage: ModelLoaderXML.PROGRAM_MODEL_ID, ...shortened});
+        })
+        this.constraintsModels.forEach(model => {
+            let shortened = model.simplifyForSave();
+            models.push({usage: ModelLoaderXML.CONSTRAINTS_MODEL_ID, ...shortened});
+        })
+        this.userModels.forEach(model => {
+            let shortened = model.simplifyForSave();
+            models.push({usage: ModelLoaderXML.USER_MODEL_ID,...shortened});
+        })
+        this.onTestEndModels.forEach(model => {
+            let shortened = model.simplifyForSave();
+            models.push({usage: ModelLoaderXML.ON_TEST_END_ID,...shortened});
+        })
+        return models;
     }
 
     /**

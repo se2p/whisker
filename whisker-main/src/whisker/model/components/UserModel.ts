@@ -9,35 +9,51 @@ import {CheckUtility} from "../util/CheckUtility";
  *
  * ############# Assumptions ##################
  * - Only one start node, unique
- * - Does not need a stop node. A stop node stops all other user models too. Stopping only one with a normal node
- *    without outgoing edges
+ * - Does not need a stop node.
+ * - A stop node stops the model it belongs to.
+ * - A stop all node stops all models of this type.
  * - Each edge has a condition (input event, condition for a variable,....) -> or at least an always true condition
  * - Input effects are immediate inputs in the step the condition holds.
  * - Conditions should exclude each other so only one edge can be taken at one step. The first matching one is
  * taken. So that it not gets ambiguous.
  */
 export class UserModel {
-
     readonly id: string;
-    protected readonly startNode: ModelNode;
-    protected currentState: ModelNode;
 
-    protected readonly stopNodes: { [key: string]: ModelNode };
+    protected readonly startNodeId: string;
+    protected readonly stopNodeIds: string[];
+    protected readonly stopAllNodeIds: string[];
+
     protected readonly nodes: { [key: string]: ModelNode };
     protected readonly edges: { [key: string]: UserModelEdge };
 
     lastTransitionStep: number = 0;
     secondLastTransitionStep: number = 0;
     stepNbrOfProgramEnd: number;
+    protected currentState: ModelNode;
 
-    constructor(id: string, startNode: ModelNode, stopNodes: { [key: string]: ModelNode },
-                nodes: { [key: string]: ModelNode }, edges: { [key: string]: UserModelEdge }) {
+    // todo should the coverage of the user models be considered too?
+
+    /**
+     * Construct a user model (graph) with a string identifier. This model acts as a user playing/using the Scratch
+     * program and provides inputs for the program.
+     *
+     * @param id ID of the model.
+     * @param startNodeId Id of the start node
+     * @param nodes Dictionary mapping the node ids to the actual nodes in the graph.
+     * @param edges Dictionary mapping the edge ids to the actual edges in the graph.
+     * @param stopNodeIds Ids of the stop nodes.
+     * @param stopAllNodeIds Ids of the nodes that stop all models on reaching them.
+     */
+    constructor(id: string, startNodeId: string, nodes: { [key: string]: ModelNode }, edges: { [key: string]: UserModelEdge },
+                stopNodeIds: string[], stopAllNodeIds: string[]) {
         this.id = id;
-        this.currentState = startNode;
-        this.startNode = startNode;
-        this.stopNodes = stopNodes;
+        this.currentState = nodes[startNodeId];
         this.nodes = nodes;
         this.edges = edges;
+        this.startNodeId = startNodeId;
+        this.stopNodeIds = stopNodeIds;
+        this.stopAllNodeIds = stopAllNodeIds;
     }
 
     /**
@@ -67,7 +83,7 @@ export class UserModel {
      * Reset the graph to the start state.
      */
     reset(): void {
-        this.currentState = this.startNode;
+        this.currentState = this.nodes[this.startNodeId];
         this.lastTransitionStep = 0;
         this.secondLastTransitionStep = 0;
         Object.values(this.nodes).forEach(node => {
@@ -87,5 +103,16 @@ export class UserModel {
     setTransitionsStartTo(steps: number) {
         this.lastTransitionStep = steps;
         this.secondLastTransitionStep = steps;
+    }
+
+    simplifyForSave() {
+        return {
+            id: this.id,
+            startNodeId: this.startNodeId,
+            stopNodeIds: this.stopNodeIds,
+            stopAllNodeIds: this.stopAllNodeIds,
+            nodesIds: Object.keys(this.nodes),
+            edges: this.edges
+        }
     }
 }
