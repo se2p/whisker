@@ -126,7 +126,7 @@ export class ProgramModel {
      * Whether all models should stop.
      */
     haltAllModels() {
-        return this.currentState.stopAllModels;
+        return this.currentState.isStopAllNode;
     }
 
     /**
@@ -168,7 +168,7 @@ export class ProgramModel {
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodesIds: Object.keys(this.nodes),
+            nodeIds: Object.keys(this.nodes),
             edges: edges
         }
     }

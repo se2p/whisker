@@ -132,7 +132,7 @@
                                         <div class="col-lg-12">
                                             <div class="upload-btn-wrapper">
                                                 <button class="btnr" data-i18n="browse"></button>
-                                                <input type="file" id="fileselect-models" accept=".xml"
+                                                <input type="file" id="fileselect-models" accept=".json"
                                                        name="model-file" title=""/>
                                                 <label id=model-lavel" class="filename-label" for="fileselect-models"
                                                        data-i18n="no-file"></label>
@@ -372,6 +372,35 @@
             </div>
         </div>
             <div class="col-lg-12">
+                <div class="btn-group-toggle" data-toggle="buttons">
+                    <button id="run-all-tests" class="btn btn-main" type="button"
+                            data-toggle="tooltip" data-placement="top" data-animation="false"
+                            data-i18n="tests">
+                    </button>
+                    <button id="reset" class="btn btn-main" type="button"
+                            data-toggle="tooltip" data-placement="top" data-animation="false"
+                            data-i18n="[title]t-reset;reset;"></button>
+                    <div class="btn-group-toggle btn-wrapper" data-toggle="buttons">
+                        <label class="btn btn-main" data-i18n="[title]t-tap"
+                               data-toggle="tooltip" data-placement="top" data-animation="false">
+                            <input id="toggle-tap" class="checkbox-button" type="checkbox"
+                                   autocomplete="off">
+                            <div data-i18n="tap"></div>
+                        </label>
+                        <label class="btn btn-main" data-i18n="[title]t-log"
+                               data-toggle="tooltip" data-placement="top" data-animation="false">
+                            <input id="toggle-log" class="checkbox-button" type="checkbox"
+                                   autocomplete="off">
+                            <div data-i18n="log"></div>
+                        </label>
+                        <label class="btn btn-main" data-i18n="[title]show-advanced"
+                               data-toggle="tooltip" data-placement="top" data-animation="false">
+                            <input id="toggle-advanced" class="checkbox-button" type="checkbox"
+                                   autocomplete="off">
+                            <div data-i18n="advanced"></div>
+                        </label>
+                    </div>
+                </div>
                 <div id="test-table" class="hide spacer50">
                     <h3 data-i18n="uploaded-tests" id="tests-header"></h3>
                     <table class="display table table-sm mt-4">
@@ -387,35 +416,6 @@
                         </thead>
                         <tbody></tbody>
                     </table>
-                    <div class="btn-group-toggle" data-toggle="buttons">
-                        <button id="run-all-tests" class="btn btn-main" type="button"
-                                data-toggle="tooltip" data-placement="top" data-animation="false"
-                                data-i18n="tests">
-                        </button>
-                        <button id="reset" class="btn btn-main" type="button"
-                                data-toggle="tooltip" data-placement="top" data-animation="false"
-                                data-i18n="[title]t-reset;reset;"></button>
-                        <div class="btn-group-toggle btn-wrapper" data-toggle="buttons">
-                            <label class="btn btn-main" data-i18n="[title]t-tap"
-                                   data-toggle="tooltip" data-placement="top" data-animation="false">
-                                <input id="toggle-tap" class="checkbox-button" type="checkbox"
-                                       autocomplete="off">
-                                <div data-i18n="tap"></div>
-                            </label>
-                            <label class="btn btn-main" data-i18n="[title]t-log"
-                                   data-toggle="tooltip" data-placement="top" data-animation="false">
-                                <input id="toggle-log" class="checkbox-button" type="checkbox"
-                                       autocomplete="off">
-                                <div data-i18n="log"></div>
-                            </label>
-                            <label class="btn btn-main" data-i18n="[title]show-advanced"
-                                   data-toggle="tooltip" data-placement="top" data-animation="false">
-                                <input id="toggle-advanced" class="checkbox-button" type="checkbox"
-                                       autocomplete="off">
-                                <div data-i18n="advanced"></div>
-                            </label>
-                        </div>
-                    </div>
                 </div>
                 <div id="output-run" class="mt-4 spacer50 hide">
                     <h3 data-i18n="tap"></h3>

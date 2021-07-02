@@ -1,0 +1,330 @@
+import {ModelNode} from "../components/ModelNode";
+import {ModelEdge, ProgramModelEdge, UserModelEdge} from "../components/ModelEdge";
+import {ProgramModel} from "../components/ProgramModel";
+import {UserModel} from "../components/UserModel";
+import {Condition} from "../components/Condition";
+import {Effect} from "../components/Effect";
+import {InputEffect, InputEffectName} from "../components/InputEffect";
+import {CheckName} from "../components/Check";
+
+/**
+ * Load models from a json file.
+ *
+ * ############ Assumptions ############
+ * - only one start node per graph
+ * - needs to have start node
+ * - multiple conditions on an edge have to all be fulfilled for the condition to be true
+ * - edges that have the same source and target but different conditions are alternatives
+ * - there can be a constraint program model, that defines all constraints (initialisation of variable/attributes,
+ * constraints after initialisation e.g. time < 30 as it decreases)
+ */
+export class ModelLoader {
+
+    static readonly PROGRAM_MODEL_ID = "program";
+    static readonly CONSTRAINTS_MODEL_ID = "constraints";
+    static readonly USER_MODEL_ID = "user";
+    static readonly ON_TEST_END_ID = "end";
+
+    private startNodeId: string;
+    private stopNodeIds: string[];
+    private stopAllNodeIds: string[];
+
+    private nodesMap: { [key: string]: ModelNode };
+    private edgesMapProgram: { [key: string]: ProgramModelEdge };
+    private edgesMapUser: { [key: string]: UserModelEdge };
+    private graphIDs: string[];
+
+    private constraintsModels: ProgramModel[];
+    private programModels: ProgramModel[];
+    private userModels: UserModel[];
+    private onTestEndModels: ProgramModel[];
+
+    private idUndefined = 0;
+    private static readonly ID_UNDEFINED = "id_undefined";
+
+    /**
+     * Load the models from a string file content.
+     * @param jsonText Content of a json file containing the models.
+     */
+    loadModels(jsonText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModels: ProgramModel[], onTestEndModels: ProgramModel[] } {
+        const graphs = JSON.parse(jsonText);
+        this.graphIDs = [];
+        this.programModels = [];
+        this.userModels = [];
+        this.constraintsModels = [];
+        this.onTestEndModels = [];
+
+        try {
+            graphs.forEach(graph => {
+                this.loadGraph(graph);
+            })
+        } catch (e) {
+            throw new Error("Model Loader: " + e.message);
+        }
+
+        return {
+            programModels: this.programModels,
+            userModels: this.userModels,
+            constraintsModels: this.constraintsModels,
+            onTestEndModels: this.onTestEndModels
+        };
+    }
+
+    private loadGraph(graph) {
+        let graphID = graph.id;
+        if (graph.startNodeId == undefined) {
+            throw new Error(graphID + ": Start node id of the graph is undefined");
+        } else if (Array.isArray(graph.startNodeId)) {
+            throw new Error(graphID + ": Only one start node allowed.")
+        }
+        this.startNodeId = graph.startNodeId;
+
+        this.stopNodeIds = graph.stopNodeIds;
+        if (graph.stopNodeIds == undefined) {
+            console.warn("Warning: Graph without stop node ids.");
+            this.stopNodeIds = [];
+        }
+
+        this.stopAllNodeIds = graph.stopAllNodeIds;
+        if (graph.stopNodeIds == undefined) {
+            console.warn("Warning: Graph without stop-all node ids.");
+            this.stopAllNodeIds = [];
+        }
+        this.nodesMap = {};
+        this.edgesMapProgram = {};
+        this.edgesMapUser = {};
+        this.loadModel(graph);
+    }
+
+    private loadModel(graph): void {
+        let graphID = graph.id;
+        if (graphID == undefined) {
+            graphID = ModelLoader.ID_UNDEFINED + this.idUndefined;
+            this.idUndefined++;
+            console.warn("Warning: A graph id was not given. Defining as " + graphID);
+        } else if (this.graphIDs.indexOf(graphID) != -1) {
+            graphID = graphID + "_dup" + this.graphIDs.length;
+            console.warn("Warning: Model id '" + graph._attributes.id + "' already defined.");
+        }
+        this.graphIDs.push(graphID);
+
+        // create all nodes
+        const nodeIDs = graph.nodeIds;
+        if (!Array.isArray(nodeIDs) || nodeIDs.length == 0) {
+            throw new Error(graphID + ": No node ids given.");
+        }
+        this.loadNode(nodeIDs);
+
+        // Load the edges
+
+        try {
+            graph.edges.forEach(edge => this.loadEdge(graph.usage, graphID, edge));
+        } catch (e) {
+            throw new Error(graphID + ": " + e.message);
+        }
+
+
+        let model;
+        switch (graph.usage) {
+            case ModelLoader.PROGRAM_MODEL_ID:
+                model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram,
+                    this.stopNodeIds, this.stopAllNodeIds);
+                this.programModels.push(model);
+                break;
+            case ModelLoader.USER_MODEL_ID:
+                model = new UserModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapUser, this.stopNodeIds,
+                    this.stopAllNodeIds);
+                this.userModels.push(model);
+                break;
+            case ModelLoader.CONSTRAINTS_MODEL_ID:
+                model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram, this.stopNodeIds,
+                    this.stopAllNodeIds)
+                this.constraintsModels.push(model);
+                break;
+            case ModelLoader.ON_TEST_END_ID:
+                model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram, this.stopNodeIds,
+                    this.stopAllNodeIds)
+                this.onTestEndModels.push(model);
+                break;
+        }
+    }
+
+    private loadNode(nodeIds: string[]): void {
+        nodeIds.forEach(id => {
+            if ((this.nodesMap)[id]) {
+                throw new Error("Node id '" + id + "' already defined.");
+            }
+            (this.nodesMap)[id] = new ModelNode(id);
+        })
+
+        this.nodesMap[this.startNodeId].isStartNode = true;
+        this.stopNodeIds.forEach(id => {
+            this.nodesMap[id].isStopNode = true;
+        })
+        this.stopAllNodeIds.forEach(id => {
+            this.nodesMap[id].isStopAllNode = true;
+        })
+    }
+
+    private loadEdge(usage: string, graphID: string, edge): void {
+        let edgeID;
+        if (edge.id == undefined) {
+            edgeID = graphID + "-edge-undef-" + this.idUndefined;
+            this.idUndefined++;
+            console.warn("Warning: ID for an edge not given.");
+        } else if ((this.edgesMapProgram)[graphID + "-" + edge.id]) {
+            edgeID = graphID + "-" + edge.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
+            console.warn("Warning: ID '" + graphID + "-" + edge.id + "' already defined.");
+        } else {
+            edgeID = graphID + "-" + edge.id;
+        }
+
+        const from = edge.from;
+        const to = edge.to;
+
+        if (from == undefined) {
+            throw new Error(edgeID + ": source node (from) not defined.");
+        }
+
+        if (to == undefined) {
+            throw new Error(edgeID + ": target node (to) not defined.");
+        }
+
+        if (!this.nodesMap[from]) {
+            throw new Error(edgeID + ": Unknown node id '" + from + "'.");
+        }
+        if (!this.nodesMap[to]) {
+            throw new Error(edgeID + ": Unknown node id '" + to + "'.");
+        }
+
+        let forceTestAt, forceTestAfter;
+        if (edge.forceTestAfter == undefined) {
+            forceTestAfter = -1;
+        } else {
+            forceTestAfter = Number(edge.forceTestAfter.toString());
+        }
+
+        if (edge.forceTestAt == undefined) {
+            forceTestAt = -1;
+        } else {
+            forceTestAt = Number(edge.forceTestAt.toString());
+        }
+
+        if (usage != ModelLoader.USER_MODEL_ID) {
+            const newEdge = new ProgramModelEdge(edgeID, from, to, forceTestAfter, forceTestAt);
+
+            if (!edge.conditions) {
+                throw new Error("Edge '" + edgeID + "': Condition not given.");
+            }
+
+            this.loadConditions(newEdge, edge.conditions);
+            if (edge.effects) {
+                this.loadEffects(newEdge, edge.effects);
+            }
+
+            this.nodesMap[from].addOutgoingEdge(newEdge);
+            this.edgesMapProgram[edgeID] = newEdge;
+        } else {
+            const newEdge = new UserModelEdge(edgeID, from, to, forceTestAfter, forceTestAt);
+
+            if (!edge.conditions) {
+                throw new Error("Edge '" + edgeID + "': Condition not given.");
+            }
+
+            this.loadConditions(newEdge, edge.conditions);
+            if (edge.effects) {
+                this.loadInputEffect(newEdge, edge.effects);
+            }
+
+            this.nodesMap[from].addOutgoingEdge(newEdge);
+            this.edgesMapUser[edgeID] = newEdge;
+        }
+    }
+
+
+    private loadConditions(newEdge: ModelEdge, conditions: any[]) {
+        let id, name, negated, args;
+        conditions.forEach(condition => {
+            id = condition.id;
+            name = condition.name;
+            negated = condition.negated;
+            args = condition.args;
+
+            if (id == undefined) {
+                id = "condition" + this.idUndefined;
+                console.warn("Warning: " + newEdge.id + " ID for an condition not given.");
+                this.idUndefined++;
+            }
+
+            if (name == undefined || CheckName[name] == undefined) { // todo test
+                throw new Error(newEdge.id + ": Name of condition wrong or missing.");
+            }
+
+            if (negated == undefined || (typeof negated) != 'boolean') {
+                throw new Error(newEdge.id + ": Negated attribute of condition missing or not a boolean.");
+            }
+
+            if (args == undefined || !Array.isArray(args)) {
+                throw new Error(newEdge.id + ": Arguments for condition not given or not an array.");
+            }
+
+            newEdge.addCondition(new Condition(id, name, negated, args));
+        })
+    }
+
+    private loadEffects(newEdge: ProgramModelEdge, effects: any[]) {
+        let id, name, negated, args;
+        effects.forEach(effect => {
+            id = effect.id;
+            name = effect.name;
+            negated = effect.negated;
+            args = effect.args;
+
+            if (id == undefined) {
+                id = "condition" + this.idUndefined;
+                console.warn("Warning: " + newEdge.id + " ID for an effect not given.");
+                this.idUndefined++;
+            }
+
+            if (name == undefined || CheckName[name] == undefined) { // todo test
+                throw new Error(newEdge.id + ": Name of effect wrong or missing.");
+            }
+
+            if (negated == undefined || (typeof negated) != 'boolean') {
+                throw new Error(newEdge.id + ": Negated attribute of effect missing or not a boolean.");
+            }
+
+            if (args == undefined || !Array.isArray(args)) {
+                throw new Error(newEdge.id + ": Arguments for effect not given or not an array.");
+            }
+
+            newEdge.addEffect(new Effect(id, name, negated, args));
+        })
+    }
+
+    private loadInputEffect(newEdge: UserModelEdge, effects: any[]) {
+        let id, name, args;
+        effects.forEach(effect => {
+            id = effect.id;
+            name = effect.name;
+            args = effect.args;
+
+            if (id == undefined) {
+                id = "condition" + this.idUndefined;
+                console.warn("Warning: " + newEdge.id + " ID for an input effect not given.");
+                this.idUndefined++;
+            }
+
+            if (name == undefined || InputEffectName[name] == undefined) { // todo test
+                throw new Error(newEdge.id + ": Name of input effect wrong or missing.");
+            }
+
+            if (args == undefined || !Array.isArray(args)) {
+                throw new Error(newEdge.id + ": Arguments for input effect not given or not an array.");
+            }
+
+            newEdge.addInputEffect(new InputEffect(id, name, args));
+        })
+    }
+
+}

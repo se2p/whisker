@@ -1,7 +1,0 @@
-<models>
-    <model id="g0" usage="program">
-        <node id="n0" startNode="true"/>
-        <node id="n1" stopNode="true"/>
-        <edge id="e0" source="n0" target="n1" condition="nothing:space" effect="Output:Cat:Hmm"/>
-    </model>
-</models>

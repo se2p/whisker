@@ -111,7 +111,7 @@ export class UserModel {
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodesIds: Object.keys(this.nodes),
+            nodeIds: Object.keys(this.nodes),
             edges: this.edges
         }
     }

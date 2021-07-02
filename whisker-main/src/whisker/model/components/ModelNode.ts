@@ -12,7 +12,7 @@ export class ModelNode {
 
     isStartNode = false;
     isStopNode = false;
-    stopAllModels = false;
+    isStopAllNode = false;
 
     /**
      * Node of a graph with an unique id identifier.
@@ -74,7 +74,7 @@ export class ModelNode {
             id: this.id,
             isStartNode: this.isStartNode,
             isStopNode: this.isStopNode,
-            stopAllModels: this.stopAllModels
+            stopAllModels: this.isStopAllNode
         }
     }
 }

@@ -101,11 +101,17 @@ class ModelEditor {
 
     // todo on click on a model tab
     loadModel() {
-        let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
-        const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
-        FileSaver.saveAs(blob, 'model.json');
+        // saving
+        // let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
+        // const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
+        // FileSaver.saveAs(blob, 'model.json');
 
         // todo load into the first one
+        // this.models = this.modelTester.getAllModels();
+        // let nodes = this.models[0].nodeIds;
+        // let edges = this.models[0].edges;
+        // this.data = {nodes: nodes, edges: edges};
+
 
         let nodes = [];
         let edges = [];

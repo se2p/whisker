@@ -1,4 +1,4 @@
-import {ModelLoaderXML} from "./util/ModelLoaderXML";
+import {ModelLoader} from "./util/ModelLoader";
 import {ProgramModel} from "./components/ProgramModel";
 import {UserModel} from "./components/UserModel";
 import TestDriver from "../../test/test-driver";
@@ -42,15 +42,15 @@ export class ModelTester extends EventEmitter {
      */
     load(modelsString) {
         try {
-            const result = new ModelLoaderXML().loadModels(modelsString);
+            const result = new ModelLoader().loadModels(modelsString);
             this.constraintsModels = result.constraintsModels;
             this.programModels = result.programModels;
             this.userModels = result.userModels;
             this.onTestEndModels = result.onTestEndModels;
             this.emit(ModelTester.MODEL_ON_LOAD);
         } catch (e) {
-            this.emit(ModelTester.MODEL_LOAD_ERROR, "Model Loader: " + e.message);
-            throw new Error("Model Loader: " + e.message);
+            this.emit(ModelTester.MODEL_LOAD_ERROR, e.message);
+            throw new Error(e.message);
         }
     }
 
@@ -84,19 +84,19 @@ export class ModelTester extends EventEmitter {
         let models = [];
         this.programModels.forEach(model => {
             let shortened = model.simplifyForSave();
-            models.push({usage: ModelLoaderXML.PROGRAM_MODEL_ID, ...shortened});
+            models.push({usage: ModelLoader.PROGRAM_MODEL_ID, ...shortened});
         })
         this.constraintsModels.forEach(model => {
             let shortened = model.simplifyForSave();
-            models.push({usage: ModelLoaderXML.CONSTRAINTS_MODEL_ID, ...shortened});
+            models.push({usage: ModelLoader.CONSTRAINTS_MODEL_ID, ...shortened});
         })
         this.userModels.forEach(model => {
             let shortened = model.simplifyForSave();
-            models.push({usage: ModelLoaderXML.USER_MODEL_ID,...shortened});
+            models.push({usage: ModelLoader.USER_MODEL_ID,...shortened});
         })
         this.onTestEndModels.forEach(model => {
             let shortened = model.simplifyForSave();
-            models.push({usage: ModelLoaderXML.ON_TEST_END_ID,...shortened});
+            models.push({usage: ModelLoader.ON_TEST_END_ID,...shortened});
         })
         return models;
     }
@@ -130,9 +130,6 @@ export class ModelTester extends EventEmitter {
         if (this.constraintsModels.length == 0) {
             this.constraintCallback.disable();
         }
-
-        // run the test driver for one step as inputs can be in the first step but the vm does nothing yet.
-        await t.runForSteps(1);
 
         this.modelStepCallback = t.addModelCallback(this.getModelStepFunction(t), true, "modelStep");
         this.onTestEndCallback = t.addModelCallback(this.getOnTestEndFunction(t), true, "stopModelsCheck");
@@ -176,7 +173,24 @@ export class ModelTester extends EventEmitter {
         return () => {
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
+            if (t.getSprite("Apple").isTouchingColor([255,0,0])) {
+                console.log("apple touching red", t.getTotalStepsExecuted())
+            }
+            // if (t.getSprite("Bowl").sayText) {
+            //     console.log(t.getSprite("Bowl").sayText, t.getTotalStepsExecuted());
+            // }
+            // console.log("bowlx", t.getSprite("Bowl").old.x, t.getSprite("Bowl").x,t.getTotalStepsExecuted());
+            // let stage = t.getStage();
+            // if (points != stage.getVariable("Punkte").value) {
+            //     console.log("points", stage.getVariable("Punkte").old.value, stage.getVariable("Punkte").value, t.getTotalStepsExecuted());
+            //     points = stage.getVariable("Punkte").value;
+            // }
             // console.log(t.vmWrapper.vm.runtime.ioDevices.keyboard._keysPressed, t.getTotalStepsExecuted());
+            // let bananas = t.getSprite("Bananas");
+            // if (bananas.visible != visible) {
+            //     console.log("banana visible", bananas.visible, bananas.y, t.getTotalStepsExecuted());
+            //     visible = bananas.visible;
+            // }
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
@@ -220,6 +234,7 @@ export class ModelTester extends EventEmitter {
     }
 
     private startOnTestEnd(t: TestDriver) {
+        console.log("start on test end", t.getTotalStepsExecuted())
         this.constraintCallback.disable();
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
@@ -302,7 +317,7 @@ export class ModelTester extends EventEmitter {
         }
         this.result.edgeTrace.push(edgeTrace);
         this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-        // if (!transition.id.toLowerCase().startsWith("bowl"))
+        // if (transition.id.toLowerCase().startsWith("bananas-fall"))
         //     console.log("Edge trace: " + edgeTrace, t.getTotalStepsExecuted());
     }
 
