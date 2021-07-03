@@ -173,24 +173,6 @@ export class ModelTester extends EventEmitter {
         return () => {
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
-            if (t.getSprite("Apple").isTouchingColor([255,0,0])) {
-                console.log("apple touching red", t.getTotalStepsExecuted())
-            }
-            // if (t.getSprite("Bowl").sayText) {
-            //     console.log(t.getSprite("Bowl").sayText, t.getTotalStepsExecuted());
-            // }
-            // console.log("bowlx", t.getSprite("Bowl").old.x, t.getSprite("Bowl").x,t.getTotalStepsExecuted());
-            // let stage = t.getStage();
-            // if (points != stage.getVariable("Punkte").value) {
-            //     console.log("points", stage.getVariable("Punkte").old.value, stage.getVariable("Punkte").value, t.getTotalStepsExecuted());
-            //     points = stage.getVariable("Punkte").value;
-            // }
-            // console.log(t.vmWrapper.vm.runtime.ioDevices.keyboard._keysPressed, t.getTotalStepsExecuted());
-            // let bananas = t.getSprite("Bananas");
-            // if (bananas.visible != visible) {
-            //     console.log("banana visible", bananas.visible, bananas.y, t.getTotalStepsExecuted());
-            //     visible = bananas.visible;
-            // }
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
@@ -234,7 +216,6 @@ export class ModelTester extends EventEmitter {
     }
 
     private startOnTestEnd(t: TestDriver) {
-        console.log("start on test end", t.getTotalStepsExecuted())
         this.constraintCallback.disable();
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();

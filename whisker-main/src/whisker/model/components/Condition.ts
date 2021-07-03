@@ -1,56 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import {ModelEdge} from "./ModelEdge";
 import {Check, CheckName} from "./Check";
 import ModelResult from "../../../test-runner/model-result";
-
-/**
- * Evaluate the conditions for the given edge.
- * @param newEdge Edge with the given condition.
- * @param condString String representing the conditions.
- */
-export function setUpCondition(newEdge: ModelEdge, condString: string) {
-    const conditions = condString.split(",");
-
-    try {
-        conditions.forEach(cond => {
-            newEdge.addCondition(getCondition(newEdge, cond.trim()));
-        })
-    } catch (e) {
-        throw new Error("Edge '" + newEdge.id + "': " + e.message);
-    }
-}
-
-/**
- * Converts a single condition string e.g. 'Key:space' for an edge into a condition object. Tests for negation with
- * '!' at the beginning. Splits the condition string based on ':'.
- * @param edge Edge with the given condition string.
- * @param condString String part on the edge of the xml file that is the condition.
- */
-export function getCondition(edge: ModelEdge, condString): Condition {
-    let negated = false;
-    if (condString.startsWith("!")) {
-        negated = true;
-        condString = condString.substr(1, condString.length);
-    }
-
-    let newID = "condition" + (edge.conditions.length + 1);
-    const parts = condString.split(":");
-    if (parts[0] == CheckName.Function) {
-        // append all elements again as the function could contain a :
-        let theFunction = "";
-        for (let i = 1; i < parts.length; i++) {
-            theFunction += parts[i];
-        }
-
-        return new Condition(newID, CheckName.Function, negated, [theFunction]);
-    }
-
-    if (parts.length < 2) {
-        throw new Error("Edge condition not correctly formatted. ':' missing.");
-    }
-    return new Condition(newID, parts[0], negated, parts.splice(1, parts.length));
-}
 
 /**
  * Defining an edge condition.

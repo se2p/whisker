@@ -1,54 +1,6 @@
 import TestDriver from "../../../test/test-driver";
-import {ProgramModelEdge} from "./ModelEdge";
 import ModelResult from "../../../test-runner/model-result";
 import {Check, CheckName} from "./Check";
-
-/**
- * Evaluate the effects of the given edge.
- * @param newEdge Edge of a program model with the effects.
- * @param effectString String representing the effects.
- */
-export function setUpEffect(newEdge: ProgramModelEdge, effectString: string) {
-    const effects = effectString.split(",");
-
-    try {
-        effects.forEach(effect => {
-            newEdge.addEffect(getEffect(newEdge, effect.trim()));
-        })
-    } catch (e) {
-        throw new Error("Edge '" + newEdge.id + "': " + e.message);
-    }
-}
-
-/**
- * Get an effect object for a single effect string. Tests for negation with '!' at the beginning. Splits the
- * effect string based on ':'.
- * @param parentEdge Parent edge.
- * @param effectString String defining the effect, f.e. Output:Cat:Hmm
- */
-export function getEffect(parentEdge: ProgramModelEdge, effectString): Effect {
-    let isANegation = false;
-    if (effectString.startsWith("!")) {
-        isANegation = true;
-        effectString = effectString.substr(1, effectString.length);
-    }
-    const parts = effectString.split(":");
-
-    let newID = "effect" + (parentEdge.effects.length + 1);
-    if (parts[0] == CheckName.Function) {
-        // append all elements again as the function could contain a :
-        let theFunction = "";
-        for (let i = 1; i < parts.length; i++) {
-            theFunction += parts[i];
-        }
-        return new Effect(newID, CheckName.Function, isANegation, [theFunction]);
-    }
-
-    if (parts.length < 2) {
-        throw new Error("Edge effect not correctly formatted. ':' missing.");
-    }
-    return new Effect(newID, parts[0], isANegation, parts.splice(1, parts.length));
-}
 
 /**
  * Class representing the check of an edge effect.

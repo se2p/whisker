@@ -1,5 +1,4 @@
 import TestDriver from "../../../test/test-driver";
-import {UserModelEdge} from "./ModelEdge";
 import {ModelUtil} from "../util/ModelUtil";
 import {MouseMoveEvent} from "../../testcase/events/MouseMoveEvent";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
@@ -15,36 +14,6 @@ export enum InputEffectName {
     InputMouseMove = "InputMouseMove", // x, y
     InputText = "InputText" // answer| text
 }
-
-/**
- * Evaluate and set up the input effect of the given edge string.
- * @param newEdge Edge of a user model with the input effects.
- * @param effect String representing the input effects.
- */
-export function setUpInputEffect(newEdge: UserModelEdge, effect: string) {
-    const effects = effect.split(",");
-
-    try {
-        effects.forEach(effect => {
-            newEdge.addInputEffect(getInputEffect(newEdge, effect.trim()));
-        })
-    } catch (e) {
-        throw new Error("Edge '" + newEdge.id + "': " + e.message);
-    }
-}
-
-/**
- * Get an input effect object based on a input effect string e.g. "InputImmediate:Key:Left:isDown:true". No negation
- * possible in contrast to other effects. Splits the input effect string based on ':'.
- * @param parentEdge Parent edge.
- * @param effect String defining the effect, f.e. Output:Hmm
- */
-function getInputEffect(parentEdge: UserModelEdge, effect) {
-    const parts = effect.split(":");
-    let id = parentEdge.id + ".inputEffect" + parentEdge.inputEffects.length;
-    return new InputEffect(id, parts[0], parts.splice(1, parts.length));
-}
-
 
 /**
  * Class for giving the Scratch VM immediate inputs.

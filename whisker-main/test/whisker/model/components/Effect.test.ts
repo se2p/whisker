@@ -1,6 +1,5 @@
-import {Effect, setUpEffect} from "../../../../src/whisker/model/components/Effect";
+import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
-import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 
 describe('Effect', () => {
     test("no arguments", () => {
@@ -798,29 +797,5 @@ describe('Effect', () => {
         effect2 = new Effect("id", CheckName.TouchingEdge, true, ["sprite"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
-
-    test("get effect", () => {
-        let dummyEdge = new ProgramModelEdge("1", "0", "1", undefined, undefined);
-        let effectString = "AttrChange:Cat:x:+";
-        expect(() => {
-            setUpEffect(dummyEdge, effectString);
-        }).not.toThrow();
-        effectString = "Function:()=>{return true;}";
-        expect(() => {
-            setUpEffect(dummyEdge, effectString);
-        }).not.toThrow();
-        effectString = "!AttrChange:Cat:x:+";
-        expect(() => {
-            setUpEffect(dummyEdge, effectString);
-        }).not.toThrow();
-        expect(() => {
-            setUpEffect(null, effectString);
-        }).toThrow();
-
-        effectString = "AttrChange"
-        expect(() => {
-            setUpEffect(dummyEdge, effectString);
-        }).toThrow();
     })
 });

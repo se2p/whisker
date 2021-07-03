@@ -232,8 +232,8 @@ export class ModelLoader {
             }
 
             this.loadConditions(newEdge, edge.conditions);
-            if (edge.effects) {
-                this.loadInputEffect(newEdge, edge.effects);
+            if (edge.inputEffects) {
+                this.loadInputEffect(newEdge, edge.inputEffects);
             }
 
             this.nodesMap[from].addOutgoingEdge(newEdge);

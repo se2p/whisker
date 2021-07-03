@@ -1,4 +1,4 @@
-import {Condition, setUpCondition} from "../../../../src/whisker/model/components/Condition";
+import {Condition} from "../../../../src/whisker/model/components/Condition";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {ProgramModelEdge} from "../../../../src/whisker/model/components/ModelEdge";
 import {expect} from "@jest/globals";
@@ -209,30 +209,6 @@ describe('Condition', () => {
         expect(() => {
             let condition = new Condition("id", CheckName.AttrChange, false, ["test", "attr", "-"]);
             condition.check(1, 1);
-        }).toThrow();
-    })
-
-    test("get condition", () => {
-        let dummyEdge = new ProgramModelEdge("1", "0", "1", undefined, undefined);
-        let condString = "AttrChange:Cat:x:+";
-        expect(() => {
-            setUpCondition(dummyEdge, condString);
-        }).not.toThrow();
-        condString = "Function:()=>{return true;}";
-        expect(() => {
-            setUpCondition(dummyEdge, condString);
-        }).not.toThrow();
-        condString = "!AttrChange:Cat:x:+";
-        expect(() => {
-            setUpCondition(dummyEdge, condString);
-        }).not.toThrow();
-        expect(() => {
-            setUpCondition(null, condString);
-        }).toThrow();
-
-        condString = "AttrChange"
-        expect(() => {
-            setUpCondition(dummyEdge, condString);
         }).toThrow();
     })
 })
