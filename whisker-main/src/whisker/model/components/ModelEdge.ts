@@ -31,11 +31,11 @@ export abstract class ModelEdge {
         this.to = to;
         this.forceTestAfter = forceTestAfter;
         if (this.forceTestAfter != -1) {
-            this.forceTestAfter = forceTestAfter + ModelTester.TIME_LEEWAY;
+            this.forceTestAfter = forceTestAfter;
         }
         this.forceTestAt = forceTestAt;
         if (this.forceTestAt != -1) {
-            this.forceTestAt = forceTestAt + ModelTester.TIME_LEEWAY;
+            this.forceTestAt = forceTestAt;
         }
         this.failedForcedTest = false;
     }
@@ -124,10 +124,10 @@ export abstract class ModelEdge {
      */
     registerComponents(checkListener: CheckUtility, t: TestDriver, result: ModelResult, caseSensitive: boolean): void {
         if (this.forceTestAt != -1) {
-            this.forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt);
+            this.forceTestAtSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAt) + 1;
         }
         if (this.forceTestAfter != -1) {
-            this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter);
+            this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
         }
         this.conditions.forEach(cond => {
             cond.registerComponents(checkListener, t, result, caseSensitive);

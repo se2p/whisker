@@ -2,7 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
 import {ProgramModelEdge} from "../components/ModelEdge";
-import {getConstraintFailedOutput, getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
+import {getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
 
 /**
@@ -146,8 +146,10 @@ export class CheckUtility {
         let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                let error = getConstraintFailedOutput(edge, effects[i]);
-                // console.error(error, this.testDriver.getTotalStepsExecuted());
+                let error = getEffectFailedOutput(edge, effects[i]);
+                console.log("bowl", this.testDriver.getSprite("Bowl").x);
+                console.log("punkte", this.testDriver.getStage().getVariable("Punkte").value);
+                console.error(error, this.testDriver.getTotalStepsExecuted());
                 modelResult.addFail(error);
             }
         }
@@ -205,9 +207,13 @@ export class CheckUtility {
             return;
         }
 
+        let t = this.testDriver;
         function makeFailedOutput(edge, effect) {
             let output = getEffectFailedOutput(edge, effect);
-            // console.error(output, this.testDriver.getTotalStepsExecuted());
+            console.log("Zeit", t.getStage().getVariable("Zeit").value);
+            let bowl = t.getSprite("Bowl");
+            console.log("bowl movement", bowl.x, bowl.old.x)
+            console.error(output, t.getTotalStepsExecuted());
             modelResult.addFail(output);
         }
 

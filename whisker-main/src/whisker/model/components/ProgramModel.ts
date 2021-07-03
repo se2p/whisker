@@ -73,7 +73,7 @@ export class ProgramModel {
             this.coverageTotal[edge.id] = true;
             this.currentState = this.nodes[edge.getEndNodeId()];
             this.stepNbrOfScndLastTransition = this.stepNbrOfLastTransition;
-            this.stepNbrOfLastTransition = testDriver.getTotalStepsExecuted();
+            this.stepNbrOfLastTransition = testDriver.getTotalStepsExecuted() + 1;
         }
         return edge;
     }

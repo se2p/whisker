@@ -2,9 +2,29 @@
 import {ModelEdge} from "../components/ModelEdge";
 import {Effect} from "../components/Effect";
 import {Condition} from "../components/Condition";
+import {CheckName} from "../components/Check";
 
 function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
-    return edge.id + ": " + effect.toString();
+    let conditions = edge.conditions;
+    let containsAfterTime;
+    let containsAtTime;
+
+    for (let i = 0; i < conditions.length; i++) {
+        if (conditions[i].name == CheckName.TimeBetween || conditions[i].name == CheckName.TimeAfterEnd) {
+            containsAfterTime = conditions[i].args[0];
+        } else if (conditions[i].name == CheckName.TimeElapsed) {
+            containsAtTime = conditions[i].args[0];
+        }
+    }
+
+    let result = edge.id + ": " + effect.toString();
+    if (containsAtTime != undefined) {
+        result += " at " + containsAtTime;
+    }
+    if (containsAfterTime != undefined) {
+        result += " after " + containsAfterTime;
+    }
+    return result;
 }
 
 function getTimeLimitFailedAfterOutput(edge: ModelEdge, condition: Condition, ms: number) {
@@ -18,11 +38,6 @@ function getTimeLimitFailedAtOutput(edge: ModelEdge, condition: Condition, ms: n
 function getErrorOnEdgeOutput(edge: ModelEdge, error: string) {
     return "Error was thrown. " + edge.id + ": " + error;
 }
-
-function getConstraintFailedOutput(edge: ModelEdge, effect: Effect) {
-    return edge.id + ": " + effect.toString();
-}
-
 
 // ----- Variables, sprites, attributes not found and other initialization errors
 
@@ -85,7 +100,6 @@ function getChangeComparisonNotKnownError(value: string) {
 export {
     getEffectFailedOutput,
     getErrorOnEdgeOutput,
-    getConstraintFailedOutput,
     getVariableNotFoundError,
     getAttributeNotFoundError,
     getSpriteNotFoundError,

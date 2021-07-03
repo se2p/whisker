@@ -67,7 +67,7 @@ export class UserModel {
         if (edge != null) {
             this.currentState = this.nodes[edge.getEndNodeId()];
             this.secondLastTransitionStep = this.lastTransitionStep;
-            this.lastTransitionStep = testDriver.getTotalStepsExecuted();
+            this.lastTransitionStep = testDriver.getTotalStepsExecuted() + 1;
         }
         return edge;
     }
