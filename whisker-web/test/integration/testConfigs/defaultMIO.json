@@ -2,24 +2,23 @@
     "test-generator": "many-objective",
     "algorithm": "mio",
     "chromosome": "variablelengthtest",
-    "population-size": 10,
-    "minVarChromosomeLength": 30,
-    "maxVarChromosomeLength": 30,
+    "minVarChromosomeLength": 5,
+    "maxVarChromosomeLength": 20,
     "chromosome-length": 30,
+    "extractor": "dynamic",
     "crossover": {
         "operator": "singlepointrelative",
-        "probability": 0.8
+        "probability": 1
     },
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
         "gaussianMutationPower": 5,
-        "maxMutationCountStart": 3,
+        "maxMutationCountStart": 0,
         "maxMutationCountFocusedPhase": 10
     },
     "selection": {
         "operator": "rank",
-        "size": 2,
         "randomSelectionProbabilityStart": 0.5,
         "randomSelectionProbabilityFocusedPhase": 0
     },
