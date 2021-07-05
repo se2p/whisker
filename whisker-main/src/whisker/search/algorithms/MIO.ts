@@ -27,6 +27,7 @@ import {Randomness} from "../../utils/Randomness";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -76,7 +77,11 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _samplingCounter: Map<number, number>;
 
+    private _localSearchOperators = new List<LocalSearch<C>>();
+
     private _startTime: number;
+
+    private readonly _random = Randomness.getInstance();
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -123,6 +128,13 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._heuristicFunctions = heuristicFunctions;
     }
 
+    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
+        this._localSearchOperators = localSearchOperators;
+        for (const localSearchOperator of localSearchOperators) {
+            localSearchOperator.setAlgorithm(this);
+        }
+    }
+
     getNumberOfIterations(): number {
         return this._iterations;
     }
@@ -145,6 +157,14 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 await mutatedChromosome.evaluate();
                 this._mutationCounter++;
                 this.updateArchive(mutatedChromosome);
+                // Apply local search to the mutated chromosome.
+                for (const localSearch of this._localSearchOperators) {
+                    if (localSearch.isApplicable(mutatedChromosome) &&
+                        this._random.nextDouble() < localSearch.getProbability()) {
+                        const modifiedChromosome = await localSearch.apply(mutatedChromosome);
+                        this.updateArchive(modifiedChromosome);
+                    }
+                }
             } else {
                 chromosome = this.getNewChromosome();
                 await chromosome.evaluate();
@@ -156,21 +176,21 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
-            console.log("Iteration " + this._iterations + ", covered goals: "
-                + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
+            console.log(`Iteration ${this._iterations},
+             covered goals: ${this._archiveCovered.size} / ${this._fitnessFunctions.size}`);
         }
         return this._bestIndividuals;
     }
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- */
+    /**
+     * Summarize the solution saved in _archive.
+     * @returns: For each statement that is not covered, it returns 4 items:
+     *        - Not covered: the statement that’s not covered by any
+     *        function in the _bestIndividuals.
+     *        - ApproachLevel: the approach level of that statement
+     *        - BranchDistance: the branch distance of that statement
+     *        - Fitness: the fitness value of that statement
+     */
 
     summarizeSolution(): string {
         const summary = [];
@@ -191,8 +211,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         branchDistance = fitnessFunction.getBranchDistance(chromosome);
                         if (approachLevel === 0 && branchDistance === 0) {
                             CFGDistance = fitnessFunction.getCFGDistance(chromosome);
-                        }
-                        else {
+                        } else {
                             CFGDistance = Number.MAX_VALUE;
                             //this means that it was unnecessary to calculate cfg distance, since
                             //approach level or branch distance was not 0;
@@ -203,7 +222,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 curSummary['BranchDistance'] = branchDistance;
                 curSummary['CFGDistance'] = CFGDistance;
                 curSummary['Fitness'] = fitness;
-                if (Object.keys(curSummary).length > 0){
+                if (Object.keys(curSummary).length > 0) {
                     summary.push(curSummary);
                 }
             }
@@ -272,7 +291,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                     this._archiveUncovered.delete(fitnessFunctionKey);
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
-                    if(this._archiveCovered.size == this._fitnessFunctions.size) {
+                    if (this._archiveCovered.size == this._fitnessFunctions.size) {
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     }
@@ -315,7 +334,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param fitnessFunctionKey The key of the fitness function.
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
-        console.log("Found test for goal: " + this._fitnessFunctions.get(fitnessFunctionKey));
+        console.log(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
         this._bestIndividuals = new List<C>(Array.from(this._archiveCovered.values())).distinct();
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
