@@ -43,6 +43,9 @@ export class CheckUtility {
 
             this.testDriver.addModelSpriteMoved((sprite) => {
                 if (sprite.name == spriteName1 && sprite.isTouchingSprite(spriteName2)) {
+                    if (sprite.name == "Apple" && spriteName2 == "Bowl") {
+                        console.error("Apple touching bowl", this.testDriver.getTotalStepsExecuted());
+                    }
                     this.touched[touchingString] = true;
                 }
             });
@@ -70,6 +73,10 @@ export class CheckUtility {
                 // made visible again it triggers this, test for visibility here too. this could also fail in some
                 // cases...
                 if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b]) && sprite.visible) {
+                    if (sprite.name == "Apple") {
+                        sprite.isTouchingColor([r,g,b]);
+                        console.error("Apple touching red", this.testDriver.getTotalStepsExecuted(), sprite.x);
+                    }
                     this.colorTouched[colorString] = true;
                 }
             });
@@ -147,9 +154,7 @@ export class CheckUtility {
         for (let i = 0; i < effects.length; i++) {
             if (!effects[i].check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
                 let error = getEffectFailedOutput(edge, effects[i]);
-                console.log("bowl", this.testDriver.getSprite("Bowl").x);
-                console.log("punkte", this.testDriver.getStage().getVariable("Punkte").value);
-                console.error(error, this.testDriver.getTotalStepsExecuted());
+                // console.error(error);
                 modelResult.addFail(error);
             }
         }
@@ -207,13 +212,10 @@ export class CheckUtility {
             return;
         }
 
-        let t = this.testDriver;
+        // let t = this.testDriver;
         function makeFailedOutput(edge, effect) {
             let output = getEffectFailedOutput(edge, effect);
-            console.log("Zeit", t.getStage().getVariable("Zeit").value);
-            let bowl = t.getSprite("Bowl");
-            console.log("bowl movement", bowl.x, bowl.old.x)
-            console.error(output, t.getTotalStepsExecuted());
+            // console.error(output);
             modelResult.addFail(output);
         }
 
