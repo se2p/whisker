@@ -18,7 +18,7 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      */
     isApplicable(chromosome: TestChromosome): boolean {
         return chromosome.getGenes().size() > 1 && chromosome.getGenes().size() > chromosome.lastImprovedCodon &&
-            this._originalChromosomes.indexOf(chromosome) < 0;
+            chromosome.lastImprovedTrace !== undefined && this._originalChromosomes.indexOf(chromosome) < 0;
     }
 
     /**
