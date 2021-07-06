@@ -4,25 +4,35 @@ import {Effect} from "../components/Effect";
 import {ProgramModelEdge} from "../components/ModelEdge";
 import {getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
+import EventEmitter from "events";
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
  */
-export class CheckUtility {
+export class CheckUtility extends EventEmitter {
     private readonly testDriver: TestDriver;
+    private readonly modelResult: ModelResult;
 
+    static readonly EVENT_TOUCHING = "EventTouching";
+    static readonly EVENT_COLOR = "EventColor";
     private touched: { [key: string]: boolean } = {};
     private colorTouched: { [key: string]: boolean } = {};
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
+    private constraintChecks: { edge: ProgramModelEdge, model: ProgramModel }[] = [];
     private failedChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
 
     /**
      * Get an instance of a condition state saver.
      * @param testDriver Instance of the test driver.
+     * @param nbrOfAllModels Number of all models.
+     * @param modelResult For saving errors of the model.
      */
-    constructor(testDriver: TestDriver) {
+    constructor(testDriver: TestDriver, nbrOfAllModels: number, modelResult: ModelResult) {
+        super();
         this.testDriver = testDriver;
+        this.modelResult = modelResult;
+        this.setMaxListeners(nbrOfAllModels);
     }
 
     /**
@@ -32,21 +42,16 @@ export class CheckUtility {
      * @param spriteName2 Name of the other sprite that the first needs to touch.
      */
     registerTouching(spriteName1: string, spriteName2: string): void {
-        this._registerTouching(spriteName1, spriteName2);
-    }
-
-    private _registerTouching(spriteName1: string, spriteName2: string): void {
         let touchingString = CheckUtility.getTouchingString(spriteName1, spriteName2);
 
         if (this.touched[touchingString] == undefined) {
             this.touched[touchingString] = false;
 
             this.testDriver.addModelSpriteMoved((sprite) => {
-                if (sprite.name == spriteName1 && sprite.isTouchingSprite(spriteName2)) {
-                    if (sprite.name == "Apple" && spriteName2 == "Bowl") {
-                        console.error("Apple touching bowl", this.testDriver.getTotalStepsExecuted());
-                    }
-                    this.touched[touchingString] = true;
+                if (sprite.name == spriteName1 && (this.touched[touchingString] != sprite.isTouchingSprite(spriteName2))) {
+                    this.emit(CheckUtility.EVENT_TOUCHING, this.testDriver, spriteName1, spriteName2);
+                    this.touched[touchingString] = !this.touched[touchingString];
+                    console.log("emitting", touchingString, this.touched[touchingString]);
                 }
             });
         }
@@ -63,56 +68,16 @@ export class CheckUtility {
         let colorString = CheckUtility.getColorString(spriteName, r, g, b);
 
         if (this.colorTouched[colorString] == undefined) {
-
             this.colorTouched[colorString] = false;
 
             this.testDriver.addModelSpriteMoved((sprite) => {
-                // this test gets all very short touches with a color (when in the same step e.g. the sprites is
-                // moved again and a test isTouchingColor would not register it after step). as this also created
-                // the problem that even if the sprite is hidden, moves (touches randomly the color), and is then
-                // made visible again it triggers this, test for visibility here too. this could also fail in some
-                // cases...
-                if (sprite.name == spriteName && sprite.isTouchingColor([r, g, b]) && sprite.visible) {
-                    if (sprite.name == "Apple") {
-                        sprite.isTouchingColor([r,g,b]);
-                        console.error("Apple touching red", this.testDriver.getTotalStepsExecuted(), sprite.x);
-                    }
-                    this.colorTouched[colorString] = true;
+                if (sprite.name == spriteName && (this.colorTouched[colorString] != sprite.isTouchingColor([r, g, b]))) {
+                    this.emit(CheckUtility.EVENT_COLOR, this.testDriver, spriteName, r, g, b);
+                    this.colorTouched[colorString] = !this.colorTouched[colorString];
+                    console.log("emitting", colorString, this.colorTouched[colorString])
                 }
             });
         }
-    }
-
-    /**
-     * Reset the fulfilled checks of the last step.
-     */
-    reset() {
-        for (const touchedKey in this.touched) {
-            this.touched[touchedKey] = false;
-        }
-        for (const colorKey in this.colorTouched) {
-            this.colorTouched[colorKey] = false;
-        }
-    }
-
-    /**
-     * Check whether two sprites touched in the current step and they did not in the last step.
-     * @param spriteName1 Name of the first sprite.
-     * @param spriteName2 Name of the second sprite.
-     */
-    areTouching(spriteName1: string, spriteName2: string): boolean {
-        let combi1 = CheckUtility.getTouchingString(spriteName1, spriteName2);
-        let combi2 = CheckUtility.getTouchingString(spriteName2, spriteName1);
-        return (this.touched[combi1] || this.touched[combi2]
-            || this.testDriver.getSprite(spriteName1).isTouchingSprite(spriteName2));
-    }
-
-    /**
-     * Check whether a sprite is touching a color.
-     */
-    isTouchingColor(spriteName: string, r: number, g: number, b: number): boolean {
-        return (this.colorTouched[CheckUtility.getColorString(spriteName, r, g, b)]
-            || this.testDriver.getSprite(spriteName).isTouchingColor([r, g, b]));
     }
 
     /**
@@ -143,22 +108,44 @@ export class CheckUtility {
     }
 
     /**
-     * Check the effects of an edge immediately and throw an error if they are not fulfilled. For the constraints model.
-     * @param edge The taken edge of the constraints model.
+     * Register the effects of an constraint model edge in this listener to test them later on.
+     * @param takenEdge The taken edge of a model.
      * @param model Model of the edge.
-     * @param modelResult To save errors into.
      */
-    checkEffectsConstraint(edge: ProgramModelEdge, model: ProgramModel, modelResult: ModelResult) {
-        let effects = edge.effects;
-        let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
-        for (let i = 0; i < effects.length; i++) {
-            if (!effects[i].check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                let error = getEffectFailedOutput(edge, effects[i]);
-                // console.error(error);
-                modelResult.addFail(error);
+    registerConstraintCheck(takenEdge: ProgramModelEdge, model: ProgramModel) {
+        this.constraintChecks.push({edge: takenEdge, model: model});
+    }
+
+    /**
+     * Check the effects of the constraint models.
+     */
+    checkConstraintEffects(modelResult: ModelResult) {
+        for (let i = 0; i < this.constraintChecks.length; i++) {
+            let edge = this.constraintChecks[i].edge;
+            let effects = edge.effects;
+            let model = this.constraintChecks[i].model;
+
+            // todo make it possible to check for contradictions?
+            // for (let j = i + 1; j < this.effectChecks.length; j++) {
+            //     if (effect.contradicts(this.effectChecks[j].effect)) {
+            //         doNotCheck[i] = true;
+            //         doNotCheck[j] = true;
+            //     }
+            // }
+
+
+            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
+            for (let i = 0; i < effects.length; i++) {
+                if (!effects[i].check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
+                    let error = getEffectFailedOutput(edge, effects[i]);
+                    console.error(error);
+                    modelResult.addFail(error);
+                }
             }
         }
+        this.constraintChecks = [];
     }
+
 
     /**
      * Check the registered effects of this step.
@@ -215,7 +202,7 @@ export class CheckUtility {
         // let t = this.testDriver;
         function makeFailedOutput(edge, effect) {
             let output = getEffectFailedOutput(edge, effect);
-            // console.error(output);
+            console.error(output);
             modelResult.addFail(output);
         }
 

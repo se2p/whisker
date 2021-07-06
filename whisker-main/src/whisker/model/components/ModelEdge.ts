@@ -5,7 +5,6 @@ import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
 import {getErrorOnEdgeOutput, getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {InputEffect} from "./InputEffect";
-import {ModelTester} from "../ModelTester";
 
 /**
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
@@ -62,6 +61,9 @@ export abstract class ModelEdge {
             for (let i = 0; i < this.conditions.length; i++) {
                 try {
                     if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
+                        console.error(this.forceTestAfter, stepsSinceLastTransition);
+                        let banan = t.getSprite("Bananas");
+                        console.error("oldx",banan.old.x,"x",banan.x,"oldy",banan.old.y, "y", banan.y);
                         this.failedForcedTest = true;
                         failedConditions.push(this.conditions[i]);
                         modelResult.addFail(this.getTimeLimitFailedOutput(this.conditions[i], t));

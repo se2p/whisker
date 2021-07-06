@@ -184,11 +184,7 @@ export abstract class CheckGenerator {
         let spriteName2 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName2Regex).name;
         cu.registerTouching(spriteName1, spriteName2);
         return () => {
-            const areTouching = cu.areTouching(spriteName1, spriteName2);
-            if (areTouching) {
-                return !negated;
-            }
-            return negated;
+            return !negated == t.getSprite(spriteName1).isTouchingSprite(spriteName2);
         }
     }
 
@@ -213,10 +209,7 @@ export abstract class CheckGenerator {
         cu.registerColor(spriteName, r, g, b);
 
         return () => {
-            if (cu.isTouchingColor(spriteName, r, g, b)) {
-                return !negated;
-            }
-            return negated;
+            return (!negated == t.getSprite(spriteName).isTouchingColor([r, g, b]));
         }
     }
 

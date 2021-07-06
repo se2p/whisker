@@ -63,19 +63,47 @@ export class ProgramModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
-        let stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
-        let edge = this.currentState.testEdgeConditions(testDriver, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
-            modelResult);
+    makeOneTransition(t: TestDriver, checkUtility: CheckUtility, modelResult: ModelResult): ModelEdge {
+        let stepsSinceLastTransition = t.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
+        let edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
+            this.stepNbrOfProgramEnd, modelResult);
 
         if (edge != null) {
-            this.coverageCurrentRun[edge.id] = true;
-            this.coverageTotal[edge.id] = true;
-            this.currentState = this.nodes[edge.getEndNodeId()];
-            this.stepNbrOfScndLastTransition = this.stepNbrOfLastTransition;
-            this.stepNbrOfLastTransition = testDriver.getTotalStepsExecuted() + 1;
+            this.update(t, edge);
         }
         return edge;
+    }
+
+    testTouching(t: TestDriver, cu: CheckUtility, modelResult: ModelResult, sprite1: string, sprite2: string): ModelEdge {
+        let stepsSinceLastTransition = t.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
+        let edge = this.currentState.testEdgesOnTouching(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
+            modelResult, sprite1, sprite2);
+
+        if (edge != null) {
+            this.update(t, edge);
+        }
+        return edge;
+    }
+
+    testColor(t: TestDriver, cu: CheckUtility, modelResult: ModelResult, sprite1: string, r: number, g: number,
+              b: number): ModelEdge {
+        let stepsSinceLastTransition = t.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
+        let edge = this.currentState.testEdgesOnColor(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
+            modelResult, sprite1, r, g, b);
+
+        if (edge != null) {
+            this.update(t, edge);
+        }
+        return edge;
+    }
+
+    private update(t: TestDriver, edge: ModelEdge) {
+        this.coverageCurrentRun[edge.id] = true;
+        this.coverageTotal[edge.id] = true;
+        this.currentState = this.nodes[edge.getEndNodeId()];
+        this.stepNbrOfScndLastTransition = this.stepNbrOfLastTransition;
+        this.stepNbrOfLastTransition = t.getTotalStepsExecuted() + 1;
+
     }
 
     /**
@@ -147,9 +175,9 @@ export class ProgramModel {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean) {
+    registerComponents(cu: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean) {
         Object.values(this.nodes).forEach(node => {
-            node.registerComponents(checkListener, testDriver, result, caseSensitive);
+            node.registerComponents(cu, testDriver, result, caseSensitive);
         })
     }
 

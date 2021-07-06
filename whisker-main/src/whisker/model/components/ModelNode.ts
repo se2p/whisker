@@ -2,6 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
 import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
+import {CheckName} from "./Check";
 
 /**
  * Node structure for a model.
@@ -35,11 +36,10 @@ export class ModelNode {
      * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    testEdgeConditions(testDriver: TestDriver, stepsSinceLastTransition: number, stepsSinceEnd: number, modelResult: ModelResult) {
-        if (this.edges.length == 0) {
-            return null;
-        }
+    testEdgeConditions(testDriver: TestDriver, checkUtility: CheckUtility, stepsSinceLastTransition: number,
+                       stepsSinceEnd: number, modelResult: ModelResult): ModelEdge {
 
+        // get all edges that have not failing conditions and check for order of events
         for (let i = 0; i < this.edges.length; i++) {
             const result = this.edges[i].checkConditions(testDriver, stepsSinceLastTransition, stepsSinceEnd, modelResult);
 
@@ -47,8 +47,43 @@ export class ModelNode {
                 return this.edges[i];
             }
         }
-
         return null;
+    }
+
+    testEdgesOnTouching(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number,
+                        stepsSinceEnd: number, modelResult: ModelResult, sprite1: string, sprite2: string) {
+        for (let i = 0; i < this.edges.length; i++) {
+            for (let j = 0; j < this.edges[i].conditions.length; j++) {
+                let cond = this.edges[i].conditions[j];
+                if (cond.name == CheckName.SpriteTouching && cond.args[0] == sprite1 && cond.args[1] == sprite2) {
+                    const result = this.edges[i].checkConditions(t, stepsSinceLastTransition, stepsSinceEnd, modelResult);
+
+                    if (result && result.length == 0) {
+                        return this.edges[i];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    testEdgesOnColor(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number,
+                     stepsSinceEnd: number, modelResult: ModelResult, sprite1: string, r: number, g: number, b: number) {
+        for (let i = 0; i < this.edges.length; i++) {
+            for (let j = 0; j < this.edges[i].conditions.length; j++) {
+                let cond = this.edges[i].conditions[j];
+                if (cond.name == CheckName.SpriteColor && cond.args[0] == sprite1 && cond.args[1] == r
+                    && cond.args[2] == g && cond.args[3] == b) {
+                    const result = this.edges[i].checkConditions(t, stepsSinceLastTransition, stepsSinceEnd, modelResult);
+
+                    if (result && result.length == 0) {
+                        return this.edges[i];
+                    }
+                }
+            }
+        }
+        return null;
+
     }
 
     /**

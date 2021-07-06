@@ -59,10 +59,10 @@ export class UserModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(testDriver: TestDriver, modelResult: ModelResult): ModelEdge {
+    makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility, modelResult: ModelResult): ModelEdge {
         let stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.lastTransitionStep;
-        let edge = this.currentState.testEdgeConditions(testDriver, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
-            modelResult);
+        let edge = this.currentState.testEdgeConditions(testDriver, checkUtility, stepsSinceLastTransition,
+            this.stepNbrOfProgramEnd, modelResult);
 
         if (edge != null) {
             this.currentState = this.nodes[edge.getEndNodeId()];
