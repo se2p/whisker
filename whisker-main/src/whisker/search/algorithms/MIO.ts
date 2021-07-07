@@ -73,8 +73,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private _maxMutationCountFocusedPhase: number;
 
-    private _mutationCounter: number;
-
     private _samplingCounter: Map<number, number>;
 
     private _localSearchOperators = new List<LocalSearch<C>>();
@@ -151,25 +149,31 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     async findSolution(): Promise<List<C>> {
         this.setStartValues();
         let chromosome: C;
+        let mutationCounter = 0;
         while (!(this._stoppingCondition.isFinished(this))) {
-            if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
-                const mutatedChromosome = chromosome.mutate();
-                await mutatedChromosome.evaluate();
-                this._mutationCounter++;
-                this.updateArchive(mutatedChromosome);
-                // Apply local search to the mutated chromosome.
-                for (const localSearch of this._localSearchOperators) {
-                    if (localSearch.isApplicable(mutatedChromosome) &&
-                        this._random.nextDouble() < localSearch.getProbability()) {
-                        const modifiedChromosome = await localSearch.apply(mutatedChromosome);
-                        this.updateArchive(modifiedChromosome);
-                    }
-                }
-            } else {
-                chromosome = this.getNewChromosome();
+            // If we have no chromosomes saved in our archives so far or if randomness tells us to do so
+            // we sample a new chromosome randomly.
+            if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0)
+                || this._random.nextDouble() < this._randomSelectionProbability) {
+                chromosome = this._chromosomeGenerator.get();
                 await chromosome.evaluate();
-                this._mutationCounter = 0;
                 this.updateArchive(chromosome);
+                // By chance apply LocalSearch to the randomly generated chromosome.
+                await this.applyLocalSearch(chromosome);
+            } else {
+                // Otherwise select a chromosome from an uncovered Population and mutate it
+                let mutant = this.chooseChromosome().clone() as C;
+                while (mutationCounter < this._maxMutationCount) {
+                    mutant = mutant.mutate();
+                    await mutant.evaluate();
+                    this.updateArchive(mutant);
+                    mutationCounter++;
+                }
+                // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
+                // too cost intensive and provides hardly any benefit.
+                await this.applyLocalSearch(mutant);
+                // Reset mutationCounter
+                mutationCounter = 0;
             }
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
@@ -179,6 +183,23 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log(`Iteration ${this._iterations}, covered goals: ${this._archiveCovered.size}/${this._fitnessFunctions.size}`);
         }
         return this._bestIndividuals;
+    }
+
+    /**
+     * Select a chromosome to mutate. We select the population with the lowest sampling counter and randomly choose
+     * a chromosome from the selected population.
+     * @return C selected Chromosome.
+     */
+    private chooseChromosome(): C {
+        const anyUncovered: boolean = this._archiveUncovered.size > 0;
+        const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
+        this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
+        if (anyUncovered) {
+            const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
+            return this._random.pickRandomElementFromList(archiveTuples).getChromosome();
+        } else {
+            return this._archiveCovered.get(fitnessFunctionKey);
+        }
     }
 
     /**
@@ -231,12 +252,24 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     }
 
     /**
+     * Apply all LocalSearch operators with a given probability iff they are applicable at all.
+     * @param chromosome the chromosome to apply LocalSearch on
+     */
+    private async applyLocalSearch(chromosome: C): Promise<void> {
+        for (const localSearch of this._localSearchOperators) {
+            if (localSearch.isApplicable(chromosome) && this._random.nextDouble() < localSearch.getProbability()) {
+                const modifiedChromosome = await localSearch.apply(chromosome);
+                this.updateArchive(modifiedChromosome);
+            }
+        }
+    }
+
+    /**
      * Sets the appropriate starting values for the search.
      */
     private setStartValues(): void {
         this._iterations = 0;
         this._startTime = Date.now();
-        this._mutationCounter = 0;
         this._bestIndividuals = new List<C>();
         this._archiveCovered = new Map<number, C>();
         this._archiveUncovered = new Map<number, List<ChromosomeHeuristicTuple<C>>>();
@@ -247,29 +280,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this.updateParameters();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
-    }
-
-    /**
-     * Creates a new chromosome by random or by mutating a chromosome from the archive.
-     *
-     * @returns A new chromosome.
-     */
-    private getNewChromosome(): C {
-        if ((this._archiveUncovered.size == 0 && this._archiveCovered.size == 0)
-            || Randomness.getInstance().nextDouble() < this._randomSelectionProbability) {
-            return this._chromosomeGenerator.get();
-        } else {
-            const anyUncovered: boolean = this._archiveUncovered.size > 0;
-            const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
-            this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
-            if (anyUncovered) {
-                const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
-                const randomIndex = Randomness.getInstance().nextInt(0, archiveTuples.size());
-                return archiveTuples.get(randomIndex).getChromosome().mutate();
-            } else {
-                return this._archiveCovered.get(fitnessFunctionKey).mutate();
-            }
-        }
     }
 
     /**
