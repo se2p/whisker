@@ -68,16 +68,6 @@ export class ProgramModel {
         let edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.stepNbrOfProgramEnd, modelResult);
 
-        if (edge != null) {
-            this.update(t, edge);
-        }
-        return edge;
-    }
-
-    testTouching(t: TestDriver, cu: CheckUtility, modelResult: ModelResult, sprite1: string, sprite2: string): ModelEdge {
-        let stepsSinceLastTransition = t.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
-        let edge = this.currentState.testEdgesOnTouching(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
-            modelResult, sprite1, sprite2);
 
         if (edge != null) {
             this.update(t, edge);
@@ -85,11 +75,10 @@ export class ProgramModel {
         return edge;
     }
 
-    testColor(t: TestDriver, cu: CheckUtility, modelResult: ModelResult, sprite1: string, r: number, g: number,
-              b: number): ModelEdge {
+    testForEvent(t: TestDriver, cu: CheckUtility, modelResult: ModelResult, eventStrings: string[]): ModelEdge {
         let stepsSinceLastTransition = t.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
-        let edge = this.currentState.testEdgesOnColor(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
-            modelResult, sprite1, r, g, b);
+        let edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
+            modelResult, eventStrings);
 
         if (edge != null) {
             this.update(t, edge);

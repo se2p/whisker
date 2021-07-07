@@ -182,9 +182,11 @@ export abstract class CheckGenerator {
                                   spriteName1Regex: string, spriteName2Regex: string): () => boolean {
         let spriteName1 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName1Regex).name;
         let spriteName2 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName2Regex).name;
-        cu.registerTouching(spriteName1, spriteName2);
+        cu.registerTouching(spriteName1Regex, spriteName2Regex, spriteName1, spriteName2, negated);
+        // only test touching if the sprite did not move as otherwise the model was already notified and test it
         return () => {
-            return !negated == t.getSprite(spriteName1).isTouchingSprite(spriteName2);
+            const sprite = t.getSprite(spriteName1);
+            return sprite.x === sprite.old.x && sprite.y === sprite.old.y && !negated == sprite.isTouchingSprite(spriteName2);
         }
     }
 
@@ -206,10 +208,11 @@ export abstract class CheckGenerator {
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
             throw getRGBRangeError();
         }
-        cu.registerColor(spriteName, r, g, b);
-
+        cu.registerColor(spriteNameRegex, spriteName, r, g, b, negated);
+        // only test touching if the sprite did not move as otherwise the model was already notified and test it
         return () => {
-            return (!negated == t.getSprite(spriteName).isTouchingColor([r, g, b]));
+            const sprite = t.getSprite(spriteName);
+            return sprite.x === sprite.old.x && sprite.y === sprite.old.y && !negated == sprite.isTouchingColor([r, g, b]);
         }
     }
 

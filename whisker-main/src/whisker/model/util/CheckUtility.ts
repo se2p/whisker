@@ -13,10 +13,11 @@ export class CheckUtility extends EventEmitter {
     private readonly testDriver: TestDriver;
     private readonly modelResult: ModelResult;
 
-    static readonly EVENT_TOUCHING = "EventTouching";
-    static readonly EVENT_COLOR = "EventColor";
-    private touched: { [key: string]: boolean } = {};
-    private colorTouched: { [key: string]: boolean } = {};
+    static readonly EVENT = "Event"
+    private spriteChecks: { [key: string]: ((sprite) => boolean)[] } = {};
+    private registeredTouching: string[] = [];
+    private registeredColor: string[] = [];
+    private eventStrings: string[] = [];
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
     private constraintChecks: { edge: ProgramModelEdge, model: ProgramModel }[] = [];
@@ -38,46 +39,105 @@ export class CheckUtility extends EventEmitter {
     /**
      * Register a touching check for a sprite with another sprite. The check is also registered for the
      * other sprite as there have been inconsistencies.
+     * @param spriteRegex1 Regex defining the first sprite name to find the same check again.
+     * @param spriteRegex2 Regex defining the second sprite name to find the same check again.
      * @param spriteName1 Sprite's name that gets the condition check registered.
      * @param spriteName2 Name of the other sprite that the first needs to touch.
+     * @param negated Whether this check is negated.
      */
-    registerTouching(spriteName1: string, spriteName2: string): void {
-        let touchingString = CheckUtility.getTouchingString(spriteName1, spriteName2);
+    registerTouching(spriteRegex1: string, spriteRegex2: string, spriteName1: string, spriteName2: string, negated: boolean): void {
+        const touchingString = CheckUtility.getTouchingString(spriteName1, spriteName2, negated);
+        const eventString = CheckUtility.getTouchingString(spriteRegex1, spriteRegex2, negated);
 
-        if (this.touched[touchingString] == undefined) {
-            this.touched[touchingString] = false;
+        // no check for this sprite till now
+        if (this.spriteChecks[spriteName1] == undefined) {
+            this.setupModelSpriteMove(spriteName1);
+        }
 
-            this.testDriver.addModelSpriteMoved((sprite) => {
-                if (sprite.name == spriteName1 && (this.touched[touchingString] != sprite.isTouchingSprite(spriteName2))) {
-                    this.emit(CheckUtility.EVENT_TOUCHING, this.testDriver, spriteName1, spriteName2);
-                    this.touched[touchingString] = !this.touched[touchingString];
-                    console.log("emitting", touchingString, this.touched[touchingString]);
-                }
+        if (this.registeredTouching.indexOf(touchingString) == -1) {
+            this.registeredTouching.push(touchingString);
+            this.spriteChecks[spriteName1].push((sprite) => {
+                return !negated == sprite.isTouchingSprite(spriteName2) && this.updateEventString(eventString);
             });
         }
     }
 
     /**
      * Registers a color touching check for a sprite with a RGB color value (as an array).
+     * @param spriteRegex Regex defining the first sprite name to find the same check again.
+     * @param negated Whether this check is negated
      * @param spriteName Name of the sprite that gets the check.
      * @param r RGB red value.
      * @param g RGB green value.
      * @param b RGB blue value.
      */
-    registerColor(spriteName: string, r: number, g: number, b: number): void {
-        let colorString = CheckUtility.getColorString(spriteName, r, g, b);
+    registerColor(spriteRegex: string, spriteName: string, r: number, g: number, b: number, negated: boolean): void {
+        const colorString = CheckUtility.getColorString(spriteName, r, g, b, negated);
+        const eventString = CheckUtility.getColorString(spriteRegex, r, g, b, negated);
 
-        if (this.colorTouched[colorString] == undefined) {
-            this.colorTouched[colorString] = false;
+        // no check for this sprite till now
+        if (this.spriteChecks[spriteName] == undefined) {
+            this.setupModelSpriteMove(spriteName);
+        }
 
-            this.testDriver.addModelSpriteMoved((sprite) => {
-                if (sprite.name == spriteName && (this.colorTouched[colorString] != sprite.isTouchingColor([r, g, b]))) {
-                    this.emit(CheckUtility.EVENT_COLOR, this.testDriver, spriteName, r, g, b);
-                    this.colorTouched[colorString] = !this.colorTouched[colorString];
-                    console.log("emitting", colorString, this.colorTouched[colorString])
-                }
+        if (this.registeredColor.indexOf(colorString) == -1) {
+            this.registeredColor.push(colorString);
+            this.spriteChecks[spriteName].push((sprite) => {
+                return !negated == sprite.isTouchingColor([r,g,b]) && this.updateEventString(eventString);
             });
         }
+    }
+
+    private setupModelSpriteMove(spriteName: string) {
+        this.spriteChecks[spriteName] = [];
+        this.testDriver.addModelSpriteMoved((sprite) => {
+            if (sprite.name == spriteName) {
+                let change = false;
+                this.spriteChecks[spriteName].forEach(fun => {
+                    if (fun(sprite)) {
+                        change = true;
+                    }
+                });
+                if (change) {
+                    this.emit(CheckUtility.EVENT, this.testDriver, this.eventStrings);
+                }
+            }
+        })
+    }
+
+    private updateEventString(event: string): boolean {
+        if (this.eventStrings.indexOf(event) != -1) {
+            return false;
+        }
+
+        if (this.eventStrings.length == 0) {
+            this.eventStrings.push(event);
+            return true;
+        }
+
+        const negated = event.startsWith("!");
+        let invertedEvent;
+
+        if (negated) {
+            invertedEvent = event.substring(1, event.length);
+        } else {
+            invertedEvent = "!" + event;
+        }
+
+        let newEventString = [];
+        // if the event strings array contains the inverted event remove that one
+        for (let i = 0; i < this.eventStrings.length; i++) {
+            if (this.eventStrings[i] != invertedEvent) {
+                newEventString.push(this.eventStrings[i]);
+            }
+        }
+        this.eventStrings = newEventString;
+        this.eventStrings.push(event);
+        return true;
+    }
+
+    reset() {
+        this.eventStrings = [];
     }
 
     /**
@@ -88,12 +148,14 @@ export class CheckUtility extends EventEmitter {
         return this.testDriver.isKeyDown(keyName);
     }
 
-    private static getTouchingString(sprite1: string, sprite2: string): string {
-        return sprite1 + ":" + sprite2;
+    static getTouchingString(sprite1: string, sprite2: string, negated: boolean): string {
+        let s = negated ? "!" : "";
+        return s + sprite1 + ":" + sprite2;
     }
 
-    private static getColorString(spriteName: string, r: number, g: number, b: number): string {
-        return spriteName + ":" + r + ":" + g + ":" + b;
+    static getColorString(spriteName: string, r: number, g: number, b: number, negated): string {
+        let s = negated ? "!" : "";
+        return s + spriteName + ":" + r + ":" + g + ":" + b;
     }
 
     /**

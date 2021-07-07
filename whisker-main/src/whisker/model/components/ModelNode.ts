@@ -50,38 +50,57 @@ export class ModelNode {
         return null;
     }
 
-    testEdgesOnTouching(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number,
-                        stepsSinceEnd: number, modelResult: ModelResult, sprite1: string, sprite2: string) {
+    testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
+                 modelResult: ModelResult, eventStrings: string[]) {
         for (let i = 0; i < this.edges.length; i++) {
+
+            let check = false;
+
+            // look up if this edge should be checked first based on its conditions
+            // edge should only be checked if it contains any event of the eventStrings and no touchingSprite or
+            // touchingColor event that is not in eventStrings
             for (let j = 0; j < this.edges[i].conditions.length; j++) {
                 let cond = this.edges[i].conditions[j];
-                if (cond.name == CheckName.SpriteTouching && cond.args[0] == sprite1 && cond.args[1] == sprite2) {
-                    const result = this.edges[i].checkConditions(t, stepsSinceLastTransition, stepsSinceEnd, modelResult);
 
-                    if (result && result.length == 0) {
-                        return this.edges[i];
+                if (cond.name == CheckName.SpriteTouching || cond.name == CheckName.SpriteColor) {
+
+                    let eventString;
+                    if (cond.name == CheckName.SpriteTouching) {
+                        eventString = CheckUtility.getTouchingString(cond.args[0], cond.args[1], cond.negated);
+                    } else  {
+                        eventString = CheckUtility.getColorString(cond.args[0], cond.args[1], cond.args[2], cond.args[3],
+                            cond.negated);
+                    }
+
+                    if (eventStrings.indexOf(eventString) == -1) {
+                        check = false;
+                        break;
+                    } else {
+                        check = true;
                     }
                 }
             }
-        }
-        return null;
-    }
 
-    testEdgesOnColor(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number,
-                     stepsSinceEnd: number, modelResult: ModelResult, sprite1: string, r: number, g: number, b: number) {
-        for (let i = 0; i < this.edges.length; i++) {
-            for (let j = 0; j < this.edges[i].conditions.length; j++) {
-                let cond = this.edges[i].conditions[j];
-                if (cond.name == CheckName.SpriteColor && cond.args[0] == sprite1 && cond.args[1] == r
-                    && cond.args[2] == g && cond.args[3] == b) {
-                    const result = this.edges[i].checkConditions(t, stepsSinceLastTransition, stepsSinceEnd, modelResult);
+            if (check) {
+                let failed = false;
+                for (let j = 0; j < this.edges[i].conditions.length; j++) {
+                    let cond = this.edges[i].conditions[j];
 
-                    if (result && result.length == 0) {
-                        return this.edges[i];
+                    // check only not yet fulfilled conditions
+                    if (cond.name != CheckName.SpriteTouching && cond.name != CheckName.SpriteColor) {
+                        if (!cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                            failed = true;
+                            break;
+                        }
                     }
+                }
+
+                if (!failed) {
+                    return this.edges[i];
                 }
             }
         }
+
         return null;
 
     }

@@ -112,8 +112,7 @@ export class ModelTester extends EventEmitter {
         let allModels = [...this.programModels, ...this.constraintsModels, ...this.userModels, ...this.onTestEndModels];
         this.result = new ModelResult();
         this.checkUtility = new CheckUtility(testDriver, allModels.length, this.result);
-        this.checkUtility.on(CheckUtility.EVENT_TOUCHING, this.onTouchingEvent.bind(this));
-        this.checkUtility.on(CheckUtility.EVENT_COLOR, this.onColorEvent.bind(this));
+        this.checkUtility.on(CheckUtility.EVENT, this.onEvent.bind(this));
 
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
         allModels.forEach(model => {
@@ -187,6 +186,7 @@ export class ModelTester extends EventEmitter {
             });
             this.checkEffects();
             checkProgramModels = [...notStoppedModels];
+            this.checkUtility.reset();
 
             if (checkProgramModels.length == 0) {
                 this.modelStepCallback.disable();
@@ -286,46 +286,11 @@ export class ModelTester extends EventEmitter {
         }
     }
 
-    // TODO PROBLEM: sprite namen sind hier nicht gleich wie die REGEX von den conditions -.-
-    // TODO: PROBLEM 2: Edge for not changing points taken when ever apple/banana leaves the ground, but should be
-    //  checked only the step after...
-    private onTouchingEvent(t: TestDriver, sprite1: string, sprite2: string) {
-        if (this.constraintCallback.isActive()) {
-            this.constraintsModels.forEach(model => {
-                let edge = model.testTouching(t, this.checkUtility, this.result, sprite1, sprite2);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    // register only, check is after the step
-                    this.checkUtility.registerConstraintCheck(edge, model);
-                    this.edgeTrace(edge, t);
-                }
-            })
-        }
-        if (this.modelStepCallback.isActive()) {
-            this.programModels.forEach(model => {
-                let edge = model.testTouching(t, this.checkUtility, this.result, sprite1, sprite2);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    // register only, check is after the step
-                    this.checkUtility.registerEffectCheck(edge, model);
-                    this.edgeTrace(edge, t);
-                }
-            });
-        }
-        if (this.onTestEndCallback.isActive()) {
-            this.onTestEndModels.forEach(model => {
-                let edge = model.testTouching(t, this.checkUtility, this.result, sprite1, sprite2);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    // register only, check is after the step
-                    this.checkUtility.registerConstraintCheck(edge, model);
-                    this.edgeTrace(edge, t);
-                }
-            });
-        }
-    }
 
-    private onColorEvent(t: TestDriver, sprite: string, r: number, g: number, b: number) {
+    private onEvent(t: TestDriver, eventStrings: string[]) {
         if (this.constraintCallback.isActive()) {
             this.constraintsModels.forEach(model => {
-                let edge = model.testColor(t, this.checkUtility, this.result, sprite, r, g, b);
+                let edge = model.testForEvent(t, this.checkUtility, this.result, eventStrings);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     // register only, check is after the step
                     this.checkUtility.registerConstraintCheck(edge, model);
@@ -335,7 +300,7 @@ export class ModelTester extends EventEmitter {
         }
         if (this.modelStepCallback.isActive()) {
             this.programModels.forEach(model => {
-                let edge = model.testColor(t, this.checkUtility, this.result, sprite, r, g, b);
+                let edge = model.testForEvent(t, this.checkUtility, this.result, eventStrings);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     // register only, check is after the step
                     this.checkUtility.registerEffectCheck(edge, model);
@@ -345,7 +310,7 @@ export class ModelTester extends EventEmitter {
         }
         if (this.onTestEndCallback.isActive()) {
             this.onTestEndModels.forEach(model => {
-                let edge = model.testColor(t, this.checkUtility, this.result, sprite, r, g, b);
+                let edge = model.testForEvent(t, this.checkUtility, this.result, eventStrings);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     // register only, check is after the step
                     this.checkUtility.registerConstraintCheck(edge, model);
