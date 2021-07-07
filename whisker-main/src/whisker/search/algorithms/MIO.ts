@@ -28,6 +28,7 @@ import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import {TestChromosome} from "../../testcase/TestChromosome";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -153,29 +154,45 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         while (!(this._stoppingCondition.isFinished(this))) {
             // If we have no chromosomes saved in our archives so far or if randomness tells us to do so
             // we sample a new chromosome randomly.
-            if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0)
+            if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0) || this._maxMutationCount === 0
                 || this._random.nextDouble() < this._randomSelectionProbability) {
                 chromosome = this._chromosomeGenerator.get();
                 await chromosome.evaluate();
                 this.updateArchive(chromosome);
                 // By chance apply LocalSearch to the randomly generated chromosome.
                 await this.applyLocalSearch(chromosome);
+                this._iterations++;
             } else {
-                // Otherwise select a chromosome from an uncovered Population and mutate it
-                let mutant = this.chooseChromosome().clone() as C;
+                // Otherwise we choose a chromosome to mutate from one of our populations, preferring uncovered ones.
+                const anyUncovered: boolean = this._archiveUncovered.size > 0;
+                const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
+                this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
+                if (anyUncovered) {
+                    const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
+                    chromosome = this._random.pickRandomElementFromList(archiveTuples).getChromosome().clone() as C;
+                } else {
+                    chromosome = this._archiveCovered.get(fitnessFunctionKey).clone() as C;
+                }
+                let currentHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
                 while (mutationCounter < this._maxMutationCount) {
-                    mutant = mutant.mutate();
+                    const mutant = chromosome.mutate();
                     await mutant.evaluate();
-                    this.updateArchive(mutant);
+                    this.updateArchive(chromosome);
+                    const mutantHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
+                    // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome
+                    if (currentHeuristic <= mutantHeuristic) {
+                        chromosome = mutant;
+                        currentHeuristic = mutantHeuristic;
+                    }
                     mutationCounter++;
+                    this._iterations++;
                 }
                 // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
                 // too cost intensive and provides hardly any benefit.
-                await this.applyLocalSearch(mutant);
+                await this.applyLocalSearch(chromosome);
                 // Reset mutationCounter
                 mutationCounter = 0;
             }
-            this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
@@ -183,23 +200,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log(`Iteration ${this._iterations}, covered goals: ${this._archiveCovered.size}/${this._fitnessFunctions.size}`);
         }
         return this._bestIndividuals;
-    }
-
-    /**
-     * Select a chromosome to mutate. We select the population with the lowest sampling counter and randomly choose
-     * a chromosome from the selected population.
-     * @return C selected Chromosome.
-     */
-    private chooseChromosome(): C {
-        const anyUncovered: boolean = this._archiveUncovered.size > 0;
-        const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
-        this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
-        if (anyUncovered) {
-            const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
-            return this._random.pickRandomElementFromList(archiveTuples).getChromosome();
-        } else {
-            return this._archiveCovered.get(fitnessFunctionKey);
-        }
     }
 
     /**
@@ -313,6 +313,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     archiveTuples = new List<ChromosomeHeuristicTuple<C>>();
                 }
                 const newTuple = new ChromosomeHeuristicTuple<C>(chromosome, heuristicValue);
+                // Do not add duplicates in any population!
+                if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
+                    continue;
+                }
                 if (archiveTuples.size() < this._maxArchiveSize) {
                     archiveTuples.add(newTuple);
                     this._samplingCounter.set(fitnessFunctionKey, 0);
@@ -330,6 +334,26 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 this._archiveUncovered.set(fitnessFunctionKey, archiveTuples);
             }
         }
+    }
+
+    /**
+     * Check if the given List of tuples already contains the tuple we want to add. Two tuples are similar if they
+     * possess exactly the same genes.
+     * @param tupleList the list into which we want to add the tuple
+     * @param tupleToAdd the tuple we want to add to the tupleList
+     * @return boolean determining if the tupleList already contains the tupleToAdd
+     */
+    private tuplesContainChromosome(tupleList: List<ChromosomeHeuristicTuple<C>>,
+                                    tupleToAdd: ChromosomeHeuristicTuple<C>): boolean {
+        const chromosomeToAdd = tupleToAdd.getChromosome() as unknown as TestChromosome;
+        const genesToAdd = JSON.stringify(chromosomeToAdd.getGenes());
+        for (const tuple of tupleList) {
+            const chromosome = tuple.getChromosome() as unknown as TestChromosome;
+            if (genesToAdd === JSON.stringify(chromosome.getGenes())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
