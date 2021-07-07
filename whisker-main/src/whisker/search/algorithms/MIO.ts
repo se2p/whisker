@@ -177,7 +177,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 while (mutationCounter < this._maxMutationCount) {
                     const mutant = chromosome.mutate();
                     await mutant.evaluate();
-                    this.updateArchive(chromosome);
+                    this.updateArchive(mutant);
                     const mutantHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
                     // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome
                     if (currentHeuristic <= mutantHeuristic) {
