@@ -64,7 +64,7 @@ export class ProgramModel {
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
     makeOneTransition(t: TestDriver, checkUtility: CheckUtility, modelResult: ModelResult): ModelEdge {
-        let stepsSinceLastTransition = t.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
+        let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.stepNbrOfLastTransition;
         let edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
             this.stepNbrOfProgramEnd, modelResult);
 
@@ -76,7 +76,7 @@ export class ProgramModel {
     }
 
     testForEvent(t: TestDriver, cu: CheckUtility, modelResult: ModelResult, eventStrings: string[]): ModelEdge {
-        let stepsSinceLastTransition = t.getTotalStepsExecuted() - this.stepNbrOfLastTransition;
+        let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.stepNbrOfLastTransition;
         let edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
             modelResult, eventStrings);
 

@@ -256,7 +256,7 @@ export class ModelLoader {
                 this.idUndefined++;
             }
 
-            if (name == undefined || CheckName[name] == undefined) { // todo test
+            if (name == undefined || CheckName[name] == undefined) {
                 throw new Error(newEdge.id + ": Name of condition wrong or missing.");
             }
 
@@ -286,7 +286,7 @@ export class ModelLoader {
                 this.idUndefined++;
             }
 
-            if (name == undefined || CheckName[name] == undefined) { // todo test
+            if (name == undefined || CheckName[name] == undefined) {
                 throw new Error(newEdge.id + ": Name of effect wrong or missing.");
             }
 
@@ -315,7 +315,7 @@ export class ModelLoader {
                 this.idUndefined++;
             }
 
-            if (name == undefined || InputEffectName[name] == undefined) { // todo test
+            if (name == undefined || InputEffectName[name] == undefined) {
                 throw new Error(newEdge.id + ": Name of input effect wrong or missing.");
             }
 

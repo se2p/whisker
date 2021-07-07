@@ -20,8 +20,9 @@ export class CheckUtility extends EventEmitter {
     private eventStrings: string[] = [];
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
-    private constraintChecks: { edge: ProgramModelEdge, model: ProgramModel }[] = [];
     private failedChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
+    private constraintChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
+    private failedConstraintChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
 
     /**
      * Get an instance of a condition state saver.
@@ -83,7 +84,7 @@ export class CheckUtility extends EventEmitter {
         if (this.registeredColor.indexOf(colorString) == -1) {
             this.registeredColor.push(colorString);
             this.spriteChecks[spriteName].push((sprite) => {
-                return !negated == sprite.isTouchingColor([r,g,b]) && this.updateEventString(eventString);
+                return !negated == sprite.isTouchingColor([r, g, b]) && this.updateEventString(eventString);
             });
         }
     }
@@ -175,111 +176,127 @@ export class CheckUtility extends EventEmitter {
      * @param model Model of the edge.
      */
     registerConstraintCheck(takenEdge: ProgramModelEdge, model: ProgramModel) {
-        this.constraintChecks.push({edge: takenEdge, model: model});
+        takenEdge.effects.forEach(effect => {
+            this.constraintChecks.push({effect: effect, edge: takenEdge, model: model});
+        });
     }
 
     /**
      * Check the effects of the constraint models.
      */
-    checkConstraintEffects(modelResult: ModelResult) {
-        for (let i = 0; i < this.constraintChecks.length; i++) {
-            let edge = this.constraintChecks[i].edge;
-            let effects = edge.effects;
-            let model = this.constraintChecks[i].model;
-
-            // todo make it possible to check for contradictions?
-            // for (let j = i + 1; j < this.effectChecks.length; j++) {
-            //     if (effect.contradicts(this.effectChecks[j].effect)) {
-            //         doNotCheck[i] = true;
-            //         doNotCheck[j] = true;
-            //     }
-            // }
-
-
-            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
-            for (let i = 0; i < effects.length; i++) {
-                if (!effects[i].check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                    let error = getEffectFailedOutput(edge, effects[i]);
-                    console.error(error);
-                    modelResult.addFail(error);
-                }
-            }
-        }
+    checkConstraintEffects(modelResult: ModelResult): Effect[] {
+        let result = this.check(this.constraintChecks, this.failOnConstraintModel, modelResult);
         this.constraintChecks = [];
+        this.failedConstraintChecks = result.failedEffects;
+        return result.contradictingEffects;
     }
 
 
     /**
      * Check the registered effects of this step.
      */
-    checkEffects(modelResult: ModelResult) {
+    checkEffects(modelResult: ModelResult): Effect[] {
+        let result = this.check(this.effectChecks, this.failOnProgramModel, modelResult);
+        this.failedChecks = result.failedEffects;
+        this.effectChecks = [];
+        return result.contradictingEffects;
+    }
+
+    private failOnProgramModel(edge, effect, modelResult, t) {
+        let output = getEffectFailedOutput(edge, effect);
+        console.error(output, t.getTotalStepsExecuted());
+        modelResult.addFail(output);
+    }
+
+    private failOnConstraintModel(edge, effect, modelResult, t) {
+        let error = getEffectFailedOutput(edge, effect);
+        console.error(error, t.getTotalStepsExecuted());
+        modelResult.addFail(error);
+    }
+
+    /**
+     * Check the registered effects of this step.
+     */
+    private check(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[],
+                  makeFailedOutput: (edge, effect, modelResult, t) => void, modelResult: ModelResult) {
         let doNotCheck = {};
+        let failedEffects = []
 
         // check for contradictions in effects
-        for (let i = 0; i < this.effectChecks.length; i++) {
-            let effect = this.effectChecks[i].effect;
+        for (let i = 0; i < toCheck.length; i++) {
+            let effect = toCheck[i].effect;
 
-            for (let j = i + 1; j < this.effectChecks.length; j++) {
-                if (effect.contradicts(this.effectChecks[j].effect)) {
+            for (let j = i + 1; j < toCheck.length; j++) {
+                if (effect.contradicts(toCheck[j].effect)) {
                     doNotCheck[i] = true;
                     doNotCheck[j] = true;
                 }
             }
 
             if (!doNotCheck[i]) {
-                let model = this.effectChecks[i].model;
+                let model = toCheck[i].model;
                 let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
                 try {
                     if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                        this.failedChecks.push(this.effectChecks[i]);
+                        // makeFailedOutput(toCheck[i].edge, effect, modelResult, this.testDriver);
+                        failedEffects.push(toCheck[i]);
                     }
                 } catch (e) {
-                    let error = getErrorOnEdgeOutput(this.effectChecks[i].edge, e.message);
-                    console.error(error);
-                    this.failedChecks.push(this.effectChecks[i]);
-                    modelResult.addError(error);
+                    // let error = getErrorOnEdgeOutput(toCheck[i].edge, e.message);
+                    // console.error(error);
+                    failedEffects.push(toCheck[i]);
+                    // modelResult.addError(error);
                 }
             }
         }
 
         // Get the contradicting edges and return them for outputs
         let contradictingEffects = [];
-        for (let i = 0; i < this.effectChecks.length; i++) {
+        for (let i = 0; i < toCheck.length; i++) {
             if (doNotCheck[i]) {
-                contradictingEffects.push(this.effectChecks[i].effect);
+                contradictingEffects.push(toCheck[i].effect);
             }
         }
-        this.effectChecks = [];
-        return contradictingEffects;
+        return {contradictingEffects, failedEffects};
     }
 
     /**
-     * Check the failed effects of this step.
+     * Check the failed effects of last step.
      */
     checkFailedEffects(modelResult: ModelResult) {
         if (!this.failedChecks || this.failedChecks.length == 0) {
             return;
         }
+        this.checkFailed(this.failedChecks, this.failOnProgramModel, modelResult);
+        this.failedChecks = [];
+    }
 
-        // let t = this.testDriver;
-        function makeFailedOutput(edge, effect) {
-            let output = getEffectFailedOutput(edge, effect);
-            console.error(output);
-            modelResult.addFail(output);
+    /**
+     * Check the failed constraint effects of last step.
+     */
+    checkFailedConstraintEffects(modelResult: ModelResult) {
+        if (!this.failedConstraintChecks || this.failedConstraintChecks.length == 0) {
+            return;
         }
+        this.checkFailed(this.failedConstraintChecks, this.failOnConstraintModel, modelResult);
+        this.failedConstraintChecks = [];
 
-        for (let i = 0; i < this.failedChecks.length; i++) {
-            let effect = this.failedChecks[i].effect;
-            let model = this.failedChecks[i].model;
+    }
+
+    private checkFailed(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[],
+                        makeFailedOutput: (edge, effect, modelResult, t) => void, modelResult: ModelResult) {
+
+        for (let i = 0; i < toCheck.length; i++) {
+            let effect = toCheck[i].effect;
+            let model = toCheck[i].model;
             try {
                 if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
                     model.stepNbrOfProgramEnd)) {
-                    makeFailedOutput(this.failedChecks[i].edge, effect);
+                    makeFailedOutput(toCheck[i].edge, effect, modelResult, this.testDriver);
                 }
             } catch (e) {
-                makeFailedOutput(this.failedChecks[i].edge, effect);
+                makeFailedOutput(toCheck[i].edge, effect, modelResult, this.testDriver);
             }
         }
-        this.failedChecks = [];
     }
 }

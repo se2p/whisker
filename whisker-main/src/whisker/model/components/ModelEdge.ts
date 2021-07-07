@@ -55,8 +55,8 @@ export abstract class ModelEdge {
         let failedConditions = [];
 
         // times up... force testing of conditions and if they are not fulfilled make add as failed
-        if ((this.forceTestAtSteps && this.forceTestAtSteps < t.getTotalStepsExecuted())
-            || (this.forceTestAfterSteps && this.forceTestAfterSteps < stepsSinceLastTransition)) {
+        if ((this.forceTestAtSteps && this.forceTestAtSteps <= t.getTotalStepsExecuted())
+            || (this.forceTestAfterSteps && this.forceTestAfterSteps <= stepsSinceLastTransition)) {
 
             for (let i = 0; i < this.conditions.length; i++) {
                 try {

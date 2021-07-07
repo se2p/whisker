@@ -150,11 +150,12 @@ export class ModelTester extends EventEmitter {
         let checkConstraintsModel = [...this.constraintsModels];
         return () => {
             let notStoppedModels = [];
+            this.checkUtility.checkFailedConstraintEffects(this.result);
             checkConstraintsModel.forEach(model => {
                 let edge = model.makeOneTransition(t, this.checkUtility, this.result);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     this.checkUtility.registerConstraintCheck(edge, model);
-                    // this.edgeTrace(edge, t);
+                    this.edgeTrace(edge, t);
                 }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
@@ -172,7 +173,16 @@ export class ModelTester extends EventEmitter {
     private getModelStepFunction(t: TestDriver) {
         let checkProgramModels = [...this.programModels];
         return () => {
-            // this.checkUtility.checkFailedEffects(this.result); // todo do i need that?
+            // if (t.getSprite("Bowl").sayText) {
+            //     console.log(t.getSprite("Bowl").sayText, t.getTotalStepsExecuted());
+            // }
+            // if (t.getSprite("Bananas").sayText) {
+            //     console.log(t.getSprite("Bananas").sayText, t.getTotalStepsExecuted());
+            // }
+            // if (t.getSprite("Apple").sayText) {
+            //     console.log(t.getSprite("Apple").sayText, t.getTotalStepsExecuted());
+            // }
+            this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.checkUtility, this.result);
@@ -244,11 +254,6 @@ export class ModelTester extends EventEmitter {
                     this.checkUtility.registerConstraintCheck(takenEdge, model);
                     this.edgeTrace(takenEdge, t);
                 }
-                if (model.haltAllModels()) { // todo move that out of the forEach or else not all models can make a
-                    // transition
-                    this.onTestEndCallback.disable();
-                    return;
-                }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
                 }
@@ -258,6 +263,13 @@ export class ModelTester extends EventEmitter {
                 this.onTestEndCallback.disable();
             }
             afterStopModels = [...notStoppedModels];
+
+            afterStopModels.forEach(model => {
+                if (model.haltAllModels()) {
+                    this.onTestEndCallback.disable();
+                    return;
+                }
+            })
         };
     }
 
@@ -335,8 +347,8 @@ export class ModelTester extends EventEmitter {
         }
         this.result.edgeTrace.push(edgeTrace);
         this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-        if (!transition.id.toLowerCase().startsWith("bowl"))
-            console.log("Edge trace: " + edgeTrace, t.getTotalStepsExecuted());
+        // if (transition.id.toLowerCase().startsWith("bananonred"))
+        //     console.log("Edge trace: " + edgeTrace, t.getTotalStepsExecuted());
     }
 
     /**

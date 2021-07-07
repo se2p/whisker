@@ -19,10 +19,10 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
 
     let result = edge.id + ": " + effect.toString();
     if (containsAtTime != undefined) {
-        result += " at " + containsAtTime;
+        result += " at " + containsAtTime + "ms";
     }
     if (containsAfterTime != undefined) {
-        result += " after " + containsAfterTime;
+        result += " after " + containsAfterTime + "ms";
     }
     return result;
 }
