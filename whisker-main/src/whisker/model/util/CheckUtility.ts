@@ -149,11 +149,17 @@ export class CheckUtility extends EventEmitter {
         return this.testDriver.isKeyDown(keyName);
     }
 
+    /**
+     * Get the string defining a touching event.
+     */
     static getTouchingString(sprite1: string, sprite2: string, negated: boolean): string {
         let s = negated ? "!" : "";
         return s + sprite1 + ":" + sprite2;
     }
 
+    /**
+     * Get the string defining a color event.
+     */
     static getColorString(spriteName: string, r: number, g: number, b: number, negated): string {
         let s = negated ? "!" : "";
         return s + spriteName + ":" + r + ":" + g + ":" + b;
@@ -184,8 +190,8 @@ export class CheckUtility extends EventEmitter {
     /**
      * Check the effects of the constraint models.
      */
-    checkConstraintEffects(modelResult: ModelResult): Effect[] {
-        let result = this.check(this.constraintChecks, this.failOnConstraintModel, modelResult);
+    checkConstraintEffects(): Effect[] {
+        let result = this.check(this.constraintChecks);
         this.constraintChecks = [];
         this.failedConstraintChecks = result.failedEffects;
         return result.contradictingEffects;
@@ -195,8 +201,8 @@ export class CheckUtility extends EventEmitter {
     /**
      * Check the registered effects of this step.
      */
-    checkEffects(modelResult: ModelResult): Effect[] {
-        let result = this.check(this.effectChecks, this.failOnProgramModel, modelResult);
+    checkEffects(): Effect[] {
+        let result = this.check(this.effectChecks);
         this.failedChecks = result.failedEffects;
         this.effectChecks = [];
         return result.contradictingEffects;
@@ -214,11 +220,7 @@ export class CheckUtility extends EventEmitter {
         modelResult.addFail(error);
     }
 
-    /**
-     * Check the registered effects of this step.
-     */
-    private check(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[],
-                  makeFailedOutput: (edge, effect, modelResult, t) => void, modelResult: ModelResult) {
+    private check(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[]) {
         let doNotCheck = {};
         let failedEffects = []
 
@@ -235,17 +237,13 @@ export class CheckUtility extends EventEmitter {
 
             if (!doNotCheck[i]) {
                 let model = toCheck[i].model;
-                let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition;
+                let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
                 try {
                     if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                        // makeFailedOutput(toCheck[i].edge, effect, modelResult, this.testDriver);
                         failedEffects.push(toCheck[i]);
                     }
                 } catch (e) {
-                    // let error = getErrorOnEdgeOutput(toCheck[i].edge, e.message);
-                    // console.error(error);
                     failedEffects.push(toCheck[i]);
-                    // modelResult.addError(error);
                 }
             }
         }

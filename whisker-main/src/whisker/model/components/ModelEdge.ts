@@ -61,9 +61,6 @@ export abstract class ModelEdge {
             for (let i = 0; i < this.conditions.length; i++) {
                 try {
                     if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
-                        console.error(this.forceTestAfter, stepsSinceLastTransition);
-                        let banan = t.getSprite("Bananas");
-                        console.error("oldx",banan.old.x,"x",banan.x,"oldy",banan.old.y, "y", banan.y);
                         this.failedForcedTest = true;
                         failedConditions.push(this.conditions[i]);
                         modelResult.addFail(this.getTimeLimitFailedOutput(this.conditions[i], t));
@@ -98,7 +95,7 @@ export abstract class ModelEdge {
     }
 
     getTimeLimitFailedOutput(condition: Condition, t: TestDriver) {
-        if (this.forceTestAtSteps && this.forceTestAtSteps < t.getTotalStepsExecuted()) {
+        if (this.forceTestAtSteps != -1 && this.forceTestAtSteps <= t.getTotalStepsExecuted()) {
             return getTimeLimitFailedAtOutput(this, condition, this.forceTestAt)
         } else {
             return getTimeLimitFailedAfterOutput(this, condition, this.forceTestAfter);

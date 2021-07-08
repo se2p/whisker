@@ -49,7 +49,7 @@ export class ModelTester extends EventEmitter {
             this.emit(ModelTester.MODEL_ON_LOAD);
         } catch (e) {
             this.emit(ModelTester.MODEL_LOAD_ERROR, e.message);
-            throw new Error(e.message);
+            throw e;
         }
     }
 
@@ -161,7 +161,10 @@ export class ModelTester extends EventEmitter {
                     notStoppedModels.push(model);
                 }
             })
-            this.checkUtility.checkConstraintEffects(this.result);
+            let contradictingEffects = this.checkUtility.checkConstraintEffects();
+            if (contradictingEffects && contradictingEffects.length != 0) {
+                this.printContradictingEffects(contradictingEffects);
+            }
             checkConstraintsModel = [...notStoppedModels];
 
             if (checkConstraintsModel.length == 0) {
@@ -173,15 +176,6 @@ export class ModelTester extends EventEmitter {
     private getModelStepFunction(t: TestDriver) {
         let checkProgramModels = [...this.programModels];
         return () => {
-            // if (t.getSprite("Bowl").sayText) {
-            //     console.log(t.getSprite("Bowl").sayText, t.getTotalStepsExecuted());
-            // }
-            // if (t.getSprite("Bananas").sayText) {
-            //     console.log(t.getSprite("Bananas").sayText, t.getTotalStepsExecuted());
-            // }
-            // if (t.getSprite("Apple").sayText) {
-            //     console.log(t.getSprite("Apple").sayText, t.getTotalStepsExecuted());
-            // }
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
             checkProgramModels.forEach(model => {
@@ -194,7 +188,10 @@ export class ModelTester extends EventEmitter {
                     notStoppedModels.push(model);
                 }
             });
-            this.checkEffects();
+            let contradictingEffects = this.checkUtility.checkEffects();
+            if (contradictingEffects && contradictingEffects.length != 0) {
+                this.printContradictingEffects(contradictingEffects);
+            }
             checkProgramModels = [...notStoppedModels];
             this.checkUtility.reset();
 
@@ -258,7 +255,10 @@ export class ModelTester extends EventEmitter {
                     notStoppedModels.push(model);
                 }
             })
-            this.checkUtility.checkConstraintEffects(this.result);
+            let contradictingEffects = this.checkUtility.checkConstraintEffects();
+            if (contradictingEffects && contradictingEffects.length != 0) {
+                this.printContradictingEffects(contradictingEffects);
+            }
             if (notStoppedModels.length == 0) {
                 this.onTestEndCallback.disable();
             }
@@ -347,7 +347,7 @@ export class ModelTester extends EventEmitter {
         }
         this.result.edgeTrace.push(edgeTrace);
         this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-        // if (transition.id.toLowerCase().startsWith("bananonred"))
+        // if (!transition.id.toLowerCase().startsWith("bowl"))
         //     console.log("Edge trace: " + edgeTrace, t.getTotalStepsExecuted());
     }
 
@@ -404,16 +404,13 @@ export class ModelTester extends EventEmitter {
         return coverage;
     }
 
-    private checkEffects() {
-        let contradictingEffects = this.checkUtility.checkEffects(this.result);
-        if (contradictingEffects && contradictingEffects.length > 0) {
-            let output = "Model had to check contradicting effects! Skipping these.";
-            contradictingEffects.forEach(effect => {
-                output += "\n -- " + effect.toString();
-            })
-            console.error("EFFECTS CONTRADICTING", output);
-            this.result.log.push("EFFECTS CONTRADICTING" + output);
-            this.emit(ModelTester.MODEL_WARNING, output);
-        }
+    private printContradictingEffects(contradictingEffects) {
+        let output = "Model had to check contradicting effects! Skipping these.";
+        contradictingEffects.forEach(effect => {
+            output += "\n -- " + effect.toString();
+        })
+        console.error("EFFECTS CONTRADICTING", output);
+        this.result.log.push("EFFECTS CONTRADICTING" + output);
+        this.emit(ModelTester.MODEL_WARNING, output);
     }
 }

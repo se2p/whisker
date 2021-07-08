@@ -59,7 +59,8 @@ export class ModelLoader {
                 this.loadGraph(graph);
             })
         } catch (e) {
-            throw new Error("Model Loader: " + e.message);
+            e.message = "Model Loader: " + e.message;
+            throw e;
         }
 
         return {
@@ -80,13 +81,13 @@ export class ModelLoader {
         this.startNodeId = graph.startNodeId;
 
         this.stopNodeIds = graph.stopNodeIds;
-        if (graph.stopNodeIds == undefined) {
+        if (graph.stopNodeIds == undefined || !Array.isArray(graph.stopNodeIds)) {
             console.warn("Warning: Graph without stop node ids.");
             this.stopNodeIds = [];
         }
 
         this.stopAllNodeIds = graph.stopAllNodeIds;
-        if (graph.stopNodeIds == undefined) {
+        if (graph.stopAllNodeIds == undefined || !Array.isArray(graph.stopAllNodeIds)) {
             console.warn("Warning: Graph without stop-all node ids.");
             this.stopAllNodeIds = [];
         }
