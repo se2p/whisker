@@ -167,18 +167,19 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 const anyUncovered: boolean = this._archiveUncovered.size > 0;
                 const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
                 this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
+                let archiveTuples: List<ChromosomeHeuristicTuple<C>>
                 if (anyUncovered) {
-                    const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
-                    chromosome = this._random.pickRandomElementFromList(archiveTuples).getChromosome().clone() as C;
+                    archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
+                    chromosome = this._random.pickRandomElementFromList(archiveTuples).getChromosome();
                 } else {
-                    chromosome = this._archiveCovered.get(fitnessFunctionKey).clone() as C;
+                    chromosome = this._archiveCovered.get(fitnessFunctionKey);
                 }
                 let currentHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
                 while (mutationCounter < this._maxMutationCount) {
                     const mutant = chromosome.mutate();
                     await mutant.evaluate();
                     this.updateArchive(mutant);
-                    const mutantHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
+                    const mutantHeuristic = this.getHeuristicValue(mutant, fitnessFunctionKey);
                     // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome
                     if (currentHeuristic <= mutantHeuristic) {
                         chromosome = mutant;
@@ -293,7 +294,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (heuristicValue == 1) {
                 if (this._archiveCovered.has(fitnessFunctionKey)) {
                     const oldBestChromosome = this._archiveCovered.get(fitnessFunctionKey);
-                    if (this.compareChromosomesWithEqualHeuristic(chromosome, oldBestChromosome) > 0) {
+                    if (oldBestChromosome.getLength() > chromosome.getLength() ||
+                        this.compareChromosomesWithEqualHeuristic(chromosome, oldBestChromosome) > 0) {
                         this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
@@ -387,9 +389,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         for (const tuple of chromosomeHeuristicTuples) {
             const heuristicValue = tuple.getHeuristicValue();
             const chromosome = tuple.getChromosome();
-            if (worstTuple == undefined || heuristicValue < worstHeuristicValue
-                || (heuristicValue == worstHeuristicValue
-                    && chromosome.getLength() > worstTuple.getChromosome().getLength())) {
+            if (worstTuple == undefined ||
+                heuristicValue < worstHeuristicValue ||
+                (heuristicValue === worstHeuristicValue &&
+                    this.compareChromosomesWithEqualHeuristic(worstTuple.getChromosome(), chromosome) > 0)) {
                 worstHeuristicValue = heuristicValue;
                 worstTuple = tuple;
             }
@@ -406,10 +409,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *         zero if both are equal.
      */
     private compareChromosomesWithEqualHeuristic(chromosome1: C, chromosome2: C): number {
-        const lengthDifference = chromosome2.getLength() - chromosome1.getLength();
-        if (lengthDifference != 0) {
-            return lengthDifference;
-        }
         let heuristicSum1 = 0;
         let heuristicSum2 = 0;
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
