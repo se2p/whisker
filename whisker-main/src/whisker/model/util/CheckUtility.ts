@@ -177,8 +177,15 @@ export class CheckUtility extends EventEmitter {
     /**
      * Check the registered effects of this step.
      */
-    checkEffects(): Effect[] {
-        let result = this.check(this.effectChecks);
+    checkEffects(modelResult: ModelResult): Effect[] {
+        let result = this.check(this.effectChecks, modelResult, false);
+        this.failedChecks = result.failedEffects;
+        this.effectChecks = [];
+        return result.contradictingEffects;
+    }
+
+    checkEndEffects(modelResult: ModelResult): Effect[] {
+        let result = this.check(this.effectChecks, modelResult, true);
         this.failedChecks = result.failedEffects;
         this.effectChecks = [];
         return result.contradictingEffects;
@@ -190,7 +197,8 @@ export class CheckUtility extends EventEmitter {
         modelResult.addFail(output);
     }
 
-    private check(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[]) {
+    private check(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[], modelResult: ModelResult,
+                  makeFailOutput: boolean) {
         let doNotCheck = {};
         let failedEffects = []
 
@@ -211,9 +219,13 @@ export class CheckUtility extends EventEmitter {
                 try {
                     if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
                         failedEffects.push(toCheck[i]);
+                        if (makeFailOutput) {
+                            this.failOnProgramModel(toCheck[i].edge, toCheck[i].effect, modelResult, this.testDriver);
+                        }
                     }
                 } catch (e) {
                     failedEffects.push(toCheck[i]);
+                    this.failOnProgramModel(toCheck[i].edge, toCheck[i].effect, modelResult, this.testDriver);
                 }
             }
         }

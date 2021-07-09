@@ -144,7 +144,7 @@ export class ModelTester extends EventEmitter {
                     notStoppedModels.push(model);
                 }
             });
-            let contradictingEffects = this.checkUtility.checkEffects();
+            let contradictingEffects = this.checkUtility.checkEffects(this.result);
             if (contradictingEffects && contradictingEffects.length != 0) {
                 this.printContradictingEffects(contradictingEffects);
             }
@@ -203,7 +203,7 @@ export class ModelTester extends EventEmitter {
                     notStoppedModels.push(model);
                 }
             })
-            let contradictingEffects = this.checkUtility.checkEffects();
+            let contradictingEffects = this.checkUtility.checkEndEffects(this.result);
             if (contradictingEffects && contradictingEffects.length != 0) {
                 this.printContradictingEffects(contradictingEffects);
             }
