@@ -18,11 +18,11 @@
  *
  */
 
-import {IntegerListChromosome} from './IntegerListChromosome';
-import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
 
+import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
+import {TestChromosome} from "./TestChromosome";
 
-export class VariableLengthMutation extends AbstractVariableLengthMutation<IntegerListChromosome> {
+export class VariableLengthTestChromosomeMutation extends AbstractVariableLengthMutation<TestChromosome> {
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         super(min, max, length, gaussianMutationPower);
@@ -38,7 +38,12 @@ export class VariableLengthMutation extends AbstractVariableLengthMutation<Integ
      * @param chromosome The original chromosome, that mutates.
      * @return A mutated deep copy of the given chromosome.
      */
-    apply(chromosome: IntegerListChromosome): IntegerListChromosome {
-        return super.applyUpTo(chromosome, chromosome.getLength());
+    apply(chromosome: TestChromosome): TestChromosome {
+        if (chromosome.lastImprovedCodon == 0 || chromosome.lastImprovedCodon == chromosome.getLength() - 1) {
+            return super.applyUpTo(chromosome, chromosome.getLength());
+        } else {
+            console.log("Mutating up to " + chromosome.lastImprovedCodon +" at length "+chromosome.getLength());
+            return super.applyUpTo(chromosome, chromosome.lastImprovedCodon + 1);
+        }
     }
 }
