@@ -11,11 +11,6 @@ import {Callback} from "../../vm/callbacks"
 
 export class ModelTester extends EventEmitter {
 
-    /**
-     * For checking initialisation values for all sprites and constraints afterwards. Can also stay empty if
-     * there are none.
-     */
-    private constraintsModels: ProgramModel[] = [];
     private programModels: ProgramModel[] = [];
     private userModels: UserModel[] = [];
     private onTestEndModels: ProgramModel[] = [];
@@ -29,7 +24,6 @@ export class ModelTester extends EventEmitter {
     static readonly MODEL_LOG_COVERAGE = "ModelLogCoverage";
     static readonly MODEL_ON_LOAD = "ModelOnLoad";
 
-    private constraintCallback: Callback;
     private modelStepCallback: Callback;
     private onTestEndCallback: Callback;
     private haltAllCallback: Callback;
@@ -42,7 +36,6 @@ export class ModelTester extends EventEmitter {
     load(modelsString) {
         try {
             const result = new ModelLoader().loadModels(modelsString);
-            this.constraintsModels = result.constraintsModels;
             this.programModels = result.programModels;
             this.userModels = result.userModels;
             this.onTestEndModels = result.onTestEndModels;
@@ -57,14 +50,14 @@ export class ModelTester extends EventEmitter {
      * Whether any models are loaded at the moment.
      */
     someModelLoaded() {
-        return this.programModels.length != 0 || this.constraintsModels.length != 0 || this.userModels.length != 0;
+        return this.programModels.length != 0 || this.userModels.length != 0;
     }
 
     /**
      * Check if program models are loaded.
      */
     programModelsLoaded() {
-        return this.programModels.length != 0 || this.constraintsModels.length != 0;
+        return this.programModels.length != 0;
     }
 
     /**
@@ -75,8 +68,7 @@ export class ModelTester extends EventEmitter {
     }
 
     running() {
-        return this.modelStepCallback.isActive() || this.constraintCallback.isActive()
-            || this.onTestEndCallback.isActive() || this.checkLastFailedCallback.isActive();
+        return this.modelStepCallback.isActive() || this.onTestEndCallback.isActive() || this.checkLastFailedCallback.isActive();
     }
 
     getAllModels() {
@@ -84,10 +76,6 @@ export class ModelTester extends EventEmitter {
         this.programModels.forEach(model => {
             let shortened = model.simplifyForSave();
             models.push({usage: ModelLoader.PROGRAM_MODEL_ID, ...shortened});
-        })
-        this.constraintsModels.forEach(model => {
-            let shortened = model.simplifyForSave();
-            models.push({usage: ModelLoader.CONSTRAINTS_MODEL_ID, ...shortened});
         })
         this.userModels.forEach(model => {
             let shortened = model.simplifyForSave();
@@ -109,7 +97,7 @@ export class ModelTester extends EventEmitter {
         console.log("----Preparing model----");
         Container.testDriver = testDriver;
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
-        let allModels = [...this.programModels, ...this.constraintsModels, ...this.userModels, ...this.onTestEndModels];
+        let allModels = [...this.programModels, ...this.userModels, ...this.onTestEndModels];
         this.result = new ModelResult();
         this.checkUtility = new CheckUtility(testDriver, allModels.length, this.result);
         this.checkUtility.on(CheckUtility.EVENT, this.onEvent.bind(this));
@@ -125,11 +113,6 @@ export class ModelTester extends EventEmitter {
 
     private async addCallbacks(t: TestDriver) {
         this.userInputGen(t, this.result);
-        this.constraintCallback = t.addModelCallback(this.getConstraintFunction(t), true, "constraints");
-
-        if (this.constraintsModels.length == 0) {
-            this.constraintCallback.disable();
-        }
 
         this.modelStepCallback = t.addModelCallback(this.getModelStepFunction(t), true, "modelStep");
         this.onTestEndCallback = t.addModelCallback(this.getOnTestEndFunction(t), true, "stopModelsCheck");
@@ -144,33 +127,6 @@ export class ModelTester extends EventEmitter {
         }
         this.onTestEndCallback.disable();
         this.checkLastFailedCallback.disable();
-    }
-
-    private getConstraintFunction(t: TestDriver) {
-        let checkConstraintsModel = [...this.constraintsModels];
-        return () => {
-            let notStoppedModels = [];
-            this.checkUtility.checkFailedConstraintEffects(this.result);
-            checkConstraintsModel.forEach(model => {
-                let edge = model.makeOneTransition(t, this.checkUtility, this.result);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    this.checkUtility.registerConstraintCheck(edge, model);
-                    this.edgeTrace(edge, t);
-                }
-                if (!model.stopped()) {
-                    notStoppedModels.push(model);
-                }
-            })
-            let contradictingEffects = this.checkUtility.checkConstraintEffects();
-            if (contradictingEffects && contradictingEffects.length != 0) {
-                this.printContradictingEffects(contradictingEffects);
-            }
-            checkConstraintsModel = [...notStoppedModels];
-
-            if (checkConstraintsModel.length == 0) {
-                this.constraintCallback.disable();
-            }
-        };
     }
 
     private getModelStepFunction(t: TestDriver) {
@@ -202,20 +158,13 @@ export class ModelTester extends EventEmitter {
     }
 
     private checkForHaltAll(t: TestDriver) {
-        let models = [...this.constraintsModels, ...this.programModels];
         return () => {
-            if (!this.modelStepCallback.isActive() && !this.constraintCallback.isActive()) {
+            if (!this.modelStepCallback.isActive()) {
                 this.startOnTestEnd(t);
                 return;
             }
 
-            if (!this.modelStepCallback.isActive()) {
-                models = [...this.constraintsModels];
-            } else if (!this.constraintCallback.isActive()) {
-                models = [...this.programModels];
-            }
-
-            models.forEach(model => {
+            this.programModels.forEach(model => {
                 if (model.haltAllModels()) {
                     this.startOnTestEnd(t);
                 }
@@ -224,7 +173,6 @@ export class ModelTester extends EventEmitter {
     }
 
     private startOnTestEnd(t: TestDriver) {
-        this.constraintCallback.disable();
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
         this.checkLastFailedCallback.enable();
@@ -248,14 +196,14 @@ export class ModelTester extends EventEmitter {
             afterStopModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(t, this.checkUtility, this.result);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
-                    this.checkUtility.registerConstraintCheck(takenEdge, model);
+                    this.checkUtility.registerEffectCheck(takenEdge, model);
                     this.edgeTrace(takenEdge, t);
                 }
                 if (!model.stopped()) {
                     notStoppedModels.push(model);
                 }
             })
-            let contradictingEffects = this.checkUtility.checkConstraintEffects();
+            let contradictingEffects = this.checkUtility.checkEffects();
             if (contradictingEffects && contradictingEffects.length != 0) {
                 this.printContradictingEffects(contradictingEffects);
             }
@@ -300,16 +248,6 @@ export class ModelTester extends EventEmitter {
 
 
     private onEvent(t: TestDriver, eventStrings: string[]) {
-        if (this.constraintCallback.isActive()) {
-            this.constraintsModels.forEach(model => {
-                let edge = model.testForEvent(t, this.checkUtility, this.result, eventStrings);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    // register only, check is after the step
-                    this.checkUtility.registerConstraintCheck(edge, model);
-                    this.edgeTrace(edge, t);
-                }
-            })
-        }
         if (this.modelStepCallback.isActive()) {
             this.programModels.forEach(model => {
                 let edge = model.testForEvent(t, this.checkUtility, this.result, eventStrings);
@@ -325,7 +263,7 @@ export class ModelTester extends EventEmitter {
                 let edge = model.testForEvent(t, this.checkUtility, this.result, eventStrings);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     // register only, check is after the step
-                    this.checkUtility.registerConstraintCheck(edge, model);
+                    this.checkUtility.registerEffectCheck(edge, model);
                     this.edgeTrace(edge, t);
                 }
             });
@@ -355,7 +293,7 @@ export class ModelTester extends EventEmitter {
      * Get the result of the test run as a ModelResult.
      */
     getModelStates(testDriver: TestDriver) {
-        let models = [...this.programModels, ...this.constraintsModels, ...this.onTestEndModels];
+        let models = [...this.programModels, ...this.onTestEndModels];
         models.forEach(model => {
             if (model.stopped()) {
                 console.log("Model '" + model.id + "' stopped.");
@@ -381,7 +319,7 @@ export class ModelTester extends EventEmitter {
         this.emit(ModelTester.MODEL_LOG, "--- Model Coverage");
         let coverages = {};
 
-        let programModels = [...this.programModels, ...this.constraintsModels, ...this.onTestEndModels];
+        let programModels = [...this.programModels, ...this.onTestEndModels];
         programModels.forEach(model => {
             coverages[model.id] = model.getCoverageCurrentRun();
             this.result.coverage[model.id] = coverages[model.id];
@@ -397,7 +335,7 @@ export class ModelTester extends EventEmitter {
      */
     getTotalCoverage() {
         const coverage = {};
-        let programModels = [...this.programModels, ...this.constraintsModels, ...this.onTestEndModels];
+        let programModels = [...this.programModels, ...this.onTestEndModels];
         programModels.forEach(model => {
             coverage[model.id] = model.getTotalCoverage();
         });

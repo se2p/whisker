@@ -21,8 +21,6 @@ export class CheckUtility extends EventEmitter {
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
     private failedChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
-    private constraintChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
-    private failedConstraintChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
 
     /**
      * Get an instance of a condition state saver.
@@ -177,28 +175,6 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
-     * Register the effects of an constraint model edge in this listener to test them later on.
-     * @param takenEdge The taken edge of a model.
-     * @param model Model of the edge.
-     */
-    registerConstraintCheck(takenEdge: ProgramModelEdge, model: ProgramModel) {
-        takenEdge.effects.forEach(effect => {
-            this.constraintChecks.push({effect: effect, edge: takenEdge, model: model});
-        });
-    }
-
-    /**
-     * Check the effects of the constraint models.
-     */
-    checkConstraintEffects(): Effect[] {
-        let result = this.check(this.constraintChecks);
-        this.constraintChecks = [];
-        this.failedConstraintChecks = result.failedEffects;
-        return result.contradictingEffects;
-    }
-
-
-    /**
      * Check the registered effects of this step.
      */
     checkEffects(): Effect[] {
@@ -212,12 +188,6 @@ export class CheckUtility extends EventEmitter {
         let output = getEffectFailedOutput(edge, effect);
         console.error(output, t.getTotalStepsExecuted());
         modelResult.addFail(output);
-    }
-
-    private failOnConstraintModel(edge, effect, modelResult, t) {
-        let error = getEffectFailedOutput(edge, effect);
-        console.error(error, t.getTotalStepsExecuted());
-        modelResult.addFail(error);
     }
 
     private check(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[]) {
@@ -267,18 +237,6 @@ export class CheckUtility extends EventEmitter {
         }
         this.checkFailed(this.failedChecks, this.failOnProgramModel, modelResult);
         this.failedChecks = [];
-    }
-
-    /**
-     * Check the failed constraint effects of last step.
-     */
-    checkFailedConstraintEffects(modelResult: ModelResult) {
-        if (!this.failedConstraintChecks || this.failedConstraintChecks.length == 0) {
-            return;
-        }
-        this.checkFailed(this.failedConstraintChecks, this.failOnConstraintModel, modelResult);
-        this.failedConstraintChecks = [];
-
     }
 
     private checkFailed(toCheck: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[],

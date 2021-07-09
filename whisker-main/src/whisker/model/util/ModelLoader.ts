@@ -21,7 +21,6 @@ import {CheckName} from "../components/Check";
 export class ModelLoader {
 
     static readonly PROGRAM_MODEL_ID = "program";
-    static readonly CONSTRAINTS_MODEL_ID = "constraints";
     static readonly USER_MODEL_ID = "user";
     static readonly ON_TEST_END_ID = "end";
 
@@ -34,7 +33,6 @@ export class ModelLoader {
     private edgesMapUser: { [key: string]: UserModelEdge };
     private graphIDs: string[];
 
-    private constraintsModels: ProgramModel[];
     private programModels: ProgramModel[];
     private userModels: UserModel[];
     private onTestEndModels: ProgramModel[];
@@ -46,12 +44,11 @@ export class ModelLoader {
      * Load the models from a string file content.
      * @param jsonText Content of a json file containing the models.
      */
-    loadModels(jsonText: string): { programModels: ProgramModel[], userModels: UserModel[], constraintsModels: ProgramModel[], onTestEndModels: ProgramModel[] } {
+    loadModels(jsonText: string): { programModels: ProgramModel[], userModels: UserModel[], onTestEndModels: ProgramModel[] } {
         const graphs = JSON.parse(jsonText);
         this.graphIDs = [];
         this.programModels = [];
         this.userModels = [];
-        this.constraintsModels = [];
         this.onTestEndModels = [];
 
         try {
@@ -66,7 +63,6 @@ export class ModelLoader {
         return {
             programModels: this.programModels,
             userModels: this.userModels,
-            constraintsModels: this.constraintsModels,
             onTestEndModels: this.onTestEndModels
         };
     }
@@ -136,11 +132,6 @@ export class ModelLoader {
                 model = new UserModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapUser, this.stopNodeIds,
                     this.stopAllNodeIds);
                 this.userModels.push(model);
-                break;
-            case ModelLoader.CONSTRAINTS_MODEL_ID:
-                model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram, this.stopNodeIds,
-                    this.stopAllNodeIds)
-                this.constraintsModels.push(model);
                 break;
             case ModelLoader.ON_TEST_END_ID:
                 model = new ProgramModel(graphID, this.startNodeId, this.nodesMap, this.edgesMapProgram, this.stopNodeIds,
