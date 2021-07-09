@@ -543,6 +543,23 @@ describe('Effect', () => {
         attrChange2 = new Effect("id", CheckName.AttrChange, true, ['sprite', 'var', '-=']);
         expect(attrChange2.contradicts(attrChange)).toBeFalsy();
         expect(attrChange.contradicts(attrChange2)).toBeFalsy();
+
+        varChange = new Effect("id", CheckName.VarChange, true, ['sprite', 'var', '-5']);
+        varChange2 = new Effect("id", CheckName.VarChange, true, ['sprite', 'var', '-7']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
+        varChange = new Effect("id", CheckName.VarChange, true, ['sprite', 'var', '+5']);
+        varChange2 = new Effect("id", CheckName.VarChange, true, ['sprite', 'var', '+7']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
+        varChange = new Effect("id", CheckName.AttrChange, true, ['sprite', 'var', '-5']);
+        varChange2 = new Effect("id", CheckName.AttrChange, true, ['sprite', 'var', '-7']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
+        varChange = new Effect("id", CheckName.AttrChange, true, ['sprite', 'var', '+5']);
+        varChange2 = new Effect("id", CheckName.AttrChange, true, ['sprite', 'var', '+7']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
     })
 
     test("contradictions: variable comparison", () => {
