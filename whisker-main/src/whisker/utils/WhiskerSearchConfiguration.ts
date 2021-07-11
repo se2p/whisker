@@ -52,6 +52,7 @@ import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExt
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+import {EventSelector, LocalityEventSelector, UniformEventSelector} from "../testcase/EventSelector";
 
 
 class ConfigException implements Error {
@@ -257,11 +258,11 @@ export class WhiskerSearchConfiguration {
             switch (operator['type']) {
                 case "Extension":
                     type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        operator['probability']);
+                        this.getEventSelector(), operator['probability']);
                     break;
                 case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        operator['probability']);
+                        this.getEventSelector(), operator['probability']);
             }
 
             operators.add(type);
@@ -280,6 +281,18 @@ export class WhiskerSearchConfiguration {
             case 'dynamic':
             default:
                 return new DynamicScratchEventExtractor(Container.vm);
+        }
+    }
+
+    public getEventSelector(): EventSelector {
+        switch (this.dict['eventSelector']) {
+            case 'locality': {
+                const {integerRange} = this.dict;
+                return new LocalityEventSelector(integerRange);
+            }
+            case 'uniform':
+            default:
+                return new UniformEventSelector();
         }
     }
 
