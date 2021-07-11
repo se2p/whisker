@@ -22,11 +22,16 @@ import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
 
 
 /**
- * Mutates every codon with the same probability.
+ * A mutation operator that aims at increasing locality by biasing mutations towards the end of the codon list.
+ * In other words, codons at the end of the list have a higher chance of being mutated than codons at the beginning
+ * of the list. Changing a single codon also changes the meaning of all codons that follow. This mutation operators
+ * favors codons at the end of the list, such that small changes in the phenotype space also result in small changes in
+ * the genotype space.
  */
-export class VariableLengthMutation extends AbstractVariableLengthMutation {
+export class BiasedVariableLengthMutation extends AbstractVariableLengthMutation {
+
     protected _getMutationProbability(idx: number, numberOfCodons: number): number {
-        return 1 / numberOfCodons;
+        return 2 * idx / (numberOfCodons * (numberOfCodons + 1));
     }
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
