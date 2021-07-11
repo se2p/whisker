@@ -33,7 +33,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _fitnessFunction: FitnessFunction<C>;
 
-    _fitnessFunctions: List<FitnessFunction<C>> = new List();
+    private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
     _stoppingCondition: StoppingCondition<C>;
 
@@ -45,15 +45,15 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _startTime: number;
 
+    private _archive = new Map<number, C>();
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
 
-    setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
-        StatisticsCollector.getInstance().fitnessFunctionCount = 1;
-        this._fitnessFunction = fitnessFunction;
-        this._fitnessFunctions.clear();
-        this._fitnessFunctions.add(fitnessFunction)
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
+        this._fitnessFunctions = fitnessFunctions;
+        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
@@ -106,6 +106,31 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._bestIndividuals;
     }
 
+    /**
+     * Updates the archive of best chromosomes.
+     *
+     * @param candidateChromosome The candidate chromosome for the archive.
+     */
+    private updateArchive(candidateChromosome: C): void {
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestLength = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).getLength()
+                : Number.MAX_SAFE_INTEGER;
+            const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+            const candidateLength = candidateChromosome.getLength();
+            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                bestLength = candidateLength;
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                }
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
+                this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+                console.log(`Found test for goal: ${fitnessFunction}`);
+            }
+        }
+    }
+
 /**
  * Summarize the solution saved in _archive.
  * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
@@ -129,7 +154,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        return this._fitnessFunctions;
+        return this._fitnessFunctions.values();
     }
 
     getStartTime(): number {

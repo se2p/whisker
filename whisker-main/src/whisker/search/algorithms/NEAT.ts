@@ -64,6 +64,11 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     private _networkFitnessFunction: NetworkFitnessFunction<NetworkChromosome>;
 
     /**
+     * Saves all Networks mapped to the generation they occurred in.
+     */
+    private _populationRecord = new Map<number, string>();
+
+    /**
      * Evaluates the networks by letting them play the given Scratch game.
      * @param networks the networks to evaluate -> Current population
      */
@@ -95,25 +100,28 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes);
+            this._populationRecord.set(this._iterations, JSON.stringify(population));
             population.evolution();
             this._iterations++;
             this.updateBestIndividualAndStatistics();
-            if (this._iterations % reportPeriod === 0)
-                 this.reportOfCurrentIteration(population);
+            if (this._iterations % reportPeriod === 0) {
+                this.reportOfCurrentIteration(population);
+            }
         }
+        console.log("Record:", this.populationRecord);
         return this._bestIndividuals;
     }
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
+    /**
+     * Summarize the solution saved in _archive.
+     * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+     *        - Not covered: the statement that’s not covered by any
+     *        function in the _bestIndividuals.
+     *        - ApproachLevel: the approach level of that statement
+     *        - BranchDistance: the branch distance of that statement
+     *        - Fitness: the fitness value of that statement
+     * For other search algorithms, it returns an empty string.
+     */
     summarizeSolution(): string {
         return '';
     }
@@ -174,7 +182,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         console.log("All Species: ", population.species)
         for (const specie of population.species)
             console.log("Species: " + specie.id + " has a size of " + specie.size() + " and produces "
-                + specie.expectedOffspring +" offspring")
+                + specie.expectedOffspring + " offspring")
         console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
         console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
         console.log("-----------------------------------------------------")
@@ -215,5 +223,9 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
         this._fitnessFunctions = fitnessFunctions;
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    }
+
+    get populationRecord(): Map<number, string> {
+        return this._populationRecord;
     }
 }

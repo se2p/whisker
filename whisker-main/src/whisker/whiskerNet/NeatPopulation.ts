@@ -359,4 +359,12 @@ export class NeatPopulation<C extends NetworkChromosome> {
     get generator(): ChromosomeGenerator<C> {
         return this._generator;
     }
+
+    toJSON(){
+        return {
+            species: this.species,
+            highestFitness: this.highestFitness,
+            averageFitness: this.averageFitness
+        };
+    }
 }

@@ -2,7 +2,6 @@ import {ConnectionGene} from "../ConnectionGene";
 import {List} from "../../utils/List";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 
 export abstract class NodeGene {
 

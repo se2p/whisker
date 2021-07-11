@@ -443,4 +443,16 @@ export class Species<C extends NetworkChromosome> {
     get properties(): NeuroevolutionProperties<C> {
         return this._properties;
     }
+
+    toJSON(){
+        return {
+            id: this.id,
+            age: this.age,
+            ageOfLastImprovement: this.ageOfLastImprovement,
+            averageFitness: this.averageFitness,
+            currentBestFitness: this.currentBestFitness,
+            allTimeBestFitness: this.allTimeBestFitness,
+            expectedOffspring: this.expectedOffspring,
+        }
+    }
 }

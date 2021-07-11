@@ -1,6 +1,4 @@
 import {TestGenerator} from "./TestGenerator";
-import {WhiskerTest} from "./WhiskerTest";
-import {List} from "../utils/List";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
