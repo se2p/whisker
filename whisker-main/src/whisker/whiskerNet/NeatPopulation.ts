@@ -360,11 +360,13 @@ export class NeatPopulation<C extends NetworkChromosome> {
         return this._generator;
     }
 
-    toJSON(){
-        return {
-            species: this.species,
-            highestFitness: this.highestFitness,
-            averageFitness: this.averageFitness
-        };
+    toJSON():Record<string, (number | Species<C>)> {
+        const population = {};
+        population['highestFitness'] = this.highestFitness;
+        population['averageFitness'] = this.averageFitness;
+        for (let i = 0; i < this.species.size(); i++) {
+            population[`Species ${i}`] = this.species.get(i);
+        }
+        return population;
     }
 }

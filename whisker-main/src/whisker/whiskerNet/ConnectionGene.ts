@@ -29,7 +29,7 @@ export class ConnectionGene {
     /**
      * Defines whether this connection is a recurrent connection.
      */
-    private readonly _recurrent: boolean;
+    private readonly _isRecurrent: boolean;
 
     /**
      * Saves the next available innovation number.
@@ -51,7 +51,7 @@ export class ConnectionGene {
         this._weight = weight;
         this._isEnabled = enabled;
         this._innovation = innovation;
-        this._recurrent = recurrent;
+        this._isRecurrent = recurrent;
     }
 
     /**
@@ -60,7 +60,7 @@ export class ConnectionGene {
      * @param target the target node of the new connection
      */
     public cloneWithNodes(source: NodeGene, target: NodeGene): ConnectionGene {
-        return new ConnectionGene(source, target, this.weight, this.isEnabled, this.innovation, this.recurrent)
+        return new ConnectionGene(source, target, this.weight, this.isEnabled, this.innovation, this.isRecurrent)
     }
 
     /**
@@ -69,7 +69,11 @@ export class ConnectionGene {
      */
     public equalsByNodes(other: unknown): boolean {
         if (!(other instanceof ConnectionGene)) return false;
-        return this.source.equals(other.source) && this.target.equals(other.target) && (this.recurrent === other.recurrent);
+        return this.source.equals(other.source) && this.target.equals(other.target) && (this.isRecurrent === other.isRecurrent);
+    }
+
+    static getNextInnovationNumber(): number {
+        return ++ConnectionGene.innovationCounter;
     }
 
     toString(): string {
@@ -77,7 +81,7 @@ export class ConnectionGene {
 , ToId: ${this.target.id}\
 , Weight: ${this.weight}\
 , Enabled: ${this.isEnabled}\
-, Recurrent: ${this.recurrent}\
+, Recurrent: ${this.isRecurrent}\
 , InnovationNumber: ${this.innovation}}`
     }
 
@@ -113,11 +117,17 @@ export class ConnectionGene {
         this._innovation = innovation;
     }
 
-    static getNextInnovationNumber(): number {
-        return ++ConnectionGene.innovationCounter;
+    get isRecurrent(): boolean {
+        return this._isRecurrent;
     }
 
-    get recurrent(): boolean {
-        return this._recurrent;
+
+    toJSON(){
+        const connection = {};
+        connection[`Source`] = this.source.id;
+        connection[`Target`] = this.target.id;
+        connection[`Weight`] = this.weight;
+        connection[`Enabled`] = this.isEnabled;
+        return connection;
     }
 }

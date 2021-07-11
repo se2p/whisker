@@ -14,7 +14,8 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         const start = Date.now();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
-        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 1000);
+        // Round to 2 decimals
+        const surviveTime = Math.round(((Container.vm.runtime.currentMSecs - start) / 1000 + Number.EPSILON) * 100 ) / 100;
         network.networkFitness = surviveTime;
         executor.resetState();
         return surviveTime;

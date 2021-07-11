@@ -24,7 +24,7 @@ describe("ConnectionGene Test", () => {
         expect(connection.weight).toBe(0.2);
         expect(connection.isEnabled).toBe(true);
         expect(connection.innovation).toBe(1)
-        expect(connection.recurrent).toBe(false);
+        expect(connection.isRecurrent).toBe(false);
         expect(ConnectionGene.getNextInnovationNumber()).toBe(2);
     })
 
@@ -48,7 +48,7 @@ describe("ConnectionGene Test", () => {
         expect(connection.weight).toBe(cloneConnection.weight);
         expect(connection.isEnabled).toBe(cloneConnection.isEnabled);
         expect(connection.innovation).toBe(cloneConnection.innovation);
-        expect(connection.recurrent).toBe(cloneConnection.recurrent);
+        expect(connection.isRecurrent).toBe(cloneConnection.isRecurrent);
     })
 
     test("Test equalsByNodes with equal nodes", () => {

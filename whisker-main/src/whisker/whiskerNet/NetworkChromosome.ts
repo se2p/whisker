@@ -354,7 +354,7 @@ export class NetworkChromosome extends Chromosome {
         // Double Check if we really don't have a recurrent network
         if (!this.isRecurrent) {
             for (const connection of this.connections) {
-                if (connection.recurrent && connection.isEnabled) {
+                if (connection.isRecurrent && connection.isEnabled) {
                     this.isRecurrent = true;
                 }
             }
@@ -543,7 +543,7 @@ export class NetworkChromosome extends Chromosome {
         }
 
         for (const inConnection of node1.incomingConnections) {
-            if (!inConnection.recurrent) {
+            if (!inConnection.isRecurrent) {
                 if (!inConnection.source.traversed) {
                     inConnection.source.traversed = true;
                     if (this.isRecurrentPath(inConnection.source, node2, level, threshold)) {
@@ -729,5 +729,16 @@ export class NetworkChromosome extends Chromosome {
 
     set isRecurrent(value: boolean) {
         this._isRecurrent = value;
+    }
+
+    toJSON(){
+        const network = {};
+        for (let i = 0; i < this.allNodes.size(); i++) {
+            network[`Node ${i}`] = this.allNodes.get(i);
+        }
+        for (let i = 0; i < this.connections.size(); i++) {
+            network[`Connection ${i}`] = this.connections.get(i);
+        }
+        return network;
     }
 }

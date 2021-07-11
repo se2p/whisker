@@ -66,7 +66,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     /**
      * Saves all Networks mapped to the generation they occurred in.
      */
-    private _populationRecord = new Map<number, string>();
+    private _populationRecord = new Map<number, NeatPopulation<C>>();
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
@@ -100,7 +100,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes);
-            this._populationRecord.set(this._iterations, JSON.stringify(population));
+            this._populationRecord.set(this._iterations, population);
             population.evolution();
             this._iterations++;
             this.updateBestIndividualAndStatistics();
@@ -123,7 +123,11 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * For other search algorithms, it returns an empty string.
      */
     summarizeSolution(): string {
-        return '';
+        const solution = {};
+        this.populationRecord.forEach((population, iteration) =>{
+            solution["Population " + iteration] = population.toJSON();
+        })
+        return JSON.stringify(solution, undefined, 4);
     }
 
     /**
@@ -225,7 +229,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
-    get populationRecord(): Map<number, string> {
+    get populationRecord(): Map<number, NeatPopulation<C>> {
         return this._populationRecord;
     }
 }

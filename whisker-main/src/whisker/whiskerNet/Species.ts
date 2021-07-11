@@ -444,15 +444,18 @@ export class Species<C extends NetworkChromosome> {
         return this._properties;
     }
 
-    toJSON(){
-        return {
-            id: this.id,
-            age: this.age,
-            ageOfLastImprovement: this.ageOfLastImprovement,
-            averageFitness: this.averageFitness,
-            currentBestFitness: this.currentBestFitness,
-            allTimeBestFitness: this.allTimeBestFitness,
-            expectedOffspring: this.expectedOffspring,
+    toJSON() {
+        const species = {};
+        species[`id`] = this.id;
+        species[`age`] = this.age;
+        species[`ageOfLastImprovement`] = this.ageOfLastImprovement;
+        species[`averageFitness`] = this.averageFitness;
+        species[`currentBestFitness`] = this.currentBestFitness;
+        species[`allTimeBestFitness`] = this.allTimeBestFitness;
+        species[`expectedOffspring`] = this.expectedOffspring;
+        for (let i = 0; i < this.chromosomes.size(); i++) {
+            species[`Member ${i}`] = this.chromosomes.get(i);
         }
+        return species;
     }
 }

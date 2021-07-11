@@ -76,4 +76,12 @@ export class RegressionNode extends NodeGene {
 , Parameter ${this.eventParameter}}`;
     }
 
+    toJSON(){
+        const node = {}
+        node[`id`] = this.id;
+        node[`type`] = 'REGRESSION';
+        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        return node;
+    }
+
 }

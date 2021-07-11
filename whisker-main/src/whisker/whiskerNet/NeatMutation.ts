@@ -185,12 +185,12 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
             // Verify if we truly found a new connection.
             if(!skip) {
                 for (const connection of chromosome.connections) {
-                    if (connection.source === node1 && connection.target === node2 && connection.recurrent && recurrentConnection) {
+                    if (connection.source === node1 && connection.target === node2 && connection.isRecurrent && recurrentConnection) {
                         skip = true;
                         break;
                     }
 
-                    if (connection.source === node1 && connection.target === node2 && !connection.recurrent && !recurrentConnection) {
+                    if (connection.source === node1 && connection.target === node2 && !connection.isRecurrent && !recurrentConnection) {
                         skip = true;
                         break;
                     }
@@ -261,7 +261,7 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         // Create the new hiddenNode and the connections leading in and out of the new node
         const newNode = new HiddenNode(chromosome.allNodes.size(), ActivationFunction.SIGMOID)
 
-        const newConnection1 = new ConnectionGene(fromNode, newNode, 1, true, 0, splitConnection.recurrent)
+        const newConnection1 = new ConnectionGene(fromNode, newNode, 1, true, 0, splitConnection.isRecurrent)
         NeuroevolutionUtil.assignInnovationNumber(newConnection1);
         newNode.incomingConnections.add(newConnection1);
 
@@ -347,7 +347,7 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
                 let save = false;
                 for (const otherConnection of chromosome.connections) {
                     if (((otherConnection.source.equals(chosenConnection.source)) && (otherConnection.isEnabled) &&
-                        (chosenConnection.innovation !== otherConnection.innovation)) || chosenConnection.recurrent) {
+                        (chosenConnection.innovation !== otherConnection.innovation)) || chosenConnection.isRecurrent) {
                         save = true;
                         break;
                     }
@@ -361,7 +361,7 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         // Finally check if we changed the isRecurrent state by disabling or enabling a recurrent connection.
         chromosome.isRecurrent = false;
         for (const connection of chromosome.connections)
-            if (connection.isEnabled && connection.recurrent) {
+            if (connection.isEnabled && connection.isRecurrent) {
                 chromosome.isRecurrent = true;
                 break;
             }
@@ -375,7 +375,7 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         for (const connection of chromosome.connections) {
             if (!connection.isEnabled) {
                 connection.isEnabled = true;
-                if (connection.recurrent) {
+                if (connection.isRecurrent) {
                     chromosome.isRecurrent = true;
                 }
                 break;

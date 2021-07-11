@@ -46,7 +46,7 @@ export abstract class NodeGene {
     private _lastActivationValue: number
 
     /**
-     * True if this node has been traversed (used for checking if a network is a recurrent network)
+     * True if this node has been traversed. Used for checking if a network is a recurrent network
      */
     private _traversed: boolean
 
@@ -166,5 +166,13 @@ export abstract class NodeGene {
 
     get type(): NodeType {
         return this._type;
+    }
+
+    toJSON(){
+        const node = {}
+        node[`id`] = this.id;
+        node[`type`] = NodeType[this.type];
+        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        return node;
     }
 }

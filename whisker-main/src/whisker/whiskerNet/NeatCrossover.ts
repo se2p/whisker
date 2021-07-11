@@ -219,10 +219,10 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
 
                 // Now add the new Connection
                 const newConnection = new ConnectionGene(newFromNode, newOutNode, currentConnection.weight, !disable, currentConnection.innovation,
-                    currentConnection.recurrent);
+                    currentConnection.isRecurrent);
 
-                // Set the recurrent flag if we added a recurrent connection
-                if (newConnection.recurrent)
+                // Set the isRecurrent flag if we added a isRecurrent connection
+                if (newConnection.isRecurrent)
                     recurrent = true;
 
                 // Collect the disabled Connections -> if we produce a defect network we sequentially enable the
