@@ -214,18 +214,23 @@ export class StatisticsCollector {
             return [...Array(until).keys()]
         }
 
+        let header = timestamps;
+        let values = coverages;
+
         // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
         // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
         // the number of columns should be padded in this case so that the number of columns is always identical.
-        const lengthDiff = numberOfCoverageValues - timestamps.length;
-        const nextTimeStamp = timestamps[timestamps.length - 1] + 1000;
-        const nextCoverageValue = coverages[coverages.length - 1];
+        if (numberOfCoverageValues !== undefined) {
+            const nextTimeStamp = timestamps[timestamps.length - 1] + 1000;
+            const nextCoverageValue = coverages[coverages.length - 1];
 
-        const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * 1000)
-        const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
+            const lengthDiff = numberOfCoverageValues - timestamps.length;
+            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * 1000)
+            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
 
-        const header = [...timestamps, ...headerPadding];
-        const values = [...coverages, ...valuePadding];
+            header.push(...headerPadding);
+            values.push(...valuePadding);
+        }
 
         // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
         const truncateFitnessTimeline = numberOfCoverageValues != undefined && 0 <= numberOfCoverageValues;
