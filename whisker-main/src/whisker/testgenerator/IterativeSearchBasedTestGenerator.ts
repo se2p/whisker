@@ -19,12 +19,9 @@
  */
 
 import {TestGenerator} from './TestGenerator';
-import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
 import {TestChromosome} from '../testcase/TestChromosome';
-import {WhiskerTest} from './WhiskerTest';
 import {StatisticsCollector} from "../utils/StatisticsCollector";
-import {FitnessFunction} from "../search/FitnessFunction";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 /**
@@ -34,46 +31,80 @@ import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
  */
 export class IterativeSearchBasedTestGenerator extends TestGenerator {
 
-    async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary> {
-        const testChromosomes = new List<TestChromosome>();
+    /**
+     * Maps each target statement to the chromosome covering it, if any.
+     */
+    private _archive = new Map<number, TestChromosome>();
+
+    /**
+     * Saves the bestIndividuals, i.e all distinct Chromosomes in the archive.
+     */
+    private _bestIndividuals = new List<TestChromosome>();
+
+    /**
+     * Generate Tests by sequentially targeting each target statement in the fitnessFunction map.
+     * @returns testSuite covering as many targets as possible within the stoppingCriterion limit
+     */
+    async generateTests(): Promise<WhiskerTestListWithSummary> {
+        const startTime = Date.now();
         this._fitnessFunctions = this.extractCoverageGoals();
+        StatisticsCollector.getInstance().iterationCount = 0;
         let numGoal = 1;
         const totalGoals = this._fitnessFunctions.size;
-
-        for (const fitnessFunction of this._fitnessFunctions.values()) {
+        let createdTestsToReachFullCoverage = 0;
+        for (const fitnessFunction of this._fitnessFunctions.keys()) {
             console.log("Current goal "+numGoal+"/"+totalGoals+": "+fitnessFunction);
             numGoal++;
-            if (await this._isCovered(fitnessFunction, testChromosomes)) {
+            if (this._archive.has(fitnessFunction)) {
                 // If already covered, we don't need to search again
                 console.log("Goal "+fitnessFunction+" already covered, skipping.");
                 continue;
             }
+            // Generate searchAlgorithm responsible for covering the selected target statement.
             // TODO: Somehow set the fitness function as objective
             const searchAlgorithm = this.buildSearchAlgorithm(false);
-            searchAlgorithm.setFitnessFunction(fitnessFunction);
+            searchAlgorithm.setFitnessFunction(this._fitnessFunctions.get(fitnessFunction));
             // TODO: Assuming there is at least one solution?
             const testChromosome = (await searchAlgorithm.findSolution()).get(0);
-
-            if (await fitnessFunction.isCovered(testChromosome)) {
-                console.log("Goal "+fitnessFunction+" was successfully covered, keeping test.");
-                testChromosomes.add(testChromosome);
-                StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
-            } else {
-                console.log("Goal "+fitnessFunction+" was not successfully covered.");
-            }
+            this.updateArchive(testChromosome);
+            createdTestsToReachFullCoverage += StatisticsCollector.getInstance().createdTestsToReachFullCoverage;
         }
-        const testSuite = await this.getTestSuite(testChromosomes);
+        // Update Statistics related to achieving full coverage
+        if(this._archive.size === this._fitnessFunctions.size){
+        StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - startTime;
+        StatisticsCollector.getInstance().createdTestsToReachFullCoverage = createdTestsToReachFullCoverage;
+        }
+        // Done at the end to prevent used SearchAlgorithm to distort fitnessFunctionCount
+        StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
+        const testSuite = await this.getTestSuite(this._bestIndividuals);
         await this.collectStatistics(testSuite);
         return new WhiskerTestListWithSummary(testSuite, '');
     }
 
-    async _isCovered(coverageGoal: FitnessFunction<any>, testSuite: List<TestChromosome>): Promise<boolean> {
-        // TODO: Could be written in a single line
-        for (const testChromosome of testSuite) {
-            if (await coverageGoal.isCovered(testChromosome)) {
-                return true;
+    /**
+     * Updates the archive of best chromosomes.
+     * We store a chromosome if it either manages to cover a previously uncovered statement or
+     * if it covers a previously covered statement using less genes than the current chromosome covering that statement.
+     *
+     * @param candidateChromosome the chromosome to update the archive with.
+     */
+    private updateArchive(candidateChromosome: TestChromosome): void {
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestLength = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).getLength()
+                : Number.MAX_SAFE_INTEGER;
+            const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+            const candidateLength = candidateChromosome.getLength();
+            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                bestLength = candidateLength;
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                }
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
+                this._bestIndividuals = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
+                console.log(`Found test for goal: ${fitnessFunction}`);
             }
         }
-        return false;
     }
 }

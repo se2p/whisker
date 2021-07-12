@@ -50,7 +50,6 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     }
 
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
-        StatisticsCollector.getInstance().fitnessFunctionCount = 1;
         this._fitnessFunction = fitnessFunction;
         this._fitnessFunctions.clear();
         this._fitnessFunctions.add(fitnessFunction)
@@ -74,9 +73,17 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         await bestIndividual.evaluate();
         this._bestIndividual = bestIndividual;
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
-        StatisticsCollector.getInstance().iterationCount = 0;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
-        StatisticsCollector.getInstance().bestTestSuiteSize = 1;
+
+        // Do not reset statistics if we use the iterative approach.
+        if (!this.isIterativeSearch()) {
+            StatisticsCollector.getInstance().iterationCount = 0;
+            StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+            StatisticsCollector.getInstance().bestTestSuiteSize = 1;
+        }
+
+        if (this._stoppingCondition.isFinished(this)) {
+            this.updateStatistics();
+        }
 
         while (!(this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
@@ -87,10 +94,8 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 ${bestIndividual.toString()}`);
             this._iterations++;
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
-                if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
-                    StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
-                    StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                if (this._fitnessFunction.isOptimal(candidateFitness)) {
+                    this.updateStatistics();
                 }
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
@@ -125,6 +130,26 @@ ${bestIndividual.toString()}`);
         summary['CFGDistance'] = CFGDistance;
         summary['Fitness'] = this._fitnessFunction.getFitness(this._bestIndividual);
         return JSON.stringify({'Target': summary});
+    }
+
+    /**
+     * Determines whether the used TestGenerator is the IterativeSearchBasedTestGenerator.
+     * If so we do no want to update statistics in the OnePlusOne-Algorithm.
+     * @returns boolean defining whether OnePlusOneEA has been called by the IterativeSearchBasedTestGenerator
+     */
+    private isIterativeSearch(): boolean {
+        return this._properties.getTestGenerator() === 'iterative';
+    }
+
+    /**
+     * Updates statistic values using the StatisticsCollector
+     */
+    private updateStatistics(): void {
+        StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
+        StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+        if (!this.isIterativeSearch()) {
+            StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+        }
     }
 
     getNumberOfIterations(): number {

@@ -91,6 +91,7 @@ export class WhiskerSearchConfiguration {
         properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
             this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
         properties.setStartOfFocusedPhase(this.dict['startOfFocusedPhase'] as number);
+        properties.setTestGenerator(this.dict['test-generator']);
 
         properties.setStoppingCondition(this._getStoppingCondition(this.dict['stopping-condition']));
 
