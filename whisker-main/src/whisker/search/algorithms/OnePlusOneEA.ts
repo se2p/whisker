@@ -41,7 +41,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     _iterations = 0;
 
-    _bestIndividuals = new List<C>();
+    _bestIndividual: C;
 
     _startTime: number;
 
@@ -68,58 +68,63 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     async findSolution(): Promise<List<C>> {
 
         this._startTime = Date.now();
-        console.log("1+1 EA started at "+this._startTime);
+        console.log("1+1 EA started at " + this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
         await bestIndividual.evaluate();
-        this._bestIndividuals.add(bestIndividual);
+        this._bestIndividual = bestIndividual;
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
-        let bestLength = bestIndividual.getLength();
-        console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
-        console.log(this._fitnessFunction)
 
         while (!(this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
             const candidateChromosome = bestIndividual.mutate();
             await candidateChromosome.evaluate();
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
-            //console.log("Iteration "+this._iterations+" ["+bestFitness+"]: "+candidateChromosome.toString()+" has fitness "+candidateFitness);
+            console.log(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
+${bestIndividual.toString()}`);
             this._iterations++;
-            if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
-                (this._fitnessFunction.compare(candidateFitness, bestFitness) === 0 && candidateChromosome.getLength() <= bestLength)) {
+            if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
                     StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
                     StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                 }
                 bestFitness = candidateFitness;
-                bestLength = candidateChromosome.getLength();
                 bestIndividual = candidateChromosome;
-                this._bestIndividuals.clear();
-                this._bestIndividuals.add(bestIndividual);
-                console.log(`Iteration ${this._iterations}: Best Chromosome\
-                ${bestIndividual.toString()} with fitness ${bestFitness} and length ${bestIndividual.getLength()}`)
+                this._bestIndividual = bestIndividual;
             }
         }
-        console.log("1+1 EA completed at "+Date.now());
-        return this._bestIndividuals;
+        console.log("1+1 EA completed at " + Date.now());
+        return new List<C>([this._bestIndividual]);
     }
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
+    /**
+     * Summarize the solution saved in _archive.
+     * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+     *        - Not covered: the statement that’s not covered by any
+     *        function in the _bestIndividuals.
+     *        - ApproachLevel: the approach level of that statement
+     *        - BranchDistance: the branch distance of that statement
+     *        - Fitness: the fitness value of that statement
+     * For other search algorithms, it returns an empty string.
+     */
     summarizeSolution(): string {
-        return '';
+        const summary = {};
+        summary['block'] = this._fitnessFunction.toString();
+        const approachLevel = this._fitnessFunction.getApproachLevel(this._bestIndividual);
+        const branchDistance = this._fitnessFunction.getBranchDistance(this._bestIndividual);
+        let CFGDistance = Number.MAX_VALUE;
+        if (approachLevel === 0 && branchDistance === 0) {
+            CFGDistance = this._fitnessFunction.getCFGDistance(this._bestIndividual);
+        }
+        summary['ApproachLevel'] = approachLevel;
+        summary['BranchDistance'] = branchDistance;
+        summary['CFGDistance'] = CFGDistance;
+        summary['Fitness'] = this._fitnessFunction.getFitness(this._bestIndividual);
+        return JSON.stringify({'Target': summary});
     }
 
     getNumberOfIterations(): number {
@@ -127,7 +132,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     }
 
     getCurrentSolution(): List<C> {
-        return this._bestIndividuals;
+        return new List<C>([this._bestIndividual]);
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
