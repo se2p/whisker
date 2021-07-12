@@ -19,6 +19,7 @@
  */
 
 import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
+import {Preconditions} from "../utils/Preconditions";
 
 
 /**
@@ -31,7 +32,8 @@ import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
 export class BiasedVariableLengthMutation extends AbstractVariableLengthMutation {
 
     protected _getMutationProbability(idx: number, numberOfCodons: number): number {
-        return 2 * idx / (numberOfCodons * (numberOfCodons + 1));
+        Preconditions.checkArgument(idx < numberOfCodons);
+        return 2 * (idx + 1) / (numberOfCodons * (numberOfCodons + 1));
     }
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {

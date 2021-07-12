@@ -23,7 +23,7 @@ export class LocalityEventSelector implements EventSelector {
     private readonly _valueRange: number;
 
     constructor({min, max}: { min: number, max: number }) {
-        this._valueRange = max - min;
+        this._valueRange = max - min + 1;
     }
 
     selectEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>): ScratchEvent {
@@ -32,7 +32,7 @@ export class LocalityEventSelector implements EventSelector {
 
         let current = bucketSize;
         let rule = 0;
-        while (codon < current) {
+        while (codon >= current) {
             rule++;
             current += bucketSize;
         }
