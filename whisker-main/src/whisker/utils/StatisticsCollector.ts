@@ -199,48 +199,36 @@ export class StatisticsCollector {
      * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
      */
     public asCsv(numberOfCoverageValues?: number): string {
-        // Extract timestamps and sort them in ascending order.
+        // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
         const coverageStatsMap = this._adjustCoverageOverTime();
-        const timestamps = [...coverageStatsMap.keys()];
-        timestamps.sort((a, b) => a - b);
-
-        // For every timestamp, extract the corresponding coverage value (in the same order).
-        const coverages = [];
-        for (const timestamp of timestamps) {
-            coverages.push(coverageStatsMap.get(timestamp));
-        }
-
-        function range(until: number): number[] {
-            return [...Array(until).keys()]
-        }
+        const timestamps = [...coverageStatsMap.keys()].sort((a, b) => a - b);
+        const coverages = timestamps.map((ts) => coverageStatsMap.get(ts));
 
         let header = timestamps;
         let values = coverages;
 
+        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        const truncateFitnessTimeline = numberOfCoverageValues != undefined && 0 <= numberOfCoverageValues;
+
         // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
         // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
         // the number of columns should be padded in this case so that the number of columns is always identical.
-        if (numberOfCoverageValues !== undefined) {
+        if (truncateFitnessTimeline) {
             const nextTimeStamp = timestamps[timestamps.length - 1] + 1000;
             const nextCoverageValue = coverages[coverages.length - 1];
 
-            const lengthDiff = numberOfCoverageValues - timestamps.length;
+            const lengthDiff = Math.abs(numberOfCoverageValues - timestamps.length);
+
+            const range: (until: number) => number[] = (until) => [...Array(until).keys()];
             const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * 1000)
             const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
 
-            header.push(...headerPadding);
-            values.push(...valuePadding);
+            header = [...header, ...headerPadding].slice(0, numberOfCoverageValues);
+            values = [...values, ...valuePadding].slice(0, numberOfCoverageValues);
         }
 
-        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
-        const truncateFitnessTimeline = numberOfCoverageValues != undefined && 0 <= numberOfCoverageValues;
-        const coveragesHeaders = truncateFitnessTimeline
-                ? header.slice(0, numberOfCoverageValues).join(",")
-                : header.join(",");
-        const coverageValues =
-            truncateFitnessTimeline
-                ? values.slice(0, numberOfCoverageValues).join(",")
-                : values.join(",");
+        const coveragesHeaders = header.join(",");
+        const coverageValues = values.join(",");
 
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize",
