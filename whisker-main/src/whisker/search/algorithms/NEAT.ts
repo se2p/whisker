@@ -123,8 +123,47 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * For other search algorithms, it returns an empty string.
      */
     summarizeSolution(): string {
+        const summary = [];
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const curSummary = {};
+            if (!this._archive.has(fitnessFunctionKey)) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                curSummary['block'] = fitnessFunction.toString();
+                let fitness = Number.MAX_VALUE;
+                let approachLevel = Number.MAX_VALUE;
+                let branchDistance = Number.MAX_VALUE;
+                let CFGDistance = Number.MAX_VALUE;
+                for (const chromosome of this._bestIndividuals) {
+                    const curFitness = fitnessFunction.getFitness(chromosome);
+                    if (curFitness < fitness) {
+                        fitness = curFitness;
+                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
+                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
+                        if (approachLevel === 0 && branchDistance === 0) {
+                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
+                        } else {
+                            CFGDistance = Number.MAX_VALUE;
+                            //this means that it was unnecessary to calculate cfg distance, since
+                            //approach level or branch distance was not 0;
+                        }
+                    }
+                }
+                curSummary['ApproachLevel'] = approachLevel;
+                curSummary['BranchDistance'] = branchDistance;
+                curSummary['CFGDistance'] = CFGDistance;
+                curSummary['Fitness'] = fitness;
+                if (Object.keys(curSummary).length > 0) {
+                    summary.push(curSummary);
+                }
+            }
+
+        }
+        return JSON.stringify({'uncoveredBlocks': summary});
+    }
+
+    public getPopulationRecordAsJSON(): string {
         const solution = {};
-        this.populationRecord.forEach((population, iteration) =>{
+        this.populationRecord.forEach((population, iteration) => {
             solution["Population " + iteration] = population.toJSON();
         })
         return JSON.stringify(solution, undefined, 4);
