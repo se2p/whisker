@@ -1,4 +1,4 @@
-import {LocalityEventSelector, UniformEventSelector} from "../../../src/whisker/testcase/EventSelector";
+import {ClusteringEventSelector, InterleavingEventSelector} from "../../../src/whisker/testcase/EventSelector";
 import {List} from "../../../src/whisker/utils/List";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
@@ -37,7 +37,7 @@ class DummyEvent extends ScratchEvent {
 
 describe("LocalityEventSelector Test", () => {
 
-    const selector = new LocalityEventSelector({min: 0, max: 14});
+    const selector = new ClusteringEventSelector({min: 0, max: 14});
     const range = (until) => [...Array(until).keys()];
 
     test("Test select one available event", () => {
@@ -88,7 +88,7 @@ describe("LocalityEventSelector Test", () => {
 
 describe("UniformEventSelector Test", () => {
 
-    const selector = new UniformEventSelector();
+    const selector = new InterleavingEventSelector();
     const range = (until) => [...Array(until).keys()];
 
     test("Test select event", () => {

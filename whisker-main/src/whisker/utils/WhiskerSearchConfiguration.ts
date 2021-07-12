@@ -52,7 +52,7 @@ import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExt
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
-import {EventSelector, LocalityEventSelector, UniformEventSelector} from "../testcase/EventSelector";
+import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
 import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
 
 
@@ -295,13 +295,13 @@ export class WhiskerSearchConfiguration {
 
     public getEventSelector(): EventSelector {
         switch (this.dict['eventSelector']) {
-            case 'locality': {
+            case 'clustering': {
                 const {integerRange} = this.dict;
-                return new LocalityEventSelector(integerRange);
+                return new ClusteringEventSelector(integerRange);
             }
-            case 'uniform':
+            case 'interleaving':
             default:
-                return new UniformEventSelector();
+                return new InterleavingEventSelector();
         }
     }
 

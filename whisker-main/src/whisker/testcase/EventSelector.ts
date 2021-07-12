@@ -5,7 +5,7 @@ export interface EventSelector {
     selectEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>): ScratchEvent
 }
 
-export class UniformEventSelector implements EventSelector {
+export class InterleavingEventSelector implements EventSelector {
 
     /**
      * Selects an event from the given list of available events, based on the current codon in the given codon list.
@@ -19,7 +19,7 @@ export class UniformEventSelector implements EventSelector {
     }
 }
 
-export class LocalityEventSelector implements EventSelector {
+export class ClusteringEventSelector implements EventSelector {
     private readonly _valueRange: number;
 
     constructor({min, max}: { min: number, max: number }) {
@@ -28,15 +28,15 @@ export class LocalityEventSelector implements EventSelector {
 
     selectEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>): ScratchEvent {
         const codon = codons.get(numCodon);
-        const bucketSize = Math.floor(this._valueRange / availableEvents.size());
+        const clusterSize = Math.floor(this._valueRange / availableEvents.size());
 
-        let current = bucketSize;
-        let rule = 0;
+        let current = clusterSize;
+        let cluster = 0;
         while (codon >= current) {
-            rule++;
-            current += bucketSize;
+            cluster++;
+            current += clusterSize;
         }
 
-        return availableEvents.get(rule);
+        return availableEvents.get(cluster);
     }
 }
