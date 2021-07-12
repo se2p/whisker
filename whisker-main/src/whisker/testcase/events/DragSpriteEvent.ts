@@ -87,4 +87,16 @@ export class DragSpriteEvent extends ScratchEvent {
             this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
     }
+
+    getNumVariableParameters(): number {
+        return 0;
+    }
+
+    getVariableParameterNames(): string[] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return `DragSpriteEvent-${this._target}-${this._x}-${this._y}`;
+    }
 }

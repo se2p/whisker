@@ -15,6 +15,8 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {ParameterTypes} from "../testcase/events/ParameterTypes";
 import Runtime from "scratch-vm/src/engine/runtime"
+import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
 export class NetworkExecutor {
 
@@ -73,7 +75,7 @@ export class NetworkExecutor {
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
         this._random = Randomness.getInstance();
-        this._eventExtractor = new StaticScratchEventExtractor(this._vm);
+        this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
         this.recordInitialState();
     }
 

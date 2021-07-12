@@ -55,6 +55,7 @@ import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLoc
 
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NetworkChromosomeGeneratorExistingNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorExistingNetwork";
+import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
 class ConfigException implements Error {
     message: string;
@@ -267,6 +268,8 @@ export class WhiskerSearchConfiguration {
                 return new JustWaitScratchEventExtractor(Container.vm);
             case 'static':
                 return new StaticScratchEventExtractor(Container.vm);
+            case 'neuroevolution':
+                return new NeuroevolutionScratchEventExtractor(Container.vm);
             case 'dynamic':
             default:
                 return new DynamicScratchEventExtractor(Container.vm);
@@ -290,13 +293,13 @@ export class WhiskerSearchConfiguration {
                     this.dict['minVarChromosomeLength'],
                     this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork': {
-                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
+                const eventExtractor = this.getEventExtractor();
                 return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm),
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
-                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
+                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm));
             }
