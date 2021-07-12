@@ -79,27 +79,29 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
+        console.log(this._fitnessFunction)
 
         while (!(this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
             const candidateChromosome = bestIndividual.mutate();
             await candidateChromosome.evaluate();
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
-            console.log("Iteration "+this._iterations+" ["+bestFitness+"]: "+candidateChromosome.toString()+" has fitness "+candidateFitness);
+            //console.log("Iteration "+this._iterations+" ["+bestFitness+"]: "+candidateChromosome.toString()+" has fitness "+candidateFitness);
             this._iterations++;
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
                 (this._fitnessFunction.compare(candidateFitness, bestFitness) === 0 && candidateChromosome.getLength() <= bestLength)) {
                 if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
-                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                     StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
                     StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                 }
                 bestFitness = candidateFitness;
                 bestLength = candidateChromosome.getLength();
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
-                console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
+                console.log(`Iteration ${this._iterations}: Best Chromosome\
+                ${bestIndividual.toString()} with fitness ${bestFitness} and length ${bestIndividual.getLength()}`)
             }
         }
         console.log("1+1 EA completed at "+Date.now());
