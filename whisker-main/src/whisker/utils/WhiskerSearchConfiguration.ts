@@ -53,6 +53,7 @@ import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 import {EventSelector, LocalityEventSelector, UniformEventSelector} from "../testcase/EventSelector";
+import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
 
 
 class ConfigException implements Error {
@@ -203,7 +204,15 @@ export class WhiskerSearchConfiguration {
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
-            case'neatMutation':
+            case 'biasedvariablelength': {
+                const {
+                    integerRange: {min, max},
+                    [`chromosome-length`]: chromosomeLength,
+                    mutation: {gaussianMutationPower}
+                } = this.dict;
+                return new BiasedVariableLengthMutation(min, max, chromosomeLength, gaussianMutationPower);
+            }
+            case 'neatMutation':
                 return new NeatMutation(
                     this.dict['mutation']['mutationAddConnection'] as number,
                     this.dict['mutation']['recurrentConnection'] as number,
