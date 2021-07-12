@@ -32,6 +32,11 @@ import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import {TypeTextEvent} from "./events/TypeTextEvent";
 import {Randomness} from "../utils/Randomness";
+import {DragSpriteEvent} from "./events/DragSpriteEvent";
+import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
+import Cast from "scratch-vm/src/util/cast";
+
+const twgl = require('twgl.js');
 
 
 export abstract class ScratchEventExtractor {
@@ -126,9 +131,53 @@ export abstract class ScratchEventExtractor {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
                 const value = field.TOUCHINGOBJECTMENU.value;
+                // Target senses Mouse
                 if (value == "_mouse_") {
                     eventList.add(new MouseMoveToEvent(target.x, target.y));
                     eventList.add(new MouseMoveEvent());
+                }
+                // Target senses edge
+                else if (value === "_edge_") {
+                    const random = Randomness.getInstance();
+                    let x: number;
+                    let y: number;
+                    const stageWidth = Container.vmWrapper.getStageSize().width / 2;
+                    const stageHeight = Container.vmWrapper.getStageSize().height / 2;
+                    if (random.randomBoolean()) {
+                        // Snap to the left or right edge and randomly select the y-coordinate
+                        x = random.pick([-stageWidth, stageWidth]);
+                        y = random.nextInt(-stageHeight, stageHeight);
+                    } else {
+                        // Snap to upper or lower edge and randomly select the x-coordinate
+                        x = random.nextInt(-stageWidth, stageWidth);
+                        y = random.pick([-stageHeight, stageHeight])
+                    }
+                    eventList.add(new DragSpriteEvent(target, x, y));
+                } else {
+                    // Target senses another sprite
+                    let sensingRenderedTarget = Container.vmWrapper.getTargetOfSprite(value);
+                    // If the renderedTarget is not visible. Check if we have clones that might be.
+                    if (!sensingRenderedTarget.visible) {
+                        for (const clone of sensingRenderedTarget.sprite.clones) {
+                            if (clone.visible) {
+                                sensingRenderedTarget = clone;
+                                break;
+                            }
+                        }
+                    }
+                    // We only create a DragEvent if we found the sensed Sprite and if it's visible.
+                    if (sensingRenderedTarget.sprite && sensingRenderedTarget.visible) {
+                        eventList.add(new DragSpriteEvent(target, sensingRenderedTarget.x, sensingRenderedTarget.y));
+                    }
+                }
+                break;
+            }
+            case "sensing_touchingcolor": {
+                const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
+                const colorPosition = ScratchEventExtractor.findColorOnCanvas(target, sensedColor);
+                // Only add the event if we actually found the color on the canvas.
+                if (colorPosition.x && colorPosition.y) {
+                    eventList.add(new DragSpriteEvent(target, colorPosition.x, colorPosition.y))
                 }
                 break;
             }
@@ -154,7 +203,7 @@ export abstract class ScratchEventExtractor {
                 eventList.add(new MouseDownEvent(!isMouseDown));
                 break;
             }
-            case 'pen_penDown':{
+            case 'pen_penDown': {
                 eventList.add(new MouseMoveEvent())
                 break;
             }
@@ -374,6 +423,84 @@ export abstract class ScratchEventExtractor {
             }
         }
         return false;
+    }
+
+    /**
+     * Finds a color on the canvas via scanning the surrounding of the source sprite using an ever increasing radius.
+     * @param sprite the source sprite
+     * @param sensedColor the color we are searching for in hex representation
+     */
+    private static findColorOnCanvas(sprite: RenderedTarget, sensedColor: string): { x: number, y: number } {
+        // Gather the sensed color of the block and transform it in the [r,g,b] format
+        const color3b = Cast.toRgbColorList(sensedColor);
+
+        // Collect all touchable objects which might carry the sensed color
+        const renderer = sprite.runtime.renderer;
+        const touchableObjects = [];
+        for (let index = renderer._visibleDrawList.length - 1; index >= 0; index--) {
+            const id = renderer._visibleDrawList[index];
+            if (id !== sprite.drawableID) {
+                const drawable = renderer._allDrawables[id];
+                touchableObjects.push({
+                    id,
+                    drawable
+                });
+            }
+        }
+
+        // Scan an ever increasing radius around the source sprite and check if we found an object carrying the
+        // sensed color. We stop if the radius is greater than maxRadius.
+        const point = twgl.v3.create();
+        const color = new Uint8ClampedArray(4);
+        let r = sprite.size + 1;
+        let rPrev = 1;
+        let rIncrease = 1;
+        const maxRadius = Math.sqrt(
+            Math.pow((renderer._xRight - renderer._xLeft), 2) +
+            Math.pow((renderer._yTop - renderer._yBottom), 2)
+        );
+        while (r < maxRadius) {
+            const coordinates = [];
+            for (const x of [-r, r]) {
+                for (let y = -r; y <= r; y++) {
+                    coordinates.push([x, y]);
+                }
+            }
+            for (const y of [-r, r]) {
+                for (let x = -r; x <= r; x++) {
+                    coordinates.push([x, y]);
+                }
+            }
+            for (const c of coordinates) {
+                const x = c[0];
+                const y = c[1];
+                point[0] = sprite.x + x;
+                point[1] = sprite.y + y;
+                renderer.constructor.sampleColor3b(point, touchableObjects, color);
+
+                // Check if we found an object carrying the correct color.
+                if (ScratchEventExtractor.isColorMatching(color, color3b)) {
+                    return {x: point[0] as number, y: point[1] as number};
+                }
+            }
+            // Increase the scan radius in a recursive fashion.
+            rIncrease += rPrev;
+            rPrev = (rIncrease / 5);
+            r += (rIncrease / 2);
+        }
+        // At this point we scanned the whole canvas but didn't find the color.
+        return {x: undefined, y: undefined};
+    }
+
+    /**
+     * Check if color1 matches color2.
+     * @param color1 the first color
+     * @param color2 the second color
+     */
+    private static isColorMatching(color1: Uint8ClampedArray, color2: Uint8ClampedArray): boolean {
+        return (color1[0] & 0b11111000) === (color2[0] & 0b11111000) &&
+            (color1[1] & 0b11111000) === (color2[1] & 0b11111000) &&
+            (color1[2] & 0b11110000) === (color2[2] & 0b11110000);
     }
 
 }

@@ -20,6 +20,10 @@
 
 import {List} from "../../../src/whisker/utils/List";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 
 describe("List", () => {
 
@@ -49,9 +53,28 @@ describe("List", () => {
         expect(list.getElements()).toEqual([1, 4, 2, 3]);
     });
 
+    test("Replace oldElement with a new one", () => {
+        const wasSuccessFull = list.replace(2, 5);
+        expect(wasSuccessFull).toBeTruthy();
+        expect(list.getElements()).toEqual([1, 5, 3]);
+    });
+
+    test("Try to replace a non existing oldElement with a new one", () => {
+        const wasSuccessFull = list.replace(-1, 5);
+        expect(wasSuccessFull).toBeFalsy();
+        expect(list.getElements()).toEqual([1,2,3]);
+    });
+
     test("Replace element given an index", () => {
-        list.replace(4, 1)
+        const wasSuccessFull = list.replaceAt(4, 1);
+        expect(wasSuccessFull).toBeTruthy();
         expect(list.getElements()).toEqual([1, 4, 3]);
+    });
+
+    test("Try to replace element given a non valid index", () => {
+        const wasSuccessFull = list.replaceAt(4, -1);
+        expect(wasSuccessFull).toBeFalsy();
+        expect(list.getElements()).toEqual([1, 2, 3]);
     });
 
     test("Add array to list", () => {
@@ -78,6 +101,15 @@ describe("List", () => {
         const filteredList = list.filter(value => value < 30);
         expect(filteredList.getElements()).toEqual([13,21,9,11,20]);
         expect(list.getElements()).toEqual([13,21,9,33,77,35,11,20,62,81])
+    });
+
+    test("Test FindIndex", () => {
+        const list = new List([new MouseMoveEvent(), new WaitEvent(), new KeyPressEvent('left arrow')]);
+        expect(list.findIndex(event => event instanceof KeyPressEvent)).toEqual(2);
+    });
+
+    test("Test FindElement", () => {
+        expect(list.findElement(2)).toEqual(1);
     });
 
     test("Clear list", () => {
@@ -149,6 +181,13 @@ describe("List", () => {
         const list = new List([new ClickStageEvent(), new ClickStageEvent(), new ClickStageEvent()]);
         const distinct = list.distinctObjects();
         expect(distinct.size()).toBe(1);
+    });
+
+    test("Test map", () => {
+        const expected = new List<number>();
+        for(const x of list)
+            expected.add(x * 2);
+        expect(list.map(x => x * 2)).toEqual(expected);
     });
 
     test("Test toString", () => {

@@ -2,28 +2,24 @@
     "test-generator": "many-objective",
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
-    "population-size": 5,
-    "chromosome-length": 30,
-    "minVarChromosomeLength": 10,
-    "maxVarChromosomeLength": 20,
+    "population-size": 3,
+    "chromosome-length": 50,
+    "minVarChromosomeLength": 2,
+    "maxVarChromosomeLength": 2,
     "extractor": "dynamic",
     "crossover": {
         "operator": "singlepointrelative",
-        "probability": 0.8
+        "probability": 0
     },
     "mutation": {
         "operator": "variablelength",
-        "probability": 1,
+        "probability": 0,
         "gaussianMutationPower": 5
     },
     "localSearch": [
         {
             "type": "Extension",
-            "probability": 0.1
-        },
-        {
-            "type": "Reduction",
-            "probability": 0.3
+            "probability": 1
         }
     ],
     "selection": {
@@ -38,7 +34,7 @@
         "conditions": [
             {
                 "type": "fixed-time",
-                "duration": 100000
+                "duration": 1000000
             },
             {
                 "type": "optimal"

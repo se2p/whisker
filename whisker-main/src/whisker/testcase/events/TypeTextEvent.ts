@@ -38,11 +38,10 @@ export class TypeTextEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return '' +
-            `t.inputImmediate({
+        return `t.inputImmediate({
     device: 'text',
     answer: '${this._text}'
-  });`
+  });`;
     }
 
     public toString(): string {

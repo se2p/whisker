@@ -63,11 +63,6 @@ class VMWrapper {
         /**
          * @type {number}
          */
-        this.runStartTime = 0;
-
-        /**
-         * @type {number}
-         */
         this.stepsExecuted = 0;
 
         /**
@@ -147,7 +142,7 @@ class VMWrapper {
      * @param {Function?} condition .
      * @param {number=} timeout .
      * @param {number=} steps .
-     * @returns {number} .
+     * @returns {number} runtime in ms.
      */
     async run (condition, timeout, steps) {
         if (this.isRunning()) {
@@ -156,19 +151,17 @@ class VMWrapper {
         }
 
         condition = condition || (() => false);
-        timeout = timeout === undefined ? Infinity : timeout;
+        if(timeout !== undefined && steps === undefined){
+            steps = this.convertFromTimeToSteps(timeout);
+        }
         steps = steps === undefined ? Infinity : steps;
 
         this.running = true;
-        this.runStartTime = Date.now();
         this.runStartStepsExecuted = this.getTotalStepsExecuted();
 
         let constraintError = null;
 
-        while (this.isRunning() &&
-               this.getRunTimeElapsed() < timeout &&
-               this.getRunStepsExecuted() < steps &&
-               !condition()) {
+        while (this.isRunning() && this.getRunStepsExecuted() < steps && !condition()) {
 
             constraintError = await this.stepper.step(this.step.bind(this));
 
@@ -187,28 +180,27 @@ class VMWrapper {
 
         this.running = false;
         const stepsExecuted = this.getRunStepsExecuted();
-
         this.inputs.updateInputs(stepsExecuted);
 
         if (constraintError && this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL) {
             throw constraintError;
         }
 
-        return stepsExecuted;
+        return this.getRunTimeElapsed();
     }
 
     /**
      * @param {number} time .
-     * @returns {number} .
+     * @returns {number} runtime in ms.
      */
     async runForTime (time) {
-        return await this.run(null, time);
+        return await this.run(undefined, time);
     }
 
     /**
      * @param {Function} condition .
      * @param {number=} timeout .
-     * @returns {number} .
+     * @returns {number} runtime in ms.
      */
     async runUntil (condition, timeout) {
         return await this.run(condition, timeout);
@@ -217,7 +209,7 @@ class VMWrapper {
     /**
      * @param {Function} callback .
      * @param {number=} timeout .
-     * @returns {number} .
+     * @returns {number} runtime in ms .
      */
     async runUntilChanges (callback, timeout) {
         const initialValue = callback();
@@ -226,11 +218,10 @@ class VMWrapper {
 
     /**
      * @param {number} steps .
-     * @param {number=} timeout .
-     * @returns {number} .
+     * @returns {number} runtime in steps.
      */
-    async runForSteps (steps, timeout) {
-        return await this.run(null, timeout, steps);
+    async runForSteps (steps) {
+        return this.convertFromTimeToSteps(await this.run(undefined, undefined, steps));
     }
 
     cancelRun () {
@@ -247,14 +238,14 @@ class VMWrapper {
      * @return {number} .
      */
     getTotalTimeElapsed () {
-        return (Date.now() - this.startTime) * this.accelerationFactor;
+        return this.getTotalStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
     /**
      * @return {number} .
      */
     getRunTimeElapsed () {
-        return (Date.now() - this.runStartTime) * this.accelerationFactor;
+        return this.getRunStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
     /**
@@ -417,6 +408,19 @@ class VMWrapper {
     convertFromTimeToSteps(timeDuration){
         const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
         return Math.ceil(timeDuration / stepDuration);
+    }
+
+    /**
+     * Finds the RenderedTarget instance of a sprite using the sprite's name.
+     * @param spriteName the name of the sprite we are searching the RenderedTarget instance for
+     * @return {RenderedTarget}
+     */
+    getTargetOfSprite(spriteName){
+        for(const target of this.vm.runtime.targets){
+            if(target.sprite.name === spriteName){
+                return target;
+            }
+        }
     }
 
     /**

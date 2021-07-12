@@ -49,6 +49,10 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {NaiveScratchEventExtractor} from "../testcase/NaiveScratchEventExtractor";
 import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExtractor";
+import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
+import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
+import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NetworkChromosomeGeneratorExistingNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorExistingNetwork";
 
@@ -228,6 +232,33 @@ export class WhiskerSearchConfiguration {
         }
     }
 
+    public getLocalSearchOperators(): List<LocalSearch<any>> {
+        const operators = new List<LocalSearch<any>>();
+        const localSearchOperators = this.dict['localSearch'];
+
+        // If there are no local search operators defined return an empty list.
+        if (!localSearchOperators) {
+            return new List<LocalSearch<any>>();
+        }
+
+        // Otherwise add the defined local search operators
+        for (const operator of localSearchOperators) {
+            let type: LocalSearch<any>;
+            switch (operator['type']) {
+                case "Extension":
+                    type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
+                        operator['probability']);
+                    break;
+                case "Reduction":
+                    type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
+                        operator['probability']);
+            }
+
+            operators.add(type);
+        }
+        return operators;
+    }
+
     public getEventExtractor(): ScratchEventExtractor {
         switch (this.dict['extractor']) {
             case 'naive':
@@ -362,14 +393,6 @@ export class WhiskerSearchConfiguration {
         }
 
         throw new ConfigException("Unknown Algorithm " + this.dict["test-generator"]);
-    }
-
-    public getWaitDuration(): number {
-        if ("wait-duration" in this.dict) {
-            return this.dict["wait-duration"]
-        } else {
-            return 10;
-        }
     }
 
     public getWaitStepUpperBound(): number {

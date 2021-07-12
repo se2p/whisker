@@ -45,6 +45,7 @@ import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
 import {RandomNeuroevolution} from "./algorithms/RandomNeuroevolution";
+import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -83,6 +84,11 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * The selection operator for the search algorithm.
      */
     private _selectionOperator: Selection<C>;
+
+    /**
+     * The LocalSearch operators which can be used by the algorithm under certain circumstances.
+     */
+    private _localSearchOperators = new List<LocalSearch<C>>();
 
     /**
      * The type of the algorithm that will be build.
@@ -180,15 +186,25 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         this._properties = properties;
         return this as unknown as SearchAlgorithmBuilder<C>;
     }
+
     /**
      * Adds the selection operation to use.
-     * @param selection the selection operator to use
+     * @param selectionOp the selection operator to use
      * @returns the search builder with the applied selection operation
      */
     addSelectionOperator(selectionOp: Selection<C>): SearchAlgorithmBuilder<C> {
         this._selectionOperator = selectionOp;
 
         return this as unknown as SearchAlgorithmBuilder<C>;
+    }
+
+    /**
+     * Adds the LocalSearch operators callable by the given search algorithm
+     * @param localSearchOperators the LocalSearch operators to be used by the algorithm
+     */
+    addLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): SearchAlgorithmBuilder<C> {
+        this._localSearchOperators = localSearchOperators;
+        return this;
     }
 
     /**
@@ -234,6 +250,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         const searchAlgorithm: SearchAlgorithm<C> = new MOSA();
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setSelectionOperator(this._selectionOperator);
+        searchAlgorithm.setLocalSearchOperators(this._localSearchOperators);
 
         return searchAlgorithm;
     }

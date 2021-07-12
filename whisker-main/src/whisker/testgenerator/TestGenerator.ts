@@ -43,8 +43,9 @@ export abstract class TestGenerator {
 
     protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
-        .addSelectionOperator(this._config.getSelectionOperator())
-        .addProperties(this._config.getSearchAlgorithmProperties());
+            .addSelectionOperator(this._config.getSelectionOperator())
+            .addLocalSearchOperators(this._config.getLocalSearchOperators())
+            .addProperties(this._config.getSearchAlgorithmProperties());
         if (initializeFitnessFunction) {
             builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),
                 this._config.getSearchAlgorithmProperties().getChromosomeLength(),
@@ -57,9 +58,9 @@ export abstract class TestGenerator {
 
     protected extractCoverageGoals(): Map<number, FitnessFunction<any>> {
         return new SearchAlgorithmBuilder(this._config.getAlgorithm())
-        .initializeFitnessFunction(this._config.getFitnessFunctionType(),
-            this._config.getSearchAlgorithmProperties().getChromosomeLength(),
-            this._config.getFitnessFunctionTargets()).fitnessFunctions;
+            .initializeFitnessFunction(this._config.getFitnessFunctionType(),
+                this._config.getSearchAlgorithmProperties().getChromosomeLength(),
+                this._config.getFitnessFunctionTargets()).fitnessFunctions;
     }
 
     protected collectStatistics(testSuite: List<WhiskerTest>): void {
