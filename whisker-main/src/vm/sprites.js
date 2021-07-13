@@ -27,14 +27,19 @@ class Sprites {
         this._onSpriteMoved = null;
 
         /**
-         * @type {(Function[])}
+         * @type {(Function|null)}
          */
-        this._onSpriteMovedModel = [];
+        this._onSpriteMovedModel = null;
 
         /**
          * @type {(Function|null)}
          */
         this._onSpriteVisualChange = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onModelSpriteVisualChange = null;
     }
 
     /**
@@ -162,9 +167,9 @@ class Sprites {
         if (this._onSpriteMoved) {
             this._onSpriteMoved(this.wrapTarget(target));
         }
-        this._onSpriteMovedModel.forEach(fun => {
-            fun(this.wrapTarget(target));
-        })
+        if (this._onSpriteMovedModel) {
+            this._onSpriteMovedModel(this.wrapTarget(target));
+        }
     }
 
     /**
@@ -174,6 +179,10 @@ class Sprites {
         if (this._onSpriteVisualChange) {
             this._onSpriteVisualChange(this.wrapTarget(target));
         }
+        if (this._onModelSpriteVisualChange) {
+            this._onModelSpriteVisualChange(this.wrapTarget(target));
+        }
+
     }
 
     /**
@@ -187,8 +196,8 @@ class Sprites {
      * Duplicated function for model tests.
      * @param func
      */
-    addModelSpriteMoved(func) {
-        this._onSpriteMovedModel.push(func);
+    onModelSpriteMoved(func) {
+        this._onSpriteMovedModel = func;
     }
 
     /**
@@ -196,6 +205,13 @@ class Sprites {
      */
     onSpriteVisualChange (func) {
         this._onSpriteVisualChange = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onModelSpriteVisualChange (func) {
+        this._onModelSpriteVisualChange = func;
     }
 }
 

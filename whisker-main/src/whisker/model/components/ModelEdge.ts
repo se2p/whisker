@@ -63,6 +63,7 @@ export abstract class ModelEdge {
                     if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
                         this.failedForcedTest = true;
                         failedConditions.push(this.conditions[i]);
+                        console.error(this.getTimeLimitFailedOutput(this.conditions[i],t));
                         modelResult.addFail(this.getTimeLimitFailedOutput(this.conditions[i], t));
                     }
                 } catch (e) {

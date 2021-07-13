@@ -33,17 +33,12 @@ class TestDriver {
         this.getStage = vmWrapper.sprites.getStage.bind(vmWrapper.sprites);
         this.getNewSprites = vmWrapper.sprites.getNewSprites.bind(vmWrapper.sprites);
         this.onSpriteMoved = vmWrapper.sprites.onSpriteMoved.bind(vmWrapper.sprites);
-        this.addModelSpriteMoved = vmWrapper.sprites.addModelSpriteMoved.bind(vmWrapper.sprites);
         this.onSpriteVisualChange = vmWrapper.sprites.onSpriteVisualChange.bind(vmWrapper.sprites);
 
         this.addCallback = vmWrapper.callbacks.addCallback.bind(vmWrapper.callbacks);
         this.reAddCallback = vmWrapper.callbacks.reAddCallback.bind(vmWrapper.callbacks);
         this.removeCallback = vmWrapper.callbacks.removeCallback.bind(vmWrapper.callbacks);
         this.clearCallbacks = vmWrapper.callbacks.clearCallbacks.bind(vmWrapper.callbacks);
-
-        this.addModelCallback = vmWrapper.callbacks.addCallback.bind(vmWrapper.modelCallbacks);
-        this.reAddModelCallback = vmWrapper.callbacks.reAddCallback(vmWrapper.modelCallbacks);
-        this.removeModelCallback = vmWrapper.callbacks.removeCallback.bind(vmWrapper.modelCallbacks);
 
         this.addInput = vmWrapper.inputs.addInput.bind(vmWrapper.inputs);
         this.addInputs = vmWrapper.inputs.addInputs.bind(vmWrapper.inputs);

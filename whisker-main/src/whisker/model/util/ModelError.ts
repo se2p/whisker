@@ -7,19 +7,19 @@ import {CheckName} from "../components/Check";
 function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
     let conditions = edge.conditions;
     let containsAfterTime;
-    let containsAtTime;
+    let containsElapsed;
 
     for (let i = 0; i < conditions.length; i++) {
         if (conditions[i].name == CheckName.TimeBetween || conditions[i].name == CheckName.TimeAfterEnd) {
             containsAfterTime = conditions[i].args[0];
         } else if (conditions[i].name == CheckName.TimeElapsed) {
-            containsAtTime = conditions[i].args[0];
+            containsElapsed = conditions[i].args[0];
         }
     }
 
     let result = edge.id + ": " + effect.toString();
-    if (containsAtTime != undefined) {
-        result += " at " + containsAtTime + "ms";
+    if (containsElapsed != undefined) {
+        result += " before " + containsElapsed + "ms elapsed";
     }
     if (containsAfterTime != undefined) {
         result += " after " + containsAfterTime + "ms";

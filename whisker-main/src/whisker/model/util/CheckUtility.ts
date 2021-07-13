@@ -14,9 +14,11 @@ export class CheckUtility extends EventEmitter {
     private readonly modelResult: ModelResult;
 
     static readonly EVENT = "Event"
-    private spriteChecks: { [key: string]: ((sprite) => boolean)[] } = {};
+    private onMovedChecks: { [key: string]: ((sprite) => boolean)[] } = {};
+    private onVisualChangeChecks: { [key: string]: ((sprite) => boolean)[] } = {};
     private registeredTouching: string[] = [];
     private registeredColor: string[] = [];
+    private registeredOutput: string[] = [];
     private eventStrings: string[] = [];
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
@@ -33,6 +35,7 @@ export class CheckUtility extends EventEmitter {
         this.testDriver = testDriver;
         this.modelResult = modelResult;
         this.setMaxListeners(nbrOfAllModels);
+        this.setupSpriteEvents();
     }
 
     /**
@@ -49,13 +52,13 @@ export class CheckUtility extends EventEmitter {
         const eventString = CheckUtility.getTouchingString(spriteRegex1, spriteRegex2, negated);
 
         // no check for this sprite till now
-        if (this.spriteChecks[spriteName1] == undefined) {
-            this.setupModelSpriteMove(spriteName1);
+        if (this.onMovedChecks[spriteName1] == undefined || this.onMovedChecks[spriteName1] == null) {
+            this.onMovedChecks[spriteName1] = [];
         }
 
         if (this.registeredTouching.indexOf(touchingString) == -1) {
             this.registeredTouching.push(touchingString);
-            this.spriteChecks[spriteName1].push((sprite) => {
+            this.onMovedChecks[spriteName1].push((sprite) => {
                 return !negated == sprite.isTouchingSprite(spriteName2) && this.updateEventString(eventString);
             });
         }
@@ -75,24 +78,61 @@ export class CheckUtility extends EventEmitter {
         const eventString = CheckUtility.getColorString(spriteRegex, r, g, b, negated);
 
         // no check for this sprite till now
-        if (this.spriteChecks[spriteName] == undefined) {
-            this.setupModelSpriteMove(spriteName);
+        if (this.onMovedChecks[spriteName] == undefined|| this.onMovedChecks[spriteName] == null) {
+            this.onMovedChecks[spriteName] = [];
         }
 
         if (this.registeredColor.indexOf(colorString) == -1) {
             this.registeredColor.push(colorString);
-            this.spriteChecks[spriteName].push((sprite) => {
+            this.onMovedChecks[spriteName].push((sprite) => {
                 return !negated == sprite.isTouchingColor([r, g, b]) && this.updateEventString(eventString);
             });
         }
     }
 
-    private setupModelSpriteMove(spriteName: string) {
-        this.spriteChecks[spriteName] = [];
-        this.testDriver.addModelSpriteMoved((sprite) => {
-            if (sprite.name == spriteName) {
+    /**
+     * Register an output event on the visual change checks.
+     * @param spriteRegex  Regex defining the first sprite name to find the same check again.
+     * @param spriteName Name of the sprite.
+     * @param output Output as clear text that is saved in the check, e.g. -8.
+     * @param outputExpr Expression that can be evaluated checking the output for equality.
+     * @param negated Whether the check is negated.
+     */
+    registerOutput(spriteRegex: string, spriteName: string, output: string, outputExpr: string, negated: boolean) {
+        const outputString = CheckUtility.getOutputString(spriteName, output, negated);
+
+        if (this.onVisualChangeChecks[spriteName] == undefined || this.onVisualChangeChecks[spriteName] == null) {
+            this.onVisualChangeChecks[spriteName] = [];
+        }
+
+        if (this.registeredOutput.indexOf(outputString) == -1) {
+            this.registeredOutput.push(outputString);
+            this.onVisualChangeChecks[spriteName].push((sprite) => {
+                let correctOutput =  sprite.sayText && sprite.sayText != ""
+                    && sprite.sayText.indexOf(eval(outputExpr)(this.testDriver)) != -1;
+                return !negated == correctOutput && this.updateEventString(outputString);
+            })
+        }
+    }
+
+    private setupSpriteEvents() {
+        this.testDriver.vmWrapper.sprites.onModelSpriteMoved((sprite) => {
+            if (this.onMovedChecks[sprite.name] != null) {
                 let change = false;
-                this.spriteChecks[spriteName].forEach(fun => {
+                this.onMovedChecks[sprite.name].forEach(fun => {
+                    if (fun(sprite)) {
+                        change = true;
+                    }
+                });
+                if (change) {
+                    this.emit(CheckUtility.EVENT, this.testDriver, this.eventStrings);
+                }
+            }
+        })
+        this.testDriver.vmWrapper.sprites.onModelSpriteVisualChange((sprite) => {
+            if (this.onVisualChangeChecks[sprite.name] != null) {
+                let change = false;
+                this.onVisualChangeChecks[sprite.name].forEach(fun => {
                     if (fun(sprite)) {
                         change = true;
                     }
@@ -158,9 +198,17 @@ export class CheckUtility extends EventEmitter {
     /**
      * Get the string defining a color event.
      */
-    static getColorString(spriteName: string, r: number, g: number, b: number, negated): string {
+    static getColorString(spriteName: string, r: number, g: number, b: number, negated: boolean): string {
         let s = negated ? "!" : "";
         return s + spriteName + ":" + r + ":" + g + ":" + b;
+    }
+
+    /**
+     * Get the string defining an output event.
+     */
+    static getOutputString(spriteName: string, output: string, negated: boolean) {
+        let s = negated ? "!" : "";
+        return s + spriteName + ":" + output;
     }
 
     /**

@@ -114,10 +114,10 @@ export class ModelTester extends EventEmitter {
     private async addCallbacks(t: TestDriver) {
         this.userInputGen(t, this.result);
 
-        this.modelStepCallback = t.addModelCallback(this.getModelStepFunction(t), true, "modelStep");
-        this.onTestEndCallback = t.addModelCallback(this.getOnTestEndFunction(t), true, "stopModelsCheck");
-        this.haltAllCallback = t.addModelCallback(this.checkForHaltAll(t), true, "checkForHalt");
-        this.checkLastFailedCallback = t.addModelCallback(() => {
+        this.modelStepCallback = this.addModelCallback(t, this.getModelStepFunction(t), true, "modelStep");
+        this.onTestEndCallback = this.addModelCallback(t, this.getOnTestEndFunction(t), true, "stopModelsCheck");
+        this.haltAllCallback = this.addModelCallback(t, this.checkForHaltAll(t), true, "checkForHalt");
+        this.checkLastFailedCallback = this.addModelCallback(t, () => {
             this.checkUtility.checkFailedEffects(this.result);
             this.checkLastFailedCallback.disable();
         }, true, "checkForFailedEffects")
@@ -241,9 +241,13 @@ export class ModelTester extends EventEmitter {
                     callback.disable();
                 }
             }
-            let callback = t.addModelCallback(userInputFun, false, "inputOfUserModel");
+            let callback = this.addModelCallback(t, userInputFun, false, "inputOfUserModel");
             return callback;
         }
+    }
+
+    private addModelCallback(t: TestDriver, fun: Function, afterStep = false, name: string) {
+        return t.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
 
 
