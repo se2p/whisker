@@ -731,8 +731,13 @@ export class NetworkChromosome extends Chromosome {
         this._isRecurrent = value;
     }
 
-    toJSON(){
+    public toJSON(): Record<string, any>{
         const network = {};
+        console.log(this.networkFitness)
+        network[`NetworkFitness`] = this.networkFitness;
+        network[`FitnessShared`] = this.sharedFitness;
+        network[`ExpectedOffspring`] = this.expectedOffspring;
+        network[`DeathMark`] = this.hasDeathMark;
         for (let i = 0; i < this.allNodes.size(); i++) {
             network[`Node ${i}`] = this.allNodes.get(i);
         }
