@@ -186,6 +186,7 @@ export class Species<C extends NetworkChromosome> {
      */
     public getNumberOfOffspringsNEAT(leftOver: number): number {
         this.expectedOffspring = 0;
+        this.calculateAverageSpeciesFitness();
 
         let intPart = 0;
         let fractionPart = 0.0;
@@ -216,7 +217,7 @@ export class Species<C extends NetworkChromosome> {
      */
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
 
-        const expectedOffspring = (this.averageSpeciesFitness() / totalAvgSpeciesFitness) * populationSize;
+        const expectedOffspring = (this.calculateAverageSpeciesFitness() / totalAvgSpeciesFitness) * populationSize;
         const intExpectedOffspring = Math.floor(expectedOffspring);
         const fractionExpectedOffspring = expectedOffspring % 1;
 
@@ -256,7 +257,7 @@ export class Species<C extends NetworkChromosome> {
             // If we have a population Champion in this species apply slight mutation or clone it
             if (this.champion.isPopulationChampion && this.champion.numberOffspringPopulationChamp > 0) {
                 if (champCloned < this.properties.populationChampionNumberClones) {
-                    child = this.champion.clone() as C;
+                    child = this.champion.cloneStructure() as C;
                     champCloned++;
                     this.champion.numberOffspringPopulationChamp--;
                 } else {
@@ -266,7 +267,7 @@ export class Species<C extends NetworkChromosome> {
 
             // Species champions are cloned only
             else if (champCloned < 1) {
-                child = this.champion.clone() as C;
+                child = this.champion.cloneStructure() as C;
                 champCloned++;
             }
 
@@ -291,7 +292,7 @@ export class Species<C extends NetworkChromosome> {
      * or mutated by changing their weights or adding a new connection.
      */
     private breedPopulationChampion(): C {
-        const parent = this.champion.clone() as C;
+        const parent = this.champion.cloneStructure() as C;
         // We want the popChamp clone to be treated like a popChamp during mutation but not afterwards.
         parent.isPopulationChampion = true;
         parent.mutate();
@@ -305,7 +306,7 @@ export class Species<C extends NetworkChromosome> {
      */
     private breedMutationOnly(): C {
         // Choose random parent and apply mutation
-        const parent = this._randomness.pickRandomElementFromList(this.chromosomes).clone() as C;
+        const parent = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C;
         parent.mutate();
         return parent;
     }
@@ -317,13 +318,13 @@ export class Species<C extends NetworkChromosome> {
      */
     private breedCrossover(speciesList: List<Species<C>>): C {
         // Pick first parent
-        const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes).clone() as C;
+        const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C;
         let parent2: C
 
         // Pick second parent either from within the species or from another species (interspecies mating)
         if (this._randomness.nextDouble() > this._properties.interspeciesMating) {
             // Second parent picked from the same species (= this species)
-            parent2 = this._randomness.pickRandomElementFromList(this.chromosomes).clone() as C
+            parent2 = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C
         }
         // Mate outside of the species
         else {
@@ -334,7 +335,7 @@ export class Species<C extends NetworkChromosome> {
                 randomSpecies = this._randomness.pickRandomElementFromList(speciesList) as Species<C>;
                 giveUp++;
             }
-            parent2 = randomSpecies.chromosomes.get(0).clone() as C;
+            parent2 = randomSpecies.chromosomes.get(0).cloneStructure() as C;
         }
 
         // Apply the Crossover Operation
@@ -360,12 +361,51 @@ export class Species<C extends NetworkChromosome> {
     /**
      * Calculates the average fitness across all members of the species.
      */
-    public averageSpeciesFitness(): number {
+    public calculateAverageSpeciesFitness(): number {
         let sum = 0;
         for (const chromosome of this.chromosomes)
             sum += chromosome.sharedFitness;
         this.averageFitness = sum / this.size();
         return this.averageFitness;
+    }
+
+    /**
+     * Deep Clone of this Species.
+     * @returns Species clone of this.
+     */
+    clone(): Species<C>{
+        const clone = new Species(this.id, this.isNovel, this.properties);
+        clone.age = this.age;
+        clone.averageFitness = this.averageFitness;
+        clone.currentBestFitness = this.currentBestFitness;
+        clone.allTimeBestFitness = this.allTimeBestFitness;
+        clone.expectedOffspring = this.expectedOffspring;
+        clone.ageOfLastImprovement = this.ageOfLastImprovement;
+        clone.champion = this.chromosomes.get(0).clone() as C
+        for(const network of this.chromosomes){
+            clone.chromosomes.add(network.clone() as C)
+        }
+        return clone;
+    }
+
+    /**
+     * Transforms this Species into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | C)> {
+        const species = {};
+        species[`id`] = this.id;
+        species[`age`] = this.age;
+        species[`ageOfLastImprovement`] = this.ageOfLastImprovement;
+        species[`averageFitness`] = this.averageFitness;
+        species[`currentBestFitness`] = this.currentBestFitness;
+        species[`allTimeBestFitness`] = this.allTimeBestFitness;
+        species[`expectedOffspring`] = this.expectedOffspring;
+        species[`ChampionId`] = this.champion.id;
+        for (let i = 0; i < this.chromosomes.size(); i++) {
+            species[`Member ${i}`] = this.chromosomes.get(i).toJSON();
+        }
+        return species;
     }
 
     get id(): number {
@@ -442,20 +482,5 @@ export class Species<C extends NetworkChromosome> {
 
     get properties(): NeuroevolutionProperties<C> {
         return this._properties;
-    }
-
-    toJSON() {
-        const species = {};
-        species[`id`] = this.id;
-        species[`age`] = this.age;
-        species[`ageOfLastImprovement`] = this.ageOfLastImprovement;
-        species[`averageFitness`] = this.averageFitness;
-        species[`currentBestFitness`] = this.currentBestFitness;
-        species[`allTimeBestFitness`] = this.allTimeBestFitness;
-        species[`expectedOffspring`] = this.expectedOffspring;
-        for (let i = 0; i < this.chromosomes.size(); i++) {
-            species[`Member ${i}`] = this.chromosomes.get(i);
-        }
-        return species;
     }
 }

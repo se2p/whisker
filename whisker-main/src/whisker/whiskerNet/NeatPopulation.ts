@@ -69,14 +69,20 @@ export class NeatPopulation<C extends NetworkChromosome> {
     private _populationChampion: C;
 
     /**
+     * Saves the current population before applying evolution. Used for reporting.
+     */
+    private _previousPopulation: NeatPopulation<C>
+
+    /**
      * Constructs a new NEATPopulation
      * @param size the size of the population
      * @param numberOfSpecies the number of species we want to maintain through the generations.
      * @param generator the chromosomeGenerator used for creating the initial population.
      * @param properties the defined search parameters
+     * @param generatePopulation determines whether the constructor should generate a new Population
      */
     constructor(size: number, numberOfSpecies: number, generator: ChromosomeGenerator<C>,
-                properties: NeuroevolutionProperties<C>) {
+                properties: NeuroevolutionProperties<C>, generatePopulation = true) {
         this._speciesCount = 0;
         this._highestFitness = 0;
         this._highestFitnessLastChanged = 0;
@@ -89,7 +95,9 @@ export class NeatPopulation<C extends NetworkChromosome> {
         this._properties = properties;
         this._averageFitness = 0;
 
-        this.generatePopulation();
+        if (generatePopulation) {
+            this.generatePopulation();
+        }
     }
 
     /**
@@ -206,6 +214,9 @@ export class NeatPopulation<C extends NetworkChromosome> {
             //TODO: Babies Stolen
         }
 
+        // Save current Population for reporting purposes, before it gets evolved.
+        this.previousPopulation = this.clone();
+
         // Remove the Chromosomes with a death mark on them.
         for (const chromosome of this.chromosomes) {
             if (chromosome.hasDeathMark) {
@@ -288,6 +299,41 @@ export class NeatPopulation<C extends NetworkChromosome> {
         this.averageFitness = sum / this.populationSize();
     }
 
+    /**
+     * Deep Clone of this NeatPopulation.
+     * @returns clone of this.
+     */
+    clone(): NeatPopulation<C> {
+        const clone = new NeatPopulation(this.populationSize(), this.numberOfSpeciesTargeted, this.generator, this.properties, false);
+        clone.speciesCount = this.speciesCount;
+        clone.highestFitness = this.highestFitness;
+        clone.highestFitnessLastChanged = this.highestFitnessLastChanged;
+        clone.averageFitness = this.averageFitness;
+        clone.generation = this.generation;
+        clone.populationChampion = this.populationChampion.clone() as C;
+        for (const network of this.chromosomes) {
+            clone.chromosomes.add(network.clone() as C);
+        }
+        for (const species of this.species) {
+            clone.species.add(species.clone());
+        }
+        return clone;
+    }
+
+    /**
+     * Transform this NeatPopulation into a JSON representation.
+     * @return Record containing this NeatPopulation's attributes mapped to the corresponding values.
+     */
+    public toJSON(): Record<string, (number | Species<C>)> {
+        const population = {};
+        population[`averageFitness`] = this.averageFitness;
+        population[`PopulationChampionId`] = this.populationChampion.id;
+        for (let i = 0; i < this.species.size(); i++) {
+            population[`Species ${i}`] = this.species.get(i).toJSON();
+        }
+        return population;
+    }
+
     get chromosomes(): List<C> {
         return this._chromosomes;
     }
@@ -360,13 +406,11 @@ export class NeatPopulation<C extends NetworkChromosome> {
         return this._generator;
     }
 
-    toJSON():Record<string, (number | Species<C>)> {
-        const population = {};
-        population['highestFitness'] = this.highestFitness;
-        population['averageFitness'] = this.averageFitness;
-        for (let i = 0; i < this.species.size(); i++) {
-            population[`Species ${i}`] = this.species.get(i);
-        }
-        return population;
+    get previousPopulation(): NeatPopulation<C> {
+        return this._previousPopulation;
+    }
+
+    set previousPopulation(value: NeatPopulation<C>) {
+        this._previousPopulation = value;
     }
 }

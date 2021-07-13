@@ -106,7 +106,7 @@ describe("NeuroevolutionUtil Tests", () => {
     test("Test Speciation with a chromosome mutated several times", () => {
         population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
         const chromosome = generator.get();
-        const mutant = chromosome.clone();
+        const mutant = chromosome.cloneStructure();
         for (let i = 0; i < 100; i++) {
             mutant.mutate();
             NeuroevolutionUtil.speciate(mutant, population, properties);
@@ -116,7 +116,7 @@ describe("NeuroevolutionUtil Tests", () => {
 
     test("Test Compatibility Distance of clones", () => {
         const chromosome1 = generator.get();
-        const chromosome2 = chromosome1.clone();
+        const chromosome2 = chromosome1.cloneStructure();
         const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome1, chromosome2, 1, 1, 0.4);
         expect(compatDistance).toBe(0);
     })
@@ -177,7 +177,7 @@ describe("NeuroevolutionUtil Tests", () => {
 
     test("Test Compatibility Distance of Chromosomes with excess connections", () => {
         const chromosome1 = generator.get();
-        const chromosome2 = chromosome1.clone();
+        const chromosome2 = chromosome1.cloneStructure();
 
         const node1 = chromosome1.inputNodes.get("Sprite1").get("X-Position");
         const node2 = chromosome1.outputNodes.get(1);

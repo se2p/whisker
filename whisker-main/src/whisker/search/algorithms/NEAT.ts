@@ -44,7 +44,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
     /**
      * The archive maps all statements of a Scratch project as numbers to a chromosome which covers the given statement.
-     * @private
      */
     private readonly _archive = new Map<number, C>();
 
@@ -100,21 +99,20 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes);
-            this._populationRecord.set(this._iterations, population);
             population.evolution();
+            this._populationRecord.set(this._iterations, population.previousPopulation.clone());
             this._iterations++;
             this.updateBestIndividualAndStatistics();
             if (this._iterations % reportPeriod === 0) {
                 this.reportOfCurrentIteration(population);
             }
         }
-        console.log("Record:", this.populationRecord);
         return this._bestIndividuals;
     }
 
     /**
      * Summarize the solution saved in _archive.
-     * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
+     * @returns: For each statement that is not covered, it returns 4 items:
      *        - Not covered: the statement that’s not covered by any
      *        function in the _bestIndividuals.
      *        - ApproachLevel: the approach level of that statement
@@ -159,14 +157,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
         }
         return JSON.stringify({'uncoveredBlocks': summary});
-    }
-
-    public getPopulationRecordAsJSON(): string {
-        const solution = {};
-        this.populationRecord.forEach((population, iteration) => {
-            solution["Population " + iteration] = population.toJSON();
-        })
-        return JSON.stringify(solution, undefined, 4);
     }
 
     /**
@@ -235,6 +225,18 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
             }
         }
+    }
+
+    /**
+     * Transforms the collected information about each Population obtained during the search into a JSON representation.
+     * @return string in JSON format containing collected Population information of each iteration.
+     */
+    public getPopulationRecordAsJSON(): string {
+        const solution = {};
+        this.populationRecord.forEach((population, iteration) => {
+            solution[`Generation ${iteration}`] = population.toJSON();
+        })
+        return JSON.stringify(solution, undefined, 4);
     }
 
     getStartTime(): number {

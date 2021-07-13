@@ -2,8 +2,6 @@ import {Species} from "../../../src/whisker/whiskerNet/Species";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {List} from "../../../src/whisker/utils/List";
 import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
-import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
@@ -163,7 +161,7 @@ describe("Species Test", () => {
         species.assignAdjustFitness();
 
         let totalOffsprings = 0;
-        const avgFitness = species.averageSpeciesFitness();
+        const avgFitness = species.calculateAverageSpeciesFitness();
         for (const c of species.chromosomes) {
             c.expectedOffspring = c.networkFitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
@@ -177,7 +175,7 @@ describe("Species Test", () => {
         species.assignAdjustFitness();
 
         let totalOffsprings = 0;
-        const avgFitness = species.averageSpeciesFitness();
+        const avgFitness = species.calculateAverageSpeciesFitness();
         for (const c of species.chromosomes) {
             c.expectedOffspring = c.networkFitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
@@ -237,7 +235,7 @@ describe("Species Test", () => {
         speciesList.add(new Species<NetworkChromosome>(1, true, properties))
         popSpecie.assignAdjustFitness();
 
-        popSpecie.averageSpeciesFitness();
+        popSpecie.calculateAverageSpeciesFitness();
         popSpecie.expectedOffspring = 50;
         const sizeBeforeBreed = popSpecie.size();
 
@@ -268,7 +266,7 @@ describe("Species Test", () => {
 
     test(" Test averageSpeciesFitness", () => {
         species.assignAdjustFitness();
-        const avgFitness = species.averageSpeciesFitness();
+        const avgFitness = species.calculateAverageSpeciesFitness();
         expect(avgFitness).toBeLessThan(10)
         expect(avgFitness).toBeGreaterThan(0)
     })

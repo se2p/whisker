@@ -141,7 +141,7 @@ describe('Test NetworkChromosome', () => {
 
     test("Clone Test without hidden Layer", () => {
         chromosome.generateNetwork();
-        const clone = chromosome.clone();
+        const clone = chromosome.cloneStructure();
         expect(clone.connections.size()).toEqual(chromosome.connections.size())
         expect(clone.allNodes.size()).toEqual(chromosome.allNodes.size())
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size)
@@ -159,7 +159,7 @@ describe('Test NetworkChromosome', () => {
     })
 
     test("Clone Test with hidden Layer", () => {
-        const clone = chromosome.clone();
+        const clone = chromosome.cloneStructure();
         expect(clone.connections.size()).toEqual(chromosome.connections.size());
         expect(clone.connections.get(0)).not.toBe(chromosome.connections.get(0));
         expect(clone.allNodes.size()).toEqual(chromosome.allNodes.size());

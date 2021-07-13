@@ -18,6 +18,16 @@ import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
 
 export class NetworkChromosome extends Chromosome {
+
+    /**
+     * Id Counter
+     */
+    public static idCounter = 0;
+
+    /**
+     * Unique identifier
+     */
+    private _id: number;
     /**
      * Holds all nodes of a Network
      */
@@ -139,6 +149,7 @@ export class NetworkChromosome extends Chromosome {
     constructor(connections: List<ConnectionGene>, allNodes: List<NodeGene>,
                 mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>) {
         super();
+        this._id = NetworkChromosome.idCounter;
         this._allNodes = allNodes;
         this._inputNodes = new Map<string, Map<string, InputNode>>();
         this._outputNodes = new List<NodeGene>();
@@ -165,19 +176,22 @@ export class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Deep clone of a NetworkChromosome
-     * @return the cloned network
+     * Deep clone of a NetworkChromosome's structure. Attributes which are not related to the Network's structure
+     * are initialised by the constructor.
+     * @param doIncrementIdCounter determines whether the ID counter should be incremented during cloning.
+     * @returns NetworkChromosome the cloned Network.
      */
-    clone(): NetworkChromosome {
-        return this.cloneWith(this.connections)
+    cloneStructure(doIncrementIdCounter = true): NetworkChromosome {
+        return this.cloneWith(this.connections, doIncrementIdCounter)
     }
 
     /**
-     * Deep clone of a NetworkChromosome using a defined list of genes
-     * @param newGenes the ConnectionGenes the network should be initialised with
-     * @return the cloned network
+     * Deep clone of a NetworkChromosome using a defined list of genes.
+     * @param newGenes the ConnectionGenes the network should be initialised with.
+     * @param doIncrementIdCounter determines whether the ID counter should be incremented during cloning.
+     * @returns NetworkChromosome the cloned network.
      */
-    cloneWith(newGenes: List<ConnectionGene>): NetworkChromosome {
+    cloneWith(newGenes: List<ConnectionGene>, doIncrementIdCounter = true): NetworkChromosome {
         const connectionsClone = new List<ConnectionGene>();
         const nodesClone = new List<NodeGene>();
 
@@ -194,8 +208,29 @@ export class NetworkChromosome extends Chromosome {
             const connectionClone = connection.cloneWithNodes(fromNode, toNode);
             connectionsClone.add(connectionClone);
         }
-
+        if (doIncrementIdCounter) {
+            NetworkChromosome.idCounter++;
+        }
         return new NetworkChromosome(connectionsClone, nodesClone, this.getMutationOperator(), this.getCrossoverOperator());
+    }
+
+    /**
+     * Deep Clone of a Network including its structure and attributes.
+     */
+    clone(): NetworkChromosome {
+        const clone = this.cloneStructure(false);
+        clone.id = this.id;
+        clone.trace = this.trace;
+        clone.coverage = this.coverage;
+        clone.networkFitness = this.networkFitness;
+        clone.sharedFitness = this.sharedFitness;
+        clone.species = this.species;
+        clone.isSpeciesChampion = this.isSpeciesChampion;
+        clone.isPopulationChampion = this.isPopulationChampion;
+        clone.hasDeathMark = this.hasDeathMark;
+        clone.expectedOffspring = this.expectedOffspring;
+        clone.isRecurrent = this.isRecurrent;
+        return clone;
     }
 
     /**
@@ -595,6 +630,34 @@ export class NetworkChromosome extends Chromosome {
         return "Genome:\nNodeGenes: " + this.allNodes + "\nConnectionGenes: " + this.connections;
     }
 
+    /**
+     * Transforms this NetworkChromosome into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
+        const network = {};
+        network[`Id`] = this.id;
+        network[`NetworkFitness`] = this.networkFitness;
+        network[`FitnessShared`] = this.sharedFitness;
+        network[`ExpectedOffspring`] = this.expectedOffspring;
+        network[`DeathMark`] = this.hasDeathMark;
+        for (let i = 0; i < this.allNodes.size(); i++) {
+            network[`Node ${i}`] = this.allNodes.get(i).toJSON();
+        }
+        for (let i = 0; i < this.connections.size(); i++) {
+            network[`Connection ${i}`] = this.connections.get(i).toJSON();
+        }
+        return network;
+    }
+
+    get id(): number {
+        return this._id;
+    }
+
+    set id(value: number) {
+        this._id = value;
+    }
+
     getLength(): number {
         return this._codons.size();
     }
@@ -729,21 +792,5 @@ export class NetworkChromosome extends Chromosome {
 
     set isRecurrent(value: boolean) {
         this._isRecurrent = value;
-    }
-
-    public toJSON(): Record<string, any>{
-        const network = {};
-        console.log(this.networkFitness)
-        network[`NetworkFitness`] = this.networkFitness;
-        network[`FitnessShared`] = this.sharedFitness;
-        network[`ExpectedOffspring`] = this.expectedOffspring;
-        network[`DeathMark`] = this.hasDeathMark;
-        for (let i = 0; i < this.allNodes.size(); i++) {
-            network[`Node ${i}`] = this.allNodes.get(i);
-        }
-        for (let i = 0; i < this.connections.size(); i++) {
-            network[`Connection ${i}`] = this.connections.get(i);
-        }
-        return network;
     }
 }

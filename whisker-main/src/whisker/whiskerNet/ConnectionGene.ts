@@ -85,6 +85,19 @@ export class ConnectionGene {
 , InnovationNumber: ${this.innovation}}`
     }
 
+    /**
+     * Transforms this ConnectionGene into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | boolean)> {
+        const connection = {};
+        connection[`Source`] = this.source.id;
+        connection[`Target`] = this.target.id;
+        connection[`Weight`] = this.weight;
+        connection[`Enabled`] = this.isEnabled;
+        return connection;
+    }
+
     get source(): NodeGene {
         return this._source;
     }
@@ -119,15 +132,5 @@ export class ConnectionGene {
 
     get isRecurrent(): boolean {
         return this._isRecurrent;
-    }
-
-
-    toJSON(){
-        const connection = {};
-        connection[`Source`] = this.source.id;
-        connection[`Target`] = this.target.id;
-        connection[`Weight`] = this.weight;
-        connection[`Enabled`] = this.isEnabled;
-        return connection;
     }
 }
