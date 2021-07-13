@@ -52,12 +52,13 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         let numGoal = 1;
         const totalGoals = this._fitnessFunctions.size;
         let createdTestsToReachFullCoverage = 0;
+        let hasImprovedCoverage = true;
         for (const fitnessFunction of this._fitnessFunctions.keys()) {
-            console.log("Current goal "+numGoal+"/"+totalGoals+": "+fitnessFunction);
+            console.log(`Current goal ${numGoal}/${totalGoals}:${fitnessFunction}`);
             numGoal++;
             if (this._archive.has(fitnessFunction)) {
                 // If already covered, we don't need to search again
-                console.log("Goal "+fitnessFunction+" already covered, skipping.");
+                console.log(`Goal ${fitnessFunction} already covered, skipping.`);
                 continue;
             }
             // Generate searchAlgorithm responsible for covering the selected target statement.
@@ -66,13 +67,17 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             searchAlgorithm.setFitnessFunction(this._fitnessFunctions.get(fitnessFunction));
             // TODO: Assuming there is at least one solution?
             const testChromosome = (await searchAlgorithm.findSolution()).get(0);
-            this.updateArchive(testChromosome);
+            hasImprovedCoverage = this.updateArchive(testChromosome);
+            // Stop if found Chromosome did not improve Coverage; This implies that we ran out of search budget.
+            if (!hasImprovedCoverage) {
+                break;
+            }
             createdTestsToReachFullCoverage += StatisticsCollector.getInstance().createdTestsToReachFullCoverage;
         }
         // Update Statistics related to achieving full coverage
-        if(this._archive.size === this._fitnessFunctions.size){
-        StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - startTime;
-        StatisticsCollector.getInstance().createdTestsToReachFullCoverage = createdTestsToReachFullCoverage;
+        if (this._archive.size === this._fitnessFunctions.size) {
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - startTime;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage = createdTestsToReachFullCoverage;
         }
         // Done at the end to prevent used SearchAlgorithm to distort fitnessFunctionCount
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
@@ -87,8 +92,10 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
      * if it covers a previously covered statement using less genes than the current chromosome covering that statement.
      *
      * @param candidateChromosome the chromosome to update the archive with.
+     * @returns boolean defining whether the candidateChromosome improved Coverage.
      */
-    private updateArchive(candidateChromosome: TestChromosome): void {
+    private updateArchive(candidateChromosome: TestChromosome): boolean {
+        let improvedCoverage = false;
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             let bestLength = this._archive.has(fitnessFunctionKey)
@@ -99,12 +106,13 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
+                    improvedCoverage = true;
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
                 }
                 this._archive.set(fitnessFunctionKey, candidateChromosome);
                 this._bestIndividuals = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
-                console.log(`Found test for goal: ${fitnessFunction}`);
             }
         }
+        return improvedCoverage;
     }
 }
