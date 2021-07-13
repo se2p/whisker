@@ -103,6 +103,15 @@ The main entry point to the container is the wrapper script `whisker-docker.sh`,
 headless mode (using the flags `-d`, `-k` and `-l`, among others.) Any `<additional arguments>` given by the user will
 be forwarded by the script to the servant.
 
+In case you want to redirect stdout and stderr of Whisker to files in a writable bind mount, you can achieve
+this for example as follows:
+```bash
+docker run -v "/outside/the/container:/inside/the/container" whisker /inside/the/container -- <additional arguments>
+```
+This will mount the directory `/outside/the/container` as `/inside/the/container`, instruct Whisker to
+redirect its output (such as log or error messages) to files in `/inside/the/container` instead of the console,
+and make them accessible to you in `/outside/the/container`.
+
 ## Writing Tests
 
 Details on writing Whisker tests in JavaScript can be found
