@@ -39,7 +39,12 @@ class Sprites {
         /**
          * @type {(Function|null)}
          */
-        this._onModelSpriteVisualChange = null;
+        this._onSayOrThink = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onVariableChange = null;
     }
 
     /**
@@ -179,10 +184,24 @@ class Sprites {
         if (this._onSpriteVisualChange) {
             this._onSpriteVisualChange(this.wrapTarget(target));
         }
-        if (this._onModelSpriteVisualChange) {
-            this._onModelSpriteVisualChange(this.wrapTarget(target));
-        }
+    }
 
+    /**
+     * @param {RenderedTarget} target .
+     */
+    doOnSayOrThink (target) {
+        if (this._onSayOrThink) {
+            this._onSayOrThink(this.wrapTarget(target));
+        }
+    }
+
+    /**
+     * @param {string} variableName .
+     */
+    doOnVariableChange (variableName) {
+        if (this._onVariableChange) {
+            this._onVariableChange(variableName);
+        }
     }
 
     /**
@@ -194,7 +213,7 @@ class Sprites {
 
     /**
      * Duplicated function for model tests.
-     * @param func
+     * @param {(Function|null)} func
      */
     onModelSpriteMoved(func) {
         this._onSpriteMovedModel = func;
@@ -210,8 +229,15 @@ class Sprites {
     /**
      * @param {(Function|null)} func .
      */
-    onModelSpriteVisualChange (func) {
-        this._onModelSpriteVisualChange = func;
+    onSayOrThink (func) {
+        this._onSayOrThink = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onVariableChange (func) {
+        this._onVariableChange = func;
     }
 }
 

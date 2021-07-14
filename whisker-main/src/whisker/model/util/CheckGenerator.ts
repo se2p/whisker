@@ -67,6 +67,7 @@ export abstract class CheckGenerator {
      * Get a method for checking whether a variable has a given comparison with a given value fulfilled.
      *
      * @param t Instance of the test driver.
+     * @param cu Listener for the checks.
      * @param spriteNameRegex Regex describing the name of the sprite having the variable.
      * @param varNameRegex Regex describing the name of the variable.
      * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
@@ -74,7 +75,7 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getVariableComparisonCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
+    static getVariableComparisonCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
                                       varNameRegex: string, comparison: string, varValue: string): () => boolean {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         let {
@@ -89,6 +90,7 @@ export abstract class CheckGenerator {
             && comparison != "<" && comparison != "<=") {
             throw getComparisonNotKnownError(comparison);
         }
+        cu.registerVarEvent(spriteNameRegex, spriteName, varNameRegex, variableName);
         return () => {
             let sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             let variable = sprite.getVariable(variableName);
@@ -219,19 +221,21 @@ export abstract class CheckGenerator {
     /**
      * Get a method checking whether a sprite has the given output included in their sayText.
      * @param t Instance of the test driver.
+     * @param cu  Listener for the checks.
      * @param spriteNameRegex  Regex describing the name of the sprite.
      * @param output Output to say.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getOutputOnSpriteCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
-                                  output: string): () => boolean {
+    static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
+                                  spriteNameRegex: string, output: string): () => boolean {
         let spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         const expression = ModelUtil.getExpressionForEval(t, caseSensitive, output);
 
+        cu.registerOutput(spriteNameRegex, spriteName, output, expression, negated);
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
-            if (sprite.sayText && sprite.sayText != "" && sprite.sayText.indexOf(eval(expression)(t)) != -1) {
+            if (sprite.sayText && sprite.sayText.indexOf(eval(expression)(t)) != -1) {
                 return !negated;
             }
             return negated;
@@ -241,6 +245,7 @@ export abstract class CheckGenerator {
     /**
      * Get a method checking whether a variable value of a sprite changed.
      * @param t Instance of the test driver.
+     * @param cu Listener for the checks.
      * @param spriteNameRegex Regex describing the name of the sprite having the variable.
      * @param varNameRegex Regex describing the name of the variable.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
@@ -249,8 +254,8 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getVariableChangeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
-                                  varNameRegex: string, change): () => boolean {
+    static getVariableChangeCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
+                                  spriteNameRegex: string, varNameRegex: string, change): () => boolean {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         let {
             sprite: foundSprite,
@@ -260,6 +265,7 @@ export abstract class CheckGenerator {
         let spriteName = sprite.name;
         let variableName = foundVar.name;
 
+        cu.registerVarEvent(spriteNameRegex, spriteName, varNameRegex, variableName);
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const variable = sprite.getVariable(variableName);

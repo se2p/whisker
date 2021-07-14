@@ -121,13 +121,13 @@ export abstract class Check {
             case CheckName.Function:
                 return CheckGenerator.getFunctionCheck(t, this._negated, this._args[0]);
             case CheckName.Output:
-                return CheckGenerator.getOutputOnSpriteCheck(t, this._negated, caseSensitive, this._args[0],
+                return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._negated, caseSensitive, this._args[0],
                     this._args[1]);
             case CheckName.VarChange:
-                return CheckGenerator.getVariableChangeCheck(t, this._negated, caseSensitive, this._args[0],
+                return CheckGenerator.getVariableChangeCheck(t, cu, this._negated, caseSensitive, this._args[0],
                     this._args[1], this._args[2]);
             case CheckName.VarComp:
-                return CheckGenerator.getVariableComparisonCheck(t, this._negated, caseSensitive, this._args[0],
+                return CheckGenerator.getVariableComparisonCheck(t, cu, this._negated, caseSensitive, this._args[0],
                     this._args[1], this._args[2], this._args[3]);
             case CheckName.SpriteTouching:
                 return CheckGenerator.getSpriteTouchingCheck(t, cu, this._negated, caseSensitive, this._args[0],

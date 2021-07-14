@@ -1,6 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Check, CheckName} from "./Check";
+import {CheckUtility} from "../util/CheckUtility";
 
 /**
  * Class representing the check of an edge effect.
@@ -31,9 +32,9 @@ export class Effect extends Check {
     /**
      * Register the check listener and test driver and check the effect for errors.
      */
-    registerComponents(t: TestDriver, result: ModelResult, caseSensitive: boolean) {
+    registerComponents(t: TestDriver, cu: CheckUtility, result: ModelResult, caseSensitive: boolean) {
         try {
-            this._effect = this.checkArgsWithTestDriver(t, null, caseSensitive);
+            this._effect = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
             console.error(e + ". This effect will be considered as not fulfilled in test run.");
             this._effect = () => false;

@@ -63,7 +63,7 @@ export abstract class ModelEdge {
                     if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
                         this.failedForcedTest = true;
                         failedConditions.push(this.conditions[i]);
-                        console.error(this.getTimeLimitFailedOutput(this.conditions[i],t));
+                        console.error(this.getTimeLimitFailedOutput(this.conditions[i],t), t.getTotalStepsExecuted());
                         modelResult.addFail(this.getTimeLimitFailedOutput(this.conditions[i], t));
                     }
                 } catch (e) {
@@ -191,10 +191,10 @@ export class ProgramModelEdge extends ModelEdge {
     /**
      * Register the check listener and test driver on the conditions and effects.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean): void {
-        super.registerComponents(checkListener, testDriver, result, caseSensitive);
+    registerComponents(cu: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean): void {
+        super.registerComponents(cu, testDriver, result, caseSensitive);
         this.effects.forEach(effect => {
-            effect.registerComponents(testDriver, result, caseSensitive);
+            effect.registerComponents(testDriver, cu, result, caseSensitive);
         })
     }
 

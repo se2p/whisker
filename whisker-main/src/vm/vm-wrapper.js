@@ -100,6 +100,8 @@ class VMWrapper {
         this._onQuestion = this.onQuestion.bind(this);
         this._onAnswer   = this.onAnswer.bind(this);
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
+        this._onSayOrThink = this.sprites.doOnSayOrThink.bind(this.sprites);
+        this._onVariableChange = this.sprites.doOnVariableChange.bind(this.sprites);
     }
 
     /**
@@ -346,9 +348,13 @@ class VMWrapper {
         this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
         this.vm.runtime.on('QUESTION', this._onQuestion);
         this.vm.runtime.on('ANSWER', this._onAnswer);
+        this.vm.runtime.on('SAY', this._onSayOrThink)
+        this.vm.runtime.on('DELETE_SAY_OR_THINK', this._onSayOrThink)
+        this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange)
 
         this.vm.greenFlag();
         this.startTime = Date.now();
+        this.vm.runtime.stepsExecuted = 0;
 
         this.aborted = false;
     }
@@ -366,6 +372,9 @@ class VMWrapper {
         this.vm.runtime.removeListener('targetWasCreated', this._onTargetCreated);
         this.vm.runtime.removeListener('QUESTION', this._onQuestion);
         this.vm.runtime.removeListener('ANSWER', this._onAnswer);
+        this.vm.runtime.removeListener('SAY', this._onSayOrThink)
+        this.vm.runtime.removeListener('DELETE_SAY_OR_THINK', this._onSayOrThink)
+        this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange)
     }
 
     // TODO: reset sprites on green flag?

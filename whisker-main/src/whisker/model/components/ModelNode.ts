@@ -60,24 +60,12 @@ export class ModelNode {
             // edge should only be checked if it contains any event of the eventStrings and no touchingSprite or
             // touchingColor event that is not in eventStrings
             for (let j = 0; j < this.edges[i].conditions.length; j++) {
-                let cond = this.edges[i].conditions[j];
-
-                if (cond.name == CheckName.SpriteTouching || cond.name == CheckName.SpriteColor) {
-
-                    let eventString;
-                    if (cond.name == CheckName.SpriteTouching) {
-                        eventString = CheckUtility.getTouchingString(cond.args[0], cond.args[1], cond.negated);
-                    } else  {
-                        eventString = CheckUtility.getColorString(cond.args[0], cond.args[1], cond.args[2], cond.args[3],
-                            cond.negated);
-                    }
-
-                    if (eventStrings.indexOf(eventString) == -1) {
-                        check = false;
-                        break;
-                    } else {
-                        check = true;
-                    }
+                let eventString = CheckUtility.getEventString(this.edges[i].conditions[j]);
+                if (eventString != "" && eventStrings.indexOf(eventString) != -1) {
+                    check = true;
+                } else if (eventString != "") {
+                    check = false;
+                    break;
                 }
             }
 
@@ -86,12 +74,11 @@ export class ModelNode {
                 for (let j = 0; j < this.edges[i].conditions.length; j++) {
                     let cond = this.edges[i].conditions[j];
 
-                    // check only not yet fulfilled conditions
-                    if (cond.name != CheckName.SpriteTouching && cond.name != CheckName.SpriteColor) {
-                        if (!cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
-                            failed = true;
-                            break;
-                        }
+                    // check only not yet unfulfilled conditions
+                    if (cond.name != CheckName.SpriteTouching && cond.name != CheckName.SpriteColor
+                        && cond.name != CheckName.Output && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                        failed = true;
+                        break;
                     }
                 }
 
