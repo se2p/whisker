@@ -88,3 +88,9 @@ ENTRYPOINT ["/whisker/whisker-docker.sh"]
 # Set the default arguments for Whisker's servant, if none are specified
 # explicitly by the user:
 CMD ["--help"]
+
+# By default, Puppeteer runs as unprivileged user "chrome" in the container.
+# For our experiment infrastructure, we need to switch the user to root.
+# (Otherwise, bind mounts might not work properly.) You may remove the
+# following line if you don't use bind mounts.
+USER root
