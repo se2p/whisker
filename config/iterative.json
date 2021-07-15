@@ -1,0 +1,43 @@
+{
+    "test-generator": "many-objective",
+    "algorithm": "iterative-one-plus-one",
+    "chromosome": "variablelengthtest",
+    "chromosome-length": 30,
+    "minVarChromosomeLength": 5,
+    "maxVarChromosomeLength": 20,
+    "extractor": "dynamic",
+    "mutation": {
+        "operator": "variablelength",
+        "probability": 1,
+        "gaussianMutationPower": 5
+    },
+    "crossover": {
+        "operator": "singlepointrelative",
+        "probability": 0.8
+    },
+    "selection": {
+        "operator": "rank"
+    },
+    "fitness-function": {
+        "type": "statement"
+    },
+    "stopping-condition": {
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "fixed-time",
+                "duration": 100000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "integerRange": {
+        "min": 0,
+        "max": 480
+    },
+    "waitStepUpperBound": 150,
+    "click-duration": 3,
+    "pressDurationUpperBound": 50
+}

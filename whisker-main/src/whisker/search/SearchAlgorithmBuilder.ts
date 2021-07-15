@@ -46,6 +46,7 @@ import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
 import {RandomNeuroevolution} from "./algorithms/RandomNeuroevolution";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
+import {IterativeOnePlusOneEA} from "./algorithms/IterativeOnePlusOneEA";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -223,6 +224,9 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case SearchAlgorithmType.ONE_PLUS_ONE:
                 searchAlgorithm = this._buildOnePlusOne();
                 break;
+            case SearchAlgorithmType.ITERATIVE_ONE_PLUS_ONE:
+                searchAlgorithm = this._buildIterativeOnePlusOne();
+                break;
             case SearchAlgorithmType.SIMPLEGA:
                 searchAlgorithm = this._buildSimpleGA();
                 break;
@@ -283,6 +287,16 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         const searchAlgorithm: SearchAlgorithm<C> = new OnePlusOneEA();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
 
+        return searchAlgorithm;
+    }
+
+    /**
+     * A helper method that builds the 'Iterative OnePlusOne' search algorithm with all necessary properties.
+     */
+    private _buildIterativeOnePlusOne(): SearchAlgorithm<C> {
+        const searchAlgorithm: SearchAlgorithm<C> = new IterativeOnePlusOneEA();
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
+        searchAlgorithm.setLocalSearchOperators(this._localSearchOperators);
         return searchAlgorithm;
     }
 
