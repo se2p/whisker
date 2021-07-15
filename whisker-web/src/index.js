@@ -75,7 +75,7 @@ const runSearch = async function () {
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     if (configName.toLowerCase().includes('neuroevolution')){
-        Whisker.networkDownload.show();
+        Whisker.networkDownload.setTitle(`${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`);
     }
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
@@ -206,7 +206,6 @@ const initComponents = function () {
     Whisker.outputLog = new Output($('#output-log')[0]);
     Whisker.outputLog.hide();
     Whisker.networkDownload = new DownloadButton($('#network-download')[0]);
-    Whisker.networkDownload.setTitle('NetworkPopulationRecord');
     Whisker.networkDownload.setFormat('json');
     Whisker.networkDownload.hide();
 

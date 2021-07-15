@@ -1,12 +1,13 @@
 {
     "test-generator": "neuroevolution",
     "algorithm": "randomNeuroevolution",
-    "chromosome": "neatChromosome",
-    "population-size": 100,
+    "chromosome": "sparseNetwork",
+    "population-size": 150,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 20,
+    "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
+    "extractor": "neuroevolution",
     "crossover": {
         "operator": "neatCrossover",
         "crossoverWithoutMutation": 0.2,
@@ -17,12 +18,14 @@
         "operator": "neatMutation",
         "mutationWithoutCrossover": 0.25,
         "mutationAddConnection": 0.05,
-        "recurrentConnection": 0.05,
-        "addConnectionTries": 20,
+        "recurrentConnection": 0.1,
+        "addConnectionTries": 50,
+        "populationChampionNumberOffspring": 5,
+        "populationChampionNumberClones": 2,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
         "mutateWeights": 0.6,
-        "perturbationPower": 2.0,
+        "perturbationPower": 2.5,
         "mutateToggleEnableConnection": 0.1,
         "toggleEnableConnectionTimes": 3,
         "mutateEnableConnection": 0.03
@@ -31,38 +34,30 @@
         "distanceThreshold": 3.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
-        "weightCoefficient": 0.4
+        "weightCoefficient": 0.3
     },
     "fitness-function": {
         "type": "statement",
         "targets": []
     },
     "network-fitness": {
-        "type": "combined",
-        "timeout": 20000,
-        "functions": [
-            {
-                "type": "score",
-                "offset": 0.01
-            },
-            {
-                "type": "statement"
-            }
-        ]
+        "type": "score",
+        "timeout": 10000000,
+        "offset": 0.01
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 200
+                "iterations": 300
             },
             {
                 "type": "optimal"
             }
         ]
     },
-    "waitStepUpperBound": 200,
+    "waitStepUpperBound": 50,
     "click-duration": 1,
-    "press-duration": 1
+    "pressDurationUpperBound": 50
 }

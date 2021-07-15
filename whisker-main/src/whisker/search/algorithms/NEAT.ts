@@ -101,11 +101,11 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             await this.evaluateNetworks(population.chromosomes);
             population.evolution();
             this._populationRecord.set(this._iterations, population.previousPopulation.clone());
-            this._iterations++;
             this.updateBestIndividualAndStatistics();
             if (this._iterations % reportPeriod === 0) {
                 this.reportOfCurrentIteration(population);
             }
+            this._iterations++;
         }
         return this._bestIndividuals;
     }

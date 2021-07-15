@@ -64,13 +64,18 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
     private _networkFitnessFunction: NetworkFitnessFunction<NetworkChromosome>;
 
     /**
+     * Saves all Networks mapped to the generation they occurred in.
+     */
+    private _populationRecord = new Map<number, NeatPopulation<C>>();
+
+    /**
      * Evaluates the networks by letting them play the given Scratch game using random event selection.
      * @param networks the networks to evaluate -> Current population
      */
     async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
-            await this._networkFitnessFunction.getRandomFitness(network, this._properties.timeout);
+            await this._networkFitnessFunction.getFitness(network, this._properties.timeout);
 
             // Update the archive and stop if during the evaluation of the population if we already cover all
             // statements.
@@ -87,37 +92,75 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
      */
     async findSolution(): Promise<List<C>> {
         // The targeted number of species -> The distanceThreshold is adjusted appropriately.
-        const speciesNumber = 5;
+        const speciesNumber = 10;
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
-        const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
-            this._properties);
         this._iterations = 0;
         this._startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
+            const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
+                this._properties);
             await this.evaluateNetworks(population.chromosomes);
             population.evolution();
-            this._iterations++;
+            this._populationRecord.set(this._iterations, population.previousPopulation.clone());
+            console.log(this.populationRecord);
             this.updateBestIndividualAndStatistics();
-            if (this._iterations % reportPeriod === 0)
+            if (this._iterations % reportPeriod === 0) {
                 this.reportOfCurrentIteration(population);
+            }
+            this._iterations++;
         }
         return this._bestIndividuals;
     }
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
+    /**
+     * Summarize the solution saved in _archive.
+     * @returns: For each statement that is not covered, it returns 4 items:
+     *        - Not covered: the statement that’s not covered by any
+     *        function in the _bestIndividuals.
+     *        - ApproachLevel: the approach level of that statement
+     *        - BranchDistance: the branch distance of that statement
+     *        - Fitness: the fitness value of that statement
+     * For other search algorithms, it returns an empty string.
+     */
     summarizeSolution(): string {
-        return '';
+        const summary = [];
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const curSummary = {};
+            if (!this._archive.has(fitnessFunctionKey)) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                curSummary['block'] = fitnessFunction.toString();
+                let fitness = Number.MAX_VALUE;
+                let approachLevel = Number.MAX_VALUE;
+                let branchDistance = Number.MAX_VALUE;
+                let CFGDistance = Number.MAX_VALUE;
+                for (const chromosome of this._bestIndividuals) {
+                    const curFitness = fitnessFunction.getFitness(chromosome);
+                    if (curFitness < fitness) {
+                        fitness = curFitness;
+                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
+                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
+                        if (approachLevel === 0 && branchDistance === 0) {
+                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
+                        } else {
+                            CFGDistance = Number.MAX_VALUE;
+                            //this means that it was unnecessary to calculate cfg distance, since
+                            //approach level or branch distance was not 0;
+                        }
+                    }
+                }
+                curSummary['ApproachLevel'] = approachLevel;
+                curSummary['BranchDistance'] = branchDistance;
+                curSummary['CFGDistance'] = CFGDistance;
+                curSummary['Fitness'] = fitness;
+                if (Object.keys(curSummary).length > 0) {
+                    summary.push(curSummary);
+                }
+            }
+
+        }
+        return JSON.stringify({'uncoveredBlocks': summary});
     }
 
     getStartTime(): number {
@@ -191,6 +234,18 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
         }
     }
 
+    /**
+     * Transforms the collected information about each Population obtained during the search into a JSON representation.
+     * @return string in JSON format containing collected Population information of each iteration.
+     */
+    public getPopulationRecordAsJSON(): string {
+        const solution = {};
+        this.populationRecord.forEach((population, iteration) => {
+            solution[`Generation ${iteration}`] = population.toJSON();
+        })
+        return JSON.stringify(solution, undefined, 4);
+    }
+
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
@@ -216,5 +271,9 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
         this._fitnessFunctions = fitnessFunctions;
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    }
+
+    get populationRecord(): Map<number, NeatPopulation<C>> {
+        return this._populationRecord;
     }
 }
