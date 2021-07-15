@@ -92,14 +92,15 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             this._properties);
         this._iterations = 0;
         this._startTime = Date.now();
+        StatisticsCollector.getInstance().startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes);
             population.evolution();
-            this._iterations++;
             this.updateBestIndividualAndStatistics();
             if (this._iterations % reportPeriod === 0)
                  this.reportOfCurrentIteration(population);
+            this._iterations++;
         }
         return this._bestIndividuals;
     }

@@ -26,7 +26,6 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -73,10 +72,10 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
             StatisticsCollector.getInstance().incrementIterationCount();
-            this._iterations++;
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate();
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
@@ -91,6 +90,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
+                this._iterations++;
+                StatisticsCollector.getInstance().incrementIterationCount();
             }
         }
         return this._bestIndividuals;

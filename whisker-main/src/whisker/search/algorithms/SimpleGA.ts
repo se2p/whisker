@@ -94,6 +94,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
 
         console.log("Simple GA started at "+this._startTime);
 
@@ -106,13 +107,14 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
         while(!(this._stoppingCondition.isFinished(this))) {
             console.log("Iteration "+this._iterations+", best fitness: "+this._bestFitness);
-            this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
 
             const nextGeneration = this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
             this.evaluateAndSortPopulation(nextGeneration)
             population = nextGeneration;
+            this._iterations++;
+            StatisticsCollector.getInstance().incrementIterationCount();
         }
 
         console.log("Simple GA completed at "+Date.now());

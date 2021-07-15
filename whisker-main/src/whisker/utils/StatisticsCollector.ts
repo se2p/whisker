@@ -182,6 +182,14 @@ export class StatisticsCollector {
         this._createdTestsToReachFullCoverage = value;
     }
 
+    get startTime(): number {
+        return this._startTime;
+    }
+
+    set startTime(value: number) {
+        this._startTime = value;
+    }
+
     get timeToReachFullCoverage(): number {
         return this._timeToReachFullCoverage;
     }
@@ -265,7 +273,7 @@ export class StatisticsCollector {
         return adjusted;
     }
 
-    reset() {
+    public reset(): void {
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
         this._coveredFitnessFunctionsCount = 0;

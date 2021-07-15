@@ -49,6 +49,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         const startTime = Date.now();
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
         let numGoal = 1;
         const totalGoals = this._fitnessFunctions.size;
         let createdTestsToReachFullCoverage = 0;

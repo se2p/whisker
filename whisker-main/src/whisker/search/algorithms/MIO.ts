@@ -229,6 +229,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this.updateParameters();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
     }
 
     /**

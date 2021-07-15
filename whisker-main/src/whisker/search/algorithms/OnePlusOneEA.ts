@@ -74,11 +74,12 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         this._bestIndividual = bestIndividual;
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
 
-        // Do not reset statistics if we use the iterative approach.
+        // Prevent statistics to be reset in case of IterativeSearch.
         if (!this.isIterativeSearch()) {
             StatisticsCollector.getInstance().iterationCount = 0;
             StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
             StatisticsCollector.getInstance().bestTestSuiteSize = 1;
+            StatisticsCollector.getInstance().startTime = Date.now();
         }
 
         if (this._stoppingCondition.isFinished(this)) {
@@ -92,7 +93,6 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
             console.log(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
 ${bestIndividual.toString()}`);
-            this._iterations++;
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 if (this._fitnessFunction.isOptimal(candidateFitness)) {
                     this.updateStatistics();
@@ -100,6 +100,8 @@ ${bestIndividual.toString()}`);
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividual = bestIndividual;
+                this._iterations++;
+                StatisticsCollector.getInstance().incrementIterationCount();
             }
         }
         console.log("1+1 EA completed at " + Date.now());

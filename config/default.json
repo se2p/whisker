@@ -45,10 +45,6 @@
             }
         ]
     },
-    "archive": {
-        "maxArchiveSizeStart": null,
-        "maxArchiveSizeFocusedPhase": null
-    },
     "integerRange": {
         "min": 0,
         "max": 480

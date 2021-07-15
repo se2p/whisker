@@ -140,6 +140,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._fullCoverageReached = false;
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
         await this.applyLocalSearch(parentPopulation);
