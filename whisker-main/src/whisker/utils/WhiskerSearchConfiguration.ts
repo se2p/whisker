@@ -52,7 +52,7 @@ import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExt
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
-import {VariableLengthTestChromosomeMutation} from "../testcase/VariableLengthTestChromosomeMutation";
+import {VariableLengthConstrainedChromosomeMutation} from "../testcase/VariableLengthConstrainedChromosomeMutation";
 
 
 class ConfigException implements Error {
@@ -208,8 +208,8 @@ export class WhiskerSearchConfiguration {
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
-            case 'variablelengthtest':
-                return new VariableLengthTestChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
+            case 'variablelengthConstrained':
+                return new VariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(

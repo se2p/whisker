@@ -288,18 +288,18 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const parent1 = this.selectChromosome(parentPopulation, useRankSelection);
             // TODO: Does it affect the search that we may pick the same parent twice?
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
-            let child1 = parent1.clone() as C;
-            let child2 = parent2.clone() as C;
+            let child1: C;
+            let child2: C;
             if (this._random.nextDouble() < this._properties.getCrossoverProbability()) {
                 const crossover = parent1.crossover(parent2);
                 child1 = crossover.getFirst();
                 child2 = crossover.getSecond();
             }
             if (this._random.nextDouble() < this._properties.getMutationProbablity()) {
-                child1 = child1.mutate();
+                child1 = parent1.mutate();
             }
             if (this._random.nextDouble() < this._properties.getMutationProbablity()) {
-                child2 = child2.mutate();
+                child2 = parent2.mutate();
             }
             offspringPopulation.add(child1);
             if (offspringPopulation.size() < parentPopulation.size()) {

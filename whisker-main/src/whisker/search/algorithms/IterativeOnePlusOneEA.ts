@@ -31,28 +31,55 @@ import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 export class IterativeOnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
+    /**
+     * Generator responsible for generating initial chromosome whenever we select a new target.
+     */
     private _chromosomeGenerator: ChromosomeGenerator<C>;
 
+    /**
+     * SearchAlgorithm properties set via config file.
+     */
     private _properties: SearchAlgorithmProperties<C>;
 
+    /**
+     * Contains all fitnessFunction, i.e all target statements.
+     */
     private _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
+    /**
+     * Defines the stopping Condition.
+     */
     private _stoppingCondition: StoppingCondition<C>;
 
+    /**
+     * Number of generations
+     */
     private _iterations = 0;
 
+    /**
+     * Saves the top performing chromosomes. Those are used to construct the final test suite at the end of the Search.
+     */
     private _bestIndividuals = new List<C>();
 
+    /**
+     * Saves the start time of the SearchAlgorithm in ms.
+     */
     private _startTime: number;
 
+    /**
+     * The archive maps to each covered target statement the chromosome covering that statement.
+     * Uncovered statements are not included.
+     */
     private _archive = new Map<number, C>();
 
-    private _selectionOperator: Selection<C>;
-
-    private _localSearchOperators = new List<LocalSearch<C>>();
-
+    /**
+     * Determines if we have to generate a new chromosome, or keep mutating on an existing one.
+     */
     private _generateNewChromosome = false;
 
+    /**
+     * Determines if we have reached full coverage during search.
+     */
     private _fullCoverageReached = false;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
@@ -69,15 +96,12 @@ export class IterativeOnePlusOneEA<C extends Chromosome> extends SearchAlgorithm
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
-    setSelectionOperator(selectionOperator: Selection<C>): void {
-        this._selectionOperator = selectionOperator;
+    setSelectionOperator(): void {
+        return;
     }
 
-    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
-        this._localSearchOperators = localSearchOperators;
-        for (const localSearchOperator of localSearchOperators) {
-            localSearchOperator.setAlgorithm(this);
-        }
+    setLocalSearchOperators(): void {
+        return;
     }
 
     getNumberOfIterations(): number {
@@ -97,7 +121,6 @@ export class IterativeOnePlusOneEA<C extends Chromosome> extends SearchAlgorithm
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-
         this.initializeSearch();
         console.log(`Iterative-1+1EA started at ${this._startTime}`);
         let chromosome: C;
@@ -204,7 +227,7 @@ export class IterativeOnePlusOneEA<C extends Chromosome> extends SearchAlgorithm
     }
 
     /**
-     * Initializes Statistics at the start of the search
+     * Initializes Statistics at the start of the search.
      */
     private initializeSearch(): void {
         StatisticsCollector.getInstance().iterationCount = 0;
@@ -248,7 +271,6 @@ export class IterativeOnePlusOneEA<C extends Chromosome> extends SearchAlgorithm
      *  - iterationCount
      *  - createdTestsToReachFullCoverage
      *  - timeToReachFullCoverage
-     * @private
      */
     private updateStatistics() {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
