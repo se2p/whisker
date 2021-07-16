@@ -89,9 +89,14 @@ export class WhiskerSearchConfiguration {
             this.dict['mutation']['maxMutationCountFocusedPhase'] as number);
         properties.setSelectionProbabilities(this.dict['selection']['randomSelectionProbabilityStart'] as number,
             this.dict['selection']['randomSelectionProbabilityFocusedPhase'] as number);
-        properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
-            this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
         properties.setStartOfFocusedPhase(this.dict['startOfFocusedPhase'] as number);
+        properties.setTestGenerator(this.dict['test-generator']);
+
+        // Not all algorithms have special archive settings.
+        if (this.dict['archive']) {
+            properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
+                this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
+        }
 
         properties.setStoppingCondition(this._getStoppingCondition(this.dict['stopping-condition']));
 
@@ -395,6 +400,8 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.RANDOM;
             case 'one-plus-one':
                 return SearchAlgorithmType.ONE_PLUS_ONE;
+            case 'iterative-one-plus-one':
+                return SearchAlgorithmType.ITERATIVE_ONE_PLUS_ONE;
             case 'simplega':
                 return SearchAlgorithmType.SIMPLEGA;
             case 'mosa':
