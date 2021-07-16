@@ -107,7 +107,6 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
         while(!(this._stoppingCondition.isFinished(this))) {
             console.log("Iteration "+this._iterations+", best fitness: "+this._bestFitness);
-            StatisticsCollector.getInstance().incrementIterationCount();
 
             const nextGeneration = this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
