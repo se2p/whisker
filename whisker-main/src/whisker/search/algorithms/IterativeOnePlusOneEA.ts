@@ -26,8 +26,6 @@ import {FitnessFunction} from "../FitnessFunction";
 import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Selection} from "../Selection";
-import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 export class IterativeOnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 

@@ -65,8 +65,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-
-        this._startTime = Date.now();
+        this.initializeStatistics();
         console.log("1+1 EA started at " + this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
@@ -83,7 +82,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         }
 
         if (this._stoppingCondition.isFinished(this)) {
-            this.updateStatistics();
+            this.updateStatisticsAtEnd();
         }
 
         while (!(this._stoppingCondition.isFinished(this))) {
@@ -94,7 +93,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 ${bestIndividual.toString()}`);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 if (this._fitnessFunction.isOptimal(candidateFitness)) {
-                    this.updateStatistics();
+                    this.updateStatisticsAtEnd();
                 }
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
@@ -143,9 +142,20 @@ ${bestIndividual.toString()}`);
     }
 
     /**
-     * Updates statistic values using the StatisticsCollector
+     * Initializes Statistic related values.
      */
-    private updateStatistics(): void {
+    private initializeStatistics(): void {
+        StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().bestTestSuiteSize = 1;
+        this._startTime = Date.now();
+        StatisticsCollector.getInstance().startTime = this._startTime;
+    }
+
+    /**
+     * Updates statistic values using the StatisticsCollector when the search is about to stop.
+     */
+    private updateStatisticsAtEnd(): void {
         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         if (!this.isIterativeSearch()) {
