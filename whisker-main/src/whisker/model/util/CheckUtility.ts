@@ -18,8 +18,10 @@ export class CheckUtility extends EventEmitter {
     private onMovedChecks: { [key: string]: ((sprite) => boolean)[] } = {};
     private onSayOrThinkChecks: { [key: string]: ((sprite) => boolean)[] } = {};
     private variableChecks: ((varName) => string)[] = [];
+
     private registeredTouching: string[] = [];
     private registeredColor: string[] = [];
+    private registeredSpriteMove: { [key: string]: string } = {};
     private registeredOutput: string[] = [];
     private registeredVarEvents: string[] = [];
     private eventStrings: string[] = [];
@@ -42,6 +44,24 @@ export class CheckUtility extends EventEmitter {
         this.setupSpriteEvents();
     }
 
+
+    /**
+     * Register a movement listener on a sprite.
+     * @param spriteRegex Regex defining the sprite name.
+     * @param spriteName Name of the actual sprite.
+     */
+    registerMovement(spriteRegex: string, spriteName: string) {
+        // no check for this sprite till now
+        if (this.onMovedChecks[spriteName] == undefined || this.onMovedChecks[spriteName] == null) {
+            this.onMovedChecks[spriteName] = [];
+        }
+
+        if (this.registeredSpriteMove[spriteName] == undefined || this.registeredSpriteMove[spriteName] == null) {
+            this.registeredSpriteMove[spriteName] = spriteRegex;
+        }
+    }
+
+
     /**
      * Register a touching check for a sprite with another sprite. The check is also registered for the
      * other sprite as there have been inconsistencies.
@@ -51,7 +71,8 @@ export class CheckUtility extends EventEmitter {
      * @param spriteName2 Name of the other sprite that the first needs to touch.
      * @param negated Whether this check is negated.
      */
-    registerTouching(spriteRegex1: string, spriteRegex2: string, spriteName1: string, spriteName2: string, negated: boolean): void {
+    registerTouching(spriteRegex1: string, spriteRegex2: string, spriteName1: string, spriteName2: string,
+                     negated: boolean): void {
         const touchingString = CheckUtility.getTouchingString(spriteName1, spriteName2, negated);
         const eventString = CheckUtility.getTouchingString(spriteRegex1, spriteRegex2, negated);
 
@@ -121,11 +142,11 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
-     * todo
-     * @param spriteRegex
-     * @param spriteName
-     * @param varRegex
-     * @param varName
+     * Register an variable change event for a variable of a sprite.
+     * @param spriteRegex Regex defining the sprite name.
+     * @param spriteName Name of the actual sprite.
+     * @param varRegex Regex defining the variable name.
+     * @param varName Name of the actual variable.
      */
     registerVarEvent(spriteRegex: string, spriteName: string, varRegex: string, varName: string) {
         const varString = CheckUtility.getVarEventString(spriteName, varName);
@@ -144,17 +165,25 @@ export class CheckUtility extends EventEmitter {
 
     private setupSpriteEvents() {
         this.testDriver.vmWrapper.sprites.onModelSpriteMoved((sprite) => {
+            let change = false;
+            // check for x and y attribute change listeners
+            if (this.registeredSpriteMove[sprite.name] != undefined && this.registeredSpriteMove[sprite.name] != null) {
+                this.updateEventString(this.registeredSpriteMove[sprite.name]);
+                change = true;
+            }
+
+            // check color and touching sprite
             if (this.onMovedChecks[sprite.name] != null) {
-                let change = false;
                 this.onMovedChecks[sprite.name].forEach(fun => {
+                    // checks if any color or touching predicates are fulfilled and updates the eventStrings
                     if (fun(sprite)) {
                         change = true;
                     }
                 });
-                if (change) {
-                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, this.eventStrings);
-                    this.checkEffectsOnEmit();
-                }
+            }
+
+            if (change) {
+                this.emit(CheckUtility.CHECK_UTILITY_EVENT, this.eventStrings);
             }
         })
         this.testDriver.vmWrapper.sprites.onSayOrThink((sprite) => {
@@ -169,7 +198,6 @@ export class CheckUtility extends EventEmitter {
                 });
                 if (change) {
                     this.emit(CheckUtility.CHECK_UTILITY_EVENT, this.eventStrings);
-                    this.checkEffectsOnEmit();
                 }
             }
         })
@@ -179,7 +207,6 @@ export class CheckUtility extends EventEmitter {
                 eventString = this.variableChecks[i](varName);
                 if (eventString) {
                     this.emit(CheckUtility.CHECK_UTILITY_EVENT, [eventString]);
-                    this.checkEffectsOnEmit();
                     return;
                 }
             }
@@ -350,40 +377,18 @@ export class CheckUtility extends EventEmitter {
         if (!this.failedChecks || this.failedChecks.length == 0) {
             return;
         }
-        for (let i = 0; i < this.effectChecks.length; i++) {
-            let effect = this.effectChecks[i].effect;
-            let model = this.effectChecks[i].model;
+        for (let i = 0; i < this.failedChecks.length; i++) {
+            let effect = this.failedChecks[i].effect;
+            let model = this.failedChecks[i].model;
             try {
                 if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
                     model.stepNbrOfProgramEnd)) {
-                    this.failOnProgramModel(this.effectChecks[i].edge, effect, modelResult);
+                    this.failOnProgramModel(this.failedChecks[i].edge, effect, modelResult);
                 }
             } catch (e) {
-                this.failOnProgramModel(this.effectChecks[i].edge, effect, modelResult);
+                this.failOnProgramModel(this.failedChecks[i].edge, effect, modelResult);
             }
         }
         this.failedChecks = [];
-    }
-
-    private checkEffectsOnEmit() {
-        let newEffects = [];
-        for (let i = 0; i < this.effectChecks.length; i++) {
-            let effect = this.effectChecks[i].effect;
-            let eventString = CheckUtility.getEventString(effect);
-            if (eventString == "" || this.eventStrings.indexOf(eventString) == -1) {
-                newEffects.push(this.effectChecks[i])
-            } else if (this.eventStrings.indexOf(eventString) != -1) {
-                // todo test var change effect
-            }
-        }
-        // if (newEffects.length < this.effectChecks.length) {
-        //     console.log("#EFFECTS removed", this.effectChecks.length - newEffects.length)
-        //     this.effectChecks.forEach(elem => {
-        //         if (newEffects.indexOf(elem) == -1) {
-        //             console.log("EFFECT REMOVED", elem.effect)
-        //         }
-        //     })
-        // }
-        this.effectChecks = newEffects;
     }
 }

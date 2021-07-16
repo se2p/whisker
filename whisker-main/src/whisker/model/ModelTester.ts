@@ -250,25 +250,18 @@ export class ModelTester extends EventEmitter {
 
     private onEvent(eventStrings: string[]) {
         // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
-        if (this.modelStepCallback.isActive()) {
-            this.programModels.forEach(model => {
-                let edge = model.testForEvent(this.testDriver, this.checkUtility, this.result, eventStrings);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    // register only, check is after the step
-                    this.checkUtility.registerEffectCheck(edge, model);
-                    this.edgeTrace(edge);
-                }
-            });
-        }
-        if (this.onTestEndCallback.isActive()) {
-            this.onTestEndModels.forEach(model => {
-                let edge = model.testForEvent(this.testDriver, this.checkUtility, this.result, eventStrings);
-                if (edge != null && edge instanceof ProgramModelEdge) {
-                    // register only, check is after the step
-                    this.checkUtility.registerEffectCheck(edge, model);
-                    this.edgeTrace(edge);
-                }
-            });
+        let models = this.modelStepCallback.isActive() ? this.programModels :  this.onTestEndModels;
+        models.forEach(model => {
+            let edge = model.testForEvent(this.testDriver, this.checkUtility, this.result, eventStrings);
+            if (edge != null && edge instanceof ProgramModelEdge) {
+                // register only, check is after the step
+                this.checkUtility.registerEffectCheck(edge, model);
+                this.edgeTrace(edge);
+            }
+        });
+        let contradictingEffects = this.checkUtility.checkEffects(this.result);
+        if (contradictingEffects && contradictingEffects.length != 0) {
+            this.printContradictingEffects(contradictingEffects);
         }
     }
 

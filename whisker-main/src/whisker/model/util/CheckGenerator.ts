@@ -113,6 +113,7 @@ export abstract class CheckGenerator {
      * Get a method for checking whether a sprite's attribute has a given comparison with a given value fulfilled.
      *
      * @param t Instance of the test driver.
+     * @param cu Listener for the checks.
      * @param spriteNameRegex Regex describing the name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param comparison  Mode of comparison, e.g. =, <, >, <=, >=
@@ -120,8 +121,9 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getAttributeComparisonCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
-                                       attrName: string, comparison: string, varValue: string): () => boolean {
+    static getAttributeComparisonCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
+                                       spriteNameRegex: string, attrName: string, comparison: string,
+                                       varValue: string): () => boolean {
         attrName = attrName.toLowerCase();
 
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
@@ -131,6 +133,10 @@ export abstract class CheckGenerator {
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
             throw getComparisonNotKnownError(comparison);
+        }
+
+        if (attrName == "x" || attrName == "y") {
+            cu.registerMovement(spriteNameRegex, spriteName);
         }
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
@@ -294,6 +300,7 @@ export abstract class CheckGenerator {
      * Get a method checking whether an attribute of a sprite changed.
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText;
      * @param t Instance of the test driver.
+     * @param cu Listener for the checks.
      * @param spriteNameRegex  Regex describing the name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
@@ -302,13 +309,17 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getAttributeChangeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
-                                   attrName: string, change): () => boolean {
+    static getAttributeChangeCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
+                                   spriteNameRegex: string, attrName: string, change): () => boolean {
         attrName = attrName.toLowerCase();
 
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         let spriteName = sprite.name;
         ModelUtil.checkAttributeExistence(t, sprite, attrName);
+
+        if (attrName == "x" || attrName == "y") {
+            cu.registerMovement(spriteNameRegex, spriteName);
+        }
 
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];

@@ -111,10 +111,10 @@ export abstract class Check {
     checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean) {
         switch (this._name) {
             case CheckName.AttrComp:
-                return CheckGenerator.getAttributeComparisonCheck(t, this._negated, caseSensitive, this._args[0],
+                return CheckGenerator.getAttributeComparisonCheck(t, cu, this._negated, caseSensitive, this._args[0],
                     this._args[1], this._args[2], this._args[3]);
             case CheckName.AttrChange:
-                return CheckGenerator.getAttributeChangeCheck(t, this._negated, caseSensitive, this._args[0],
+                return CheckGenerator.getAttributeChangeCheck(t, cu, this._negated, caseSensitive, this._args[0],
                     this._args[1], this._args[2]);
             case CheckName.BackgroundChange:
                 return CheckGenerator.getBackgroundChangeCheck(t, this._negated, this._args[0]);

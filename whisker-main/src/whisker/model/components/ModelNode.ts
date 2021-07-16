@@ -60,8 +60,11 @@ export class ModelNode {
             // edge should only be checked if it contains any event of the eventStrings and no touchingSprite or
             // touchingColor event that is not in eventStrings
             for (let j = 0; j < this.edges[i].conditions.length; j++) {
-                let eventString = CheckUtility.getEventString(this.edges[i].conditions[j]);
-                if (eventString != "" && eventStrings.indexOf(eventString) != -1) {
+                const cond = this.edges[i].conditions[j];
+                let eventString = CheckUtility.getEventString(cond);
+                let isAttrMove = (cond.name == CheckName.AttrComp || cond.name == CheckName.AttrChange) &&
+                    (cond.args[1] == "x" || cond.args[1] == "y");
+                if ((eventString != "" && eventStrings.indexOf(eventString) != -1) || isAttrMove) {
                     check = true;
                 } else if (eventString != "") {
                     check = false;
