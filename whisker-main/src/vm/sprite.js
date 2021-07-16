@@ -390,6 +390,14 @@ class Sprite {
         }
     }
 
+    updateVariables(variableName, newValue, oldValue) {
+        for (const variable of Object.values(this._variables)) {
+            if (variable.name === variableName) {
+                variable.setOldValue(oldValue);
+            }
+        }
+    }
+
     /**
      * @param {ScratchVariable} variable .
      * @returns {Variable} .

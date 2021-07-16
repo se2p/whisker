@@ -129,13 +129,7 @@ export class ModelTester extends EventEmitter {
 
     private getModelStepFunction() {
         let checkProgramModels = [...this.programModels];
-        // let points = 0;
         return () => {
-            // let currentPoints = this.testDriver.getStage().getVariable("Punkte").value;
-            // if (points != currentPoints) {
-            //     console.log("points", currentPoints, this.testDriver.getTotalStepsExecuted());
-            //     points = currentPoints;
-            // }
             this.checkUtility.checkFailedEffects(this.result);
             let notStoppedModels = [];
             checkProgramModels.forEach(model => {
@@ -253,7 +247,6 @@ export class ModelTester extends EventEmitter {
     private addModelCallback(fun: Function, afterStep = false, name: string) {
         return this.testDriver.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
-
 
     private onEvent(eventStrings: string[]) {
         // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());

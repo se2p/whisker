@@ -197,8 +197,13 @@ class Sprites {
 
     /**
      * @param {string} variableName .
+     * @param newValue
+     * @param oldValue
      */
-    doOnVariableChange (variableName) {
+    doOnVariableChange (variableName, newValue, oldValue) {
+        for (const sprite of Object.values(this.sprites)) {
+            sprite.updateVariables(variableName, newValue, oldValue);
+        }
         if (this._onVariableChange) {
             this._onVariableChange(variableName);
         }

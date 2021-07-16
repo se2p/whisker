@@ -65,6 +65,10 @@ class Variable {
     updateOld () {
         this._old.value = this.value;
     }
+
+    setOldValue(value) {
+        this._old.value = value;
+    }
 }
 
 module.exports = Variable;
