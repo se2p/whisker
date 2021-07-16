@@ -296,7 +296,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildIterativeOnePlusOne(): SearchAlgorithm<C> {
         const searchAlgorithm: SearchAlgorithm<C> = new IterativeOnePlusOneEA();
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
-        searchAlgorithm.setLocalSearchOperators(this._localSearchOperators);
         return searchAlgorithm;
     }
 

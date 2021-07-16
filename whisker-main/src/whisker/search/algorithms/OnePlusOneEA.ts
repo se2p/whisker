@@ -65,21 +65,17 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        this.initializeStatistics();
+        // Prevent statistics to be reset in case of IterativeSearch.
+        this._startTime = Date.now();
+        if (!this.isIterativeSearch()) {
+            this.initializeStatistics();
+        }
         console.log("1+1 EA started at " + this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
         await bestIndividual.evaluate();
         this._bestIndividual = bestIndividual;
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
-
-        // Prevent statistics to be reset in case of IterativeSearch.
-        if (!this.isIterativeSearch()) {
-            StatisticsCollector.getInstance().iterationCount = 0;
-            StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
-            StatisticsCollector.getInstance().bestTestSuiteSize = 1;
-            StatisticsCollector.getInstance().startTime = Date.now();
-        }
 
         if (this._stoppingCondition.isFinished(this)) {
             this.updateStatisticsAtEnd();
@@ -148,7 +144,6 @@ ${bestIndividual.toString()}`);
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
-        this._startTime = Date.now();
         StatisticsCollector.getInstance().startTime = this._startTime;
     }
 
