@@ -382,8 +382,6 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.RANDOM;
             case 'one-plus-one':
                 return SearchAlgorithmType.ONE_PLUS_ONE;
-            case 'iterative-one-plus-one':
-                return SearchAlgorithmType.ITERATIVE_ONE_PLUS_ONE;
             case 'simplega':
                 return SearchAlgorithmType.SIMPLEGA;
             case 'mosa':

@@ -2,7 +2,6 @@ import {List} from '../../utils/List';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {NetworkChromosome} from "../../whiskerNet/NetworkChromosome";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
-import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
@@ -12,51 +11,11 @@ import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFit
 
 
 export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
+
     /**
      * The search parameters
      */
-    private _properties: NeuroevolutionProperties<C>;
-
-    /**
-     * The generator used for creating the initial population.
-     */
-    private _chromosomeGenerator: ChromosomeGenerator<C>;
-
-    /**
-     * The used fitness function to evaluate how close we are to an optimal solution.
-     */
-    private _fitnessFunctions: Map<number, FitnessFunction<C>>;
-
-    /**
-     * Defines when we stop the search.
-     */
-    private _stoppingCondition: StoppingCondition<C>;
-
-    /**
-     * Saves the number of iterations.
-     */
-    private _iterations = 0;
-
-    /**
-     * Saves the best chromosomes according to the defined fitness function
-     */
-    private _bestIndividuals = new List<C>();
-
-    /**
-     * The archive maps all statements of a Scratch project as numbers to a chromosome which covers the given statement.
-     * @private
-     */
-    private readonly _archive = new Map<number, C>();
-
-    /**
-     * Saves the time at which the search was started.
-     */
-    private _startTime: number;
-
-    /**
-     * Flag if we reached 100% coverage of the given Scratch project.
-     */
-    private _fullCoverageReached = false;
+    private _neuroevolutionProperties: NeuroevolutionProperties<C>;
 
     /**
      * The fitnessFunction used to evaluate the networks of Neuroevolution Algorithm.
@@ -67,10 +26,10 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
      * Evaluates the networks by letting them play the given Scratch game using random event selection.
      * @param networks the networks to evaluate -> Current population
      */
-    async evaluateNetworks(networks: List<C>): Promise<void> {
+    async evaluateNetworks(networks: List<NetworkChromosome>): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
-            await this._networkFitnessFunction.getRandomFitness(network, this._properties.timeout);
+            await this._networkFitnessFunction.getRandomFitness(network, this._neuroevolutionProperties.timeout);
 
             // Update the archive and stop if during the evaluation of the population if we already cover all
             // statements.
@@ -85,13 +44,13 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
      * Returns a list of solutions for the given problem.
      * @returns Solution for the given problem
      */
-    async findSolution(): Promise<List<C>> {
+    async findSolution(): Promise<Map<number, C>> {
         // The targeted number of species -> The distanceThreshold is adjusted appropriately.
         const speciesNumber = 5;
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
-        const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
-            this._properties);
+        const population = new NeatPopulation(this._neuroevolutionProperties.populationSize, speciesNumber, this._chromosomeGenerator,
+            this._neuroevolutionProperties);
         this._iterations = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().startTime = Date.now();
@@ -104,50 +63,11 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
                 this.reportOfCurrentIteration(population);
             this._iterations++;
         }
-        return this._bestIndividuals;
-    }
-
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
-    summarizeSolution(): string {
-        return '';
+        return this._archive as Map<number, C>;
     }
 
     getStartTime(): number {
         return this._startTime;
-    }
-
-    /**
-     * Updates the archive with a given network candidate. The archive is updated if we cover a new statement or
-     * if we cover a already covered statement by executing less events.
-     * @param network The candidate network the archive may gets updated with.
-     */
-    private updateArchive(network: C): void {
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            let bestLength = this._archive.has(fitnessFunctionKey)
-                ? this._archive.get(fitnessFunctionKey).getLength()
-                : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(network);
-            const candidateLength = network.getLength();
-            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
-                bestLength = candidateLength;
-                if (!this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
-                }
-                this._archive.set(fitnessFunctionKey, network);
-                //console.log("Found test for goal: " + fitnessFunction);
-            }
-        }
-        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
     }
 
     /**
@@ -161,7 +81,7 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                (this._iterations + 1) * this._properties.populationSize;
+                (this._iterations + 1) * this._neuroevolutionProperties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }
@@ -197,16 +117,16 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
-        this._properties = properties as unknown as NeuroevolutionProperties<C>;
-        this._stoppingCondition = this._properties.stoppingCondition
-        this._networkFitnessFunction = this._properties.networkFitness;
+        this._neuroevolutionProperties = properties as unknown as NeuroevolutionProperties<C>;
+        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition
+        this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
 
     getNumberOfIterations(): number {
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
+    getCurrentSolution(): List<NetworkChromosome> {
         return this._bestIndividuals;
     }
 

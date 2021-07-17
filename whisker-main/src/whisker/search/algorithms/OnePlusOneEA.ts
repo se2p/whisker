@@ -23,27 +23,15 @@ import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
-import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
-    _chromosomeGenerator: ChromosomeGenerator<C>;
-
-    _fitnessFunction: FitnessFunction<C>;
-
-    _fitnessFunctions: List<FitnessFunction<C>> = new List();
-
-    _stoppingCondition: StoppingCondition<C>;
-
-    _properties: SearchAlgorithmProperties<C>;
-
-    _iterations = 0;
-
-    _bestIndividual: C;
-
-    _startTime: number;
+    /**
+     * Holds the currently best performing Chromosome on which we will keep mutating on.
+     */
+    private _bestIndividual: C;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -51,8 +39,11 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
         this._fitnessFunction = fitnessFunction;
-        this._fitnessFunctions.clear();
-        this._fitnessFunctions.add(fitnessFunction)
+    }
+
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
+        this._fitnessFunctions = fitnessFunctions;
+        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
@@ -64,7 +55,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    async findSolution(): Promise<List<C>> {
+    async findSolution(): Promise<Map<number, C>> {
         // Prevent statistics to be reset in case of IterativeSearch.
         this._startTime = Date.now();
         if (!this.isIterativeSearch()) {
@@ -74,6 +65,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
         let bestIndividual = this._chromosomeGenerator.get();
         await bestIndividual.evaluate();
+        this.updateArchive(bestIndividual);
         this._bestIndividual = bestIndividual;
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
 
@@ -84,6 +76,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         while (!(this._stoppingCondition.isFinished(this))) {
             const candidateChromosome = bestIndividual.mutate();
             await candidateChromosome.evaluate();
+            this.updateArchive(candidateChromosome);
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
             console.log(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
 ${bestIndividual.toString()}`);
@@ -99,33 +92,7 @@ ${bestIndividual.toString()}`);
             }
         }
         console.log("1+1 EA completed at " + Date.now());
-        return new List<C>([this._bestIndividual]);
-    }
-
-    /**
-     * Summarize the solution saved in _archive.
-     * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
-     *        - Not covered: the statement that’s not covered by any
-     *        function in the _bestIndividuals.
-     *        - ApproachLevel: the approach level of that statement
-     *        - BranchDistance: the branch distance of that statement
-     *        - Fitness: the fitness value of that statement
-     * For other search algorithms, it returns an empty string.
-     */
-    summarizeSolution(): string {
-        const summary = {};
-        summary['block'] = this._fitnessFunction.toString();
-        const approachLevel = this._fitnessFunction.getApproachLevel(this._bestIndividual);
-        const branchDistance = this._fitnessFunction.getBranchDistance(this._bestIndividual);
-        let CFGDistance = Number.MAX_VALUE;
-        if (approachLevel === 0 && branchDistance === 0) {
-            CFGDistance = this._fitnessFunction.getCFGDistance(this._bestIndividual);
-        }
-        summary['ApproachLevel'] = approachLevel;
-        summary['BranchDistance'] = branchDistance;
-        summary['CFGDistance'] = CFGDistance;
-        summary['Fitness'] = this._fitnessFunction.getFitness(this._bestIndividual);
-        return JSON.stringify({'Target': summary});
+        return this._archive;
     }
 
     /**
@@ -153,9 +120,6 @@ ${bestIndividual.toString()}`);
     private updateStatisticsAtEnd(): void {
         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
-        if (!this.isIterativeSearch()) {
-            StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
-        }
     }
 
     getNumberOfIterations(): number {
@@ -167,7 +131,9 @@ ${bestIndividual.toString()}`);
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        return this._fitnessFunctions;
+        if (this._fitnessFunctions) {
+            return this._fitnessFunctions.values();
+        } else return [this._fitnessFunction]
     }
 
     getStartTime(): number {

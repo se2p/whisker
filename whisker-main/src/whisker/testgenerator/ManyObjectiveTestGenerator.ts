@@ -23,6 +23,8 @@ import {ScratchProject} from '../scratch/ScratchProject';
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 import {Container} from "../utils/Container";
+import {List} from "../utils/List";
+import {TestChromosome} from "../testcase/TestChromosome";
 
 /**
  * A many-objective search algorithm can generate tests
@@ -30,15 +32,16 @@ import {Container} from "../utils/Container";
  */
 export class ManyObjectiveTestGenerator extends TestGenerator {
 
-    async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary> {
+    async generateTests(): Promise<WhiskerTestListWithSummary> {
 
         // TODO: Ensure this is a many-objective algorithm taking all goals
         const searchAlgorithm = this.buildSearchAlgorithm(true);
 
         // TODO: Assuming there is at least one solution?
-        const testChromosomes = await searchAlgorithm.findSolution();
+        const archive = await searchAlgorithm.findSolution();
+        const testChromosomes = new List<TestChromosome>([...archive.values()]).distinct();
 
-        // Check if we can remove unnecessary events in our final testSuite.
+        // Check if we can remove unnecessary events in our final testSuite by applying ReductionLocalSearch.
         const reductionOperator = new ReductionLocalSearch(Container.vmWrapper, Container.config.getEventExtractor(), 1);
         for (const chromosome of testChromosomes) {
             if (reductionOperator.isApplicable(chromosome)) {
@@ -53,7 +56,7 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
 
         await this.collectStatistics(testSuite);
 
-        const summary = searchAlgorithm.summarizeSolution();
+        const summary = this.summarizeSolution(archive);
 
         return new WhiskerTestListWithSummary(testSuite, summary);
     }

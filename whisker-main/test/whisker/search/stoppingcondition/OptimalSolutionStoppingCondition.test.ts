@@ -26,8 +26,6 @@ import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSear
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
-import Any = jasmine.Any;
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
 
@@ -47,8 +45,8 @@ describe('OptimalSolutionStoppingCondition', () => {
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
-        algorithm.setFitnessFunction(fitnessFunction)
-        algorithm.setCurrentSolution(chromosome)
+        algorithm.setFitnessFunction(fitnessFunction);
+        algorithm.setCurrentSolution(chromosome);
 
         const stoppingCondition = new OptimalSolutionStoppingCondition();
 
