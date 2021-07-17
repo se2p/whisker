@@ -5,6 +5,7 @@ import {ProgramModelEdge} from "../components/ModelEdge";
 import {getEffectFailedOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
 import EventEmitter from "events";
+import Sprite from "../../../vm/sprite";
 import {Check, CheckName} from "../components/Check";
 
 /**
@@ -16,16 +17,16 @@ export class CheckUtility extends EventEmitter {
 
     static readonly CHECK_UTILITY_EVENT = "CheckUtilityEvent"
     private onMovedChecks: { [key: string]: ((sprite) => boolean)[] } = {};
+    private onVisualChecks: { [key: string]: ((sprite) => boolean)[] } = {};
     private onSayOrThinkChecks: { [key: string]: ((sprite) => boolean)[] } = {};
-    private variableChecks: ((varName) => string)[] = [];
+    private variableChecks: { [key: string]: (() => void)[] } = {};
 
-    private registeredTouching: string[] = [];
-    private registeredColor: string[] = [];
-    private registeredSpriteMove: { [key: string]: string } = {};
+    private registeredOnMove: string[] = [];
+    private registeredVisualChange: string[] = [];
     private registeredOutput: string[] = [];
     private registeredVarEvents: string[] = [];
+
     private eventStrings: string[] = [];
-    private sayTexts: { [key: string]: string } = {}
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
     private failedChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
@@ -41,176 +42,109 @@ export class CheckUtility extends EventEmitter {
         this.testDriver = testDriver;
         this.modelResult = modelResult;
         this.setMaxListeners(nbrOfAllModels);
-        this.setupSpriteEvents();
+        this.testDriver.vmWrapper.sprites.onModelSpriteMoved(sprite => this.checkForEvent(this.onMovedChecks, sprite));
+        this.testDriver.vmWrapper.sprites.onSayOrThink(sprite => this.checkForEvent(this.onSayOrThinkChecks, sprite));
+        this.testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(sprite => this.checkForEvent(this.onVisualChecks, sprite));
+        this.testDriver.vmWrapper.sprites.onVariableChange((varName: string) => {
+            if (this.variableChecks[varName] != null) {
+                this.variableChecks[varName].forEach(fun => fun());
+            }
+        });
     }
 
+    /**
+     * Register a listener on the movement of a sprite with a certain predicate to be fulfilled for the event to be
+     * triggered.
+     * @param spriteName Name of the sprite.
+     * @param predicate Function checking if the predicate for the event is fulfilled.
+     * @param eventString String defining the event (see CheckUtility.getEventString)
+     */
+    registerOnMoveEvent(spriteName: string, eventString: string, predicate: (sprite: Sprite) => boolean) {
+        if (this.registeredOnMove.indexOf(eventString) == -1) {
+            this.registeredOnMove.push(eventString);
+            this.register(this.onMovedChecks, eventString, spriteName, predicate);
+        }
+    }
 
     /**
-     * Register a movement listener on a sprite.
-     * @param spriteRegex Regex defining the sprite name.
+     * Register an visual change event listener.
      * @param spriteName Name of the actual sprite.
+     * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerMovement(spriteRegex: string, spriteName: string) {
-        // no check for this sprite till now
-        if (this.onMovedChecks[spriteName] == undefined || this.onMovedChecks[spriteName] == null) {
-            this.onMovedChecks[spriteName] = [];
-        }
-
-        if (this.registeredSpriteMove[spriteName] == undefined || this.registeredSpriteMove[spriteName] == null) {
-            this.registeredSpriteMove[spriteName] = spriteRegex;
-        }
-    }
-
-
-    /**
-     * Register a touching check for a sprite with another sprite. The check is also registered for the
-     * other sprite as there have been inconsistencies.
-     * @param spriteRegex1 Regex defining the first sprite name to find the same check again.
-     * @param spriteRegex2 Regex defining the second sprite name to find the same check again.
-     * @param spriteName1 Sprite's name that gets the condition check registered.
-     * @param spriteName2 Name of the other sprite that the first needs to touch.
-     * @param negated Whether this check is negated.
-     */
-    registerTouching(spriteRegex1: string, spriteRegex2: string, spriteName1: string, spriteName2: string,
-                     negated: boolean): void {
-        const touchingString = CheckUtility.getTouchingString(spriteName1, spriteName2, negated);
-        const eventString = CheckUtility.getTouchingString(spriteRegex1, spriteRegex2, negated);
-
-        // no check for this sprite till now
-        if (this.onMovedChecks[spriteName1] == undefined || this.onMovedChecks[spriteName1] == null) {
-            this.onMovedChecks[spriteName1] = [];
-        }
-
-        if (this.registeredTouching.indexOf(touchingString) == -1) {
-            this.registeredTouching.push(touchingString);
-            this.onMovedChecks[spriteName1].push((sprite) => {
-                return !negated == sprite.isTouchingSprite(spriteName2) && this.updateEventString(eventString);
-            });
-        }
-    }
-
-    /**
-     * Registers a color touching check for a sprite with a RGB color value (as an array).
-     * @param spriteRegex Regex defining the first sprite name to find the same check again.
-     * @param negated Whether this check is negated
-     * @param spriteName Name of the sprite that gets the check.
-     * @param r RGB red value.
-     * @param g RGB green value.
-     * @param b RGB blue value.
-     */
-    registerColor(spriteRegex: string, spriteName: string, r: number, g: number, b: number, negated: boolean): void {
-        const colorString = CheckUtility.getColorString(spriteName, r, g, b, negated);
-        const eventString = CheckUtility.getColorString(spriteRegex, r, g, b, negated);
-
-        // no check for this sprite till now
-        if (this.onMovedChecks[spriteName] == undefined || this.onMovedChecks[spriteName] == null) {
-            this.onMovedChecks[spriteName] = [];
-        }
-
-        if (this.registeredColor.indexOf(colorString) == -1) {
-            this.registeredColor.push(colorString);
-            this.onMovedChecks[spriteName].push((sprite) => {
-                return !negated == sprite.isTouchingColor([r, g, b]) && this.updateEventString(eventString);
-            });
+    // todo add them to the check generator (size, visible, ... what more?)
+    registerOnVisualChange(spriteName: string, eventString: string, predicate: (sprite: Sprite) => boolean) {
+        if (this.registeredVisualChange.indexOf(eventString) == -1) {
+            this.registeredVisualChange.push(eventString);
+            this.register(this.onVisualChecks, eventString, spriteName, predicate);
         }
     }
 
     /**
      * Register an output event on the visual change checks.
-     * @param spriteRegex  Regex defining the first sprite name to find the same check again.
      * @param spriteName Name of the sprite.
-     * @param output Output as clear text that is saved in the check, e.g. -8.
-     * @param outputExpr Expression that can be evaluated checking the output for equality.
-     * @param negated Whether the check is negated.
+     * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOutput(spriteRegex: string, spriteName: string, output: string, outputExpr: string, negated: boolean) {
-        const outputString = CheckUtility.getOutputString(spriteName, output, negated);
-        const eventString = CheckUtility.getOutputString(spriteRegex, output, negated);
+    registerOutput(spriteName: string, eventString: string, predicate: (sprite: Sprite) => boolean) {
+        if (this.registeredOutput.indexOf(eventString) == -1) {
+            this.registeredOutput.push(eventString);
+            this.register(this.onSayOrThinkChecks, eventString, spriteName, predicate);
+        }
+    }
 
-        if (this.onSayOrThinkChecks[spriteName] == undefined || this.onSayOrThinkChecks[spriteName] == null) {
-            this.onSayOrThinkChecks[spriteName] = [];
+
+    private register(predicateChecker: { [key: string]: ((sprite) => boolean)[] }, eventString: string,
+                     spriteName: string, predicate: (sprite: Sprite) => boolean) {
+        // no check for this sprite till now
+        if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
+            predicateChecker[spriteName] = [];
         }
 
-        if (this.registeredOutput.indexOf(outputString) == -1) {
-            this.registeredOutput.push(outputString);
-            this.sayTexts[spriteName] = "";
-            this.onSayOrThinkChecks[spriteName].push((sprite) => {
-                let correctOutput = sprite.sayText && sprite.sayText.indexOf(eval(outputExpr)(this.testDriver)) != -1;
-                return !negated == correctOutput && this.updateEventString(eventString);
-            })
-        }
+        predicateChecker[spriteName].push((sprite) => {
+            try {
+                return predicate(sprite) && this.updateEventString(eventString);
+            } catch (e) {
+                // todo cant put this in the result error list .... ignore?
+                console.error(e);
+                return false;
+            }
+        });
     }
 
     /**
-     * Register an variable change event for a variable of a sprite.
-     * @param spriteRegex Regex defining the sprite name.
-     * @param spriteName Name of the actual sprite.
-     * @param varRegex Regex defining the variable name.
-     * @param varName Name of the actual variable.
+     * Register an variable change event for a variable.
+     * @param varName Name of the variable.
+     * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerVarEvent(spriteRegex: string, spriteName: string, varRegex: string, varName: string) {
-        const varString = CheckUtility.getVarEventString(spriteName, varName);
-        const eventString = CheckUtility.getVarEventString(spriteRegex, varRegex);
-        if (this.registeredVarEvents.indexOf(varString) == -1) {
-            this.registeredVarEvents.push(varString);
+    registerVarEvent(varName: string, eventString: string, predicate: () => boolean) {
+        if (this.registeredVarEvents.indexOf(eventString) == -1) {
+            this.registeredVarEvents.push(eventString);
 
-            this.variableChecks.push((currentVarName) => {
-                if (varName == currentVarName) {
-                    return eventString;
+            if (this.variableChecks[varName] == undefined || this.variableChecks[varName] == null) {
+                this.variableChecks[varName] = [];
+            }
+            this.variableChecks[varName].push(() => {
+                if (predicate()) {
+                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, [eventString]);
                 }
-                return undefined;
             })
         }
     }
 
-    private setupSpriteEvents() {
-        this.testDriver.vmWrapper.sprites.onModelSpriteMoved((sprite) => {
+    private checkForEvent(checks, sprite) {
+        if (checks[sprite.name] != null) {
             let change = false;
-            // check for x and y attribute change listeners
-            if (this.registeredSpriteMove[sprite.name] != undefined && this.registeredSpriteMove[sprite.name] != null) {
-                this.updateEventString(this.registeredSpriteMove[sprite.name]);
-                change = true;
-            }
-
-            // check color and touching sprite
-            if (this.onMovedChecks[sprite.name] != null) {
-                this.onMovedChecks[sprite.name].forEach(fun => {
-                    // checks if any color or touching predicates are fulfilled and updates the eventStrings
-                    if (fun(sprite)) {
-                        change = true;
-                    }
-                });
-            }
-
+            checks[sprite.name].forEach(fun => {
+                if (fun(sprite)) {
+                    change = true;
+                }
+            });
             if (change) {
                 this.emit(CheckUtility.CHECK_UTILITY_EVENT, this.eventStrings);
             }
-        })
-        this.testDriver.vmWrapper.sprites.onSayOrThink((sprite) => {
-            if (this.sayTexts[sprite.name] != null
-                && this.sayTexts[sprite.name] != undefined && this.sayTexts[sprite.name] != sprite.sayText) {
-                this.sayTexts[sprite.name] = sprite.sayText;
-                let change = false;
-                this.onSayOrThinkChecks[sprite.name].forEach(fun => {
-                    if (fun(sprite)) {
-                        change = true;
-                    }
-                });
-                if (change) {
-                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, this.eventStrings);
-                }
-            }
-        })
-        this.testDriver.vmWrapper.sprites.onVariableChange((varName) => {
-            let eventString;
-            for (let i = 0; i < this.variableChecks.length; i++) {
-                eventString = this.variableChecks[i](varName);
-                if (eventString) {
-                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, [eventString]);
-                    return;
-                }
-            }
-        })
+        }
     }
 
     private updateEventString(event: string): boolean {
@@ -223,25 +157,30 @@ export class CheckUtility extends EventEmitter {
             return true;
         }
 
-        const negated = event.startsWith("!");
-        let invertedEvent;
-
-        if (negated) {
-            invertedEvent = event.substring(1, event.length);
-        } else {
-            invertedEvent = "!" + event;
-        }
-
         let newEventString = [];
-        // if the event strings array contains the inverted event remove that one
+        const check1 = CheckUtility.splitEventString(event);
         for (let i = 0; i < this.eventStrings.length; i++) {
-            if (this.eventStrings[i] != invertedEvent) {
+            const check2 = CheckUtility.splitEventString(this.eventStrings[i]);
+            if (!Check.testForContradictingOnDummies(check1, check2)) {
                 newEventString.push(this.eventStrings[i]);
             }
         }
         this.eventStrings = newEventString;
         this.eventStrings.push(event);
         return true;
+    }
+
+    private static splitEventString(eventString: string): { name: CheckName, negated: boolean, args: any[] } {
+        const negated = eventString.startsWith("!");
+        if (negated) {
+            eventString = eventString.substring(1, eventString.length);
+        }
+        const splits = eventString.split(":");
+        return {
+            negated: negated,
+            name: CheckName[splits[0]],
+            args: splits.slice(1, splits.length)
+        }
     }
 
     reset() {
@@ -256,48 +195,15 @@ export class CheckUtility extends EventEmitter {
         return this.testDriver.isKeyDown(keyName);
     }
 
-    static getEventString(check: Check): string {
-        if (check.name == CheckName.SpriteTouching) {
-            return CheckUtility.getTouchingString(check.args[0], check.args[1], check.negated);
-        } else if (check.name == CheckName.SpriteColor) {
-            return CheckUtility.getColorString(check.args[0], check.args[1], check.args[2], check.args[3], check.negated);
-        } else if (check.name == CheckName.Output) {
-            return CheckUtility.getOutputString(check.args[0], check.args[1], check.negated);
-        } else if (check.name == CheckName.VarChange || check.name == CheckName.VarComp) {
-            return CheckUtility.getVarEventString(check.args[0], check.args[1]);
+    /**
+     * Get a string defining the event of a listener.
+     */
+    static getEventString(name: CheckName, negated: boolean, ...args): string {
+        let string = negated ? "!" + name : name;
+        for (let i = 0; i < args.length; i++) {
+            string += ":" + args[i];
         }
-        return "";
-    }
-
-    /**
-     * Get the string defining a touching event.
-     */
-    static getTouchingString(sprite1: string, sprite2: string, negated: boolean): string {
-        let s = negated ? "!" : "";
-        return s + sprite1 + ":" + sprite2;
-    }
-
-    /**
-     * Get the string defining a color event.
-     */
-    static getColorString(spriteName: string, r: number, g: number, b: number, negated: boolean): string {
-        let s = negated ? "!" : "";
-        return s + spriteName + ":" + r + ":" + g + ":" + b;
-    }
-
-    /**
-     * Get the string defining an output event.
-     */
-    static getOutputString(spriteName: string, output: string, negated: boolean) {
-        let s = negated ? "!" : "";
-        return s + spriteName + ":" + output;
-    }
-
-    /**
-     * Get the string defining a variable change event.
-     */
-    static getVarEventString(spriteNameRegex: string, varNameRegex: string) {
-        return spriteNameRegex + ":" + varNameRegex;
+        return string;
     }
 
     /**

@@ -50,25 +50,21 @@ export class ModelNode {
         return null;
     }
 
+    /**
+     * Check the edges for a transition based on fired events.
+     */
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                  modelResult: ModelResult, eventStrings: string[]) {
         for (let i = 0; i < this.edges.length; i++) {
 
             let check = false;
 
-            // look up if this edge should be checked first based on its conditions
-            // edge should only be checked if it contains any event of the eventStrings and no touchingSprite or
-            // touchingColor event that is not in eventStrings
+            // look up if this edge has a condition that was triggered
             for (let j = 0; j < this.edges[i].conditions.length; j++) {
                 const cond = this.edges[i].conditions[j];
-                let eventString = CheckUtility.getEventString(cond);
-                let isAttrMove = (cond.name == CheckName.AttrComp || cond.name == CheckName.AttrChange) &&
-                    (cond.args[1] == "x" || cond.args[1] == "y");
-                if ((eventString != "" && eventStrings.indexOf(eventString) != -1) || isAttrMove) {
+                const eventString = CheckUtility.getEventString(cond.name, cond.negated, cond.args);
+                if (eventStrings.indexOf(eventString) != -1) {
                     check = true;
-                } else if (eventString != "") {
-                    check = false;
-                    break;
                 }
             }
 
@@ -76,10 +72,9 @@ export class ModelNode {
                 let failed = false;
                 for (let j = 0; j < this.edges[i].conditions.length; j++) {
                     let cond = this.edges[i].conditions[j];
+                    const eventString = CheckUtility.getEventString(cond.name, cond.negated, cond.args);
 
-                    // check only not yet unfulfilled conditions
-                    if (cond.name != CheckName.SpriteTouching && cond.name != CheckName.SpriteColor
-                        && cond.name != CheckName.Output && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                    if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
                         failed = true;
                         break;
                     }

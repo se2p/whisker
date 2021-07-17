@@ -39,6 +39,11 @@ class Sprites {
         /**
          * @type {(Function|null)}
          */
+        this._onSpriteVisualChangeModel = null;
+
+        /**
+         * @type {(Function|null)}
+         */
         this._onSayOrThink = null;
 
         /**
@@ -184,6 +189,9 @@ class Sprites {
         if (this._onSpriteVisualChange) {
             this._onSpriteVisualChange(this.wrapTarget(target));
         }
+        if (this._onSpriteVisualChangeModel) {
+            this._onSpriteVisualChangeModel(this.wrapTarget(target));
+        }
     }
 
     /**
@@ -229,6 +237,13 @@ class Sprites {
      */
     onSpriteVisualChange (func) {
         this._onSpriteVisualChange = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onSpriteVisualChangeModel (func) {
+        this._onSpriteVisualChangeModel = func;
     }
 
     /**

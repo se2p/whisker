@@ -30,7 +30,7 @@ export enum CheckName {
  * Super class for checks (effects/conditions on model edges). The check method depends on the test driver and needs
  * to be created once for every test run with a new test driver.
  */
-export abstract class Check {
+export class Check {
     protected readonly _id: string;
     protected readonly _name: CheckName;
     protected readonly _args: any[];
@@ -199,6 +199,18 @@ export abstract class Check {
         return this.name == check.name && this.negated != check.negated && this.arrayEquals(this.args, check.args);
     }
 
+    /**
+     * Test whether the checks (dummies) are contradicting each other.
+     */
+    static testForContradictingOnDummies(check1: { name: CheckName, negated: boolean, args: any[] }, check2: { name: CheckName, negated: boolean, args: any[] }) {
+        let checkDummy1 = new Check("dummy", check1.name, check1.args, check1.negated);
+        let checkDummy2 = new Check("dummy", check2.name, check2.args, check2.negated);
+        return Check.testForContradicting(checkDummy1, checkDummy2);
+    }
+
+    /**
+     * Test whether the checks are contradicting each other.
+     */
     static testForContradicting(check1: Check, check2: Check) {
         if (check1.name != check2.name || check1.equals(check2)) {
             return false;
