@@ -71,60 +71,7 @@ export class Effect extends Check {
      * @param effect The other effect.
      */
     contradicts(effect: Effect): boolean {
-        if (this.name != effect.name) {
-            return false;
-        }
-
-        switch (this.name) {
-            case CheckName.Click:
-                // you cant click on two different sprites at the same time
-                return this.args[0] != effect.args[0];
-            case CheckName.BackgroundChange: // contradict if different costume names
-                return this.args[0] != effect.args[0];
-            case CheckName.Output:
-                // contradict if same sprite name and different output
-                return this.args[0] == effect.args[0] && this.args[1] != effect.args[1];
-            case CheckName.VarChange:
-            case CheckName.AttrChange:
-                if (this.args[0] != effect.args[0] || this.args[1] != effect.args[1]) {
-                    return false;
-                }
-                return this.args[2].indexOf(effect.args[2]) == -1 && effect.args[2].indexOf(this.args[2]) == -1;
-            case CheckName.VarComp:
-            case CheckName.AttrComp:
-                if (this.args[0] != effect.args[0] || this.args[1] != effect.args[1]) {
-                    return false;
-                }
-                return Effect.checkComparison(this.args[2], effect.args[2], this.args[3], effect.args[3]);
-            case CheckName.NbrOfVisibleClones:
-            case CheckName.NbrOfClones:
-                if (this.args[0] != effect.args[0]) {
-                    return false;
-                }
-                return Effect.checkComparison(this.args[1], effect.args[1], this.args[2], effect.args[2]);
-            default:
-                return false;
-        }
+        return Check.testForContradicting(this, effect);
     }
 
-    private static checkComparison(comparison1: string, comparison2: string, value1: string, value2: string): boolean {
-        if (comparison1 == comparison2 && value1 == value2) {
-            return false; // same effect checks
-        }
-
-        // =
-        if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
-            return value1 != value2;
-        } else if (comparison1 == '=' || comparison1 == '==') {
-            return !eval(value1 + comparison2 + value2);
-        } else if (comparison2 == '=' || comparison2 == '==') {
-            return !eval(value2 + comparison1 + value1);
-        }
-        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
-        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
-            return false;
-        }
-
-        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
-    }
 }

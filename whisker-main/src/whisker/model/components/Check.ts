@@ -186,4 +186,115 @@ export abstract class Check {
             negated: this.negated
         }
     }
+
+    equals(check: Check) {
+        return this.name == check.name && this.negated == check.negated && this.arrayEquals(this.args, check.args);
+    }
+
+    private arrayEquals(a, b) {
+        return a.length === b.length && a.every((val, index) => val === b[index]);
+    }
+
+    isInvertedOf(check: Check) {
+        return this.name == check.name && this.negated != check.negated && this.arrayEquals(this.args, check.args);
+    }
+
+    static testForContradicting(check1: Check, check2: Check) {
+        if (check1.name != check2.name || check1.equals(check2)) {
+            return false;
+        }
+        if (check1.isInvertedOf(check2)) {
+            return true;
+        }
+
+        let comp1, comp2;
+        switch (check1.name) {
+            case CheckName.Click:
+                // you cant click on two different sprites at the same time
+                return check1.args[0] != check2.args[0];
+            case CheckName.BackgroundChange: // contradict if different costume names
+                return check1.args[0] != check2.args[0];
+            case CheckName.Output:
+                // contradict if same sprite name and different output
+                return check1.args[0] == check2.args[0] && check1.args[1] != check2.args[1];
+            case CheckName.VarChange:
+            case CheckName.AttrChange:
+                if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
+                    return false;
+                }
+
+                if (!check1.negated && !check2.negated) {
+                    return check1.args[2].indexOf(check2.args[2]) == -1 && check2.args[2].indexOf(check1.args[2]) == -1;
+                } else {
+                    return false;
+                }
+            case CheckName.VarComp:
+            case CheckName.AttrComp:
+                if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
+                    return false;
+                }
+
+                comp1 = check1.args[2];
+                comp2 = check2.args[2];
+                if (check1.negated) {
+                    comp1 = this.getInvertedCompOp(comp1);
+                }
+                if (check2.negated) {
+                    comp2 = this.getInvertedCompOp(comp2);
+                }
+
+                return this.checkComparison(comp1, comp2, check1.args[3], check2.args[3]);
+            case CheckName.NbrOfVisibleClones:
+            case CheckName.NbrOfClones:
+                if (check1.args[0] != check2.args[0]) {
+                    return false;
+                }
+
+                comp1 = check1.args[1];
+                comp2 = check2.args[1];
+                if (check1.negated) {
+                    comp1 = this.getInvertedCompOp(comp1);
+                }
+                if (check2.negated) {
+                    comp2 = this.getInvertedCompOp(comp2);
+                }
+
+                return this.checkComparison(comp1, comp2, check1.args[2], check2.args[2]);
+
+            default:
+                return false;
+        }
+    }
+
+    private static getInvertedCompOp(comp) {
+        if (comp == "=" || comp == "==") {
+            return "!=";
+        } else if (comp == "<") {
+            return ">=";
+        } else if (comp == ">") {
+            return "<=";
+        } else if (comp == ">=") {
+            return "<";
+        } else if (comp == "<=") {
+            return ">";
+        }
+        throw new Error("unkwown comparison");
+    }
+
+    private static checkComparison(comparison1: string, comparison2: string, value1: string, value2: string): boolean {
+        // =
+        if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
+            return value1 != value2;
+        } else if (comparison1 == '=' || comparison1 == '==') {
+            return !eval(value1 + comparison2 + value2);
+        } else if (comparison2 == '=' || comparison2 == '==') {
+            return !eval(value2 + comparison1 + value1);
+        }
+        // < and <, > and >, < and <=, <= and <=, >= and >, > and >=
+        if (comparison1.startsWith(comparison2) || comparison2.startsWith(comparison1)) {
+            return false;
+        }
+
+        return !eval(value2 + comparison1 + value1) || !eval(value1 + comparison2 + value2);
+    }
 }
