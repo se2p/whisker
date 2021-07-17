@@ -87,12 +87,36 @@ ${bestIndividual.toString()}`);
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividual = bestIndividual;
-                this._iterations++;
-                StatisticsCollector.getInstance().incrementIterationCount();
             }
+            this._iterations++;
+            StatisticsCollector.getInstance().incrementIterationCount();
         }
         console.log("1+1 EA completed at " + Date.now());
         return this._archive;
+    }
+
+    /**
+     * Updates the archive of best chromosomes.
+     *
+     * @param candidateChromosome The candidate chromosome for the archive.
+     */
+    protected updateArchive(candidateChromosome: C): void {
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestLength = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).getLength()
+                : Number.MAX_SAFE_INTEGER;
+            const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+            const candidateLength = candidateChromosome.getLength();
+            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                bestLength = candidateLength;
+                if (!this._archive.has(fitnessFunctionKey) && !this.isIterativeSearch()) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                }
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
+            }
+        }
+        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
     }
 
     /**
@@ -131,9 +155,7 @@ ${bestIndividual.toString()}`);
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        if (this._fitnessFunctions) {
-            return this._fitnessFunctions.values();
-        } else return [this._fitnessFunction]
+        return [this._fitnessFunction];
     }
 
     getStartTime(): number {

@@ -60,6 +60,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             // TODO: Somehow set the fitness function as objective
             const searchAlgorithm = this.buildSearchAlgorithm(false);
             searchAlgorithm.setFitnessFunction(this._fitnessFunctions.get(fitnessFunction));
+            searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
             // TODO: Assuming there is at least one solution?
             const archive = await searchAlgorithm.findSolution();
             this.updateGlobalArchive(archive);
@@ -96,6 +97,9 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
                     this._archive.get(fitnessKey).getLength() : Number.MAX_SAFE_INTEGER;
                 const candidateFitness = fitnessFunction.getFitness(candidate);
                 if (fitnessFunction.isOptimal(candidateFitness) && candidate.getLength() < bestLength) {
+                    if(!this._archive.has(fitnessKey)){
+                        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    }
                     this._archive.set(fitnessKey, candidate);
                 }
             })
