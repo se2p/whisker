@@ -1,6 +1,6 @@
 {
-    "test-generator": "many-objective",
-    "algorithm": "iterative-one-plus-one",
+    "test-generator": "iterative",
+    "algorithm": "one-plus-one",
     "chromosome": "variablelengthtest",
     "chromosome-length": 30,
     "minVarChromosomeLength": 5,
@@ -19,7 +19,8 @@
         "operator": "rank"
     },
     "fitness-function": {
-        "type": "statement"
+        "type": "statement",
+        "targets": []
     },
     "stopping-condition": {
         "type": "one-of",
