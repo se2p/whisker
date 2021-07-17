@@ -105,7 +105,9 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
             const nextGeneration = this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
-            this.evaluateAndSortPopulation(nextGeneration)
+            if(!(this._stoppingCondition.isFinished(this))) {
+                this.evaluateAndSortPopulation(nextGeneration)
+            }
             population = nextGeneration;
             this._iterations++;
             this.updateStatistics();
