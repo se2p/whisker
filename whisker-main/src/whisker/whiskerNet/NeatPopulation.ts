@@ -69,11 +69,6 @@ export class NeatPopulation<C extends NetworkChromosome> {
     private _populationChampion: C;
 
     /**
-     * Saves the current population before applying evolution. Used for reporting.
-     */
-    private _previousPopulation: NeatPopulation<C>
-
-    /**
      * Constructs a new NEATPopulation
      * @param size the size of the population
      * @param numberOfSpecies the number of species we want to maintain through the generations.
@@ -112,11 +107,11 @@ export class NeatPopulation<C extends NetworkChromosome> {
         console.log("Starting Species: ", this.species);
     }
 
-
     /**
-     * Applies evolution to the current population -> generate the next generation from the current one
+     * Calculates the shared fitness of each species member and infers the number of children each species is allowed
+     * to produce in the next evolution step.
      */
-    public evolution(): void {
+    public assignNumberOfChildren(): void {
         // Adjust the Distance Threshold accordingly to eventually reach the targeted number of Species
         const compatibilityModifier = 0.3;
         if (this.generation > 1) {
@@ -213,10 +208,12 @@ export class NeatPopulation<C extends NetworkChromosome> {
 
             //TODO: Babies Stolen
         }
+    }
 
-        // Save current Population for reporting purposes, before it gets evolved.
-        this.previousPopulation = this.clone();
-
+    /**
+     * Applies evolution to the current population -> generate the next generation from the current one.
+     */
+    public evolve(): void {
         // Remove the Chromosomes with a death mark on them.
         for (const chromosome of this.chromosomes) {
             if (chromosome.hasDeathMark) {
@@ -327,6 +324,7 @@ export class NeatPopulation<C extends NetworkChromosome> {
     public toJSON(): Record<string, (number | Species<C>)> {
         const population = {};
         population[`averageFitness`] = this.averageFitness;
+        population[`HighestFitness`] = this.populationChampion.networkFitness;
         population[`PopulationChampionId`] = this.populationChampion.id;
         for (let i = 0; i < this.species.size(); i++) {
             population[`Species ${i}`] = this.species.get(i).toJSON();
@@ -404,13 +402,5 @@ export class NeatPopulation<C extends NetworkChromosome> {
 
     get generator(): ChromosomeGenerator<C> {
         return this._generator;
-    }
-
-    get previousPopulation(): NeatPopulation<C> {
-        return this._previousPopulation;
-    }
-
-    set previousPopulation(value: NeatPopulation<C>) {
-        this._previousPopulation = value;
     }
 }

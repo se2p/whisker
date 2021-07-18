@@ -2,7 +2,7 @@
     "test-generator": "neuroevolution",
     "algorithm": "randomNeuroevolution",
     "chromosome": "sparseNetwork",
-    "population-size": 150,
+    "population-size": 100,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
@@ -50,10 +50,7 @@
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 300
-            },
-            {
-                "type": "optimal"
+                "iterations": 100
             }
         ]
     },

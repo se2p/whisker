@@ -99,8 +99,9 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes);
-            population.evolution();
-            this._populationRecord.set(this._iterations, population.previousPopulation.clone());
+            population.assignNumberOfChildren();
+            this._populationRecord.set(this._iterations, population.clone());
+            population.evolve();
             this.updateBestIndividualAndStatistics();
             if (this._iterations % reportPeriod === 0) {
                 this.reportOfCurrentIteration(population);

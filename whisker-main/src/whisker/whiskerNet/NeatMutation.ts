@@ -13,58 +13,62 @@ import {HiddenNode} from "./NetworkNodes/HiddenNode";
 export class NeatMutation implements Mutation<NetworkChromosome> {
 
     /**
-     * Saves all encountered innovations
+     * Saves all encountered innovations.
      */
     public static _innovations = new List<ConnectionGene>();
 
     /**
-     * Random generator
+     * Random generator.
      */
     private _random = Randomness.getInstance();
 
     /**
-     * Probability for applying the addConnection mutation
+     * Probability for applying the addConnection mutation.
      */
     private readonly _mutationAddConnection: number;
 
     /**
-     * Probability for adding a recurrent connection during the addConnection mutation
+     * Probability for adding a recurrent connection during the addConnection mutation.
      */
     private readonly _recurrentConnection: number;
 
     /**
-     * Number of tries for adding a new connection during the addConnection mutation
+     * Number of tries for adding a new connection during the addConnection mutation.
      */
     private readonly _addConnectionTries: number;
 
     /**
-     * Probability for applying an addConnection mutation to a population champ (otherwise we only perturb its weights)
+     * Probability for applying an addConnection mutation to a population champ (otherwise we only perturb its weights).
      */
     private readonly _populationChampionConnectionMutation: number;
+
+    /**
+     * Probability of apply an add node mutation.
+     */
     private readonly _mutationAddNode: number;
 
     /**
-     * Probability for applying a weight mutation
+     * Probability for applying a weight mutation.
      */
     private readonly _mutateWeights: number;
 
     /**
-     * Power of the weight perturbation
+     * Power of the weight perturbation.
      */
     private readonly _perturbationPower: number;
 
     /**
-     * Probability for applying the toggleEnableConnection mutation
+     * Probability for applying the toggleEnableConnection mutation.
      */
     private readonly _mutateToggleEnableConnection: number;
 
     /**
-     * Defines how many connections are toggled during the toggleEnableConnection mutation
+     * Defines how many connections are toggled during the toggleEnableConnection mutation.
      */
     private readonly _toggleEnableConnectionTimes: number;
 
     /**
-     * Probability for applying the mutateConnectionReenable mutation
+     * Probability for applying the mutateConnectionReenable mutation.
      */
     private readonly _mutateEnableConnection: number;
 

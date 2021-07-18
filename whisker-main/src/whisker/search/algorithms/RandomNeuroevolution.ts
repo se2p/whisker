@@ -9,6 +9,10 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../../whiskerNet/NeatPopulation";
 import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
+import {Randomness} from "../../utils/Randomness";
+import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
+import {Species} from "../../whiskerNet/Species";
+import {Container} from "../../utils/Container";
 
 
 export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
@@ -95,20 +99,57 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
         const speciesNumber = 10;
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
+        const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
+            this._properties);
         this._iterations = 0;
         this._startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
-                this._properties);
             await this.evaluateNetworks(population.chromosomes);
-            population.evolution();
-            this._populationRecord.set(this._iterations, population.previousPopulation.clone());
-            console.log(this.populationRecord);
+            population.assignNumberOfChildren();
+
+            // TODO: Separate NEAT-Population and RANDOM-Population
+            for (const network of population.chromosomes) {
+                network.expectedOffspring = 1;
+                network.hasDeathMark = false;
+            }
+            for (const species of population.species) {
+                species.expectedOffspring = species.size();
+            }
+
+            this._populationRecord.set(this._iterations, population.clone());
             this.updateBestIndividualAndStatistics();
             if (this._iterations % reportPeriod === 0) {
                 this.reportOfCurrentIteration(population);
             }
+
+            // Evolve Randomly
+            // TODO: Separate NEAT-Population and RANDOM-Population
+            const oldChromosomes = population.chromosomes.clone();
+            for (const network of population.chromosomes) {
+                const mutant = network.mutate().cloneStructure() as C;
+                population.chromosomes.replace(network, mutant);
+                NeuroevolutionUtil.speciate(mutant, population, Container.config.getNeuroevolutionProperties());
+            }
+
+            // Remove empty species and age the ones that survive.
+            // Furthermore, add the members of the surviving species to the population List
+            for (const specie of population.species) {
+                if (specie.chromosomes.size() === 0) {
+                    population.species.remove(specie);
+                } else {
+                    // Give the new species an age bonus!
+                    if (specie.isNovel)
+                        specie.isNovel = false;
+                    else
+                        specie.age++;
+                }
+            }
+
+            for(const oldChromosome of oldChromosomes){
+                oldChromosome.species.removeChromosome(oldChromosome);
+            }
+            population.generation++;
             this._iterations++;
         }
         return this._bestIndividuals;
