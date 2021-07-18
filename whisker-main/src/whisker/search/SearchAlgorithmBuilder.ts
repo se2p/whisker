@@ -73,7 +73,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * The map for the heuristic function of chromsomes.
      */
-    private _heuristicFunctions: Map<number, Function>;
+    private _heuristicFunctions: Map<number, (number) => number>;
 
     /**
      * The properties for the search algorithm.
@@ -160,7 +160,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      */
     initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: List<string>): SearchAlgorithmBuilder<C> {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
-        this._heuristicFunctions = new Map<number, Function>();
+        this._heuristicFunctions = new Map<number, (number) => number>();
 
         switch (fitnessFunctionType) {
             case FitnessFunctionType.ONE_MAX:
@@ -272,7 +272,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildRandom(): SearchAlgorithm<C> {
         const searchAlgorithm: SearchAlgorithm<C> = new RandomSearch();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
-
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         return searchAlgorithm;
     }
 
@@ -282,6 +282,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildOnePlusOne() {
         const searchAlgorithm: SearchAlgorithm<C> = new OnePlusOneEA();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
 
         return searchAlgorithm;
     }
@@ -292,6 +293,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _buildSimpleGA() {
         const searchAlgorithm: SearchAlgorithm<C> = new SimpleGA();
         searchAlgorithm.setFitnessFunction(this._fitnessFunction);
+        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setSelectionOperator(this._selectionOperator);
 
         return searchAlgorithm;

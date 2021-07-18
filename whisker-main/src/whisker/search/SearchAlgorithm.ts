@@ -38,19 +38,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    findSolution(): Promise<List<C>>;
-
-    /**
-     * Summarize the solution saved in _archive.
-     * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
-     *        - Not covered: the statement that’s not covered by any
-     *        function in the _bestIndividuals.
-     *        - ApproachLevel: the approach level of that statement
-     *        - BranchDistance: the branch distance of that statement
-     *        - Fitness: the fitness value of that statement
-     * For other search algorithms, it returns an empty string.
-     */
-    summarizeSolution(): string;
+    findSolution(): Promise<Map<number, C>>;
 
     /**
      * Sets the properties for this search algorithm.
@@ -81,7 +69,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * @param heuristicFunctions The functions for calculating the heuristic values in the range of [0, 1]
      *          from the fitness values, where 0 is the worst value and 1 is the best value.
      */
-    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void;
+    setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void;
 
     /**
      * Sets the selection operator used by the search algorithm.
@@ -113,5 +101,9 @@ export interface SearchAlgorithm<C extends Chromosome> {
      */
     getFitnessFunctions(): Iterable<FitnessFunction<C>>;
 
+    /**
+     * Get starting time of Algorithm
+     * @returns startTime of Algorithm in ms.
+     */
     getStartTime(): number;
 }

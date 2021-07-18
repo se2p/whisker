@@ -20,8 +20,8 @@
 
 import {StoppingCondition} from "../StoppingCondition";
 import {Chromosome} from "../Chromosome";
-import {SearchAlgorithm} from "../SearchAlgorithm";
 import {Container} from "../../utils/Container";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class FixedTimeStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
@@ -31,12 +31,12 @@ export class FixedTimeStoppingCondition<T extends Chromosome> implements Stoppin
         this._maxTime = maxTime;
     }
 
-    isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        return (Date.now() - algorithm.getStartTime()) > this.maxTime;
+    isFinished(): boolean {
+        return (Date.now() - StatisticsCollector.getInstance().startTime) > this.maxTime;
     }
 
-    getProgress(algorithm: SearchAlgorithm<T>): number {
-        return (Date.now() - algorithm.getStartTime()) / this.maxTime;
+    getProgress(): number {
+        return (Date.now() - StatisticsCollector.getInstance().startTime) / this.maxTime;
     }
 
     get maxTime(): number {
