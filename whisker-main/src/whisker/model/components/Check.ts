@@ -235,11 +235,7 @@ export class Check {
                     return false;
                 }
 
-                if (!check1.negated && !check2.negated) {
-                    return check1.args[2].indexOf(check2.args[2]) == -1 && check2.args[2].indexOf(check1.args[2]) == -1;
-                } else {
-                    return false;
-                }
+                return Check.checkChange(check1, check2);
             case CheckName.VarComp:
             case CheckName.AttrComp:
                 if (check1.args[0] != check2.args[0] || check1.args[1] != check2.args[1]) {
@@ -278,7 +274,43 @@ export class Check {
         }
     }
 
-    private static getInvertedCompOp(comp) {
+    private static checkChange(check1: Check, check2: Check) {
+        let change1 = check1.args[2];
+        let change2 = check2.args[2];
+        let negated1 = check1.negated;
+        let negated2 = check2.negated;
+
+        if (change1.length == 2 && change2.length == 2) {
+
+            // += & -=, -= & +=
+            if(change1 != change2) {
+                // both negated -> problem, no one negated -> problem
+                return check1.negated == check2.negated;
+            }
+
+            // += & +=, -= & -=
+            return check1.negated != check2.negated;
+        } else if (change1.length == 2) {
+            change1 = Check.getInvertedChangeOp(change1);
+            negated1 = !negated1;
+        } else if (change2.length == 2) {
+            change2 = Check.getInvertedChangeOp(change2);
+            negated2 = !negated2;
+        }
+
+        if (change1 == change2) {
+            return negated1 != negated2;
+        } else {
+            return !negated1 && !negated2;
+        }
+    }
+
+    // only for += and -=
+    private static getInvertedChangeOp(change): string {
+        return change == "+=" ? "-" : "+";
+    }
+
+    private static getInvertedCompOp(comp): string {
         if (comp == "=" || comp == "==") {
             return "!=";
         } else if (comp == "<") {
@@ -294,6 +326,10 @@ export class Check {
     }
 
     private static checkComparison(comparison1: string, comparison2: string, value1: string, value2: string): boolean {
+        if (comparison1 == "!=" || comparison2 == "!=") {
+            return false;
+        }
+
         // =
         if ((comparison1 == '=' || comparison2 == '==') && (comparison2 == '=' || comparison2 == '==')) {
             return value1 != value2;
