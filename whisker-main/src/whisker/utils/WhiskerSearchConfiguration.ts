@@ -57,7 +57,7 @@ import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NetworkChromosomeGeneratorExistingNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorExistingNetwork";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NeuroevolutionPopulation} from "../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
-import {RandomPopulation} from "../whiskerNet/NeuroevolutionPopulations/RandomPopulation";
+import {RandomNeuroevolutionPopulation} from "../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 import {NeatPopulation} from "../whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 
 class ConfigException implements Error {
@@ -142,7 +142,7 @@ export class WhiskerSearchConfiguration {
 
         const timeout = this.dict['network-fitness']['timeout']
 
-        properties.populationType = this.getNeuroevolutionPopulation();
+        properties.populationType = this.dict[`populationType`] as string;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
@@ -385,16 +385,6 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.NEAT;
             default:
                 throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this.dict['algorithm']);
-        }
-    }
-
-    public getNeuroevolutionPopulation():NeuroevolutionPopulation<NetworkChromosome>{
-        switch (this.dict['populationType']) {
-            case 'random':
-                return new RandomPopulation(this.getChromosomeGenerator(), this.getNeuroevolutionProperties());
-            case 'neat':
-            default:
-                return new NeatPopulation(this.getChromosomeGenerator(), this.getNeuroevolutionProperties());
         }
     }
 

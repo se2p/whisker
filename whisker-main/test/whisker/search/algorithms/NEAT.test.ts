@@ -115,7 +115,7 @@ describe('Test NEAT', () => {
         properties.disjointCoefficient = 1;
         properties.weightCoefficient = 1;
         properties.penalizingAge = 20;
-        properties.populationType = new NeatPopulation(generator, properties);
+        properties.populationType = 'neat';
         searchAlgorithm = builder.addProperties(properties as unknown as SearchAlgorithmProperties<Chromosome>)
             .addChromosomeGenerator(generator).initializeFitnessFunction(FitnessFunctionType.STATEMENT, null, null)
             .buildSearchAlgorithm();

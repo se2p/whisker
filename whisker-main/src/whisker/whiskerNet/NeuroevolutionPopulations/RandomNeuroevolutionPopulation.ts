@@ -1,7 +1,7 @@
 import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
 import {NetworkChromosome} from "../NetworkChromosome";
 
-export class RandomPopulation<C extends NetworkChromosome> extends NeuroevolutionPopulation<NetworkChromosome> {
+export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends NeuroevolutionPopulation<NetworkChromosome> {
 
     /**
      * We actually have no need for calculating fitnessDistribution in the RandomPopulation. We nevertheless do it
@@ -20,10 +20,11 @@ export class RandomPopulation<C extends NetworkChromosome> extends Neuroevolutio
     protected assignNumberOfOffspring(): void {
         for (const chromosome of this.chromosomes) {
             chromosome.expectedOffspring = 1;
+            chromosome.hasDeathMark = false;
         }
         for (const species of this.species) {
             species.calculateAverageSpeciesFitness();
-            species.expectedOffspring = this.species.size();
+            species.expectedOffspring = species.size();
         }
 
         // Find the population champion and reward him with additional children
@@ -45,8 +46,8 @@ export class RandomPopulation<C extends NetworkChromosome> extends Neuroevolutio
      * Deep Clone of RandomPopulation.
      * @returns clone of this RandomPopulation.
      */
-    clone(): RandomPopulation<C> {
-        const clone = new RandomPopulation(this.generator, this.properties);
+    clone(): RandomNeuroevolutionPopulation<C> {
+        const clone = new RandomNeuroevolutionPopulation(this.generator, this.properties);
         clone.speciesCount = this.speciesCount;
         clone.highestFitness = this.highestFitness;
         clone.highestFitnessLastChanged = this.highestFitnessLastChanged;

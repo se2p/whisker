@@ -11,6 +11,7 @@ import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionPropertie
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {Container} from "../../utils/Container";
+import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -92,7 +93,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     async findSolution(): Promise<List<C>> {
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
-        const population = this._properties.populationType;
+        const population = this.getPopulation();
         population.generatePopulation();
         this._iterations = 0;
         this._startTime = Date.now();
@@ -158,6 +159,20 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
         }
         return JSON.stringify({'uncoveredBlocks': summary});
+    }
+
+    /**
+     * Generate the desired type of NeuroevolutionPopulation to be used by the NEAT algorithm.
+     * @returns NeuroevolutionPopulation defined in the config files.
+     */
+    private getPopulation(): NeuroevolutionPopulation<NetworkChromosome> {
+        switch (this._properties.populationType) {
+            case 'random':
+                return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._properties);
+            default:
+            case 'neat':
+                return new NeatPopulation(this._chromosomeGenerator, this._properties);
+        }
     }
 
     /**
