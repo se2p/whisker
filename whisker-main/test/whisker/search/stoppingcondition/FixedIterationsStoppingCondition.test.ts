@@ -19,37 +19,36 @@
  */
 
 
-import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
+import {StatisticsCollector} from "../../../../src/whisker/utils/StatisticsCollector";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
-    setIterations(iterations:number) {
+    setIterations(iterations: number) {
         this._iterations = iterations;
+        StatisticsCollector.getInstance().iterationCount = iterations;
     }
 }
 
 describe('FixedIterationsStoppingCondition', () => {
 
     test('Max reached', async () => {
-        const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         const maxIterations = 10;
         algorithm.setIterations(maxIterations);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
+        expect(await stoppingCondition.isFinished()).toBeTruthy();
     });
 
     test('Max not reached', async () => {
-        const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         const maxIterations = 10;
         algorithm.setIterations(5);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        expect(await stoppingCondition.isFinished()).toBeFalsy();
     });
 
     test('Progress of 0.5', async () => {
@@ -58,7 +57,7 @@ describe('FixedIterationsStoppingCondition', () => {
         algorithm.setIterations(5);
         const stoppingCondition = new FixedIterationsStoppingCondition(maxIterations);
 
-        expect(await stoppingCondition.getProgress(algorithm)).toBe(0.5);
+        expect(await stoppingCondition.getProgress()).toBe(0.5);
     });
 
 });

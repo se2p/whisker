@@ -39,7 +39,7 @@ import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/s
 
 describe('MOSA', () => {
 
-    let searchAlgorithm;
+    let searchAlgorithm: MOSA<BitstringChromosome>;
 
     const populationSize = 50;
     const chromosomeLength = 10;
@@ -69,12 +69,13 @@ describe('MOSA', () => {
             .addSelectionOperator(new RankSelection())
             .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
 
-        searchAlgorithm = builder.buildSearchAlgorithm();
+        searchAlgorithm = builder.buildSearchAlgorithm() as MOSA<BitstringChromosome>;
     });
 
     test('BitstringChromosome with SingleBitFitnessFunction', async () => {
-        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
-        expect(solutions === searchAlgorithm.getCurrentSolution()).toBeTruthy();
+        const archive = await searchAlgorithm.findSolution();
+        const solutions = new List<BitstringChromosome>(Array.from(archive.values())).distinct();
+        expect(solutions).toEqual(searchAlgorithm.getCurrentSolution());
 
         const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
         for (const fitnessFunction of fitnessFunctions.values()) {
@@ -91,7 +92,8 @@ describe('MOSA', () => {
 
     test('Get current solution', async () => {
         expect(searchAlgorithm.getCurrentSolution()).toEqual(new List<BitstringChromosome>());
-        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        const archive = await searchAlgorithm.findSolution();
+        const solutions = new List<BitstringChromosome>([...archive.values()]).distinct();
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
     });
 

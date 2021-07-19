@@ -52,6 +52,7 @@ import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExt
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+import {VariableLengthConstrainedChromosomeMutation} from "../testcase/VariableLengthConstrainedChromosomeMutation";
 
 
 class ConfigException implements Error {
@@ -87,9 +88,14 @@ export class WhiskerSearchConfiguration {
             this.dict['mutation']['maxMutationCountFocusedPhase'] as number);
         properties.setSelectionProbabilities(this.dict['selection']['randomSelectionProbabilityStart'] as number,
             this.dict['selection']['randomSelectionProbabilityFocusedPhase'] as number);
-        properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
-            this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
         properties.setStartOfFocusedPhase(this.dict['startOfFocusedPhase'] as number);
+        properties.setTestGenerator(this.dict['test-generator']);
+
+        // Not all algorithms have special archive settings.
+        if (this.dict['archive']) {
+            properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
+                this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
+        }
 
         properties.setStoppingCondition(this._getStoppingCondition(this.dict['stopping-condition']));
 
@@ -201,6 +207,9 @@ export class WhiskerSearchConfiguration {
                 return new BitflipMutation();
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
+                    this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
+            case 'variablelengthConstrained':
+                return new VariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(
