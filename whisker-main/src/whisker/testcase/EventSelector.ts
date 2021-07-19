@@ -35,7 +35,7 @@ export class ClusteringEventSelector implements EventSelector {
 
     selectEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>): ScratchEvent {
         const codon = codons.get(numCodon);
-        const clusterSize = Math.floor(this._valueRange / availableEvents.size());
+        const clusterSize = Math.ceil(this._valueRange / availableEvents.size());
 
         let current = clusterSize;
         let cluster = 0;
