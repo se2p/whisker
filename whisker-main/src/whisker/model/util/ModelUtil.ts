@@ -108,9 +108,13 @@ export abstract class ModelUtil {
      * @param attrName Name of the attribute e.g. x.
      */
     static checkAttributeExistence(testDriver: TestDriver, sprite: Sprite, attrName: string) {
+        let undefinedVal;
         try {
-            eval("sprite." + attrName);
+            undefinedVal = eval("sprite." + attrName) == null;
         } catch (e) {
+            throw getAttributeNotFoundError(attrName, sprite.name);
+        }
+        if (undefinedVal) {
             throw getAttributeNotFoundError(attrName, sprite.name);
         }
     }

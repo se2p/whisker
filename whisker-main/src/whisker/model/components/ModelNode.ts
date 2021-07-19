@@ -62,7 +62,7 @@ export class ModelNode {
             // look up if this edge has a condition that was triggered
             for (let j = 0; j < this.edges[i].conditions.length; j++) {
                 const cond = this.edges[i].conditions[j];
-                const eventString = CheckUtility.getEventString(cond.name, cond.negated, cond.args);
+                const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
                 if (eventStrings.indexOf(eventString) != -1) {
                     check = true;
                 }
@@ -72,7 +72,7 @@ export class ModelNode {
                 let failed = false;
                 for (let j = 0; j < this.edges[i].conditions.length; j++) {
                     let cond = this.edges[i].conditions[j];
-                    const eventString = CheckUtility.getEventString(cond.name, cond.negated, cond.args);
+                    const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
 
                     if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
                         failed = true;

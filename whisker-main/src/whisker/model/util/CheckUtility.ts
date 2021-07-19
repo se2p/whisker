@@ -67,12 +67,12 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
-     * Register an visual change event listener.
+     * Register an visual change event listener. (Attributes: size, direction, effect, visible, costume,
+     * rotationStyle.  Also and x,y motions, but should be registered on move)
      * @param spriteName Name of the actual sprite.
      * @param eventString Function checking if the predicate for the event is fulfilled.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    // todo add them to the check generator (size, visible, ... what more?)
     registerOnVisualChange(spriteName: string, eventString: string, predicate: (sprite: Sprite) => boolean) {
         if (this.registeredVisualChange.indexOf(eventString) == -1) {
             this.registeredVisualChange.push(eventString);
@@ -102,13 +102,15 @@ export class CheckUtility extends EventEmitter {
         }
 
         predicateChecker[spriteName].push((sprite) => {
+            let predicateResult;
             try {
-                return predicate(sprite) && this.updateEventString(eventString);
+                predicateResult = predicate(sprite);
             } catch (e) {
-                // todo cant put this in the result error list .... ignore?
+                this.modelResult.addError(e);
                 console.error(e);
                 return false;
             }
+            return predicateResult && this.updateEventString(eventString);
         });
     }
 
@@ -149,7 +151,7 @@ export class CheckUtility extends EventEmitter {
 
     private updateEventString(event: string): boolean {
         if (this.eventStrings.indexOf(event) != -1) {
-            return false;
+            return true;
         }
 
         if (this.eventStrings.length == 0) {
@@ -170,7 +172,7 @@ export class CheckUtility extends EventEmitter {
         return true;
     }
 
-    private static splitEventString(eventString: string): { name: CheckName, negated: boolean, args: any[] } {
+    static splitEventString(eventString: string): { name: CheckName, negated: boolean, args: any[] } {
         const negated = eventString.startsWith("!");
         if (negated) {
             eventString = eventString.substring(1, eventString.length);
