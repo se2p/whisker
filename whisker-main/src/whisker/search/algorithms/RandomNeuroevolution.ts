@@ -9,9 +9,7 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../../whiskerNet/NeatPopulation";
 import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
-import {Randomness} from "../../utils/Randomness";
 import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
-import {Species} from "../../whiskerNet/Species";
 import {Container} from "../../utils/Container";
 
 
@@ -104,11 +102,16 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
         this._iterations = 0;
         this._startTime = Date.now();
 
+        // TODO: Very hackish solution. Probably its best to separate NEAT-Population and RANDOM-Population.
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes);
+            for(const species of population.species){
+                if(species.size() === 0){
+                    population.species.remove(species);
+                }
+            }
             population.assignNumberOfChildren();
 
-            // TODO: Separate NEAT-Population and RANDOM-Population
             for (const network of population.chromosomes) {
                 network.expectedOffspring = 1;
                 network.hasDeathMark = false;
@@ -123,19 +126,20 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
                 this.reportOfCurrentIteration(population);
             }
 
-            // Evolve Randomly
-            // TODO: Separate NEAT-Population and RANDOM-Population
+            // Evolve Randomly by mutating each chromosome once.
             const oldChromosomes = population.chromosomes.clone();
             for (const network of population.chromosomes) {
                 const mutant = network.mutate().cloneStructure() as C;
                 population.chromosomes.replace(network, mutant);
-                NeuroevolutionUtil.speciate(mutant, population, Container.config.getNeuroevolutionProperties());
+                NeuroevolutionUtil.speciate(mutant, population, this._properties);
             }
 
             // Remove empty species and age the ones that survive.
-            // Furthermore, add the members of the surviving species to the population List
+            for(const oldChromosome of oldChromosomes){
+                oldChromosome.species.removeChromosome(oldChromosome);
+            }
             for (const specie of population.species) {
-                if (specie.chromosomes.size() === 0) {
+                if (specie.size() === 0) {
                     population.species.remove(specie);
                 } else {
                     // Give the new species an age bonus!
@@ -144,10 +148,6 @@ export class RandomNeuroevolution<C extends NetworkChromosome> extends SearchAlg
                     else
                         specie.age++;
                 }
-            }
-
-            for(const oldChromosome of oldChromosomes){
-                oldChromosome.species.removeChromosome(oldChromosome);
             }
             population.generation++;
             this._iterations++;

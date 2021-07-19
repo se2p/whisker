@@ -23,6 +23,8 @@ import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEve
 describe('Test NEAT', () => {
 
     let searchAlgorithm: SearchAlgorithm<Chromosome>;
+    let generator: NetworkChromosomeGeneratorSparse;
+    let properties : NeuroevolutionProperties<NetworkChromosome>;
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
@@ -70,13 +72,13 @@ describe('Test NEAT', () => {
         genInputs.set("Sprite2", sprite2);
         const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
-        const generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
+        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         const iterations = 20;
         const populationSize = 100;
         const random = Randomness.getInstance();
-        const properties = new NeuroevolutionProperties(populationSize);
+        properties = new NeuroevolutionProperties(populationSize);
 
         properties.networkFitness = new class implements NetworkFitnessFunction<NetworkChromosome> {
             compare(value1: number, value2: number): number {

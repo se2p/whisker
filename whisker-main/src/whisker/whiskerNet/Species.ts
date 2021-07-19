@@ -153,6 +153,7 @@ export class Species<C extends NetworkChromosome> {
         this.sortChromosomes();
         const champion = this.chromosomes.get(0);
         this.champion = champion;
+        console.log("Chromosomes: ", this.chromosomes);
         this.currentBestFitness = champion.networkFitness;
 
         // Update the age of last improvement based on the non-shared Fitness value

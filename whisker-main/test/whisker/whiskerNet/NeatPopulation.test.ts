@@ -110,6 +110,7 @@ describe("Test NeatPopulation", () => {
         for (let i = 0; i < 50; i++) {
             for (const c of population.chromosomes)
                 c.networkFitness = random.nextInt(1, 50);
+            population.assignNumberOfChildren();
             population.evolve();
         }
         const newGeneration = population.chromosomes;
@@ -127,6 +128,7 @@ describe("Test NeatPopulation", () => {
         for (let i = 1; i < population.species.size(); i++) {
             population.species.remove(population.species.get(i))
         }
+        population.assignNumberOfChildren();
         population.evolve();
         expect(population.species.size()).toBe(1);
         expect(population.species.get(0).chromosomes.size()).toBe(size);
@@ -135,6 +137,7 @@ describe("Test NeatPopulation", () => {
     test("Test evolve with distance Threshold below 0.3", () => {
         population.generation = 3;
         population.properties.distanceThreshold = 0.1;
+        population.assignNumberOfChildren();
         population.evolve();
         expect(population.properties.distanceThreshold).toBe(0.3);
     })
