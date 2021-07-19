@@ -54,7 +54,7 @@ import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLoc
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
 import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
-import {VariableLengthConstrainedChromosomeMutation} from "../testcase/VariableLengthConstrainedChromosomeMutation";
+import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 
 
 class ConfigException implements Error {

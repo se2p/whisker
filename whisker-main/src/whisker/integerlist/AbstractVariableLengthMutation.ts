@@ -60,6 +60,14 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
         this._random = Randomness.getInstance();
     }
 
+    /**
+     * Defines the probability of mutating the codon at position idx of the codon list.
+     * @param idx codon position for which a mutation probability should be determined.
+     * @param numberOfCodons the total number of mutation candidates.
+     * @returns number defining the mutation probability of the codon at position idx.
+     */
+    protected abstract _getMutationProbability(idx: number, numberOfCodons: number): number;
+
     abstract apply(chromosome: T): T;
 
 
@@ -85,8 +93,6 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
         }
         return chromosome.cloneWith(newCodons) as T;
     }
-
-    protected abstract _getMutationProbability(idx: number, numberOfCodons: number): number;
 
     /**
      * Execute one of the allowed mutations, with equally distributed probability.

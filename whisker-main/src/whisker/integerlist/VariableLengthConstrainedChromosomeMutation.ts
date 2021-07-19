@@ -19,8 +19,8 @@
  */
 
 
-import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
-import {TestChromosome} from "./TestChromosome";
+import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
+import {TestChromosome} from "../testcase/TestChromosome";
 
 export class VariableLengthConstrainedChromosomeMutation extends AbstractVariableLengthMutation<TestChromosome> {
 
@@ -28,12 +28,6 @@ export class VariableLengthConstrainedChromosomeMutation extends AbstractVariabl
         super(min, max, length, gaussianMutationPower);
     }
 
-    /**
-     * Defines the probability of mutating the codon at position idx of the codon list.
-     * @param idx codon position for which a mutation probability should be determined.
-     * @param numberOfCodons the total number of mutation candidates.
-     * @returns number defining the mutation probability of the codon at position idx.
-     */
     protected _getMutationProbability(idx: number, numberOfCodons: number): number {
         return 1 / numberOfCodons;
     }
