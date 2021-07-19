@@ -29,6 +29,16 @@ export class VariableLengthConstrainedChromosomeMutation extends AbstractVariabl
     }
 
     /**
+     * Defines the probability of mutating the codon at position idx of the codon list.
+     * @param idx codon position for which a mutation probability should be determined.
+     * @param numberOfCodons the total number of mutation candidates.
+     * @returns number defining the mutation probability of the codon at position idx.
+     */
+    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+        return 1 / numberOfCodons;
+    }
+
+    /**
      * Returns a mutated deep copy of the given chromosome.
      * Each integer in the codon list mutates with a probability of one divided by the lists size.
      * If a index inside the list mutates it executes one of the following mutations with equal probability:

@@ -52,7 +52,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
     private readonly _random: Randomness
 
 
-    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
+    protected constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         this._min = min;
         this._max = max;
         this._length = length;
@@ -76,16 +76,17 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
     applyUpTo(chromosome: T, maxPosition: number): T {
         const newCodons = new List<number>();
         newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
-        const mutationProbability = 1 / maxPosition;
         let index = 0;
         while (index < maxPosition) {
-            if (this._random.nextDouble() < mutationProbability) {
-                index = this.mutateAtIndex(newCodons, index);
+            if (this._random.nextDouble() < this._getMutationProbability(index, maxPosition)) {
+                index = this._mutateAtIndex(newCodons, index);
             }
             index++;
         }
         return chromosome.cloneWith(newCodons) as T;
     }
+
+    protected abstract _getMutationProbability(idx: number, numberOfCodons: number): number;
 
     /**
      * Execute one of the allowed mutations, with equally distributed probability.

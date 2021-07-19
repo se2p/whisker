@@ -20,6 +20,7 @@
 
 import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
 import {Preconditions} from "../utils/Preconditions";
+import {IntegerListChromosome} from "./IntegerListChromosome";
 
 
 /**
@@ -29,11 +30,15 @@ import {Preconditions} from "../utils/Preconditions";
  * favors codons at the end of the list, such that small changes in the phenotype space also result in small changes in
  * the genotype space.
  */
-export class BiasedVariableLengthMutation extends AbstractVariableLengthMutation {
+export class BiasedVariableLengthMutation extends AbstractVariableLengthMutation<IntegerListChromosome> {
 
     protected _getMutationProbability(idx: number, numberOfCodons: number): number {
         Preconditions.checkArgument(idx < numberOfCodons);
         return 2 * (idx + 1) / (numberOfCodons * (numberOfCodons + 1));
+    }
+
+    apply(chromosome: IntegerListChromosome): IntegerListChromosome {
+        return super.applyUpTo(chromosome, chromosome.getLength());
     }
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
