@@ -27,7 +27,6 @@ import {Randomness} from "../../utils/Randomness";
 import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {TestChromosome} from "../../testcase/TestChromosome";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 
 /**
