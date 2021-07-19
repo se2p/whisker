@@ -1,0 +1,52 @@
+[
+  {
+    "id": "test",
+    "usage": "program",
+    "startNodeId": "n0",
+    "stopNodeIds": [
+      "n2"
+    ],
+    "stopAllNodeIds": [],
+    "nodeIds": [
+      "n0","n1", "n2"
+    ],
+    "edges": [
+      {
+        "id": "varChange1",
+        "from": "n0",
+        "to": "n1",
+        "forceTestAfter": -1,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "VarChange",
+            "args": [
+              "Sprite1","test","+1"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },
+      {
+        "id": "varChange2",
+        "from": "n1",
+        "to": "n2",
+        "forceTestAfter": -1,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "VarChange",
+            "args": [
+              "Sprite1","test","+1"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      }
+    ]
+  }
+]

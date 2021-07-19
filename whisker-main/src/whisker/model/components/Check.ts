@@ -117,7 +117,7 @@ export class Check {
                 return CheckGenerator.getAttributeChangeCheck(t, cu, this._negated, caseSensitive, this._args[0],
                     this._args[1], this._args[2]);
             case CheckName.BackgroundChange:
-                return CheckGenerator.getBackgroundChangeCheck(t, this._negated, this._args[0]);
+                return CheckGenerator.getBackgroundChangeCheck(t, cu, this._negated, this._args[0]);
             case CheckName.Function:
                 return CheckGenerator.getFunctionCheck(t, this._negated, this._args[0]);
             case CheckName.Output:
@@ -154,7 +154,7 @@ export class Check {
                 return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, true,
                     this._args[0], this._args[1], this._args[2]);
             case CheckName.TouchingEdge:
-                return CheckGenerator.getTouchingEdgeCheck(t, this._negated, caseSensitive, this._args[0]);
+                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._negated, caseSensitive, this._args[0]);
             case CheckName.TimeAfterEnd:
                 return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
             default:

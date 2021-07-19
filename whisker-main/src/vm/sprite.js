@@ -45,9 +45,11 @@ class Sprite {
          */
         this.onVisualChange = null;
 
-        this._target.on(RenderedTarget.EVENT_TARGET_MOVED, () => {
+        this._target.on(RenderedTarget.EVENT_TARGET_MOVED, (target, oldX, oldY) => {
+            this._old.x = oldX;
+            this._old.y = oldY;
             if (this.onMoved) {
-                this.onMoved();
+                this.onMoved(target);
             }
         });
 
@@ -149,7 +151,7 @@ class Sprite {
      * @returns {number} .
      */
     get size () {
-        return this._target.size;
+        return Math.round(this._target.size);
     }
 
     /**
@@ -157,6 +159,13 @@ class Sprite {
      */
     get currentCostume () {
         return this._target.currentCostume;
+    }
+
+    /**
+     * @return {string}
+     */
+    get currentCostumeName () {
+        return this._target.sprite.costumes[this._target.currentCostume].name;
     }
 
     /**
@@ -182,6 +191,13 @@ class Sprite {
             return bubbleState.text;
         }
         return null;
+    }
+
+    /**
+     * @return {!string}
+     */
+    get rotationStyle() {
+        return this._target.rotationStyle;
     }
 
     /**
@@ -381,6 +397,8 @@ class Sprite {
         this._old.volume = this.volume;
         this._old.layerOrder = this.layerOrder;
         this._old.sayText = this.sayText;
+        this._old.rotationStyle = this.rotationStyle;
+        this._old.currentCostumeName = this.currentCostumeName;
     }
 
     _update () {

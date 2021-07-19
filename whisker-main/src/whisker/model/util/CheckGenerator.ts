@@ -87,7 +87,8 @@ export abstract class CheckGenerator {
             && comparison != "<" && comparison != "<=") {
             throw getComparisonNotKnownError(comparison);
         }
-        function check () {
+
+        function check() {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             const variable = sprite.getVariable(variableName);
             try {
@@ -116,7 +117,9 @@ export abstract class CheckGenerator {
     static getAttributeComparisonCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
                                        spriteNameRegex: string, attrName: string, comparison: string,
                                        varValue: string): () => boolean {
-        attrName = attrName.toLowerCase();
+        if (attrName == "costume" || attrName == "currentCostume") {
+            attrName = "currentCostumeName";
+        }
         const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         const spriteName = sprite.name;
         ModelUtil.checkAttributeExistence(t, sprite, attrName);
@@ -129,6 +132,10 @@ export abstract class CheckGenerator {
         // on movement listener
         if (attrName == "x" || attrName == "y") {
             return CheckGenerator.attributeCompOnMove(t, cu, negated, sprite, spriteNameRegex, attrName, comparison,
+                varValue);
+        } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
+            || attrName == "currentCostumeName" || attrName == "rotationStyle") {
+            return CheckGenerator.attributeCompOnVisual(t, cu, negated, sprite, spriteNameRegex, attrName, comparison,
                 varValue);
         }
 
@@ -143,8 +150,39 @@ export abstract class CheckGenerator {
         }
     }
 
+    private static attributeCompOnVisual(t: TestDriver, cu: CheckUtility, negated: boolean, sprite, spriteNameRegex: string,
+                                         attrName: string, comparison: string, varValue: string): () => boolean {
+        const spriteName = sprite.name;
+        let eventString;
+        if (attrName == "currentCostumeName") {
+            eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, "costume",
+                comparison, varValue);
+        } else {
+            eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
+                comparison, varValue);
+        }
+
+        cu.registerOnVisualChange(spriteName, eventString, (sprite) => {
+            try {
+                return !negated == ModelUtil.compare(sprite[attrName], varValue, comparison);
+            } catch (e) {
+                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+            }
+        });
+
+        return () => {
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+            try {
+                return sprite.x === sprite.old.x && sprite.y === sprite.old.y
+                    && !negated == ModelUtil.compare(sprite[attrName], varValue, comparison);
+            } catch (e) {
+                throw getErrorForAttribute(spriteName, attrName, e.message);
+            }
+        }
+    }
+
     private static attributeCompOnMove(t: TestDriver, cu: CheckUtility, negated: boolean, sprite, spriteNameRegex: string,
-                                   attrName: string, comparison: string, varValue: string): () => boolean {
+                                       attrName: string, comparison: string, varValue: string): () => boolean {
         const spriteName = sprite.name;
         const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
             comparison, varValue);
@@ -323,13 +361,18 @@ export abstract class CheckGenerator {
      */
     static getAttributeChangeCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
                                    spriteNameRegex: string, attrName: string, change): () => boolean {
-        attrName = attrName.toLowerCase();
+        if (attrName == "costume" || attrName == "currentCostume") {
+            attrName = "currentCostumeName";
+        }
         const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         const spriteName = sprite.name;
         ModelUtil.checkAttributeExistence(t, sprite, attrName);
 
         if (attrName == "x" || attrName == "y") {
             return CheckGenerator.attributeChangeOnMove(t, cu, negated, sprite, spriteNameRegex, attrName, change);
+        } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
+            || attrName == "currentCostumeName" || attrName == "rotationStyle") {
+            return CheckGenerator.attributeChangeOnVisual(t, cu, negated, sprite, spriteNameRegex, attrName, change);
         }
 
         return () => {
@@ -342,8 +385,36 @@ export abstract class CheckGenerator {
         }
     }
 
+    private static attributeChangeOnVisual(t: TestDriver, cu: CheckUtility, negated: boolean, sprite, spriteNameRegex: string,
+                                           attrName: string, change): () => boolean {
+        const spriteName = sprite.name;
+        let eventString;
+        if (attrName == "currentCostumeName") {
+            eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, "costume", change);
+        } else {
+            eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, attrName, change);
+        }
+        cu.registerOnVisualChange(spriteName, eventString, (sprite) => {
+            try {
+                return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+            } catch (e) {
+                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+            }
+        });
+
+        return () => {
+            const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
+            try {
+                return sprite.x === sprite.old.x && sprite.y === sprite.old.y
+                    && !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+            } catch (e) {
+                throw getErrorForAttribute(spriteName, attrName, e.message);
+            }
+        }
+    }
+
     private static attributeChangeOnMove(t: TestDriver, cu: CheckUtility, negated: boolean, sprite, spriteNameRegex: string,
-                                   attrName: string, change): () => boolean {
+                                         attrName: string, change): () => boolean {
         const spriteName = sprite.name;
         const eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, attrName, change);
         cu.registerOnMoveEvent(spriteName, eventString, (sprite) => {
@@ -368,16 +439,13 @@ export abstract class CheckGenerator {
     /**
      * Get a method checking whether the background of the stage changed.
      * @param t Instance of the test driver.
+     * @param cu Listener for checks.
      * @param newBackground Name of the new background.
      * @param negated Whether this check is negated.
      */
-    static getBackgroundChangeCheck(t: TestDriver, negated: boolean, newBackground: string): () => boolean {
-        return () => {
-            // todo how to get the background
-            const stage = t.getStage();
-            // stage.
-            return negated;
-        }
+    static getBackgroundChangeCheck(t: TestDriver, cu: CheckUtility, negated: boolean, newBackground: string): () => boolean {
+        return CheckGenerator.getAttributeComparisonCheck(t, cu, negated, false, "Stage",
+            "costume", "=", newBackground)
     }
 
     /**
@@ -389,6 +457,7 @@ export abstract class CheckGenerator {
      */
     static getExpressionCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, expression: string) {
         let toEval = ModelUtil.getExpressionForEval(t, caseSensitive, expression);
+        // todo get dependencies on attributes / variables and add listeners
         return () => {
             return !negated == eval(toEval)(t);
         }
@@ -485,15 +554,22 @@ export abstract class CheckGenerator {
     /**
      * Get a method to check whether a sprite is touching an edge.
      * @param t Test driver.
+     * @param cu Listener for checks.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param spriteNameRegex Regex defining the sprite name.
      */
-    static getTouchingEdgeCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, spriteNameRegex: string) {
+    static getTouchingEdgeCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean, spriteNameRegex: string) {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+        const eventString = CheckUtility.getEventString(CheckName.TouchingEdge, negated, spriteNameRegex);
+
+        cu.registerOnMoveEvent(spriteName, eventString, (sprite) => {
+            return !negated == sprite.isTouchingEdge();
+        })
+
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName))[0];
-            return !negated == sprite.isTouchingEdge();
+            return sprite.x === sprite.old.x && sprite.y === sprite.old.y && !negated == sprite.isTouchingEdge();
         }
     }
 }
