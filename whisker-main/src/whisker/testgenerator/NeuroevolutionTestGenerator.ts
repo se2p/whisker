@@ -4,7 +4,6 @@ import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {NEAT} from "../search/algorithms/NEAT";
-import {RandomNeuroevolution} from "../search/algorithms/RandomNeuroevolution";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -19,7 +18,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         const summary = searchAlgorithm.summarizeSolution();
         const testListWithSummary = new WhiskerTestListWithSummary(testSuite, summary);
         // TODO: It is deeply necessary to separate NE and SearchAlgorithms or at least make NE a subclass of it.
-        if(searchAlgorithm instanceof NEAT || searchAlgorithm instanceof RandomNeuroevolution){
+        if(searchAlgorithm instanceof NEAT){
         testListWithSummary.networkPopulation = searchAlgorithm.getPopulationRecordAsJSON();
         }
         return testListWithSummary;

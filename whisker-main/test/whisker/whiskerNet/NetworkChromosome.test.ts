@@ -14,7 +14,7 @@ import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {RegressionNode} from "../../../src/whisker/whiskerNet/NetworkNodes/RegressionNode";
 import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
-import {Species} from "../../../src/whisker/whiskerNet/Species";
+import {Species} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";

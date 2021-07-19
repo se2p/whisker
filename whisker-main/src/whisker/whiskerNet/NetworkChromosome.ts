@@ -7,7 +7,7 @@ import {Mutation} from "../search/Mutation";
 import {NodeType} from "./NetworkNodes/NodeType";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
-import {Species} from "./Species";
+import {Species} from "./NeuroevolutionPopulations/Species";
 import assert from "assert";
 import {InputNode} from "./NetworkNodes/InputNode";
 import {Randomness} from "../utils/Randomness";

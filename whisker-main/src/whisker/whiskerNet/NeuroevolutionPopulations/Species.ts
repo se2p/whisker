@@ -1,9 +1,10 @@
-import {List} from "../utils/List";
-import {NetworkChromosome} from "./NetworkChromosome";
-import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
-import {Randomness} from "../utils/Randomness";
+import {List} from "../../utils/List";
+import {NetworkChromosome} from "../NetworkChromosome";
+import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {Randomness} from "../../utils/Randomness";
 import {NeatPopulation} from "./NeatPopulation";
-import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
+import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
+import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
 
 export class Species<C extends NetworkChromosome> {
 
@@ -161,10 +162,13 @@ export class Species<C extends NetworkChromosome> {
             this.allTimeBestFitness = champion.networkFitness;
         }
 
-        // Determines which members of this species are allowed to reproduce
-        // based on the parentsPerSpecies config factor
-        // +1 ensures that the species will not go extinct -> at least one member survives
-        const numberOfParents = Math.floor((this.properties.parentsPerSpecies * this.chromosomes.size())) + 1;
+        // Determines how many members of this species are allowed to reproduce
+        // using the parentsPerSpecies hyperparameter.
+        // Ensure that the species will not go extinct -> at least one member survives.
+        let numberOfParents = Math.floor((this.properties.parentsPerSpecies * this.chromosomes.size()));
+        if(numberOfParents === 0){
+            numberOfParents = 1;
+        }
 
         this.chromosomes.get(0).isSpeciesChampion = true;
 
@@ -238,12 +242,12 @@ export class Species<C extends NetworkChromosome> {
      * @param speciesList a List of all species
      * @return returns the generated children
      */
-    public breed(population: NeatPopulation<C>, speciesList: List<Species<C>>): List<NetworkChromosome> {
+    public breed(population: NeuroevolutionPopulation<C>, speciesList: List<Species<C>>): List<C> {
         if (this.expectedOffspring > 0 && this.chromosomes.size() == 0) {
-            return new List<NetworkChromosome>();
+            return new List<C>();
         }
 
-        const children = new List<NetworkChromosome>();
+        const children = new List<C>();
 
         this.sortChromosomes();
         this.champion = this.chromosomes.get(0);

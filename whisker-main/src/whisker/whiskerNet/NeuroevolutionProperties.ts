@@ -1,6 +1,7 @@
 import {NetworkChromosome} from "./NetworkChromosome";
 import {StoppingCondition} from "../search/StoppingCondition";
 import {NetworkFitnessFunction} from "./NetworkFitness/NetworkFitnessFunction";
+import {NeuroevolutionPopulation} from "./NeuroevolutionPopulations/NeuroevolutionPopulation";
 
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.
@@ -8,10 +9,21 @@ import {NetworkFitnessFunction} from "./NetworkFitness/NetworkFitnessFunction";
 export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     // ----------------- Population Management -------------------
+
+    /**
+     * Defines the type of NeuroevolutionPopulation
+     */
+    private _populationType: NeuroevolutionPopulation<C>;
+
     /**
      * The size of the population that will be initially generated.
      */
     private _populationSize: number;
+
+    /**
+     * Number of desired species.
+     */
+    private _numberOfSpecies: number;
 
     /**
      * Specifies how many member of the species survive in each generation
@@ -163,12 +175,28 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     // Getter and Setter
 
+    get populationType(): NeuroevolutionPopulation<C> {
+        return this._populationType;
+    }
+
+    set populationType(value: NeuroevolutionPopulation<C>) {
+        this._populationType = value;
+    }
+
     get populationSize(): number {
         return this._populationSize;
     }
 
     set populationSize(value: number) {
         this._populationSize = value;
+    }
+
+    get numberOfSpecies(): number {
+        return this._numberOfSpecies;
+    }
+
+    set numberOfSpecies(value: number) {
+        this._numberOfSpecies = value;
     }
 
     get parentsPerSpecies(): number {

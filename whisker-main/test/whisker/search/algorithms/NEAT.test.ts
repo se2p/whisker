@@ -18,6 +18,7 @@ import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 
 
 describe('Test NEAT', () => {
@@ -114,6 +115,7 @@ describe('Test NEAT', () => {
         properties.disjointCoefficient = 1;
         properties.weightCoefficient = 1;
         properties.penalizingAge = 20;
+        properties.populationType = new NeatPopulation(generator, properties);
         searchAlgorithm = builder.addProperties(properties as unknown as SearchAlgorithmProperties<Chromosome>)
             .addChromosomeGenerator(generator).initializeFitnessFunction(FitnessFunctionType.STATEMENT, null, null)
             .buildSearchAlgorithm();

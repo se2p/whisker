@@ -1,8 +1,6 @@
-import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
+import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
-import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
@@ -66,7 +64,9 @@ describe("Test NeatPopulation", () => {
         properties.parentsPerSpecies = 0.2
         properties.mutationWithoutCrossover = 0.3
         properties.interspeciesMating = 0.1;
-        population = new NeatPopulation(size, numberOfSpecies, chromosomeGenerator, properties);
+        properties.numberOfSpecies = 5;
+        population = new NeatPopulation(chromosomeGenerator, properties);
+        population.generatePopulation();
         random = Randomness.getInstance();
         for (const c of population.chromosomes)
             c.networkFitness = random.nextInt(1, 50);
@@ -110,7 +110,7 @@ describe("Test NeatPopulation", () => {
         for (let i = 0; i < 50; i++) {
             for (const c of population.chromosomes)
                 c.networkFitness = random.nextInt(1, 50);
-            population.assignNumberOfChildren();
+            population.updatePopulationStatistics();
             population.evolve();
         }
         const newGeneration = population.chromosomes;
@@ -128,7 +128,7 @@ describe("Test NeatPopulation", () => {
         for (let i = 1; i < population.species.size(); i++) {
             population.species.remove(population.species.get(i))
         }
-        population.assignNumberOfChildren();
+        population.updatePopulationStatistics()
         population.evolve();
         expect(population.species.size()).toBe(1);
         expect(population.species.get(0).chromosomes.size()).toBe(size);
@@ -137,7 +137,7 @@ describe("Test NeatPopulation", () => {
     test("Test evolve with distance Threshold below 0.3", () => {
         population.generation = 3;
         population.properties.distanceThreshold = 0.1;
-        population.assignNumberOfChildren();
+        population.updatePopulationStatistics();
         population.evolve();
         expect(population.properties.distanceThreshold).toBe(0.3);
     })

@@ -1,11 +1,12 @@
-import {Species} from "./Species";
-import {NeatPopulation} from "./NeatPopulation";
+import {Species} from "./NeuroevolutionPopulations/Species";
+import {NeatPopulation} from "./NeuroevolutionPopulations/NeatPopulation";
 import {NetworkChromosome} from "./NetworkChromosome";
 import {List} from "../utils/List";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 import {ConnectionGene} from "./ConnectionGene";
 import {NeatMutation} from "./NeatMutation";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
+import {NeuroevolutionPopulation} from "./NeuroevolutionPopulations/NeuroevolutionPopulation";
 
 export class NeuroevolutionUtil {
 
@@ -15,7 +16,7 @@ export class NeuroevolutionUtil {
      * @param population the whole population of NetworkChromosomes
      * @param properties the defined search-properties
      */
-    public static speciate(chromosome: NetworkChromosome, population: NeatPopulation<NetworkChromosome>,
+    public static speciate(chromosome: NetworkChromosome, population: NeuroevolutionPopulation<NetworkChromosome>,
                            properties: NeuroevolutionProperties<NetworkChromosome>): void {
 
         // If we have no species at all so far create the first one

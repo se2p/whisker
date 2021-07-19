@@ -6,9 +6,11 @@ import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {NeatPopulation} from "../../whiskerNet/NeatPopulation";
+import {NeatPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
+import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
+import {Container} from "../../utils/Container";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -65,7 +67,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     /**
      * Saves all Networks mapped to the generation they occurred in.
      */
-    private _populationRecord = new Map<number, NeatPopulation<C>>();
+    private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
@@ -88,18 +90,16 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<List<C>> {
-        // The targeted number of species -> The distanceThreshold is adjusted appropriately.
-        const speciesNumber = 10;
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
-        const population = new NeatPopulation(this._properties.populationSize, speciesNumber, this._chromosomeGenerator,
-            this._properties);
+        const population = this._properties.populationType;
+        population.generatePopulation();
         this._iterations = 0;
         this._startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            await this.evaluateNetworks(population.chromosomes);
-            population.assignNumberOfChildren();
+            await this.evaluateNetworks(population.chromosomes as List<C>);
+            population.updatePopulationStatistics();
             this._populationRecord.set(this._iterations, population.clone());
             population.evolve();
             this.updateBestIndividualAndStatistics();
@@ -205,7 +205,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Reports the current state of the search.
      * @param population the population of networks
      */
-    private reportOfCurrentIteration(population: NeatPopulation<NetworkChromosome>): void {
+    private reportOfCurrentIteration(population: NeuroevolutionPopulation<NetworkChromosome>): void {
         console.log("Iteration: " + this._iterations)
         console.log("Highest fitness last changed: " + population.highestFitnessLastChanged)
         console.log("Highest Network Fitness: " + population.highestFitness)
@@ -271,7 +271,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
-    get populationRecord(): Map<number, NeatPopulation<C>> {
+    get populationRecord(): Map<number, NeuroevolutionPopulation<NetworkChromosome>> {
         return this._populationRecord;
     }
 }

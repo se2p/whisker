@@ -1,4 +1,4 @@
-import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
+import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
@@ -78,14 +78,16 @@ describe("NeuroevolutionUtil Tests", () => {
     })
 
     test("Test Speciation when a new Population gets created", () => {
-        population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
+        population = new NeatPopulation<NetworkChromosome>(generator, properties);
+        population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.size()).toBeGreaterThanOrEqual(1);
     })
 
     test("Test Speciation when a new Population gets created and a low speciation Threshold", () => {
         properties.distanceThreshold = 0.01;
-        population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
+        population = new NeatPopulation<NetworkChromosome>(generator, properties);
+        population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.size()).toBeGreaterThanOrEqual(1);
         // With this low threshold every unique connection leads to compatDistance above the Threshold
@@ -95,7 +97,8 @@ describe("NeuroevolutionUtil Tests", () => {
 
     test("Test Speciation when a new Population gets created and a high speciation Threshold", () => {
         properties.distanceThreshold = 1000;
-        population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
+        population = new NeatPopulation<NetworkChromosome>(generator, properties);
+        population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.size()).toBeGreaterThanOrEqual(1);
         // With this low threshold every unique connection leads to compatDistance above the Threshold
@@ -104,7 +107,7 @@ describe("NeuroevolutionUtil Tests", () => {
     })
 
     test("Test Speciation with a chromosome mutated several times", () => {
-        population = new NeatPopulation<NetworkChromosome>(populationSize, 2, generator, properties);
+        population = new NeatPopulation<NetworkChromosome>(generator, properties);
         const chromosome = generator.get();
         const mutant = chromosome.cloneStructure();
         for (let i = 0; i < 100; i++) {

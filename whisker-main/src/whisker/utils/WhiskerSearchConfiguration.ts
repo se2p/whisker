@@ -56,6 +56,9 @@ import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLoc
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NetworkChromosomeGeneratorExistingNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorExistingNetwork";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
+import {NeuroevolutionPopulation} from "../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
+import {RandomPopulation} from "../whiskerNet/NeuroevolutionPopulations/RandomPopulation";
+import {NeatPopulation} from "../whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 
 class ConfigException implements Error {
     message: string;
@@ -110,6 +113,7 @@ export class WhiskerSearchConfiguration {
         const properties = new NeuroevolutionProperties(populationSize);
 
         const parentsPerSpecies = this.dict['parentsPerSpecies'] as number;
+        const numberOfSpecies = this.dict['numberOfSpecies'] as number;
         const penalizingAge = this.dict['penalizingAge'] as number;
         const ageSignificance = this.dict['ageSignificance'] as number;
         const inputRate = this.dict['inputRate'] as number
@@ -138,6 +142,8 @@ export class WhiskerSearchConfiguration {
 
         const timeout = this.dict['network-fitness']['timeout']
 
+        properties.populationType = this.getNeuroevolutionPopulation();
+        properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
         properties.ageSignificance = ageSignificance;
@@ -377,10 +383,18 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.MIO;
             case'neat':
                 return SearchAlgorithmType.NEAT;
-            case'randomNeuroevolution':
-                return SearchAlgorithmType.RANDOM_NEUROEVOLUTION;
             default:
                 throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this.dict['algorithm']);
+        }
+    }
+
+    public getNeuroevolutionPopulation():NeuroevolutionPopulation<NetworkChromosome>{
+        switch (this.dict['populationType']) {
+            case 'random':
+                return new RandomPopulation(this.getChromosomeGenerator(), this.getNeuroevolutionProperties());
+            case 'neat':
+            default:
+                return new NeatPopulation(this.getChromosomeGenerator(), this.getNeuroevolutionProperties());
         }
     }
 

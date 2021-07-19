@@ -65,20 +65,6 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     }
 
     /**
-     * Calculates the distance to the target Sprite after a random project execution.
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     */
-    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        await executor.executeRandom(network);
-        const fitness = this.getTargetDistanceFitness(network);
-        executor.resetState();
-        network.networkFitness = fitness;
-        return fitness;
-    }
-
-    /**
      * Used for CombinedNetworkFitness.
      * Value is calculated within CombinedNetworkFitness, hence returns 0.0
      */

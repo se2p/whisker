@@ -1,27 +1,29 @@
 {
     "test-generator": "neuroevolution",
-    "algorithm": "randomNeuroevolution",
+    "algorithm": "neat",
     "chromosome": "sparseNetwork",
-    "population-size": 100,
-    "parentsPerSpecies": 0.20,
+    "populationType": "random",
+    "population-size": 150,
+    "numberOfSpecies": 5,
+    "parentsPerSpecies": 1,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "extractor": "neuroevolution",
     "crossover": {
         "operator": "neatCrossover",
-        "crossoverWithoutMutation": 0.2,
-        "interspeciesRate": 0.001,
-        "weightAverageRate": 0.4
+        "crossoverWithoutMutation": 0,
+        "interspeciesRate": 0,
+        "weightAverageRate": 0
     },
     "mutation": {
         "operator": "neatMutation",
-        "mutationWithoutCrossover": 0.25,
+        "mutationWithoutCrossover": 1,
         "mutationAddConnection": 0.05,
         "recurrentConnection": 0.1,
         "addConnectionTries": 50,
-        "populationChampionNumberOffspring": 5,
-        "populationChampionNumberClones": 2,
+        "populationChampionNumberOffspring": 0,
+        "populationChampionNumberClones": 0,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
         "mutateWeights": 0.6,
@@ -31,7 +33,7 @@
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 3.0,
+        "distanceThreshold": 5.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
         "weightCoefficient": 0.3

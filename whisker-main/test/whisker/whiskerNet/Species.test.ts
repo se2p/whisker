@@ -1,9 +1,9 @@
-import {Species} from "../../../src/whisker/whiskerNet/Species";
+import {Species} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
 import {List} from "../../../src/whisker/utils/List";
 import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeatPopulation";
+import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
@@ -216,7 +216,8 @@ describe("Species Test", () => {
         properties.weightCoefficient = 0.1;
         properties.disjointCoefficient = 0.1
         properties.excessCoefficient = 0.1;
-        const population = new NeatPopulation(50, 1, generator, properties)
+        const population = new NeatPopulation(generator, properties);
+        population.generatePopulation();
         const speciesList = new List<Species<NetworkChromosome>>();
         const popSpecie = population.species.get(0);
 
@@ -252,7 +253,8 @@ describe("Species Test", () => {
         properties.weightCoefficient = 0.1;
         properties.disjointCoefficient = 0.1
         properties.excessCoefficient = 0.1;
-        const population = new NeatPopulation(50, 1, generator, properties)
+        const population = new NeatPopulation(generator, properties);
+        population.generatePopulation();
         const speciesList = new List<Species<NetworkChromosome>>();
         const popSpecie = population.species.get(0);
         popSpecie.chromosomes.clear();

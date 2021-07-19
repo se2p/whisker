@@ -44,7 +44,6 @@ import {Container} from "../utils/Container";
 import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
-import {RandomNeuroevolution} from "./algorithms/RandomNeuroevolution";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 
 /**
@@ -229,9 +228,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             case SearchAlgorithmType.NEAT:
                 searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>
                 break;
-            case SearchAlgorithmType.RANDOM_NEUROEVOLUTION:
-                searchAlgorithm = this._buildRandomNeuroevolution() as unknown as SearchAlgorithm<C>
-                break;
             case SearchAlgorithmType.RANDOM:
             default:
                 searchAlgorithm = this._buildRandom();
@@ -302,15 +298,6 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      */
     private _buildNEAT() {
         const searchAlgorithm: SearchAlgorithm<C> = new NEAT() as unknown as SearchAlgorithm<C>;
-        searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
-        return searchAlgorithm;
-    }
-
-    /**
-     * A helper method that builds the a randomised Neuroevolution algorithm.
-     */
-    private _buildRandomNeuroevolution() {
-        const searchAlgorithm: SearchAlgorithm<C> = new RandomNeuroevolution() as unknown as SearchAlgorithm<C>;
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         return searchAlgorithm;
     }
