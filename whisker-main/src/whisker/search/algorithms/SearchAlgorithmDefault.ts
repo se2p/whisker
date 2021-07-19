@@ -50,7 +50,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     protected _chromosomeGenerator: ChromosomeGenerator<C>;
 
     /**
-     * Defines the stopping condition of the 1+1EA.
+     * Defines the stopping condition of the SearchAlgorithm.
      */
     protected _stoppingCondition: StoppingCondition<C>;
 
@@ -65,13 +65,12 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
     protected _bestIndividuals = new List<C>();
 
     /**
-     * FitnessFunction this OnePlusOne instance is optimizing for.
+     * FitnessFunction the concrete SearchAlgorithm is optimizing for.
      */
     protected _fitnessFunction: FitnessFunction<C>;
 
     /**
-     * Map of fitnessFunctions. The map is needed when using 1+1EA in combination with an IterativeTestGenerator to
-     * keep track of already covered FitnessFunctions.
+     * Maps each FitnessFunction to a unique identifier.
      */
     protected _fitnessFunctions: Map<number, FitnessFunction<C>>;
 
