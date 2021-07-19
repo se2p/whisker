@@ -19,7 +19,6 @@
  */
 
 import {TestGenerator} from './TestGenerator';
-import {ScratchProject} from '../scratch/ScratchProject';
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 import {Container} from "../utils/Container";
