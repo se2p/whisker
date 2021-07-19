@@ -54,6 +54,7 @@ import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLoc
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
 import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
+import {VariableLengthConstrainedChromosomeMutation} from "../testcase/VariableLengthConstrainedChromosomeMutation";
 
 
 class ConfigException implements Error {
@@ -208,6 +209,9 @@ export class WhiskerSearchConfiguration {
                 return new BitflipMutation();
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
+                    this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
+            case 'variablelengthConstrained':
+                return new VariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case 'biasedvariablelength': {
                 const {

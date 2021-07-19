@@ -24,7 +24,7 @@ import {Randomness} from '../utils/Randomness';
 import {IntegerListChromosome} from './IntegerListChromosome';
 
 
-export abstract class AbstractVariableLengthMutation implements Mutation<IntegerListChromosome> {
+export abstract class AbstractVariableLengthMutation<T extends IntegerListChromosome> implements Mutation<T> {
 
     /**
      * Lower bound for integer values
@@ -60,6 +60,9 @@ export abstract class AbstractVariableLengthMutation implements Mutation<Integer
         this._random = Randomness.getInstance();
     }
 
+    abstract apply(chromosome: T): T;
+
+
     /**
      * Returns a mutated deep copy of the given chromosome.
      * If a index inside the list mutates it executes one of the following mutations with equal probability:
@@ -67,23 +70,22 @@ export abstract class AbstractVariableLengthMutation implements Mutation<Integer
      *  - replace the current codon at the index using gaussian noise
      *  - remove the current codon at the index
      * @param chromosome The original chromosome, that mutates.
+     * @param maxPosition The location up to which to mutate
      * @return A mutated deep copy of the given chromosome.
      */
-    apply(chromosome: IntegerListChromosome): IntegerListChromosome {
+    applyUpTo(chromosome: T, maxPosition: number): T {
         const newCodons = new List<number>();
         newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
+        const mutationProbability = 1 / maxPosition;
         let index = 0;
-        const numberOfCodons = newCodons.size();
-        while (index < numberOfCodons) {
-            if (this._random.nextDouble() < this._getMutationProbability(index, numberOfCodons)) {
-                index = this._mutateAtIndex(newCodons, index);
+        while (index < maxPosition) {
+            if (this._random.nextDouble() < mutationProbability) {
+                index = this.mutateAtIndex(newCodons, index);
             }
             index++;
         }
-        return chromosome.cloneWith(newCodons);
+        return chromosome.cloneWith(newCodons) as T;
     }
-
-    protected abstract _getMutationProbability(idx: number, numberOfCodons: number): number;
 
     /**
      * Execute one of the allowed mutations, with equally distributed probability.
