@@ -373,8 +373,7 @@ class Inputs {
         this.vmWrapper.vm.runtime.startHats('event_whenstageclicked', null, stage);
     }
 
-    // TODO events
-    clickOnSprite (target, steps) {
+    clickSprite (target, steps) {
         for (const t of this.vmWrapper.vm.runtime.targets) {
             if (t.sprite.name === target) {
                 this.inputImmediate({
@@ -388,7 +387,7 @@ class Inputs {
         }
     }
 
-    clickOnClone (x, y, steps) {
+    clickClone (x, y, steps) {
         for (const target of this.vmWrapper.vm.runtime.targets) {
             if (target.x === x && target.y === y) {
                 this.inputImmediate({
@@ -398,6 +397,16 @@ class Inputs {
                     isDown: true,
                     steps: steps
                 });
+                break;
+            }
+        }
+    }
+
+    // When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
+    dragSprite (target, x, y) {
+        for (const t of this.vmWrapper.vm.runtime.targets) {
+            if (t.sprite.name === target) {
+                t.setXY(x, y, true);
                 break;
             }
         }

@@ -35,17 +35,17 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     async apply(): Promise<void> {
         if (this._target.isOriginal) {
-            Container.testDriver.clickOnSprite(this._target.sprite.name, this._steps);
+            Container.testDriver.clickSprite(this._target.sprite.name, this._steps);
         } else {
-            Container.testDriver.clickOnClone(this._target.x, this._target.y, this._steps);
+            Container.testDriver.clickClone(this._target.x, this._target.y, this._steps);
         }
     }
 
     public toJavaScript(): string {
         if (this._target.isOriginal) {
-            return `t.clickOnSprite('${this._target.sprite.name}', ${this._steps});`;
+            return `t.clickSprite('${this._target.sprite.name}', ${this._steps});`;
         } else {
-            return `t.clickOnClone(${this._target.x}, ${this._target.y}, ${this._steps});`;
+            return `t.clickClone(${this._target.x}, ${this._target.y}, ${this._steps});`;
         }
     }
 

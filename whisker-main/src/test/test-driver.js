@@ -26,9 +26,10 @@ class TestDriver {
         this.isRunning = vmWrapper.isRunning.bind(vmWrapper);
         this.isProjectRunning = vmWrapper.isProjectRunning.bind(vmWrapper);
 
-        this.clickOnSprite = vmWrapper.inputs.clickOnSprite.bind(vmWrapper.inputs);
-        this.clickOnClone = vmWrapper.inputs.clickOnClone.bind(vmWrapper.inputs);
-        this.dragSprite = vmWrapper.dragSprite.bind(vmWrapper);
+        this.clickStage = vmWrapper.inputs.clickStage.bind(vmWrapper.inputs);
+        this.clickSprite = vmWrapper.inputs.clickSprite.bind(vmWrapper.inputs);
+        this.clickClone = vmWrapper.inputs.clickClone.bind(vmWrapper.inputs);
+        this.dragSprite = vmWrapper.inputs.dragSprite.bind(vmWrapper.inputs);
         this.keyPress = vmWrapper.inputs.keyPress.bind(vmWrapper.inputs);
         this.mouseDown = vmWrapper.inputs.mouseDown.bind(vmWrapper.inputs);
         this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
@@ -58,7 +59,6 @@ class TestDriver {
         this.clearInputs = vmWrapper.inputs.clearInputs.bind(vmWrapper.inputs);
         this.resetMouse = vmWrapper.inputs.resetMouse.bind(vmWrapper.inputs);
         this.resetKeyboard = vmWrapper.inputs.resetKeyboard.bind(vmWrapper.inputs);
-        this.clickStage = vmWrapper.inputs.clickStage.bind(vmWrapper.inputs);
         this.getAnswer = vmWrapper.getAnswer.bind(vmWrapper);
         this.isQuestionAsked = vmWrapper.isQuestionAsked.bind(vmWrapper);
 

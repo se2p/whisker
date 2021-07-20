@@ -30,7 +30,7 @@ export class ClickStageEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return 't.clickStage()';
+        return 't.clickStage();';
     }
 
     public toString(): string {

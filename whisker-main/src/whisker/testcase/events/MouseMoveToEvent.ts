@@ -42,7 +42,7 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     public toString(): string {
-        return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
+        return "MouseMoveToEvent " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 
     getNumParameters(): number {
