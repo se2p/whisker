@@ -37,7 +37,7 @@
 #     fixes for common issues that prevent Chrome from starting, such as missing
 #     system fonts, external libraries, etc. The one we use is based on the
 #     Alpine Linux project, which offers a particularly small base image.
-FROM zenika/alpine-chrome:with-puppeteer as base
+FROM buildkite/puppeteer as base
 
 # (b) Copy manifest and lock files required for installing build/library
 #     dependencies. The following layers are only re-built when one of these
@@ -49,17 +49,13 @@ COPY ["scratch-analysis/package.json", "./scratch-analysis/"]
 COPY ["servant/package.json", "./servant/"]
 COPY ["whisker-web/package.json", "./whisker-web/"]
 COPY ["whisker-main/package.json", "./whisker-main/"]
-# TODO: We need this because the default user is not allowed to create files
-# and directories. There must be a better way to fix these permission problems?
-USER root
-RUN yarn install
+RUN apt update && apt install -y git && yarn install
 
 # (c) Copy source files and build Whisker. This layer is only rebuilt when a
 #     source file changes in the source directory.
 FROM install as build
 WORKDIR /whisker-build/
 COPY ./ ./
-USER root
 RUN yarn build
 
 
@@ -67,7 +63,7 @@ RUN yarn build
 # (2) Execution Stage
 #-------------------------------------------------------------------------------
 
-FROM zenika/alpine-chrome:with-puppeteer as execute
+FROM buildkite/puppeteer as execute
 
 WORKDIR /whisker/
 
@@ -88,9 +84,3 @@ ENTRYPOINT ["/whisker/whisker-docker.sh"]
 # Set the default arguments for Whisker's servant, if none are specified
 # explicitly by the user:
 CMD ["--help"]
-
-# By default, Puppeteer runs as unprivileged user "chrome" in the container.
-# For our experiment infrastructure, we need to switch the user to root.
-# (Otherwise, bind mounts might not work properly.) You may remove the
-# following line if you don't use bind mounts.
-USER root
