@@ -6,7 +6,7 @@ import {getEffectFailedOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
-import {Check, CheckName} from "../components/Check";
+import {CheckName} from "../components/Check";
 
 /**
  * For edge condition or effect checks that need to listen to the onMoved of a sprite or keys before a step.
@@ -16,9 +16,9 @@ export class CheckUtility extends EventEmitter {
     private readonly modelResult: ModelResult;
 
     static readonly CHECK_UTILITY_EVENT = "CheckUtilityEvent"
-    private onMovedChecks: { [key: string]: ((sprite) => boolean)[] } = {};
-    private onVisualChecks: { [key: string]: ((sprite) => boolean)[] } = {};
-    private onSayOrThinkChecks: { [key: string]: ((sprite) => boolean)[] } = {};
+    private onMovedChecks: { [key: string]: ((sprite) => void)[] } = {};
+    private onVisualChecks: { [key: string]: ((sprite) => void)[] } = {};
+    private onSayOrThinkChecks: { [key: string]: ((sprite) => void)[] } = {};
     private variableChecks: { [key: string]: (() => void)[] } = {};
 
     private registeredOnMove: string[] = [];
@@ -48,6 +48,10 @@ export class CheckUtility extends EventEmitter {
         this.testDriver.vmWrapper.sprites.onVariableChange((varName: string) => {
             if (this.variableChecks[varName] != null) {
                 this.variableChecks[varName].forEach(fun => fun());
+                if (this.eventStrings.length > 0) {
+                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, this.eventStrings);
+                }
+                this.eventStrings = [];
             }
         });
     }
@@ -94,7 +98,7 @@ export class CheckUtility extends EventEmitter {
     }
 
 
-    private register(predicateChecker: { [key: string]: ((sprite) => boolean)[] }, eventString: string,
+    private register(predicateChecker: { [key: string]: ((sprite) => void)[] }, eventString: string,
                      spriteName: string, predicate: (sprite: Sprite) => boolean) {
         // no check for this sprite till now
         if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
@@ -108,9 +112,10 @@ export class CheckUtility extends EventEmitter {
             } catch (e) {
                 this.modelResult.addError(e);
                 console.error(e);
-                return false;
             }
-            return predicateResult && this.updateEventString(eventString);
+            if (predicateResult) {
+                this.eventStrings.push(eventString);
+            }
         });
     }
 
@@ -128,8 +133,15 @@ export class CheckUtility extends EventEmitter {
                 this.variableChecks[varName] = [];
             }
             this.variableChecks[varName].push(() => {
-                if (predicate()) {
-                    this.emit(CheckUtility.CHECK_UTILITY_EVENT, [eventString]);
+                let predicateResult;
+                try {
+                    predicateResult = predicate();
+                } catch (e) {
+                    this.modelResult.addError(e);
+                    console.error(e);
+                }
+                if (predicateResult) {
+                    this.eventStrings.push(eventString);
                 }
             })
         }
@@ -137,51 +149,11 @@ export class CheckUtility extends EventEmitter {
 
     private checkForEvent(checks, sprite) {
         if (checks[sprite.name] != null) {
-            let change = false;
-            checks[sprite.name].forEach(fun => {
-                if (fun(sprite)) {
-                    change = true;
-                }
-            });
-            if (change) {
+            checks[sprite.name].forEach(fun => fun(sprite));
+            if (this.eventStrings.length > 0) {
                 this.emit(CheckUtility.CHECK_UTILITY_EVENT, this.eventStrings);
             }
-        }
-    }
-
-    private updateEventString(event: string): boolean {
-        if (this.eventStrings.indexOf(event) != -1) {
-            return true;
-        }
-
-        if (this.eventStrings.length == 0) {
-            this.eventStrings.push(event);
-            return true;
-        }
-
-        let newEventString = [];
-        const check1 = CheckUtility.splitEventString(event);
-        for (let i = 0; i < this.eventStrings.length; i++) {
-            const check2 = CheckUtility.splitEventString(this.eventStrings[i]);
-            if (!Check.testForContradictingOnDummies(check1, check2)) {
-                newEventString.push(this.eventStrings[i]);
-            }
-        }
-        this.eventStrings = newEventString;
-        this.eventStrings.push(event);
-        return true;
-    }
-
-    static splitEventString(eventString: string): { name: CheckName, negated: boolean, args: any[] } {
-        const negated = eventString.startsWith("!");
-        if (negated) {
-            eventString = eventString.substring(1, eventString.length);
-        }
-        const splits = eventString.split(":");
-        return {
-            negated: negated,
-            name: CheckName[splits[0]],
-            args: splits.slice(1, splits.length)
+            this.eventStrings = [];
         }
     }
 
@@ -222,14 +194,14 @@ export class CheckUtility extends EventEmitter {
     /**
      * Check the registered effects of this step.
      */
-    checkEffects(modelResult: ModelResult): Effect[] {
-        let result = this.check(modelResult, false);
+    checkEffects(): Effect[] {
+        let result = this.check(false);
         this.effectChecks = [];
         return result;
     }
 
-    checkEndEffects(modelResult: ModelResult): Effect[] {
-        let result = this.check(modelResult, true);
+    checkEndEffects(): Effect[] {
+        let result = this.check(true);
         this.effectChecks = [];
         return result;
     }
@@ -240,7 +212,24 @@ export class CheckUtility extends EventEmitter {
         modelResult.addFail(output);
     }
 
-    private check(modelResult: ModelResult, makeFailOutput: boolean) {
+    checkEventEffects() {
+        let newEffects = [];
+        for (let i = 0; i < this.effectChecks.length; i++) {
+            let model = this.effectChecks[i].model;
+            let effect = this.effectChecks[i].effect;
+            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
+            try {
+                if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
+                    newEffects.push(this.effectChecks[i]);
+                }
+            } catch (e) {
+                this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, this.modelResult);
+            }
+        }
+        this.effectChecks = newEffects;
+    }
+
+    private check(makeFailOutput: boolean) {
         let contradictingEffects = [];
         let doNotCheck = {};
         let failedEffects = [];
@@ -262,12 +251,12 @@ export class CheckUtility extends EventEmitter {
                     if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
                         failedEffects.push(this.effectChecks[i]);
                         if (makeFailOutput) {
-                            this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, modelResult);
+                            this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, this.modelResult);
                         }
                     }
                 } catch (e) {
                     failedEffects.push(this.effectChecks[i]);
-                    this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, modelResult);
+                    this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, this.modelResult);
                 }
             } else {
                 contradictingEffects.push(this.effectChecks[i].effect);

@@ -44,6 +44,7 @@ export class ModelNode {
             const result = this.edges[i].checkConditions(testDriver, stepsSinceLastTransition, stepsSinceEnd, modelResult);
 
             if (result && result.length == 0) {
+                this.edges[i].lastTransition = testDriver.getTotalStepsExecuted() + 1;
                 return this.edges[i];
             }
         }
@@ -56,38 +57,15 @@ export class ModelNode {
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                  modelResult: ModelResult, eventStrings: string[]) {
         for (let i = 0; i < this.edges.length; i++) {
+            const result = this.edges[i].checkConditionsOnEvent(t, cu, stepsSinceLastTransition, stepsSinceEnd,
+                modelResult, eventStrings);
 
-            let check = false;
-
-            // look up if this edge has a condition that was triggered
-            for (let j = 0; j < this.edges[i].conditions.length; j++) {
-                const cond = this.edges[i].conditions[j];
-                const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
-                if (eventStrings.indexOf(eventString) != -1) {
-                    check = true;
-                }
-            }
-
-            if (check) {
-                let failed = false;
-                for (let j = 0; j < this.edges[i].conditions.length; j++) {
-                    let cond = this.edges[i].conditions[j];
-                    const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
-
-                    if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
-                        failed = true;
-                        break;
-                    }
-                }
-
-                if (!failed) {
-                    return this.edges[i];
-                }
+            if (result && result.length == 0) {
+                this.edges[i].lastTransition = t.getTotalStepsExecuted() + 1;
+                return this.edges[i];
             }
         }
-
         return null;
-
     }
 
     /**

@@ -131,11 +131,11 @@ export abstract class CheckGenerator {
 
         // on movement listener
         if (attrName == "x" || attrName == "y") {
-            return CheckGenerator.attributeCompOnMove(t, cu, negated, sprite, spriteNameRegex, attrName, comparison,
+            return CheckGenerator.attributeCompOnMove(t, cu, negated, sprite.name, spriteNameRegex, attrName, comparison,
                 varValue);
         } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
             || attrName == "currentCostumeName" || attrName == "rotationStyle") {
-            return CheckGenerator.attributeCompOnVisual(t, cu, negated, sprite, spriteNameRegex, attrName, comparison,
+            return CheckGenerator.attributeCompOnVisual(t, cu, negated, sprite.name, spriteNameRegex, attrName, comparison,
                 varValue);
         }
 
@@ -150,9 +150,9 @@ export abstract class CheckGenerator {
         }
     }
 
-    private static attributeCompOnVisual(t: TestDriver, cu: CheckUtility, negated: boolean, sprite, spriteNameRegex: string,
-                                         attrName: string, comparison: string, varValue: string): () => boolean {
-        const spriteName = sprite.name;
+    private static attributeCompOnVisual(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName: string,
+                                         spriteNameRegex: string, attrName: string, comparison: string,
+                                         varValue: string): () => boolean {
         let eventString;
         if (attrName == "currentCostumeName") {
             eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, "costume",
@@ -173,17 +173,16 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             try {
-                return sprite.x === sprite.old.x && sprite.y === sprite.old.y
-                    && !negated == ModelUtil.compare(sprite[attrName], varValue, comparison);
+                return !negated == ModelUtil.compare(sprite[attrName], varValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteName, attrName, e.message);
+                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         }
     }
 
-    private static attributeCompOnMove(t: TestDriver, cu: CheckUtility, negated: boolean, sprite, spriteNameRegex: string,
-                                       attrName: string, comparison: string, varValue: string): () => boolean {
-        const spriteName = sprite.name;
+    private static attributeCompOnMove(t: TestDriver, cu: CheckUtility, negated: boolean, spriteName: string,
+                                       spriteNameRegex: string, attrName: string, comparison: string,
+                                       varValue: string): () => boolean {
         const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
             comparison, varValue);
 
@@ -198,10 +197,9 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             try {
-                return sprite.x === sprite.old.x && sprite.y === sprite.old.y
-                    && !negated == ModelUtil.compare(sprite[attrName], varValue, comparison);
+                return !negated == ModelUtil.compare(sprite[attrName], varValue, comparison);
             } catch (e) {
-                throw getErrorForAttribute(spriteName, attrName, e.message);
+                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
         }
     }
@@ -248,8 +246,7 @@ export abstract class CheckGenerator {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         return () => {
             const sprite = t.getSprite(spriteName1);
-            return sprite.x === sprite.old.x && sprite.y === sprite.old.y
-                && !negated == sprite.isTouchingSprite(spriteName2);
+            return !negated == sprite.isTouchingSprite(spriteName2);
         }
     }
 
@@ -280,7 +277,7 @@ export abstract class CheckGenerator {
         // only test touching if the sprite did not move as otherwise the model was already notified and test it
         return () => {
             const sprite = t.getSprite(spriteName);
-            return sprite.x === sprite.old.x && sprite.y === sprite.old.y && !negated == sprite.isTouchingColor([r, g, b]);
+            return !negated == sprite.isTouchingColor([r, g, b]);
         }
     }
 
@@ -405,8 +402,7 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             try {
-                return sprite.x === sprite.old.x && sprite.y === sprite.old.y
-                    && !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw getErrorForAttribute(spriteName, attrName, e.message);
             }
@@ -428,8 +424,7 @@ export abstract class CheckGenerator {
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName), false)[0];
             try {
-                return sprite.x === sprite.old.x && sprite.y === sprite.old.y
-                    && !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
+                return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
                 throw getErrorForAttribute(spriteName, attrName, e.message);
             }
@@ -569,7 +564,7 @@ export abstract class CheckGenerator {
 
         return () => {
             const sprite = t.getSprites(sprite => sprite.name.includes(spriteName))[0];
-            return sprite.x === sprite.old.x && sprite.y === sprite.old.y && !negated == sprite.isTouchingEdge();
+            return !negated == sprite.isTouchingEdge();
         }
     }
 }

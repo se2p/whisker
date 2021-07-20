@@ -17,6 +17,7 @@ export abstract class ModelEdge {
     /* Id of the target node*/
     readonly to: string;
     conditions: Condition[] = [];
+    _lastTransition: number = 0;
 
     readonly forceTestAfter: number;
     readonly forceTestAt: number;
@@ -48,6 +49,9 @@ export abstract class ModelEdge {
      * @Returns the failed conditions.
      */
     checkConditions(t: TestDriver, stepsSinceLastTransition: number, stepsSinceEnd: number, modelResult: ModelResult): Condition[] {
+        if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
+            return this.conditions;
+        }
         if (this.failedForcedTest) {
             return this.conditions;
         }
@@ -63,7 +67,7 @@ export abstract class ModelEdge {
                     if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
                         this.failedForcedTest = true;
                         failedConditions.push(this.conditions[i]);
-                        console.error(this.getTimeLimitFailedOutput(this.conditions[i],t), t.getTotalStepsExecuted());
+                        console.error(this.getTimeLimitFailedOutput(this.conditions[i], t), t.getTotalStepsExecuted());
                         modelResult.addFail(this.getTimeLimitFailedOutput(this.conditions[i], t));
                     }
                 } catch (e) {
@@ -93,6 +97,44 @@ export abstract class ModelEdge {
         }
 
         return failedConditions;
+    }
+
+
+    checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
+                           modelResult: ModelResult, eventStrings: string[]): Condition[] {
+        if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
+            return this.conditions;
+        }
+        let check = false;
+
+        // look up if this edge has a condition that was triggered
+        for (let j = 0; j < this.conditions.length; j++) {
+            const cond = this.conditions[j];
+            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
+            if (eventStrings.indexOf(eventString) != -1) {
+                check = true;
+            }
+        }
+
+        if (!check) {
+            return this.conditions;
+        }
+
+        let failed = [];
+        for (let j = 0; j < this.conditions.length; j++) {
+            let cond = this.conditions[j];
+            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
+
+            if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                failed.push(cond);
+                break;
+            }
+        }
+        return failed;
+    }
+
+    set lastTransition(transition: number) {
+        this._lastTransition = transition;
     }
 
     getTimeLimitFailedOutput(condition: Condition, t: TestDriver) {
@@ -138,6 +180,7 @@ export abstract class ModelEdge {
         this.failedForcedTest = false;
         this.forceTestAtSteps = undefined;
         this.forceTestAfterSteps = undefined;
+        this.lastTransition = 0;
     }
 
     simplifyForSave() {

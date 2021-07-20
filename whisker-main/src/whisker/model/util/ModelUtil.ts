@@ -180,6 +180,9 @@ export abstract class ModelUtil {
      * @param comparison Comparison mode, =|==, <, <=, >=, >
      */
     static compare(value1, value2, comparison) {
+        if (value1 == undefined || value2 == undefined) {
+            throw new Error("comparison with undefined value");
+        }
         if (comparison === "=" || comparison === "==") {
             if (value1 == "true") {
                 value1 = true;
