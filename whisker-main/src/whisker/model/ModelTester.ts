@@ -28,6 +28,7 @@ export class ModelTester extends EventEmitter {
     private modelStepCallback: Callback;
     private onTestEndCallback: Callback;
     private haltAllCallback: Callback;
+    private checkLastFailedCallback: Callback;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -68,7 +69,7 @@ export class ModelTester extends EventEmitter {
     }
 
     running() {
-        return this.modelStepCallback.isActive() || this.onTestEndCallback.isActive();
+        return this.modelStepCallback.isActive() || this.onTestEndCallback.isActive() || this.checkLastFailedCallback.isActive();
     }
 
     getAllModels() {
@@ -114,17 +115,22 @@ export class ModelTester extends EventEmitter {
         this.modelStepCallback = this.addModelCallback(this.getModelStepFunction(), true, "modelStep");
         this.onTestEndCallback = this.addModelCallback(this.getOnTestEndFunction(), true, "stopModelsCheck");
         this.haltAllCallback = this.addModelCallback(this.checkForHaltAll(), true, "checkForHalt");
+        this.checkLastFailedCallback = this.addModelCallback(() => {
+            this.checkUtility.checkFailedEffectsWithoutTimers();
+            this.checkLastFailedCallback.disable();
+        }, true, "checkForFailedEffects")
 
         if (this.programModels.length == 0) {
             this.modelStepCallback.disable();
         }
         this.onTestEndCallback.disable();
+        this.checkLastFailedCallback.disable();
     }
 
     private getModelStepFunction() {
         let checkProgramModels = [...this.programModels];
         return () => {
-            this.checkUtility.checkFailedEffects(this.result);
+            this.checkUtility.checkFailedEffects();
             let notStoppedModels = [];
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility, this.result);
@@ -155,7 +161,6 @@ export class ModelTester extends EventEmitter {
                 this.startOnTestEnd();
                 return;
             }
-
             this.programModels.forEach(model => {
                 if (model.haltAllModels()) {
                     this.startOnTestEnd();
@@ -167,6 +172,7 @@ export class ModelTester extends EventEmitter {
     private startOnTestEnd() {
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
+        this.checkLastFailedCallback.enable();
         if (this.onTestEndModels.length > 0) {
             let steps = this.testDriver.getTotalStepsExecuted();
             this.onTestEndModels.forEach(model => {

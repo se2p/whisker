@@ -270,7 +270,7 @@ export class CheckUtility extends EventEmitter {
     /**
      * Check the failed effects of last step.
      */
-    checkFailedEffects(modelResult: ModelResult) {
+    checkFailedEffects() {
         if (!this.failedChecks || this.failedChecks.length == 0) {
             return;
         }
@@ -280,10 +280,37 @@ export class CheckUtility extends EventEmitter {
             try {
                 if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
                     model.stepNbrOfProgramEnd)) {
-                    this.failOnProgramModel(this.failedChecks[i].edge, effect, modelResult);
+                    this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
                 }
             } catch (e) {
-                this.failOnProgramModel(this.failedChecks[i].edge, effect, modelResult);
+                this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
+            }
+        }
+        this.failedChecks = [];
+    }
+
+    /**
+     * Check all failed effects of the last step but dont interpret TimeBetween or TimeElapsed Effects as failed
+     * as f.e. Bubbles can be removed when a stopAll is in the Scratch code called and it was shown shorter then in
+     * the model modelled.
+     */
+    checkFailedEffectsWithoutTimers() {
+        if (!this.failedChecks || this.failedChecks.length == 0) {
+            return;
+        }
+        for (let i = 0; i < this.failedChecks.length; i++) {
+            let effect = this.failedChecks[i].effect;
+            let model = this.failedChecks[i].model;
+            console.log(effect);
+            try {
+                if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
+                    model.stepNbrOfProgramEnd)) {
+                    if (effect.name != CheckName.TimeBetween && effect.name != CheckName.TimeElapsed) {
+                        this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
+                    }
+                }
+            } catch (e) {
+                this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
             }
         }
         this.failedChecks = [];
