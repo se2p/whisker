@@ -17,7 +17,7 @@ function set_docker_cmd() {
 
 function run_docker_cmd() {
     set_docker_cmd
-    "${DOCKER_CMD}" "$@"
+    eval "${DOCKER_CMD}" "$@"
 }
 
 function main() {
