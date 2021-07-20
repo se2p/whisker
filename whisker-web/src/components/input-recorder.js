@@ -14,7 +14,7 @@ class InputRecorder extends EventEmitter {
         this._onInput = this.onInput.bind(this);
 
         this.testBegin = 'const test = async function (t) {\n';
-        this.testEnd = '\n    await t.runForTime(5000);\n    t.end();\n}';
+        this.testEnd = '\n    await t.wait(5000);\n    t.end();\n}';
         this.export =  '\n\n\n' +
 `module.exports = [
     {
@@ -96,6 +96,7 @@ class InputRecorder extends EventEmitter {
         });
     }
 
+    // TODO Convert input to event functions
     showInputs () {
         const inputs = this.inputs.map(input => `        ${JSON.stringify(input)}`);
         let inputCode = `    t.addInputs([\n${inputs.join(',\n')}\n    ]);`;
