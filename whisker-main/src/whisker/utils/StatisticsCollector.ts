@@ -18,6 +18,10 @@
  *
  */
 
+import {List} from "./List";
+import {FitnessFunction} from "../search/FitnessFunction";
+import {Chromosome} from "../search/Chromosome";
+
 /**
  * Singleton class to collect statistics from search runs
  *
@@ -40,6 +44,7 @@ export class StatisticsCollector {
     private _startTime: number;
     private _timeToReachFullCoverage: number;
     private readonly _covOverTime: Map<number, number>;
+    private readonly coveredFitnessFunctions: List<FitnessFunction<Chromosome>>;
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -61,6 +66,7 @@ export class StatisticsCollector {
         this._testEventCount = 0;
         this._numberFitnessEvaluations = 0;
         this._covOverTime = new Map<number, number>();
+        this.coveredFitnessFunctions = new List<FitnessFunction<Chromosome>>();
     }
 
     public static getInstance(): StatisticsCollector {
@@ -121,10 +127,13 @@ export class StatisticsCollector {
     /**
      * Increments the number of covered fitness functions by one
      */
-    public incrementCoveredFitnessFunctionCount(): void {
-        this._coveredFitnessFunctionsCount++;
-        const timeStamp = Date.now() - this._startTime;
-        this._covOverTime.set(timeStamp, this._coveredFitnessFunctionsCount);
+    public incrementCoveredFitnessFunctionCount(coveredFitnessFunction: FitnessFunction<Chromosome>): void {
+        if(!this.coveredFitnessFunctions.contains(coveredFitnessFunction)) {
+            this.coveredFitnessFunctions.add(coveredFitnessFunction);
+            this._coveredFitnessFunctionsCount++;
+            const timeStamp = Date.now() - this._startTime;
+            this._covOverTime.set(timeStamp, this._coveredFitnessFunctionsCount);
+        }
     }
 
     get bestCoverage(): number {

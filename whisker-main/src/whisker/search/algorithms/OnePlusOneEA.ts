@@ -110,8 +110,8 @@ ${bestIndividual.toString()}`);
             const candidateLength = candidateChromosome.getLength();
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
-                if (!this._archive.has(fitnessFunctionKey) && !this.isIterativeSearch()) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 }
                 this._archive.set(fitnessFunctionKey, candidateChromosome);
             }
