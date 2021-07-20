@@ -372,6 +372,75 @@ class Inputs {
         const stage = this.vmWrapper.sprites.getStage().getScratchTarget();
         this.vmWrapper.vm.runtime.startHats('event_whenstageclicked', null, stage);
     }
+
+    // TODO events
+    clickOnSprite (target, steps) {
+        for (const t of this.vmWrapper.vm.runtime.targets) {
+            if (t.sprite.name === target) {
+                this.inputImmediate({
+                    device: 'mouse',
+                    sprite: this.vmWrapper.sprites.getSprite(target),
+                    isDown: true,
+                    steps: steps
+                });
+                break;
+            }
+        }
+    }
+
+    clickOnClone (x, y, steps) {
+        for (const target of this.vmWrapper.vm.runtime.targets) {
+            if (target.x === x && target.y === y) {
+                this.inputImmediate({
+                    device: 'mouse',
+                    x: x,
+                    y: y,
+                    isDown: true,
+                    steps: steps
+                });
+                break;
+            }
+        }
+    }
+
+    keyPress (keyOption, steps) {
+        this.inputImmediate({
+            device: 'keyboard',
+            key: keyOption,
+            isDown: true,
+            steps: steps
+        });
+    }
+
+    mouseDown (value) {
+        this.inputImmediate({
+            device: 'mouse',
+            isDown: value
+        });
+    }
+
+    mouseMove (x, y) {
+        this.inputImmediate({
+            device: 'mouse',
+            x: Math.trunc(x),
+            y: Math.trunc(y)
+        });
+    }
+
+    mouseMoveToEvent (x, y) {
+        this.inputImmediate({
+            device: 'mouse',
+            x: Math.trunc(x),
+            y: Math.trunc(y)
+        });
+    }
+
+    typeText (text) {
+        this.inputImmediate({
+            device: 'text',
+            answer: text
+        });
+    }
 }
 
 module.exports = {

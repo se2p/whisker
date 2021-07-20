@@ -262,6 +262,20 @@ class VMWrapper {
         return this.stepsExecuted - this.runStartStepsExecuted;
     }
 
+    // When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
+    dragSprite (target, x, y) {
+        for (const t of this.vm.runtime.targets) {
+            if (t.sprite.name === target) {
+                t.setXY(x, y, true);
+                break;
+            }
+        }
+    }
+
+    async wait (steps) {
+        await this.runForSteps(steps);
+    }
+
     /**
      * @param {string} project .
      * @param {number} accelerationFactor .
