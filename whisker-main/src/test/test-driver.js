@@ -26,6 +26,16 @@ class TestDriver {
         this.isRunning = vmWrapper.isRunning.bind(vmWrapper);
         this.isProjectRunning = vmWrapper.isProjectRunning.bind(vmWrapper);
 
+        this.clickOnSprite = vmWrapper.inputs.clickOnSprite.bind(vmWrapper.inputs);
+        this.clickOnClone = vmWrapper.inputs.clickOnClone.bind(vmWrapper.inputs);
+        this.dragSprite = vmWrapper.dragSprite.bind(vmWrapper);
+        this.keyPress = vmWrapper.inputs.keyPress.bind(vmWrapper.inputs);
+        this.mouseDown = vmWrapper.inputs.mouseDown.bind(vmWrapper.inputs);
+        this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
+        this.mouseMoveToEvent = vmWrapper.inputs.mouseMoveToEvent.bind(vmWrapper.inputs);
+        this.typeText = vmWrapper.inputs.typeText.bind(vmWrapper.inputs);
+        this.wait = vmWrapper.wait.bind(vmWrapper);
+
         this.getSprites = vmWrapper.sprites.getSprites.bind(vmWrapper.sprites);
         this.getSpritesAtPoint = vmWrapper.sprites.getSpritesAtPoint.bind(vmWrapper.sprites);
         this.getSpriteAtPoint = vmWrapper.sprites.getSpriteAtPoint.bind(vmWrapper.sprites);
