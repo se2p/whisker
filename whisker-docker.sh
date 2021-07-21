@@ -25,7 +25,7 @@ REDIRECT_OUTPUT="${2}"
 if [ "${REDIRECT_OUTPUT}" = "--" ]; then
     OUTPUT_DIR="${1}"
     shift 2
-    trap 'copy_artefacts' INT TERM HUP QUIT
+    trap "copy_artefacts ${OUTPUT_DIR}" INT TERM HUP QUIT EXIT
     WHISKER=">${OUTPUT_DIR}/log-out.txt 2>${OUTPUT_DIR}/log-err.txt ${WHISKER}"
 fi
 
