@@ -28,7 +28,6 @@ export class ModelTester extends EventEmitter {
     private modelStepCallback: Callback;
     private onTestEndCallback: Callback;
     private haltAllCallback: Callback;
-    private checkLastFailedCallback: Callback;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -69,7 +68,7 @@ export class ModelTester extends EventEmitter {
     }
 
     running() {
-        return this.modelStepCallback.isActive() || this.onTestEndCallback.isActive() || this.checkLastFailedCallback.isActive();
+        return this.modelStepCallback.isActive() || this.onTestEndCallback.isActive()
     }
 
     getAllModels() {
@@ -115,22 +114,17 @@ export class ModelTester extends EventEmitter {
         this.modelStepCallback = this.addModelCallback(this.getModelStepFunction(), true, "modelStep");
         this.onTestEndCallback = this.addModelCallback(this.getOnTestEndFunction(), true, "stopModelsCheck");
         this.haltAllCallback = this.addModelCallback(this.checkForHaltAll(), true, "checkForHalt");
-        this.checkLastFailedCallback = this.addModelCallback(() => {
-            this.checkUtility.checkFailedEffectsWithoutTimers();
-            this.checkLastFailedCallback.disable();
-        }, true, "checkForFailedEffects")
 
         if (this.programModels.length == 0) {
             this.modelStepCallback.disable();
         }
         this.onTestEndCallback.disable();
-        this.checkLastFailedCallback.disable();
     }
 
     private getModelStepFunction() {
         let checkProgramModels = [...this.programModels];
         return () => {
-            this.checkUtility.checkFailedEffects();
+            this.checkUtility.makeFailedOutputs();
             let notStoppedModels = [];
             checkProgramModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility, this.result);
@@ -172,7 +166,6 @@ export class ModelTester extends EventEmitter {
     private startOnTestEnd() {
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
-        this.checkLastFailedCallback.enable();
         if (this.onTestEndModels.length > 0) {
             let steps = this.testDriver.getTotalStepsExecuted();
             this.onTestEndModels.forEach(model => {
@@ -200,7 +193,7 @@ export class ModelTester extends EventEmitter {
                     notStoppedModels.push(model);
                 }
             })
-            let contradictingEffects = this.checkUtility.checkEndEffects();
+            let contradictingEffects = this.checkUtility.checkEffects();
             if (contradictingEffects && contradictingEffects.length != 0) {
                 this.printContradictingEffects(contradictingEffects);
             }
@@ -249,7 +242,7 @@ export class ModelTester extends EventEmitter {
 
     private onEvent(eventStrings: string[]) {
         // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
-        let models = this.modelStepCallback.isActive() ? this.programModels :  this.onTestEndModels;
+        let models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
         models.forEach(model => {
             let edge = model.testForEvent(this.testDriver, this.checkUtility, this.result, eventStrings);
             if (edge != null && edge instanceof ProgramModelEdge) {
@@ -258,7 +251,20 @@ export class ModelTester extends EventEmitter {
                 this.edgeTrace(edge);
             }
         });
-        this.checkUtility.checkEventEffects();
+
+        // check for halt
+        let halt = false;
+        this.programModels.forEach(model => {
+            if (model.haltAllModels()) {
+                halt = true;
+            }
+        })
+        if (halt) {
+            this.checkUtility.checkEffects();
+            this.startOnTestEnd();
+        } else {
+            this.checkUtility.checkEventEffects();
+        }
     }
 
     private edgeTrace(transition: ProgramModelEdge) {

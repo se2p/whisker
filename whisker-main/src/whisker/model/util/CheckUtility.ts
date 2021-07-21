@@ -195,44 +195,9 @@ export class CheckUtility extends EventEmitter {
      * Check the registered effects of this step.
      */
     checkEffects(): Effect[] {
-        let result = this.check(false);
-        this.effectChecks = [];
-        return result;
-    }
-
-    checkEndEffects(): Effect[] {
-        let result = this.check(true);
-        this.effectChecks = [];
-        return result;
-    }
-
-    private failOnProgramModel(edge, effect, modelResult) {
-        let output = getEffectFailedOutput(edge, effect);
-        console.error(output, this.testDriver.getTotalStepsExecuted());
-        modelResult.addFail(output);
-    }
-
-    checkEventEffects() {
-        let newEffects = [];
-        for (let i = 0; i < this.effectChecks.length; i++) {
-            let model = this.effectChecks[i].model;
-            let effect = this.effectChecks[i].effect;
-            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
-            try {
-                if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                    newEffects.push(this.effectChecks[i]);
-                }
-            } catch (e) {
-                this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, this.modelResult);
-            }
-        }
-        this.effectChecks = newEffects;
-    }
-
-    private check(makeFailOutput: boolean) {
         let contradictingEffects = [];
         let doNotCheck = {};
-        let failedEffects = [];
+        let newEffects = [];
 
         // check for contradictions in effects
         for (let i = 0; i < this.effectChecks.length; i++) {
@@ -246,73 +211,51 @@ export class CheckUtility extends EventEmitter {
 
             if (!doNotCheck[i]) {
                 let model = this.effectChecks[i].model;
+                let effect = this.effectChecks[i].effect;
                 let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
                 try {
                     if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                        failedEffects.push(this.effectChecks[i]);
-                        if (makeFailOutput) {
-                            this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, this.modelResult);
-                        }
+                        newEffects.push(this.effectChecks[i]);
                     }
                 } catch (e) {
-                    failedEffects.push(this.effectChecks[i]);
-                    this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect, this.modelResult);
+                    this.failOnProgramModel(this.effectChecks[i].edge, effect);
                 }
             } else {
                 contradictingEffects.push(this.effectChecks[i].effect);
             }
         }
 
-        this.failedChecks = failedEffects;
+        this.effectChecks = newEffects
         return contradictingEffects;
     }
 
-    /**
-     * Check the failed effects of last step.
-     */
-    checkFailedEffects() {
-        if (!this.failedChecks || this.failedChecks.length == 0) {
-            return;
-        }
-        for (let i = 0; i < this.failedChecks.length; i++) {
-            let effect = this.failedChecks[i].effect;
-            let model = this.failedChecks[i].model;
-            try {
-                if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
-                    model.stepNbrOfProgramEnd)) {
-                    this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
-                }
-            } catch (e) {
-                this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
-            }
-        }
-        this.failedChecks = [];
+    private failOnProgramModel(edge, effect) {
+        let output = getEffectFailedOutput(edge, effect);
+        // console.error(output, this.testDriver.getTotalStepsExecuted());
+        this.modelResult.addFail(output);
     }
 
-    /**
-     * Check all failed effects of the last step but dont interpret TimeBetween or TimeElapsed Effects as failed
-     * as f.e. Bubbles can be removed when a stopAll is in the Scratch code called and it was shown shorter then in
-     * the model modelled.
-     */
-    checkFailedEffectsWithoutTimers() {
-        if (!this.failedChecks || this.failedChecks.length == 0) {
-            return;
-        }
-        for (let i = 0; i < this.failedChecks.length; i++) {
-            let effect = this.failedChecks[i].effect;
-            let model = this.failedChecks[i].model;
-            console.log(effect);
+    checkEventEffects() {
+        let newEffects = [];
+        for (let i = 0; i < this.effectChecks.length; i++) {
+            let model = this.effectChecks[i].model;
+            let effect = this.effectChecks[i].effect;
+            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
             try {
-                if (!effect.check(model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition,
-                    model.stepNbrOfProgramEnd)) {
-                    if (effect.name != CheckName.TimeBetween && effect.name != CheckName.TimeElapsed) {
-                        this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
-                    }
+                if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
+                    newEffects.push(this.effectChecks[i]);
                 }
             } catch (e) {
-                this.failOnProgramModel(this.failedChecks[i].edge, effect, this.modelResult);
+                this.failOnProgramModel(this.effectChecks[i].edge, effect);
             }
         }
-        this.failedChecks = [];
+        this.effectChecks = newEffects;
+    }
+
+    makeFailedOutputs() {
+        for (let i = 0; i < this.effectChecks.length; i++) {
+            this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect);
+        }
+        this.effectChecks = [];
     }
 }
