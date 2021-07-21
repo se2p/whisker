@@ -97,7 +97,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 }
                 this._archive.set(fitnessFunctionKey, chromosome);
                 this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();

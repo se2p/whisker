@@ -41,7 +41,8 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
         const testChromosomes = new List<TestChromosome>([...archive.values()]).distinct();
 
         // Check if we can remove unnecessary events in our final testSuite by applying ReductionLocalSearch.
-        const reductionOperator = new ReductionLocalSearch(Container.vmWrapper, Container.config.getEventExtractor(), 1);
+        const reductionOperator = new ReductionLocalSearch(Container.vmWrapper, Container.config.getEventExtractor(),
+            Container.config.getEventSelector(), 1);
         for (const chromosome of testChromosomes) {
             if (reductionOperator.isApplicable(chromosome)) {
                 const reducedChromosome = await reductionOperator.apply(chromosome);

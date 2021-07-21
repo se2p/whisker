@@ -18,11 +18,16 @@
  *
  */
 
-import {IntegerListChromosome} from './IntegerListChromosome';
 import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
+import {IntegerListChromosome} from './IntegerListChromosome';
 
-
+/**
+ * Mutates every codon with the same probability.
+ */
 export class VariableLengthMutation extends AbstractVariableLengthMutation<IntegerListChromosome> {
+    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+        return 1 / numberOfCodons;
+    }
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         super(min, max, length, gaussianMutationPower);

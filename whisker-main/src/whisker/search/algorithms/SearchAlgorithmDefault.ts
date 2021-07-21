@@ -172,7 +172,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
                 if (!this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 }
                 this._archive.set(fitnessFunctionKey, candidateChromosome);
             }

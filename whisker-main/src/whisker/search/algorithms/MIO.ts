@@ -252,7 +252,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(this._fitnessFunctions.get(fitnessFunctionKey));
                     this._archiveUncovered.delete(fitnessFunctionKey);
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     if (this._archiveCovered.size == this._fitnessFunctions.size) {

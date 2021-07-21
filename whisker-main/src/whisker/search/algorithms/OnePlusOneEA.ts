@@ -96,30 +96,6 @@ ${bestIndividual.toString()}`);
     }
 
     /**
-     * Updates the archive of best chromosomes.
-     *
-     * @param candidateChromosome The candidate chromosome for the archive.
-     */
-    protected updateArchive(candidateChromosome: C): void {
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            let bestLength = this._archive.has(fitnessFunctionKey)
-                ? this._archive.get(fitnessFunctionKey).getLength()
-                : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
-            const candidateLength = candidateChromosome.getLength();
-            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
-                bestLength = candidateLength;
-                if (!this._archive.has(fitnessFunctionKey) && !this.isIterativeSearch()) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
-                }
-                this._archive.set(fitnessFunctionKey, candidateChromosome);
-            }
-        }
-        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
-    }
-
-    /**
      * Determines whether the used TestGenerator is the IterativeSearchBasedTestGenerator.
      * If so we do no want to update statistics in the OnePlusOne-Algorithm.
      * @returns boolean defining whether OnePlusOneEA has been called by the IterativeSearchBasedTestGenerator

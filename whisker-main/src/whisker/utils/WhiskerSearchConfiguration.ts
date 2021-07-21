@@ -52,7 +52,9 @@ import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExt
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
-import {VariableLengthConstrainedChromosomeMutation} from "../testcase/VariableLengthConstrainedChromosomeMutation";
+import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
+import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
+import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 
 
 class ConfigException implements Error {
@@ -211,7 +213,15 @@ export class WhiskerSearchConfiguration {
             case 'variablelengthConstrained':
                 return new VariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
-            case'neatMutation':
+            case 'biasedvariablelength': {
+                const {
+                    integerRange: {min, max},
+                    [`chromosome-length`]: chromosomeLength,
+                    mutation: {gaussianMutationPower}
+                } = this.dict;
+                return new BiasedVariableLengthMutation(min, max, chromosomeLength, gaussianMutationPower);
+            }
+            case 'neatMutation':
                 return new NeatMutation(
                     this.dict['mutation']['mutationAddConnection'] as number,
                     this.dict['mutation']['recurrentConnection'] as number,
@@ -266,11 +276,11 @@ export class WhiskerSearchConfiguration {
             switch (operator['type']) {
                 case "Extension":
                     type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        operator['probability']);
+                        this.getEventSelector(), operator['probability']);
                     break;
                 case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        operator['probability']);
+                        this.getEventSelector(), operator['probability']);
             }
 
             operators.add(type);
@@ -289,6 +299,18 @@ export class WhiskerSearchConfiguration {
             case 'dynamic':
             default:
                 return new DynamicScratchEventExtractor(Container.vm);
+        }
+    }
+
+    public getEventSelector(): EventSelector {
+        switch (this.dict['eventSelector']) {
+            case 'clustering': {
+                const {integerRange} = this.dict;
+                return new ClusteringEventSelector(integerRange);
+            }
+            case 'interleaving':
+            default:
+                return new InterleavingEventSelector();
         }
     }
 

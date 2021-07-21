@@ -6,8 +6,9 @@
     "minVarChromosomeLength": 5,
     "maxVarChromosomeLength": 20,
     "extractor": "dynamic",
+    "eventSelector": "clustering",
     "mutation": {
-        "operator": "variablelength",
+        "operator": "biasedvariablelength",
         "probability": 1,
         "gaussianMutationPower": 5
     },
