@@ -252,19 +252,22 @@ export class ModelTester extends EventEmitter {
             }
         });
 
-        // check for halt
-        let halt = false;
-        this.programModels.forEach(model => {
-            if (model.haltAllModels()) {
-                halt = true;
+        // check for halt if not yet stopped
+        if (this.haltAllCallback.isActive()) {
+            let halt = false;
+            this.programModels.forEach(model => {
+                if (model.haltAllModels()) {
+                    halt = true;
+                }
+            })
+            if (halt) {
+                this.checkUtility.checkEffects();
+                this.startOnTestEnd();
+                return;
             }
-        })
-        if (halt) {
-            this.checkUtility.checkEffects();
-            this.startOnTestEnd();
-        } else {
-            this.checkUtility.checkEventEffects();
         }
+        this.checkUtility.checkEventEffects();
+
     }
 
     private edgeTrace(transition: ProgramModelEdge) {

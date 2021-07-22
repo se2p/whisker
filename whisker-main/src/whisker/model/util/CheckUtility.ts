@@ -231,7 +231,7 @@ export class CheckUtility extends EventEmitter {
 
     private failOnProgramModel(edge, effect) {
         let output = getEffectFailedOutput(edge, effect);
-        // console.error(output, this.testDriver.getTotalStepsExecuted());
+        console.error(output, this.testDriver.getTotalStepsExecuted());
         this.modelResult.addFail(output);
     }
 
