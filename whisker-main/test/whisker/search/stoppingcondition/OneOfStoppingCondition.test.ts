@@ -28,6 +28,7 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
+import {StatisticsCollector} from "../../../../src/whisker/utils/StatisticsCollector";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     setCurrentSolution(chromosome: BitstringChromosome) {
@@ -36,6 +37,7 @@ class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     }
     setIterations(iterations:number) {
         this._iterations = iterations;
+        StatisticsCollector.getInstance().iterationCount = iterations;
     }
 }
 

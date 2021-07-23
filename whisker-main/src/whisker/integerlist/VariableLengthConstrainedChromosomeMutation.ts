@@ -18,19 +18,18 @@
  *
  */
 
-import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
-import {IntegerListChromosome} from './IntegerListChromosome';
 
-/**
- * Mutates every codon with the same probability.
- */
-export class VariableLengthMutation extends AbstractVariableLengthMutation<IntegerListChromosome> {
-    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
-        return 1 / numberOfCodons;
-    }
+import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
+import {TestChromosome} from "../testcase/TestChromosome";
+
+export class VariableLengthConstrainedChromosomeMutation extends AbstractVariableLengthMutation<TestChromosome> {
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         super(min, max, length, gaussianMutationPower);
+    }
+
+    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+        return 1 / numberOfCodons;
     }
 
     /**
@@ -43,7 +42,11 @@ export class VariableLengthMutation extends AbstractVariableLengthMutation<Integ
      * @param chromosome The original chromosome, that mutates.
      * @return A mutated deep copy of the given chromosome.
      */
-    apply(chromosome: IntegerListChromosome): IntegerListChromosome {
-        return super.applyUpTo(chromosome, chromosome.getLength());
+    apply(chromosome: TestChromosome): TestChromosome {
+        if (chromosome.lastImprovedCodon == 0 || chromosome.lastImprovedCodon == chromosome.getLength() - 1) {
+            return super.applyUpTo(chromosome, chromosome.getLength());
+        } else {
+            return super.applyUpTo(chromosome, chromosome.lastImprovedCodon + 1);
+        }
     }
 }

@@ -8,7 +8,6 @@ import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {Chromosome} from "../../../../src/whisker/search/Chromosome";
 import {NetworkChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
-import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
@@ -104,7 +103,7 @@ describe('Test NEAT', () => {
                 return Promise.resolve(fitness);
             }
         }
-        properties.stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
+        properties.stoppingCondition = new FixedIterationsStoppingCondition(iterations);
         properties.timeout = 25000;
         properties.ageSignificance = 1.0;
         properties.parentsPerSpecies = 0.2;

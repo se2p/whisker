@@ -52,6 +52,9 @@ import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExt
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
+import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
+import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
+import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NetworkChromosomeGeneratorExistingNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorExistingNetwork";
@@ -93,9 +96,14 @@ export class WhiskerSearchConfiguration {
             this.dict['mutation']['maxMutationCountFocusedPhase'] as number);
         properties.setSelectionProbabilities(this.dict['selection']['randomSelectionProbabilityStart'] as number,
             this.dict['selection']['randomSelectionProbabilityFocusedPhase'] as number);
-        properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
-            this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
         properties.setStartOfFocusedPhase(this.dict['startOfFocusedPhase'] as number);
+        properties.setTestGenerator(this.dict['test-generator']);
+
+        // Not all algorithms have special archive settings.
+        if (this.dict['archive']) {
+            properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
+                this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
+        }
 
         properties.setStoppingCondition(this._getStoppingCondition(this.dict['stopping-condition']));
 
@@ -209,6 +217,17 @@ export class WhiskerSearchConfiguration {
             case 'variablelength':
                 return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
+            case 'variablelengthConstrained':
+                return new VariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
+                    this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
+            case 'biasedvariablelength': {
+                const {
+                    integerRange: {min, max},
+                    [`chromosome-length`]: chromosomeLength,
+                    mutation: {gaussianMutationPower}
+                } = this.dict;
+                return new BiasedVariableLengthMutation(min, max, chromosomeLength, gaussianMutationPower);
+            }
             case'neatMutation':
                 return new NeatMutation(this.dict['mutation'])
             case 'integerlist':
@@ -254,11 +273,11 @@ export class WhiskerSearchConfiguration {
             switch (operator['type']) {
                 case "Extension":
                     type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        operator['probability']);
+                        this.getEventSelector(), operator['probability']);
                     break;
                 case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        operator['probability']);
+                        this.getEventSelector(), operator['probability']);
             }
 
             operators.add(type);
@@ -279,6 +298,18 @@ export class WhiskerSearchConfiguration {
             case 'dynamic':
             default:
                 return new DynamicScratchEventExtractor(Container.vm);
+        }
+    }
+
+    public getEventSelector(): EventSelector {
+        switch (this.dict['eventSelector']) {
+            case 'clustering': {
+                const {integerRange} = this.dict;
+                return new ClusteringEventSelector(integerRange);
+            }
+            case 'interleaving':
+            default:
+                return new InterleavingEventSelector();
         }
     }
 

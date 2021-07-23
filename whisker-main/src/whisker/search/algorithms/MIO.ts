@@ -24,7 +24,6 @@ import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
-import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
@@ -36,47 +35,80 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
  */
 export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
-    private _chromosomeGenerator: ChromosomeGenerator<C>;
+    /**
+     * Function determining how good a chromosome performs with respect to a target statement.
+     */
+    private _heuristicFunctions: Map<number, (number) => number>;
 
-    private _properties: SearchAlgorithmProperties<C>;
-
-    private _fitnessFunctions: Map<number, FitnessFunction<C>>;
-
-    private _heuristicFunctions: Map<number, Function>;
-
-    private _iterations: number;
-
-    private _stoppingCondition: StoppingCondition<C>;
-
-    private _bestIndividuals: List<C>;
-
+    /**
+     * Maps all covered statements to the Chromosomes covering them.
+     */
     private _archiveCovered: Map<number, C>;
 
+    /**
+     * Maps uncovered Statements to the chromosomes closest to covering them with respect to the given fitnessFunction.
+     */
     private _archiveUncovered: Map<number, List<ChromosomeHeuristicTuple<C>>>;
 
+    /**
+     * Defines the probability of sampling a new Chromosome instead of mutating an existing one during search.
+     */
     private _randomSelectionProbability: number;
 
+    /**
+     * Defines the probability of sampling a new Chromosome instead of mutating an existing one
+     * at the start of the search.
+     */
     private _randomSelectionProbabilityStart: number;
 
+    /**
+     * Defines the probability of sampling a new Chromosome instead of mutating an existing one during FocusPhase.
+     */
     private _randomSelectionProbabilityFocusedPhase: number;
 
+    /**
+     * Defines the number of Chromosomes which held in each uncovered target archive/population during search.
+     */
     private _maxArchiveSize: number;
 
+    /**
+     * Defines the number of Chromosomes which held in each uncovered target archive/population
+     * at the start of the search.
+     */
     private _maxArchiveSizeStart: number;
 
+    /**
+     * Defines the number of Chromosomes which held in each uncovered target archive/population during FocusPhase.
+     */
     private _maxArchiveSizeFocusedPhase: number;
 
+    /**
+     * Defines the number of mutations applied to a given Chromosome within one round of mutation during search.
+     */
     private _maxMutationCount: number;
 
+    /**
+     * Defines the number of mutations applied to a given Chromosome within one round of mutation
+     * at the start of the search.
+     */
     private _maxMutationCountStart: number;
 
+    /**
+     * Defines the number of mutations applied to a given Chromosome within one round of mutation during FocusPhase.
+     */
     private _maxMutationCountFocusedPhase: number;
 
+    /**
+     * Counts the number of mutations applied to a given Chromosome in the current mutation round.
+     */
     private _mutationCounter: number;
 
+    /**
+     * A Map mapping to each fitnessFunction a counter determining how often the fitnessFunction has been selected for a
+     * mutation/randomSampling round. When selecting a FitnessFunction for the next mutation/randomSampling round
+     * we always choose the FitnessFunction with the lowest samplingCounter value.
+     */
     private _samplingCounter: Map<number, number>;
-
-    private _startTime: number;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -119,7 +151,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void {
+    setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void {
         this._heuristicFunctions = heuristicFunctions;
     }
 
@@ -136,7 +168,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @returns Solution for the given problem
      */
-    async findSolution(): Promise<List<C>> {
+    async findSolution(): Promise<Map<number, C>> {
         this.setStartValues();
         let chromosome: C;
         while (!(this._stoppingCondition.isFinished(this))) {
@@ -159,57 +191,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log("Iteration " + this._iterations + ", covered goals: "
                 + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
         }
-        return this._bestIndividuals;
-    }
-
-/**
- * Summarize the solution saved in _archive.
- * @returns: For each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- */
-
-    summarizeSolution(): string {
-        const summary = [];
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const curSummary = {};
-            if (!this._archiveCovered.has(fitnessFunctionKey)) {
-                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                curSummary['block'] = fitnessFunction.toString();
-                let fitness = Number.MAX_VALUE;
-                let approachLevel = Number.MAX_VALUE;
-                let branchDistance = Number.MAX_VALUE;
-                let CFGDistance = Number.MAX_VALUE;
-                for (const chromosome of this._bestIndividuals) {
-                    const curFitness = fitnessFunction.getFitness(chromosome);
-                    if (curFitness < fitness) {
-                        fitness = curFitness;
-                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
-                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
-                        if (approachLevel === 0 && branchDistance === 0) {
-                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
-                        }
-                        else {
-                            CFGDistance = Number.MAX_VALUE;
-                            //this means that it was unnecessary to calculate cfg distance, since
-                            //approach level or branch distance was not 0;
-                        }
-                    }
-                }
-                curSummary['ApproachLevel'] = approachLevel;
-                curSummary['BranchDistance'] = branchDistance;
-                curSummary['CFGDistance'] = CFGDistance;
-                curSummary['Fitness'] = fitness;
-                if (Object.keys(curSummary).length > 0){
-                    summary.push(curSummary);
-                }
-            }
-
-        }
-        return JSON.stringify({'uncoveredBlocks': summary});
+        return this._archiveCovered;
     }
 
     /**
@@ -229,6 +211,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this.updateParameters();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
     }
 
     /**
@@ -259,7 +242,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @param chromosome The candidate chromosome for the archive.
      */
-    private updateArchive(chromosome: C): void {
+    protected updateArchive(chromosome: C): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
             if (heuristicValue == 1) {
@@ -269,10 +252,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(this._fitnessFunctions.get(fitnessFunctionKey));
                     this._archiveUncovered.delete(fitnessFunctionKey);
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
-                    if(this._archiveCovered.size == this._fitnessFunctions.size) {
+                    if (this._archiveCovered.size == this._fitnessFunctions.size) {
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     }
