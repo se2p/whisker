@@ -2,7 +2,6 @@ import {List} from '../../utils/List';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {NetworkChromosome} from "../../whiskerNet/NetworkChromosome";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
-import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
@@ -10,55 +9,15 @@ import {NeatPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeatPop
 import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
-import {Container} from "../../utils/Container";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
+    // TODO: Really necessary to separate SearchAlgorithms and NE-Algorithms!!!!
     /**
      * The search parameters
      */
-    private _properties: NeuroevolutionProperties<C>;
-
-    /**
-     * The generator used for creating the initial population.
-     */
-    private _chromosomeGenerator: ChromosomeGenerator<C>;
-
-    /**
-     * The used fitness function to evaluate how close we are to an optimal solution.
-     */
-    private _fitnessFunctions: Map<number, FitnessFunction<C>>;
-
-    /**
-     * Defines when we stop the search.
-     */
-    private _stoppingCondition: StoppingCondition<C>;
-
-    /**
-     * Saves the number of iterations.
-     */
-    private _iterations = 0;
-
-    /**
-     * Saves the best chromosomes according to the defined fitness function
-     */
-    private _bestIndividuals = new List<C>();
-
-    /**
-     * The archive maps all statements of a Scratch project as numbers to a chromosome which covers the given statement.
-     */
-    private readonly _archive = new Map<number, C>();
-
-    /**
-     * Saves the time at which the search was started.
-     */
-    private _startTime: number;
-
-    /**
-     * Flag if we reached 100% coverage of the given Scratch project.
-     */
-    private _fullCoverageReached = false;
+    private _neuroevolutionProperties: NeuroevolutionProperties<C>;
 
     /**
      * The fitnessFunction used to evaluate the networks of Neuroevolution Algorithm.
@@ -77,7 +36,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     private async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
-            await this._networkFitnessFunction.getFitness(network, this._properties.timeout);
+            await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout);
             // Update the archive and stop in the middle of the evaluation if we already cover all statements.
             this.updateArchive(network);
             if ((this._stoppingCondition.isFinished(this))) {
@@ -90,7 +49,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Returns a list of solutions for the given problem.
      * @returns Solution for the given problem
      */
-    async findSolution(): Promise<List<C>> {
+    async findSolution(): Promise<Map<number, C>> {
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
         const population = this.getPopulation();
@@ -109,56 +68,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             }
             this._iterations++;
         }
-        return this._bestIndividuals;
-    }
-
-    /**
-     * Summarize the solution saved in _archive.
-     * @returns: For each statement that is not covered, it returns 4 items:
-     *        - Not covered: the statement that’s not covered by any
-     *        function in the _bestIndividuals.
-     *        - ApproachLevel: the approach level of that statement
-     *        - BranchDistance: the branch distance of that statement
-     *        - Fitness: the fitness value of that statement
-     * For other search algorithms, it returns an empty string.
-     */
-    summarizeSolution(): string {
-        const summary = [];
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const curSummary = {};
-            if (!this._archive.has(fitnessFunctionKey)) {
-                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                curSummary['block'] = fitnessFunction.toString();
-                let fitness = Number.MAX_VALUE;
-                let approachLevel = Number.MAX_VALUE;
-                let branchDistance = Number.MAX_VALUE;
-                let CFGDistance = Number.MAX_VALUE;
-                for (const chromosome of this._bestIndividuals) {
-                    const curFitness = fitnessFunction.getFitness(chromosome);
-                    if (curFitness < fitness) {
-                        fitness = curFitness;
-                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
-                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
-                        if (approachLevel === 0 && branchDistance === 0) {
-                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
-                        } else {
-                            CFGDistance = Number.MAX_VALUE;
-                            //this means that it was unnecessary to calculate cfg distance, since
-                            //approach level or branch distance was not 0;
-                        }
-                    }
-                }
-                curSummary['ApproachLevel'] = approachLevel;
-                curSummary['BranchDistance'] = branchDistance;
-                curSummary['CFGDistance'] = CFGDistance;
-                curSummary['Fitness'] = fitness;
-                if (Object.keys(curSummary).length > 0) {
-                    summary.push(curSummary);
-                }
-            }
-
-        }
-        return JSON.stringify({'uncoveredBlocks': summary});
+        return this._archive as Map<number, C>;
     }
 
     /**
@@ -166,38 +76,13 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * @returns NeuroevolutionPopulation defined in the config files.
      */
     private getPopulation(): NeuroevolutionPopulation<NetworkChromosome> {
-        switch (this._properties.populationType) {
+        switch (this._neuroevolutionProperties.populationType) {
             case 'random':
-                return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._properties);
+                return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
             default:
             case 'neat':
-                return new NeatPopulation(this._chromosomeGenerator, this._properties);
+                return new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
         }
-    }
-
-    /**
-     * Updates the archive with a given network candidate. The archive is updated if we cover a new statement or
-     * if we cover a already covered statement by executing less events.
-     * @param network The candidate network the archive may gets updated with.
-     */
-    private updateArchive(network: C): void {
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            let bestLength = this._archive.has(fitnessFunctionKey)
-                ? this._archive.get(fitnessFunctionKey).getLength()
-                : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(network);
-            const candidateLength = network.getLength();
-            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
-                bestLength = candidateLength;
-                if (!this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount();
-                }
-                this._archive.set(fitnessFunctionKey, network);
-                //console.log("Found test for goal: " + fitnessFunction);
-            }
-        }
-        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
     }
 
     /**
@@ -211,7 +96,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                (this._iterations + 1) * this._properties.populationSize;
+                (this._iterations + 1) * this._neuroevolutionProperties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }
@@ -260,9 +145,9 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
-        this._properties = properties as unknown as NeuroevolutionProperties<C>;
-        this._stoppingCondition = this._properties.stoppingCondition
-        this._networkFitnessFunction = this._properties.networkFitness;
+        this._neuroevolutionProperties = properties as unknown as NeuroevolutionProperties<C>;
+        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition
+        this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
@@ -274,7 +159,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     }
 
     getCurrentSolution(): List<C> {
-        return this._bestIndividuals;
+        return this._bestIndividuals as List<C>;
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
