@@ -207,14 +207,40 @@ export abstract class CheckGenerator {
     /**
      * Get a method checking another method.
      * @param t Instance of the test driver.
+     * @param cu Listener for checks.
+     * @param caseSensitive Whether the sprite and variable names are case sensitive.
      * @param negated Whether it should be negated.
      * @param f the function as a string.
      */
-    static getFunctionCheck(t: TestDriver, negated: boolean, f: string): () => boolean {
+    static getFunctionCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean, f: string):
+        () => boolean {
         try {
             eval(f);
         } catch (e) {
             throw getFunctionEvalError(e);
+        }
+        let {varDependencies, attrDependencies} = ModelUtil.getDependencies(f);
+        let eventString = CheckUtility.getEventString(CheckName.Function, negated, f);
+        if (varDependencies.length > 0) {
+            varDependencies.forEach(({spriteName, varName}) => {
+                cu.registerVarEvent(varName, eventString, () => {
+                    return !negated == eval(f)(t);
+                })
+            })
+        }
+        if (attrDependencies.length > 0) {
+            attrDependencies.forEach(({spriteName, attrName}) => {
+                if (attrName == "x" || attrName == "y") {
+                    cu.registerOnMoveEvent(spriteName, eventString, () => {
+                        return !negated == eval(f)(t);
+                    })
+                } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
+                    || attrName == "currentCostumeName" || attrName == "rotationStyle") {
+                    cu.registerOnVisualChange(spriteName, eventString, () => {
+                        return !negated == eval(f)(t);
+                    })
+                }
+            })
         }
         return () => {
             return !negated == eval(f);
@@ -293,7 +319,7 @@ export abstract class CheckGenerator {
     static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean,
                                   spriteNameRegex: string, output: string): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
-        const expression = ModelUtil.getExpressionForEval(t, caseSensitive, output);
+        const expression = ModelUtil.getExpressionForEval(t, caseSensitive, output).expr;
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, spriteNameRegex, output);
         cu.registerOutput(spriteName, eventString, (sprite) => {
@@ -446,15 +472,43 @@ export abstract class CheckGenerator {
     /**
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
      * @param t Instance of the test driver.
+     * @param cu Listener for checks.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
-     * @param expression The expression string.
+     * @param expr The expression string.
      */
-    static getExpressionCheck(t: TestDriver, negated: boolean, caseSensitive: boolean, expression: string) {
-        let toEval = ModelUtil.getExpressionForEval(t, caseSensitive, expression);
-        // todo get dependencies on attributes / variables and add listeners
+    static getExpressionCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean, expr: string) {
+        let {
+            expr: expression,
+            varDependencies,
+            attrDependencies
+        } = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
+
+        let eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
+        if (varDependencies.length > 0) {
+            varDependencies.forEach(({spriteName, varName}) => {
+                cu.registerVarEvent(varName, eventString, () => {
+                    return !negated == eval(expression)(t);
+                })
+            })
+        }
+        if (attrDependencies.length > 0) {
+            attrDependencies.forEach(({spriteName, attrName}) => {
+                if (attrName == "x" || attrName == "y") {
+                    cu.registerOnMoveEvent(spriteName, eventString, () => {
+                        return !negated == eval(expression)(t);
+                    })
+                } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
+                    || attrName == "currentCostumeName" || attrName == "rotationStyle") {
+                    cu.registerOnVisualChange(spriteName, eventString, () => {
+                        return !negated == eval(expression)(t);
+                    })
+                }
+            })
+        }
+
         return () => {
-            return !negated == eval(toEval)(t);
+            return !negated == eval(expression)(t);
         }
     }
 

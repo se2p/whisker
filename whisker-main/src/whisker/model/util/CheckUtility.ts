@@ -29,7 +29,6 @@ export class CheckUtility extends EventEmitter {
     private eventStrings: string[] = [];
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
-    private failedChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
 
     /**
      * Get an instance of a condition state saver.

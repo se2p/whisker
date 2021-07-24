@@ -5,6 +5,7 @@ import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
 import {getErrorOnEdgeOutput, getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {InputEffect} from "./InputEffect";
+import {CheckName} from "./Check";
 
 /**
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
@@ -99,39 +100,14 @@ export abstract class ModelEdge {
         return failedConditions;
     }
 
-
+    /**
+     * Do nothing.. Only on subtype ProgramModelEdge.
+     */
     checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                            modelResult: ModelResult, eventStrings: string[]): Condition[] {
-        if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
-            return this.conditions;
-        }
-        let check = false;
-
-        // look up if this edge has a condition that was triggered
-        for (let j = 0; j < this.conditions.length; j++) {
-            const cond = this.conditions[j];
-            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
-            if (eventStrings.indexOf(eventString) != -1) {
-                check = true;
-            }
-        }
-
-        if (!check) {
-            return this.conditions;
-        }
-
-        let failed = [];
-        for (let j = 0; j < this.conditions.length; j++) {
-            let cond = this.conditions[j];
-            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
-
-            if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
-                failed.push(cond);
-                break;
-            }
-        }
-        return failed;
+        return this.conditions;
     }
+
 
     set lastTransition(transition: number) {
         this._lastTransition = transition;
@@ -250,6 +226,62 @@ export class ProgramModelEdge extends ModelEdge {
             ...super.simplifyForSave(),
             effects: effects
         };
+    }
+
+    /**
+     * Check the conditions and effects for checks that are depending on the check listeners and the fired events.
+     * Effects are checked for Function:true Checks.
+     */
+    checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
+                           modelResult: ModelResult, eventStrings: string[]): Condition[] {
+        if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
+            return this.conditions;
+        }
+        let check = false;
+
+        // look up if this edge has a condition that was triggered
+        for (let j = 0; j < this.conditions.length; j++) {
+            const cond = this.conditions[j];
+            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
+            if (eventStrings.indexOf(eventString) != -1) {
+                check = true;
+                break;
+            } else if (cond.name == CheckName.Function && cond.args == ["true"]
+                || cond.name == CheckName.Probability && cond.args == ["1"]) {
+                check = this.testEffectsOnEvent(eventStrings);
+                if (check) {
+                    break;
+                }
+            }
+        }
+
+        if (!check) {
+            return this.conditions;
+        }
+
+        let failed = [];
+        for (let j = 0; j < this.conditions.length; j++) {
+            let cond = this.conditions[j];
+            const eventString = CheckUtility.getEventString(cond.name, cond.negated, ...cond.args);
+
+            if (eventStrings.indexOf(eventString) == -1 && !cond.check(stepsSinceLastTransition, stepsSinceEnd)) {
+                failed.push(cond);
+                break;
+            }
+        }
+        return failed;
+    }
+
+
+    private testEffectsOnEvent(eventStrings: string[]): boolean {
+        for (let i = 0; i < this.effects.length; i++) {
+            const eventString = CheckUtility.getEventString(this.effects[i].name, this.effects[i].negated,
+                ...this.effects[i].args);
+            if (eventStrings.indexOf(eventString) != -1) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

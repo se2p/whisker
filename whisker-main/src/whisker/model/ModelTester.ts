@@ -182,6 +182,7 @@ export class ModelTester extends EventEmitter {
     private getOnTestEndFunction() {
         let afterStopModels = [...this.onTestEndModels];
         return () => {
+            this.checkUtility.makeFailedOutputs();
             let notStoppedModels = [];
             afterStopModels.forEach(model => {
                 let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility, this.result);

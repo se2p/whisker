@@ -125,8 +125,185 @@ describe('ModelUtil tests', function () {
         expect(() => ModelUtil.testNumber("string")).toThrow();
         expect(() => ModelUtil.testNumber("")).toThrow();
         expect(() => ModelUtil.testNumber(null)).toThrow();
-        expect(() => ModelUtil.testNumber(undefined)).toThrow();;
-        expect(() => ModelUtil.testNumber(1)).not.toThrow();;
-        expect(() => ModelUtil.testNumber("1")).not.toThrow();;
+        expect(() => ModelUtil.testNumber(undefined)).toThrow();
+        expect(() => ModelUtil.testNumber(1)).not.toThrow();
+        expect(() => ModelUtil.testNumber("1")).not.toThrow();
+    })
+
+    test("getDependencies attribute", () => {
+        let func = "(t) => {" +
+            "return t.getSprite('Apple').x == 0;}";
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [],
+            attrDependencies: [{spriteName: 'Apple', attrName: 'x'}]
+        })
+        func = "(t) => {" +
+            "return t.getSprite('Apple').visible;}";
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [],
+            attrDependencies: [{spriteName: 'Apple', attrName: 'visible'}]
+        })
+        func = "(t) => {" +
+            "t.getSprite('Apple').visible;"+
+            "return t.getSprite('Apple').visible;}";
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [],
+            attrDependencies: [{spriteName: 'Apple', attrName: 'visible'}]
+        })
+        func = "(t) => {" +
+            "let y = t.getSprite('ban').y;"+
+            "return t.getSprite('Apple').visible;}";
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [],
+            attrDependencies: [{spriteName:'ban',attrName:'y'},{spriteName: 'Apple', attrName: 'visible'}]
+        })
+    });
+
+    test("getDependencies variable", () => {
+        let func = "(t) => {" +
+            "return t.getSprite('Apple').getVariable('test') == '2'}";
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "Apple", varName: "test"}],
+            attrDependencies: []
+        });
+        func = "(t) => {" +
+            "let var1 = t.getSprite('Apple').getVariable('test');"+
+            "return t.getSprite('Apple').getVariable('test') == '2'}";
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "Apple", varName: "test"}],
+            attrDependencies: []
+        });
+        func = "(t) => {" +
+            "let var1 = t.getSprite('Apple').getVariable('test2');"+
+            "return t.getSprite('Apple').getVariable('test') == '2'}";
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "Apple", varName: "test2"},{spriteName: "Apple", varName: "test"}],
+            attrDependencies: []
+        });
+    });
+
+    test("getDependencies variable 2", () => {
+        let func = "(t) => {" +
+            "let sprite = t.getSprite('apple');" +
+            "let variable = sprite.getVariable('test');" +
+            "}"
+
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "apple", varName: "test"}],
+            attrDependencies: []
+        });
+    });
+
+    test("getDependencies two sprites", () => {
+        let func = "(t) => {" +
+            "let sprite = t.getSprite('apple');" +
+            "sprite = t.getSprite('bananas');" +
+            "let variable = sprite.getVariable('test');}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "bananas", varName: "test"}],
+            attrDependencies: []
+        });
+    });
+
+    test("getDependencies both attribute and variable", () => {
+        let func = "(t) => {" +
+            "let x = t.getSprite('apple').x;" +
+            "sprite = t.getSprite('bananas');" +
+            "let variable = sprite.getVariable('test');}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "bananas", varName: "test"}],
+            attrDependencies: [{spriteName: "apple", attrName: "x"}]
+        });
+    });
+
+    test("getDependencies nothing", () => {
+        let func = "(t) => {" +
+            "let x = t.getSprite('apple');" +
+            "sprite = t.getSprite('bananas');}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [],
+            attrDependencies: []
+        });
+    });
+
+    test("getDependencies with \" ", () => {
+        let func = "(t) => {" +
+            "let x = t.getSprite('apple');" +
+            "sprite = t.getSprite('bananas');" +
+            "return sprite.getVariable(\"test\");}";
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "bananas", varName: "test"}],
+            attrDependencies: []
+        });
+
+        func = "(t) => {" +
+            "let x = t.getSprite(\"apple\").x;" +
+            "sprite = t.getSprite(\"bananas\");" +
+            "let variable = sprite.getVariable(\"test\");}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "bananas", varName: "test"}],
+            attrDependencies: [{spriteName: "apple", attrName: "x"}]
+        });
+    });
+
+    test("getDependencies crossed use", () => {
+        let func = "(t) => {" +
+            "let apple = t.getSprite('apple');" +
+            "sprite = t.getSprite('bananas');" +
+            "let variable = sprite.getVariable('test');" +
+            "let x = apple.x;}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "bananas", varName: "test"}],
+            attrDependencies: [{spriteName: "apple", attrName: "x"}]
+        });
+    })
+
+    test("getDependencies crossed use 2", () => {
+        let func = "(t) => {" +
+            "let apple = t.getSprite('apple');" +
+            "sprite = t.getSprite('bananas');" +
+            "let variable = sprite.getVariable('test');" +
+            "let x = apple.x;" +
+            "return apple.x;}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "bananas", varName: "test"}],
+            attrDependencies: [{spriteName: "apple", attrName: "x"}]
+        });
+    })
+
+    test("getDependencies wrong ones", () => {
+        // Error ones
+        let func = "(t) => {" +
+            "let x = t.getSprite(apple).x;" +
+            "sprite = t.getSprite('bananas');" +
+            "let variable = sprite.getVariable('test');}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [{spriteName: "bananas", varName: "test"}],
+            attrDependencies: []
+        });
+
+        func = "(t) => {" +
+            "let x = t.getSprite(apple).x;" +
+            "sprite = t.getSprite(bananas);" +
+            "let variable = sprite.getVariable('test');}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [],
+            attrDependencies: []
+        });
+        func = "(t) => {" +
+            "let x = t.getSprite('apple').x;" +
+            "sprite = t.getSprite('bananas');" +
+            "let variable = sprite.getVariable(test);}"
+        expect(ModelUtil.getDependencies(func)).toStrictEqual({
+            varDependencies: [],
+            attrDependencies: [{spriteName: "apple", attrName: "x"}]
+        });
     })
 });

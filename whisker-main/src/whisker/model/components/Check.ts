@@ -39,7 +39,6 @@ export class Check {
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
      * @param id Id for this check.
-     * @param edge Parent edge.
      * @param name Type/name of the check.
      * @param args List of arguments for the check.
      * @param negated Whether the check is negated.
@@ -108,7 +107,7 @@ export class Check {
      * @param cu Instance of the check utility for listening and checking more complex events.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean) {
+    checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean): (...any) => boolean {
         switch (this._name) {
             case CheckName.AttrComp:
                 return CheckGenerator.getAttributeComparisonCheck(t, cu, this._negated, caseSensitive, this._args[0],
@@ -119,7 +118,7 @@ export class Check {
             case CheckName.BackgroundChange:
                 return CheckGenerator.getBackgroundChangeCheck(t, cu, this._negated, this._args[0]);
             case CheckName.Function:
-                return CheckGenerator.getFunctionCheck(t, this._negated, this._args[0]);
+                return CheckGenerator.getFunctionCheck(t, cu, this._negated, caseSensitive, this._args[0]);
             case CheckName.Output:
                 return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._negated, caseSensitive, this._args[0],
                     this._args[1]);
@@ -140,7 +139,7 @@ export class Check {
             case CheckName.Click:
                 return CheckGenerator.getSpriteClickedCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.Expr:
-                return CheckGenerator.getExpressionCheck(t, this._negated, caseSensitive, this._args[0]);
+                return CheckGenerator.getExpressionCheck(t, cu, this._negated, caseSensitive, this._args[0]);
             case CheckName.Probability:
                 return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             case CheckName.TimeElapsed:
@@ -197,15 +196,6 @@ export class Check {
 
     isInvertedOf(check: Check) {
         return this.name == check.name && this.negated != check.negated && this.arrayEquals(this.args, check.args);
-    }
-
-    /**
-     * Test whether the checks (dummies) are contradicting each other.
-     */
-    static testForContradictingOnDummies(check1: { name: CheckName, negated: boolean, args: any[] }, check2: { name: CheckName, negated: boolean, args: any[] }) {
-        let checkDummy1 = new Check("dummy", check1.name, check1.args, check1.negated);
-        let checkDummy2 = new Check("dummy", check2.name, check2.args, check2.negated);
-        return Check.testForContradicting(checkDummy1, checkDummy2);
     }
 
     /**
@@ -283,7 +273,7 @@ export class Check {
         if (change1.length == 2 && change2.length == 2) {
 
             // += & -=, -= & +=
-            if(change1 != change2) {
+            if (change1 != change2) {
                 // both negated -> problem, no one negated -> problem
                 return check1.negated == check2.negated;
             }

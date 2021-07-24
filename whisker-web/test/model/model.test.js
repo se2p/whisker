@@ -72,9 +72,39 @@ describe('Model fruitcatcher tests', () => {
         await expect(modelCoverage).toBe("1.00");
     }, timeout);
 
-    test('move event listener', async () => {
+    test('move event listener (change)', async () => {
         await loadProject('test/model/scratch-programs/MoveEvent.sb3',
-            'test/model/model-jsons/MoveEvent.json');
+            'test/model/model-jsons/MoveEventChange.json');
+        await (await page.$('#run-all-tests')).click();
+        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
+        await expect(errorsInModel).toBe("0");
+        await expect(failsInModel).toBe("0");
+        await expect(modelCoverage).toBe("1.00");
+    }, timeout);
+
+    test('move event listener (comp)', async () => {
+        await loadProject('test/model/scratch-programs/MoveEvent.sb3',
+            'test/model/model-jsons/MoveEventComp.json');
+        await (await page.$('#run-all-tests')).click();
+        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
+        await expect(errorsInModel).toBe("0");
+        await expect(failsInModel).toBe("0");
+        await expect(modelCoverage).toBe("1.00");
+    }, timeout);
+
+    test('move event listener (expr)', async () => {
+        await loadProject('test/model/scratch-programs/MoveEvent.sb3',
+            'test/model/model-jsons/MoveEventExpr.json');
+        await (await page.$('#run-all-tests')).click();
+        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
+        await expect(errorsInModel).toBe("0");
+        await expect(failsInModel).toBe("0");
+        await expect(modelCoverage).toBe("1.00");
+    }, timeout);
+
+    test('move event listener (function)', async () => {
+        await loadProject('test/model/scratch-programs/MoveEvent.sb3',
+            'test/model/model-jsons/MoveEventFunction.json');
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
         await expect(errorsInModel).toBe("0");
