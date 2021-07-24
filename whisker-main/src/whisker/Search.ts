@@ -159,7 +159,7 @@ export class Search {
 
         await util.prepare(accelerationFactor || 1);
         util.start();
-        const seed = Date.now();
+        const seed = config.getRandomSeed();
         Randomness.setInitialSeed(seed);
         seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();

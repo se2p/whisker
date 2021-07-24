@@ -456,4 +456,12 @@ export class WhiskerSearchConfiguration {
             return 10;
         }
     }
+
+    public getRandomSeed(): number {
+        if ("seed" in this.dict && typeof this.dict["seed"] === "number") {
+            return this.dict["seed"];
+        } else {
+            return Date.now();
+        }
+    }
 }
