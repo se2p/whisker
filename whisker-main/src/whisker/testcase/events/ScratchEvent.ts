@@ -38,7 +38,7 @@ export abstract class ScratchEvent {
     /**
      * Sets the parameter(s) of this event using the given arguments.
      * @param args the values to which the parameters of this event should be set to
-     * @param argType the type of the given arguments decides how they should be interpreted as parameters
+     * @param argType the type of the given arguments decides how they should be interpreted as parameters.
      */
     abstract setParameter(args: number[], argType: ParameterTypes): void;
 
@@ -48,7 +48,7 @@ export abstract class ScratchEvent {
     abstract getParameter(): (number | string | RenderedTarget) [];
 
     /**
-     * Returns the name(s) of the changeable parameter(s).
+     * Returns the name(s) of variable parameter(s).
      */
     abstract getVariableParameterNames(): string[];
 
@@ -63,8 +63,9 @@ export abstract class ScratchEvent {
     abstract toString(): string;
 
     /**
-     * Returns an identifier as string which treats events with variable parameters as equal and events whose
-     * parameters are determined by the ScratchEventExtractor as different.
+     * Returns an identifier as string. Events containing variable parameters obtain the same identifier and
+     * Events whose parameters are determined by the ScratchEventExtractor get different identifiers.
+     * The id is used to query the right RegressionNode if variable parameters for a specific Event are needed.
      */
     abstract stringIdentifier():string;
 

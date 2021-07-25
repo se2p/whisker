@@ -26,7 +26,7 @@ const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
-const DownloadButton = require('./components/DownloadButton');
+const DownloadContainer = require('./components/DownloadContainer');
 const InputRecorder = require('./components/input-recorder');
 
 const {showModal, escapeHtml} = require('./utils.js');
@@ -74,9 +74,6 @@ const runSearch = async function () {
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    if (configName.toLowerCase().includes('neuroevolution')){
-        Whisker.networkDownload.setTitle(`${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`);
-    }
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
@@ -84,8 +81,10 @@ const runSearch = async function () {
         accelerationFactor);
     Whisker.outputLog.print(res[1]);
     accSlider.slider('enable');
-    Whisker.networkDownload.setData(res[2]);
-    Whisker.networkDownload.save();
+    if (configName.toLowerCase().includes('neuroevolution')){
+        const title = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
+        new DownloadContainer(title, `json`, res[2]).download();
+    }
     return res[0];
 };
 
@@ -205,10 +204,6 @@ const initComponents = function () {
     Whisker.outputRun.hide();
     Whisker.outputLog = new Output($('#output-log')[0]);
     Whisker.outputLog.hide();
-    Whisker.networkDownload = new DownloadButton($('#network-download')[0]);
-    Whisker.networkDownload.setFormat('json');
-    Whisker.networkDownload.hide();
-
 
     Whisker.testEditor = new TestEditor($('#test-editor')[0], loadTestsFromString);
     Whisker.testEditor.setDefaultValue();

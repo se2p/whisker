@@ -20,11 +20,11 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         await this.collectStatistics(testSuite);
         const summary = this.summarizeSolution(archive);
         const testListWithSummary = new WhiskerTestListWithSummary(testSuite, summary);
-        // TODO: It is deeply necessary to separate NE and SearchAlgorithms or at least make NE a subclass of it.
+        // TODO: It is deeply necessary to separate NE and SearchAlgorithms.
         if(searchAlgorithm instanceof NEAT){
             testListWithSummary.networkPopulation = searchAlgorithm.getPopulationRecordAsJSON();
         }
-        return new WhiskerTestListWithSummary(testSuite, summary);
+        return testListWithSummary;
     }
 
     /**

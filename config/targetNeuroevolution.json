@@ -41,8 +41,8 @@
     },
     "network-fitness": {
         "type": "target",
-        "player": "Pico walking",
-        "target": "#00cc44",
+        "player": "boat",
+        "target": "#ffff99",
         "travelWeight": 0.5,
         "timeout": 10000
     },
@@ -50,8 +50,7 @@
         "type": "one-of",
         "conditions": [
             {
-                "type": "fixed-iteration",
-                "iterations": 300
+                "type": "optimal"
             }
         ]
     },

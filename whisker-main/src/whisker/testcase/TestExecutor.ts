@@ -29,11 +29,11 @@ import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
+import VMWrapper = require("../../vm/vm-wrapper.js")
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
 import {ParameterTypes} from "./events/ParameterTypes";
-import VMWrapper = require("../../vm/vm-wrapper.js");
 
 
 export class TestExecutor {

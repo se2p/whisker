@@ -56,6 +56,7 @@ export abstract class ScratchEventExtractor {
      */
     public abstract extractEvents(vm: VirtualMachine): List<ScratchEvent>;
 
+
     /**
      * Traverse downwards the block hierarchy and collect all encountered events.
      * @param target the rendered target of the vm

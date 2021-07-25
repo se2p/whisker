@@ -121,20 +121,9 @@ class TestRunner extends EventEmitter {
 
         } finally {
             util.end();
-            this._printStateInformation(vm, "after");
         }
 
         return result;
-    }
-
-    _printStateInformation(vm, message) {
-        for (const target of vm.runtime.targets) {
-            const isStage = target.isStage;
-            if (!isStage) {
-                console.log(`${message}: ${target.getName()};x;${target.x};y;${target.y};direction;${target.direction};` +
-                    `costume;${target.sprite.costumes[target.currentCostume].name}`);
-            }
-        }
     }
 
     /**

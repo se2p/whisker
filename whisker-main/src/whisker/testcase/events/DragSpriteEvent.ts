@@ -57,10 +57,6 @@ export class DragSpriteEvent extends ScratchEvent {
         return `DragSprite ${this._target.sprite.name} to  ${Math.trunc(this._x)}/${Math.trunc(this._y)}`;
     }
 
-    getNumParameters(): number {
-        return 1;
-    }
-
     getParameter(): (number | string)[] {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }

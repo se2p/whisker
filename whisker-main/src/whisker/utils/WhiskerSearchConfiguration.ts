@@ -55,13 +55,8 @@ import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLoc
 import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
 import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
-
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
-import {NetworkChromosomeGeneratorExistingNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorExistingNetwork";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
-import {NeuroevolutionPopulation} from "../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
-import {RandomNeuroevolutionPopulation} from "../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
-import {NeatPopulation} from "../whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 
 class ConfigException implements Error {
     message: string;
@@ -339,9 +334,6 @@ export class WhiskerSearchConfiguration {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm));
-            }
-            case 'templateNetwork':{
-                return new NetworkChromosomeGeneratorExistingNetwork(this.dict['networkTemplate']);
             }
             case 'test':
             default:
