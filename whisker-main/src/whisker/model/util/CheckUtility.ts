@@ -180,6 +180,23 @@ export class CheckUtility extends EventEmitter {
     }
 
     /**
+     * Split up the event string.
+     * @param eventString
+     */
+    static splitEventString(eventString: string): { name: CheckName, negated: boolean, args: any[] } {
+        const negated = eventString.startsWith("!");
+        if (negated) {
+            eventString = eventString.substring(1, eventString.length);
+        }
+        const splits = eventString.split(":");
+        return {
+            negated: negated,
+            name: CheckName[splits[0]],
+            args: splits.slice(1, splits.length)
+        }
+    }
+
+    /**
      * Register the effects of an edge in this listener to test them later on.
      * @param takenEdge The taken edge of a model.
      * @param model Model of the edge.

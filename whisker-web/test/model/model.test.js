@@ -51,7 +51,7 @@ beforeEach(async() => {
 });
 
 // Tests for events during a step with a listener in check utility
-describe('Model fruitcatcher tests', () => {
+describe('Model tests on multiple events per step', () => {
     test('color event listener', async () => {
         await loadProject('test/model/scratch-programs/ColorEvent.sb3',
             'test/model/model-jsons/ColorEvent.json');

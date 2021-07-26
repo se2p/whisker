@@ -5,7 +5,7 @@ import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
 import {getErrorOnEdgeOutput, getTimeLimitFailedAfterOutput, getTimeLimitFailedAtOutput} from "../util/ModelError";
 import {InputEffect} from "./InputEffect";
-import {CheckName} from "./Check";
+import {Check} from "./Check";
 
 /**
  * Super type for the edges. All edge types have their id, the conditions and start and end node in common (defined
@@ -234,9 +234,6 @@ export class ProgramModelEdge extends ModelEdge {
      */
     checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                            modelResult: ModelResult, eventStrings: string[]): Condition[] {
-        if (this._lastTransition == t.getTotalStepsExecuted() + 1) {
-            return this.conditions;
-        }
         let check = false;
 
         // look up if this edge has a condition that was triggered
@@ -246,8 +243,7 @@ export class ProgramModelEdge extends ModelEdge {
             if (eventStrings.indexOf(eventString) != -1) {
                 check = true;
                 break;
-            } else if (cond.name == CheckName.Function && cond.args == ["true"]
-                || cond.name == CheckName.Probability && cond.args == ["1"]) {
+            } else if (eventString == "Function:true" || eventString == "Probability:1") {
                 check = this.testEffectsOnEvent(eventStrings);
                 if (check) {
                     break;
@@ -278,6 +274,9 @@ export class ProgramModelEdge extends ModelEdge {
             const eventString = CheckUtility.getEventString(this.effects[i].name, this.effects[i].negated,
                 ...this.effects[i].args);
             if (eventStrings.indexOf(eventString) != -1) {
+                return true;
+            } else if (Check.testForContradictingWithEvents(this.effects[i], eventStrings)) {
+                // tests whether a event contradicting an effect (of a true condition edge) is there
                 return true;
             }
         }

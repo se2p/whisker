@@ -198,6 +198,18 @@ export class Check {
         return this.name == check.name && this.negated != check.negated && this.arrayEquals(this.args, check.args);
     }
 
+    static testForContradictingWithEvents(check1: Check, eventStrings: string[]) {
+        for (let i = 0; i < eventStrings.length; i++) {
+            let event = eventStrings[i];
+            let {negated, name, args} = CheckUtility.splitEventString(event);
+            let checkDummy = new Check("dummy", name, args, negated);
+            if (Check.testForContradicting(check1, checkDummy)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Test whether the checks are contradicting each other.
      */
