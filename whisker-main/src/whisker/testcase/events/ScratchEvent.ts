@@ -20,6 +20,7 @@
 
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {Container} from "../../utils/Container";
+import {ParameterTypes} from "./ParameterTypes";
 
 
 export abstract class ScratchEvent {
@@ -30,20 +31,26 @@ export abstract class ScratchEvent {
     abstract apply(): Promise<void>;
 
     /**
-     * Returns the number of parameters required by this event.
+     * Returns the number of variable parameters required by this event.
      */
-    abstract getNumParameters(): number;
+    abstract getNumVariableParameters(): number;
 
     /**
      * Sets the parameter(s) of this event using the given arguments.
      * @param args the values to which the parameters of this event should be set to
+     * @param argType the type of the given arguments decides how they should be interpreted as parameters.
      */
-    abstract setParameter(args: number[]): void;
+    abstract setParameter(args: number[], argType: ParameterTypes): void;
 
     /**
      * Returns the parameter(s) of this event.
      */
     abstract getParameter(): (number | string | RenderedTarget) [];
+
+    /**
+     * Returns the name(s) of variable parameter(s).
+     */
+    abstract getVariableParameterNames(): string[];
 
     /**
      * Transforms the event into an executable Whisker-Test statement.
@@ -54,6 +61,13 @@ export abstract class ScratchEvent {
      * Transforms the event into a string representation.
      */
     abstract toString(): string;
+
+    /**
+     * Returns an identifier as string. Events containing variable parameters obtain the same identifier and
+     * Events whose parameters are determined by the ScratchEventExtractor get different identifiers.
+     * The id is used to query the right RegressionNode if variable parameters for a specific Event are needed.
+     */
+    abstract stringIdentifier():string;
 
     /**
      * Fits the given coordinates to the Scratch-Stage.

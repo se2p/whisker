@@ -18,6 +18,10 @@
  *
  */
 
+import {List} from "./List";
+import {FitnessFunction} from "../search/FitnessFunction";
+import {Chromosome} from "../search/Chromosome";
+
 /**
  * Singleton class to collect statistics from search runs
  *
@@ -39,7 +43,8 @@ export class StatisticsCollector {
     private _createdTestsToReachFullCoverage: number;
     private _startTime: number;
     private _timeToReachFullCoverage: number;
-    private _covOverTime: Map<number, number>;
+    private readonly _covOverTime: Map<number, number>;
+    private readonly coveredFitnessFunctions: List<FitnessFunction<Chromosome>>;
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -61,6 +66,7 @@ export class StatisticsCollector {
         this._testEventCount = 0;
         this._numberFitnessEvaluations = 0;
         this._covOverTime = new Map<number, number>();
+        this.coveredFitnessFunctions = new List<FitnessFunction<Chromosome>>();
     }
 
     public static getInstance(): StatisticsCollector {
@@ -121,10 +127,13 @@ export class StatisticsCollector {
     /**
      * Increments the number of covered fitness functions by one
      */
-    public incrementCoveredFitnessFunctionCount(): void {
-        this._coveredFitnessFunctionsCount++;
-        const timeStamp = Date.now() - this._startTime;
-        this._covOverTime[timeStamp] = this._coveredFitnessFunctionsCount;
+    public incrementCoveredFitnessFunctionCount(coveredFitnessFunction: FitnessFunction<Chromosome>): void {
+        if(!this.coveredFitnessFunctions.contains(coveredFitnessFunction)) {
+            this.coveredFitnessFunctions.add(coveredFitnessFunction);
+            this._coveredFitnessFunctionsCount++;
+            const timeStamp = Date.now() - this._startTime;
+            this._covOverTime.set(timeStamp, this._coveredFitnessFunctionsCount);
+        }
     }
 
     get bestCoverage(): number {
@@ -182,6 +191,14 @@ export class StatisticsCollector {
         this._createdTestsToReachFullCoverage = value;
     }
 
+    get startTime(): number {
+        return this._startTime;
+    }
+
+    set startTime(value: number) {
+        this._startTime = value;
+    }
+
     get timeToReachFullCoverage(): number {
         return this._timeToReachFullCoverage;
     }
@@ -199,29 +216,36 @@ export class StatisticsCollector {
      * @param numberOfCoverageValues the number of entries in the fitness timeline (optional)
      */
     public asCsv(numberOfCoverageValues?: number): string {
+        // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
         const coverageStatsMap = this._adjustCoverageOverTime();
-        const timestamps = [];
-        for (const coverageStatsMapKey in coverageStatsMap) {
-            timestamps.push(coverageStatsMapKey)
-        }
-        timestamps.sort(function (a, b) {
-            return a - b
-        });
+        const timestamps = [...coverageStatsMap.keys()].sort((a, b) => a - b);
+        const coverages = timestamps.map((ts) => coverageStatsMap.get(ts));
 
-        const coverages = [];
-        for (const timestamp of timestamps) {
-            coverages.push(coverageStatsMap[timestamp]);
-        }
+        let header = timestamps;
+        let values = coverages;
 
         // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
         const truncateFitnessTimeline = numberOfCoverageValues != undefined && 0 <= numberOfCoverageValues;
-        const coveragesHeaders = truncateFitnessTimeline
-                ? timestamps.slice(0, numberOfCoverageValues).join(",")
-                : timestamps.join(",");
-        const coverageValues =
-            truncateFitnessTimeline
-                ? coverages.slice(0, numberOfCoverageValues).join(",")
-                : coverages.join(",");
+
+        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
+        // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
+        // the number of columns should be padded in this case so that the number of columns is always identical.
+        if (truncateFitnessTimeline) {
+            const nextTimeStamp = timestamps[timestamps.length - 1] + 1000;
+            const nextCoverageValue = coverages[coverages.length - 1];
+
+            const lengthDiff = Math.abs(numberOfCoverageValues - timestamps.length);
+
+            const range: (until: number) => number[] = (until) => [...Array(until).keys()];
+            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * 1000)
+            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
+
+            header = [...header, ...headerPadding].slice(0, numberOfCoverageValues);
+            values = [...values, ...valuePadding].slice(0, numberOfCoverageValues);
+        }
+
+        const coveragesHeaders = header.join(",");
+        const coverageValues = values.join(",");
 
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize",
@@ -237,10 +261,9 @@ export class StatisticsCollector {
     private _adjustCoverageOverTime() {
         const adjusted: Map<number, number> = new Map();
         let maxTime = 0;
-        for (const timestamp in this._covOverTime) {
-            const t: number = timestamp as unknown as number;
-            const rounded = Math.round(t / 1000) * 1000;
-            adjusted[rounded] = this._covOverTime[timestamp];
+        for (const timestamp of this._covOverTime.keys()) {
+            const rounded = Math.round(timestamp / 1000) * 1000;
+            adjusted.set(rounded, this._covOverTime.get(timestamp));
             if (rounded > maxTime) {
                 maxTime = rounded;
             }
@@ -248,10 +271,10 @@ export class StatisticsCollector {
         }
         let maxCov = 0;
         for (let i = 0; i <= maxTime; i = i + 1000) {
-            if (i in adjusted) {
-                maxCov = adjusted[i];
+            if (adjusted.has(i)) {
+                maxCov = adjusted.get(i);
             } else {
-                adjusted[i] = maxCov;
+                adjusted.set(i, maxCov);
             }
         }
 
@@ -259,7 +282,7 @@ export class StatisticsCollector {
         return adjusted;
     }
 
-    reset() {
+    public reset(): void {
         this._fitnessFunctionCount = 0;
         this._iterationCount = 0;
         this._coveredFitnessFunctionsCount = 0;

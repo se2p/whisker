@@ -1,146 +1,112 @@
-import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NetworkChromosome} from "../NetworkChromosome";
-import {Mutation} from "../../search/Mutation";
-import {Crossover} from "../../search/Crossover";
 import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkNodes/NodeGene";
 import {ConnectionGene} from "../ConnectionGene";
-import {NeatMutation} from "../NeatMutation";
-import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
+import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {NetworkChromosomeGenerator} from "./NetworkChromosomeGenerator";
+import {NetworkChromosome} from "../NetworkChromosome";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {InputNode} from "../NetworkNodes/InputNode";
 import {BiasNode} from "../NetworkNodes/BiasNode";
 import {ClassificationNode} from "../NetworkNodes/ClassificationNode";
+import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
 import {RegressionNode} from "../NetworkNodes/RegressionNode";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
-import {NodeType} from "../NetworkNodes/NodeType";
+import {NeatMutation} from "../NeatMutation";
 
-export class NetworkChromosomeGeneratorFullyConnected implements ChromosomeGenerator<NetworkChromosome> {
-
-    /**
-     * The mutation operator of the NetworkChromosomes
-     */
-    private _mutationOp: Mutation<NetworkChromosome>;
+export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeGenerator {
 
     /**
-     * The crossover operator of th NetworkChromosomes
-     * @private
+     * A map mapping each sprite to its feature map.
      */
-    private _crossoverOp: Crossover<NetworkChromosome>;
+    private readonly _inputs: Map<string, Map<string, number>>;
 
     /**
-     * All potential input features for the network
+     * All Scratch-Events the given Scratch project handles.
      */
-    private readonly _inputs: number[][];
+    private readonly _scratchEvents: List<ScratchEvent>;
 
     /**
-     * Number of available events -> number of output nodes
+     * Constructs a new FullyConnectedNetworkGenerator connecting all input-features to all output nodes.
+     * @param mutationConfig the configuration parameters for the mutation operator
+     * @param crossoverConfig the configuration parameters for the crossover operator
+     * @param inputs a map mapping each sprite to its input feature-vector
+     * @param scratchEvents all Scratch-Events the given project handles
      */
-    private readonly _outputSize: number;
-
-    /**
-     * Defines whether the networks get a regressionNode
-     */
-    private readonly _hasRegressionNode: boolean
-
-    /**
-     * Constructs a new NetworkGenerator
-     * @param mutationOp the used mutation operator
-     * @param crossoverOp the used crossover operator
-     * @param inputs all potential input features
-     * @param numOutputNodes number of needed output nodes
-     * @param hasRegressionNode defines whether the networks get a regressionNode
-     */
-    constructor(mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>, inputs: number[][],
-                numOutputNodes: number, hasRegressionNode: boolean) {
-        this._mutationOp = mutationOp;
-        this._crossoverOp = crossoverOp;
+    constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
+                inputs: Map<string, Map<string, number>>, scratchEvents: List<ScratchEvent>) {
+        super(mutationConfig, crossoverConfig);
         this._inputs = inputs;
-        this._outputSize = numOutputNodes;
-        this._hasRegressionNode = hasRegressionNode;
+        this._scratchEvents = scratchEvents;
     }
 
     /**
-     * Creates and returns a random NetworkChromosome with the specified number of input and output nodes
-     * and a random set of connections in between them.
+     * Creates and returns a fully connected NetworkChromosome.
      * @return: generated NetworkChromosome
      */
     get(): NetworkChromosome {
         let nodeId = 0;
         const allNodes = new List<NodeGene>();
 
-        // Create the Input Nodes and add them to the nodes list.
-        // Sprites can have a different amount of feature set i.e different amount of columns.
-        const inputNodes = new List<NodeGene>()
-        for (let i = 0; i < this._inputs.length; i++) {
-            this._inputs[i].forEach(() => {
-                const iNode = new InputNode(nodeId, i);
-                nodeId++;
-                inputNodes.add(iNode)
+        // Create the Input Nodes and add them to the nodes list;
+        // Sprites can have a different amount of infos i.e different amount of feature vector sizes.
+        const inputList = new List<List<NodeGene>>()
+        this._inputs.forEach((value, spriteKey) => {
+            const spriteList = new List<NodeGene>();
+            value.forEach((value, featureKey) => {
+                const iNode = new InputNode(nodeId++, spriteKey, featureKey);
+                spriteList.add(iNode)
                 allNodes.add(iNode);
-            });
-        }
+            })
+            inputList.add(spriteList)
+        })
+
 
         // Add the Bias
         const biasNode = new BiasNode(nodeId++);
         allNodes.add(biasNode);
 
         // Create the classification output nodes and add them to the nodes list
-        const outputNodes = new List<NodeGene>()
-        while (outputNodes.size() < this.outputSize) {
-            const oNode = new ClassificationNode(nodeId++, ActivationFunction.SIGMOID);
-            outputNodes.add(oNode);
-            allNodes.add(oNode);
+        for (const event of this._scratchEvents) {
+            const classificationNode = new ClassificationNode(nodeId++, event, ActivationFunction.SIGMOID);
+            allNodes.add(classificationNode);
         }
 
-        if (this._hasRegressionNode) {
-            const mouseX = new RegressionNode(nodeId++);
-            const mouseY = new RegressionNode(nodeId++);
-            outputNodes.add(mouseX);
-            outputNodes.add(mouseY);
-            allNodes.add(mouseX);
-            allNodes.add(mouseY)
+        // Add regression nodes for each parameter of each parameterized Event
+        const parameterizedEvents = this._scratchEvents.filter(event => event.getNumVariableParameters() > 0);
+        if (!parameterizedEvents.isEmpty()) {
+            this.addRegressionNodes(allNodes, parameterizedEvents, nodeId);
         }
 
         // Create connections between input and output nodes
-        const connections = NetworkChromosomeGeneratorFullyConnected.createConnections(inputNodes, outputNodes);
+        const outputNodes = allNodes.filter(node => node instanceof ClassificationNode || node instanceof RegressionNode);
+        const connections = this.createConnections(inputList, outputNodes);
         const chromosome = new NetworkChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
+        NetworkChromosome.idCounter++;
 
         // Perturb the weights
         const mutationOp = chromosome.getMutationOperator() as NeatMutation;
-        mutationOp.mutateWeight(chromosome, 1, 1);
-
+        mutationOp.mutateWeight(chromosome, 2.5, 1);
         return chromosome;
     }
 
     /**
-     * Creates connections between input and output nodes according to the inputRate
+     * Creates connections between input and output nodes.
      * @param inputNodes all inputNodes of the network sorted according to the sprites they represent
      * @param outputNodes all outputNodes of the network
      * @return the connectionGene List
      */
-    private static createConnections(inputNodes: List<NodeGene>, outputNodes: List<NodeGene>): List<ConnectionGene> {
+    createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene> {
         const connections = new List<ConnectionGene>();
         // For each inputNode create a connection to each outputNode.
-        for (const inputNode of inputNodes) {
-            for (const outputNode of outputNodes) {
+        for (const inputNodeVector of inputNodes.getElements()) {
+            for (const inputNode of inputNodeVector) {
+                for (const outputNode of outputNodes) {
                     const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
                     NeuroevolutionUtil.assignInnovationNumber(newConnection);
                     connections.add(newConnection)
                     outputNode.incomingConnections.add(newConnection);
+                }
             }
         }
         return connections;
-    }
-
-    setCrossoverOperator(crossoverOp: Crossover<NetworkChromosome>): void {
-        this._crossoverOp = crossoverOp;
-    }
-
-    setMutationOperator(mutationOp: Mutation<NetworkChromosome>): void {
-        this._mutationOp = mutationOp;
-    }
-
-    get outputSize(): number {
-        return this._outputSize;
     }
 }

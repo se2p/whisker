@@ -3,5 +3,7 @@ export enum ActivationFunction {
 
     SIGMOID,
 
-    SOFTMAX
+    SOFTMAX,
+
+    RELU
 }

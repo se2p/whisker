@@ -50,11 +50,5 @@ export enum SearchAlgorithmType {
     /**
      * Value for "NEAT" search algorithm.
      */
-    NEAT,
-
-    /**
-     * Value for a randomised Neuroevolution Algorithm
-     */
-    RANDOM_NEUROEVOLUTION
-
+    NEAT
 }

@@ -428,7 +428,7 @@ class VMWrapper {
      */
     convertFromTimeToSteps(timeDuration){
         const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
-        return Math.ceil(timeDuration / stepDuration);
+        return timeDuration / stepDuration;
     }
 
     /**

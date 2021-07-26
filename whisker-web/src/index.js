@@ -28,6 +28,7 @@ const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
+const DownloadContainer = require('./components/DownloadContainer');
 const InputRecorder = require('./components/input-recorder');
 const ModelEditor = require('./components/model-editor');
 
@@ -101,6 +102,10 @@ const runSearch = async function () {
         accelerationFactor);
     Whisker.outputLog.print(res[1]);
     accSlider.slider('enable');
+    if (configName.toLowerCase().includes('neuroevolution')){
+        const title = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
+        new DownloadContainer(title, `json`, res[2]).download();
+    }
     return res[0];
 };
 

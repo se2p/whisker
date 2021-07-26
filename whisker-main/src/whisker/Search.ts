@@ -39,6 +39,9 @@ import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSum
 import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "./search/stoppingconditions/OneOfStoppingCondition";
 import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
+import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGenerator";
+import {StoppingCondition} from "./search/StoppingCondition";
+import {Chromosome} from "./search/Chromosome";
 
 export class Search {
 
@@ -109,7 +112,13 @@ export class Search {
          * For example, if a project contains a "wait 60 seconds" block, we might get n+60 entries. This is
          * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
          */
-        const stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+        let stoppingCondition : StoppingCondition<Chromosome>;
+        if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
+            stoppingCondition = config.getNeuroevolutionProperties().stoppingCondition;
+        }
+        else {
+            stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+        }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.
         let maxTime: number = undefined;
@@ -156,6 +165,7 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
+        console.log(this.vm)
 
         await util.prepare(accelerationFactor || 1);
         util.start();
@@ -171,6 +181,6 @@ export class Search {
         this.outputCSV(config);
 
         const javaScriptText = this.testsToString(tests);
-        return [javaScriptText, testListWithSummary.summary];
+        return [javaScriptText, testListWithSummary.summary, testListWithSummary.networkPopulation];
     }
 }
