@@ -214,37 +214,51 @@ export abstract class CheckGenerator {
      */
     static getFunctionCheck(t: TestDriver, cu: CheckUtility, negated: boolean, caseSensitive: boolean, f: string):
         () => boolean {
+        let fun;
+
+        if (f == "true" && negated || f == "false" && !negated) {
+            return () => {
+                return false;
+            };
+        } else if (f == "true" && !negated || f == "false" && negated) {
+            return () => {
+                return true;
+            };
+        }
+
         try {
-            eval(f);
+            fun = eval(f);
         } catch (e) {
             throw getFunctionEvalError(e);
         }
+
         let {varDependencies, attrDependencies} = ModelUtil.getDependencies(f);
         let eventString = CheckUtility.getEventString(CheckName.Function, negated, f);
+        this.setupDependencies(cu, eventString, varDependencies, attrDependencies, () => {
+            return !negated == fun(t);
+        });
+        return () => {
+            return !negated == fun(t);
+        };
+    }
+
+    private static setupDependencies(cu: CheckUtility, eventString: string, varDependencies,
+                                     attrDependencies, predicate: (...sprite) => boolean) {
         if (varDependencies.length > 0) {
             varDependencies.forEach(({spriteName, varName}) => {
-                cu.registerVarEvent(varName, eventString, () => {
-                    return !negated == eval(f)(t);
-                })
+                cu.registerVarEvent(varName, eventString, predicate);
             })
         }
         if (attrDependencies.length > 0) {
             attrDependencies.forEach(({spriteName, attrName}) => {
                 if (attrName == "x" || attrName == "y") {
-                    cu.registerOnMoveEvent(spriteName, eventString, () => {
-                        return !negated == eval(f)(t);
-                    })
+                    cu.registerOnMoveEvent(spriteName, eventString, predicate);
                 } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
                     || attrName == "currentCostumeName" || attrName == "rotationStyle") {
-                    cu.registerOnVisualChange(spriteName, eventString, () => {
-                        return !negated == eval(f)(t);
-                    })
+                    cu.registerOnVisualChange(spriteName, eventString, predicate)
                 }
             })
         }
-        return () => {
-            return !negated == eval(f);
-        };
     }
 
     /**
@@ -485,28 +499,9 @@ export abstract class CheckGenerator {
         } = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
 
         let eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
-        if (varDependencies.length > 0) {
-            varDependencies.forEach(({spriteName, varName}) => {
-                cu.registerVarEvent(varName, eventString, () => {
-                    return !negated == eval(expression)(t);
-                })
-            })
-        }
-        if (attrDependencies.length > 0) {
-            attrDependencies.forEach(({spriteName, attrName}) => {
-                if (attrName == "x" || attrName == "y") {
-                    cu.registerOnMoveEvent(spriteName, eventString, () => {
-                        return !negated == eval(expression)(t);
-                    })
-                } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
-                    || attrName == "currentCostumeName" || attrName == "rotationStyle") {
-                    cu.registerOnVisualChange(spriteName, eventString, () => {
-                        return !negated == eval(expression)(t);
-                    })
-                }
-            })
-        }
-
+        this.setupDependencies(cu, eventString, varDependencies, attrDependencies, () => {
+            return !negated == eval(expression)(t);
+        });
         return () => {
             return !negated == eval(expression)(t);
         }
