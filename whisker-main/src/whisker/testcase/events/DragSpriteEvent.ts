@@ -85,7 +85,7 @@ export class DragSpriteEvent extends ScratchEvent {
     }
 
     getNumVariableParameters(): number {
-        return 0;
+        return 1;
     }
 
     getVariableParameterNames(): string[] {
