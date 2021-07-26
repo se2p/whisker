@@ -46,7 +46,7 @@ export abstract class NodeGene {
     private _lastActivationValue: number
 
     /**
-     * True if this node has been traversed (used for checking if a network is a recurrent network)
+     * True if this node has been traversed. Used for checking if a network is a recurrent network
      */
     private _traversed: boolean
 
@@ -99,6 +99,18 @@ export abstract class NodeGene {
     public abstract clone(): NodeGene
 
     abstract toString(): string
+
+    /**
+     * Transforms this NodeGene into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | string)> {
+        const node = {}
+        node[`id`] = this.id;
+        node[`type`] = NodeType[this.type];
+        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        return node;
+    }
 
     get id(): number {
         return this._id;

@@ -55,7 +55,8 @@ import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLoc
 import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
 import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
-
+import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
+import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
 class ConfigException implements Error {
     message: string;
@@ -115,13 +116,13 @@ export class WhiskerSearchConfiguration {
         const properties = new NeuroevolutionProperties(populationSize);
 
         const parentsPerSpecies = this.dict['parentsPerSpecies'] as number;
+        const numberOfSpecies = this.dict['numberOfSpecies'] as number;
         const penalizingAge = this.dict['penalizingAge'] as number;
         const ageSignificance = this.dict['ageSignificance'] as number;
         const inputRate = this.dict['inputRate'] as number
 
         const crossoverWithoutMutation = this.dict['crossover']['crossoverWithoutMutation'] as number
         const interspeciesMating = this.dict['crossover']['interspeciesRate'] as number
-        const weightAverageRate = this.dict['crossover']['weightAverageRate'] as number
 
         const mutationWithoutCrossover = this.dict['mutation']['mutationWithoutCrossover'] as number
         const mutationAddConnection = this.dict['mutation']['mutationAddConnection'] as number
@@ -144,6 +145,8 @@ export class WhiskerSearchConfiguration {
 
         const timeout = this.dict['network-fitness']['timeout']
 
+        properties.populationType = this.dict[`populationType`] as string;
+        properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
         properties.ageSignificance = ageSignificance;
@@ -151,7 +154,6 @@ export class WhiskerSearchConfiguration {
 
         properties.crossoverWithoutMutation = crossoverWithoutMutation;
         properties.interspeciesMating = interspeciesMating;
-        properties.crossoverAverageWeights = weightAverageRate;
 
         properties.mutationWithoutCrossover = mutationWithoutCrossover;
         properties.mutationAddConnection = mutationAddConnection;
@@ -221,18 +223,8 @@ export class WhiskerSearchConfiguration {
                 } = this.dict;
                 return new BiasedVariableLengthMutation(min, max, chromosomeLength, gaussianMutationPower);
             }
-            case 'neatMutation':
-                return new NeatMutation(
-                    this.dict['mutation']['mutationAddConnection'] as number,
-                    this.dict['mutation']['recurrentConnection'] as number,
-                    this.dict['mutation']['addConnectionTries'] as number,
-                    this.dict['mutation']['populationChampionConnectionMutation'] as number,
-                    this.dict['mutation']['mutationAddNode'] as number,
-                    this.dict['mutation']['mutateWeights'] as number,
-                    this.dict['mutation']['perturbationPower'] as number,
-                    this.dict['mutation']['mutateToggleEnableConnection'] as number,
-                    this.dict['mutation']['toggleEnableConnectionTimes'] as number,
-                    this.dict['mutation']['mutateEnableConnection'] as number)
+            case'neatMutation':
+                return new NeatMutation(this.dict['mutation'])
             case 'integerlist':
             default:
                 return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
@@ -244,7 +236,7 @@ export class WhiskerSearchConfiguration {
             case 'singlepointrelative':
                 return new SinglePointRelativeCrossover();
             case 'neatCrossover':
-                return new NeatCrossover(this.dict['crossover']['weightAverageRate'] as number);
+                return new NeatCrossover(this.dict['crossover']);
             case 'singlepoint':
             default:
                 return new SinglePointCrossover();
@@ -296,6 +288,8 @@ export class WhiskerSearchConfiguration {
                 return new JustWaitScratchEventExtractor(Container.vm);
             case 'static':
                 return new StaticScratchEventExtractor(Container.vm);
+            case 'neuroevolution':
+                return new NeuroevolutionScratchEventExtractor(Container.vm);
             case 'dynamic':
             default:
                 return new DynamicScratchEventExtractor(Container.vm);
@@ -331,18 +325,15 @@ export class WhiskerSearchConfiguration {
                     this.dict['minVarChromosomeLength'],
                     this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork': {
-                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
-                return new NetworkChromosomeGeneratorSparse(this._getMutationOperator(), this._getCrossoverOperator(),
-                    InputExtraction.extractSpriteInfo(Container.vm),
-                    eventExtractor.extractEvents(Container.vm).size(), this.dict['inputRate'],
-                    eventExtractor.hasMouseEvent(Container.vm));
+                const eventExtractor = this.getEventExtractor();
+                return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
+                    InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm),
+                    this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
-                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
-                return new NetworkChromosomeGeneratorFullyConnected(this._getMutationOperator(), this._getCrossoverOperator(),
-                    InputExtraction.extractSpriteInfo(Container.vm),
-                    eventExtractor.extractEvents(Container.vm).size(),
-                    eventExtractor.hasMouseEvent(Container.vm));
+                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
+                return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
+                    InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
             default:
@@ -373,6 +364,9 @@ export class WhiskerSearchConfiguration {
             return new StatementNetworkFitness();
         else if (networkFitnessDef === 'survive')
             return new SurviveFitness();
+        else if (networkFitnessDef === 'target')
+            return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
+                fitnessFunction['travelWeight']);
         else if (networkFitnessDef === 'combined') {
             const fitnessFunctions = fitnessFunction["functions"];
             const comb: NetworkFitnessFunction<NetworkChromosome>[] = [];
@@ -412,8 +406,6 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.MIO;
             case'neat':
                 return SearchAlgorithmType.NEAT;
-            case'randomNeuroevolution':
-                return SearchAlgorithmType.RANDOM_NEUROEVOLUTION;
             default:
                 throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this.dict['algorithm']);
         }

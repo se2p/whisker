@@ -4,6 +4,16 @@ import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 
 class DummyEvent extends ScratchEvent {
+
+    getNumVariableParameters(): number {
+       return 0;
+    }
+    getVariableParameterNames(): string[] {
+        return [];
+    }
+    stringIdentifier(): string {
+        return `DummyEvent`;
+    }
     private readonly _name: string;
 
     constructor(name: string) {

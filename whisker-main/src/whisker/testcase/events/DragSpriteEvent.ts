@@ -57,10 +57,6 @@ export class DragSpriteEvent extends ScratchEvent {
         return `DragSprite ${this._target.sprite.name} to  ${Math.trunc(this._x)}/${Math.trunc(this._y)}`;
     }
 
-    getNumParameters(): number {
-        return 1;
-    }
-
     getParameter(): (number | string)[] {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
@@ -86,5 +82,17 @@ export class DragSpriteEvent extends ScratchEvent {
             this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
             this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
+    }
+
+    getNumVariableParameters(): number {
+        return 1;
+    }
+
+    getVariableParameterNames(): string[] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return `DragSpriteEvent-${this._target}-${this._x}-${this._y}`;
     }
 }

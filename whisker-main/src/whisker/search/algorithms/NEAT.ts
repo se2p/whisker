@@ -5,13 +5,15 @@ import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {NeatPopulation} from "../../whiskerNet/NeatPopulation";
+import {NeatPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
+import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
+import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
-    // TODO: Yet another reason to separate NE and SearchAlgorithms -> Very different parameters.
+    // TODO: Really necessary to separate SearchAlgorithms and NE-Algorithms!!!!
     /**
      * The search parameters
      */
@@ -23,10 +25,15 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     private _networkFitnessFunction: NetworkFitnessFunction<NetworkChromosome>;
 
     /**
+     * Saves all Networks mapped to the generation they occurred in.
+     */
+    private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
+
+    /**
      * Evaluates the networks by letting them play the given Scratch game.
      * @param networks the networks to evaluate -> Current population
      */
-    private async evaluateNetworks(networks: List<NetworkChromosome>): Promise<void> {
+    private async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout);
@@ -43,25 +50,39 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<Map<number, C>> {
-        // The targeted number of species -> The distanceThreshold is adjusted appropriately.
-        const speciesNumber = 10;
         // Report the current state of the search after <reportPeriod> iterations.
         const reportPeriod = 1;
-        const population = new NeatPopulation(this._neuroevolutionProperties.populationSize, speciesNumber, this._chromosomeGenerator,
-            this._neuroevolutionProperties);
+        const population = this.getPopulation();
+        population.generatePopulation();
         this._iterations = 0;
         this._startTime = Date.now();
-        StatisticsCollector.getInstance().startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            await this.evaluateNetworks(population.chromosomes);
-            population.evolution();
+            await this.evaluateNetworks(population.chromosomes as List<C>);
+            population.updatePopulationStatistics();
+            this._populationRecord.set(this._iterations, population.clone());
+            population.evolve();
             this.updateBestIndividualAndStatistics();
-            if (this._iterations % reportPeriod === 0)
+            if (this._iterations % reportPeriod === 0) {
                 this.reportOfCurrentIteration(population);
+            }
             this._iterations++;
         }
         return this._archive as Map<number, C>;
+    }
+
+    /**
+     * Generate the desired type of NeuroevolutionPopulation to be used by the NEAT algorithm.
+     * @returns NeuroevolutionPopulation defined in the config files.
+     */
+    private getPopulation(): NeuroevolutionPopulation<NetworkChromosome> {
+        switch (this._neuroevolutionProperties.populationType) {
+            case 'random':
+                return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
+            default:
+            case 'neat':
+                return new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
+        }
     }
 
     /**
@@ -84,7 +105,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Reports the current state of the search.
      * @param population the population of networks
      */
-    private reportOfCurrentIteration(population: NeatPopulation<NetworkChromosome>): void {
+    private reportOfCurrentIteration(population: NeuroevolutionPopulation<NetworkChromosome>): void {
         console.log("Iteration: " + this._iterations)
         console.log("Highest fitness last changed: " + population.highestFitnessLastChanged)
         console.log("Highest Network Fitness: " + population.highestFitness)
@@ -94,7 +115,8 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         console.log("Population Champion: ", population.populationChampion)
         console.log("All Species: ", population.species)
         for (const specie of population.species)
-            console.log("Species: " + specie.id + " has a size of " + specie.size())
+            console.log("Species: " + specie.id + " has a size of " + specie.size() + " and produces "
+                + specie.expectedOffspring + " offspring")
         console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
         console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
         console.log("-----------------------------------------------------")
@@ -104,6 +126,18 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
             }
         }
+    }
+
+    /**
+     * Transforms the collected information about each Population obtained during the search into a JSON representation.
+     * @return string in JSON format containing collected Population information of each iteration.
+     */
+    public getPopulationRecordAsJSON(): string {
+        const solution = {};
+        this.populationRecord.forEach((population, iteration) => {
+            solution[`Generation ${iteration}`] = population.toJSON();
+        })
+        return JSON.stringify(solution, undefined, 4);
     }
 
     getStartTime(): number {
@@ -124,8 +158,8 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         return this._iterations;
     }
 
-    getCurrentSolution(): List<NetworkChromosome> {
-        return this._bestIndividuals;
+    getCurrentSolution(): List<C> {
+        return this._bestIndividuals as List<C>;
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
@@ -135,5 +169,9 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
         this._fitnessFunctions = fitnessFunctions;
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    }
+
+    get populationRecord(): Map<number, NeuroevolutionPopulation<NetworkChromosome>> {
+        return this._populationRecord;
     }
 }

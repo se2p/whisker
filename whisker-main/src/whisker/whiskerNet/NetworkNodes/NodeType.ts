@@ -8,6 +8,11 @@ export enum NodeType {
     INPUT,
 
     /**
+     * Value for a Bias Node
+     */
+    BIAS,
+
+    /**
      * Value for a Hidden Node
      */
     HIDDEN,
@@ -15,10 +20,5 @@ export enum NodeType {
     /**
      * Value for an output node
      */
-    OUTPUT,
-
-    /**
-     * Value for a Bias Node
-     */
-    BIAS
+    OUTPUT
 }

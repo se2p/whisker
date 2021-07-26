@@ -5,6 +5,7 @@ import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {List} from "../utils/List";
 import {TestChromosome} from "../testcase/TestChromosome";
+import {NEAT} from "../search/algorithms/NEAT";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -18,7 +19,12 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         const testSuite = await this.getTestSuite(testChromosomes);
         await this.collectStatistics(testSuite);
         const summary = this.summarizeSolution(archive);
-        return new WhiskerTestListWithSummary(testSuite, summary);
+        const testListWithSummary = new WhiskerTestListWithSummary(testSuite, summary);
+        // TODO: It is deeply necessary to separate NE and SearchAlgorithms.
+        if(searchAlgorithm instanceof NEAT){
+            testListWithSummary.networkPopulation = searchAlgorithm.getPopulationRecordAsJSON();
+        }
+        return testListWithSummary;
     }
 
     /**

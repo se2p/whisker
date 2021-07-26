@@ -22,20 +22,7 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NetworkCh
         await executor.execute(network);
         const statementScore = StatementNetworkFitness.getNumberReachedBlocks(network);
         network.networkFitness = statementScore;
-        return Promise.resolve(statementScore);
-    }
-
-    /**
-     * Calculates the number of reached blocks of a random event selection playthrough
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     */
-    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
-        // Get the execution Trace
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        await executor.executeRandom(network);
-        const statementScore = StatementNetworkFitness.getNumberReachedBlocks(network);
-        network.networkFitness = statementScore;
+        executor.resetState();
         return Promise.resolve(statementScore);
     }
 
