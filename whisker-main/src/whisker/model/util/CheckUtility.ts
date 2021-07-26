@@ -156,7 +156,7 @@ export class CheckUtility extends EventEmitter {
         }
     }
 
-    reset() {
+    resetAfterStep() {
         this.eventStrings = [];
     }
 

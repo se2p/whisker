@@ -5,7 +5,7 @@ import TestDriver from "../../test/test-driver";
 import {EventEmitter} from "events";
 import {CheckUtility} from "./util/CheckUtility";
 import ModelResult from "../../test-runner/model-result";
-import {ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
+import {ModelEdge, ProgramModelEdge, UserModelEdge} from "./components/ModelEdge";
 import {Container} from "../utils/Container";
 import {Callback} from "../../vm/callbacks"
 
@@ -141,7 +141,7 @@ export class ModelTester extends EventEmitter {
                 this.printContradictingEffects(contradictingEffects);
             }
             checkProgramModels = [...notStoppedModels];
-            this.checkUtility.reset();
+            this.checkUtility.resetAfterStep();
 
             if (checkProgramModels.length == 0) {
                 this.modelStepCallback.disable();
@@ -167,7 +167,7 @@ export class ModelTester extends EventEmitter {
         this.modelStepCallback.disable();
         this.haltAllCallback.disable();
         if (this.onTestEndModels.length > 0) {
-            let steps = this.testDriver.getTotalStepsExecuted();
+            let steps = this.testDriver.getTotalStepsExecuted() + 1;
             this.onTestEndModels.forEach(model => {
                 model.setTransitionsStartTo(steps);
                 model.stepNbrOfProgramEnd = steps;
@@ -242,46 +242,48 @@ export class ModelTester extends EventEmitter {
     }
 
     private onEvent(eventStrings: string[]) {
-        // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
-        let models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
-        models.forEach(model => {
-            let edge = model.testForEvent(this.testDriver, this.checkUtility, this.result, eventStrings);
-            if (edge != null && edge instanceof ProgramModelEdge) {
-                // register only, check is after the step
-                this.checkUtility.registerEffectCheck(edge, model);
-                this.edgeTrace(edge);
-            }
-        });
-
-        // check for halt if not yet stopped
-        if (this.haltAllCallback.isActive()) {
-            let halt = false;
-            this.programModels.forEach(model => {
-                if (model.haltAllModels()) {
-                    halt = true;
+        if (this.running()) {
+            // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
+            let models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
+            models.forEach(model => {
+                let edge = model.testForEvent(this.testDriver, this.checkUtility, this.result, eventStrings);
+                if (edge != null && edge instanceof ProgramModelEdge) {
+                    this.checkUtility.registerEffectCheck(edge, model);
+                    this.edgeTrace(edge);
                 }
-            })
-            if (halt) {
-                this.checkUtility.checkEffects();
-                this.startOnTestEnd();
-                return;
-            }
-        }
-        this.checkUtility.checkEventEffects();
+            });
 
+            // check for halt if not yet stopped
+            if (this.haltAllCallback.isActive()) {
+                let halt = false;
+                this.programModels.forEach(model => {
+                    if (model.haltAllModels()) {
+                        halt = true;
+                    }
+                })
+                if (halt) {
+                    this.checkUtility.checkEffects();
+                    this.startOnTestEnd();
+                    return;
+                }
+            }
+            this.checkUtility.checkEventEffects();
+        }
     }
 
-    private edgeTrace(transition: ProgramModelEdge) {
+    private edgeTrace(transition: ModelEdge) {
         let edgeID = transition.id;
         let conditions = transition.conditions;
         let edgeTrace = "'" + edgeID + "':";
         for (let i = 0; i < conditions.length; i++) {
             edgeTrace = edgeTrace + " [" + i + "] " + conditions[i].toString();
         }
-        if (transition.effects.length > 0) {
-            edgeTrace = edgeTrace + " => ";
-            for (let i = 0; i < transition.effects.length; i++) {
-                edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
+        if (transition instanceof ProgramModelEdge) {
+            if (transition.effects.length > 0) {
+                edgeTrace = edgeTrace + " => ";
+                for (let i = 0; i < transition.effects.length; i++) {
+                    edgeTrace = edgeTrace + " [" + i + "] " + transition.effects[i].toString();
+                }
             }
         }
         this.result.edgeTrace.push(edgeTrace);
@@ -293,7 +295,10 @@ export class ModelTester extends EventEmitter {
     /**
      * Get the result of the test run as a ModelResult.
      */
-    getModelStates(testDriver: TestDriver) {
+    stopAndGetModelResult(testDriver: TestDriver) {
+        this.modelStepCallback.disable();
+        this.onTestEndCallback.disable();
+        this.haltAllCallback.disable();
         let models = [...this.programModels, ...this.onTestEndModels];
         models.forEach(model => {
             if (model.stopped()) {
