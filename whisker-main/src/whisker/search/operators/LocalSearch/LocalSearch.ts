@@ -3,6 +3,7 @@ import {ScratchEventExtractor} from "../../../testcase/ScratchEventExtractor";
 import {TestExecutor} from "../../../testcase/TestExecutor";
 import VMWrapper = require("../../../../vm/vm-wrapper.js")
 import {Chromosome} from "../../Chromosome";
+import {EventSelector} from "../../../testcase/EventSelector";
 
 
 /**
@@ -47,12 +48,14 @@ export abstract class LocalSearch<C extends Chromosome> {
      * Constructs a new LocalSearch object.
      * @param vmWrapper the vmWrapper containing the Scratch-VM.
      * @param eventExtractor obtains the currently available set of events.
+     * @param eventSelector
      * @param probability defines the probability of applying the concrete LocalSearch operator.
      */
-    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, probability: number) {
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector,
+                probability: number) {
         this._vmWrapper = vmWrapper;
         this._eventExtractor = eventExtractor;
-        this._testExecutor = new TestExecutor(vmWrapper, eventExtractor);
+        this._testExecutor = new TestExecutor(vmWrapper, eventExtractor, eventSelector);
         this._probability = probability;
     }
 

@@ -76,7 +76,8 @@ describe('MIO', () => {
     });
 
     test('Find optimal solution', async () => {
-        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        const archive = await searchAlgorithm.findSolution();
+        const solutions = new List<BitstringChromosome>(Array.from(archive.values())).distinct();
 
         const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
         for (const fitnessFunction of fitnessFunctions.values()) {
@@ -92,13 +93,14 @@ describe('MIO', () => {
     });
 
     test('Get current solution', async () => {
-        expect(searchAlgorithm.getCurrentSolution()).toBeUndefined();
-        const solutions = await searchAlgorithm.findSolution() as List<BitstringChromosome>;
+        expect(searchAlgorithm.getCurrentSolution().size()).toBe(0)
+        const archive = await searchAlgorithm.findSolution();
+        const solutions = new List<BitstringChromosome>(Array.from(archive.values())).distinct();
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
     });
 
     test('Get number of iterations', async () => {
-        expect(searchAlgorithm.getNumberOfIterations()).toBeUndefined();
+        expect(searchAlgorithm.getNumberOfIterations()).toBe(0);
         await searchAlgorithm.findSolution();
         expect(searchAlgorithm.getNumberOfIterations()).toBeGreaterThan(0);
         expect(searchAlgorithm.getNumberOfIterations()).toBeLessThanOrEqual(iterations);
@@ -126,7 +128,7 @@ describe('MIO', () => {
 
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
-        const heuristicFunctions = new Map<number, Function>();
+        const heuristicFunctions = new Map<number, (number) => number>();
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));
             heuristicFunctions.set(i, v => v / chromosomeLength);

@@ -58,7 +58,8 @@ export class TestChromosome extends IntegerListChromosome {
     }
 
     async evaluate(): Promise<void> {
-        const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor());
+        const executor = new TestExecutor(Container.vmWrapper, Container.config.getEventExtractor(),
+            Container.config.getEventSelector());
         await executor.execute(this);
         assert(this.trace != null);
     }
@@ -102,6 +103,8 @@ export class TestChromosome extends IntegerListChromosome {
     clone(): TestChromosome {
         const clone = new TestChromosome(this.getGenes(), this.getMutationOperator(), this.getCrossoverOperator());
         clone.trace = this._trace;
+        clone.lastImprovedCodon = this.lastImprovedCodon;
+        clone.lastImprovedTrace = this.lastImprovedTrace;
         return clone;
     }
 

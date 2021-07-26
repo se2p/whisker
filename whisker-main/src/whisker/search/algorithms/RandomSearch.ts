@@ -23,28 +23,10 @@ import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
-import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {Container} from "../../utils/Container";
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
-
-    _chromosomeGenerator: ChromosomeGenerator<C>;
-
-    _fitnessFunction: FitnessFunction<C>;
-
-    _fitnessFunctions: List<FitnessFunction<C>> = new List();
-
-    _stoppingCondition: StoppingCondition<C>;
-
-    _properties: SearchAlgorithmProperties<C>;
-
-    _iterations = 0;
-
-    _bestIndividuals = new List<C>();
-
-    _startTime: number;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -53,8 +35,11 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
         StatisticsCollector.getInstance().fitnessFunctionCount = 1;
         this._fitnessFunction = fitnessFunction;
-        this._fitnessFunctions.clear();
-        this._fitnessFunctions.add(fitnessFunction);
+    }
+
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
+        this._fitnessFunctions = fitnessFunctions;
+        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
@@ -66,48 +51,31 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    async findSolution(): Promise<List<C>> {
+    async findSolution(): Promise<Map<number, C>> {
 
         let bestIndividual = null;
         let bestFitness = 0;
         this._startTime = Date.now();
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            StatisticsCollector.getInstance().incrementIterationCount();
-            this._iterations++;
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate();
+            this.updateArchive(candidateChromosome);
             const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
 
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
-                if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
-                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
-                    StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
-                    StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
-                }
                 bestFitness = candidateFitness;
                 bestIndividual = candidateChromosome;
                 this._bestIndividuals.clear();
                 this._bestIndividuals.add(bestIndividual);
             }
+            this.updateStatistics();
+            this._iterations++;
         }
-        return this._bestIndividuals;
-    }
-
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
-    summarizeSolution(): string {
-        return '';
+        return this._archive;
     }
 
     getNumberOfIterations(): number {
@@ -119,7 +87,11 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        return this._fitnessFunctions;
+        if(this._fitnessFunctions) {
+            return this._fitnessFunctions.values();
+        }
+        else
+            return [this._fitnessFunction];
     }
 
     getStartTime(): number {

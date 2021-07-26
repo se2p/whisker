@@ -19,13 +19,17 @@
  */
 
 
-import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
-import {TestChromosome} from "./TestChromosome";
+import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
+import {TestChromosome} from "../testcase/TestChromosome";
 
-export class VariableLengthTestChromosomeMutation extends AbstractVariableLengthMutation<TestChromosome> {
+export class VariableLengthConstrainedChromosomeMutation extends AbstractVariableLengthMutation<TestChromosome> {
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         super(min, max, length, gaussianMutationPower);
+    }
+
+    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+        return 1 / numberOfCodons;
     }
 
     /**
@@ -42,7 +46,6 @@ export class VariableLengthTestChromosomeMutation extends AbstractVariableLength
         if (chromosome.lastImprovedCodon == 0 || chromosome.lastImprovedCodon == chromosome.getLength() - 1) {
             return super.applyUpTo(chromosome, chromosome.getLength());
         } else {
-            console.log("Mutating up to " + chromosome.lastImprovedCodon +" at length "+chromosome.getLength());
             return super.applyUpTo(chromosome, chromosome.lastImprovedCodon + 1);
         }
     }

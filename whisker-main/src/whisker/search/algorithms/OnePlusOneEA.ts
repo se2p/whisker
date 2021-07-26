@@ -23,37 +23,27 @@ import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
-import {StoppingCondition} from "../StoppingCondition";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
-    _chromosomeGenerator: ChromosomeGenerator<C>;
-
-    _fitnessFunction: FitnessFunction<C>;
-
-    _fitnessFunctions: List<FitnessFunction<C>> = new List();
-
-    _stoppingCondition: StoppingCondition<C>;
-
-    _properties: SearchAlgorithmProperties<C>;
-
-    _iterations = 0;
-
-    _bestIndividuals = new List<C>();
-
-    _startTime: number;
+    /**
+     * Holds the currently best performing Chromosome on which we will keep mutating on.
+     */
+    private _bestIndividual: C;
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
     }
 
     setFitnessFunction(fitnessFunction: FitnessFunction<C>): void {
-        StatisticsCollector.getInstance().fitnessFunctionCount = 1;
         this._fitnessFunction = fitnessFunction;
-        this._fitnessFunctions.clear();
-        this._fitnessFunctions.add(fitnessFunction)
+    }
+
+    setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
+        this._fitnessFunctions = fitnessFunctions;
+        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
@@ -65,59 +55,71 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
      * Returns a list of possible admissible solutions for the given problem.
      * @returns Solution for the given problem
      */
-    async findSolution(): Promise<List<C>> {
-
+    async findSolution(): Promise<Map<number, C>> {
+        // Prevent statistics to be reset in case of IterativeSearch.
         this._startTime = Date.now();
-        console.log("1+1 EA started at "+this._startTime);
+        if (!this.isIterativeSearch()) {
+            this.initializeStatistics();
+        }
+        console.log("1+1 EA started at " + this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
         await bestIndividual.evaluate();
-        this._bestIndividuals.add(bestIndividual);
+        this.updateArchive(bestIndividual);
+        this._bestIndividual = bestIndividual;
         let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
-        let bestLength = bestIndividual.getLength();
-        console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
+
+        if (this._stoppingCondition.isFinished(this)) {
+            this.updateStatisticsAtEnd();
+        }
+
+        while (!(this._stoppingCondition.isFinished(this))) {
+            const candidateChromosome = bestIndividual.mutate();
+            await candidateChromosome.evaluate();
+            this.updateArchive(candidateChromosome);
+            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            console.log(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
+${bestIndividual.toString()}`);
+            if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
+                if (this._fitnessFunction.isOptimal(candidateFitness)) {
+                    this.updateStatisticsAtEnd();
+                }
+                bestFitness = candidateFitness;
+                bestIndividual = candidateChromosome;
+                this._bestIndividual = bestIndividual;
+            }
+            this._iterations++;
+            StatisticsCollector.getInstance().incrementIterationCount();
+        }
+        console.log("1+1 EA completed at " + Date.now());
+        return this._archive;
+    }
+
+    /**
+     * Determines whether the used TestGenerator is the IterativeSearchBasedTestGenerator.
+     * If so we do no want to update statistics in the OnePlusOne-Algorithm.
+     * @returns boolean defining whether OnePlusOneEA has been called by the IterativeSearchBasedTestGenerator
+     */
+    private isIterativeSearch(): boolean {
+        return this._properties.getTestGenerator() === 'iterative';
+    }
+
+    /**
+     * Initializes Statistic related values.
+     */
+    private initializeStatistics(): void {
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().bestTestSuiteSize = 1;
-
-        while (!(this._stoppingCondition.isFinished(this))) {
-            StatisticsCollector.getInstance().incrementIterationCount();
-            const candidateChromosome = bestIndividual.mutate();
-            await candidateChromosome.evaluate();
-            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
-            console.log("Iteration "+this._iterations+" ["+bestFitness+"]: "+candidateChromosome.toString()+" has fitness "+candidateFitness);
-            this._iterations++;
-            if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
-                (this._fitnessFunction.compare(candidateFitness, bestFitness) === 0 && candidateChromosome.getLength() <= bestLength)) {
-                if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(bestFitness)) {
-                    StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
-                    StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
-                    StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
-                }
-                bestFitness = candidateFitness;
-                bestLength = candidateChromosome.getLength();
-                bestIndividual = candidateChromosome;
-                this._bestIndividuals.clear();
-                this._bestIndividuals.add(bestIndividual);
-                console.log("Best Fitness: ", bestFitness+" at length "+bestLength+": "+bestIndividual.toString());
-            }
-        }
-        console.log("1+1 EA completed at "+Date.now());
-        return this._bestIndividuals;
+        StatisticsCollector.getInstance().startTime = this._startTime;
     }
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
-    summarizeSolution(): string {
-        return '';
+    /**
+     * Updates statistic values using the StatisticsCollector when the search is about to stop.
+     */
+    private updateStatisticsAtEnd(): void {
+        StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations + 1;
+        StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
     }
 
     getNumberOfIterations(): number {
@@ -125,11 +127,11 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
     }
 
     getCurrentSolution(): List<C> {
-        return this._bestIndividuals;
+        return new List<C>([this._bestIndividual]);
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        return this._fitnessFunctions;
+        return [this._fitnessFunction];
     }
 
     getStartTime(): number {

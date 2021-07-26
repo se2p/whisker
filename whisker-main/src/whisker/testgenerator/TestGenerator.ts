@@ -31,9 +31,15 @@ import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 
 export abstract class TestGenerator {
 
-    _config: WhiskerSearchConfiguration;
+    /**
+     * Search parameters set by the config file.
+     */
+    protected _config: WhiskerSearchConfiguration;
 
-    _fitnessFunctions: Map<number, FitnessFunction<TestChromosome>>;
+    /**
+     * Maps each FitnessFunction to a unique identifier
+     */
+    protected _fitnessFunctions: Map<number, FitnessFunction<TestChromosome>>;
 
     constructor(configuration: WhiskerSearchConfiguration) {
         this._config = configuration;
@@ -130,5 +136,52 @@ export abstract class TestGenerator {
                 coveredObjectives.add(objective);
             }
         }
+    }
+
+    /**
+     * Summarizes all uncovered statements with the following information:
+     *   - ApproachLevel
+     *   - BranchDistance
+     *   - Fitness
+     * @returns string in JSON format
+     */
+    public summarizeSolution(archive: Map<number, TestChromosome>): string {
+        const summary = [];
+        const bestIndividuals = new List<TestChromosome>(Array.from(archive.values())).distinct();
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const curSummary = {};
+            if (!archive.has(fitnessFunctionKey)) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                curSummary['block'] = fitnessFunction.toString();
+                let fitness = Number.MAX_VALUE;
+                let approachLevel = Number.MAX_VALUE;
+                let branchDistance = Number.MAX_VALUE;
+                let CFGDistance = Number.MAX_VALUE;
+                for (const chromosome of bestIndividuals) {
+                    const curFitness = fitnessFunction.getFitness(chromosome);
+                    if (curFitness < fitness) {
+                        fitness = curFitness;
+                        approachLevel = fitnessFunction.getApproachLevel(chromosome);
+                        branchDistance = fitnessFunction.getBranchDistance(chromosome);
+                        if (approachLevel === 0 && branchDistance === 0) {
+                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
+                        } else {
+                            CFGDistance = Number.MAX_VALUE;
+                            //this means that it was unnecessary to calculate cfg distance, since
+                            //approach level or branch distance was not 0;
+                        }
+                    }
+                }
+                curSummary['ApproachLevel'] = approachLevel;
+                curSummary['BranchDistance'] = branchDistance;
+                curSummary['CFGDistance'] = CFGDistance;
+                curSummary['Fitness'] = fitness;
+                if (Object.keys(curSummary).length > 0) {
+                    summary.push(curSummary);
+                }
+            }
+
+        }
+        return JSON.stringify({'uncoveredBlocks': summary}, undefined, 4);
     }
 }

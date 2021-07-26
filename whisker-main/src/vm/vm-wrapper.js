@@ -337,6 +337,7 @@ class VMWrapper {
 
         this.vm.greenFlag();
         this.startTime = Date.now();
+        this.vm.runtime.stepsExecuted = 0;
 
         this.aborted = false;
     }
@@ -407,7 +408,7 @@ class VMWrapper {
      */
     convertFromTimeToSteps(timeDuration){
         const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
-        return Math.ceil(timeDuration / stepDuration);
+        return timeDuration / stepDuration;
     }
 
     /**

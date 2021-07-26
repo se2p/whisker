@@ -52,7 +52,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
     private readonly _random: Randomness
 
 
-    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
+    protected constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         this._min = min;
         this._max = max;
         this._length = length;
@@ -60,12 +60,19 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
         this._random = Randomness.getInstance();
     }
 
+    /**
+     * Defines the probability of mutating the codon at position idx of the codon list.
+     * @param idx codon position for which a mutation probability should be determined.
+     * @param numberOfCodons the total number of mutation candidates.
+     * @returns number defining the mutation probability of the codon at position idx.
+     */
+    protected abstract _getMutationProbability(idx: number, numberOfCodons: number): number;
+
     abstract apply(chromosome: T): T;
 
 
     /**
      * Returns a mutated deep copy of the given chromosome.
-     * Each integer in the codon list mutates with a probability of one divided by the lists size.
      * If a index inside the list mutates it executes one of the following mutations with equal probability:
      *  - add a new codon to the list at the index
      *  - replace the current codon at the index using gaussian noise
@@ -77,11 +84,10 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
     applyUpTo(chromosome: T, maxPosition: number): T {
         const newCodons = new List<number>();
         newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
-        const mutationProbability = 1 / maxPosition;
         let index = 0;
         while (index < maxPosition) {
-            if (this._random.nextDouble() < mutationProbability) {
-                index = this.mutateAtIndex(newCodons, index);
+            if (this._random.nextDouble() < this._getMutationProbability(index, maxPosition)) {
+                index = this._mutateAtIndex(newCodons, index);
             }
             index++;
         }
@@ -96,7 +102,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @param index  The index where to mutate inside the list.
      * @return The modified index after the mutation.
      */
-    private mutateAtIndex(codons: List<number>, index: number) {
+    private _mutateAtIndex(codons: List<number>, index: number) {
         const mutation = this._random.nextInt(0, 3)
         switch (mutation) {
             case 0:
@@ -106,7 +112,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
                 }
                 break;
             case 1:
-                codons.replaceAt(this.getRandomCodonGaussian(codons.get(index)), index);
+                codons.replaceAt(this._getRandomCodonGaussian(codons.get(index)), index);
                 break;
             case 2:
                 if (codons.size() > 1) {
@@ -123,7 +129,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * standard deviation being the gaussianMutationPower.
      * @param value the integer value to add gaussian noise to.
      */
-    private getRandomCodonGaussian(value: number): number {
+    private _getRandomCodonGaussian(value: number): number {
         const randomGaussian = this._random.nextGaussianInt(value, this._gaussianMutationPower);
         // Wrap the sampled number into the range [this._min, this._max]
         return randomGaussian - (this._max + 1) * Math.floor(randomGaussian / (this._max + 1));

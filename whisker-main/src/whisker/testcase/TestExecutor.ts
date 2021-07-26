@@ -32,6 +32,8 @@ import {Randomness} from "../utils/Randomness";
 import VMWrapper = require("../../vm/vm-wrapper.js")
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
+import {EventSelector} from "./EventSelector";
+import {ParameterTypes} from "./events/ParameterTypes";
 
 
 export class TestExecutor {
@@ -39,14 +41,16 @@ export class TestExecutor {
     private readonly _vm: VirtualMachine;
     private _vmWrapper: VMWrapper
     private _eventExtractor: ScratchEventExtractor;
+    private readonly _eventSelector: EventSelector;
     private _eventObservers: EventObserver[] = [];
     private _initialState = {};
     private _projectRunning: boolean;
 
-    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor) {
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._eventExtractor = eventExtractor;
+        this._eventSelector = eventSelector;
         this.recordInitialState();
     }
 
@@ -124,11 +128,12 @@ export class TestExecutor {
     public async selectAndSendEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>,
                                     events: List<[ScratchEvent, number[]]>): Promise<number> {
         // Select the next Event and set its parameter
-        const nextEvent: ScratchEvent = availableEvents.get(codons.get(numCodon++) % availableEvents.size())
+        const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
+        numCodon++;
         const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
-        nextEvent.setParameter(args);
+        nextEvent.setParameter(args, ParameterTypes.CODON);
         events.add([nextEvent, args]);
-        numCodon += nextEvent.getNumParameters();
+        numCodon += nextEvent.getNumVariableParameters();
         this.notify(nextEvent, args);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();
@@ -149,7 +154,7 @@ export class TestExecutor {
      */
     private static getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
         const args = [];
-        for (let i = 0; i < event.getNumParameters(); i++) {
+        for (let i = 0; i < event.getNumVariableParameters(); i++) {
             args.push(codons.get(codonPosition++ % codons.size()));
         }
         return args;
