@@ -27,6 +27,7 @@ import {Randomness} from "../../utils/Randomness";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import {TestChromosome} from "../../testcase/TestChromosome";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -98,11 +99,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * Defines the number of mutations applied to a given Chromosome within one round of mutation during FocusPhase.
      */
     private _maxMutationCountFocusedPhase: number;
-
-    /**
-     * Counts the number of mutations applied to a given Chromosome in the current mutation round.
-     */
-    private _mutationCounter: number;
 
     /**
      * A Map mapping to each fitnessFunction a counter determining how often the fitnessFunction has been selected for a
@@ -199,6 +195,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // Otherwise we choose a chromosome to mutate from one of our populations, preferring uncovered ones.
                 const anyUncovered: boolean = this._archiveUncovered.size > 0;
                 const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
                 let archiveTuples: List<ChromosomeHeuristicTuple<C>>
                 if (anyUncovered) {
@@ -207,9 +204,11 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 } else {
                     chromosome = this._archiveCovered.get(fitnessFunctionKey);
                 }
+                chromosome.targetFitness = fitnessFunction;
                 let currentHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
                 while (mutationCounter < this._maxMutationCount) {
                     const mutant = chromosome.mutate();
+                    mutant.targetFitness = fitnessFunction;
                     await mutant.evaluate();
                     this.updateArchive(mutant);
                     const mutantHeuristic = this.getHeuristicValue(mutant, fitnessFunctionKey);
@@ -287,6 +286,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(this._fitnessFunctions.get(fitnessFunctionKey));
                     this._archiveUncovered.delete(fitnessFunctionKey);
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
+                    console.log(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
                     if (this._archiveCovered.size == this._fitnessFunctions.size) {
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
@@ -300,13 +300,13 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     archiveTuples = new List<ChromosomeHeuristicTuple<C>>();
                 }
                 const newTuple = new ChromosomeHeuristicTuple<C>(chromosome, heuristicValue);
+                newTuple.getChromosome().targetFitness = this._fitnessFunctions.get(fitnessFunctionKey);
                 // Do not add duplicates in any population!
                 if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
                     continue;
                 }
                 if (archiveTuples.size() < this._maxArchiveSize) {
                     archiveTuples.add(newTuple);
-                    this._samplingCounter.set(fitnessFunctionKey, 0);
                 } else {
                     const worstArchiveTuple = this.getWorstChromosomeHeuristicTuple(archiveTuples);
                     const worstHeuristicValue = worstArchiveTuple.getHeuristicValue();
@@ -354,7 +354,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param fitnessFunctionKey The key of the fitness function.
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
-        console.log(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
         this._bestIndividuals = new List<C>(Array.from(this._archiveCovered.values())).distinct();
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();

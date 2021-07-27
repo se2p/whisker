@@ -77,6 +77,7 @@ export class TestExecutor {
         let totalCoverageSize = 0;
         let codonLastImproved = 0;
         let lastImprovedTrace: ExecutionTrace;
+        let targetFitness = Number.MAX_SAFE_INTEGER;
 
         while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
@@ -96,20 +97,33 @@ export class TestExecutor {
                 totalCoverageSize = currentCoverage.size;
                 lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
             }
+
+            // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
+            // focused Algorithm like MIO.
+            if(testChromosome.targetFitness){
+                testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
+                testChromosome.coverage = currentCoverage;
+                const currentFitness = testChromosome.targetFitness.getFitness(testChromosome);
+                if(testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0){
+                    targetFitness = currentFitness;
+                    testChromosome.lastImprovedFitnessCodon = numCodon;
+                }
+            }
         }
 
         // Check if the last event had to use a codon from the start of the codon list.
         // Extend the codon list by the required amount of codons by duplicating the first few codons.
-        if (codonLastImproved > codons.size()) {
-            const codonsToDuplicate = codonLastImproved - codons.size()
+        if (numCodon > codons.size()) {
+            const codonsToDuplicate = numCodon - codons.size();
             codons.addList(codons.subList(0, codonsToDuplicate));
         }
 
         // Set attributes of the testChromosome after executing its genes.
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        testChromosome.lastImprovedCodon = codonLastImproved;
+        testChromosome.lastImprovedCoverageCodon = codonLastImproved;
         testChromosome.lastImprovedTrace = lastImprovedTrace;
+
 
         this._vmWrapper.end();
         this.resetState();

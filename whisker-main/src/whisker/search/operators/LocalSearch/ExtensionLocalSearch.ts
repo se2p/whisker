@@ -87,7 +87,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events.clone());
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
+        newChromosome.lastImprovedCoverageCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
 
         // Save the modified chromosome to fetch its covered blocks in another round of ExtensionLocalSearch.
@@ -131,7 +131,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         let fitnessValuesUnchanged = 0;
         let done = false;
         let totalCoverageSize = chromosome.coverage.size;
-        let lastImprovedCodon = chromosome.lastImprovedCodon;
+        let lastImprovedCodon = chromosome.lastImprovedCoverageCodon;
         let lastImprovedTrace: ExecutionTrace
 
         // Uncovered blocks without branches between themselves and already covered blocks have a fitness of 0.5.

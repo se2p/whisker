@@ -43,10 +43,19 @@ export class VariableLengthConstrainedChromosomeMutation extends AbstractVariabl
      * @return A mutated deep copy of the given chromosome.
      */
     apply(chromosome: TestChromosome): TestChromosome {
-        if (chromosome.lastImprovedCodon == 0 || chromosome.lastImprovedCodon == chromosome.getLength() - 1) {
+        // If we have some information about lastImprovedFitnessCodon use this codon as a stopping point for mutation.
+        // Value of 2 equals clicking Flag, hence no improvement.
+        if(chromosome.lastImprovedFitnessCodon > 2){
+            return super.applyUpTo(chromosome, chromosome.lastImprovedFitnessCodon + 1);
+        }
+        // Else if we have some information about lastImprovedCoverageCodon use this codon as a stopping point for mutation.
+        // Value of 2 equals clicking Flag, hence no improvement.
+        else if(chromosome.lastImprovedCoverageCodon > 2){
+            return super.applyUpTo(chromosome, chromosome.lastImprovedCoverageCodon);
+        }
+        // Otherwise, mutate the whole chromosome.
+        else{
             return super.applyUpTo(chromosome, chromosome.getLength());
-        } else {
-            return super.applyUpTo(chromosome, chromosome.lastImprovedCodon + 1);
         }
     }
 }

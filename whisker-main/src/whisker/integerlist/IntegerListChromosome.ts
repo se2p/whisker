@@ -21,10 +21,7 @@
 import {List} from '../utils/List';
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
-import {IntegerListMutation} from "./IntegerListMutation";
 import {ListChromosome} from "../search/ListChromosome";
-import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
-import {TestChromosome} from "../testcase/TestChromosome";
 
 export class IntegerListChromosome extends ListChromosome<number> {
 
