@@ -29,6 +29,7 @@ export class CheckUtility extends EventEmitter {
     private eventStrings: string[] = [];
 
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
+    private failedOutputsEvents: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
 
     /**
      * Get an instance of a condition state saver.
@@ -41,9 +42,14 @@ export class CheckUtility extends EventEmitter {
         this.testDriver = testDriver;
         this.modelResult = modelResult;
         this.setMaxListeners(nbrOfAllModels);
-        this.testDriver.vmWrapper.sprites.onModelSpriteMoved(sprite => this.checkForEvent(this.onMovedChecks, sprite));
-        this.testDriver.vmWrapper.sprites.onSayOrThink(sprite => this.checkForEvent(this.onSayOrThinkChecks, sprite));
-        this.testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(sprite => this.checkForEvent(this.onVisualChecks, sprite));
+        this.testDriver.vmWrapper.sprites.onModelSpriteMoved(sprite =>
+            this.checkForEvent(this.onMovedChecks, sprite));
+        this.testDriver.vmWrapper.sprites.onSayOrThink(sprite => {
+            this.checkFailedOutputEvents();
+            this.checkForEvent(this.onSayOrThinkChecks, sprite);
+        });
+        this.testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(sprite =>
+            this.checkForEvent(this.onVisualChecks, sprite));
         this.testDriver.vmWrapper.sprites.onVariableChange((varName: string) => {
             if (this.variableChecks[varName] != null) {
                 this.variableChecks[varName].forEach(fun => fun());
@@ -269,9 +275,34 @@ export class CheckUtility extends EventEmitter {
     }
 
     makeFailedOutputs() {
+        for (let i = 0; i < this.failedOutputsEvents.length; i++) {
+            this.failOnProgramModel(this.failedOutputsEvents[i].edge, this.failedOutputsEvents[i].effect);
+        }
+        this.failedOutputsEvents = [];
         for (let i = 0; i < this.effectChecks.length; i++) {
-            this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect);
+            if (this.effectChecks[i].effect.name != CheckName.Output) {
+                this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect);
+            } else {
+                this.failedOutputsEvents.push(this.effectChecks[i]);
+            }
         }
         this.effectChecks = [];
+    }
+
+    private checkFailedOutputEvents() {
+        let newFailedList = [];
+        for (let i = 0; i < this.failedOutputsEvents.length; i++) {
+            let model = this.failedOutputsEvents[i].model;
+            let effect = this.failedOutputsEvents[i].effect;
+            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
+            try {
+                if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
+                    newFailedList.push(this.failedOutputsEvents[i]);
+                }
+            } catch (e) {
+                this.failOnProgramModel(this.failedOutputsEvents[i].edge, effect);
+            }
+        }
+        this.failedOutputsEvents = newFailedList;
     }
 }
