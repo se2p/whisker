@@ -373,6 +373,10 @@ class Inputs {
         this.vmWrapper.vm.runtime.startHats('event_whenstageclicked', null, stage);
     }
 
+    /**
+     * @param {string} target .
+     * @param {number} steps .
+     */
     clickSprite (target, steps) {
         for (const t of this.vmWrapper.vm.runtime.targets) {
             if (t.sprite.name === target) {
@@ -387,6 +391,11 @@ class Inputs {
         }
     }
 
+    /**
+     * @param {number} x .
+     * @param {number} y .
+     * @param {number} steps .
+     */
     clickClone (x, y, steps) {
         for (const target of this.vmWrapper.vm.runtime.targets) {
             if (target.x === x && target.y === y) {
@@ -402,7 +411,13 @@ class Inputs {
         }
     }
 
-    // When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
+    /**
+     * When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
+     *
+     * @param {string} target .
+     * @param {number} x .
+     * @param {number} y .
+     */
     dragSprite (target, x, y) {
         for (const t of this.vmWrapper.vm.runtime.targets) {
             if (t.sprite.name === target) {
@@ -412,6 +427,10 @@ class Inputs {
         }
     }
 
+    /**
+     * @param {string} keyOption .
+     * @param {number} steps .
+     */
     keyPress (keyOption, steps) {
         this.inputImmediate({
             device: 'keyboard',
@@ -421,6 +440,9 @@ class Inputs {
         });
     }
 
+    /**
+     * @param {boolean} value .
+     */
     mouseDown (value) {
         this.inputImmediate({
             device: 'mouse',
@@ -428,6 +450,10 @@ class Inputs {
         });
     }
 
+    /**
+     * @param {number} x .
+     * @param {number} y .
+     */
     mouseMove (x, y) {
         this.inputImmediate({
             device: 'mouse',
@@ -436,6 +462,10 @@ class Inputs {
         });
     }
 
+    /**
+     * @param {number} x .
+     * @param {number} y .
+     */
     mouseMoveToEvent (x, y) {
         this.inputImmediate({
             device: 'mouse',
@@ -444,6 +474,9 @@ class Inputs {
         });
     }
 
+    /**
+     * @param {string} text .
+     */
     typeText (text) {
         this.inputImmediate({
             device: 'text',
