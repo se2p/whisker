@@ -20,6 +20,7 @@
 
 import {StoppingCondition} from "./StoppingCondition";
 import {Chromosome} from "./Chromosome";
+import {TestGenerator} from "../testgenerator/TestGenerator";
 
 /**
  * This class stores all relevant properties from a search algorithm.
@@ -97,6 +98,11 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
      * The maximum of the range.
      */
     private _maxRange: number;
+
+    /**
+     * Defines the used TestGenerator approach
+     */
+    private _testGenerator: string
 
     /**
      * Constructs an object that stores all relevant properties of a search algorithm.
@@ -223,6 +229,14 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     }
 
     /**
+     * Returns the used TestGenerator
+     * @returns the used TestGenerator as string
+     */
+    getTestGenerator(): string {
+        return this._testGenerator;
+    }
+
+    /**
      * Sets the size of the population to the specified number.
      * @param populationSize the new population size
      */
@@ -311,4 +325,11 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
         this._maxRange = max;
     }
 
+    /**
+     * Sets the used TestGenerator
+     * @param generator the used TestGenerator as string
+     */
+    setTestGenerator(generator: string): void {
+        this._testGenerator = generator;
+    }
 }

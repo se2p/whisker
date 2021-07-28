@@ -20,6 +20,7 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
+import {ParameterTypes} from "./ParameterTypes";
 
 export class MouseMoveEvent extends ScratchEvent {
 
@@ -44,7 +45,7 @@ export class MouseMoveEvent extends ScratchEvent {
         return "MouseMove " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 2; // x and y?
     }
 
@@ -52,9 +53,27 @@ export class MouseMoveEvent extends ScratchEvent {
         return [this._x, this._y];
     }
 
-    setParameter(args:number[]): void {
-        const fittedCoordinates = this.fitCoordinates(args[0], args[1])
-        this._x = fittedCoordinates.x;
-        this._y = fittedCoordinates.y;
+    getVariableParameterNames(): string[] {
+        return ["X", "Y"]
+    }
+
+    setParameter(args: number[], argType: ParameterTypes): void {
+        switch (argType) {
+            case ParameterTypes.CODON: {
+                const fittedCoordinates = this.fitCoordinates(args[0], args[1])
+                this._x = fittedCoordinates.x;
+                this._y = fittedCoordinates.y;
+                break;
+            }
+            case ParameterTypes.REGRESSION: {
+                this._x = Math.tanh(args[0]) * 240;
+                this._y = Math.tanh(args[1]) * 180;
+                break;
+            }
+        }
+    }
+
+    stringIdentifier(): string {
+        return "MouseMoveEvent";
     }
 }

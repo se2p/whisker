@@ -20,7 +20,7 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {RenderedTarget} from'scratch-vm/src/sprites/rendered-target';
+import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 
 export class ClickSpriteEvent extends ScratchEvent {
 
@@ -57,7 +57,7 @@ export class ClickSpriteEvent extends ScratchEvent {
         }
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 0;
     }
 
@@ -67,6 +67,14 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     getParameter(): (number | RenderedTarget)[] {
         return [this._target, this._steps];
+    }
+
+    getVariableParameterNames(): string[] {
+        return [];
+    }
+
+    stringIdentifier(): string {
+        return "ClickSpriteEvent-" + this._target.sprite.name;
     }
 }
 

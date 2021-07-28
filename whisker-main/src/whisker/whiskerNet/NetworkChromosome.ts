@@ -7,11 +7,27 @@ import {Mutation} from "../search/Mutation";
 import {NodeType} from "./NetworkNodes/NodeType";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
-import {Species} from "./Species";
+import {Species} from "./NeuroevolutionPopulations/Species";
 import assert from "assert";
 import {InputNode} from "./NetworkNodes/InputNode";
+import {Randomness} from "../utils/Randomness";
+import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
+import {RegressionNode} from "./NetworkNodes/RegressionNode";
+import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
+import {ScratchEvent} from "../testcase/events/ScratchEvent";
+import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
 
 export class NetworkChromosome extends Chromosome {
+
+    /**
+     * Id Counter
+     */
+    public static idCounter = 0;
+
+    /**
+     * Unique identifier
+     */
+    private _id: number;
     /**
      * Holds all nodes of a Network
      */
@@ -20,12 +36,22 @@ export class NetworkChromosome extends Chromosome {
     /**
      * Holds all input nodes of a network mapped to the corresponding sprite.
      */
-    private readonly _inputNodes: Map<number, List<NodeGene>>;
+    private readonly _inputNodes: Map<string, Map<string, InputNode>>;
 
     /**
      * Holds all output nodes of a network
      */
     private readonly _outputNodes: List<NodeGene>;
+
+    /**
+     * Maps events to the corresponding classification Node
+     */
+    private readonly _classificationNodes: Map<string, ClassificationNode>;
+
+    /**
+     * Maps events which take at least one parameter as input to the corresponding regression Nodes
+     */
+    private readonly _regressionNodes: Map<string, List<RegressionNode>>
 
     /**
      * Holds all connections of a network
@@ -88,6 +114,11 @@ export class NetworkChromosome extends Chromosome {
     private _trace: ExecutionTrace;
 
     /**
+     * Saves the achieved coverage of the chromosome during the playthrough.
+     */
+    private _coverage: Set<string>;
+
+    /**
      * Saves the codons of the network in a similar way to other non-Network chromosomes.
      * Used for transforming the network into a TestChromosome for evaluating its StatementFitness
      */
@@ -104,9 +135,9 @@ export class NetworkChromosome extends Chromosome {
     private _hasLoop: boolean
 
     /**
-     * True if this network has regression nodes
+     * Random number generator
      */
-    private _hasRegression: boolean;
+    private readonly _random: Randomness
 
     /**
      * Constructs a new NetworkChromosome
@@ -118,9 +149,12 @@ export class NetworkChromosome extends Chromosome {
     constructor(connections: List<ConnectionGene>, allNodes: List<NodeGene>,
                 mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>) {
         super();
+        this._id = NetworkChromosome.idCounter;
         this._allNodes = allNodes;
-        this._inputNodes = new Map<number, List<NodeGene>>();
+        this._inputNodes = new Map<string, Map<string, InputNode>>();
         this._outputNodes = new List<NodeGene>();
+        this._classificationNodes = new Map<string, ClassificationNode>();
+        this._regressionNodes = new Map<string, List<RegressionNode>>();
         this._connections = connections;
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
@@ -133,27 +167,31 @@ export class NetworkChromosome extends Chromosome {
         this._expectedOffspring = 0;
         this._numberOffspringPopulationChamp = 0;
         this._trace = null;
+        this._coverage = new Set<string>();
         this._codons = new List<number>();
         this._isRecurrent = false;
         this._hasLoop = false;
-        this._hasRegression = false;
+        this._random = Randomness.getInstance();
         this.generateNetwork();
     }
 
     /**
-     * Deep clone of a NetworkChromosome
-     * @return the cloned network
+     * Deep clone of a NetworkChromosome's structure. Attributes which are not related to the Network's structure
+     * are initialised by the constructor.
+     * @param doIncrementIdCounter determines whether the ID counter should be incremented during cloning.
+     * @returns NetworkChromosome the cloned Network.
      */
-    clone(): NetworkChromosome {
-        return this.cloneWith(this.connections)
+    cloneStructure(doIncrementIdCounter = true): NetworkChromosome {
+        return this.cloneWith(this.connections, doIncrementIdCounter)
     }
 
     /**
-     * Deep clone of a NetworkChromosome using a defined list of genes
-     * @param newGenes the ConnectionGenes the network should be initialised with
-     * @return the cloned network
+     * Deep clone of a NetworkChromosome using a defined list of genes.
+     * @param newGenes the ConnectionGenes the network should be initialised with.
+     * @param doIncrementIdCounter determines whether the ID counter should be incremented during cloning.
+     * @returns NetworkChromosome the cloned network.
      */
-    cloneWith(newGenes: List<ConnectionGene>): NetworkChromosome {
+    cloneWith(newGenes: List<ConnectionGene>, doIncrementIdCounter = true): NetworkChromosome {
         const connectionsClone = new List<ConnectionGene>();
         const nodesClone = new List<NodeGene>();
 
@@ -170,56 +208,163 @@ export class NetworkChromosome extends Chromosome {
             const connectionClone = connection.cloneWithNodes(fromNode, toNode);
             connectionsClone.add(connectionClone);
         }
-
+        if (doIncrementIdCounter) {
+            NetworkChromosome.idCounter++;
+        }
         return new NetworkChromosome(connectionsClone, nodesClone, this.getMutationOperator(), this.getCrossoverOperator());
     }
 
     /**
-     * Adds additional input Nodes if we have encountered a new Sprite during the playthrough
-     * @param inputs
+     * Deep Clone of a Network including its structure and attributes.
      */
-    public addInputNode(inputs: number[][]): void {
-        for (let i = 0; i < inputs.length; i++) {
-            // First check if we encountered a new sprite.
-            if (this.inputNodes.get(i) === undefined) {
-                const newInputNodes = new List<NodeGene>();
-                inputs[i].forEach(() => {
-                    const iNode = new InputNode(this.allNodes.size(), i)
-                    newInputNodes.add(iNode);
-                    this.allNodes.add(iNode);
-                })
-                this.inputNodes.set(i, newInputNodes);
-            }
+    clone(): NetworkChromosome {
+        const clone = this.cloneStructure(false);
+        clone.id = this.id;
+        clone.trace = this.trace;
+        clone.coverage = this.coverage;
+        clone.networkFitness = this.networkFitness;
+        clone.sharedFitness = this.sharedFitness;
+        clone.species = this.species;
+        clone.isSpeciesChampion = this.isSpeciesChampion;
+        clone.isPopulationChampion = this.isPopulationChampion;
+        clone.hasDeathMark = this.hasDeathMark;
+        clone.expectedOffspring = this.expectedOffspring;
+        clone.isRecurrent = this.isRecurrent;
+        return clone;
+    }
 
-            // Then, check if we may have gathered more information from a given sprite.
-            while(this.inputNodes.get(i).size() < inputs[i].length){
-                const iNode = new InputNode(this.allNodes.size(),i)
-                this.inputNodes.get(i).add(iNode)
-                this.allNodes.add(iNode);
+    /**
+     * Adds additional input Nodes if we have encountered a new Sprite during the playthrough
+     * @param sprites a map which maps each sprite to its input feature vector
+     */
+    private updateInputNodes(sprites: Map<string, Map<string, number>>): void {
+        let updated = false;
+        sprites.forEach((spriteFeatures, spriteKey) => {
+            // Check if we have encountered a new Sprite
+            if (!this.inputNodes.has(spriteKey)) {
+                updated = true;
+                const spriteNodes = new Map<string, InputNode>();
+                spriteFeatures.forEach((featureValue, featureKey) => {
+                    const iNode = new InputNode(this.allNodes.size(), spriteKey, featureKey);
+                    spriteNodes.set(featureKey, iNode);
+                    this.allNodes.add(iNode);
+                    // By Chance we connect the new Node to the network.
+                    if (this._random.nextDouble() < 0.5) {
+                        this.connectInputNode(iNode);
+                    }
+                })
+                this.inputNodes.set(spriteKey, spriteNodes);
+            }
+            // We haven't encountered a new sprite but we still have to check if we encountered new features of a sprite.
+            else {
+                spriteFeatures.forEach((featureValue, featureKey) => {
+                    const savedSpriteMap = this.inputNodes.get(spriteKey);
+                    if (!savedSpriteMap.has(featureKey)) {
+                        updated = true;
+                        const iNode = new InputNode(this.allNodes.size(), spriteKey, featureKey);
+                        savedSpriteMap.set(featureKey, iNode);
+                        this.allNodes.add(iNode);
+                        // By Chance we connect the new Node to the network.
+                        if (this._random.nextDouble() < 0.5) {
+                            this.connectInputNode(iNode);
+                        }
+                    }
+                })
+            }
+        })
+        if (updated) {
+            this.generateNetwork();
+        }
+    }
+
+    /**
+     * Adds additional classification/regression Nodes if we have encountered a new Event during the playthrough
+     * @param events a list of encountered events
+     */
+    public updateOutputNodes(events: List<ScratchEvent>): void {
+        let updated = false;
+        for (const event of events) {
+            if (!this.classificationNodes.has(event.stringIdentifier())) {
+                updated = true;
+                const classificationNode = new ClassificationNode(this.allNodes.size(), event, ActivationFunction.SIGMOID);
+                this.allNodes.add(classificationNode);
+                this.connectOutputNode(classificationNode);
+                for (const parameter of event.getVariableParameterNames()) {
+                    const regressionNode = new RegressionNode(this.allNodes.size(), event, parameter, ActivationFunction.NONE)
+                    this.allNodes.add(regressionNode);
+                    this.connectOutputNode(regressionNode);
+                }
             }
         }
-        this.generateNetwork();
+        if (updated)
+            this.generateNetwork();
+    }
+
+    /**
+     * Connects an inputNode to the Network by creating a connection between the inputNode and all outputNodes
+     * @param iNode the inputNode to connect
+     */
+    private connectInputNode(iNode: NodeGene): void {
+        for (const oNode of this.outputNodes) {
+            const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1), true, 0, false)
+            NeuroevolutionUtil.assignInnovationNumber(newConnection);
+            this.connections.add(newConnection)
+            oNode.incomingConnections.add(newConnection);
+        }
+    }
+
+    /**
+     * Connects an outputNode to the Network by creating a connection between the outputNode and all inputNodes
+     * @param oNode the outputNode to connect
+     */
+    private connectOutputNode(oNode: NodeGene): void {
+        for (const iNodes of this.inputNodes.values()) {
+            for (const iNode of iNodes.values()) {
+                const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1), true, 0, false)
+                NeuroevolutionUtil.assignInnovationNumber(newConnection);
+                this.connections.add(newConnection)
+                oNode.incomingConnections.add(newConnection);
+            }
+        }
     }
 
     /**
      * Generates the network by placing the Input and Output nodes in the corresponding List.
      * Furthermore, assign each node its incoming connections defined by the connectionGene List.
      */
-    generateNetwork(): void {
+    public generateNetwork(): void {
         this.sortConnections();
-        // Place the input and output nodes into the corresponding List
+        this.sortNodes();
+        // Place the input, regression and output nodes into the corresponding Map/List
         for (const node of this.allNodes) {
-            if (node instanceof InputNode){
-                if(this.inputNodes.get(node.sprite) === undefined){
-                    const newSpriteVector = new List<NodeGene>();
-                    newSpriteVector.add(node);
-                    this.inputNodes.set(node.sprite,newSpriteVector);
-                }
-                else if(!this.inputNodes.get(node.sprite).contains(node))
-                    this.inputNodes.get(node.sprite).add(node);
+            // Add input nodes to the InputNode-Map
+            if (node instanceof InputNode) {
+                if (!this.inputNodes.has(node.sprite)) {
+                    const newSpriteMap = new Map<string, InputNode>();
+                    newSpriteMap.set(node.feature, node);
+                    this.inputNodes.set(node.sprite, newSpriteMap);
+                } else if (!this.inputNodes.get(node.sprite).has(node.feature))
+                    this.inputNodes.get(node.sprite).set(node.feature, node);
             }
+            // Add classification nodes to the Classification-Map
+            if (node instanceof ClassificationNode) {
+                if (!this.classificationNodes.has(node.event.stringIdentifier())) {
+                    this.classificationNodes.set(node.event.stringIdentifier(), node);
+                }
+            }
+            // Add Regression nodes to the RegressionNode-Map
+            if (node instanceof RegressionNode) {
+                if (!this.regressionNodes.has(node.event.stringIdentifier())) {
+                    const newParameterVector = new List<RegressionNode>();
+                    newParameterVector.add(node);
+                    this.regressionNodes.set(node.event.stringIdentifier(), newParameterVector);
+                } else if (!this.regressionNodes.get(node.event.stringIdentifier()).contains(node))
+                    this.regressionNodes.get(node.event.stringIdentifier()).add(node);
+            }
+            // Add output nodes to the OutputNode-Map
             if (node.type === NodeType.OUTPUT && !this.outputNodes.contains(node))
                 this.outputNodes.add(node);
+
         }
 
         // Go through each connection and set up the incoming connections of each Node
@@ -244,7 +389,7 @@ export class NetworkChromosome extends Chromosome {
         // Double Check if we really don't have a recurrent network
         if (!this.isRecurrent) {
             for (const connection of this.connections) {
-                if (connection.recurrent && connection.isEnabled) {
+                if (connection.isRecurrent && connection.isEnabled) {
                     this.isRecurrent = true;
                 }
             }
@@ -269,11 +414,14 @@ export class NetworkChromosome extends Chromosome {
             }
 
             // Activate network with some input values.
-            const inputs = [[], []];
-            for (let i = 0; i < this._inputNodes.size; i++) {
-                const spriteVectorSize = this._inputNodes.get(i).size();
-                inputs[i] = new Array(spriteVectorSize).fill(1);
-            }
+            const inputs = new Map<string, Map<string, number>>();
+            this.inputNodes.forEach((sprite, k) => {
+                const spriteFeatures = new Map<string, number>();
+                sprite.forEach((featureNode, featureKey) => {
+                    spriteFeatures.set(featureKey, 1);
+                })
+                inputs.set(k, spriteFeatures);
+            })
             this.activateNetwork(inputs);
 
             // If our output nodes got activated check if they changed their values.
@@ -299,14 +447,16 @@ export class NetworkChromosome extends Chromosome {
             }
             rounds++;
         }
+        this.flushNodeValues();
         return (level - period + 1);
     }
 
     /**
      * Activates the network in order to get an output corresponding to the fed inputs.
+     * @param inputs a map which maps each sprite to its input feature vector
      * @return returns true if everything went well.
      */
-    activateNetwork(inputs: number[][]): boolean {
+    public activateNetwork(inputs: Map<string, Map<string, number>>): boolean {
         // Generate the network and load the inputs
         this.generateNetwork();
         this.setUpInputs(inputs);
@@ -322,7 +472,6 @@ export class NetworkChromosome extends Chromosome {
 
             // For each node compute the sum of its incoming connections
             for (const node of this.allNodes) {
-
                 if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
 
                     // Reset the activation Flag and the activation value
@@ -347,7 +496,6 @@ export class NetworkChromosome extends Chromosome {
                         node.lastActivationValue = node.activationValue;
                         node.activationValue = node.getActivationValue();
                         node.activationCount++;
-
                     }
                 }
             }
@@ -358,19 +506,20 @@ export class NetworkChromosome extends Chromosome {
 
     /**
      * Load the given inputs into the inputNodes of the network
-     * @param inputs the inputs the nodes should be loaded with
+     * @param inputs a map which maps each sprite to its input feature vector
      */
-    private setUpInputs(inputs: number[][]): void {
-        for (let i = 0; i < inputs.length; i++) {
-            const spriteVector = inputs[i];
-            for (let j = 0; j < spriteVector.length; j++) {
-                const iNode = this.inputNodes.get(i).get(j);
+    private setUpInputs(inputs: Map<string, Map<string, number>>): void {
+        // First check if we encountered new nodes.
+        this.updateInputNodes(inputs);
+        inputs.forEach((spriteValue, spriteKey) => {
+            spriteValue.forEach((featureValue, featureKey) => {
+                const iNode = this.inputNodes.get(spriteKey).get(featureKey);
                 iNode.activationCount++;
                 iNode.activatedFlag = true;
-                iNode.nodeValue = spriteVector[j];
-                iNode.activationValue = spriteVector[j];
-            }
-        }
+                iNode.nodeValue = featureValue;
+                iNode.activationValue = featureValue;
+            })
+        })
     }
 
     /**
@@ -429,7 +578,7 @@ export class NetworkChromosome extends Chromosome {
         }
 
         for (const inConnection of node1.incomingConnections) {
-            if (!inConnection.recurrent) {
+            if (!inConnection.isRecurrent) {
                 if (!inConnection.source.traversed) {
                     inConnection.source.traversed = true;
                     if (this.isRecurrentPath(inConnection.source, node2, level, threshold)) {
@@ -456,18 +605,14 @@ export class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Counts the number of input Nodes
-     * @return the number of input nodes
+     * Sorts the nodes of this network according to its types.
      */
-    public inputNodesSize(): number{
-        let counter = 0;
-        for(const nodeList of this.inputNodes.values())
-            counter += nodeList.size();
-        return counter;
+    private sortNodes(): void {
+        this.allNodes.sort((a, b) => a.type - b.type);
     }
 
     /**
-     * Sorts the connections of this network corresponding to its innovation numbers.
+     * Sorts the connections of this network according to its innovation numbers.
      */
     private sortConnections(): void {
         this.connections.sort((a, b) => a.innovation - b.innovation);
@@ -483,6 +628,34 @@ export class NetworkChromosome extends Chromosome {
 
     toString(): string {
         return "Genome:\nNodeGenes: " + this.allNodes + "\nConnectionGenes: " + this.connections;
+    }
+
+    /**
+     * Transforms this NetworkChromosome into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
+        const network = {};
+        network[`Id`] = this.id;
+        network[`NetworkFitness`] = this.networkFitness;
+        network[`FitnessShared`] = this.sharedFitness;
+        network[`ExpectedOffspring`] = this.expectedOffspring;
+        network[`DeathMark`] = this.hasDeathMark;
+        for (let i = 0; i < this.allNodes.size(); i++) {
+            network[`Node ${i}`] = this.allNodes.get(i).toJSON();
+        }
+        for (let i = 0; i < this.connections.size(); i++) {
+            network[`Connection ${i}`] = this.connections.get(i).toJSON();
+        }
+        return network;
+    }
+
+    get id(): number {
+        return this._id;
+    }
+
+    set id(value: number) {
+        this._id = value;
     }
 
     getLength(): number {
@@ -501,12 +674,20 @@ export class NetworkChromosome extends Chromosome {
         return fitnessFunction.getFitness(this);
     }
 
-    get inputNodes(): Map<number, List<NodeGene>> {
+    get inputNodes(): Map<string, Map<string, InputNode>> {
         return this._inputNodes;
     }
 
     get outputNodes(): List<NodeGene> {
         return this._outputNodes;
+    }
+
+    get classificationNodes(): Map<string, ClassificationNode> {
+        return this._classificationNodes;
+    }
+
+    get regressionNodes(): Map<string, List<RegressionNode>> {
+        return this._regressionNodes;
     }
 
     get allNodes(): List<NodeGene> {
@@ -519,6 +700,14 @@ export class NetworkChromosome extends Chromosome {
 
     set trace(value: ExecutionTrace) {
         this._trace = value;
+    }
+
+    get coverage(): Set<string> {
+        return this._coverage;
+    }
+
+    set coverage(value: Set<string>) {
+        this._coverage = value;
     }
 
     get connections(): List<ConnectionGene> {
@@ -603,13 +792,5 @@ export class NetworkChromosome extends Chromosome {
 
     set isRecurrent(value: boolean) {
         this._isRecurrent = value;
-    }
-
-    get hasRegression(): boolean {
-        return this._hasRegression;
-    }
-
-    set hasRegression(value: boolean) {
-        this._hasRegression = value;
     }
 }

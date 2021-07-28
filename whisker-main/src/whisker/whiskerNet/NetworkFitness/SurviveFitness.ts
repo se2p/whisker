@@ -14,23 +14,10 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         const start = Date.now();
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
-        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
+        // Round to 2 decimals
+        const surviveTime = Math.round(((Container.vm.runtime.currentMSecs - start) / 1000 + Number.EPSILON) * 100 ) / 100;
         network.networkFitness = surviveTime;
-        return surviveTime;
-    }
-
-    /**
-     * Calculates the survived time of a random event selection playthrough
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     */
-    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
-        const start = Date.now();
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        await executor.executeRandom(network);
-        // Round due to small variances in runtime
-        const surviveTime = Math.round((Container.vm.runtime.currentMSecs - start) / 100);
-        network.networkFitness = surviveTime;
+        executor.resetState();
         return surviveTime;
     }
 

@@ -19,14 +19,17 @@
  */
 
 import {List} from "../../utils/List";
-import {Chromosome} from "./../Chromosome";
-import {SearchAlgorithmProperties} from "./../SearchAlgorithmProperties";
-import {ChromosomeGenerator} from "./../ChromosomeGenerator";
-import {FitnessFunction} from "./../FitnessFunction";
-import {Selection} from "./../Selection";
+import {Chromosome} from "../Chromosome";
+import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
+import {ChromosomeGenerator} from "../ChromosomeGenerator";
+import {FitnessFunction} from "../FitnessFunction";
+import {Selection} from "../Selection";
 import {SearchAlgorithm} from "../SearchAlgorithm";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {StoppingCondition} from "../StoppingCondition";
+import {TestChromosome} from "../../testcase/TestChromosome";
 
 /**
  * Represents a strategy to search for an approximated solution to a given problem.
@@ -36,22 +39,58 @@ import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
  */
 export abstract class SearchAlgorithmDefault<C extends Chromosome> implements SearchAlgorithm<C> {
 
-    async findSolution(): Promise<List<C>> {
-        throw new NotSupportedFunctionException();
-    }
+    /**
+     * Defines SearchParameters set within the config file.
+     */
+    protected _properties: SearchAlgorithmProperties<C>;
 
-/**
- * Summarize the solution saved in _archive.
- * @returns: For MOSA.ts, for each statement that is not covered, it returns 4 items:
- * 		- Not covered: the statement that’s not covered by any
- *        function in the _bestIndividuals.
- *     	- ApproachLevel: the approach level of that statement
- *     	- BranchDistance: the branch distance of that statement
- *     	- Fitness: the fitness value of that statement
- * For other search algorithms, it returns an empty string.
- */
-    summarizeSolution(): string {
-        return '';
+    /**
+     * Generator responsible for generating initial Chromosome.
+     */
+    protected _chromosomeGenerator: ChromosomeGenerator<C>;
+
+    /**
+     * Defines the stopping condition of the SearchAlgorithm.
+     */
+    protected _stoppingCondition: StoppingCondition<C>;
+
+    /**
+     * Archive mapping to each fitnessFunction the Chromosome solving it.
+     */
+    protected _archive = new Map<number, C>();
+
+    /**
+     * List of best performing Chromosomes.
+     */
+    protected _bestIndividuals = new List<C>();
+
+    /**
+     * FitnessFunction the concrete SearchAlgorithm is optimizing for.
+     */
+    protected _fitnessFunction: FitnessFunction<C>;
+
+    /**
+     * Maps each FitnessFunction to a unique identifier.
+     */
+    protected _fitnessFunctions: Map<number, FitnessFunction<C>>;
+
+    /**
+     * Boolean determining if we have reached full test coverage.
+     */
+    protected _fullCoverageReached = false;
+
+    /**
+     * Saves the number of generations.
+     */
+    protected _iterations = 0;
+
+    /**
+     * Starting time of the algorithm.
+     */
+    protected _startTime: number;
+
+    async findSolution(): Promise<Map<number, C>> {
+        throw new NotSupportedFunctionException();
     }
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
@@ -70,7 +109,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
         throw new NotSupportedFunctionException();
     }
 
-    setHeuristicFunctions(heuristicFunctions: Map<number, Function>): void {
+    setHeuristicFunctions(heuristicFunctions: Map<number, (number) => number>): void {
         throw new NotSupportedFunctionException();
     }
 
@@ -78,7 +117,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
         throw new NotSupportedFunctionException();
     }
 
-    setLocalSearchOperators(localSearchOperators:List<LocalSearch<C>>):void {
+    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
         throw new NotSupportedFunctionException();
     }
 
@@ -98,9 +137,64 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
         throw new NotSupportedFunctionException();
     }
 
-    async evaluatePopulation(population: List<C>) : Promise<void> {
+    /**
+     * Evaluates the current Population of Chromosomes and stops as soon as we have reached a stopping criterion.
+     * @param population the population to evaluate.
+     */
+    protected async evaluatePopulation(population: List<C>): Promise<void> {
         for (const chromosome of population) {
-            await chromosome.evaluate();
+            // Check if we have already reached our stopping condition; if so stop and exclude non-executed chromosomes
+            if (this._stoppingCondition.isFinished(this)) {
+                const executedChromosomes = population.getElements().filter(chromosome => (chromosome as unknown as TestChromosome).trace);
+                population.clear();
+                population.addAll(executedChromosomes)
+                return;
+            } else {
+                await chromosome.evaluate();
+                this.updateArchive(chromosome);
+            }
+        }
+    }
+
+    /**
+     * Updates the archive of best chromosomes.
+     *
+     * @param candidateChromosome The candidate chromosome for the archive.
+     */
+    protected updateArchive(candidateChromosome: C): void {
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestLength = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).getLength()
+                : Number.MAX_SAFE_INTEGER;
+            const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+            const candidateLength = candidateChromosome.getLength();
+            if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                bestLength = candidateLength;
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                }
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
+            }
+        }
+        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+    }
+
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - iterationCount
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
+     */
+    protected updateStatistics(): void {
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+        StatisticsCollector.getInstance().incrementIterationCount();
+        if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
+                (this._iterations + 1) * this._properties.getPopulationSize();
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }
 }

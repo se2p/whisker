@@ -33,22 +33,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             score = 0.01
         }
         network.networkFitness = score + this.offset;
-        return network.networkFitness;
-    }
-
-    /**
-     * Calculates the reached score of a random event selection playthrough
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     */
-    async getRandomFitness(network: NetworkChromosome, timeout: number): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        await executor.executeRandom(network);
-        let score = ScoreFitness.gatherPoints(Container.vm);
-        if(score < 0){
-            score = 0.01
-        }
-        network.networkFitness = score + this.offset;
+        executor.resetState();
         return network.networkFitness;
     }
 

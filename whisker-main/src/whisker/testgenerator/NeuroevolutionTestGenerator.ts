@@ -1,10 +1,11 @@
 import {TestGenerator} from "./TestGenerator";
-import {WhiskerTest} from "./WhiskerTest";
-import {List} from "../utils/List";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
+import {List} from "../utils/List";
+import {TestChromosome} from "../testcase/TestChromosome";
+import {NEAT} from "../search/algorithms/NEAT";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -13,11 +14,17 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      */
     async generateTests(): Promise<WhiskerTestListWithSummary> {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
-        const networkChromosomes = await searchAlgorithm.findSolution();
-        const testSuite = await this.getTestSuite(networkChromosomes);
+        const archive = await searchAlgorithm.findSolution();
+        const testChromosomes = new List<TestChromosome>(Array.from(archive.values())).distinct();
+        const testSuite = await this.getTestSuite(testChromosomes);
         await this.collectStatistics(testSuite);
-        const summary = searchAlgorithm.summarizeSolution();
-        return new WhiskerTestListWithSummary(testSuite, summary);
+        const summary = this.summarizeSolution(archive);
+        const testListWithSummary = new WhiskerTestListWithSummary(testSuite, summary);
+        // TODO: It is deeply necessary to separate NE and SearchAlgorithms.
+        if(searchAlgorithm instanceof NEAT){
+            testListWithSummary.networkPopulation = searchAlgorithm.getPopulationRecordAsJSON();
+        }
+        return testListWithSummary;
     }
 
     /**

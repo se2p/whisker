@@ -13,6 +13,8 @@ export class BiasNode extends NodeGene {
         this.nodeValue = 1;
         this.lastActivationValue = 1;
         this.activationValue = 1;
+        this.activatedFlag = true;
+        this.activationCount = 1;
     }
 
     equals(other: unknown): boolean {
@@ -20,7 +22,7 @@ export class BiasNode extends NodeGene {
         return this.id === other.id && this.activationFunction === other.activationFunction;
     }
 
-    clone(): NodeGene {
+    clone(): BiasNode {
         return new BiasNode(this.id)
 
     }
@@ -30,16 +32,15 @@ export class BiasNode extends NodeGene {
     }
 
     public reset(): void {
-        this.activationCount = 0;
         this.nodeValue = 1;
         this.activationValue = 1;
         this.lastActivationValue = 1;
-        this.activatedFlag = false;
         this.traversed = false;
     }
 
     toString(): string {
-        return "BiasNode{ID: " + this.id + ", Value: " + this.activationValue +
-            ", InputConnections: " + this.incomingConnections + "}";
+        return `BiasNode{ID: ${this.id}\
+, Value: ${this.activationValue}\
+, InputConnections: ${this.incomingConnections}}`;
     }
 }

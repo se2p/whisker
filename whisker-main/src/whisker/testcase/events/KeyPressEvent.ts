@@ -21,6 +21,8 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
+import {ParameterTypes} from "./ParameterTypes";
+import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
 
 export class KeyPressEvent extends ScratchEvent {
 
@@ -48,15 +50,31 @@ export class KeyPressEvent extends ScratchEvent {
         return "KeyPress " + this._keyOption + ": " + this._steps;
     }
 
-    getNumParameters(): number {
+    getNumVariableParameters(): number {
         return 1;
     }
 
-    getParameter(): number[] {
-        return [this._steps];
+    getParameter(): (string | number)[] {
+        return [this._keyOption, this._steps];
     }
 
-    setParameter(args: number[]): void {
-        this._steps = args[0] % Container.config.getPressDurationUpperBound();
+    getVariableParameterNames(): string[] {
+        return ["Steps"];
+    }
+
+    setParameter(args:number[], testExecutor:ParameterTypes): void {
+        switch (testExecutor){
+            case ParameterTypes.CODON:
+                this._steps = args[0];
+                break;
+            case ParameterTypes.REGRESSION:
+                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
+                break;
+        }
+        this._steps %= Container.config.getPressDurationUpperBound();
+    }
+
+    stringIdentifier(): string {
+        return "KeyPressEvent-" + this._keyOption;
     }
 }
