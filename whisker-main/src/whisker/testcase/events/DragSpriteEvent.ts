@@ -64,7 +64,7 @@ export class DragSpriteEvent extends ScratchEvent {
     setParameter(args: number[]): void {
         this.angle = args[0];
 
-        // We only disturb the target point if we have an angle bigger than 360 degrees.
+        // We only disturb the target point if we have an angle smaller than 360 degrees.
         if (this.angle < 360) {
             // Convert to Radians and fetch the sprite's horizontal and vertical size.
             const radians = this.angle / 180 * Math.PI;

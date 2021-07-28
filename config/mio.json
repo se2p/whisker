@@ -11,7 +11,7 @@
         "probability": 1
     },
     "mutation": {
-        "operator": "variablelength",
+        "operator": "biasedVariablelengthConstrained",
         "probability": 1,
         "gaussianMutationPower": 5,
         "maxMutationCountStart": 0,
@@ -41,7 +41,7 @@
         "conditions": [
             {
                 "type": "fixed-time",
-                "duration": 600000
+                "duration": 6000000
             },
             {
                 "type": "optimal"

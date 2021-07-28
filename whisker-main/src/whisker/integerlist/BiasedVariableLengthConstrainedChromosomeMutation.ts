@@ -19,11 +19,10 @@
  */
 
 
-import {AbstractVariableLengthMutation} from "./AbstractVariableLengthMutation";
-import {TestChromosome} from "../testcase/TestChromosome";
 import {Preconditions} from "../utils/Preconditions";
+import {VariableLengthConstrainedChromosomeMutation} from "./VariableLengthConstrainedChromosomeMutation";
 
-export class BiasedVariableLengthConstrainedChromosomeMutation extends AbstractVariableLengthMutation<TestChromosome> {
+export class BiasedVariableLengthConstrainedChromosomeMutation extends VariableLengthConstrainedChromosomeMutation {
 
     constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
         super(min, max, length, gaussianMutationPower);
@@ -32,13 +31,5 @@ export class BiasedVariableLengthConstrainedChromosomeMutation extends AbstractV
     protected _getMutationProbability(idx: number, numberOfCodons: number): number {
         Preconditions.checkArgument(idx < numberOfCodons);
         return 2 * (idx + 1) / (numberOfCodons * (numberOfCodons + 1));
-    }
-
-    apply(chromosome: TestChromosome): TestChromosome {
-        if (chromosome.lastImprovedCodon == 0 || chromosome.lastImprovedCodon == chromosome.getLength() - 1) {
-            return super.applyUpTo(chromosome, chromosome.getLength());
-        } else {
-            return super.applyUpTo(chromosome, chromosome.lastImprovedCodon + 1);
-        }
     }
 }
