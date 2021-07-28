@@ -43,7 +43,7 @@ class TestEditor {
 `const test = async function (t) {
     /* your code here */
     let sprite = t.getSprite('SpriteName');
-    await t.wait(5000);
+    t.wait(5000);
     t.end();
 }
 
