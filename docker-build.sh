@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 readonly COMMIT=$(git rev-parse --short HEAD)
-readonly TAG="whisker-${COMMIT}"
+readonly BRANCH=$(git rev-parse --abbrev-ref HEAD)
+readonly TAG="whisker-${BRANCH}-${COMMIT}"
 
 function set_docker_cmd() {
     if [[ -z "${DOCKER_CMD}" ]]; then
