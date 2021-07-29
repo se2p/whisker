@@ -21,6 +21,7 @@
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
 import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
+import {CustomFilter, ControlFilter} from 'scratch-analysis/src/block-filter'
 import {List} from "../../utils/List";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
@@ -37,7 +38,6 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         this._cfg = cfg;
         this._eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
-
     }
 
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
@@ -100,8 +100,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         let cfgDistanceNormalized;
         if (approachLevel === 0 && branchDistance === 0) {
             cfgDistanceNormalized = this._normalize(this.getCFGDistance(chromosome));
-        }
-        else {
+        } else {
             cfgDistanceNormalized = 1;
         }
         return approachLevel + this._normalize(branchDistance) + cfgDistanceNormalized;
@@ -122,7 +121,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return this.isOptimal(this.getFitness(chromosome));
     }
 
-    getApproachLevel(chromosome: TestChromosome):number {
+    getApproachLevel(chromosome: TestChromosome): number {
         const trace = chromosome.trace;
         let min: number = Number.MAX_VALUE;
 
@@ -152,7 +151,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return min
     }
 
-    getBranchDistance(chromosome: TestChromosome):number {
+    getBranchDistance(chromosome: TestChromosome): number {
         const trace = chromosome.trace;
         let minBranchApproachLevel: number = Number.MAX_VALUE;
         let branchDistance = Number.MAX_VALUE;
@@ -208,15 +207,14 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return branchDistance;
     }
 
-    getCFGDistance(chromosome: TestChromosome):number {
+    getCFGDistance(chromosome: TestChromosome): number {
 
         /*
             function bfs: go through blocks from the targetNode, all uncovered blocks are visited ones. However, to avoid
             situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
             we need to still record levels, and use a queue to save nodes for BFS.
         */
-        function bfs (cfg, targetNode, coveredBlocks) {
-            // console.log('blockTraces: ', blockTraces);
+        function bfs(cfg, targetNode, coveredBlocks) {
             const queue = [targetNode];
             const visited = new Set([targetNode]);
             let node;
@@ -224,9 +222,9 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
             while (queue.length > 0) {
                 const qSize = queue.length;
                 level += 1;
-                for (let i = 0; i < qSize; i ++) {
+                for (let i = 0; i < qSize; i++) {
                     node = queue.shift();
-                    if (coveredBlocks.has(node.id)){
+                    if (coveredBlocks.has(node.id)) {
                         return level;
                     }
                     visited.add(node);
@@ -261,8 +259,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         let requiredCondition;
         switch (controlNode.block.opcode) {
             case 'control_forever': { // Todo not sure about forever
-               requiredCondition = true;
-               break;
+                requiredCondition = true;
+                break;
             }
             case 'control_wait_until': {
                 requiredCondition = true;
@@ -328,7 +326,128 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return false;
     }
 
-    public toString = () : string => {
-        return ""+ this._targetNode.id +" of type "+this._targetNode.block.opcode;
+    /**
+     * Traverse through all fitnessFunctions and extract the independent ones. A fitnessFunction is defined to be
+     * independent if it is either the last block inside a branching statement or the last block inside a block of
+     * statements being dependent on a hatBlock. We call the blocks of independent fitnessFunctions mergeBlocks since
+     * all blocks contained in the same branch or block of hat related statements can be merged into them without
+     * loosing any information needed to achieve full coverage during search.
+     * @param fitnessFunctions the fitnessFunctions  which will be filtered to contain only independent functions.
+     * @returns Map mapping hatBlocks or branchingBlocks to their last independent Block
+     */
+    public static getMergeNodeMap(fitnessFunctions: List<StatementCoverageFitness>): Map<StatementCoverageFitness, List<StatementCoverageFitness>> {
+        const mergeNodeMap = new Map<GraphNode, List<GraphNode>>();
+        for (const fitnessFunction of fitnessFunctions) {
+            // Handling of branching blocks
+            if (ControlFilter.branch(fitnessFunction._targetNode.block)) {
+                // Get all nodes being dependent on the branching block.
+                let mergeNodes = new List<GraphNode>([...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()]);
+
+                // Find the last Block which either
+                // has no child and is not another branch block -> end of branch
+                // or has another branch block as child -> nested branches
+                mergeNodes = mergeNodes.filter(node => !node.block.next ||
+                    ControlFilter.branch(StatementCoverageFitness.getChildOfNode(node, fitnessFunction._cdg).block));
+
+                // Filter other branch blocks, they are contained within their own mergeMap key.
+                mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
+
+                // Add the branching block if it isn't present
+                if (!mergeNodes.contains(fitnessFunction._targetNode)) {
+                    mergeNodes.add(fitnessFunction._targetNode);
+                }
+
+                // In case of nested branches we have blocks which can be merged, namely the block in front of the nested
+                // branching block and the actual last block of the branch. We remove the block located in front of the
+                // nested branch since it is already covered by the true last block.
+                // SingleControlDependenceBlocks should only contain two nodes: themselves and their last block
+                // DoubleControlDependenceBlocks should only contain three nodes: themselves, last if block and last else block
+                if ((ControlFilter.singleBranch(fitnessFunction._targetNode.block) && mergeNodes.size() > 2)
+                    || (ControlFilter.doubleBranch(fitnessFunction._targetNode.block) && mergeNodes.size() > 3)) {
+                    mergeNodes = this.findLastDescendants(mergeNodes, fitnessFunction);
+                }
+
+                mergeNodeMap.set(fitnessFunction._targetNode, mergeNodes);
+            }
+                // When dealing with hatBlocks we always include the hatBlock itself
+            // and the last statement of the given block of statements depending on the given hatBlock.
+            else if (ControlFilter.hatBlock(fitnessFunction._targetNode.block) ||
+                CustomFilter.defineBlock(fitnessFunction._targetNode.block)) {
+                const mergeNodes = new List<GraphNode>();
+                const hatNode = fitnessFunction._targetNode;
+                // Add hatBlock.
+                mergeNodes.add(hatNode);
+                // Find and add the last statement in the block of statements being dependent on the hatBlock.
+                let childNode = StatementCoverageFitness.getChildOfNode(hatNode, fitnessFunction._cdg);
+                while (childNode) {
+                    if (!childNode.block.next) {
+                        mergeNodes.add(childNode);
+                        break;
+                    }
+                    childNode = StatementCoverageFitness.getChildOfNode(childNode, fitnessFunction._cdg);
+                }
+                mergeNodeMap.set(fitnessFunction._targetNode, mergeNodes);
+            }
+        }
+        // Map the independent Nodes to the corresponding StatementCoverageFitness-Functions.
+        const statementMap = new Map<StatementCoverageFitness, List<StatementCoverageFitness>>();
+        mergeNodeMap.forEach(((value, key) => {
+            const keyStatement = fitnessFunctions.get(fitnessFunctions.findIndex(fitnessFunction => fitnessFunction._targetNode === key));
+            const valueStatements = fitnessFunctions.filter(fitnessFunction => value.contains(fitnessFunction._targetNode));
+            statementMap.set(keyStatement, valueStatements);
+        }))
+        return statementMap;
     }
+
+    /**
+     * Fetches the parent of the given node.
+     * @param node the node whose parent should be fetched
+     * @param cdg the control dependence graph which contains all blocks and hence the parent of node
+     * @returns parent of node
+     */
+    private static getParentOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
+        return cdg._nodes[node.block.parent];
+    }
+
+    /**
+     * Fetches the child of the given node.
+     * @param node the node whose child should be fetched
+     * @param cdg the control dependence graph which contains all blocks and hence the child of node
+     * @returns child of node
+     */
+    private static getChildOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
+        return cdg._nodes[node.block.next];
+    }
+
+    /**
+     * When dealing with nested branches we might end up with multiple potential mergeNodes. This function finds
+     * the true mergeNode(s) by traversing from each potential node upwards. If we encounter another potential
+     * mergeNode we can remove the encountered mergeNode since it is covered by the current potential mergeNode.
+     * @param nodes contains all potential mergeNodes
+     * @param controlFitness the branching fitnessFunction all potential mergeNodes depend on.
+     * @returns List of true mergeNodes.
+     */
+    private static findLastDescendants(nodes: List<GraphNode>, controlFitness: StatementCoverageFitness): List<GraphNode> {
+        const controlNode = controlFitness._targetNode;
+        const nodesToRemove = new List<GraphNode>();
+        for (const node of nodes) {
+            if (node === controlNode) {
+                continue;
+            }
+            let parent = StatementCoverageFitness.getParentOfNode(node, controlFitness._cdg);
+            while (parent.id !== controlNode.id) {
+                // We found another potential lastDescendant so the found one cannot be the last one.
+                if (nodes.contains(parent)) {
+                    nodesToRemove.add(parent);
+                }
+                parent = StatementCoverageFitness.getParentOfNode(parent, controlFitness._cdg);
+            }
+        }
+        return nodes.filter(node => !nodesToRemove.contains(node));
+    }
+
+    public toString = (): string => {
+        return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
+    }
+
 }

@@ -28,6 +28,7 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import {TestChromosome} from "../../testcase/TestChromosome";
+import {StatementCoverageFitness} from "../../testcase/fitness/StatementFitnessFunction";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -51,6 +52,12 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * Maps uncovered Statements to the chromosomes closest to covering them with respect to the given fitnessFunction.
      */
     private _archiveUncovered: Map<number, List<ChromosomeHeuristicTuple<C>>>;
+
+    /**
+     * Contains all independent FitnessFunctions. These include the last statements inside branches and the last
+     * statements of hat related statements.
+     */
+    private _independentFitnessFunctions: Map<number, FitnessFunction<C>>
 
     /**
      * Defines the probability of sampling a new Chromosome instead of mutating an existing one during search.
@@ -265,6 +272,32 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
+        this._independentFitnessFunctions = this.getIndependentStatements();
+    }
+
+    /**
+     * Extracts independent statements from the Scratch-Project and filters the whole fitnessFunctionsMap with these,
+     * while keeping the corresponding key structure untouched, i.e the same key in both fitnessMaps points to the same
+     * statement.
+     */
+    private getIndependentStatements(): Map<number, FitnessFunction<C>> {
+        const fitnessFunctions = new List<StatementCoverageFitness>([...this._fitnessFunctions.values()]);
+        // We can only extract independent block statements if we indeed deal with scratch blocks.
+        if(fitnessFunctions.get(0) instanceof StatementCoverageFitness) {
+            const mergeNodeStatements = StatementCoverageFitness.getMergeNodeMap(fitnessFunctions);
+            let independentFitnessFunctions = new List<StatementCoverageFitness>();
+            [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.addList(statementList));
+            independentFitnessFunctions = independentFitnessFunctions.distinct();
+            const independentFitnessFunctionMap = new Map<number, FitnessFunction<C>>();
+            this._fitnessFunctions.forEach((value, key) => {
+                if (independentFitnessFunctions.contains(value as unknown as StatementCoverageFitness)) {
+                    independentFitnessFunctionMap.set(key, value);
+                }
+            })
+            return independentFitnessFunctionMap;
+        }
+        else
+            return this._fitnessFunctions;
     }
 
     /**
@@ -273,6 +306,16 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param chromosome The candidate chromosome for the archive.
      */
     protected updateArchive(chromosome: C): void {
+        this.updateCoveredArchive(chromosome);
+        this.updateUncoveredArchive(chromosome);
+    }
+
+    /**
+     * Updates the archive containing all covered Statements so far. This archive consists of all block statements
+     * contained in the given Scratch-Project.
+     * @param chromosome The candidate chromosome for the archive
+     */
+    private updateCoveredArchive(chromosome: C): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
             if (heuristicValue == 1) {
@@ -284,7 +327,9 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     }
                 } else {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(this._fitnessFunctions.get(fitnessFunctionKey));
-                    this._archiveUncovered.delete(fitnessFunctionKey);
+                    if (this._archiveUncovered.has(fitnessFunctionKey)) {
+                        this._archiveUncovered.delete(fitnessFunctionKey);
+                    }
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     console.log(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
                     if (this._archiveCovered.size == this._fitnessFunctions.size) {
@@ -292,7 +337,19 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     }
                 }
-            } else if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
+            }
+        }
+    }
+
+    /**
+     * Updates the archive containing all unCovered Statements. To reduce the amount of duplicate archive populations,
+     * this archive consists of all independent block statements defined by the independentFitnessFunctions attribute.
+     * @param chromosome The candidate chromosome for the archive
+     */
+    private updateUncoveredArchive(chromosome: C): void {
+        for (const fitnessFunctionKey of this._independentFitnessFunctions.keys()) {
+            const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
+            if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
                 let archiveTuples: List<ChromosomeHeuristicTuple<C>>;
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {
                     archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
