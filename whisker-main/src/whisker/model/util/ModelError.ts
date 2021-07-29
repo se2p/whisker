@@ -35,8 +35,8 @@ function getTimeLimitFailedAtOutput(edge: ModelEdge, condition: Condition, ms: n
     return edge.id + ": " + condition.toString() + " at " + ms + "ms";
 }
 
-function getErrorOnEdgeOutput(edge: ModelEdge, error: string) {
-    return "Error was thrown. " + edge.id + ": " + error;
+function getErrorOnEdgeOutput(edgeID: string, error: string) {
+    return "Error was thrown. " + edgeID + ": " + error;
 }
 
 // ----- Variables, sprites, attributes not found and other initialization errors

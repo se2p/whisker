@@ -2,7 +2,7 @@ import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
 import {ProgramModelEdge} from "../components/ModelEdge";
-import {getEffectFailedOutput} from "./ModelError";
+import {getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
 import EventEmitter from "events";
 import Sprite from "../../../vm/sprite";
@@ -65,13 +65,14 @@ export class CheckUtility extends EventEmitter {
      * Register a listener on the movement of a sprite with a certain predicate to be fulfilled for the event to be
      * triggered.
      * @param spriteName Name of the sprite.
+     * @param edgeID ID of the edge containing the check that is registered on the event listener.
      * @param predicate Function checking if the predicate for the event is fulfilled.
      * @param eventString String defining the event (see CheckUtility.getEventString)
      */
-    registerOnMoveEvent(spriteName: string, eventString: string, predicate: (sprite: Sprite) => boolean) {
+    registerOnMoveEvent(spriteName: string, eventString: string, edgeID, predicate: (sprite: Sprite) => boolean) {
         if (this.registeredOnMove.indexOf(eventString) == -1) {
             this.registeredOnMove.push(eventString);
-            this.register(this.onMovedChecks, eventString, spriteName, predicate);
+            this.register(this.onMovedChecks, eventString, spriteName, edgeID, predicate);
         }
     }
 
@@ -80,12 +81,13 @@ export class CheckUtility extends EventEmitter {
      * rotationStyle.  Also and x,y motions, but should be registered on move)
      * @param spriteName Name of the actual sprite.
      * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param edgeID ID of the edge containing the check that is registered on the event listener.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOnVisualChange(spriteName: string, eventString: string, predicate: (sprite: Sprite) => boolean) {
+    registerOnVisualChange(spriteName: string, eventString: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
         if (this.registeredVisualChange.indexOf(eventString) == -1) {
             this.registeredVisualChange.push(eventString);
-            this.register(this.onVisualChecks, eventString, spriteName, predicate);
+            this.register(this.onVisualChecks, eventString, spriteName,edgeID, predicate);
         }
     }
 
@@ -93,18 +95,19 @@ export class CheckUtility extends EventEmitter {
      * Register an output event on the visual change checks.
      * @param spriteName Name of the sprite.
      * @param eventString Function checking if the predicate for the event is fulfilled.
+     * @param edgeID ID of the edge containing the check that is registered on the event listener.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOutput(spriteName: string, eventString: string, predicate: (sprite: Sprite) => boolean) {
+    registerOutput(spriteName: string, eventString: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
         if (this.registeredOutput.indexOf(eventString) == -1) {
             this.registeredOutput.push(eventString);
-            this.register(this.onSayOrThinkChecks, eventString, spriteName, predicate);
+            this.register(this.onSayOrThinkChecks, eventString, spriteName, edgeID, predicate);
         }
     }
 
 
     private register(predicateChecker: { [key: string]: ((sprite) => void)[] }, eventString: string,
-                     spriteName: string, predicate: (sprite: Sprite) => boolean) {
+                     spriteName: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
         // no check for this sprite till now
         if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
             predicateChecker[spriteName] = [];
@@ -115,8 +118,7 @@ export class CheckUtility extends EventEmitter {
             try {
                 predicateResult = predicate(sprite);
             } catch (e) {
-                this.modelResult.addError(e);
-                console.error(e);
+                this.errorOutput(edgeID, e);
             }
             if (predicateResult) {
                 this.eventStrings.push(eventString);
@@ -127,10 +129,11 @@ export class CheckUtility extends EventEmitter {
     /**
      * Register an variable change event for a variable.
      * @param varName Name of the variable.
+     * @param edgeID ID of the edge containing the check that is registered on the event listener.
      * @param eventString Function checking if the predicate for the event is fulfilled.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerVarEvent(varName: string, eventString: string, predicate: () => boolean) {
+    registerVarEvent(varName: string, eventString: string, edgeID: string, predicate: () => boolean) {
         if (this.registeredVarEvents.indexOf(eventString) == -1) {
             this.registeredVarEvents.push(eventString);
 
@@ -142,8 +145,7 @@ export class CheckUtility extends EventEmitter {
                 try {
                     predicateResult = predicate();
                 } catch (e) {
-                    this.modelResult.addError(e);
-                    console.error(e);
+                    this.errorOutput(edgeID, e);
                 }
                 if (predicateResult) {
                     this.eventStrings.push(eventString);
@@ -160,10 +162,6 @@ export class CheckUtility extends EventEmitter {
             }
             this.eventStrings = [];
         }
-    }
-
-    resetAfterStep() {
-        this.eventStrings = [];
     }
 
     /**
@@ -240,7 +238,7 @@ export class CheckUtility extends EventEmitter {
                         newEffects.push(this.effectChecks[i]);
                     }
                 } catch (e) {
-                    this.failOnProgramModel(this.effectChecks[i].edge, effect);
+                    this.errorOutput(this.effectChecks[i].edge.id, e);
                 }
             } else {
                 contradictingEffects.push(this.effectChecks[i].effect);
@@ -251,37 +249,36 @@ export class CheckUtility extends EventEmitter {
         return contradictingEffects;
     }
 
-    private failOnProgramModel(edge, effect) {
+    private failOutput(edge, effect) {
         let output = getEffectFailedOutput(edge, effect);
         console.error(output, this.testDriver.getTotalStepsExecuted());
         this.modelResult.addFail(output);
     }
 
-    checkEventEffects() {
-        let newEffects = [];
-        for (let i = 0; i < this.effectChecks.length; i++) {
-            let model = this.effectChecks[i].model;
-            let effect = this.effectChecks[i].effect;
-            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
-            try {
-                if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                    newEffects.push(this.effectChecks[i]);
-                }
-            } catch (e) {
-                this.failOnProgramModel(this.effectChecks[i].edge, effect);
-            }
-        }
-        this.effectChecks = newEffects;
+    private errorOutput(edgeID: string, e: Error) {
+        let output = getErrorOnEdgeOutput(edgeID, e.message);
+        console.error(output, this.testDriver.getTotalStepsExecuted());
+        this.modelResult.addError(output);
     }
 
+    /**
+     * Check effects that are already registered for checking, triggered by an event.
+     */
+    checkEventEffects() {
+        this.effectChecks = this.check(this.effectChecks);
+    }
+
+    /**
+     * Make outputs for the failed effects of the last step, without the depending ones on the sayText attribute.
+     */
     makeFailedOutputs() {
         for (let i = 0; i < this.failedOutputsEvents.length; i++) {
-            this.failOnProgramModel(this.failedOutputsEvents[i].edge, this.failedOutputsEvents[i].effect);
+            this.failOutput(this.failedOutputsEvents[i].edge, this.failedOutputsEvents[i].effect);
         }
         this.failedOutputsEvents = [];
         for (let i = 0; i < this.effectChecks.length; i++) {
-            if (this.effectChecks[i].effect.name != CheckName.Output) {
-                this.failOnProgramModel(this.effectChecks[i].edge, this.effectChecks[i].effect);
+            if (!this.effectChecks[i].effect.dependsOnSayText) {
+                this.failOutput(this.effectChecks[i].edge, this.effectChecks[i].effect);
             } else {
                 this.failedOutputsEvents.push(this.effectChecks[i]);
             }
@@ -290,19 +287,23 @@ export class CheckUtility extends EventEmitter {
     }
 
     private checkFailedOutputEvents() {
+        this.failedOutputsEvents = this.check(this.failedOutputsEvents);
+    }
+
+    private check(checks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[]) {
         let newFailedList = [];
-        for (let i = 0; i < this.failedOutputsEvents.length; i++) {
-            let model = this.failedOutputsEvents[i].model;
-            let effect = this.failedOutputsEvents[i].effect;
-            let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
+        for (let i = 0; i < checks.length; i++) {
+            let effect = checks[i].effect;
+            let stepsSinceLastTransition = checks[i].model.stepNbrOfLastTransition
+                - checks[i].model.stepNbrOfScndLastTransition + 1;
             try {
-                if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
-                    newFailedList.push(this.failedOutputsEvents[i]);
+                if (!effect.check(stepsSinceLastTransition, checks[i].model.stepNbrOfProgramEnd)) {
+                    newFailedList.push(checks[i]);
                 }
             } catch (e) {
-                this.failOnProgramModel(this.failedOutputsEvents[i].edge, effect);
+                this.errorOutput(checks[i].edge.id, e);
             }
         }
-        this.failedOutputsEvents = newFailedList;
+        return newFailedList;
     }
 }

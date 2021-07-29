@@ -68,13 +68,13 @@ export abstract class ModelEdge {
                     if (!this.conditions[i].check(stepsSinceLastTransition, stepsSinceEnd)) {
                         this.failedForcedTest = true;
                         failedConditions.push(this.conditions[i]);
-                        console.error(this.getTimeLimitFailedOutput(this.conditions[i], t), t.getTotalStepsExecuted());
+                        // console.error(this.getTimeLimitFailedOutput(this.conditions[i], t), t.getTotalStepsExecuted());
                         modelResult.addFail(this.getTimeLimitFailedOutput(this.conditions[i], t));
                     }
                 } catch (e) {
                     let error = e.message;
                     failedConditions.push(this.conditions[i]);
-                    error = getErrorOnEdgeOutput(this, e.message);
+                    error = getErrorOnEdgeOutput(this.id, e.message);
                     console.error(error, t.getTotalStepsExecuted());
                     modelResult.addError(error);
                 }
@@ -91,7 +91,7 @@ export abstract class ModelEdge {
             } catch (e) {
                 let error = e.message;
                 failedConditions.push(this.conditions[i]);
-                error = getErrorOnEdgeOutput(this, e.message);
+                error = getErrorOnEdgeOutput(this.id, e.message);
                 console.error(error, t.getTotalStepsExecuted());
                 modelResult.addError(error);
             }

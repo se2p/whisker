@@ -12,12 +12,13 @@ export class Condition extends Check {
     /**
      * Get a condition instance. Checks the number of arguments for a condition type.
      * @param id Id of the condition
+     * @param edgeID Id of the parent edge of the check.
      * @param name Type name of the condition.
      * @param negated Whether the condition is negated.
      * @param args The arguments for the condition to check later on.
      */
-    constructor(id: string, name: CheckName, negated: boolean, args: any[]) {
-        super(id, name, args, negated);
+    constructor(id: string, edgeID: string, name: CheckName, negated: boolean, args: any[]) {
+        super(id, edgeID, name, args, negated);
     }
 
     /**

@@ -141,8 +141,6 @@ export class ModelTester extends EventEmitter {
                 this.printContradictingEffects(contradictingEffects);
             }
             checkProgramModels = [...notStoppedModels];
-            this.checkUtility.resetAfterStep();
-
             if (checkProgramModels.length == 0) {
                 this.modelStepCallback.disable();
             }

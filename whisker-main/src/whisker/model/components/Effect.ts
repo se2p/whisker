@@ -8,16 +8,25 @@ import {CheckUtility} from "../util/CheckUtility";
  */
 export class Effect extends Check {
     private _effect: (stepsSinceLastTransition: number, stepsSinceEnd: number) => boolean;
+    dependsOnSayText: boolean;
 
     /**
      * Get an effect representation, checks the arguments.
      * @param id  Id for this effect.
+     * @param edgeID Id of the parent edge of the check.
      * @param name Name of the effect type.
      * @param negated Whether the effect is negated (e.g. it does not output "hello")
      * @param args Arguments for the effect e.g. sprite names.
      */
-    constructor(id: string, name: CheckName, negated: boolean, args: any[]) {
-        super(id, name, args, negated);
+    constructor(id: string, edgeID: string, name: CheckName, negated: boolean, args: any[]) {
+        super(id, edgeID, name, args, negated);
+        if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
+            this.dependsOnSayText = true;
+        } else if (name == CheckName.Function || name == CheckName.Expr) {
+            this.dependsOnSayText = args[0].indexOf(".sayText") != -1;
+        } else {
+            this.dependsOnSayText = false;
+        }
     }
 
     /**

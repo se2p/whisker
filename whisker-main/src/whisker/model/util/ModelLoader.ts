@@ -260,7 +260,7 @@ export class ModelLoader {
                 throw new Error(newEdge.id + ": Arguments for condition not given or not an array.");
             }
 
-            newEdge.addCondition(new Condition(id, name, negated, args));
+            newEdge.addCondition(new Condition(id, newEdge.id, name, negated, args));
         })
     }
 
@@ -290,7 +290,7 @@ export class ModelLoader {
                 throw new Error(newEdge.id + ": Arguments for effect not given or not an array.");
             }
 
-            newEdge.addEffect(new Effect(id, name, negated, args));
+            newEdge.addEffect(new Effect(id, newEdge.id, name, negated, args));
         })
     }
 

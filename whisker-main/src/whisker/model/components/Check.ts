@@ -35,16 +35,18 @@ export class Check {
     protected readonly _name: CheckName;
     protected readonly _args: any[];
     protected readonly _negated: boolean;
+    protected readonly _edgeID: string;
 
     /**
      * Get a check instance and test whether enough arguments are provided for a check type.
      * @param id Id for this check.
+     * @param edgeID Id of the parent edge of the check.
      * @param name Type/name of the check.
      * @param args List of arguments for the check.
      * @param negated Whether the check is negated.
      * @protected
      */
-    protected constructor(id: string, name: CheckName, args: any[], negated: boolean) {
+    protected constructor(id: string, edgeID: string, name: CheckName, args: any[], negated: boolean) {
         if (!id) {
             throw new Error("No id given.");
         }
@@ -52,6 +54,7 @@ export class Check {
         this._args = args;
         this._negated = negated;
         this._id = id;
+        this._edgeID = edgeID;
 
         let _testArgs = function (length) {
             let error = new Error("Wrong number of arguments for check " + name + ".");
@@ -110,36 +113,38 @@ export class Check {
     checkArgsWithTestDriver(t: TestDriver, cu: CheckUtility, caseSensitive: boolean): (...any) => boolean {
         switch (this._name) {
             case CheckName.AttrComp:
-                return CheckGenerator.getAttributeComparisonCheck(t, cu, this._negated, caseSensitive, this._args[0],
-                    this._args[1], this._args[2], this._args[3]);
+                return CheckGenerator.getAttributeComparisonCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.AttrChange:
-                return CheckGenerator.getAttributeChangeCheck(t, cu, this._negated, caseSensitive, this._args[0],
-                    this._args[1], this._args[2]);
+                return CheckGenerator.getAttributeChangeCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], this._args[1], this._args[2]);
             case CheckName.BackgroundChange:
-                return CheckGenerator.getBackgroundChangeCheck(t, cu, this._negated, this._args[0]);
+                return CheckGenerator.getBackgroundChangeCheck(t, cu, this._edgeID, this._negated, this._args[0]);
             case CheckName.Function:
-                return CheckGenerator.getFunctionCheck(t, cu, this._negated, caseSensitive, this._args[0]);
+                return CheckGenerator.getFunctionCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0]);
             case CheckName.Output:
-                return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._negated, caseSensitive, this._args[0],
-                    this._args[1]);
+                return CheckGenerator.getOutputOnSpriteCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], this._args[1]);
             case CheckName.VarChange:
-                return CheckGenerator.getVariableChangeCheck(t, cu, this._negated, caseSensitive, this._args[0],
-                    this._args[1], this._args[2]);
+                return CheckGenerator.getVariableChangeCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], this._args[1], this._args[2]);
             case CheckName.VarComp:
-                return CheckGenerator.getVariableComparisonCheck(t, cu, this._negated, caseSensitive, this._args[0],
-                    this._args[1], this._args[2], this._args[3]);
+                return CheckGenerator.getVariableComparisonCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.SpriteTouching:
-                return CheckGenerator.getSpriteTouchingCheck(t, cu, this._negated, caseSensitive, this._args[0],
-                    this._args[1]);
+                return CheckGenerator.getSpriteTouchingCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], this._args[1]);
             case CheckName.SpriteColor:
-                return CheckGenerator.getSpriteColorTouchingCheck(t, cu, this._negated, caseSensitive, this._args[0],
-                    this._args[1], this._args[2], this._args[3]);
+                return CheckGenerator.getSpriteColorTouchingCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], this._args[1], this._args[2], this._args[3]);
             case CheckName.Key:
                 return CheckGenerator.getKeyDownCheck(t, cu, this._negated, this._args[0]);
             case CheckName.Click:
                 return CheckGenerator.getSpriteClickedCheck(t, this._negated, caseSensitive, this._args[0]);
             case CheckName.Expr:
-                return CheckGenerator.getExpressionCheck(t, cu, this._negated, caseSensitive, this._args[0]);
+                return CheckGenerator.getExpressionCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0]);
             case CheckName.Probability:
                 return CheckGenerator.getProbabilityCheck(t, this._negated, this._args[0]);
             case CheckName.TimeElapsed:
@@ -153,7 +158,8 @@ export class Check {
                 return CheckGenerator.getNumberOfClonesCheck(t, this._negated, caseSensitive, true,
                     this._args[0], this._args[1], this._args[2]);
             case CheckName.TouchingEdge:
-                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._negated, caseSensitive, this._args[0]);
+                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0]);
             case CheckName.TimeAfterEnd:
                 return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
             default:
@@ -202,7 +208,7 @@ export class Check {
         for (let i = 0; i < eventStrings.length; i++) {
             let event = eventStrings[i];
             let {negated, name, args} = CheckUtility.splitEventString(event);
-            let checkDummy = new Check("dummy", name, args, negated);
+            let checkDummy = new Check("dummy", "dummyEdge", name, args, negated);
             if (Check.testForContradicting(check1, checkDummy)) {
                 return true;
             }
