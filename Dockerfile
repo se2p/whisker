@@ -44,11 +44,11 @@ FROM buildkite/puppeteer as base
 #     files listed below are updated.
 FROM base as install
 WORKDIR /whisker-build/
-COPY ["package.json", "yarn.lock", "./"]
-COPY ["scratch-analysis/package.json", "./scratch-analysis/"]
-COPY ["servant/package.json", "./servant/"]
-COPY ["whisker-web/package.json", "./whisker-web/"]
-COPY ["whisker-main/package.json", "./whisker-main/"]
+COPY package.json ./
+COPY scratch-analysis/package.json ./scratch-analysis/
+COPY servant/package.json ./servant/
+COPY whisker-web/package.json ./whisker-web/
+COPY whisker-main/package.json ./whisker-main/
 RUN apt update && apt install -y git && yarn install
 
 # (c) Copy source files and build Whisker. This layer is only rebuilt when a
@@ -57,6 +57,9 @@ FROM install as build
 WORKDIR /whisker-build/
 COPY ./ ./
 RUN yarn build
+
+# Remove puppeteer because it is already included in the docker image itself.
+RUN rm -rf ./node_modules/puppeteer
 
 
 #-------------------------------------------------------------------------------
@@ -75,11 +78,12 @@ COPY --from=build /whisker-build/scratch-analysis  ./scratch-analysis
 COPY --from=build /whisker-build/servant           ./servant
 COPY --from=build /whisker-build/whisker-web       ./whisker-web
 COPY --from=build /whisker-build/whisker-main      ./whisker-main
-COPY --from=build /whisker-build/whisker-docker.sh ./whisker-docker.sh
 
 # Set the image's main command, allowing the image to be run as though it was
 # that command:
-ENTRYPOINT ["/whisker/whisker-docker.sh"]
+ENTRYPOINT ["/whisker/servant/whisker-docker.sh"]
+
+WORKDIR /whisker/servant/
 
 # Set the default arguments for Whisker's servant, if none are specified
 # explicitly by the user:
