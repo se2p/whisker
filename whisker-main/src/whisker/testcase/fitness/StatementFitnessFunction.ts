@@ -21,7 +21,7 @@
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
 import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
-import {CustomFilter, ControlFilter} from 'scratch-analysis/src/block-filter'
+import {CustomFilter, ControlFilter, StatementFilter} from 'scratch-analysis/src/block-filter'
 import {List} from "../../utils/List";
 
 export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
@@ -346,8 +346,8 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 // Find the last Block which either
                 // has no child and is not another branch block -> end of branch
                 // or has another branch block as child -> nested branches
-                mergeNodes = mergeNodes.filter(node => !node.block.next ||
-                    ControlFilter.branch(StatementCoverageFitness.getChildOfNode(node, fitnessFunction._cdg).block));
+                mergeNodes = mergeNodes.filter(node => (node.block !== undefined) && (!node.block.next ||
+                    ControlFilter.branch(StatementCoverageFitness.getChildOfNode(node, fitnessFunction._cdg).block)));
 
                 // Filter other branch blocks, they are contained within their own mergeMap key.
                 mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
