@@ -237,7 +237,8 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
-            console.log(`Iteration ${this._iterations}, covered goals: ${this._archiveCovered.size}/${this._fitnessFunctions.size}`);
+            console.log(`Iteration ${this._iterations}, covered goals total: ${this._archiveCovered.size}/${this._fitnessFunctions.size}, \
+open independent goals: ${this._archiveUncovered.size}`);
         }
         return this._archiveCovered;
     }
