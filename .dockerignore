@@ -12,14 +12,12 @@
 
 # Whitelist the Whisker source codes...
 !config
-!package.json
 !scratch-analysis
 !servant
 !tsconfig.json
 !whisker-docker.sh
 !whisker-main
 !whisker-web
-!yarn.lock
 
 # ... but ignore all artifact folders.
 **/dist/
