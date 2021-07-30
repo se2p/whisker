@@ -47,15 +47,15 @@ export class CheckUtility extends EventEmitter {
         this.testDriver = testDriver;
         this.modelResult = modelResult;
         this.setMaxListeners(nbrOfAllModels);
-        this.testDriver.vmWrapper.sprites.onModelSpriteMoved(sprite =>
+        this.testDriver.vmWrapper.sprites.onSpriteMovedModel(sprite =>
             this.checkForEvent(this.onMovedChecks, sprite));
-        this.testDriver.vmWrapper.sprites.onSayOrThink(sprite => {
+        this.testDriver.vmWrapper.sprites.onSayOrThinkModel(sprite => {
             this.checkFailedOutputEvents();
             this.checkForEvent(this.onSayOrThinkChecks, sprite);
         });
         this.testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(sprite =>
             this.checkForEvent(this.onVisualChecks, sprite));
-        this.testDriver.vmWrapper.sprites.onVariableChange((varName: string) => {
+        this.testDriver.vmWrapper.sprites.onVariableChangeModel((varName: string) => {
             if (this.variableChecks[varName] != null) {
                 this.variableChecks[varName].forEach(fun => fun());
                 if (this.eventStrings.length > 0) {

@@ -49,7 +49,17 @@ class Sprites {
         /**
          * @type {(Function|null)}
          */
+        this._onSayOrThinkModel = null;
+
+        /**
+         * @type {(Function|null)}
+         */
         this._onVariableChange = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onVariableChangeModel = null;
     }
 
     /**
@@ -201,6 +211,9 @@ class Sprites {
         if (this._onSayOrThink) {
             this._onSayOrThink(this.wrapTarget(target));
         }
+        if (this._onSayOrThinkModel) {
+            this._onSayOrThinkModel(this.wrapTarget(target));
+        }
     }
 
     /**
@@ -215,6 +228,9 @@ class Sprites {
         if (this._onVariableChange) {
             this._onVariableChange(variableName);
         }
+        if (this._onVariableChangeModel) {
+            this._onVariableChangeModel(variableName);
+        }
     }
 
     /**
@@ -228,7 +244,7 @@ class Sprites {
      * Duplicated function for model tests.
      * @param {(Function|null)} func
      */
-    onModelSpriteMoved(func) {
+    onSpriteMovedModel(func) {
         this._onSpriteMovedModel = func;
     }
 
@@ -256,8 +272,22 @@ class Sprites {
     /**
      * @param {(Function|null)} func .
      */
+    onSayOrThinkModel (func) {
+        this._onSayOrThinkModel = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
     onVariableChange (func) {
         this._onVariableChange = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onVariableChangeModel (func) {
+        this._onVariableChangeModel = func;
     }
 }
 

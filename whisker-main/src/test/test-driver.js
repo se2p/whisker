@@ -34,6 +34,8 @@ class TestDriver {
         this.getNewSprites = vmWrapper.sprites.getNewSprites.bind(vmWrapper.sprites);
         this.onSpriteMoved = vmWrapper.sprites.onSpriteMoved.bind(vmWrapper.sprites);
         this.onSpriteVisualChange = vmWrapper.sprites.onSpriteVisualChange.bind(vmWrapper.sprites);
+        this.onSayOrThink = vmWrapper.sprites.onSayOrThink.bind(vmWrapper.sprites);
+        this.onVariableChange = vmWrapper.sprites.onVariableChange.bind(vmWrapper.sprites);
 
         this.addCallback = vmWrapper.callbacks.addCallback.bind(vmWrapper.callbacks);
         this.reAddCallback = vmWrapper.callbacks.reAddCallback.bind(vmWrapper.callbacks);
