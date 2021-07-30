@@ -20,6 +20,6 @@
 !whisker-web
 
 # ... but ignore all artifact folders.
-**/dist/
-**/node_modules/
+**/dist
+**/node_modules
 
