@@ -79,7 +79,7 @@ COPY --from=build /whisker-build/whisker-docker.sh ./whisker-docker.sh
 
 # Set the image's main command, allowing the image to be run as though it was
 # that command:
-ENTRYPOINT ["/whisker/whisker-docker.sh"]
+ENTRYPOINT ["/whisker/servant/whisker-docker.sh"]
 
 # Set the default arguments for Whisker's servant, if none are specified
 # explicitly by the user:
