@@ -1,8 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {ModelEdge} from "./ModelEdge";
-import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
-import {CheckName} from "./Check";
 
 /**
  * Node structure for a model.
@@ -33,15 +31,17 @@ export class ModelNode {
 
     /**
      * Returns an model edge if one has its conditions for traversing the edge fulfilled or else null.
+     * @param testDriver Instance of the test driver.
+     * @param cu Check listener.
      * @param stepsSinceLastTransition Number of steps since the last transition in the model this effect belongs to
      * @param stepsSinceEnd Number of steps since the after run model tests started.
      */
-    testEdgeConditions(testDriver: TestDriver, checkUtility: CheckUtility, stepsSinceLastTransition: number,
-                       stepsSinceEnd: number, modelResult: ModelResult): ModelEdge {
+    testEdgeConditions(testDriver: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number,
+                       stepsSinceEnd: number): ModelEdge {
 
         // get all edges that have not failing conditions and check for order of events
         for (let i = 0; i < this.edges.length; i++) {
-            const result = this.edges[i].checkConditions(testDriver, stepsSinceLastTransition, stepsSinceEnd, modelResult);
+            const result = this.edges[i].checkConditions(testDriver, cu, stepsSinceLastTransition, stepsSinceEnd);
 
             if (result && result.length == 0) {
                 this.edges[i].lastTransition = testDriver.getTotalStepsExecuted() + 1;
@@ -55,10 +55,10 @@ export class ModelNode {
      * Check the edges for a transition based on fired events.
      */
     testForEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
-                 modelResult: ModelResult, eventStrings: string[]) {
+                 eventStrings: string[]) {
         for (let i = 0; i < this.edges.length; i++) {
             const result = this.edges[i].checkConditionsOnEvent(t, cu, stepsSinceLastTransition, stepsSinceEnd,
-                modelResult, eventStrings);
+                eventStrings);
 
             if (result && result.length == 0) {
                 this.edges[i].lastTransition = t.getTotalStepsExecuted() + 1;
@@ -71,9 +71,9 @@ export class ModelNode {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean) {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
         this.edges.forEach(edge => {
-            edge.registerComponents(checkListener, testDriver, result, caseSensitive);
+            edge.registerComponents(checkListener, testDriver, caseSensitive);
         })
     }
 

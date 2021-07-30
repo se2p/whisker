@@ -2,7 +2,6 @@ import {ModelNode} from "./ModelNode";
 import {ModelEdge, ProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
-import ModelResult from "../../../test-runner/model-result";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -63,10 +62,10 @@ export class ProgramModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(t: TestDriver, checkUtility: CheckUtility, modelResult: ModelResult): ModelEdge {
+    makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge {
         let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.stepNbrOfLastTransition;
         let edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
-            this.stepNbrOfProgramEnd, modelResult);
+            this.stepNbrOfProgramEnd);
 
 
         if (edge != null) {
@@ -75,10 +74,10 @@ export class ProgramModel {
         return edge;
     }
 
-    testForEvent(t: TestDriver, cu: CheckUtility, modelResult: ModelResult, eventStrings: string[]): ModelEdge {
+    testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: string[]): ModelEdge {
         let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.stepNbrOfLastTransition;
         let edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
-            modelResult, eventStrings);
+            eventStrings);
 
         if (edge != null) {
             this.update(t, edge);
@@ -164,9 +163,9 @@ export class ProgramModel {
     /**
      * Register the check listener and test driver.
      */
-    registerComponents(cu: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean) {
+    registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
         Object.values(this.nodes).forEach(node => {
-            node.registerComponents(cu, testDriver, result, caseSensitive);
+            node.registerComponents(cu, testDriver, caseSensitive);
         })
     }
 

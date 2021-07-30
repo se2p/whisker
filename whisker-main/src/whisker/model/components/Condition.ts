@@ -1,7 +1,6 @@
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
 import {Check, CheckName} from "./Check";
-import ModelResult from "../../../test-runner/model-result";
 
 /**
  * Defining an edge condition.
@@ -24,13 +23,13 @@ export class Condition extends Check {
     /**
      * Register the check listener and test driver and check the condition for errors.
      */
-    registerComponents(cu: CheckUtility, t: TestDriver, result: ModelResult, caseSensitive: boolean) {
+    registerComponents(cu: CheckUtility, t: TestDriver, caseSensitive: boolean) {
         try {
             this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
-            console.error(e + ". This condition will be considered as not fulfilled in test run.");
+            e.message = e.message + ". This condition will be considered as not fulfilled in test run.";
+            cu.addErrorOutput(this._edgeID, e)
             this._condition = () => false;
-            result.addError(e.message);
         }
     }
 

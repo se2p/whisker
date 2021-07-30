@@ -28,6 +28,7 @@ export class ModelTester extends EventEmitter {
     private modelStepCallback: Callback;
     private onTestEndCallback: Callback;
     private haltAllCallback: Callback;
+    private isRunning: boolean = false;
 
     /**
      * Load the models from a xml string. See ModelLoaderXML for more info.
@@ -107,7 +108,7 @@ export class ModelTester extends EventEmitter {
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
         allModels.forEach(model => {
             model.reset();
-            model.registerComponents(this.checkUtility, t, this.result, caseSensitive);
+            model.registerComponents(this.checkUtility, t, caseSensitive);
         });
         this.userInputGen(this.result);
 
@@ -119,6 +120,7 @@ export class ModelTester extends EventEmitter {
             this.modelStepCallback.disable();
         }
         this.onTestEndCallback.disable();
+        this.isRunning = true;
     }
 
     private getModelStepFunction() {
@@ -127,7 +129,7 @@ export class ModelTester extends EventEmitter {
             this.checkUtility.makeFailedOutputs();
             let notStoppedModels = [];
             checkProgramModels.forEach(model => {
-                let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility, this.result);
+                let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
                     this.checkUtility.registerEffectCheck(takenEdge, model);
                     this.edgeTrace(takenEdge);
@@ -183,7 +185,7 @@ export class ModelTester extends EventEmitter {
             this.checkUtility.makeFailedOutputs();
             let notStoppedModels = [];
             afterStopModels.forEach(model => {
-                let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility, this.result);
+                let takenEdge = model.makeOneTransition(this.testDriver, this.checkUtility);
                 if (takenEdge != null && takenEdge instanceof ProgramModelEdge) {
                     this.checkUtility.registerEffectCheck(takenEdge, model);
                     this.edgeTrace(takenEdge);
@@ -216,7 +218,7 @@ export class ModelTester extends EventEmitter {
             let userInputFun = () => {
                 let notStoppedUserModels = [];
                 userModels.forEach(model => {
-                    let edge = model.makeOneTransition(this.testDriver, this.checkUtility, modelResult);
+                    let edge = model.makeOneTransition(this.testDriver, this.checkUtility);
                     if (edge != null && edge instanceof UserModelEdge) {
                         edge.inputImmediate(this.testDriver);
                     }
@@ -240,11 +242,11 @@ export class ModelTester extends EventEmitter {
     }
 
     private onEvent(eventStrings: string[]) {
-        if (this.running()) {
+        if (this.running() && this.isRunning) {
             // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
             let models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
             models.forEach(model => {
-                let edge = model.testForEvent(this.testDriver, this.checkUtility, this.result, eventStrings);
+                let edge = model.testForEvent(this.testDriver, this.checkUtility, eventStrings);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     this.checkUtility.registerEffectCheck(edge, model);
                     this.edgeTrace(edge);

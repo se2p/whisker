@@ -1,7 +1,6 @@
 import {ModelNode} from "./ModelNode";
 import {ModelEdge, UserModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
-import ModelResult from "../../../test-runner/model-result";
 import {CheckUtility} from "../util/CheckUtility";
 
 /**
@@ -59,10 +58,10 @@ export class UserModel {
     /**
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
-    makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility, modelResult: ModelResult): ModelEdge {
+    makeOneTransition(testDriver: TestDriver, checkUtility: CheckUtility): ModelEdge {
         let stepsSinceLastTransition = testDriver.getTotalStepsExecuted() - this.lastTransitionStep;
         let edge = this.currentState.testEdgeConditions(testDriver, checkUtility, stepsSinceLastTransition,
-            this.stepNbrOfProgramEnd, modelResult);
+            this.stepNbrOfProgramEnd);
 
         if (edge != null) {
             this.currentState = this.nodes[edge.getEndNodeId()];
@@ -94,9 +93,9 @@ export class UserModel {
     /**
      * Register the check listener and test driver on all node's edges.
      */
-    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, result: ModelResult, caseSensitive: boolean) {
+    registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
         Object.values(this.nodes).forEach(node => {
-            node.registerComponents(checkListener, testDriver, result, caseSensitive);
+            node.registerComponents(checkListener, testDriver, caseSensitive);
         })
     }
 

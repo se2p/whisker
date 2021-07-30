@@ -31,6 +31,11 @@ export class CheckUtility extends EventEmitter {
     private effectChecks: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
     private failedOutputsEvents: { effect: Effect, edge: ProgramModelEdge, model: ProgramModel }[] = [];
 
+    // how often the errors or fails happened, change this boolean for printing all or only ten occurrences per error
+    private onlyTenOutputs = true;
+    private failOutputs: { [key: string]: number } = {};
+    private errorOutputs: { [key: string]: number } = {};
+
     /**
      * Get an instance of a condition state saver.
      * @param testDriver Instance of the test driver.
@@ -87,7 +92,7 @@ export class CheckUtility extends EventEmitter {
     registerOnVisualChange(spriteName: string, eventString: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
         if (this.registeredVisualChange.indexOf(eventString) == -1) {
             this.registeredVisualChange.push(eventString);
-            this.register(this.onVisualChecks, eventString, spriteName,edgeID, predicate);
+            this.register(this.onVisualChecks, eventString, spriteName, edgeID, predicate);
         }
     }
 
@@ -118,7 +123,7 @@ export class CheckUtility extends EventEmitter {
             try {
                 predicateResult = predicate(sprite);
             } catch (e) {
-                this.errorOutput(edgeID, e);
+                this.addErrorOutput(edgeID, e);
             }
             if (predicateResult) {
                 this.eventStrings.push(eventString);
@@ -145,7 +150,7 @@ export class CheckUtility extends EventEmitter {
                 try {
                     predicateResult = predicate();
                 } catch (e) {
-                    this.errorOutput(edgeID, e);
+                    this.addErrorOutput(edgeID, e);
                 }
                 if (predicateResult) {
                     this.eventStrings.push(eventString);
@@ -238,7 +243,7 @@ export class CheckUtility extends EventEmitter {
                         newEffects.push(this.effectChecks[i]);
                     }
                 } catch (e) {
-                    this.errorOutput(this.effectChecks[i].edge.id, e);
+                    this.addErrorOutput(this.effectChecks[i].edge.id, e);
                 }
             } else {
                 contradictingEffects.push(this.effectChecks[i].effect);
@@ -249,16 +254,37 @@ export class CheckUtility extends EventEmitter {
         return contradictingEffects;
     }
 
-    private failOutput(edge, effect) {
-        let output = getEffectFailedOutput(edge, effect);
-        console.error(output, this.testDriver.getTotalStepsExecuted());
+    addTimeLimitFailOutput(output: string) {
+        this.failOrError(output, this.failOutputs);
         this.modelResult.addFail(output);
     }
 
-    private errorOutput(edgeID: string, e: Error) {
+    addFailOutput(edge, effect) {
+        let output = getEffectFailedOutput(edge, effect);
+        this.failOrError(output, this.failOutputs);
+        this.modelResult.addFail(output);
+    }
+
+    addErrorOutput(edgeID: string, e: Error) {
         let output = getErrorOnEdgeOutput(edgeID, e.message);
-        console.error(output, this.testDriver.getTotalStepsExecuted());
+        this.failOrError(output, this.errorOutputs)
         this.modelResult.addError(output);
+    }
+
+    private failOrError(output: string, failureList: { [key: string]: number }) {
+        if (this.onlyTenOutputs) {
+            if (failureList[output] == undefined) {
+                failureList[output] = 0;
+            }
+            failureList[output]++;
+            if (failureList[output] == 10) {
+                console.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
+            } else if (failureList[output] < 10) {
+                console.error(output, this.testDriver.getTotalStepsExecuted());
+            }
+        } else {
+            console.error(output, this.testDriver.getTotalStepsExecuted());
+        }
     }
 
     /**
@@ -273,12 +299,12 @@ export class CheckUtility extends EventEmitter {
      */
     makeFailedOutputs() {
         for (let i = 0; i < this.failedOutputsEvents.length; i++) {
-            this.failOutput(this.failedOutputsEvents[i].edge, this.failedOutputsEvents[i].effect);
+            this.addFailOutput(this.failedOutputsEvents[i].edge, this.failedOutputsEvents[i].effect);
         }
         this.failedOutputsEvents = [];
         for (let i = 0; i < this.effectChecks.length; i++) {
             if (!this.effectChecks[i].effect.dependsOnSayText) {
-                this.failOutput(this.effectChecks[i].edge, this.effectChecks[i].effect);
+                this.addFailOutput(this.effectChecks[i].edge, this.effectChecks[i].effect);
             } else {
                 this.failedOutputsEvents.push(this.effectChecks[i]);
             }
@@ -301,7 +327,7 @@ export class CheckUtility extends EventEmitter {
                     newFailedList.push(checks[i]);
                 }
             } catch (e) {
-                this.errorOutput(checks[i].edge.id, e);
+                this.addErrorOutput(checks[i].edge.id, e);
             }
         }
         return newFailedList;
