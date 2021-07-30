@@ -58,6 +58,9 @@ WORKDIR /whisker-build/
 COPY ./ ./
 RUN yarn build
 
+# Remove puppeteer because it is already included in the docker image itself.
+RUN rm -rf ./node_modules/puppeteer
+
 
 #-------------------------------------------------------------------------------
 # (2) Execution Stage
@@ -75,9 +78,6 @@ COPY --from=build /whisker-build/scratch-analysis  ./scratch-analysis
 COPY --from=build /whisker-build/servant           ./servant
 COPY --from=build /whisker-build/whisker-web       ./whisker-web
 COPY --from=build /whisker-build/whisker-main      ./whisker-main
-
-# Remove puppeteer because it is already included in the docker image itself.
-RUN rm -rf ./node_modules/puppeteer
 
 # Set the image's main command, allowing the image to be run as though it was
 # that command:
