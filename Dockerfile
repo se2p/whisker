@@ -77,6 +77,9 @@ COPY --from=build /whisker-build/whisker-web       ./whisker-web
 COPY --from=build /whisker-build/whisker-main      ./whisker-main
 COPY --from=build /whisker-build/whisker-docker.sh ./whisker-docker.sh
 
+# Remove puppeteer because it is already included in the docker image itself.
+RUN rm -rf ./node_modules/puppeteer
+
 # Set the image's main command, allowing the image to be run as though it was
 # that command:
 ENTRYPOINT ["/whisker/servant/whisker-docker.sh"]
