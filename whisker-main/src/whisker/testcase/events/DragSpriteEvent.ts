@@ -44,13 +44,7 @@ export class DragSpriteEvent extends ScratchEvent {
 
 
     public toJavaScript(): string {
-        // When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
-        return `for(const target of t.vm.runtime.targets){
-    if(target.sprite.name === '${this._target.sprite.name}'){
-        target.setXY(${this._x}, ${this._y}, true);
-        break;
-    }
-  }`;
+        return `t.getSprite('${this._target.sprite.name}').getScratchTarget().setXY(${this._x}, ${this._y}, true);`
     }
 
     public toString(): string {
