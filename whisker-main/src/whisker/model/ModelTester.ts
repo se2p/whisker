@@ -110,7 +110,7 @@ export class ModelTester extends EventEmitter {
             model.reset();
             model.registerComponents(this.checkUtility, t, caseSensitive);
         });
-        this.userInputGen(this.result);
+        this.userInputGen();
 
         this.modelStepCallback = this.addModelCallback(this.getModelStepFunction(), true, "modelStep");
         this.onTestEndCallback = this.addModelCallback(this.getOnTestEndFunction(), true, "stopModelsCheck");
@@ -212,7 +212,7 @@ export class ModelTester extends EventEmitter {
         };
     }
 
-    private userInputGen(modelResult: ModelResult) {
+    private userInputGen() {
         if (this.userModelsLoaded()) {
             let userModels = [...this.userModels];
             let userInputFun = () => {
@@ -288,8 +288,8 @@ export class ModelTester extends EventEmitter {
         }
         this.result.edgeTrace.push(edgeTrace);
         this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
-        if (transition.id.startsWith("bananFalling"))
-            console.log("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
+        // if (transition.id.startsWith("points"))
+        //     console.log("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
     }
 
     /**

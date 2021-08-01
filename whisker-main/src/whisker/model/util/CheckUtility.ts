@@ -110,7 +110,6 @@ export class CheckUtility extends EventEmitter {
         }
     }
 
-
     private register(predicateChecker: { [key: string]: ((sprite) => void)[] }, eventString: string,
                      spriteName: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
         // no check for this sprite till now
