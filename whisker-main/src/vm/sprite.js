@@ -165,11 +165,7 @@ class Sprite {
      * @return {string}
      */
     get currentCostumeName () {
-        let costumes = this._target.sprite.costumes;
-        if (costumes !== []) {
-            return costumes[this._target.currentCostume].name;
-        }
-        return "";
+        return this._target.sprite.costumes[this._target.currentCostume].name;
     }
 
     /**

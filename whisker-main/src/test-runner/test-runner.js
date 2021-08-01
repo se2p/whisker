@@ -153,14 +153,21 @@ class TestRunner extends EventEmitter {
             }
         } else if (modelTester && modelTester.someModelLoaded()) {
             // Start the test run with either a maximal duration or until the model stops
-            await testDriver.runUntil(() => {
-                return !modelTester.running();
-            }, modelProps.duration);
-            result.modelResult = modelTester.stopAndGetModelResult(testDriver);
-            if (result.modelResult.errors.length > 0) {
+            try {
+                await testDriver.runUntil(() => {
+                    return !modelTester.running();
+                }, modelProps.duration);
+                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
+                if (result.modelResult.errors.length > 0) {
+                    result.status = Test.ERROR;
+                } else {
+                    result.status = result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
+                }
+            } catch (e) {
+                // probably run aborted
+                console.error(e);
+                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
                 result.status = Test.ERROR;
-            } else {
-                result.status = result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
             }
         }
 
