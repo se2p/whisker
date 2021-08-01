@@ -3,25 +3,22 @@
     "algorithm": "mosa",
     "chromosome": "variablelengthtest",
     "population-size": 10,
-    "minVarChromosomeLength": 30,
+    "minVarChromosomeLength": 5,
     "maxVarChromosomeLength": 30,
     "chromosome-length": 30,
+    "extractor": "dynamic",
     "crossover": {
         "operator": "singlepointrelative",
-        "probability": 0.8
+        "probability": 1
     },
     "mutation": {
         "operator": "variablelength",
         "probability": 1,
-        "gaussianMutationPower": 5,
-        "maxMutationCountStart": null,
-        "maxMutationCountFocusedPhase": null
+        "gaussianMutationPower": 5
     },
     "selection": {
         "operator": "rank",
-        "size": 2,
-        "randomSelectionProbabilityStart": null,
-        "randomSelectionProbabilityFocusedPhase": null
+        "size": 2
     },
     "fitness-function": {
         "type": "statement",
@@ -39,11 +36,6 @@
             }
         ]
     },
-    "archive": {
-        "maxArchiveSizeStart": null,
-        "maxArchiveSizeFocusedPhase": null
-    },
-    "startOfFocusedPhase": null,
     "integerRange": {
         "min": 0,
         "max": 480

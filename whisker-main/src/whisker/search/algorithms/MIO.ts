@@ -26,6 +26,9 @@ import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import {TestChromosome} from "../../testcase/TestChromosome";
+import {StatementCoverageFitness} from "../../testcase/fitness/StatementFitnessFunction";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -49,6 +52,12 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * Maps uncovered Statements to the chromosomes closest to covering them with respect to the given fitnessFunction.
      */
     private _archiveUncovered: Map<number, List<ChromosomeHeuristicTuple<C>>>;
+
+    /**
+     * Contains all independent FitnessFunctions. These include the last statements inside branches and the last
+     * statements of hat related statements.
+     */
+    private _independentFitnessFunctions: Map<number, FitnessFunction<C>>
 
     /**
      * Defines the probability of sampling a new Chromosome instead of mutating an existing one during search.
@@ -99,16 +108,15 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private _maxMutationCountFocusedPhase: number;
 
     /**
-     * Counts the number of mutations applied to a given Chromosome in the current mutation round.
-     */
-    private _mutationCounter: number;
-
-    /**
      * A Map mapping to each fitnessFunction a counter determining how often the fitnessFunction has been selected for a
      * mutation/randomSampling round. When selecting a FitnessFunction for the next mutation/randomSampling round
      * we always choose the FitnessFunction with the lowest samplingCounter value.
      */
     private _samplingCounter: Map<number, number>;
+
+    private _localSearchOperators = new List<LocalSearch<C>>();
+
+    private readonly _random = Randomness.getInstance();
 
     setChromosomeGenerator(generator: ChromosomeGenerator<C>): void {
         this._chromosomeGenerator = generator;
@@ -155,6 +163,13 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._heuristicFunctions = heuristicFunctions;
     }
 
+    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
+        this._localSearchOperators = localSearchOperators;
+        for (const localSearchOperator of localSearchOperators) {
+            localSearchOperator.setAlgorithm(this);
+        }
+    }
+
     getNumberOfIterations(): number {
         return this._iterations;
     }
@@ -171,27 +186,74 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     async findSolution(): Promise<Map<number, C>> {
         this.setStartValues();
         let chromosome: C;
+        let mutationCounter = 0;
         while (!(this._stoppingCondition.isFinished(this))) {
-            if (this._mutationCounter < this._maxMutationCount && chromosome != undefined) {
-                const mutatedChromosome = chromosome.mutate();
-                await mutatedChromosome.evaluate();
-                this._mutationCounter++;
-                this.updateArchive(mutatedChromosome);
-            } else {
-                chromosome = this.getNewChromosome();
+            // If we have no chromosomes saved in our archives so far or if randomness tells us to do so
+            // we sample a new chromosome randomly.
+            if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0) || this._maxMutationCount === 0
+                || this._random.nextDouble() < this._randomSelectionProbability) {
+                chromosome = this._chromosomeGenerator.get();
                 await chromosome.evaluate();
-                this._mutationCounter = 0;
                 this.updateArchive(chromosome);
+                // By chance apply LocalSearch to the randomly generated chromosome.
+                await this.applyLocalSearch(chromosome);
+                this._iterations++;
+            } else {
+                // Otherwise we choose a chromosome to mutate from one of our populations, preferring uncovered ones.
+                const anyUncovered: boolean = this._archiveUncovered.size > 0;
+                const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
+                let archiveTuples: List<ChromosomeHeuristicTuple<C>>
+                if (anyUncovered) {
+                    archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
+                    chromosome = this._random.pickRandomElementFromList(archiveTuples).getChromosome();
+                } else {
+                    chromosome = this._archiveCovered.get(fitnessFunctionKey);
+                }
+                chromosome.targetFitness = fitnessFunction;
+                let currentHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
+                while (mutationCounter < this._maxMutationCount) {
+                    const mutant = chromosome.mutate();
+                    mutant.targetFitness = fitnessFunction;
+                    await mutant.evaluate();
+                    this.updateArchive(mutant);
+                    const mutantHeuristic = this.getHeuristicValue(mutant, fitnessFunctionKey);
+                    // If the mutant improved keep mutating on the mutant instead of on the initial chosen chromosome
+                    if (currentHeuristic <= mutantHeuristic) {
+                        chromosome = mutant;
+                        currentHeuristic = mutantHeuristic;
+                    }
+                    mutationCounter++;
+                    this._iterations++;
+                }
+                // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
+                // too cost intensive and provides hardly any benefit.
+                await this.applyLocalSearch(chromosome);
+                // Reset mutationCounter
+                mutationCounter = 0;
             }
-            this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
-            console.log("Iteration " + this._iterations + ", covered goals: "
-                + this._archiveCovered.size + "/" + this._fitnessFunctions.size);
+            console.log(`Iteration ${this._iterations}, covered goals total: ${this._archiveCovered.size}/${this._fitnessFunctions.size}, \
+open independent goals: ${this._archiveUncovered.size}`);
         }
         return this._archiveCovered;
+    }
+
+    /**
+     * Apply all LocalSearch operators with a given probability iff they are applicable at all.
+     * @param chromosome the chromosome to apply LocalSearch on
+     */
+    private async applyLocalSearch(chromosome: C): Promise<void> {
+        for (const localSearch of this._localSearchOperators) {
+            if (localSearch.isApplicable(chromosome) && this._random.nextDouble() < localSearch.getProbability()) {
+                const modifiedChromosome = await localSearch.apply(chromosome);
+                this.updateArchive(modifiedChromosome);
+            }
+        }
     }
 
     /**
@@ -200,7 +262,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private setStartValues(): void {
         this._iterations = 0;
         this._startTime = Date.now();
-        this._mutationCounter = 0;
         this._bestIndividuals = new List<C>();
         this._archiveCovered = new Map<number, C>();
         this._archiveUncovered = new Map<number, List<ChromosomeHeuristicTuple<C>>>();
@@ -212,29 +273,32 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
+        this._independentFitnessFunctions = this.getIndependentStatements();
     }
 
     /**
-     * Creates a new chromosome by random or by mutating a chromosome from the archive.
-     *
-     * @returns A new chromosome.
+     * Extracts independent statements from the Scratch-Project and filters the whole fitnessFunctionsMap with these,
+     * while keeping the corresponding key structure untouched, i.e the same key in both fitnessMaps points to the same
+     * statement.
      */
-    private getNewChromosome(): C {
-        if ((this._archiveUncovered.size == 0 && this._archiveCovered.size == 0)
-            || Randomness.getInstance().nextDouble() < this._randomSelectionProbability) {
-            return this._chromosomeGenerator.get();
-        } else {
-            const anyUncovered: boolean = this._archiveUncovered.size > 0;
-            const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
-            this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
-            if (anyUncovered) {
-                const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
-                const randomIndex = Randomness.getInstance().nextInt(0, archiveTuples.size());
-                return archiveTuples.get(randomIndex).getChromosome().mutate();
-            } else {
-                return this._archiveCovered.get(fitnessFunctionKey).mutate();
-            }
+    private getIndependentStatements(): Map<number, FitnessFunction<C>> {
+        const fitnessFunctions = new List<StatementCoverageFitness>([...this._fitnessFunctions.values()]);
+        // We can only extract independent block statements if we indeed deal with scratch blocks.
+        if(fitnessFunctions.get(0) instanceof StatementCoverageFitness) {
+            const mergeNodeStatements = StatementCoverageFitness.getMergeNodeMap(fitnessFunctions);
+            let independentFitnessFunctions = new List<StatementCoverageFitness>();
+            [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.addList(statementList));
+            independentFitnessFunctions = independentFitnessFunctions.distinct();
+            const independentFitnessFunctionMap = new Map<number, FitnessFunction<C>>();
+            this._fitnessFunctions.forEach((value, key) => {
+                if (independentFitnessFunctions.contains(value as unknown as StatementCoverageFitness)) {
+                    independentFitnessFunctionMap.set(key, value);
+                }
+            })
+            return independentFitnessFunctionMap;
         }
+        else
+            return this._fitnessFunctions;
     }
 
     /**
@@ -243,24 +307,50 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param chromosome The candidate chromosome for the archive.
      */
     protected updateArchive(chromosome: C): void {
+        this.updateCoveredArchive(chromosome);
+        this.updateUncoveredArchive(chromosome);
+    }
+
+    /**
+     * Updates the archive containing all covered Statements so far. This archive consists of all block statements
+     * contained in the given Scratch-Project.
+     * @param chromosome The candidate chromosome for the archive
+     */
+    private updateCoveredArchive(chromosome: C): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
             if (heuristicValue == 1) {
                 if (this._archiveCovered.has(fitnessFunctionKey)) {
                     const oldBestChromosome = this._archiveCovered.get(fitnessFunctionKey);
-                    if (this.compareChromosomesWithEqualHeuristic(chromosome, oldBestChromosome) > 0) {
+                    if (oldBestChromosome.getLength() > chromosome.getLength() ||
+                        this.compareChromosomesWithEqualHeuristic(chromosome, oldBestChromosome) > 0) {
                         this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
                     }
                 } else {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(this._fitnessFunctions.get(fitnessFunctionKey));
-                    this._archiveUncovered.delete(fitnessFunctionKey);
+                    if (this._archiveUncovered.has(fitnessFunctionKey)) {
+                        this._archiveUncovered.delete(fitnessFunctionKey);
+                    }
                     this.setBestCoveringChromosome(chromosome, fitnessFunctionKey);
+                    console.log(`Found test for goal: ${this._fitnessFunctions.get(fitnessFunctionKey)}`);
                     if (this._archiveCovered.size == this._fitnessFunctions.size) {
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     }
                 }
-            } else if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
+            }
+        }
+    }
+
+    /**
+     * Updates the archive containing all unCovered Statements. To reduce the amount of duplicate archive populations,
+     * this archive consists of all independent block statements defined by the independentFitnessFunctions attribute.
+     * @param chromosome The candidate chromosome for the archive
+     */
+    private updateUncoveredArchive(chromosome: C): void {
+        for (const fitnessFunctionKey of this._independentFitnessFunctions.keys()) {
+            const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
+            if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
                 let archiveTuples: List<ChromosomeHeuristicTuple<C>>;
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {
                     archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
@@ -268,9 +358,13 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     archiveTuples = new List<ChromosomeHeuristicTuple<C>>();
                 }
                 const newTuple = new ChromosomeHeuristicTuple<C>(chromosome, heuristicValue);
+                newTuple.getChromosome().targetFitness = this._fitnessFunctions.get(fitnessFunctionKey);
+                // Do not add duplicates in any population!
+                if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
+                    continue;
+                }
                 if (archiveTuples.size() < this._maxArchiveSize) {
                     archiveTuples.add(newTuple);
-                    this._samplingCounter.set(fitnessFunctionKey, 0);
                 } else {
                     const worstArchiveTuple = this.getWorstChromosomeHeuristicTuple(archiveTuples);
                     const worstHeuristicValue = worstArchiveTuple.getHeuristicValue();
@@ -287,6 +381,26 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
     }
 
+    /**
+     * Check if the given List of tuples already contains the tuple we want to add. Two tuples are similar if they
+     * possess exactly the same genes.
+     * @param tupleList the list into which we want to add the tuple
+     * @param tupleToAdd the tuple we want to add to the tupleList
+     * @return boolean determining if the tupleList already contains the tupleToAdd
+     */
+    private tuplesContainChromosome(tupleList: List<ChromosomeHeuristicTuple<C>>,
+                                    tupleToAdd: ChromosomeHeuristicTuple<C>): boolean {
+        const chromosomeToAdd = tupleToAdd.getChromosome() as unknown as TestChromosome;
+        const genesToAdd = JSON.stringify(chromosomeToAdd.getGenes());
+        for (const tuple of tupleList) {
+            const chromosome = tuple.getChromosome() as unknown as TestChromosome;
+            if (genesToAdd === JSON.stringify(chromosome.getGenes())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
         return this._fitnessFunctions.values();
     }
@@ -298,7 +412,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param fitnessFunctionKey The key of the fitness function.
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
-        console.log("Found test for goal: " + this._fitnessFunctions.get(fitnessFunctionKey));
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
         this._bestIndividuals = new List<C>(Array.from(this._archiveCovered.values())).distinct();
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
@@ -318,9 +431,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         for (const tuple of chromosomeHeuristicTuples) {
             const heuristicValue = tuple.getHeuristicValue();
             const chromosome = tuple.getChromosome();
-            if (worstTuple == undefined || heuristicValue < worstHeuristicValue
-                || (heuristicValue == worstHeuristicValue
-                    && chromosome.getLength() > worstTuple.getChromosome().getLength())) {
+            if (worstTuple == undefined ||
+                heuristicValue < worstHeuristicValue ||
+                (heuristicValue === worstHeuristicValue &&
+                    this.compareChromosomesWithEqualHeuristic(worstTuple.getChromosome(), chromosome) > 0)) {
                 worstHeuristicValue = heuristicValue;
                 worstTuple = tuple;
             }
@@ -337,10 +451,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *         zero if both are equal.
      */
     private compareChromosomesWithEqualHeuristic(chromosome1: C, chromosome2: C): number {
-        const lengthDifference = chromosome2.getLength() - chromosome1.getLength();
-        if (lengthDifference != 0) {
-            return lengthDifference;
-        }
         let heuristicSum1 = 0;
         let heuristicSum2 = 0;
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
