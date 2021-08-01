@@ -359,7 +359,7 @@ export class WhiskerSearchConfiguration {
     public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NetworkChromosome> {
         const networkFitnessDef = fitnessFunction['type'];
         if (networkFitnessDef === 'score')
-            return new ScoreFitness(fitnessFunction['offset']);
+            return new ScoreFitness();
         else if (networkFitnessDef === 'statement')
             return new StatementNetworkFitness();
         else if (networkFitnessDef === 'survive')

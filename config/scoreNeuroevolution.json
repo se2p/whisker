@@ -44,12 +44,14 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 10000000,
-        "offset": 0.01
+        "timeout": 60000
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
+            {
+                "type": "optimal"
+            },
             {
                 "type": "fixed-iteration",
                 "iterations": 100

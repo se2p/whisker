@@ -8,19 +8,6 @@ import {NetworkExecutor} from "../NetworkExecutor";
 export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * The offset which should be added to each score.
-     */
-    private readonly offset: number;
-
-    /**
-     * Constructs a new ScoreFitness object.
-     * @param offset the offset which should be added to each score.
-     */
-    constructor(offset: number) {
-        this.offset = offset;
-    }
-
-    /**
      * Calculates the reached score
      * @param network the network to evaluate
      * @param timeout the timeout after which the execution of the Scratch-VM is halted.
@@ -30,9 +17,9 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
         await executor.execute(network);
         let score = ScoreFitness.gatherPoints(Container.vm);
         if(score < 0){
-            score = 0.01
+            score = 0.01;
         }
-        network.networkFitness = score + this.offset;
+        network.networkFitness = score;
         executor.resetState();
         return network.networkFitness;
     }
@@ -42,7 +29,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * Used for CombinedNetworkFitness.
      */
     getFitnessWithoutPlaying(): number {
-        return ScoreFitness.gatherPoints(Container.vm) + this.offset
+        return ScoreFitness.gatherPoints(Container.vm);
     }
 
     /**
