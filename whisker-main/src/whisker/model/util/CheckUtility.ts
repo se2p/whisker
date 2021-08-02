@@ -36,6 +36,9 @@ export class CheckUtility extends EventEmitter {
     private failOutputs: { [key: string]: number } = {};
     private errorOutputs: { [key: string]: number } = {};
 
+    //turn logs in console off an on
+    private logsInConsole = true;
+
     /**
      * Get an instance of a condition state saver.
      * @param testDriver Instance of the test driver.
@@ -271,6 +274,9 @@ export class CheckUtility extends EventEmitter {
     }
 
     private failOrError(output: string, failureList: { [key: string]: number }) {
+        if (!this.logsInConsole) {
+            return;
+        }
         if (this.onlyTenOutputs) {
             if (failureList[output] == undefined) {
                 failureList[output] = 0;

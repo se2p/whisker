@@ -364,9 +364,12 @@ export abstract class CheckGenerator {
             const sprites = t.getSprites(sprite => sprite.name == spriteName, false);
             let anySayText = false;
             for (let i = 0; i < sprites.length; i++) {
-                if (sprites[i].sayText && sprites[i].sayText.indexOf(eval(expression)(t)) != -1) {
-                    anySayText = true;
-                    break;
+                if (sprites[i].sayText) {
+                    let sayText = !caseSensitive ? sprites[i].sayText.toLowerCase() : sprites[i].sayText;
+                    if (sayText.indexOf(eval(expression)(t)) != -1) {
+                        anySayText = true;
+                        break;
+                    }
                 }
             }
             return !negated == anySayText;
