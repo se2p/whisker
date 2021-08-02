@@ -120,13 +120,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 + specie.expectedOffspring + " offspring")
         console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
         console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
-        // TODO: Remove after winning BoatRace!
-        if(this._networkFitnessFunction instanceof NoveltyTargetNetworkFitness){
-            const behaviours = this._networkFitnessFunction.behaviourArchive;
-            behaviours.sort((a, b) => b.x - a.x);
-            console.log(`Best Point seen so far: ${behaviours[0].x}, ${behaviours[0].y}`);
-            console.log("Archive: ", behaviours)
-        }
         console.log("-----------------------------------------------------")
 
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {

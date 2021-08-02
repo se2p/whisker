@@ -44,7 +44,7 @@
         "player": "boat",
         "timeout": 30000,
         "neighbourCount": 15,
-        "archiveThreshold": 10
+        "archiveThreshold": 6
     },
     "stopping-condition": {
         "type": "one-of",
