@@ -2,7 +2,7 @@
     "test-generator": "neuroevolution",
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
-    "population-size": 20,
+    "population-size": 250,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 30,
     "ageSignificance": 1.0,
