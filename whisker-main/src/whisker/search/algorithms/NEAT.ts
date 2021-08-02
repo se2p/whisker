@@ -10,6 +10,7 @@ import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionPropertie
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
+import {NoveltyTargetNetworkFitness} from "../../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -119,6 +120,12 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 + specie.expectedOffspring + " offspring")
         console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
         console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
+        if(this._networkFitnessFunction instanceof NoveltyTargetNetworkFitness){
+            const behaviours = this._networkFitnessFunction.behaviourArchive;
+            behaviours.sort((a, b) => b.x - a.x);
+            console.log("Best Point seen so far: ", behaviours[0]);
+            console.log("Archive: ", behaviours)
+        }
         console.log("-----------------------------------------------------")
 
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {

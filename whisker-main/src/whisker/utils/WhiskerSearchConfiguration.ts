@@ -57,6 +57,7 @@ import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthM
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
+import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
 
 class ConfigException implements Error {
     message: string;
@@ -367,7 +368,10 @@ export class WhiskerSearchConfiguration {
         else if (networkFitnessDef === 'target')
             return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
                 fitnessFunction['travelWeight']);
-        else if (networkFitnessDef === 'combined') {
+        else if (networkFitnessDef === 'novelty') {
+            return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
+                fitnessFunction['archiveThreshold']);
+        } else if (networkFitnessDef === 'combined') {
             const fitnessFunctions = fitnessFunction["functions"];
             const comb: NetworkFitnessFunction<NetworkChromosome>[] = [];
             for (const functions of fitnessFunctions) {

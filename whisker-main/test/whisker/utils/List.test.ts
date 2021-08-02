@@ -20,7 +20,6 @@
 
 import {List} from "../../../src/whisker/utils/List";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
-import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
