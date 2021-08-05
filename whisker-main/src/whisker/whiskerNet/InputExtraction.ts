@@ -8,6 +8,8 @@ const twgl = require('twgl.js');
 
 export class InputExtraction {
 
+    private static whiteColorOffset = 0;
+
     /**
      * Extracts pieces of information from all Sprites of the given Scratch project.
      * @param vm the Scratch VM.
@@ -85,7 +87,7 @@ export class InputExtraction {
         spriteFeatures.set("Y-Position", y);
 
         // Collect direction of Sprite
-        spriteFeatures.set("Direction", target.direction/180);
+        spriteFeatures.set("Direction", target.direction / 180);
 
         // Collect additional information based on the behaviour of the target
         for (const blockId of Object.keys(target.blocks._blocks)) {
@@ -114,17 +116,15 @@ export class InputExtraction {
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                    const distances = this.calculateColorDistance(target, sensedColor);
-                    // We only want to add distances if we found the color within the scan radius.
-                    if (distances.dx && distances.dy) {
-                        spriteFeatures.set("DistanceTo" + sensedColor + "-X", distances.dx);
-                        spriteFeatures.set("DistanceTo" + sensedColor + "-Y", distances.dy);
+                    const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
+                    for (const direction in distances) {
+                        spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, distances[direction]);
                     }
                     break;
                 }
 
                 // Check if the target is capable of switching his costume.
-                    //TODO: Clump into [-1,1] range. Currently set in range [0,1]
+                //TODO: Clump into [-1,1] range. Currently set in range [0,1]
                 case "looks_switchcostumeto":
                     spriteFeatures.set("Costume", target.currentCostume / target.sprite.costumes_.length);
                     break;
@@ -175,20 +175,36 @@ export class InputExtraction {
     }
 
     /**
-     * Calculates the distance between a sprite and a sensed color using an ever increasing scan radius.
-     * @param sprite the source sprite
+     * For sensing colors, we simulate 6 rangefinder sensors which are placed on the bounds of our source Sprite.
+     * The rangefinders are mounted
+     *  - in front: 0 degree
+     *  - in front-left: -45 degree
+     *  - in front-right: 45 degree
+     *  - on the left: -90 degree
+     *  - on the right: 90 degree
+     *  - at the back: 180 degree
+     * of our sprite and scan for a color in a straight line with a given resolution. If they find a color, the
+     * distance to that color is calculated and normalized.
+     * @param target the source target
      * @param sensedColor the color we are searching for in hex representation
      */
-    private static calculateColorDistance(sprite: RenderedTarget, sensedColor: string): { dx: number, dy: number } {
+    private static calculateColorDistanceRangeFinder(target: RenderedTarget, sensedColor: string): Record<string, number> {
         // Gather the sensed color of the block and transform it in the [r,g,b] format
         const color3b = Cast.toRgbColorList(sensedColor);
 
+        // It feels like in the beginning the stage is not loaded and thus everything is blank white colored.
+        // Give Scratch/Whisker some time to display the stage by excluding white color for the first few rounds.
+        if (sensedColor === '#ffffff' && this.whiteColorOffset < 5) {
+            this.whiteColorOffset++;
+            return {};
+        }
+
         // Collect all touchable objects which might carry the sensed color
-        const renderer = sprite.runtime.renderer;
+        const renderer = target.runtime.renderer;
         const touchableObjects = [];
         for (let index = renderer._visibleDrawList.length - 1; index >= 0; index--) {
             const id = renderer._visibleDrawList[index];
-            if (id !== sprite.drawableID) {
+            if (id !== target.drawableID) {
                 const drawable = renderer._allDrawables[id];
                 touchableObjects.push({
                     id,
@@ -197,49 +213,55 @@ export class InputExtraction {
             }
         }
 
-        // Scan an ever increasing radius around the source sprite and check if we found an object carrying the
-        // sensed color. We stop if the radius is greater than maxRadius.
+        // Simulate 6 rangefinder sensors calculating the distance to the color in question if found.
         const point = twgl.v3.create();
         const color = new Uint8ClampedArray(4);
-        let r = sprite.size + 1;
-        let rPrev = 1;
-        let rIncrease = 1;
-        const maxRadius = Math.sqrt(
-            Math.pow((renderer._xRight - renderer._xLeft), 2) +
-            Math.pow((renderer._yTop - renderer._yBottom), 2)
-        );
-        while (r < maxRadius) {
-            const coordinates = [];
-            for (const x of [-r, r]) {
-                for (let y = -r; y <= r; y++) {
-                    coordinates.push([x, y]);
-                }
-            }
-            for (const y of [-r, r]) {
-                for (let x = -r; x <= r; x++) {
-                    coordinates.push([x, y]);
-                }
-            }
-            for (const c of coordinates) {
-                const x = c[0];
-                const y = c[1];
-                point[0] = sprite.x + x;
-                point[1] = sprite.y + y;
+
+        // Gather required constants
+        const stageWidth = target.renderer._nativeSize[0];
+        const stageHeight = target.renderer._nativeSize[1];
+        const normalizingFactor = Math.sqrt(Math.pow(stageWidth, 2) + Math.pow(stageHeight, 2));
+        const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
+        const rangeFinderDistances = {};
+        // Check for each rangeFinder if it can detect an angle. We have 6 sensors attached to our source Sprite:
+        // Front (0), Front-Left (-45), Front-Right (45), Left (-90), Right (90) and Back (180)
+        for (const angle of rangeFinderAngles) {
+            // Adjust the currently selected rangeFinder to the pointing direction of the source sprite.
+            const adjustedAngle = target.direction + angle;
+            const radians = adjustedAngle / 180 * Math.PI;
+            let found = false;
+
+            // We use a resolution of 5 which means we scan every fifth pixel in the given direction.
+            const resolution = 5;
+
+            // Fetch the sensor location to offset the first scanned point.
+            const sensorLocation = this.getSensorLocation(angle, target);
+            let x = sensorLocation.x + resolution;
+            let y = sensorLocation.y + resolution;
+
+            // As long as we are within the canvas boundaries and have not found the color, we keep searching
+            while (this.isPointWithinCanvas(x, y, stageWidth, stageHeight) && !found) {
+                // Get color of current point on the canvas
+                point[0] = x;
+                point[1] = y;
                 renderer.constructor.sampleColor3b(point, touchableObjects, color);
 
-                // Check if we found an object carrying the correct color.
+                // If we found the color we calculate its distance from our sensor and stop for the current sensor.
                 if (this.isColorMatching(color, color3b)) {
-                    return this.calculateDistancesSigned(sprite.x, point[0], sprite.y, point[1],
-                        sprite.renderer._nativeSize[0], sprite.renderer._nativeSize[1]);
+                    const distance = Math.sqrt(Math.pow(target.x - point[0], 2) + Math.pow(target.y - point[1], 2));
+                    const distanceNormalized = distance / normalizingFactor;
+                    found = true;
+                    const rangeFinder = this.assignRangeFinder(angle);
+                    rangeFinderDistances[rangeFinder] = distanceNormalized;
                 }
+
+                // Sin and Cos switched since the axis in which the sprite moves usually is tilted by 90 degree.
+                // This is a typical pattern in games.
+                x += Math.sin(radians) * resolution;
+                y += Math.cos(radians) * resolution;
             }
-            // Increase the scan radius in a recursive fashion.
-            rIncrease += rPrev;
-            rPrev = (rIncrease / 5);
-            r += (rIncrease / 2);
         }
-        // At this point we didn't find the color
-        return {dx: undefined, dy: undefined};
+        return rangeFinderDistances;
     }
 
     /**
@@ -251,6 +273,86 @@ export class InputExtraction {
         return (color1[0] & 0b11111000) === (color2[0] & 0b11111000) &&
             (color1[1] & 0b11111000) === (color2[1] & 0b11111000) &&
             (color1[2] & 0b11110000) === (color2[2] & 0b11110000);
+    }
+
+    /**
+     * Check if the given point (x/y) lies within the bounds of the Scratch Canvas/Stage.
+     * @param x x-coordinate of the point to check
+     * @param y y-coordinate of the point to check
+     * @param stageWidth width of the Scratch Canvas/Stage
+     * @param stageHeight height of the Scratch Canvas/Stage
+     * @returns boolean determining if the given point lies within the Scratch Canvas/Stage.
+     */
+    private static isPointWithinCanvas(x: number, y: number, stageWidth: number, stageHeight: number): boolean {
+        return Math.abs(x) < stageWidth / 2 && Math.abs(y) < stageHeight / 2;
+    }
+
+    /**
+     * Assings a given angel to the corresponding rangefinder position.
+     * @param angle the angle for which a range finder should be fetched.
+     * @returns string defining the position of the rangefinder.
+     */
+    private static assignRangeFinder(angle: number): string {
+        switch (angle) {
+            case 0:
+                return "Front";
+            case 45:
+                return "FrontRight";
+            case 90:
+                return "Right";
+            case 180:
+                return "Back";
+            case -90:
+                return "Left";
+            case -45:
+                return "FrontLeft";
+            default:
+                return "BadAngle";
+        }
+    }
+
+    /**
+     * Fetch the position of the sensor in coordinates. The rangefinder sensors are not mounted on top of the source
+     * Sprite as this might lead to a color being sensed on top of the source sprite itself. Thus, sensors are
+     * mounted on the edges of the bounding box.
+     * @param angle the angle defining which sensor's position we are looking for.
+     * @param target the source target onto which the sensors are mounted.
+     * @return {number, number} determining the position on the Canvas/Stage where the sensor is located.
+     */
+    private static getSensorLocation(angle: number, target: RenderedTarget): { x: number, y: number } {
+        const boundingBox = target.getBounds()
+        let x: number;
+        let y: number;
+        switch (angle) {
+            case 0:
+                x = boundingBox.right;
+                y = target.y;
+                break;
+            case 45:
+                x = boundingBox.right;
+                y = boundingBox.bottom;
+                break;
+            case 90:
+                x = target.x;
+                y = boundingBox.bottom;
+                break;
+            case 180:
+                x = boundingBox.left
+                y = target.y
+                break;
+            case -45:
+                x = boundingBox.right;
+                y = boundingBox.top;
+                break;
+            case -90:
+                x = target.x;
+                y = boundingBox.top;
+                break;
+            default:
+                x = target.x;
+                y = target.y;
+        }
+        return {x, y};
     }
 
     /**
