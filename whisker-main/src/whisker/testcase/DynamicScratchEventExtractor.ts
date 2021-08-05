@@ -24,31 +24,46 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
+import {EventFilter} from "scratch-analysis/src/block-filter";
+
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
 
-    constructor (vm: VirtualMachine) {
+    constructor(vm: VirtualMachine) {
         super(vm);
     }
 
     public extractEvents(vm: VirtualMachine): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
+        const executingScripts = new List<string>();
+
+        // Check all blocks within scripts currently executing
+        for (const t of vm.runtime.threads) {
+            const target = t.target;
+            let block = target.blocks.getBlock(t.topBlock);
+            // For the reason of not adding hatEvents of already active scripts, skip hatEvents and defer the handling
+            // of hatEvents to the following loop where we know which scripts are indeed currently already active.
+            if (EventFilter.hatEvent(block)) {
+                block = target.blocks.getBlock(block.next);
+            }
+            // Sometimes we encounter undefined blocks here?
+            if (block) {
+                executingScripts.add(target.blocks.getTopLevelScript(t.topBlock));
+                this.traverseBlocks(target, block, eventList);
+            }
+        }
 
         // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
         // of the procedure definition script.
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.sprite.blocks.getScripts()) {
-                eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
+                if (executingScripts.contains(scriptId)) {
+                    //console.log(`Not extracting events from executing script ${scriptId}`);
+                } else {
+                    //console.log(`Extracting events from non-executing script ${scriptId}`);
+                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
+                }
             }
-        }
-
-        // Check all blocks within scripts currently executing
-        for (const t of vm.runtime.threads) {
-            const target = t.target;
-            const block = target.blocks.getBlock(t.topBlock);
-            // Sometimes we encounter undefined blocks here?
-            if (block)
-                this.traverseBlocks(target, block, eventList);
         }
 
         eventList.add(new WaitEvent())
