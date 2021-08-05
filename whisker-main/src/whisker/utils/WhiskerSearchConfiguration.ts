@@ -58,6 +58,7 @@ import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/Variab
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
+import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 
 class ConfigException implements Error {
     message: string;
@@ -224,6 +225,9 @@ export class WhiskerSearchConfiguration {
                 } = this.dict;
                 return new BiasedVariableLengthMutation(min, max, chromosomeLength, gaussianMutationPower);
             }
+            case 'biasedVariablelengthConstrained':
+                return new BiasedVariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
+                    this.dict['chromosome-length'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(this.dict['mutation'])
             case 'integerlist':

@@ -110,6 +110,7 @@ const EventFilter = {
         block.opcode === 'event_whenstageclicked' ||
         block.opcode === 'event_whenbackdropswitchesto' ||
         block.opcode === 'event_whengreaterthan' ||
+        block.opcode === 'event_whenbroadcastreceived' ||
         block.opcode === 'event_whenkeypressed',
 
     broadcastSend: block =>
@@ -142,7 +143,23 @@ const EventFilter = {
 const ControlFilter = {
     controlBlock: block =>
         block.opcode.startsWith('control_') &&
-        !block.opcode.endsWith('_menu')
+        !block.opcode.endsWith('_menu'),
+
+    singleBranch: block =>
+        block.opcode === 'control_if' ||
+        block.opcode === 'control_repeat' ||
+        block.opcode === 'control_repeat_until' ||
+        block.opcode === 'control_forever' ||
+        block.opcode === 'control_wait_until',
+
+    doubleBranch: block =>
+        block.opcode === 'control_if_else',
+
+    branch: block =>
+        ControlFilter.singleBranch(block) || ControlFilter.doubleBranch(block),
+
+    hatBlock: block =>
+        EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone'
 };
 
 const SensingFilter = {
