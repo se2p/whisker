@@ -25,9 +25,9 @@ function main() {
     echo "Building docker image of Whisker with tag ${TAG}"
     run_docker_cmd image build . -t "${TAG}"
 
-    readonly tar_file="${TAG}.tar"
+    readonly tar_file="${TAG}.tar.gz"
     echo "Saving image to ${tar_file}"
-    run_docker_cmd save "${TAG}" -o "${tar_file}"
+    run_docker_cmd save "${TAG}" | gzip > "${tar_file}"
 }
 
 main
