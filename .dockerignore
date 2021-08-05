@@ -1,25 +1,45 @@
 ################################################################################
-# Excludes files not relevant to building a Docker container for Whisker.
+# Excludes files not relevant to building a Docker image for Whisker.
 ################################################################################
 
 # Ignore everyting by default. This means you explicitly have to whitelist
 # needed files and folders.
 *
 
-# Required to install dependencies via yarn.
-!package.json
-!yarn.lock
-
-# Whitelist the Whisker source codes...
+# Whitelist Whisker configuration files.
 !config
-!scratch-analysis
-!servant
-!tsconfig.json
-!whisker-docker.sh
-!whisker-main
-!whisker-web
+config/*
+!config/*.json
 
-# ... but ignore all artifact folders.
-**/dist
-**/node_modules
+# Whitelist source codes for scratch-analysis.
+!scratch-analysis
+scratch-analysis/*
+!scratch-analysis/*.js
+!scratch-analysis/package.json
+!scratch-analysis/src
+
+# Whitelist source codes for servant.
+!servant
+servant/*
+!servant/*.js
+!servant/*.json
+!servant/*.sh
+
+# Whitelist source codes for whisker-main.
+!whisker-main
+whisker-main/*
+!whisker-main/src
+!whisker-main/*.js
+!whisker-main/*.json
+
+# Whitelist source codes for whisker-web.
+!whisker-web
+whisker-web/*
+!whisker-web/src
+!whisker-web/*.js
+!whisker-web/*.json
+
+# Whitelist files required to build Whisker.
+!package.json
+!tsconfig.json
 
