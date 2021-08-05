@@ -25,9 +25,13 @@ function main() {
     echo "Building docker image of Whisker with tag ${TAG}"
     run_docker_cmd image build . -t "${TAG}"
 
-    readonly tar_file="${TAG}.tar.gz"
-    echo "Saving image to ${tar_file}"
-    run_docker_cmd save "${TAG}" | gzip > "${tar_file}"
+    readonly tar_file="${TAG}.tar"
+    echo "Saving image to ${tar_file}.gz"
+    # Note: according to the docker documentation this command should be used:
+    #   docker save tag | gzip > tarfile.tar.gz
+    # But this leads to invalid TAR header errors when attempting to load the
+    # tar file with docker again. In contrast, this command does work:
+    run_docker_cmd save "${TAG}" -o "${tar_file}" && gzip "${tar_file}"
 }
 
 main
