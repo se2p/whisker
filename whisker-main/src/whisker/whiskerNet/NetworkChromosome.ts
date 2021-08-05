@@ -16,6 +16,9 @@ import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
+import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import {Container} from "../utils/Container";
+import {NetworkChromosomeGeneratorFullyConnected} from "./NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
 
 export class NetworkChromosome extends Chromosome {
 
@@ -249,7 +252,9 @@ export class NetworkChromosome extends Chromosome {
                     spriteNodes.set(featureKey, iNode);
                     this.allNodes.add(iNode);
                     // By Chance we connect the new Node to the network.
-                    if (this._random.nextDouble() < 0.5) {
+                    if (this._random.nextDouble() < 0.5 ||
+                        Container.config.getChromosomeGenerator() instanceof  NetworkChromosomeGeneratorFullyConnected)
+                    {
                         this.connectInputNode(iNode);
                     }
                 })
@@ -265,7 +270,8 @@ export class NetworkChromosome extends Chromosome {
                         savedSpriteMap.set(featureKey, iNode);
                         this.allNodes.add(iNode);
                         // By Chance we connect the new Node to the network.
-                        if (this._random.nextDouble() < 0.5) {
+                        if (this._random.nextDouble() < 0.5 ||
+                            Container.config.getChromosomeGenerator() instanceof NetworkChromosomeGeneratorFullyConnected) {
                             this.connectInputNode(iNode);
                         }
                     }
