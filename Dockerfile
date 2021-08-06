@@ -82,19 +82,14 @@ RUN apt update \
 
 # (c) Copy manifest and source files (as governed by .dockerignore), install
 #     dependencies and build Whisker. This layer is only rebuilt when a manifest
-#     or source file changes.
+#     or source file changes. Finally, remove build dependencies from the
+#     node_modules folder, keeping only the ones necessary for execution.
 FROM install as build
 WORKDIR /whisker-build/
 COPY ./ ./
 RUN yarn install \
-    && yarn build
-
-# https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
-ENV NODE_ENV=production
-
-# Remove build dependencies from the node_modules folder, keeping only the ones
-# necessary for execution.
-RUN yarn install
+    && yarn build \
+    && yarn install --production
 
 
 #-------------------------------------------------------------------------------
@@ -104,6 +99,9 @@ RUN yarn install
 # We use the base image again to drop build dependencies (installed via `apt`)
 # and the yarn build cache from the final image.
 FROM base as execute
+
+# https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
+ENV NODE_ENV=production
 
 # Copy the build of Whisker from the build layer to the execution layer.
 # (devDependencies have already been excluded from the node_modules folder.)
