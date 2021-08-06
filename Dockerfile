@@ -89,31 +89,24 @@ COPY ./ ./
 RUN yarn install \
     && yarn build
 
-# TODO: In the future, we might want to add an extra layer where we remove build
-#       dependencies from the node_modules folder. To this, NODE_ENV should be
-#       set to production (as it's currently done in the execution stage). Then,
-#       we have two options:
-#       (1) Running `npm prune` removes all build dependencies, keeping only
-#           the ones for production., or by deleting the
-#       (2) Deleting the node_modules folder altogether and running `yarn
-#           install` again, installing only production dependencies.
-#           https://github.com/yarnpkg/yarn/issues/6373#issuecomment-758508094
-#       However, at the moment, this removes too many dependencies, and
-#       Puppeteer won't start. Perhaps, some dependencies are mislabeled as
-#       devDependencies in package.json?
+# https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
+ENV NODE_ENV=production
+
+# Remove build dependencies from the node_modules folder, keeping only the ones
+# necessary for execution.
+RUN yarn install
+
 
 #-------------------------------------------------------------------------------
 # (2) Execution Stage
 #-------------------------------------------------------------------------------
 
-# We use the base image again to drop build dependencies and the yarn build
-# cache from the final image.
+# We use the base image again to drop build dependencies (installed via `apt`)
+# and the yarn build cache from the final image.
 FROM base as execute
 
-# https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
-ENV NODE_ENV=production
-
 # Copy the build of Whisker from the build layer to the execution layer.
+# (devDependencies have already been excluded from the node_modules folder.)
 COPY --from=build /whisker-build /whisker
 
 # Set the image's main command, allowing the image to be run as though it was
