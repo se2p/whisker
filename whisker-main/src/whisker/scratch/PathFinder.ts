@@ -58,6 +58,7 @@ export class PathFinder {
                     player.setXY(position.x, position.y, true);
                     await new WaitEvent().apply();
                 }
+                console.log(`Found path: `, path)
                 return path;
             }
             // Keep searching if we haven't found our target yet.
@@ -89,6 +90,7 @@ export class PathFinder {
             openSet.sort((a, b) => a.totalCost - b.totalCost);
         }
         // At this point we were not able to find a path.
+        console.log(`Could not find a path`)
         return undefined;
     }
 
