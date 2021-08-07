@@ -87,6 +87,16 @@ describe("List", () => {
         expect(list.size()).toBe(5);
     });
 
+    test("Range function stepSize of 1", () =>{
+        const rangeList = List.range(0, 10, 1);
+        expect(rangeList.getElements().reduce((a, b) => a + b, 0)).toBe(45)
+    })
+
+    test("Range function stepSize of 100", () =>{
+        const rangeList = List.range(0, 850, 100);
+        expect(rangeList.getElements().reduce((a, b) => a + b, 0)).toBe(3600)
+    })
+
     test("Get element of list", () => {
         expect(list.get(0)).toBe(1);
     });

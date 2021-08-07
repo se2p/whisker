@@ -3,7 +3,8 @@ import {NetworkChromosome} from "../NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {NetworkExecutor} from "../NetworkExecutor";
-import {Trace} from "scratch-vm/src/engine/tracing";
+import {PathFinder} from "../../scratch/PathFinder";
+import {ScratchPosition} from "../../scratch/ScratchPosition";
 
 export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
@@ -13,9 +14,9 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     private readonly player: RenderedTarget;
 
     /**
-     * The starting position of the player.
+     * The starting position of the player on the Canvas.
      */
-    private readonly playerStart: { x: number, y: number };
+    private readonly playerStart: ScratchPosition;
 
     /**
      * The target which has to be reached by the player sprite.
@@ -24,30 +25,37 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     private readonly target: string;
 
     /**
-     * A weight determining how big the influence of the traveled distance should be within the distance calculation
-     * This may help overcoming local optima.
-     * Set it to 0 to disable the travelled distance within the fitness calculation.
+     * Colors which are not allowed to be touched during the playthrough
      */
-    private readonly travelDistanceWeight: number;
+    private readonly colorObstacles: string[];
+
+    /**
+     * Sprites which are not allowed to be touched during the playthrough.
+     */
+    private readonly spriteObstacles: string[];
+
+    /**
+     * A valid path from the starting point to the target point.
+     */
+    private _pathToTarget: ScratchPosition[];
 
     /**
      * Constructs a new TargetFitness object.
      * @param player the player who has to reach the goal sprite.
      * @param target the name of the target which has to be reached by the player sprite.
-     * @param travelDistanceWeight the weight of the travelDistance within the fitness calculation.
+     * @param colorObstacles colors which are not allowed to be touched during the playthrough.
+     * @param spriteObstacles sprites which are not allowed to be touched during the playthrough.
      */
-    constructor(player: string, target: string, travelDistanceWeight: number) {
-        for (const runtimeTargets of Container.vm.runtime.targets) {
-            if (runtimeTargets.sprite.name === player) {
-                this.player = runtimeTargets;
-            }
-        }
+    constructor(player: string, target: string, colorObstacles: string[],
+                spriteObstacles: string[]) {
+        this.player = Container.vmWrapper.getTargetOfSprite(player);
         if (!this.player) {
             throw new Error("Player Sprite not found. Please check your config file.");
         }
-        this.playerStart = {x: this.player.x, y: this.player.y}
         this.target = target;
-        this.travelDistanceWeight = travelDistanceWeight;
+        this.playerStart = new ScratchPosition(this.player.x, this.player.y);
+        this.colorObstacles = colorObstacles;
+        this.spriteObstacles = spriteObstacles;
     }
 
     /**
@@ -58,6 +66,14 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
         await executor.execute(network);
+
+        // If we have no valid path to the target yet, try to find one. Sometimes we need to let some time pass within
+        // a game for a valid path to become available.
+        if (!this._pathToTarget) {
+            this._pathToTarget = await PathFinder.aStarPlayerToColor(this.player, this.target, 5,
+                this.colorObstacles, this.spriteObstacles);
+        }
+
         const fitness = this.getTargetDistanceFitness(network);
         executor.resetState();
         network.networkFitness = fitness;
@@ -87,66 +103,23 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      * @return Returns the targetFitness value
      */
     private getTargetDistanceFitness(network: NetworkChromosome): number {
-        // We want to maximize fitness, hence subtract the distance from the maximum stage distance of 600.
-        let fitnessDistance = 600.01 - this.extractDistanceToTarget(network.trace.blockTraces);
-        // Reward the player according to the distances travelled. This might help overcoming local optima.
         const playerEnd = {
             x: network.inputNodes.get(this.player.sprite.name).get("X-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().width / 2),
             y: network.inputNodes.get(this.player.sprite.name).get("Y-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().height / 2)
         }
-        fitnessDistance += this.travelDistanceWeight * this.distanceTravelled(playerEnd);
-        return fitnessDistance
-    }
-
-    /**
-     * Extracts the distance to the target.
-     * @param traces the traces which contain the distance to the targeted sprite/color
-     * @return Returns the distance to the target sprite/color
-     */
-    private extractDistanceToTarget(traces: [Trace]): number {
-        let ifBlock;
-        // Search for the ifBlock which in term contains the distance to the target sprite/color.
-        // If the target name starts with an '#' we are searching for a color
-        if (this.target.startsWith("#")) {
-            for (const blockId of Object.keys(this.player.blocks._blocks)) {
-                const block = this.player.blocks.getBlock(blockId);
-                if (this.player.blocks.getOpcode(block) === 'sensing_touchingcolor') {
-                    const colorBlock = this.player.blocks.getBlock(block.inputs.COLOR.block);
-                    if (colorBlock.fields.COLOUR.value === this.target) {
-                        ifBlock = block.parent;
-                        break;
-                    }
-                }
-            }
+        const playerEndPosition = new ScratchPosition(playerEnd.x, playerEnd.y)
+        // If we've found a valid path from start to the target. The fitness is determined by the index of the
+        // closest waypoint with the target representing the last waypoint.
+        if (this._pathToTarget) {
+            const distances = this._pathToTarget.map(waypoint => waypoint.distanceTo(playerEndPosition));
+            // Offset by one to give a poor solution an advantage over no solution at all.
+            return distances.indexOf(Math.min(...distances));
         }
-        // Otherwise if the target name does not start with an '#' we are searching for a sprite.
+        // If we haven't found a valid path yet, assign poor fitness.
         else {
-            for (const blockId of Object.keys(this.player.blocks._blocks)) {
-                const block = this.player.blocks.getBlock(blockId);
-                if (this.player.blocks.getOpcode(block) === 'sensing_touchingobjectmenu' &&
-                    block.fields.TOUCHINGOBJECTMENU.value === this.target) {
-                    ifBlock = this.player.blocks.getBlock(block.parent).parent;
-                    break;
-                }
-            }
+            return 0.1;
         }
-
-        if (!ifBlock) {
-            throw new Error("Target sprite/color not found. Please check your config file.")
-        }
-        return traces[ifBlock].distances[0][0];
-    }
-
-    /**
-     * Calculates the travel distance of the player. The travel distance influences the final fitness value based on
-     * a predefined weight. The travel distance can be used to overcome local optima.
-     * @param playerEnd the final position of the player after executing the project.
-     * @return Returns the travelled distance of the player.
-     */
-    private distanceTravelled(playerEnd: { x: number, y: number }) {
-        return Math.sqrt(Math.pow(this.playerStart.x - playerEnd.x, 2) +
-            Math.pow(this.playerStart.y - playerEnd.y, 2));
     }
 }

@@ -82,7 +82,7 @@ export class List<T> implements Iterable<T> {
      */
     replace(oldElement: T, newElement: T): boolean {
         const index = this._items.findIndex(element => element === oldElement);
-        if(index === -1)
+        if (index === -1)
             return false;
         this.replaceAt(newElement, index);
         return true;
@@ -95,7 +95,7 @@ export class List<T> implements Iterable<T> {
      * @return Returns true if the operation was successful and false otherwise.
      */
     replaceAt(newElement: T, position: number): boolean {
-        if(position < 0 || position > this.size() - 1){
+        if (position < 0 || position > this.size() - 1) {
             return false;
         }
         this._items[position] = newElement;
@@ -116,6 +116,18 @@ export class List<T> implements Iterable<T> {
      */
     addList(other: List<T>): void {
         this._items = this._items.concat(other._items) // TODO: Nicer way to do this?
+    }
+
+    /**
+     * Creates a List containing elements of the given range with the specified step size.
+     * @param start starting value inclusive
+     * @param stop stopping value exclusive
+     * @param step stepSize
+     * @returns List<number> containing elements from start to stop with specified step size.
+     */
+    static range(start: number, stop: number, step = 1): List<number> {
+        const items = Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
+        return new List(items);
     }
 
     /**

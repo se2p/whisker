@@ -12,10 +12,8 @@ import {NetworkChromosome} from "./NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {ParameterTypes} from "../testcase/events/ParameterTypes";
 import Runtime from "scratch-vm/src/engine/runtime"
-import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
 export class NetworkExecutor {

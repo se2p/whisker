@@ -332,13 +332,13 @@ export class WhiskerSearchConfiguration {
             case 'sparseNetwork': {
                 const eventExtractor = this.getEventExtractor();
                 return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm),
+                    InputExtraction.extractSpriteInfo(Container.vm, true), eventExtractor.extractEvents(Container.vm),
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm));
+                    InputExtraction.extractSpriteInfo(Container.vm, true), eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
             default:
@@ -371,7 +371,7 @@ export class WhiskerSearchConfiguration {
             return new SurviveFitness();
         else if (networkFitnessDef === 'target')
             return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
-                fitnessFunction['travelWeight']);
+                fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
         else if (networkFitnessDef === 'novelty') {
             return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
                 fitnessFunction['archiveThreshold']);

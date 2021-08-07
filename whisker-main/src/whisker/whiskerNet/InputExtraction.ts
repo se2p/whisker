@@ -2,6 +2,8 @@ import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {List} from "../utils/List";
+import {ScratchHelperFunctions} from "../scratch/ScratchHelperFunctions";
+import {ScratchPosition} from "../scratch/ScratchPosition";
 
 const twgl = require('twgl.js');
 
@@ -13,16 +15,17 @@ export class InputExtraction {
     /**
      * Extracts pieces of information from all Sprites of the given Scratch project.
      * @param vm the Scratch VM.
+     * @param generator determines if we extract spriteInformation for the generator
      * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
-    static extractSpriteInfo(vm: VirtualMachine): Map<string, Map<string, number>> {
+    static extractSpriteInfo(vm: VirtualMachine, generator=false): Map<string, Map<string, number>> {
         // The position of a clone in the cloneMap determines its unique identifier.
         const cloneMap = this.assignCloneIds(vm);
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
         for (const target of vm.runtime.targets) {
             if (!target.isStage && target.hasOwnProperty('blocks')) {
-                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vm);
+                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vm, generator);
                 if (target.isOriginal) {
                     spriteMap.set(target.sprite.name, spriteFeatures);
                 } else {
@@ -66,10 +69,12 @@ export class InputExtraction {
      * @param target the RenderTarget (-> Sprite) from which information is gathered
      * @param vm the Scratch-VM of the given project
      * @param cloneMap The position of a clone in the cloneMap determines its unique identifier.
+     * @param generator Determines if the function was called from a chromosome generator. When called by the
+     * generator we add features which might not be informative yet. This helps us to avoid over-speciation.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
     private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, List<number>>,
-                                          vm: VirtualMachine): Map<string, number> {
+                                          vm: VirtualMachine, generator = false): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // stageWidth and stageHeight used for normalisation
         const stageWidth = target.renderer._nativeSize[0];
@@ -116,9 +121,20 @@ export class InputExtraction {
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                    const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
-                    for (const direction in distances) {
-                        spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, distances[direction]);
+                    if(generator){
+                        // If called by the generator set up the rangeFinder sensor nodes.
+                        const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
+                        for(const angle of rangeFinderAngles){
+                            const direction = this.assignRangeFinder(angle);
+                            spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, 0);
+                        }
+                    }
+                    else {
+                        // If not called by the generator we only active nodes whose rangeFinder sensed something.
+                        const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
+                        for (const direction in distances) {
+                            spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, distances[direction]);
+                        }
                     }
                     break;
                 }
@@ -240,14 +256,14 @@ export class InputExtraction {
             let y = sensorLocation.y + resolution;
 
             // As long as we are within the canvas boundaries and have not found the color, we keep searching
-            while (this.isPointWithinCanvas(x, y, stageWidth, stageHeight) && !found) {
+            while (ScratchHelperFunctions.isPointWithinCanvas(new ScratchPosition(x,y)) && !found) {
                 // Get color of current point on the canvas
                 point[0] = x;
                 point[1] = y;
                 renderer.constructor.sampleColor3b(point, touchableObjects, color);
 
                 // If we found the color we calculate its distance from our sensor and stop for the current sensor.
-                if (this.isColorMatching(color, color3b)) {
+                if (ScratchHelperFunctions.isColorMatching(color, color3b)) {
                     const distance = Math.sqrt(Math.pow(target.x - point[0], 2) + Math.pow(target.y - point[1], 2));
                     const distanceNormalized = distance / normalizingFactor;
                     found = true;
@@ -262,29 +278,6 @@ export class InputExtraction {
             }
         }
         return rangeFinderDistances;
-    }
-
-    /**
-     * Check if color1 matches color2.
-     * @param color1 the first color
-     * @param color2 the second color
-     */
-    private static isColorMatching(color1: Uint8ClampedArray, color2: Uint8ClampedArray): boolean {
-        return (color1[0] & 0b11111000) === (color2[0] & 0b11111000) &&
-            (color1[1] & 0b11111000) === (color2[1] & 0b11111000) &&
-            (color1[2] & 0b11110000) === (color2[2] & 0b11110000);
-    }
-
-    /**
-     * Check if the given point (x/y) lies within the bounds of the Scratch Canvas/Stage.
-     * @param x x-coordinate of the point to check
-     * @param y y-coordinate of the point to check
-     * @param stageWidth width of the Scratch Canvas/Stage
-     * @param stageHeight height of the Scratch Canvas/Stage
-     * @returns boolean determining if the given point lies within the Scratch Canvas/Stage.
-     */
-    private static isPointWithinCanvas(x: number, y: number, stageWidth: number, stageHeight: number): boolean {
-        return Math.abs(x) < stageWidth / 2 && Math.abs(y) < stageHeight / 2;
     }
 
     /**

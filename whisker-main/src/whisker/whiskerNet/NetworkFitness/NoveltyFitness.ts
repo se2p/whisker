@@ -3,6 +3,8 @@ import {NetworkChromosome} from "../NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {NetworkExecutor} from "../NetworkExecutor";
 
+// TODO: Probably better to make this an interface which can be plugged into other NetworkFitnessFunctions. A weight
+//  then determines how much influence the novelty/objective has.
 export abstract class NoveltyFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
