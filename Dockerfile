@@ -4,6 +4,7 @@
 ################################################################################
 # Dockerfile to build a headless image of Whisker.
 # https://docs.docker.com/language/nodejs/build-images/#create-a-dockerfile-for-nodejs
+# https://nodejs.org/en/docs/guides/nodejs-docker-webapp/#creating-a-dockerfile
 #
 # This Dockerfile is organized as a multi-stage build, which enables us to
 # reduce the size of the final image while still allowing us to use intermediate
@@ -64,7 +65,10 @@ RUN apt update \
         libgtk-3-0 \
         libasound2 \
         libxshmfence1 \
-        x11-utils
+        x11-utils \
+    && apt autoremove -y \
+    && rm -rf /local/share/icons \
+    && rm -rf /usr/local/lib/node_modules
 
 # (b) Install packages only required to build Whisker, not to run it.
 #     We need git because we have a dependency to another git repository
@@ -78,37 +82,29 @@ RUN apt update \
 
 # (c) Copy manifest and source files (as governed by .dockerignore), install
 #     dependencies and build Whisker. This layer is only rebuilt when a manifest
-#     or source file changes.
+#     or source file changes. Finally, remove build dependencies from the
+#     node_modules folder, keeping only the ones necessary for execution.
 FROM install as build
 WORKDIR /whisker-build/
 COPY ./ ./
 RUN yarn install \
-    && yarn build
+    && yarn build \
+    && yarn install --production
 
-# TODO: In the future, we might want to add an extra layer where we remove build
-#       dependencies from the node_modules folder. To this, NODE_ENV should be
-#       set to production (as it's currently done in the execution stage). Then,
-#       we have two options:
-#       (1) Running `npm prune` removes all build dependencies, keeping only
-#           the ones for production., or by deleting the
-#       (2) Deleting the node_modules folder altogether and running `yarn
-#           install` again, installing only production dependencies.
-#           https://github.com/yarnpkg/yarn/issues/6373#issuecomment-758508094
-#       However, at the moment, this removes too many dependencies, and
-#       Puppeteer won't start. Perhaps, some dependencies are mislabeled as
-#       devDependencies in package.json?
 
 #-------------------------------------------------------------------------------
 # (2) Execution Stage
 #-------------------------------------------------------------------------------
 
-# We use the base image again to drop build dependencies from the final image.
+# We use the base image again to drop build dependencies (installed via `apt`)
+# and the yarn build cache from the final image.
 FROM base as execute
 
 # https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
 ENV NODE_ENV=production
 
 # Copy the build of Whisker from the build layer to the execution layer.
+# (devDependencies have already been excluded from the node_modules folder.)
 COPY --from=build /whisker-build /whisker
 
 # Set the image's main command, allowing the image to be run as though it was
