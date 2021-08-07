@@ -80,7 +80,7 @@ RUN apt update \
         ca-certificates \
         git
 
-# (c) Copy manifest files and install dependencies  This layer is only rebuilt
+# (c) Copy manifest files and install dependencies. This layer is only rebuilt
 #     when a manifest file changes.
 #     Unfortunately, we need a separate COPY command for every file because
 #     docker flattens the subdirectory structure when using wildcards.
