@@ -12,7 +12,7 @@
 #
 # We have the following stages:
 # (1) Build stage:
-#     (a) Install base image
+#     (a) Prepare base image
 #     (b) Install or update build/library dependencies
 #     (c) Build Whisker from its sources and dependencies
 # (2) Execution stage:
@@ -74,21 +74,30 @@ RUN apt update \
 #     We need git because we have a dependency to another git repository
 #     (the Scratch VM), and ca-certificates because otherwise git cannot verfiy
 #     the server certificate.
-FROM base as install
+FROM base as build
 RUN apt update \
     && apt install --no-install-recommends --no-install-suggests -y \
         ca-certificates \
         git
 
-# (c) Copy manifest and source files (as governed by .dockerignore), install
-#     dependencies and build Whisker. This layer is only rebuilt when a manifest
-#     or source file changes. Finally, remove build dependencies from the
-#     node_modules folder, keeping only the ones necessary for execution.
-FROM install as build
+# (c) Copy manifest files and install dependencies  This layer is only rebuilt
+#     when a manifest file changes.
+#     Unfortunately, we need a separate COPY command for every file because
+#     docker flattens the subdirectory structure when using wildcards.
 WORKDIR /whisker-build/
+COPY package.json ./
+COPY scratch-analysis/package.json ./scratch-analysis/
+COPY servant/package.json ./servant/
+COPY whisker-web/package.json ./whisker-web/
+COPY whisker-main/package.json ./whisker-main/
+RUN yarn install
+
+# (d) Copy source files (as governed by .dockerignore), build Whisker and drop
+#     build dependencies from the node_modules folder, keeping only the ones
+#     necessary for execution. This layer is only rebuilt when a source file
+#     changes.
 COPY ./ ./
-RUN yarn install \
-    && yarn build \
+RUN yarn build \
     && yarn install --production
 
 
