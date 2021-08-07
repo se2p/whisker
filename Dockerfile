@@ -67,7 +67,7 @@ RUN apt update \
         libxshmfence1 \
         x11-utils \
     && apt autoremove -y \
-    && rm -rf /local/share/icons \
+    && rm -rf /usr/share/icons \
     && rm -rf /usr/local/lib/node_modules
 
 # (b) Install packages only required to build Whisker, not to run it.
