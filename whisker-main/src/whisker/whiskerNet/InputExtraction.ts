@@ -1,12 +1,8 @@
-import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {List} from "../utils/List";
 import {ScratchHelperFunctions} from "../scratch/ScratchHelperFunctions";
-import {ScratchPosition} from "../scratch/ScratchPosition";
-import {DragSpriteEvent} from "../testcase/events/DragSpriteEvent";
-import {Container} from "../utils/Container";
-import {WaitEvent} from "../testcase/events/WaitEvent";
+import VMWrapper from "../../vm/vm-wrapper"
 
 const twgl = require('twgl.js');
 
@@ -17,18 +13,18 @@ export class InputExtraction {
 
     /**
      * Extracts pieces of information from all Sprites of the given Scratch project.
-     * @param vm the Scratch VM.
+     * @param vmWrapper the Scratch VM-Wrapper.
      * @param generator determines if we extract spriteInformation for the generator
      * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
-    static extractSpriteInfo(vm: VirtualMachine, generator = false): Map<string, Map<string, number>> {
+    static extractSpriteInfo(vmWrapper: VMWrapper, generator = false): Map<string, Map<string, number>> {
         // The position of a clone in the cloneMap determines its unique identifier.
-        const cloneMap = this.assignCloneIds(vm);
+        const cloneMap = this.assignCloneIds(vmWrapper);
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
-        for (const target of vm.runtime.targets) {
+        for (const target of vmWrapper.vm.runtime.targets) {
             if (!target.isStage && target.hasOwnProperty('blocks')) {
-                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vm, generator);
+                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vmWrapper, generator);
                 if (target.isOriginal) {
                     spriteMap.set(target.sprite.name, spriteFeatures);
                 } else {
@@ -44,12 +40,12 @@ export class InputExtraction {
     /**
      * Assign each clone an ID which is determined by its distance to the origin on the stage
      * This sorting criterion is chosen arbitrarily but enables us to uniquely identify clones.
-     * @param vm the VM of the given Scratch-Project
+     * @param vmWrapper the VM-Wrapper of the given Scratch-Project
      * @return A map mapping each original sprite having clones to a list of its clone distances.
      */
-    private static assignCloneIds(vm: VirtualMachine): Map<string, List<number>> {
+    private static assignCloneIds(vmWrapper: VMWrapper): Map<string, List<number>> {
         const cloneMap = new Map<string, List<number>>();
-        for (const target of vm.runtime.targets) {
+        for (const target of vmWrapper.vm.runtime.targets) {
             // Get the original and traverse through the clones
             if (target.isOriginal) {
                 const cloneDistances = new List<number>();
@@ -70,32 +66,28 @@ export class InputExtraction {
     /**
      * Extracts the pieces of information of the given target and normalises in the range [-1, 1]
      * @param target the RenderTarget (-> Sprite) from which information is gathered
-     * @param vm the Scratch-VM of the given project
+     * @param vmWrapper the Scratch VM-Wrapper of the given project
      * @param cloneMap The position of a clone in the cloneMap determines its unique identifier.
      * @param generator Determines if the function was called from a chromosome generator. When called by the
      * generator we add features which might not be informative yet. This helps us to avoid over-speciation.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
     private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, List<number>>,
-                                          vm: VirtualMachine, generator = false): Map<string, number> {
+                                          vmWrapper: VMWrapper, generator = false): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
-        // stageWidth and stageHeight used for normalisation
-        const stageWidth = target.renderer._nativeSize[0];
-        const stageHeight = target.renderer._nativeSize[1];
+        const stageBounds = vmWrapper.getStageSize();
+
 
         // Collect Coordinates and normalize
-        let x = target.x / (stageWidth / 2.);
-        let y = target.y / (stageHeight / 2.);
-
-        // Clamp within the stage
-        x = Math.max(-1, Math.min(x, 1))
-        y = Math.max(-1, Math.min(y, 1))
-
+        const spritePosition = ScratchHelperFunctions.getPositionOfTarget(target);
+        const x = this.mapValueIntoRange(spritePosition.x, -stageBounds.width / 2, stageBounds.width / 2);
+        const y = this.mapValueIntoRange(spritePosition.y, -stageBounds.height / 2, stageBounds.height / 2);
         spriteFeatures.set("X-Position", x);
         spriteFeatures.set("Y-Position", y);
 
         // Collect direction of Sprite
-        spriteFeatures.set("Direction", target.direction / 180);
+        const direction = this.mapValueIntoRange(target.direction, -180, 180);
+        spriteFeatures.set("Direction", direction);
 
         // Collect additional information based on the behaviour of the target
         for (const blockId of Object.keys(target.blocks._blocks)) {
@@ -104,10 +96,10 @@ export class InputExtraction {
 
                 // Check if the target interacts with another target.
                 case "sensing_touchingobjectmenu":
-                    for (const sensingTarget of vm.runtime.targets) {
+                    for (const sensingTarget of vmWrapper.vm.runtime.targets) {
                         if (sensingTarget.sprite.name === block.fields.TOUCHINGOBJECTMENU.value) {
                             const distances = this.calculateDistancesSigned(target.x, sensingTarget.x, target.y, sensingTarget.y,
-                                stageWidth, stageHeight);
+                                stageBounds.width, stageBounds.height);
                             if (target.isOriginal) {
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-X", distances.dx);
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-Y", distances.dy);
@@ -142,10 +134,13 @@ export class InputExtraction {
                 }
 
                 // Check if the target is capable of switching his costume.
-                //TODO: Clump into [-1,1] range. Currently set in range [0,1]
-                case "looks_switchcostumeto":
-                    spriteFeatures.set("Costume", target.currentCostume / target.sprite.costumes_.length);
+                case "looks_switchcostumeto": {
+                    const costumeValue = target.currentCostume;
+                    const numberOfCostumes = target.sprite.costumes._length;
+                    const costumeNormalized = this.mapValueIntoRange(costumeValue, 0, numberOfCostumes - 1);
+                    spriteFeatures.set("Costume", costumeNormalized);
                     break;
+                }
             }
         }
         return spriteFeatures;
@@ -313,6 +308,20 @@ export class InputExtraction {
      */
     private static distanceFromOrigin(sprite: RenderedTarget): number {
         return Math.sqrt(Math.pow(sprite.x, 2) + Math.pow(sprite.y, 2));
+    }
+
+    /**
+     * Maps a given value in the input space onto the corresponding value of the output space.
+     * @param value the value which should be mapped onto the output space
+     * @param input_start the first value of the input_space
+     * @param input_end the last value of the input_space
+     * @param output_start the first value of the output_space
+     * @param output_end the last value of the output_space
+     * @returns number corresponding to the mapped value from input to output space.
+     */
+    private static mapValueIntoRange(value: number, input_start: number, input_end: number,
+                                     output_start = -1, output_end = 1) {
+        return (value - input_start) / (input_end - input_start) * (output_end - output_start) + output_start
     }
 }
 

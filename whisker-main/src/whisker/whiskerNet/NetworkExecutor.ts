@@ -94,7 +94,7 @@ export class NetworkExecutor {
         // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
         network.flushNodeValues();
         for (let i = 0; i < stabilizeCounter + 1; i++) {
-            workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vm));
+            workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vmWrapper));
         }
 
         // Set up the Scratch-VM and start the game
@@ -117,7 +117,7 @@ export class NetworkExecutor {
             }
 
             // Load the inputs into the Network
-            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper.vm);
+            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
 
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.

@@ -332,13 +332,13 @@ export class WhiskerSearchConfiguration {
             case 'sparseNetwork': {
                 const eventExtractor = this.getEventExtractor();
                 return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vm, true), eventExtractor.extractEvents(Container.vm),
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper, true), eventExtractor.extractEvents(Container.vm),
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vm, true), eventExtractor.extractEvents(Container.vm));
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper, true), eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
             default:
