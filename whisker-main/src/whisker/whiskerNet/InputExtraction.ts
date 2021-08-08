@@ -4,6 +4,9 @@ import Cast from "scratch-vm/src/util/cast";
 import {List} from "../utils/List";
 import {ScratchHelperFunctions} from "../scratch/ScratchHelperFunctions";
 import {ScratchPosition} from "../scratch/ScratchPosition";
+import {DragSpriteEvent} from "../testcase/events/DragSpriteEvent";
+import {Container} from "../utils/Container";
+import {WaitEvent} from "../testcase/events/WaitEvent";
 
 const twgl = require('twgl.js');
 
@@ -18,7 +21,7 @@ export class InputExtraction {
      * @param generator determines if we extract spriteInformation for the generator
      * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
-    static extractSpriteInfo(vm: VirtualMachine, generator=false): Map<string, Map<string, number>> {
+    static extractSpriteInfo(vm: VirtualMachine, generator = false): Map<string, Map<string, number>> {
         // The position of a clone in the cloneMap determines its unique identifier.
         const cloneMap = this.assignCloneIds(vm);
         // Go through each sprite and collect input features from them.
@@ -121,15 +124,14 @@ export class InputExtraction {
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                    if(generator){
+                    if (generator) {
                         // If called by the generator set up the rangeFinder sensor nodes.
                         const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
-                        for(const angle of rangeFinderAngles){
+                        for (const angle of rangeFinderAngles) {
                             const direction = this.assignRangeFinder(angle);
                             spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, 0);
                         }
-                    }
-                    else {
+                    } else {
                         // If not called by the generator we only active nodes whose rangeFinder sensed something.
                         const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
                         for (const direction in distances) {
@@ -236,6 +238,7 @@ export class InputExtraction {
         // Gather required constants
         const stageWidth = target.renderer._nativeSize[0];
         const stageHeight = target.renderer._nativeSize[1];
+        const targetPosition = ScratchHelperFunctions.getPositionOfTarget(target);
         const normalizingFactor = Math.sqrt(Math.pow(stageWidth, 2) + Math.pow(stageHeight, 2));
         const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
         const rangeFinderDistances = {};
@@ -244,37 +247,36 @@ export class InputExtraction {
         for (const angle of rangeFinderAngles) {
             // Adjust the currently selected rangeFinder to the pointing direction of the source sprite.
             const adjustedAngle = target.direction + angle;
-            const radians = adjustedAngle / 180 * Math.PI;
             let found = false;
 
             // We use a resolution of 5 which means we scan every fifth pixel in the given direction.
-            const resolution = 5;
+            const resolution = 3;
 
             // Fetch the sensor location to offset the first scanned point.
-            const sensorLocation = this.getSensorLocation(angle, target);
-            let x = sensorLocation.x + resolution;
-            let y = sensorLocation.y + resolution;
+            // -1 to make sure the sensor is on top of the target.
+            const distanceToTargetBoundary = ScratchHelperFunctions.getSafetyDistanceFromTarget(target, -1);
+            const sensorLocation = targetPosition.goInDirectionTilted(adjustedAngle, distanceToTargetBoundary);
+            let scannedPixel = sensorLocation.clone();
 
             // As long as we are within the canvas boundaries and have not found the color, we keep searching
-            while (ScratchHelperFunctions.isPointWithinCanvas(new ScratchPosition(x,y)) && !found) {
+            while (ScratchHelperFunctions.isPointWithinCanvas(scannedPixel) && !found) {
                 // Get color of current point on the canvas
-                point[0] = x;
-                point[1] = y;
+                point[0] = scannedPixel.x;
+                point[1] = scannedPixel.y;
                 renderer.constructor.sampleColor3b(point, touchableObjects, color);
 
                 // If we found the color we calculate its distance from our sensor and stop for the current sensor.
                 if (ScratchHelperFunctions.isColorMatching(color, color3b)) {
-                    const distance = Math.sqrt(Math.pow(target.x - point[0], 2) + Math.pow(target.y - point[1], 2));
+                    const distance = Math.sqrt(Math.pow(sensorLocation.x - point[0], 2) + Math.pow(sensorLocation.y - point[1], 2));
                     const distanceNormalized = distance / normalizingFactor;
                     found = true;
                     const rangeFinder = this.assignRangeFinder(angle);
                     rangeFinderDistances[rangeFinder] = distanceNormalized;
                 }
 
-                // Sin and Cos switched since the axis in which the sprite moves usually is tilted by 90 degree.
-                // This is a typical pattern in games.
-                x += Math.sin(radians) * resolution;
-                y += Math.cos(radians) * resolution;
+                // Move the scannedPixel in a straight line to the next scannedPixel according to the chosen resolution
+                // We use a by 90° tilted coordinate system as in most games the y-Axis is the FRONT moving direction.
+                scannedPixel = scannedPixel.goInDirectionTilted(adjustedAngle, resolution);
             }
         }
         return rangeFinderDistances;
@@ -313,11 +315,15 @@ export class InputExtraction {
      * @return {number, number} determining the position on the Canvas/Stage where the sensor is located.
      */
     private static getSensorLocation(angle: number, target: RenderedTarget): { x: number, y: number } {
-        const boundingBox = target.getBounds()
+        const boundingBox = ScratchHelperFunctions.getBoundsOfTarget(target);
+        const width = ScratchHelperFunctions.getWidthOfTarget(target);
+        const height = ScratchHelperFunctions.getHeightOfTarget(target);
         let x: number;
         let y: number;
+        let trueAngle: number;
         switch (angle) {
             case 0:
+
                 x = boundingBox.right;
                 y = target.y;
                 break;

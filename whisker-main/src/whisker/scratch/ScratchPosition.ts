@@ -25,6 +25,10 @@ export class ScratchPosition {
         return new ScratchPosition(x,y);
     }
 
+    public clone():ScratchPosition{
+        return new ScratchPosition(this.x, this.y);
+    }
+
     public equals(other: ScratchPosition): boolean {
         return other._x === this._x && other._y === this._y;
     }
