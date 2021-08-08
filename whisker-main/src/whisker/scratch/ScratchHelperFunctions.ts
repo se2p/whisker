@@ -3,6 +3,7 @@ import {ScratchPosition} from "./ScratchPosition";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {List} from "../utils/List";
+
 const twgl = require('twgl.js');
 
 
@@ -29,6 +30,17 @@ export class ScratchHelperFunctions {
     public static getSafetyDistanceFromTarget(target: RenderedTarget, safetySpace: number): number {
         return Math.sqrt(Math.pow(this.getWidthOfTarget(target), 2) +
             Math.pow(this.getHeightOfTarget(target), 2)) / 2 + safetySpace;
+    }
+
+    public static getMousePosition(): ScratchPosition {
+        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`]
+        return new ScratchPosition(mouse._x, mouse._y);
+    }
+
+    public static setMousePosition(position: ScratchPosition): void {
+        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`]
+        mouse._x = position.x;
+        mouse._y = position.y;
     }
 
     /**
@@ -67,15 +79,15 @@ export class ScratchHelperFunctions {
     }
 
     public static findColorWithinRadius(color: string, samplingResolution = 5, maxRadius = 600,
-                                        startingPoint= new ScratchPosition(0, 0)): ScratchPosition {
+                                        startingPoint = new ScratchPosition(0, 0)): ScratchPosition {
         const targetColor = this.getColorFromHex(color);
         let radius = 1;
         const searchAngles = List.range(0, 360, 10);
         while (radius < maxRadius) {
-            for(const angle of searchAngles){
+            for (const angle of searchAngles) {
                 const scratchPoint = startingPoint.goInDirection(angle, radius);
                 const colorAtPosition = this.getColorAtPosition(scratchPoint);
-                if(this.isColorMatching(targetColor, colorAtPosition) && this.isPointWithinCanvas(scratchPoint)){
+                if (this.isColorMatching(targetColor, colorAtPosition) && this.isPointWithinCanvas(scratchPoint)) {
                     return scratchPoint;
                 }
             }

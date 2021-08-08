@@ -3,8 +3,8 @@ export class ScratchPosition {
     private readonly _y: number;
 
     constructor(x: number, y: number) {
-        this._x = Math.round(x);
-        this._y = Math.round(y);
+        this._x = Math.trunc(x);
+        this._y = Math.trunc(y);
     }
 
     public distanceTo(other: ScratchPosition): number {
