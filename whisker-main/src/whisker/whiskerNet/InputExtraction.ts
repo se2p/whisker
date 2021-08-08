@@ -307,54 +307,6 @@ export class InputExtraction {
     }
 
     /**
-     * Fetch the position of the sensor in coordinates. The rangefinder sensors are not mounted on top of the source
-     * Sprite as this might lead to a color being sensed on top of the source sprite itself. Thus, sensors are
-     * mounted on the edges of the bounding box.
-     * @param angle the angle defining which sensor's position we are looking for.
-     * @param target the source target onto which the sensors are mounted.
-     * @return {number, number} determining the position on the Canvas/Stage where the sensor is located.
-     */
-    private static getSensorLocation(angle: number, target: RenderedTarget): { x: number, y: number } {
-        const boundingBox = ScratchHelperFunctions.getBoundsOfTarget(target);
-        const width = ScratchHelperFunctions.getWidthOfTarget(target);
-        const height = ScratchHelperFunctions.getHeightOfTarget(target);
-        let x: number;
-        let y: number;
-        let trueAngle: number;
-        switch (angle) {
-            case 0:
-
-                x = boundingBox.right;
-                y = target.y;
-                break;
-            case 45:
-                x = boundingBox.right;
-                y = boundingBox.bottom;
-                break;
-            case 90:
-                x = target.x;
-                y = boundingBox.bottom;
-                break;
-            case 180:
-                x = boundingBox.left
-                y = target.y
-                break;
-            case -45:
-                x = boundingBox.right;
-                y = boundingBox.top;
-                break;
-            case -90:
-                x = target.x;
-                y = boundingBox.top;
-                break;
-            default:
-                x = target.x;
-                y = target.y;
-        }
-        return {x, y};
-    }
-
-    /**
      * Calculate the distance of a sprite from the origin (0,0) of the Stage.
      * @param sprite the sprite to calculate the distance from
      * @return distance from stage origin
