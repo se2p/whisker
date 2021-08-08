@@ -136,7 +136,7 @@ export class InputExtraction {
                 // Check if the target is capable of switching his costume.
                 case "looks_switchcostumeto": {
                     const costumeValue = target.currentCostume;
-                    const numberOfCostumes = target.sprite.costumes._length;
+                    const numberOfCostumes = target.sprite.costumes_.length;
                     const costumeNormalized = this.mapValueIntoRange(costumeValue, 0, numberOfCostumes - 1);
                     spriteFeatures.set("Costume", costumeNormalized);
                     break;
@@ -234,7 +234,7 @@ export class InputExtraction {
         const stageWidth = target.renderer._nativeSize[0];
         const stageHeight = target.renderer._nativeSize[1];
         const targetPosition = ScratchHelperFunctions.getPositionOfTarget(target);
-        const normalizingFactor = Math.sqrt(Math.pow(stageWidth, 2) + Math.pow(stageHeight, 2));
+        const stageSize = Math.sqrt(Math.pow(stageWidth, 2) + Math.pow(stageHeight, 2));
         const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
         const rangeFinderDistances = {};
         // Check for each rangeFinder if it can detect an angle. We have 6 sensors attached to our source Sprite:
@@ -244,17 +244,21 @@ export class InputExtraction {
             const adjustedAngle = target.direction + angle;
             let found = false;
 
-            // We use a resolution of 5 which means we scan every fifth pixel in the given direction.
+            // We use a resolution of 5 which means we scan every fifth pixel in the given direction and have a
+            // maximum sensor range of 50.
             const resolution = 3;
+            const maxScanRange = 50;
 
             // Fetch the sensor location to offset the first scanned point.
             // -1 to make sure the sensor is on top of the target.
             const distanceToTargetBoundary = ScratchHelperFunctions.getSafetyDistanceFromTarget(target, -1);
             const sensorLocation = targetPosition.goInDirectionTilted(adjustedAngle, distanceToTargetBoundary);
             let scannedPixel = sensorLocation.clone();
+            let currentScanRange = 0;
 
-            // As long as we are within the canvas boundaries and have not found the color, we keep searching
-            while (ScratchHelperFunctions.isPointWithinCanvas(scannedPixel) && !found) {
+            // As long as we are within the canvas boundaries; have not found the color and have not reach our
+            // maximum scanning range, we keep searching
+            while (ScratchHelperFunctions.isPointWithinCanvas(scannedPixel) && !found && currentScanRange < maxScanRange) {
                 // Get color of current point on the canvas
                 point[0] = scannedPixel.x;
                 point[1] = scannedPixel.y;
@@ -263,7 +267,7 @@ export class InputExtraction {
                 // If we found the color we calculate its distance from our sensor and stop for the current sensor.
                 if (ScratchHelperFunctions.isColorMatching(color, color3b)) {
                     const distance = Math.sqrt(Math.pow(sensorLocation.x - point[0], 2) + Math.pow(sensorLocation.y - point[1], 2));
-                    const distanceNormalized = distance / normalizingFactor;
+                    const distanceNormalized = this.mapValueIntoRange(distance, 0, 100);
                     found = true;
                     const rangeFinder = this.assignRangeFinder(angle);
                     rangeFinderDistances[rangeFinder] = distanceNormalized;
@@ -272,6 +276,7 @@ export class InputExtraction {
                 // Move the scannedPixel in a straight line to the next scannedPixel according to the chosen resolution
                 // We use a by 90° tilted coordinate system as in most games the y-Axis is the FRONT moving direction.
                 scannedPixel = scannedPixel.goInDirectionTilted(adjustedAngle, resolution);
+                currentScanRange += resolution;
             }
         }
         return rangeFinderDistances;
