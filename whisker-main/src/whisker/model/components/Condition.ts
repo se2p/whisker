@@ -27,7 +27,6 @@ export class Condition extends Check {
         try {
             this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
         } catch (e) {
-            e.message = e.message + ". This condition will be considered as not fulfilled in test run.";
             cu.addErrorOutput(this._edgeID, e)
             this._condition = () => false;
         }
