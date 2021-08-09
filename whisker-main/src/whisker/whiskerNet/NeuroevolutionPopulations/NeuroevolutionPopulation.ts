@@ -185,8 +185,9 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
             else if (this.species.size() > this.numberOfSpeciesTargeted)
                 this.properties.distanceThreshold += compatibilityModifier;
 
-            if (this.properties.distanceThreshold < 0.3)
-                this.properties.distanceThreshold = 0.3;
+            if (this.properties.distanceThreshold < 1) {
+                this.properties.distanceThreshold = 1;
+            }
         }
     }
 

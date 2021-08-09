@@ -3,6 +3,7 @@
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
     "population-size": 250,
+    "numberOfSpecies": 15,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 30,
     "ageSignificance": 1.0,
