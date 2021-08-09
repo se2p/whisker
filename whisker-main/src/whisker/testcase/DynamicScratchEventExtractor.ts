@@ -25,6 +25,7 @@ import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {EventFilter} from "scratch-analysis/src/block-filter";
+import {TypeTextEvent} from "./events/TypeTextEvent";
 
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
@@ -34,7 +35,7 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
     }
 
     public extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        const eventList = new List<ScratchEvent>();
+        let eventList = new List<ScratchEvent>();
         const executingScripts = new List<string>();
 
         // Check all blocks within scripts currently executing
@@ -64,6 +65,9 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         }
 
         eventList.add(new WaitEvent())
+        if(eventList.getElements().some(event => event instanceof TypeTextEvent)){
+            eventList = eventList.filter(event => event instanceof TypeTextEvent);
+        }
 
         return eventList.distinctObjects();
     }
