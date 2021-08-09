@@ -263,8 +263,15 @@ export abstract class ModelUtil {
             } catch (e) {
                 throw geExprEvalError(e);
             }
+
+            let expr;
+            if (!caseSensitive) {
+                expr = "(t) => {return " + toEval.toLowerCase() + "}"
+            } else {
+                expr = "(t) => {return " + toEval + "}";
+            }
             return {
-                expr: "(t) => {return " + toEval + "}",
+                expr: expr,
                 varDependencies: [],
                 attrDependencies: []
             };
@@ -275,6 +282,11 @@ export abstract class ModelUtil {
         }
 
         let {expr, varDependencies, attrDependencies} = this._getExpression(t, caseSensitive, toEval);
+
+        // all texts in "" to lower case
+        if (!caseSensitive) {
+            expr = ModelUtil.toLowerCaseTexts(expr);
+        }
 
         // test it beforehand
         try {
@@ -288,6 +300,25 @@ export abstract class ModelUtil {
             varDependencies: varDependencies,
             attrDependencies: attrDependencies
         };
+    }
+
+    private static toLowerCaseTexts(expr: string) {
+        // all texts in "" to lower case
+        let temp = expr.split("\"");
+        console.log(temp);
+        if (temp.length > 2) {
+            // (0) return => (1) "Hello (2) "
+            expr = temp[0];
+            for (let i = 1; i < temp.length; i++) {
+                if (i % 2 == 0) {
+                    expr += temp[i].toLowerCase();
+                } else {
+                    expr += temp[i];
+                }
+            }
+        }
+        console.log(expr);
+        return expr;
     }
 
     private static _getExpression(t: TestDriver, caseSensitive: boolean, toEval: string):

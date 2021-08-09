@@ -31,7 +31,7 @@
             "name": "Output",
             "args": [
               "Sprite1",
-              "Hello"
+              "'Hel'+'lo'"
             ],
             "negated": false
           }

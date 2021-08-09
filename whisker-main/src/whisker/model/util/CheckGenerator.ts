@@ -358,7 +358,8 @@ export abstract class CheckGenerator {
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, spriteNameRegex, output);
         cu.registerOutput(spriteName, eventString, edgeID, (sprite) => {
-            return !negated == (sprite.sayText && sprite.sayText.indexOf(eval(expression)(t)) != -1);
+            let sayText = !caseSensitive ? sprite.sayText.toLowerCase() : sprite.sayText;
+            return !negated == (sayText && sayText.indexOf(eval(expression)(t)) != -1);
         })
         return () => {
             const sprites = t.getSprites(sprite => sprite.name == spriteName, false);

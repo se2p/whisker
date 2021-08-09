@@ -98,10 +98,10 @@ export class ProgramModel {
      * Get the coverage of this model of the last run.
      */
     getCoverageCurrentRun() {
-        let covered = 0;
+        let covered = [];
         for (const key in this.coverageCurrentRun) {
             if (this.coverageCurrentRun[key]) {
-                covered++;
+                covered.push(key);
             }
         }
         return {
