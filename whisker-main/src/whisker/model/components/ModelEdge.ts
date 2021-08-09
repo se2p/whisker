@@ -23,7 +23,7 @@ export abstract class ModelEdge {
     readonly forceTestAt: number;
     private forceTestAfterSteps: number;
     private forceTestAtSteps: number;
-    private failedForcedTest: boolean;
+    protected failedForcedTest: boolean;
 
     protected constructor(id: string, from: string, to: string, forceTestAfter: number, forceTestAt: number) {
         this.id = id;
@@ -224,6 +224,9 @@ export class ProgramModelEdge extends ModelEdge {
      */
     checkConditionsOnEvent(t: TestDriver, cu: CheckUtility, stepsSinceLastTransition: number, stepsSinceEnd: number,
                            eventStrings: string[]): Condition[] {
+        if (this.failedForcedTest) {
+            return this.conditions;
+        }
         let check = false;
 
         // look up if this edge has a condition that was triggered
