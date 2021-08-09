@@ -44,13 +44,7 @@ export class DragSpriteEvent extends ScratchEvent {
 
 
     public toJavaScript(): string {
-        // When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
-        return `for(const target of t.vm.runtime.targets){
-    if(target.sprite.name === '${this._target.sprite.name}'){
-        target.setXY(${this._x}, ${this._y}, true);
-        break;
-    }
-  }`;
+        return `t.getSprite('${this._target.sprite.name}').getScratchTarget().setXY(${this._x}, ${this._y}, true);`
     }
 
     public toString(): string {
@@ -64,7 +58,7 @@ export class DragSpriteEvent extends ScratchEvent {
     setParameter(args: number[]): void {
         this.angle = args[0];
 
-        // We only disturb the target point if we have an angle bigger than 360 degrees.
+        // We only disturb the target point if we have an angle smaller than 360 degrees.
         if (this.angle < 360) {
             // Convert to Radians and fetch the sprite's horizontal and vertical size.
             const radians = this.angle / 180 * Math.PI;

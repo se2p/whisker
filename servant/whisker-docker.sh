@@ -8,7 +8,7 @@ if [ ! -f /.dockerenv ]; then
 fi
 
 # The base command for Whisker.
-WHISKER="node servant/servant.js -d -k -l -u whisker-web/dist/index.html"
+WHISKER="node servant.js -d -k -l -u ../whisker-web/dist/index.html"
 
 # Function that copies the artefacts created by Whisker to the given
 # destination directory.
