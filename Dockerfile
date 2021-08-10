@@ -3,6 +3,8 @@
 
 ################################################################################
 # Dockerfile to build a headless image of Whisker.
+# https://docs.docker.com/language/nodejs/build-images/#create-a-dockerfile-for-nodejs
+# https://nodejs.org/en/docs/guides/nodejs-docker-webapp/#creating-a-dockerfile
 #
 # This Dockerfile is organized as a multi-stage build, which enables us to
 # reduce the size of the final image while still allowing us to use intermediate
@@ -10,20 +12,20 @@
 #
 # We have the following stages:
 # (1) Build stage:
-#     (a) Install base image
+#     (a) Prepare base image
 #     (b) Install or update build/library dependencies
 #     (c) Build Whisker from its sources and dependencies
 # (2) Execution stage:
-#     Only copies files necessary to run Whisker and sets the entry point to
-#     Whisker's servant in headless mode. This results in a single-layer image.
+#     Only copy files necessary to run Whisker and set the entry point to
+#     Whisker's servant in headless mode
 #
 # Because an image is built during the final sub-stage (c) of the build stage we
 # can minimize the size of image layers by leveraging a build cache. The
 # sub-stages are ordered from the less frequently changed (to ensure the build
-# cache not busted) to the more frequently changed.
+# cache is not busted) to the more frequently changed.
 #
-# Note: if you need to modify or debug this Dockerfile, you can only build the
-# image up until one of the (sub)stages by specifying "--target <stage name>".
+# Note: if you need to modify or debug this Dockerfile, you can build the image
+# only up until one of the (sub)stages by specifying "--target <stage name>".
 # To inspect the contents of the container at a specific stage, stop building
 # at that stage and run the container in interactive mode:
 # `docker run -it --entrypoint /bin/sh <image name>`
@@ -33,58 +35,95 @@
 # (1) Build Stage
 #-------------------------------------------------------------------------------
 
-# (a) We need an image that has built-in support for Puppeteer. It provides
-#     fixes for common issues that prevent Chrome from starting, such as missing
-#     system fonts, external libraries, etc. The one we use is based on the
-#     Alpine Linux project, which offers a particularly small base image.
-FROM buildkite/puppeteer as base
+# (a) We use a slim base image that already includes Node.JS, and install only
+#     a minimal set of missing packages required to run Puppeteer. In
+#     particular, this includes various shared libraries (*.so files), and
+#     the x11-utils package. Puppeteer will complain about missing *.so files.
+#     To find out which package provides the missing file, install the apt-file
+#     package and run `apt-file find <missing file>`. If in doubt, or if
+#     Puppeteer still refuses to run (as is the case when x11-utils is not
+#     installed), you can temporarily add Google Chrome to your repsitory as
+#     it's done here
+#       > https://github.com/buildkite/docker-puppeteer/blob/master/Dockerfile
+#     and list all its dependencies via `apt show google-chrome-stable`.
+#     Then, just copy this list of dependencies and install them below. This
+#     will most likely pull in a lot of unwanted packages, too, but at least
+#     Puppeteer will work then.
+FROM node:lts-buster-slim as base
+RUN apt update \
+    && apt install --no-install-recommends --no-install-suggests -y \
+        libnss3 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libcups2 \
+        libdrm2 \
+        libxkbcommon0 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxrandr2 \
+        libgbm1 \
+        libgtk-3-0 \
+        libasound2 \
+        libxshmfence1 \
+        x11-utils \
+    && apt autoremove -y \
+    && rm -rf /usr/share/icons \
+    && rm -rf /usr/local/lib/node_modules
 
-# (b) Copy manifest and lock files required for installing build/library
-#     dependencies. The following layers are only re-built when one of these
-#     files listed below are updated.
-FROM base as install
+# (b) Install packages only required to build Whisker, not to run it.
+#     We need git because we have a dependency to another git repository
+#     (the Scratch VM), and ca-certificates because otherwise git cannot verfiy
+#     the server certificate.
+FROM base as build
+RUN apt update \
+    && apt install --no-install-recommends --no-install-suggests -y \
+        ca-certificates \
+        git
+
+# (c) Copy manifest files and install dependencies. This layer is only rebuilt
+#     when a manifest file changes.
+#     Unfortunately, we need a separate COPY command for every file because
+#     docker flattens the subdirectory structure when using wildcards.
 WORKDIR /whisker-build/
 COPY package.json ./
 COPY scratch-analysis/package.json ./scratch-analysis/
 COPY servant/package.json ./servant/
 COPY whisker-web/package.json ./whisker-web/
 COPY whisker-main/package.json ./whisker-main/
-RUN apt update && apt install -y git && yarn install
+RUN yarn install
 
-# (c) Copy source files and build Whisker. This layer is only rebuilt when a
-#     source file changes in the source directory.
-FROM install as build
-WORKDIR /whisker-build/
+# (d) Copy source files (as governed by .dockerignore), build Whisker and drop
+#     build dependencies from the node_modules folder, keeping only the ones
+#     necessary for execution. This layer is only rebuilt when a source file
+#     changes.
 COPY ./ ./
-RUN yarn build
-
-# Remove puppeteer because it is already included in the docker image itself.
-RUN rm -rf ./node_modules/puppeteer
+RUN yarn build \
+    && yarn install --production
 
 
 #-------------------------------------------------------------------------------
 # (2) Execution Stage
 #-------------------------------------------------------------------------------
 
-FROM buildkite/puppeteer as execute
+# We use the base image again to drop build dependencies (installed via `apt`)
+# and the yarn build cache from the final image.
+FROM base as execute
 
-WORKDIR /whisker/
+# https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
+ENV NODE_ENV=production
 
-# Only copy the artifacts needed to run Whisker from the build stage to the
-# execution stage.
-COPY --from=build /whisker-build/config            ./config
-COPY --from=build /whisker-build/node_modules      ./node_modules
-COPY --from=build /whisker-build/scratch-analysis  ./scratch-analysis
-COPY --from=build /whisker-build/servant           ./servant
-COPY --from=build /whisker-build/whisker-web       ./whisker-web
-COPY --from=build /whisker-build/whisker-main      ./whisker-main
+# Copy the build of Whisker from the build layer to the execution layer.
+# (devDependencies have already been excluded from the node_modules folder.)
+COPY --from=build /whisker-build /whisker
 
 # Set the image's main command, allowing the image to be run as though it was
 # that command:
 ENTRYPOINT ["/whisker/servant/whisker-docker.sh"]
 
+# Whisker's servant requires this as working directory, as it uses relative
+# and not absolute paths:
 WORKDIR /whisker/servant/
 
-# Set the default arguments for Whisker's servant, if none are specified
-# explicitly by the user:
-CMD ["--help"]
+# Set the default arguments for servant, in case none are given explicitly:
+#CMD ["--help"]
+
