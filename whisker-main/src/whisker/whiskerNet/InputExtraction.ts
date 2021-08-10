@@ -3,6 +3,8 @@ import Cast from "scratch-vm/src/util/cast";
 import {List} from "../utils/List";
 import {ScratchHelperFunctions} from "../scratch/ScratchHelperFunctions";
 import VMWrapper from "../../vm/vm-wrapper"
+import {Container} from "../utils/Container";
+import {Pair} from "../utils/Pair";
 
 const twgl = require('twgl.js');
 
@@ -115,6 +117,14 @@ export class InputExtraction {
 
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
+                    if (Container.pathToGoal) {
+                        const distanceToWaypoint = this.getDistanceToNextWaypoint(5, 75, target);
+                        // Only add as input if we are close enough to a waypoint and actually have a path to follow.
+                        if (distanceToWaypoint) {
+                            spriteFeatures.set("DistanceToNextWaypoint-X", distanceToWaypoint.getFirst());
+                            spriteFeatures.set("DistanceToNextWaypoint-Y", distanceToWaypoint.getSecond());
+                        }
+                    }
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
                     if (generator) {
                         // If called by the generator set up the rangeFinder sensor nodes.
@@ -231,10 +241,7 @@ export class InputExtraction {
         const color = new Uint8ClampedArray(4);
 
         // Gather required constants
-        const stageWidth = target.renderer._nativeSize[0];
-        const stageHeight = target.renderer._nativeSize[1];
         const targetPosition = ScratchHelperFunctions.getPositionOfTarget(target);
-        const stageSize = Math.sqrt(Math.pow(stageWidth, 2) + Math.pow(stageHeight, 2));
         const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
         const rangeFinderDistances = {};
         // Check for each rangeFinder if it can detect an angle. We have 6 sensors attached to our source Sprite:
@@ -244,10 +251,10 @@ export class InputExtraction {
             const adjustedAngle = target.direction + angle;
             let found = false;
 
-            // We use a resolution of 5 which means we scan every fifth pixel in the given direction and have a
-            // maximum sensor range of 50.
+            // We use a resolution of 3 which means we scan every third pixel in the given direction and have a
+            // maximum sensor range of 100.
             const resolution = 3;
-            const maxScanRange = 50;
+            const maxScanRange = 100;
 
             // Fetch the sensor location to offset the first scanned point.
             // -1 to make sure the sensor is on top of the target.
@@ -267,7 +274,7 @@ export class InputExtraction {
                 // If we found the color we calculate its distance from our sensor and stop for the current sensor.
                 if (ScratchHelperFunctions.isColorMatching(color, color3b)) {
                     const distance = Math.sqrt(Math.pow(sensorLocation.x - point[0], 2) + Math.pow(sensorLocation.y - point[1], 2));
-                    const distanceNormalized = this.mapValueIntoRange(distance, 0, 100);
+                    const distanceNormalized = this.mapValueIntoRange(distance, 0, maxScanRange);
                     found = true;
                     const rangeFinder = this.assignRangeFinder(angle);
                     rangeFinderDistances[rangeFinder] = distanceNormalized;
@@ -327,6 +334,42 @@ export class InputExtraction {
     private static mapValueIntoRange(value: number, input_start: number, input_end: number,
                                      output_start = -1, output_end = 1) {
         return (value - input_start) / (input_end - input_start) * (output_end - output_start) + output_start
+    }
+
+    /**
+     * Calculates the distance to the closest waypoint given the specified wayPointStepSize
+     * @param wayPointStepSize determines the step size indicating at which waypoints we are looking at.
+     * @param distanceThreshold determines the maximum distance to our target. We limit the distance to effectively
+     * normalize.
+     * @param target the target which has to follow the waypoints
+     * @returns Pair<number> with the normalized and signed x and y distances.
+     */
+    private static getDistanceToNextWaypoint(wayPointStepSize: number, distanceThreshold: number, target: RenderedTarget): Pair<number> {
+        // If we have no path we cannot find the closest wayPoint.
+        if (!Container.pathToGoal) {
+            return undefined;
+        }
+        // Only look at every <wayPointStepSize> waypoint and get the next (+1) closest waypoint.
+        const playerPosition = ScratchHelperFunctions.getPositionOfTarget(target);
+        const waypoints = Container.pathToGoal.filter((_, index) => index % wayPointStepSize === 0 && index > 0);
+        const waypointDistances = waypoints.map(waypoint => waypoint.distanceTo(playerPosition));
+        const indexOfNearestWaypoint = waypointDistances.indexOf(Math.min(...waypointDistances));
+        const wayPointToReach = waypoints[indexOfNearestWaypoint + 1];
+
+        // Normalize the distance to the waypoint including a sign indicating the relative position to the target
+        const absoluteX = Math.abs(wayPointToReach.x - playerPosition.x);
+        const absoluteY = Math.abs(wayPointToReach.y - playerPosition.y);
+
+        // At this point we are way off the path, hence we do not include the waypoint as input.
+        if (absoluteX > distanceThreshold || absoluteY > distanceThreshold) {
+            return undefined
+        }
+
+        const xSigned = playerPosition.x < wayPointToReach.x ? absoluteX : -absoluteX;
+        const ySigned = playerPosition.y < wayPointToReach.y ? absoluteY : -absoluteY;
+        const wayPointDistanceX = this.mapValueIntoRange(xSigned, -distanceThreshold, distanceThreshold);
+        const wayPointDistanceY = this.mapValueIntoRange(ySigned, -distanceThreshold, distanceThreshold);
+        return new Pair<number>(wayPointDistanceX, wayPointDistanceY);
     }
 }
 

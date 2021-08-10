@@ -72,6 +72,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         if (!this._pathToTarget) {
             this._pathToTarget = await PathFinder.aStarPlayerToColor(this.player, this.target, 5,
                 this.colorObstacles, this.spriteObstacles);
+            Container.pathToGoal = this._pathToTarget;
         }
 
         const fitness = this.getTargetDistanceFitness(network);
@@ -115,7 +116,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         if (this._pathToTarget) {
             const distances = this._pathToTarget.map(waypoint => waypoint.distanceTo(playerEndPosition));
             // Offset by one to give a poor solution an advantage over no solution at all.
-            return distances.indexOf(Math.min(...distances));
+            return distances.indexOf(Math.min(...distances)) + 1;
         }
         // If we haven't found a valid path yet, assign poor fitness.
         else {
