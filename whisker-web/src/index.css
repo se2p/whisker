@@ -182,7 +182,8 @@ p {
 }
 
 .headline-spacer {
-    margin-top: 50px;
+    margin-top: 20px;
+    margin-bottom: -100px;
 }
 
 .grey-spacer {
@@ -212,7 +213,6 @@ p {
 
 .main {
     padding-top: 5vh;
-    padding-bottom: 5vh;
     width: 100%;
     margin: auto;
 }
@@ -913,19 +913,19 @@ img {vertical-align: middle;}
 }
 
 #scroll-background {
-    background-color: var(--subColor);
+    background-color: white;
     height: 60px;
     width: 100%;
 }
 
 #left-btn-group {
     position: absolute;
-    left: 10%;
+    left: 15%;
 }
 
 #right-btn-group {
     position: absolute;
-    right: 10%;
+    right: 14.45%;
 }
 
 .btn-group-toggle {
