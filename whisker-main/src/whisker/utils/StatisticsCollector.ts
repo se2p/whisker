@@ -45,6 +45,7 @@ export class StatisticsCollector {
     private _timeToReachFullCoverage: number;
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: List<FitnessFunction<Chromosome>>;
+    private readonly _averageNetworkFitness: Map<number, number>;
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -67,6 +68,7 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = 0;
         this._covOverTime = new Map<number, number>();
         this.coveredFitnessFunctions = new List<FitnessFunction<Chromosome>>();
+        this._averageNetworkFitness = new Map<number, number>();
     }
 
     public static getInstance(): StatisticsCollector {
@@ -128,12 +130,16 @@ export class StatisticsCollector {
      * Increments the number of covered fitness functions by one
      */
     public incrementCoveredFitnessFunctionCount(coveredFitnessFunction: FitnessFunction<Chromosome>): void {
-        if(!this.coveredFitnessFunctions.contains(coveredFitnessFunction)) {
+        if (!this.coveredFitnessFunctions.contains(coveredFitnessFunction)) {
             this.coveredFitnessFunctions.add(coveredFitnessFunction);
             this._coveredFitnessFunctionsCount++;
             const timeStamp = Date.now() - this._startTime;
             this._covOverTime.set(timeStamp, this._coveredFitnessFunctionsCount);
         }
+    }
+
+    public updateAverageNetworkFitness(iteration: number, averageNetworkFitness: number):void {
+        this._averageNetworkFitness.set(iteration, Math.trunc(averageNetworkFitness));
     }
 
     get bestCoverage(): number {
@@ -255,6 +261,21 @@ export class StatisticsCollector {
             this._bestCoverage, this._testEventCount, this._eventsCount, this._bestTestSuiteSize,
             this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
+        return [headerRow, dataRow].join("\n");
+    }
+
+    public asCsvNeuroevolution(): string {
+        // Standard headers
+        const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
+            "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage"];
+        // AveragePopulationFitness header depending on iteration count.
+        const networkFitnessHeaderValues = List.range(0, this.iterationCount).getElements();
+        const networkFitnessHeader = networkFitnessHeaderValues.map(iteration => iteration.toString());
+        const coverageValues = [...this._averageNetworkFitness.values()]
+        const headerRow = headers.join(",").concat(",", networkFitnessHeader.join(","));
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
+            this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage];
+        const dataRow = data.join(",").concat(",", coverageValues.join(","));
         return [headerRow, dataRow].join("\n");
     }
 

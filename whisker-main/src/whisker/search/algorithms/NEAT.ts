@@ -63,7 +63,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             population.updatePopulationStatistics();
             this._populationRecord.set(this._iterations, population.clone());
             population.evolve();
-            this.updateBestIndividualAndStatistics();
+            this.updateBestIndividualAndStatistics(population);
             if (this._iterations % reportPeriod === 0) {
                 this.reportOfCurrentIteration(population);
             }
@@ -89,11 +89,12 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     /**
      * Updates the List of the best networks found so far and the statistics used for reporting.
      */
-    private updateBestIndividualAndStatistics(): void {
+    private updateBestIndividualAndStatistics(population: NeuroevolutionPopulation<NetworkChromosome>): void {
         this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
+        StatisticsCollector.getInstance().updateAverageNetworkFitness(this._iterations, population.averageFitness)
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
