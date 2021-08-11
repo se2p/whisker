@@ -16,7 +16,6 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         await executor.execute(network);
         // Calculate time survived, transform it into seconds and include acceleration.
         const surviveTime = Math.trunc((Container.vm.runtime.currentMSecs - start) / 1000 * Container.acceleration);
-        console.log(`SurviveTime: ${surviveTime}`)
         network.networkFitness = surviveTime;
         executor.resetState();
         return surviveTime;
