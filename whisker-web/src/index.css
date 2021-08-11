@@ -210,7 +210,7 @@ p {
     display: none;
 }
 
-#main {
+.main {
     padding-top: 5vh;
     padding-bottom: 5vh;
     width: 100%;
@@ -903,4 +903,31 @@ img {vertical-align: middle;}
     overflow: hidden;
     text-overflow: ellipsis;
     margin-left: 160px;
+}
+
+.sticky {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    z-index: 9999;
+    top: 0;
+}
+
+#scroll-background {
+    background-color: var(--subColor);
+    height: 60px;
+    width: 100%;
+}
+
+#left-btn-group {
+    position: absolute;
+    left: 10%;
+}
+
+#right-btn-group {
+    position: absolute;
+    right: 10%;
+}
+
+.btn-group-toggle {
+    padding: 10px;
 }
