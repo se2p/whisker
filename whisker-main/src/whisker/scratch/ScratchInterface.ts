@@ -7,7 +7,7 @@ import {List} from "../utils/List";
 const twgl = require('twgl.js');
 
 
-export class ScratchHelperFunctions {
+export class ScratchInterface {
 
     public static getPositionOfTarget(target: RenderedTarget): ScratchPosition {
         return new ScratchPosition(target.x, target.y);

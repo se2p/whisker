@@ -2,7 +2,6 @@ import {List} from "../../utils/List";
 import {NetworkChromosome} from "../NetworkChromosome";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
-import {NeatPopulation} from "./NeatPopulation";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
 import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
 
@@ -29,9 +28,14 @@ export class Species<C extends NetworkChromosome> {
     private _age: number;
 
     /**
-     * The average fitness value of all member of this species.
+     * The average shared fitness value of all member of this species.
      */
     private _averageFitness: number;
+
+    /**
+     * Average networkFitness of this species.
+     */
+    private _averageNetworkFitness = 0;
 
     /**
      * The best networkFitness value of the current species population.
@@ -67,6 +71,7 @@ export class Species<C extends NetworkChromosome> {
      * Random generator
      */
     private _randomness: Randomness;
+
 
     /**
      * Constructs a new Species.
@@ -374,6 +379,16 @@ export class Species<C extends NetworkChromosome> {
     }
 
     /**
+     * Calculates the average network fitness across all members of the species, used for reporting and refocusing
+     * the search in stagnation phase.
+     */
+    public calculateAverageNetworkFitness(): number{
+        const networkFitnessValues = this.chromosomes.map(a => a.networkFitness).getElements();
+        this.averageNetworkFitness = networkFitnessValues.reduce((a, b) => a + b) / this.size();
+        return this.averageNetworkFitness
+    }
+
+    /**
      * Deep Clone of this Species.
      * @returns Species clone of this.
      */
@@ -401,7 +416,7 @@ export class Species<C extends NetworkChromosome> {
         species[`id`] = this.id;
         species[`age`] = this.age;
         species[`ageOfLastImprovement`] = this.ageOfLastImprovement;
-        species[`averageFitness`] = this.averageFitness;
+        species[`averageFitness`] = this.averageNetworkFitness;
         species[`currentBestFitness`] = this.currentBestFitness;
         species[`allTimeBestFitness`] = this.allTimeBestFitness;
         species[`expectedOffspring`] = this.expectedOffspring;
@@ -430,6 +445,14 @@ export class Species<C extends NetworkChromosome> {
 
     set averageFitness(value: number) {
         this._averageFitness = value;
+    }
+
+    get averageNetworkFitness(): number {
+        return this._averageNetworkFitness;
+    }
+
+    set averageNetworkFitness(value: number) {
+        this._averageNetworkFitness = value;
     }
 
     get currentBestFitness(): number {

@@ -1,6 +1,6 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {ScratchPosition} from "./ScratchPosition";
-import {ScratchHelperFunctions} from "./ScratchHelperFunctions";
+import {ScratchInterface} from "./ScratchInterface";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 
 export class PathFinder {
@@ -23,14 +23,14 @@ export class PathFinder {
         const visited: AStarNode[] = [];
 
         // Convert targetColor in Uint8 representation
-        const targetColorUint8 = ScratchHelperFunctions.getColorFromHex(targetColor);
+        const targetColorUint8 = ScratchInterface.getColorFromHex(targetColor);
 
         // Get comparable Arrays of our obstacles.
-        const obstacleSprites = spriteObstacles.map(sprite => ScratchHelperFunctions.getPositionOfTarget(sprite));
+        const obstacleSprites = spriteObstacles.map(sprite => ScratchInterface.getPositionOfTarget(sprite));
 
         // Get starting Node
-        const startingPosition = ScratchHelperFunctions.getPositionOfTarget(player);
-        const targetPosition = ScratchHelperFunctions.findColorWithinRadius(targetColor);
+        const startingPosition = ScratchInterface.getPositionOfTarget(player);
+        const targetPosition = ScratchInterface.findColorWithinRadius(targetColor);
         const startingDistance = startingPosition.distanceTo(targetPosition);
         const startNode = new AStarNode(startingPosition, null, 0, startingDistance);
         openSet.push(startNode);
@@ -41,11 +41,11 @@ export class PathFinder {
             let current = openSet[0];
             player.setXY(current.position.x, current.position.y, true);
             await new WaitEvent().apply();
-            const colorAtCurrentPosition = ScratchHelperFunctions.getColorAtPosition(current.position);
+            const colorAtCurrentPosition = ScratchInterface.getColorAtPosition(current.position);
             visited.push(current);
             // If we found our goal reproduce the path taken.
             if (current.position.equals(targetPosition) ||
-                ScratchHelperFunctions.isColorMatching(colorAtCurrentPosition, targetColorUint8)) {
+                ScratchInterface.isColorMatching(colorAtCurrentPosition, targetColorUint8)) {
                 const path: ScratchPosition[] = [];
                 path.push(current.position);
                 // Trace back from our final node to our starting Node
@@ -99,7 +99,7 @@ export class PathFinder {
                                  obstacleSprites: ScratchPosition[] = []): AStarNode[] {
         const neighbours: AStarNode[] = [];
         // For each neighbour we check within a given safety range if we do not touch any obstacles.
-        const safetyRange = Math.ceil(ScratchHelperFunctions.getSafetyDistanceFromTarget(player,0) / 4);
+        const safetyRange = Math.ceil(ScratchInterface.getSafetyDistanceFromTarget(player,0) / 4);
         // Moving directions.
         const directions = ["NORTH", "EAST", "SOUTH", "WEST"];
         for (const direction of directions) {
@@ -120,7 +120,7 @@ export class PathFinder {
             }
             // If we have a neighbour not contained within the Canvas or hit by an obstacle within the required
             // safety distance, do not include that neighbour.
-            if (!ScratchHelperFunctions.isPointWithinCanvas(neighbourPosition) ||
+            if (!ScratchInterface.isPointWithinCanvas(neighbourPosition) ||
                 this.isTouchingObstacle(neighbourPosition, safetyRange, obstacleColors, obstacleSprites)) {
                 continue;
             }
@@ -136,7 +136,7 @@ export class PathFinder {
                                       obstacleSprites: ScratchPosition[] = []): boolean {
         let isTouchingObstacleColor = false;
         for(const color of obstacleColors){
-         if(ScratchHelperFunctions.findColorWithinRadius(color, 1, safetyRange, position) !== undefined){
+         if(ScratchInterface.findColorWithinRadius(color, 1, safetyRange, position) !== undefined){
              isTouchingObstacleColor = true;
              break;
          }

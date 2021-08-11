@@ -1,7 +1,7 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {List} from "../utils/List";
-import {ScratchHelperFunctions} from "../scratch/ScratchHelperFunctions";
+import {ScratchInterface} from "../scratch/ScratchInterface";
 import VMWrapper from "../../vm/vm-wrapper"
 import {Container} from "../utils/Container";
 import {Pair} from "../utils/Pair";
@@ -81,7 +81,7 @@ export class InputExtraction {
 
 
         // Collect Coordinates and normalize
-        const spritePosition = ScratchHelperFunctions.getPositionOfTarget(target);
+        const spritePosition = ScratchInterface.getPositionOfTarget(target);
         const x = this.mapValueIntoRange(spritePosition.x, -stageBounds.width / 2, stageBounds.width / 2);
         const y = this.mapValueIntoRange(spritePosition.y, -stageBounds.height / 2, stageBounds.height / 2);
         spriteFeatures.set("X-Position", x);
@@ -241,7 +241,7 @@ export class InputExtraction {
         const color = new Uint8ClampedArray(4);
 
         // Gather required constants
-        const targetPosition = ScratchHelperFunctions.getPositionOfTarget(target);
+        const targetPosition = ScratchInterface.getPositionOfTarget(target);
         const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
         const rangeFinderDistances = {};
         // Check for each rangeFinder if it can detect an angle. We have 6 sensors attached to our source Sprite:
@@ -258,21 +258,21 @@ export class InputExtraction {
 
             // Fetch the sensor location to offset the first scanned point.
             // -1 to make sure the sensor is on top of the target.
-            const distanceToTargetBoundary = ScratchHelperFunctions.getSafetyDistanceFromTarget(target, -1);
+            const distanceToTargetBoundary = ScratchInterface.getSafetyDistanceFromTarget(target, -1);
             const sensorLocation = targetPosition.goInDirectionTilted(adjustedAngle, distanceToTargetBoundary);
             let scannedPixel = sensorLocation.clone();
             let currentScanRange = 0;
 
             // As long as we are within the canvas boundaries; have not found the color and have not reach our
             // maximum scanning range, we keep searching
-            while (ScratchHelperFunctions.isPointWithinCanvas(scannedPixel) && !found && currentScanRange < maxScanRange) {
+            while (ScratchInterface.isPointWithinCanvas(scannedPixel) && !found && currentScanRange < maxScanRange) {
                 // Get color of current point on the canvas
                 point[0] = scannedPixel.x;
                 point[1] = scannedPixel.y;
                 renderer.constructor.sampleColor3b(point, touchableObjects, color);
 
                 // If we found the color we calculate its distance from our sensor and stop for the current sensor.
-                if (ScratchHelperFunctions.isColorMatching(color, color3b)) {
+                if (ScratchInterface.isColorMatching(color, color3b)) {
                     const distance = Math.sqrt(Math.pow(sensorLocation.x - point[0], 2) + Math.pow(sensorLocation.y - point[1], 2));
                     const distanceNormalized = this.mapValueIntoRange(distance, 0, maxScanRange);
                     found = true;
@@ -350,7 +350,7 @@ export class InputExtraction {
             return undefined;
         }
         // Only look at every <wayPointStepSize> waypoint and get the next (+1) closest waypoint.
-        const playerPosition = ScratchHelperFunctions.getPositionOfTarget(target);
+        const playerPosition = ScratchInterface.getPositionOfTarget(target);
         const waypoints = Container.pathToGoal.filter((_, index) => index % wayPointStepSize === 0 && index > 0);
         const waypointDistances = waypoints.map(waypoint => waypoint.distanceTo(playerPosition));
         const indexOfNearestWaypoint = waypointDistances.indexOf(Math.min(...waypointDistances));

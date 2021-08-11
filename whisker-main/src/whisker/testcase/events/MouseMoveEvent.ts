@@ -21,7 +21,7 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterTypes} from "./ParameterTypes";
-import {ScratchHelperFunctions} from "../../scratch/ScratchHelperFunctions";
+import {ScratchInterface} from "../../scratch/ScratchInterface";
 import {ScratchPosition} from "../../scratch/ScratchPosition";
 
 export class MouseMoveEvent extends ScratchEvent {
@@ -41,7 +41,7 @@ export class MouseMoveEvent extends ScratchEvent {
             x: Math.trunc(this._x),
             y: Math.trunc(this._y)
         });
-        ScratchHelperFunctions.setMousePosition(new ScratchPosition(this._x, this._y))
+        ScratchInterface.setMousePosition(new ScratchPosition(this._x, this._y))
     }
 
     public toJavaScript(): string {

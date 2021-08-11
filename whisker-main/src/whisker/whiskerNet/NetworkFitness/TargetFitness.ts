@@ -74,7 +74,6 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
                 this.colorObstacles, this.spriteObstacles);
             Container.pathToGoal = this._pathToTarget;
         }
-
         const fitness = this.getTargetDistanceFitness(network);
         executor.resetState();
         network.networkFitness = fitness;
@@ -111,6 +110,11 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
                 (Container.vmWrapper.getStageSize().height / 2)
         }
         const playerEndPosition = new ScratchPosition(playerEnd.x, playerEnd.y)
+
+        // TODO: Remove when we found root cause of defect networks (happens like once in 1000 times)
+        if(playerEndPosition.x === 0 && playerEndPosition.y === 0){
+            return 0.1;
+        }
         // If we've found a valid path from start to the target. The fitness is determined by the index of the
         // closest waypoint with the target representing the last waypoint.
         if (this._pathToTarget) {

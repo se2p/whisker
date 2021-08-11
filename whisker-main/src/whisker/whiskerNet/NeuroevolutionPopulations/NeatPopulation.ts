@@ -17,6 +17,7 @@ export class NeatPopulation<C extends NetworkChromosome> extends NeuroevolutionP
         // Calculate the shared fitness value for each chromosome in each Specie and mark parent candidates.
         for (const specie of this.species) {
             specie.assignAdjustFitness();
+            specie.calculateAverageNetworkFitness();
         }
 
         // Calculate the total average fitness value of all chromosomes in the generation
@@ -81,8 +82,9 @@ export class NeatPopulation<C extends NetworkChromosome> extends NeuroevolutionP
                 specie.ageOfLastImprovement = specie.age;
             }
 
-            // Otherwise, allow only the first two species to reproduce and mark the others dead.
+            // Otherwise, allow only the first two most promising species to reproduce and mark the others dead.
             else {
+                this.species.sort((a, b) => b.averageNetworkFitness - a.averageNetworkFitness);
                 for (let i = 0; i < this.species.size(); i++) {
                     const specie = this.species.get(i);
                     if (i <= 1) {
