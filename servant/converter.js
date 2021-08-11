@@ -42,7 +42,6 @@ const convertToCsv = function (str) {
                         modelFails.add(error);
                     })
                 }
-                console.log("new error list", result.modelErrors);
             }
 
             result.testResults.set(test.id, status);

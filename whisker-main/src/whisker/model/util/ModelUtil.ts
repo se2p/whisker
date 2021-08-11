@@ -305,7 +305,6 @@ export abstract class ModelUtil {
     private static toLowerCaseTexts(expr: string) {
         // all texts in "" to lower case
         let temp = expr.split("\"");
-        console.log(temp);
         if (temp.length > 2) {
             // (0) return => (1) "Hello (2) "
             expr = temp[0];
@@ -317,7 +316,6 @@ export abstract class ModelUtil {
                 }
             }
         }
-        console.log(expr);
         return expr;
     }
 

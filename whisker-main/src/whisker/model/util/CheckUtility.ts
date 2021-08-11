@@ -59,6 +59,14 @@ export class CheckUtility extends EventEmitter {
         this.testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(sprite =>
             this.checkForEvent(this.onVisualChecks, sprite));
         this.testDriver.vmWrapper.sprites.onVariableChangeModel((varName: string) => {
+            if (varName == "Punkte") {
+                console.log("points now", this.testDriver.getStage().getVariable("Punkte").value,
+                    this.testDriver.getStage().getVariable("Punkte").old.value, this.testDriver.getTotalStepsExecuted());
+            }
+            // if (varName == "Zeit") {
+            //     console.log("time now", this.testDriver.getStage().getVariable("Zeit").value,
+            //         this.testDriver.getStage().getVariable("Zeit").old.value, this.testDriver.getTotalStepsExecuted());
+            // }
             if (this.variableChecks[varName] != null) {
                 this.variableChecks[varName].forEach(fun => fun());
                 if (this.eventStrings.length > 0) {
@@ -226,7 +234,7 @@ export class CheckUtility extends EventEmitter {
         let doNotCheck = {};
         let newEffects = [];
 
-        // check for contradictions in effects
+        // check for contradictions in effects and only test an effect if it does not contradict another one
         for (let i = 0; i < this.effectChecks.length; i++) {
             let effect = this.effectChecks[i].effect;
             for (let j = i + 1; j < this.effectChecks.length; j++) {
@@ -252,7 +260,7 @@ export class CheckUtility extends EventEmitter {
             }
         }
 
-        this.effectChecks = newEffects
+        this.effectChecks = newEffects;
         return contradictingEffects;
     }
 
