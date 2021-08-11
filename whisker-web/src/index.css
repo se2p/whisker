@@ -235,7 +235,7 @@ p {
 }
 
 .btn-wrapper {
-    width: 300px;
+    width: max-content;
     float: right;
 }
 
@@ -968,10 +968,10 @@ img {vertical-align: middle;}
 .slider:before {
     position: absolute;
     content: "";
-    height: 14px;
-    width: 14px;
-    left: 0;
-    bottom: 0;
+    height: 12px;
+    width: 12px;
+    left: 2px;
+    bottom: 2px;
     background-color: white;
     -webkit-transition: .4s;
     transition: .4s;
@@ -986,9 +986,9 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(17px);
-    -ms-transform: translateX(17px);
-    transform: translateX(17px);
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
 }
 
 /* Rounded sliders */
@@ -1001,5 +1001,5 @@ input:checked + .slider:before {
 }
 
 .toggleWrapper {
-    margin: 20px;
+    margin: 5px;
 }
