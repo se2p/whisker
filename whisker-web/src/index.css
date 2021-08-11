@@ -548,7 +548,6 @@ tr td:nth-child(5) {
 
 /* Tooltip container */
 .tooltip-sign {
-    z-index: 9999;
     position: relative;
     display: inline-block;
 }
