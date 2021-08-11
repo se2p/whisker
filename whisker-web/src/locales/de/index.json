@@ -32,6 +32,8 @@
     "t-load" : "Lade Tests des Editors",
     "save" : "Tests herunterladen",
     "t-save" : "Tests des Editors als Datei speichern",
+    "log-save" : "Logdatei herunterladen",
+    "tap-save" : "TAP13-Datei herunterladen",
     "clear" : "Löschen",
     "t-clear" : "Lösche Inhalt",
     "tap" : "TAP13",

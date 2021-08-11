@@ -32,6 +32,8 @@
     "t-load" : "Load all tests of editor",
     "save" : "Download tests",
     "t-save" : "Save the tests of the test editor",
+    "log-save" : "Download log output",
+    "tap-save" : "Download TAP13 output",
     "clear" : "Clear",
     "t-clear" : "Clear content",
     "tap" : "TAP13",
