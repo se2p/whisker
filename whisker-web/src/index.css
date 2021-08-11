@@ -531,6 +531,12 @@ p {
     padding: 15px;
 }
 
+.scrollTable {
+    height: 500px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
 /* Forward clicks to button underneath */
 .fa-plus, .fa-minus {
     pointer-events: none;
