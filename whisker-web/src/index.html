@@ -212,10 +212,8 @@
     <div class="container spacer100">
         <!-- Scratch project -->
         <div class="row">
-            <div class="col-lg-12">
+            <div class="col-lg-6">
                 <h3 data-i18n="project"></h3>
-            </div>
-            <div class="col-lg-6 spacer50">
                 <!-- Stage -->
                 <!-- Use tabindex to make the canvas focusable. -->
                 <div id="viewer">
@@ -245,8 +243,28 @@
                 </div>
             </div>
 
-            <!-- Test generation -->
+            <!-- Tests table -->
             <div class="col-lg-6">
+                <div id="test-table" class="hide spacer50">
+                    <h3 data-i18n="uploaded-tests" id="tests-header"></h3>
+                    <table class="display table table-sm mt-4">
+                        <thead class="thead-white">
+                        <tr>
+                            <th></th>
+                            <th>#</th>
+                            <th data-i18n="table-name"></th>
+                            <th data-i18n="table-categories"></th>
+                            <th data-i18n="table-test-result" class="result text-center"></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Test generation -->
+            <div class="col-lg-12">
                 <div id="scratch-controls">
                     <form class="row">
                         <!-- Config file upload, start generation button -->
@@ -321,26 +339,6 @@
                         </div>
                     </form>
                 </div>
-            </div>
-        </div>
-
-        <!-- Table of tests -->
-        <div class="col-lg-12">
-            <div id="test-table" class="hide spacer50">
-                <h3 data-i18n="uploaded-tests" id="tests-header"></h3>
-                <table class="display table table-sm mt-4">
-                    <thead class="thead-white">
-                    <tr>
-                        <th></th>
-                        <th>#</th>
-                        <th data-i18n="table-name"></th>
-                        <th data-i18n="table-categories"></th>
-                        <th data-i18n="table-test-result" class="result text-center"></th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
             </div>
         </div>
 
