@@ -548,6 +548,7 @@ tr td:nth-child(5) {
 
 /* Tooltip container */
 .tooltip-sign {
+    z-index: 9999;
     position: relative;
     display: inline-block;
 }
@@ -914,7 +915,7 @@ img {vertical-align: middle;}
 .sticky {
     position: -webkit-sticky; /* Safari */
     position: sticky;
-    z-index: 9999;
+    z-index: 9998;
     top: 0;
 }
 
@@ -1002,4 +1003,8 @@ input:checked + .slider:before {
 
 .toggleWrapper {
     margin: 5px;
+}
+
+.tooltip {
+    z-index: 9999;
 }
