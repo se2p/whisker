@@ -58,7 +58,7 @@
     "no-tests" : "No tests loaded",
     "test-execution" : "Test execution",
     "no-project" : "No Scratch project loaded",
-    "uploaded-tests": "Uploaded tests",
+    "uploaded-tests": "Your tests",
     "description" : "Description",
     "categories" : "Categories",
     "inputs" : "Input recorder",
