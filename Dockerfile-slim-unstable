@@ -100,7 +100,7 @@ FROM base as execute
 # Also, update the path to Chromium since we don't use the instance bundled with
 # Puppeteer.
 ENV NODE_ENV=production \
-    CHROME_BIN=/usr/bin/chromium-browser
+    CHROME_BIN=/usr/bin/chromium
 
 # Copy the build of Whisker from the build layer to the execution layer.
 # (devDependencies have already been excluded from the node_modules folder.)
