@@ -543,6 +543,7 @@ $('.nav-link').on('click', event => {
     }
 });
 
+/* Add border to header if it sticks to the top */
 $(function() {
     const stickyHeader = $('.sticky');
     const stickyHeaderPosition = stickyHeader.offset().top;
