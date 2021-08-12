@@ -18,7 +18,7 @@
 # We have the following stages:
 # (1) Build stage:
 #     (a) Prepare base image
-#     (b) Install or update build/library dependencies (via apt)
+#     (b) Install or update build/library dependencies (via apt-get)
 #     (c) Install or update build/library dependencies (via yarn)
 #     (d) Build Whisker from its sources and dependencies
 # (2) Execution stage:
@@ -45,8 +45,8 @@
 # (a) We use a slim base image that already includes Node.JS, install Chromium
 #     for Puppeteer, and a minimal set of packages required to run it.
 FROM node:lts-buster-slim as base
-RUN apt update \
-    && apt install --no-install-recommends --no-install-suggests -y \
+RUN apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y \
         chromium \
     && rm -rf /usr/share/icons \
     && rm -rf /usr/local/lib/node_modules
@@ -56,15 +56,15 @@ RUN apt update \
 #     (the Scratch VM), and ca-certificates because otherwise git cannot verfiy
 #     the server certificate.
 FROM base as build
-RUN apt update \
-    && apt install --no-install-recommends --no-install-suggests -y \
+RUN apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y \
         ca-certificates \
         git
 
 # (c) Copy manifest files and install dependencies. We don't download the
 #     bundled Chromium instance of Puppeteer but reuse the one installed via
-#     apt. This makes for a smaller docker image and simplifies dependency
-#     management since apt automatically pulls in all system libraries needed to
+#     apt-get. This makes for a smaller docker image and simplifies dependency
+#     management since apt-get automatically pulls in all system libraries needed to
 #     run Puppeteer. If you want to use bundled Chromium, just remove the ENV
 #     instruction below (or set it to false).
 #     Unfortunately, we need a separate COPY command for every manifest file
@@ -92,7 +92,7 @@ RUN yarn build \
 # (2) Execution Stage
 #-------------------------------------------------------------------------------
 
-# We use the base image again to drop build dependencies (installed via apt)
+# We use the base image again to drop build dependencies (installed via apt-get)
 # and the yarn build cache from the final image.
 FROM base as execute
 

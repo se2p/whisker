@@ -45,13 +45,13 @@
 #     installed), you can temporarily add Google Chrome to your repsitory as
 #     it's done here
 #       > https://github.com/buildkite/docker-puppeteer/blob/master/Dockerfile
-#     and list all its dependencies via `apt show google-chrome-stable`.
+#     and list all its dependencies via `apt-get show google-chrome-stable`.
 #     Then, just copy this list of dependencies and install them below. This
 #     will most likely pull in a lot of unwanted packages, too, but at least
 #     Puppeteer will work then.
 FROM node:lts-buster-slim as base
-RUN apt update \
-    && apt install --no-install-recommends --no-install-suggests -y \
+RUN apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y \
         libnss3 \
         libatk1.0-0 \
         libatk-bridge2.0-0 \
@@ -66,7 +66,7 @@ RUN apt update \
         libasound2 \
         libxshmfence1 \
         x11-utils \
-    && apt autoremove -y \
+    && apt-get autoremove -y \
     && rm -rf /usr/share/icons \
     && rm -rf /usr/local/lib/node_modules
 
@@ -75,8 +75,8 @@ RUN apt update \
 #     (the Scratch VM), and ca-certificates because otherwise git cannot verfiy
 #     the server certificate.
 FROM base as build
-RUN apt update \
-    && apt install --no-install-recommends --no-install-suggests -y \
+RUN apt-get update \
+    && apt-get install --no-install-recommends --no-install-suggests -y \
         ca-certificates \
         git
 
@@ -105,7 +105,7 @@ RUN yarn build \
 # (2) Execution Stage
 #-------------------------------------------------------------------------------
 
-# We use the base image again to drop build dependencies (installed via `apt`)
+# We use the base image again to drop build dependencies (installed via `apt-get`)
 # and the yarn build cache from the final image.
 FROM base as execute
 
