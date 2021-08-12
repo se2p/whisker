@@ -18,7 +18,7 @@
     "acceleration" : "Acceleration:",
     "search" : "Start test generation",
     "advanced" : "Automated help",
-    "show-advanced" : "Show test generation function",
+    "show-advanced" : "Show test generation and record input features",
     "tests" : "Run tests",
     "running" : "Running",
     "reset" : "Reset",
