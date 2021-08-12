@@ -108,21 +108,23 @@ p {
 }
 
 .btn-main {
-    color: var(--mainColor);
+    color: white;
     background-color: var(--textColor);
     border-color: var(--textColorHover);
 }
 
 .btn-main:not(.active) {
     color: var(--subheadingColor);
-    background-color: var(--mainColor);
+    background-color: white;
     border-color: var(--mainColor);
 }
 
 .btn-main:hover {
-    background-color: var(--mainColorHover);
-    border-color: var(--mainColorHover);
+    background-color: white;
+    border-color: var(--mainColor);
+    color: var(--subColor)
 }
+
 
 .btn-circle.btn-sm {
     width: 30px;
