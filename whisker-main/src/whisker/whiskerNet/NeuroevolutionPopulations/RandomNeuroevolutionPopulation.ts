@@ -25,6 +25,7 @@ export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends
         for (const species of this.species) {
             species.calculateAverageSpeciesFitness();
             species.expectedOffspring = species.size();
+            species.calculateAverageNetworkFitness();
         }
 
         // Find the population champion and reward him with additional children
