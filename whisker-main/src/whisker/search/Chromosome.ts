@@ -32,6 +32,36 @@ import {List} from "../utils/List";
  */
 export abstract class Chromosome {
 
+    // TODO: If mutation based on lastImprovedFitness turns out to work well, we should think about subclassing this
+    //  into something like SingleObjectiveChromosome. For now its placed here to reduce the amount of casts...
+    /**
+     * The position in the codon list after which no additional fitness improvement regarding the specified
+     * targetFitness has been seen.
+     */
+    private _lastImprovedFitnessCodon: number;
+
+    /**
+     * The fitnessFunction this chromosome is optimising for. Only applicable for single-objective focused algorithms
+     * like MIO.
+     */
+    private _targetFitness: FitnessFunction<Chromosome>;
+
+    get lastImprovedFitnessCodon(): number {
+        return this._lastImprovedFitnessCodon;
+    }
+
+    set lastImprovedFitnessCodon(value: number) {
+        this._lastImprovedFitnessCodon = value;
+    }
+
+    get targetFitness(): FitnessFunction<Chromosome> {
+        return this._targetFitness;
+    }
+
+    set targetFitness(value: FitnessFunction<Chromosome>) {
+        this._targetFitness = value;
+    }
+
     /**
      * Retrieve the crossover operator to apply
      */

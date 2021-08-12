@@ -258,7 +258,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         const searchAlgorithm: SearchAlgorithm<C> = new MIO();
         searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
         searchAlgorithm.setHeuristicFunctions(this._heuristicFunctions);
-
+        searchAlgorithm.setLocalSearchOperators(this._localSearchOperators);
         return searchAlgorithm;
     }
 
