@@ -3,7 +3,7 @@
 readonly COMMIT=$(git rev-parse --short HEAD)
 declare -l BRANCH # Make contents of the variable lowercase
 readonly BRANCH=$(git rev-parse --abbrev-ref HEAD)
-readonly TAG="whisker-${BRANCH}-${COMMIT}"
+readonly TAG="whisker:${BRANCH}-${COMMIT}"
 
 function set_docker_cmd() {
     if [[ -z "${DOCKER_CMD}" ]]; then
