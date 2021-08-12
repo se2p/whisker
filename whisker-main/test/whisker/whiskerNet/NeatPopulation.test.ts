@@ -134,12 +134,12 @@ describe("Test NeatPopulation", () => {
         expect(population.species.get(0).chromosomes.size()).toBe(size);
     })
 
-    test("Test evolve with distance Threshold below 0.3", () => {
+    test("Test evolve with distance Threshold below 1", () => {
         population.generation = 3;
         population.properties.distanceThreshold = 0.1;
         population.updatePopulationStatistics();
         population.evolve();
-        expect(population.properties.distanceThreshold).toBe(0.3);
+        expect(population.properties.distanceThreshold).toBe(1);
     })
 
 })
