@@ -544,7 +544,7 @@ $(function() {
     const stickyHeaderPosition = stickyHeader.offset().top;
     $(window).scroll(function() {
         const scroll = $(window).scrollTop();
-        if (scroll >= stickyHeaderPosition) {
+        if (scroll > stickyHeaderPosition + 1) {
             stickyHeader.addClass('scrolled');
         } else {
             stickyHeader.removeClass('scrolled');

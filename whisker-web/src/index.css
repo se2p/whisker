@@ -154,7 +154,7 @@ p {
 
 .banner {
     width:100%;
-    padding-top:10px;
+    transform: translateY(-4%);
 }
 
 #nav-links {
@@ -931,7 +931,7 @@ img {vertical-align: middle;}
 
 #left-btn-group {
     position: absolute;
-    left: 15%;
+    left: 5%;
 }
 
 #left-btn-group .btn {
@@ -940,7 +940,7 @@ img {vertical-align: middle;}
 
 #right-btn-group {
     position: absolute;
-    right: 14.45%;
+    right: 25%;
     margin-top: 6px;
 }
 
