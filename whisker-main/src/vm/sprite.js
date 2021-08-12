@@ -263,6 +263,20 @@ class Sprite {
     }
 
     /**
+     * @returns {boolean} .
+     */
+    isTouchingVerticalEdge () {
+        return this._target.isTouchingVerticalEdge();
+    }
+
+    /**
+     * @returns {boolean} .
+     */
+    isTouchingHorizEdge () {
+        return this._target.isTouchingHorizEdge();
+    }
+
+    /**
      * @param {string} spriteName .
      * @returns {boolean} .
      */

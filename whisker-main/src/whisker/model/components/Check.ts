@@ -23,7 +23,9 @@ export enum CheckName {
     TimeAfterEnd = "TimeAfterEnd", // time from program end (for after end models)
     NbrOfClones = "NbrOfClones", // sprite name, comparison, number
     NbrOfVisibleClones = "NbrOfVisibleClones", // sprite name, comparison, number
-    TouchingEdge = "TouchingEdge" // sprite name regex
+    TouchingEdge = "TouchingEdge", // sprite name regex
+    TouchingVerticalEdge = "TouchingVerticalEdge", // sprite name regex
+    TouchingHorizEdge = "TouchingHorizEdge" // sprite name regex
 }
 
 /**
@@ -80,6 +82,8 @@ export class Check {
             case CheckName.TimeAfterEnd:
             case CheckName.TimeBetween:
             case CheckName.TouchingEdge:
+            case CheckName.TouchingHorizEdge:
+            case CheckName.TouchingVerticalEdge:
                 _testArgs(1);
                 break;
             case CheckName.Output:
@@ -160,6 +164,12 @@ export class Check {
             case CheckName.TouchingEdge:
                 return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeID, this._negated, caseSensitive,
                     this._args[0]);
+            case CheckName.TouchingHorizEdge:
+                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], false);
+            case CheckName.TouchingVerticalEdge:
+                return CheckGenerator.getTouchingEdgeCheck(t, cu, this._edgeID, this._negated, caseSensitive,
+                    this._args[0], true, false);
             case CheckName.TimeAfterEnd:
                 return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
             default:

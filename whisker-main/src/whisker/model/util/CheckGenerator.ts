@@ -631,21 +631,35 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param spriteNameRegex Regex defining the sprite name.
-     */
+     * @param verticalEdge Whether the vertical edges should be considered for the check.
+     * @param horizEdge Whether the horizontal edges should be considered for the check.
+     * */
     static getTouchingEdgeCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                                spriteNameRegex: string) {
+                                spriteNameRegex: string, verticalEdge = true, horizEdge =true) {
+        if (!verticalEdge && !horizEdge) {
+            throw new Error("Check touching edge not valid. Either vertical, horizontal or both.");
+        }
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
-        const eventString = CheckUtility.getEventString(CheckName.TouchingEdge, negated, spriteNameRegex);
+
+
+        let check = sprite => sprite.visible && sprite.isTouchingEdge();
+        let eventString = CheckUtility.getEventString(CheckName.TouchingEdge, negated, spriteNameRegex);
+        if (!verticalEdge) {
+            check = sprite => sprite.visible && sprite.isTouchingHorizEdge();
+            eventString = CheckUtility.getEventString(CheckName.TouchingHorizEdge, negated, spriteNameRegex);
+        } else if (!horizEdge){
+            check = sprite => sprite.visible && sprite.isTouchingVerticalEdge();
+            eventString = CheckUtility.getEventString(CheckName.TouchingVerticalEdge, negated, spriteNameRegex);
+        }
 
         cu.registerOnMoveEvent(spriteName, eventString, edgeID, (sprite) => {
             return !negated == sprite.isTouchingEdge();
         })
-
         return () => {
             const sprites = t.getSprites(sprite => sprite.name == spriteName, false);
             let anyTouchingEdge = false;
             for (let i = 0; i < sprites.length; i++) {
-                if (sprites[i].visible && sprites[i].isTouchingEdge()) {
+                if (check(sprites[i])) {
                     anyTouchingEdge = true;
                     break;
                 }
