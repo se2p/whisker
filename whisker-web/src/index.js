@@ -286,22 +286,13 @@ const initEvents = function () {
             .text(i18next.t("start-record"));
     });
     $('#record').on('click', () => {
-        if (Whisker.scratch.isInputEnabled()) {
             if (Whisker.inputRecorder.isRecording()) {
                 Whisker.inputRecorder.stopRecording();
+                Whisker.scratch.disableInput();
             } else {
+                Whisker.scratch.enableInput();
                 Whisker.inputRecorder.startRecording();
             }
-        } else {
-            showModal(i18next.t("inputs"), i18next.t("inputs-error"));
-        }
-    });
-    $('#toggle-input').on('change', event => {
-        if ($(event.target).is(':checked')) {
-            Whisker.scratch.enableInput();
-        } else {
-            Whisker.scratch.disableInput();
-        }
     });
     $('#toggle-advanced').on('change', event => {
         if ($(event.target).is(':checked')) {
