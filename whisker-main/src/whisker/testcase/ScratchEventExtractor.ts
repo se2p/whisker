@@ -35,6 +35,8 @@ import {Randomness} from "../utils/Randomness";
 import {DragSpriteEvent} from "./events/DragSpriteEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import Cast from "scratch-vm/src/util/cast";
+import {MouseMoveYEvent} from "./events/MouseMoveYEvent";
+import {MouseMoveXEvent} from "./events/MouseMoveXEvent";
 
 const twgl = require('twgl.js');
 
@@ -123,9 +125,13 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_mousex':
-            case 'sensing_mousey': {
+            case 'motion_setx':
+                eventList.add(new MouseMoveXEvent());
+                break;
+            case 'sensing_mousey':
+            case 'motion_sety':{
                 // Mouse move
-                eventList.add(new MouseMoveEvent());
+                eventList.add(new MouseMoveYEvent());
                 break;
             }
             case 'sensing_touchingobject': {

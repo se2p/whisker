@@ -91,6 +91,16 @@ export class InputExtraction {
         const direction = this.mapValueIntoRange(target.direction, -180, 180);
         spriteFeatures.set("Direction", direction);
 
+        // If we have a path to a goal extract the signed x and y distance to the next wayPoint as input.
+        if (Container.pathToGoal) {
+            const distanceToWaypoint = this.getDistanceToNextWaypoint(5, 75, target);
+            // Only add as input if we are close enough to a waypoint and actually have a path to follow.
+            if (distanceToWaypoint) {
+                spriteFeatures.set("DistanceToNextWaypoint-X", distanceToWaypoint.getFirst());
+                spriteFeatures.set("DistanceToNextWaypoint-Y", distanceToWaypoint.getSecond());
+            }
+        }
+
         // Collect additional information based on the behaviour of the target
         for (const blockId of Object.keys(target.blocks._blocks)) {
             const block = target.blocks.getBlock(blockId);
@@ -117,14 +127,6 @@ export class InputExtraction {
 
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
-                    if (Container.pathToGoal) {
-                        const distanceToWaypoint = this.getDistanceToNextWaypoint(5, 75, target);
-                        // Only add as input if we are close enough to a waypoint and actually have a path to follow.
-                        if (distanceToWaypoint) {
-                            spriteFeatures.set("DistanceToNextWaypoint-X", distanceToWaypoint.getFirst());
-                            spriteFeatures.set("DistanceToNextWaypoint-Y", distanceToWaypoint.getSecond());
-                        }
-                    }
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
                     if (generator) {
                         // If called by the generator set up the rangeFinder sensor nodes.
