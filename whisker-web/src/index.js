@@ -237,6 +237,17 @@ const initComponents = function () {
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
 }
 
+function showAndJumpTo(elem) {
+    $(elem).show();
+    jumpTo(elem);
+}
+
+function jumpTo(elem) {
+    location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+    location.href = elem
+    window.scrollBy(0, -100) // respect header size
+}
+
 const initEvents = function () {
     $("#acceleration-factor")
         .on('slide', function (slideEvt) { $("#acceleration-value").text(slideEvt.value);})
@@ -297,9 +308,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#scratch-controls').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#scratch-controls'
+            showAndJumpTo('#scratch-controls');
         } else {
             $(event.target)
                 .parent()
@@ -312,9 +321,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#output-run').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#output-run'
+            showAndJumpTo('#output-run');
         } else {
             $(event.target)
                 .parent()
@@ -327,9 +334,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#output-log').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#output-log'
+            showAndJumpTo('#output-log');
         } else {
             $(event.target)
                 .parent()
@@ -349,8 +354,7 @@ const initEvents = function () {
                         // TODO: This text is used as a marker to tell servant
                         //       when the search is done. There must be a nicer way...
                         Whisker.outputRun.println('summary');
-                        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-                        location.href = '#test-table'
+                        jumpTo('#test-table')
                     },
                 );
             }
