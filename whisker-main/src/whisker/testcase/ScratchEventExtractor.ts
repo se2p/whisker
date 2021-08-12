@@ -93,6 +93,16 @@ export abstract class ScratchEventExtractor {
                 foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
             }
 
+            // Block setting x-coordinate
+            if(block.inputs.X){
+                foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.X.block)));
+            }
+
+            // Block setting y-coordinate
+            if(block.inputs.Y){
+                this.traverseBlocks(target, target.blocks.getBlock(block.inputs.Y.block), foundEvents);
+            }
+
             // handle procedure calls by mapping the call to its corresponding procedure_definition
             if (target.blocks.getOpcode(block) === 'procedures_call') {
                 if (this.proceduresMap.has(block.mutation.proccode)) {
@@ -125,15 +135,11 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_mousex':
-            case 'motion_setx':
                 eventList.add(new MouseMoveXEvent());
                 break;
             case 'sensing_mousey':
-            case 'motion_sety':{
-                // Mouse move
                 eventList.add(new MouseMoveYEvent());
                 break;
-            }
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
