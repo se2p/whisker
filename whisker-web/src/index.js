@@ -430,6 +430,7 @@ $(document)
         initComponents();
         initEvents();
         toggleComponents();
+
     });
 
 window.onbeforeunload = function () {
@@ -540,6 +541,19 @@ $('.nav-link').on('click', event => {
         location.href = href + '?lng=' + lng;
         event.preventDefault();
     }
+});
+
+$(function() {
+    const stickyHeader = $('.sticky');
+    const stickyHeaderPosition = stickyHeader.offset().top;
+    $(window).scroll(function() {
+        const scroll = $(window).scrollTop();
+        if (scroll >= stickyHeaderPosition) {
+            stickyHeader.addClass('scrolled');
+        } else {
+            stickyHeader.removeClass('scrolled');
+        }
+    });
 });
 
 export {i18next as i18n};
