@@ -934,6 +934,10 @@ img {vertical-align: middle;}
     left: 15%;
 }
 
+#left-btn-group .btn {
+    margin-left: 20px;
+}
+
 #right-btn-group {
     position: absolute;
     right: 14.45%;
