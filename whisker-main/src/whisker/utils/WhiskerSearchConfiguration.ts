@@ -59,6 +59,7 @@ import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
 import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
+import {NetworkChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorTemplateNetwork";
 
 class ConfigException implements Error {
     message: string;
@@ -339,6 +340,11 @@ export class WhiskerSearchConfiguration {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vmWrapper, true), eventExtractor.extractEvents(Container.vm));
+            }
+            case 'templateNetwork': {
+                // TODO: Definitely make this more user friendly!!!!
+                return new NetworkChromosomeGeneratorTemplateNetwork(this.dict['mutation'], this.dict['crossover'],
+                    this.dict['networkTemplate']);
             }
             case 'test':
             default:

@@ -3,7 +3,7 @@
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
     "populationType": "random",
-    "population-size": 250,
+    "population-size": 25,
     "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -39,22 +39,21 @@
         "weightCoefficient": 0.3
     },
     "fitness-function": {
-        "type": "statement",
-        "targets": []
+        "type": "statement"
     },
     "network-fitness": {
-        "type": "score",
-        "timeout": 60000
+        "type": "survive",
+        "timeout": 300000
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
-                "type": "optimal"
+                "type": "fixed-iteration",
+                "iterations": 250
             },
             {
-                "type": "fixed-iteration",
-                "iterations": 300
+                "type": "optimal"
             },
             {
                 "type": "fixed-time",

@@ -2,7 +2,7 @@
     "test-generator": "neuroevolution",
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
-    "populationType": "neat",
+    "populationType": "random",
     "population-size": 250,
     "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
@@ -44,7 +44,7 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 60000
+        "timeout": 300000
     },
     "stopping-condition": {
         "type": "one-of",

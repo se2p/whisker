@@ -94,7 +94,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
-        StatisticsCollector.getInstance().updateAverageNetworkFitness(this._iterations, population.averageFitness)
+        StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, population.highestFitness);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =

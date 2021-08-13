@@ -45,7 +45,7 @@ export class StatisticsCollector {
     private _timeToReachFullCoverage: number;
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: List<FitnessFunction<Chromosome>>;
-    private readonly _averageNetworkFitness: Map<number, number>;
+    private readonly _bestNetworkFitness: Map<number, number>;
 
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
@@ -68,7 +68,7 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = 0;
         this._covOverTime = new Map<number, number>();
         this.coveredFitnessFunctions = new List<FitnessFunction<Chromosome>>();
-        this._averageNetworkFitness = new Map<number, number>();
+        this._bestNetworkFitness = new Map<number, number>();
     }
 
     public static getInstance(): StatisticsCollector {
@@ -138,8 +138,8 @@ export class StatisticsCollector {
         }
     }
 
-    public updateAverageNetworkFitness(iteration: number, averageNetworkFitness: number):void {
-        this._averageNetworkFitness.set(iteration, Math.trunc(averageNetworkFitness));
+    public updateBestNetworkFitnessTimeline(iteration: number, bestNetworkFitness: number):void {
+        this._bestNetworkFitness.set(iteration, Math.trunc(bestNetworkFitness));
     }
 
     get bestCoverage(): number {
@@ -271,7 +271,7 @@ export class StatisticsCollector {
         // AveragePopulationFitness header depending on iteration count.
         const networkFitnessHeaderValues = List.range(0, this.iterationCount).getElements();
         const networkFitnessHeader = networkFitnessHeaderValues.map(iteration => iteration.toString());
-        const coverageValues = [...this._averageNetworkFitness.values()]
+        const coverageValues = [...this._bestNetworkFitness.values()]
         const headerRow = headers.join(",").concat(",", networkFitnessHeader.join(","));
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
             this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage];

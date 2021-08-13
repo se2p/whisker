@@ -43,14 +43,14 @@
     },
     "network-fitness": {
         "type": "survive",
-        "timeout": 100000000
+        "timeout": 300000
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 300
+                "iterations": 250
             },
             {
                 "type": "optimal"

@@ -5,7 +5,7 @@ import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {NetworkChromosomeGenerator} from "./NetworkChromosomeGenerator";
 import {NetworkChromosome} from "../NetworkChromosome";
 
-export class NetworkChromosomeGeneratorExistingNetwork extends NetworkChromosomeGenerator {
+export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosomeGenerator {
 
     /**
      * The template of the existing Network
@@ -13,11 +13,14 @@ export class NetworkChromosomeGeneratorExistingNetwork extends NetworkChromosome
     private networkTemplate: Record<string, Record<string, (string| number)>>
 
     /**
-     * Constructs a new NetworkGenerator
+     * Constructs a new NetworkGenerator which generates copies of an existing network.
      * @param networkTemplate the template of the existing network from which we want to create a population of.
+     * @param mutationConfig the configuration parameters for the mutation operator
+     * @param crossoverConfig the configuration parameters for the crossover operator
      */
-    constructor(networkTemplate: Record<string, Record<string, (string| number)>>) {
-        super(networkTemplate.mutation, networkTemplate.crossover);
+    constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
+                networkTemplate: Record<string, Record<string, (string| number)>>) {
+        super(mutationConfig, crossoverConfig);
         this.networkTemplate = networkTemplate;
     }
 
@@ -27,6 +30,7 @@ export class NetworkChromosomeGeneratorExistingNetwork extends NetworkChromosome
      * @return: generated NetworkChromosome
      */
     get(): NetworkChromosome {
+        console.log(this.networkTemplate);
         return new NetworkChromosome(null,null, this._mutationOp, this._crossoverOp);
     }
 
