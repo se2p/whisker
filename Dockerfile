@@ -66,6 +66,7 @@ RUN apt-get update \
         libasound2 \
         libxshmfence1 \
         x11-utils \
+        dumb-init \
     && apt-get autoremove -y \
     && rm -rf /usr/share/icons \
     && rm -rf /usr/local/lib/node_modules

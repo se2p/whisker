@@ -30,4 +30,12 @@ if [ "${REDIRECT_OUTPUT}" = "--" ]; then
 fi
 
 # Run Whisker with the command line arguments passed to this script.
-eval "${WHISKER} $*"
+# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
+# https://snyk.io/blog/10-best-practices-to-containerize-nodejs-web-applications-with-docker/
+# https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
+# https://github.com/Yelp/dumb-init
+# Make sure to use `exec` here (instead of `eval`) such that the following command becomes the
+# container's PID 1. This allows Whisker to receive any Unix signals sent to the Docker container.
+# However, Node.js was not designed to run as PID 1. So we need to use an init wrapper that
+# forwards all received signals to the Node.js child process. (We use `dumb-init`).
+exec "dumb-init ${WHISKER} $*"
