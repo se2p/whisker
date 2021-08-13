@@ -44,7 +44,7 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 300000
+        "timeout": 600000
     },
     "stopping-condition": {
         "type": "one-of",

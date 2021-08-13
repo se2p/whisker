@@ -264,18 +264,43 @@ export class StatisticsCollector {
         return [headerRow, dataRow].join("\n");
     }
 
-    public asCsvNeuroevolution(): string {
+    public asCsvNeuroevolution(numberOfIterations?:number): string {
+
+        let header = [...this._bestNetworkFitness.keys()].sort((a, b) => a -b);
+        let values = [... this._bestNetworkFitness.values()].sort((a, b) => a -b);
+
+        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        const truncateFitnessTimeline = numberOfIterations != undefined && 0 <= numberOfIterations;
+
+        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
+        // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
+        // the number of columns should be padded in this case so that the number of columns is always identical.
+        if (truncateFitnessTimeline) {
+            const nextIteration = this.iterationCount > 0 ? this.iterationCount : 0;
+            const nextCoverageValue = this._bestNetworkFitness.get(this.iterationCount - 1);
+            console.log(nextCoverageValue)
+
+            const lengthDiff = Math.abs(numberOfIterations - this.iterationCount);
+
+            const range: (until: number) => number[] = (until) => [...Array(until).keys()];
+            const headerPadding = range(lengthDiff).map(x => nextIteration + x)
+            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
+
+            header = [...header, ...headerPadding].slice(0, numberOfIterations);
+            values = [...values, ...valuePadding].slice(0, numberOfIterations);
+        }
+
+        const fitnessHeaders = header.join(",");
+        const fitnessValues = values.join(",");
+
         // Standard headers
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage"];
         // AveragePopulationFitness header depending on iteration count.
-        const networkFitnessHeaderValues = List.range(0, this.iterationCount).getElements();
-        const networkFitnessHeader = networkFitnessHeaderValues.map(iteration => iteration.toString());
-        const coverageValues = [...this._bestNetworkFitness.values()]
-        const headerRow = headers.join(",").concat(",", networkFitnessHeader.join(","));
+        const headerRow = headers.join(",").concat(",", fitnessHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
             this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage];
-        const dataRow = data.join(",").concat(",", coverageValues.join(","));
+        const dataRow = data.join(",").concat(",", fitnessValues);
         return [headerRow, dataRow].join("\n");
     }
 

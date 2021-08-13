@@ -42,6 +42,7 @@ import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGenerator";
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
+import {FixedIterationsStoppingCondition} from "./search/stoppingconditions/FixedIterationsStoppingCondition";
 
 export class Search {
 
@@ -114,7 +115,21 @@ export class Search {
          */
         let stoppingCondition : StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
-            console.log(StatisticsCollector.getInstance().asCsvNeuroevolution());
+            let maxIterations: number = undefined;
+            stoppingCondition = config.getNeuroevolutionProperties().stoppingCondition;
+            if(stoppingCondition instanceof FixedIterationsStoppingCondition){
+                maxIterations = stoppingCondition.maxIterations;
+            }
+            else if (stoppingCondition instanceof OneOfStoppingCondition){
+                for (const d of stoppingCondition.conditions) {
+                    if (d instanceof FixedIterationsStoppingCondition) {
+                        if (maxIterations == undefined || maxIterations > d.maxIterations) { // take the minimum
+                            maxIterations = d.maxIterations;
+                        }
+                    }
+                }
+            }
+            console.log(StatisticsCollector.getInstance().asCsvNeuroevolution(maxIterations));
             return;
         }
         else {
