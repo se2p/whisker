@@ -58,6 +58,20 @@ export class InputNode extends NodeGene {
  Feature: ${this.feature}}`;
     }
 
+    /**
+     * Transforms this NodeGene into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | string)> {
+        const node = {}
+        node[`id`] = this.id;
+        node[`type`] = NodeType[this.type];
+        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        node[`sprite`] = this.sprite;
+        node['feature'] = this.feature;
+        return node;
+    }
+
     get sprite(): string {
         return this._sprite;
     }

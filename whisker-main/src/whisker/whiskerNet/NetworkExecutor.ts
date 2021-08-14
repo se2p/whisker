@@ -187,7 +187,6 @@ export class NetworkExecutor {
      * @param network the network which should play the given game.
      */
     async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
-        console.log(`RANDOM`)
         const events = new List<[ScratchEvent, number[]]>();
         const codons = new List<number>()
 

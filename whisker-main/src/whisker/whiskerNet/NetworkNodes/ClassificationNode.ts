@@ -58,6 +58,19 @@ export class ClassificationNode extends NodeGene {
 , InputConnections: ${this.incomingConnections}}`;
     }
 
+    /**
+     * Transforms this Classification Node into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | string)> {
+        const node = {}
+        node[`id`] = this.id;
+        node[`type`] = "CLASSIFICATION";
+        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        node[`event`] = this.event.stringIdentifier();
+        return node;
+    }
+
     get event(): ScratchEvent {
         return this._event;
     }

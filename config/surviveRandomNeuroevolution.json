@@ -50,7 +50,7 @@
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 250
+                "iterations": 100
             },
             {
                 "type": "optimal"

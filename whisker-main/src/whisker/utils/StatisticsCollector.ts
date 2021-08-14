@@ -269,16 +269,16 @@ export class StatisticsCollector {
         let header = [...this._bestNetworkFitness.keys()].sort((a, b) => a -b);
         let values = [... this._bestNetworkFitness.values()].sort((a, b) => a -b);
 
-        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        // Truncate the fitness timeline to the given numberOfIterations count if necessary.
         const truncateFitnessTimeline = numberOfIterations != undefined && 0 <= numberOfIterations;
 
-        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
-        // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
-        // the number of columns should be padded in this case so that the number of columns is always identical.
+        // If the search stops before the maximum iteration count has been reached, the CSV file will only include
+        // columns up to that iteration count, and not until the desired max iteration count. As a result, experiment
+        // data becomes difficult to merge. Therefore, the number of columns should be padded in this case so that
+        // the number of iterations is always identical.
         if (truncateFitnessTimeline) {
             const nextIteration = this.iterationCount > 0 ? this.iterationCount : 0;
             const nextCoverageValue = this._bestNetworkFitness.get(this.iterationCount - 1);
-            console.log(nextCoverageValue)
 
             const lengthDiff = Math.abs(numberOfIterations - this.iterationCount);
 
@@ -296,7 +296,8 @@ export class StatisticsCollector {
         // Standard headers
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage"];
-        // AveragePopulationFitness header depending on iteration count.
+
+        // Average population fitness header depending on max iteration count.
         const headerRow = headers.join(",").concat(",", fitnessHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
             this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage];

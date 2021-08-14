@@ -95,6 +95,8 @@ export class ConnectionGene {
         connection[`Target`] = this.target.id;
         connection[`Weight`] = this.weight;
         connection[`Enabled`] = this.isEnabled;
+        connection[`Innovation`] = this.innovation;
+        connection[`Recurrent`] = this.isRecurrent;
         return connection;
     }
 

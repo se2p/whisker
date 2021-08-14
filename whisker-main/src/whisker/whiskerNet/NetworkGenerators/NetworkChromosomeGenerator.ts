@@ -49,7 +49,7 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
      * @param outputNodes all outputNodes of the network
      * @return the connectionGene List
      */
-    abstract createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene>;
+    abstract createConnections(inputNodes?: List<List<NodeGene>>, outputNodes?: List<NodeGene>): List<ConnectionGene>;
 
     /**
      * Adds regression nodes to the network

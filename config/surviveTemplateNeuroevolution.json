@@ -1,0 +1,743 @@
+{
+    "test-generator": "neuroevolution",
+    "algorithm": "neat",
+    "chromosome": "templateNetwork",
+    "populationType": "neat",
+    "population-size": 30,
+    "numberOfSpecies": 10,
+    "parentsPerSpecies": 0.20,
+    "penalizingAge": 15,
+    "ageSignificance": 1.0,
+    "inputRate": 0.3,
+    "extractor": "neuroevolution",
+    "crossover": {
+        "operator": "neatCrossover",
+        "crossoverWithoutMutation": 0.2,
+        "interspeciesRate": 0.001,
+        "weightAverageRate": 0.4
+    },
+    "mutation": {
+        "operator": "neatMutation",
+        "mutationWithoutCrossover": 0.25,
+        "mutationAddConnection": 0.05,
+        "recurrentConnection": 0.1,
+        "addConnectionTries": 50,
+        "populationChampionNumberOffspring": 3,
+        "populationChampionNumberClones": 1,
+        "populationChampionConnectionMutation": 0.3,
+        "mutationAddNode": 0.03,
+        "mutateWeights": 0.6,
+        "perturbationPower": 2.5,
+        "mutateToggleEnableConnection": 0.1,
+        "toggleEnableConnectionTimes": 3,
+        "mutateEnableConnection": 0.03
+    },
+    "compatibility": {
+        "distanceThreshold": 3.0,
+        "disjointCoefficient": 1,
+        "excessCoefficient": 1,
+        "weightCoefficient": 0.3
+    },
+    "fitness-function": {
+        "type": "statement",
+        "targets": []
+    },
+    "network-fitness": {
+        "type": "survive",
+        "timeout": 300000
+    },
+    "stopping-condition": {
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "optimal"
+            },
+            {
+                "type": "fixed-iteration",
+                "iterations": 100
+            },
+            {
+                "type": "fixed-time",
+                "duration": 468000000
+            }
+        ]
+    },
+    "waitStepUpperBound": 250,
+    "click-duration": 1,
+    "pressDurationUpperBound": 250,
+    "networkTemplate": {
+        "Id": 90,
+        "NetworkFitness": 13,
+        "FitnessShared": 2.1666666666666665,
+        "ExpectedOffspring": 1.5384615384615383,
+        "DeathMark": false,
+        "Nodes": {
+            "Node 0": {
+                "id": 0,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Bowl",
+                "feature": "X-Position"
+            },
+            "Node 1": {
+                "id": 1,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Bowl",
+                "feature": "Y-Position"
+            },
+            "Node 2": {
+                "id": 2,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Bowl",
+                "feature": "Direction"
+            },
+            "Node 3": {
+                "id": 3,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Apple",
+                "feature": "X-Position"
+            },
+            "Node 4": {
+                "id": 4,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Apple",
+                "feature": "Y-Position"
+            },
+            "Node 5": {
+                "id": 5,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Apple",
+                "feature": "Direction"
+            },
+            "Node 6": {
+                "id": 6,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Apple",
+                "feature": "DistanceToBowl-X"
+            },
+            "Node 7": {
+                "id": 7,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Apple",
+                "feature": "DistanceToBowl-Y"
+            },
+            "Node 8": {
+                "id": 8,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Apple",
+                "feature": "DistanceToRedbar-X"
+            },
+            "Node 9": {
+                "id": 9,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Apple",
+                "feature": "DistanceToRedbar-Y"
+            },
+            "Node 10": {
+                "id": 10,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Banana",
+                "feature": "X-Position"
+            },
+            "Node 11": {
+                "id": 11,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Banana",
+                "feature": "Y-Position"
+            },
+            "Node 12": {
+                "id": 12,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Banana",
+                "feature": "Direction"
+            },
+            "Node 13": {
+                "id": 13,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Banana",
+                "feature": "DistanceToBowl-X"
+            },
+            "Node 14": {
+                "id": 14,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Banana",
+                "feature": "DistanceToBowl-Y"
+            },
+            "Node 15": {
+                "id": 15,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Banana",
+                "feature": "DistanceToRedbar-X"
+            },
+            "Node 16": {
+                "id": 16,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Banana",
+                "feature": "DistanceToRedbar-Y"
+            },
+            "Node 17": {
+                "id": 17,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Redbar",
+                "feature": "X-Position"
+            },
+            "Node 18": {
+                "id": 18,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Redbar",
+                "feature": "Y-Position"
+            },
+            "Node 19": {
+                "id": 19,
+                "type": "INPUT",
+                "activationFunction": "NONE",
+                "sprite": "Redbar",
+                "feature": "Direction"
+            },
+            "Node 20": {
+                "id": 20,
+                "type": "BIAS",
+                "activationFunction": "NONE"
+            },
+            "Node 21": {
+                "id": 21,
+                "type": "CLASSIFICATION",
+                "activationFunction": "SIGMOID",
+                "event": "KeyPressEvent-right arrow"
+            },
+            "Node 22": {
+                "id": 22,
+                "type": "CLASSIFICATION",
+                "activationFunction": "SIGMOID",
+                "event": "KeyPressEvent-left arrow"
+            },
+            "Node 23": {
+                "id": 23,
+                "type": "CLASSIFICATION",
+                "activationFunction": "SIGMOID",
+                "event": "WaitEvent"
+            },
+            "Node 24": {
+                "id": 24,
+                "type": "REGRESSION",
+                "activationFunction": "NONE",
+                "event": "KeyPressEvent-right arrow",
+                "eventParameter": "Steps"
+            },
+            "Node 25": {
+                "id": 25,
+                "type": "REGRESSION",
+                "activationFunction": "NONE",
+                "event": "KeyPressEvent-left arrow",
+                "eventParameter": "Steps"
+            },
+            "Node 26": {
+                "id": 26,
+                "type": "REGRESSION",
+                "activationFunction": "NONE",
+                "event": "WaitEvent",
+                "eventParameter": "Duration"
+            }
+        },
+        "Connections": {
+            "Connection 0": {
+                "Source": 10,
+                "Target": 21,
+                "Weight": 4.743655692729767,
+                "Enabled": true,
+                "Innovation": 43,
+                "Recurrent": false
+            },
+            "Connection 1": {
+                "Source": 10,
+                "Target": 22,
+                "Weight": 1.017736196844993,
+                "Enabled": true,
+                "Innovation": 44,
+                "Recurrent": false
+            },
+            "Connection 2": {
+                "Source": 10,
+                "Target": 23,
+                "Weight": -1.4876757544581616,
+                "Enabled": true,
+                "Innovation": 45,
+                "Recurrent": false
+            },
+            "Connection 3": {
+                "Source": 10,
+                "Target": 24,
+                "Weight": -0.09458590534979461,
+                "Enabled": true,
+                "Innovation": 46,
+                "Recurrent": false
+            },
+            "Connection 4": {
+                "Source": 10,
+                "Target": 25,
+                "Weight": -2.0629715363511654,
+                "Enabled": true,
+                "Innovation": 47,
+                "Recurrent": false
+            },
+            "Connection 5": {
+                "Source": 10,
+                "Target": 26,
+                "Weight": 2.862772205075446,
+                "Enabled": true,
+                "Innovation": 48,
+                "Recurrent": false
+            },
+            "Connection 6": {
+                "Source": 11,
+                "Target": 21,
+                "Weight": -2.619105795610425,
+                "Enabled": true,
+                "Innovation": 49,
+                "Recurrent": false
+            },
+            "Connection 7": {
+                "Source": 11,
+                "Target": 22,
+                "Weight": -2.0382265946502054,
+                "Enabled": true,
+                "Innovation": 50,
+                "Recurrent": false
+            },
+            "Connection 8": {
+                "Source": 11,
+                "Target": 23,
+                "Weight": -3.3641546639231823,
+                "Enabled": true,
+                "Innovation": 51,
+                "Recurrent": false
+            },
+            "Connection 9": {
+                "Source": 11,
+                "Target": 24,
+                "Weight": 0.4773769718792866,
+                "Enabled": true,
+                "Innovation": 52,
+                "Recurrent": false
+            },
+            "Connection 10": {
+                "Source": 11,
+                "Target": 25,
+                "Weight": -4.938378772290809,
+                "Enabled": true,
+                "Innovation": 53,
+                "Recurrent": false
+            },
+            "Connection 11": {
+                "Source": 11,
+                "Target": 26,
+                "Weight": 1.9730474108367626,
+                "Enabled": true,
+                "Innovation": 54,
+                "Recurrent": false
+            },
+            "Connection 12": {
+                "Source": 12,
+                "Target": 21,
+                "Weight": 1.607681755829904,
+                "Enabled": true,
+                "Innovation": 55,
+                "Recurrent": false
+            },
+            "Connection 13": {
+                "Source": 12,
+                "Target": 22,
+                "Weight": 0.45180684156378603,
+                "Enabled": true,
+                "Innovation": 56,
+                "Recurrent": false
+            },
+            "Connection 14": {
+                "Source": 12,
+                "Target": 23,
+                "Weight": 0.7381901577503428,
+                "Enabled": true,
+                "Innovation": 57,
+                "Recurrent": false
+            },
+            "Connection 15": {
+                "Source": 12,
+                "Target": 24,
+                "Weight": 1.643572102194787,
+                "Enabled": true,
+                "Innovation": 58,
+                "Recurrent": false
+            },
+            "Connection 16": {
+                "Source": 12,
+                "Target": 25,
+                "Weight": 1.1397462277091903,
+                "Enabled": true,
+                "Innovation": 59,
+                "Recurrent": false
+            },
+            "Connection 17": {
+                "Source": 12,
+                "Target": 26,
+                "Weight": 0.491008659122085,
+                "Enabled": true,
+                "Innovation": 60,
+                "Recurrent": false
+            },
+            "Connection 18": {
+                "Source": 13,
+                "Target": 21,
+                "Weight": 2.2937457133058987,
+                "Enabled": true,
+                "Innovation": 61,
+                "Recurrent": false
+            },
+            "Connection 19": {
+                "Source": 13,
+                "Target": 22,
+                "Weight": 0.5087984396433469,
+                "Enabled": true,
+                "Innovation": 62,
+                "Recurrent": false
+            },
+            "Connection 20": {
+                "Source": 13,
+                "Target": 23,
+                "Weight": -0.8320044581618655,
+                "Enabled": true,
+                "Innovation": 63,
+                "Recurrent": false
+            },
+            "Connection 21": {
+                "Source": 13,
+                "Target": 24,
+                "Weight": -1.913569530178326,
+                "Enabled": true,
+                "Innovation": 64,
+                "Recurrent": false
+            },
+            "Connection 22": {
+                "Source": 13,
+                "Target": 25,
+                "Weight": 2.865633573388203,
+                "Enabled": true,
+                "Innovation": 65,
+                "Recurrent": false
+            },
+            "Connection 23": {
+                "Source": 13,
+                "Target": 26,
+                "Weight": 2.5196009087791493,
+                "Enabled": true,
+                "Innovation": 66,
+                "Recurrent": false
+            },
+            "Connection 24": {
+                "Source": 14,
+                "Target": 21,
+                "Weight": 1.1724108367626886,
+                "Enabled": true,
+                "Innovation": 67,
+                "Recurrent": false
+            },
+            "Connection 25": {
+                "Source": 14,
+                "Target": 22,
+                "Weight": 3.879190243484225,
+                "Enabled": true,
+                "Innovation": 68,
+                "Recurrent": false
+            },
+            "Connection 26": {
+                "Source": 14,
+                "Target": 23,
+                "Weight": -0.19678069272976695,
+                "Enabled": true,
+                "Innovation": 69,
+                "Recurrent": false
+            },
+            "Connection 27": {
+                "Source": 14,
+                "Target": 24,
+                "Weight": -2.294560185185185,
+                "Enabled": true,
+                "Innovation": 70,
+                "Recurrent": false
+            },
+            "Connection 28": {
+                "Source": 14,
+                "Target": 25,
+                "Weight": 1.1274648491083679,
+                "Enabled": true,
+                "Innovation": 71,
+                "Recurrent": false
+            },
+            "Connection 29": {
+                "Source": 14,
+                "Target": 26,
+                "Weight": 3.8439107510288064,
+                "Enabled": true,
+                "Innovation": 72,
+                "Recurrent": false
+            },
+            "Connection 30": {
+                "Source": 15,
+                "Target": 21,
+                "Weight": 1.509409293552812,
+                "Enabled": true,
+                "Innovation": 73,
+                "Recurrent": false
+            },
+            "Connection 31": {
+                "Source": 15,
+                "Target": 22,
+                "Weight": 0.3763395919067216,
+                "Enabled": true,
+                "Innovation": 74,
+                "Recurrent": false
+            },
+            "Connection 32": {
+                "Source": 15,
+                "Target": 23,
+                "Weight": 1.0198902606310014,
+                "Enabled": true,
+                "Innovation": 75,
+                "Recurrent": false
+            },
+            "Connection 33": {
+                "Source": 15,
+                "Target": 24,
+                "Weight": -2.088359482167353,
+                "Enabled": true,
+                "Innovation": 76,
+                "Recurrent": false
+            },
+            "Connection 34": {
+                "Source": 15,
+                "Target": 25,
+                "Weight": 0.6924082647462275,
+                "Enabled": true,
+                "Innovation": 77,
+                "Recurrent": false
+            },
+            "Connection 35": {
+                "Source": 15,
+                "Target": 26,
+                "Weight": -0.4158200445816185,
+                "Enabled": true,
+                "Innovation": 78,
+                "Recurrent": false
+            },
+            "Connection 36": {
+                "Source": 16,
+                "Target": 21,
+                "Weight": -0.08084705075445808,
+                "Enabled": true,
+                "Innovation": 79,
+                "Recurrent": false
+            },
+            "Connection 37": {
+                "Source": 16,
+                "Target": 22,
+                "Weight": 2.318404921124828,
+                "Enabled": true,
+                "Innovation": 80,
+                "Recurrent": false
+            },
+            "Connection 38": {
+                "Source": 16,
+                "Target": 23,
+                "Weight": 3.495434670781893,
+                "Enabled": true,
+                "Innovation": 81,
+                "Recurrent": false
+            },
+            "Connection 39": {
+                "Source": 16,
+                "Target": 24,
+                "Weight": -0.651823988340192,
+                "Enabled": true,
+                "Innovation": 82,
+                "Recurrent": false
+            },
+            "Connection 40": {
+                "Source": 16,
+                "Target": 25,
+                "Weight": 2.379501028806584,
+                "Enabled": true,
+                "Innovation": 83,
+                "Recurrent": false
+            },
+            "Connection 41": {
+                "Source": 16,
+                "Target": 26,
+                "Weight": -2.2807248799725652,
+                "Enabled": true,
+                "Innovation": 84,
+                "Recurrent": false
+            },
+            "Connection 42": {
+                "Source": 17,
+                "Target": 21,
+                "Weight": -2.4883187585733886,
+                "Enabled": true,
+                "Innovation": 103,
+                "Recurrent": false
+            },
+            "Connection 43": {
+                "Source": 17,
+                "Target": 22,
+                "Weight": 0.8283929183813443,
+                "Enabled": true,
+                "Innovation": 104,
+                "Recurrent": false
+            },
+            "Connection 44": {
+                "Source": 17,
+                "Target": 23,
+                "Weight": -1.2211291152263375,
+                "Enabled": true,
+                "Innovation": 105,
+                "Recurrent": false
+            },
+            "Connection 45": {
+                "Source": 17,
+                "Target": 24,
+                "Weight": 0.2946137688614543,
+                "Enabled": true,
+                "Innovation": 106,
+                "Recurrent": false
+            },
+            "Connection 46": {
+                "Source": 17,
+                "Target": 25,
+                "Weight": -0.2251157407407407,
+                "Enabled": true,
+                "Innovation": 107,
+                "Recurrent": false
+            },
+            "Connection 47": {
+                "Source": 17,
+                "Target": 26,
+                "Weight": 1.217260373799726,
+                "Enabled": true,
+                "Innovation": 108,
+                "Recurrent": false
+            },
+            "Connection 48": {
+                "Source": 18,
+                "Target": 21,
+                "Weight": -0.8804441015089164,
+                "Enabled": true,
+                "Innovation": 109,
+                "Recurrent": false
+            },
+            "Connection 49": {
+                "Source": 18,
+                "Target": 22,
+                "Weight": 3.2050432956104253,
+                "Enabled": true,
+                "Innovation": 110,
+                "Recurrent": false
+            },
+            "Connection 50": {
+                "Source": 18,
+                "Target": 23,
+                "Weight": 0.67536865569273,
+                "Enabled": true,
+                "Innovation": 111,
+                "Recurrent": false
+            },
+            "Connection 51": {
+                "Source": 18,
+                "Target": 24,
+                "Weight": -0.3869062928669411,
+                "Enabled": true,
+                "Innovation": 112,
+                "Recurrent": false
+            },
+            "Connection 52": {
+                "Source": 18,
+                "Target": 25,
+                "Weight": 1.2789351851851851,
+                "Enabled": true,
+                "Innovation": 113,
+                "Recurrent": false
+            },
+            "Connection 53": {
+                "Source": 18,
+                "Target": 26,
+                "Weight": -1.0743098422496569,
+                "Enabled": true,
+                "Innovation": 114,
+                "Recurrent": false
+            },
+            "Connection 54": {
+                "Source": 19,
+                "Target": 21,
+                "Weight": -1.0208976337448559,
+                "Enabled": true,
+                "Innovation": 115,
+                "Recurrent": false
+            },
+            "Connection 55": {
+                "Source": 19,
+                "Target": 22,
+                "Weight": -0.5706983024691358,
+                "Enabled": true,
+                "Innovation": 116,
+                "Recurrent": false
+            },
+            "Connection 56": {
+                "Source": 19,
+                "Target": 23,
+                "Weight": -2.1286008230452675,
+                "Enabled": true,
+                "Innovation": 117,
+                "Recurrent": false
+            },
+            "Connection 57": {
+                "Source": 19,
+                "Target": 24,
+                "Weight": -2.382801783264746,
+                "Enabled": true,
+                "Innovation": 118,
+                "Recurrent": false
+            },
+            "Connection 58": {
+                "Source": 19,
+                "Target": 25,
+                "Weight": 1.8279106652949246,
+                "Enabled": true,
+                "Innovation": 119,
+                "Recurrent": false
+            },
+            "Connection 59": {
+                "Source": 19,
+                "Target": 26,
+                "Weight": -1.7675861625514402,
+                "Enabled": true,
+                "Innovation": 120,
+                "Recurrent": false
+            }
+        }
+    }
+}

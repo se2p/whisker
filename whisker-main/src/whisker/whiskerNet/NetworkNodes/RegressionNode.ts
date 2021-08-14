@@ -76,11 +76,17 @@ export class RegressionNode extends NodeGene {
 , Parameter ${this.eventParameter}}`;
     }
 
-    toJSON(){
+    /**
+     * Transforms this NodeGene into a JSON representation.
+     * @return Record containing most important attributes keys mapped to their values.
+     */
+    public toJSON(): Record<string, (number | string)> {
         const node = {}
         node[`id`] = this.id;
-        node[`type`] = 'REGRESSION';
+        node[`type`] = "REGRESSION";
         node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        node[`event`] = this._event.stringIdentifier();
+        node['eventParameter'] = this._eventParameter;
         return node;
     }
 

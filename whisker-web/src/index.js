@@ -82,8 +82,10 @@ const runSearch = async function () {
     Whisker.outputLog.print(res[1]);
     accSlider.slider('enable');
     if (configName.toLowerCase().includes('neuroevolution')){
-        const title = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
-        new DownloadContainer(title, `json`, res[2]).download();
+        const titlePopulationRecord = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
+        new DownloadContainer(titlePopulationRecord, `json`, res[2]).download();
+        const bestNetwork = `${configName.substring(0, configName.indexOf('.json'))}-BestNetwork`;
+        new DownloadContainer(bestNetwork, `json`, res[3]).download();
     }
     return res[0];
 };

@@ -20,6 +20,8 @@
 
 import {Randomness} from "./Randomness";
 import isEqual from 'lodash.isequal';
+import {NodeGene} from "../whiskerNet/NetworkNodes/NodeGene";
+import {ConnectionGene} from "../whiskerNet/ConnectionGene";
 
 /**
  * A class to store a list of elements of the same type.
@@ -153,6 +155,16 @@ export class List<T> implements Iterable<T> {
      */
     filter(predicate: (value: T, index: number, array: T[]) => boolean): List<T> {
         return new List<T>(this._items.filter(predicate));
+    }
+
+    /**
+     * Returns the first element where the given predicate evaluates to true. If no element was found the function
+     * returns unknown.
+     * @param predicate the predicate is called for each element in the list until an element return true is found.
+     * @return T the found element matching the given predicate or undefined otherwise
+     */
+    find(predicate: (value:T, index:number, obj: T[]) => unknown):T | undefined{
+        return this._items.find(predicate);
     }
 
     /**

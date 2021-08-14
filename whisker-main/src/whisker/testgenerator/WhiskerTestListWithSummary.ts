@@ -5,6 +5,7 @@ export class WhiskerTestListWithSummary {
     private readonly _testList: List<WhiskerTest>;
     private readonly _summary: string;
     private _networkPopulation: string;
+    private _bestNetwork: string;
 
     constructor(testList: List<WhiskerTest>, summary: string){
         // console.log('constructing a WhiskerTestListWithSummary, testList: ', testList);
@@ -27,5 +28,13 @@ export class WhiskerTestListWithSummary {
 
     set networkPopulation(value: string) {
         this._networkPopulation = value;
+    }
+
+    get bestNetwork(): string {
+        return this._bestNetwork;
+    }
+
+    set bestNetwork(value: string) {
+        this._bestNetwork = value;
     }
 }

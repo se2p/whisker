@@ -108,6 +108,12 @@ describe("List", () => {
         expect(list.getElements()).toEqual([13,21,9,33,77,35,11,20,62,81])
     });
 
+    test("Test find", () => {
+        const keyPressEvent = new KeyPressEvent('left arrow')
+        const list = new List([new MouseMoveEvent(), new WaitEvent(), new KeyPressEvent('left arrow')]);
+        expect(list.find(event => event instanceof KeyPressEvent)).toEqual(keyPressEvent);
+    });
+
     test("Test FindIndex", () => {
         const list = new List([new MouseMoveEvent(), new WaitEvent(), new KeyPressEvent('left arrow')]);
         expect(list.findIndex(event => event instanceof KeyPressEvent)).toEqual(2);

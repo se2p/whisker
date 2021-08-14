@@ -343,9 +343,10 @@ export class WhiskerSearchConfiguration {
                     InputExtraction.extractSpriteInfo(Container.vmWrapper, true), eventExtractor.extractEvents(Container.vm));
             }
             case 'templateNetwork': {
-                // TODO: Definitely make this more user friendly!!!!
+                // TODO: Definitely make this more user friendly -> Load networkTemplate from file not from config!!!!
+                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorTemplateNetwork(this.dict['mutation'], this.dict['crossover'],
-                    this.dict['networkTemplate']);
+                    this.dict['networkTemplate'], eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
             default:

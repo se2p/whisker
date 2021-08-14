@@ -1,27 +1,40 @@
 import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkNodes/NodeGene";
 import {ConnectionGene} from "../ConnectionGene";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {NetworkChromosomeGenerator} from "./NetworkChromosomeGenerator";
 import {NetworkChromosome} from "../NetworkChromosome";
+import {InputNode} from "../NetworkNodes/InputNode";
+import {ClassificationNode} from "../NetworkNodes/ClassificationNode";
+import {RegressionNode} from "../NetworkNodes/RegressionNode";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
+import {HiddenNode} from "../NetworkNodes/HiddenNode";
+import {BiasNode} from "../NetworkNodes/BiasNode";
 
 export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosomeGenerator {
 
     /**
      * The template of the existing Network
      */
-    private networkTemplate: Record<string, Record<string, (string| number)>>
+    private readonly _networkTemplate: Record<string, (number | string | Record<string, (number | string)>)>
+
+    /**
+     * All Scratch-Events the given Scratch project handles.
+     */
+    private readonly _scratchEvents: List<ScratchEvent>;
 
     /**
      * Constructs a new NetworkGenerator which generates copies of an existing network.
      * @param networkTemplate the template of the existing network from which we want to create a population of.
-     * @param mutationConfig the configuration parameters for the mutation operator
-     * @param crossoverConfig the configuration parameters for the crossover operator
+     * @param mutationConfig the configuration parameters for the mutation operator.
+     * @param crossoverConfig the configuration parameters for the crossover operator.
+     * @param scratchEvents all Scratch-Events found in the project.
      */
     constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
-                networkTemplate: Record<string, Record<string, (string| number)>>) {
+                networkTemplate: Record<string, (number | string | Record<string, (number | string)>)>,
+                scratchEvents: List<ScratchEvent>) {
         super(mutationConfig, crossoverConfig);
-        this.networkTemplate = networkTemplate;
+        this._networkTemplate = networkTemplate;
+        this._scratchEvents = scratchEvents;
     }
 
     /**
@@ -30,29 +43,49 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
      * @return: generated NetworkChromosome
      */
     get(): NetworkChromosome {
-        console.log(this.networkTemplate);
-        return new NetworkChromosome(null,null, this._mutationOp, this._crossoverOp);
-    }
-
-    /**
-     * Creates connections between input and output nodes according to the inputRate
-     * @param inputNodes all inputNodes of the network sorted according to the sprites they represent
-     * @param outputNodes all outputNodes of the network
-     * @return the connectionGene List
-     */
-    createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene> {
-        const connections = new List<ConnectionGene>();
-        // For each inputNode create a connection to each outputNode.
-        for (const inputNodeVector of inputNodes.getElements()) {
-            for (const inputNode of inputNodeVector) {
-                for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
-                    NeuroevolutionUtil.assignInnovationNumber(newConnection);
-                    connections.add(newConnection)
-                    outputNode.incomingConnections.add(newConnection);
+        const allNodes = new List<NodeGene>();
+        for (const nodeKey of Object.keys(this._networkTemplate.Nodes)) {
+            const node = this._networkTemplate.Nodes[nodeKey];
+            switch (node.type) {
+                case "INPUT":
+                    allNodes.add(new InputNode(node.id, node.sprite, node.feature));
+                    break;
+                case "BIAS":
+                    allNodes.add(new BiasNode(node.id));
+                    break;
+                case "HIDDEN":
+                    allNodes.add(new HiddenNode(node.id, node.activationFunction));
+                    break;
+                case "CLASSIFICATION": {
+                    const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
+                    allNodes.add(new ClassificationNode(node.id, event, node.activationFunction));
+                    break;
+                }
+                case "REGRESSION": {
+                    const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
+                    allNodes.add(new RegressionNode(node.id, event, node.eventParameter, node.activationFunction));
+                    break;
                 }
             }
         }
-        return connections;
+        const allConnections = new List<ConnectionGene>();
+        for (const connectionKey of Object.keys(this._networkTemplate.Connections)) {
+            const connection = this._networkTemplate.Connections[connectionKey];
+            const sourceNode = allNodes.find(node => node.id === connection.Source);
+            const targetNode = allNodes.find(node => node.id === connection.Target);
+            const recurrent = connection.Recurrent === `true`;
+            allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.Weight, connection.Enabled,
+                connection.Innovation, recurrent));
+        }
+        return new NetworkChromosome(allConnections, allNodes, this._mutationOp, this._crossoverOp);
+    }
+
+    /**
+     * Creates connections between input and output nodes. Function not required since connections are already defined
+     * through template network.
+     * @return undefined since connections are defined through template
+     */
+    createConnections(): List<ConnectionGene> {
+        return undefined;
     }
 }

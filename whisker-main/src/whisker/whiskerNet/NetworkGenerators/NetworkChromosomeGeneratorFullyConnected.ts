@@ -47,8 +47,8 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
         const allNodes = new List<NodeGene>();
 
         // Create the Input Nodes and add them to the nodes list;
-        // Sprites can have a different amount of infos i.e different amount of feature vector sizes.
-        const inputList = new List<List<NodeGene>>()
+        // Sprites can have a different amount of features.
+        const inputList = new List<List<NodeGene>>();
         this._inputs.forEach((value, spriteKey) => {
             const spriteList = new List<NodeGene>();
             value.forEach((value, featureKey) => {

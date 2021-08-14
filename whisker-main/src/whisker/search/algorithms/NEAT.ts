@@ -10,6 +10,8 @@ import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionPropertie
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
+import {ConnectionGene} from "../../whiskerNet/ConnectionGene";
+import {NodeGene} from "../../whiskerNet/NetworkNodes/NodeGene";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -28,6 +30,12 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Saves all Networks mapped to the generation they occurred in.
      */
     private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
+
+    /**
+     * The JSON record containing the bestIndividual found so far. Can be used for saving and loading networks
+     * between runs.
+     */
+    private _bestIndividual: Record<string, (number | ConnectionGene | NodeGene)>
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
@@ -51,7 +59,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      */
     async findSolution(): Promise<Map<number, C>> {
         // Report the current state of the search after <reportPeriod> iterations.
-        const reportPeriod = 1;
         const population = this.getPopulation();
         population.generatePopulation();
         this._iterations = 0;
@@ -60,12 +67,9 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes as List<C>);
             population.updatePopulationStatistics();
-            this._populationRecord.set(this._iterations, population.clone());
             population.evolve();
             this.updateBestIndividualAndStatistics(population);
-            if (this._iterations % reportPeriod === 0) {
-                this.reportOfCurrentIteration(population);
-            }
+            this.reportOfCurrentIteration(population);
             this._iterations++;
         }
         return this._archive as Map<number, C>;
@@ -100,6 +104,8 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 (this._iterations + 1) * this._neuroevolutionProperties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
+        this._populationRecord.set(this._iterations, population.clone());
+        this.updateBestIndividualRecord(population.populationChampion);
     }
 
     /**
@@ -131,8 +137,27 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     }
 
     /**
+     * Updates the record of the best individual found so far.
+     * @param bestIndividual the current population champion.
+     */
+    private updateBestIndividualRecord(bestIndividual: NetworkChromosome):void {
+        if (this._bestIndividual === undefined || this._bestIndividual.NetworkFitness < bestIndividual.networkFitness) {
+            this._bestIndividual = bestIndividual.toJSON();
+        }
+    }
+
+    /**
+     * Transforms the best individual into a JSON representation.
+     * @return string in JSON format containing the best individual in a format compatible to the
+     * TemplateNetworkGenerator
+     */
+    public getBestIndividualAsJSON(): string {
+        return JSON.stringify(this._bestIndividual, undefined, 4);
+    }
+
+    /**
      * Transforms the collected information about each Population obtained during the search into a JSON representation.
-     * @return string in JSON format containing collected Population information of each iteration.
+     * @return string in JSON format containing the collected Population information of each iteration.
      */
     public getPopulationRecordAsJSON(): string {
         const solution = {};

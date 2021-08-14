@@ -647,12 +647,18 @@ export class NetworkChromosome extends Chromosome {
         network[`FitnessShared`] = this.sharedFitness;
         network[`ExpectedOffspring`] = this.expectedOffspring;
         network[`DeathMark`] = this.hasDeathMark;
+
+        const nodes = {}
         for (let i = 0; i < this.allNodes.size(); i++) {
-            network[`Node ${i}`] = this.allNodes.get(i).toJSON();
+            nodes[`Node ${i}`] = this.allNodes.get(i).toJSON();
         }
+        network[`Nodes`] = nodes;
+
+        const connections = {};
         for (let i = 0; i < this.connections.size(); i++) {
-            network[`Connection ${i}`] = this.connections.get(i).toJSON();
+            connections[`Connection ${i}`] = this.connections.get(i).toJSON();
         }
+        network[`Connections`] = connections;
         return network;
     }
 

@@ -23,6 +23,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         // TODO: It is deeply necessary to separate NE and SearchAlgorithms.
         if(searchAlgorithm instanceof NEAT){
             testListWithSummary.networkPopulation = searchAlgorithm.getPopulationRecordAsJSON();
+            testListWithSummary.bestNetwork = searchAlgorithm.getBestIndividualAsJSON();
         }
         return testListWithSummary;
     }
