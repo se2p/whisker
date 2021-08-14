@@ -149,6 +149,7 @@ export class WhiskerSearchConfiguration {
         const timeout = this.dict['network-fitness']['timeout']
 
         properties.populationType = this.dict[`populationType`] as string;
+        properties.randomEventSelection = this.dict['randomNetworkEventSelection'] === 'true'
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;

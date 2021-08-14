@@ -165,6 +165,11 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _timeout: number
 
     /**
+     * Determines if events should be selected at random.
+     */
+    private _randomEventSelection:boolean
+
+    /**
      * Constructs an object that stores all relevant properties of a Neuroevolution Algorithm.
      * @param populationSize the size of the population
      */
@@ -404,5 +409,13 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     set timeout(value: number) {
         this._timeout = value;
+    }
+
+    get randomEventSelection(): boolean {
+        return this._randomEventSelection;
+    }
+
+    set randomEventSelection(value: boolean) {
+        this._randomEventSelection = value;
     }
 }

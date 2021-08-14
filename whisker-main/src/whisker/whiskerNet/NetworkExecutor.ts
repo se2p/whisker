@@ -183,6 +183,70 @@ export class NetworkExecutor {
     }
 
     /**
+     * Lets a neural network play the given Scratch game by randomly choosing events.
+     * @param network the network which should play the given game.
+     */
+    async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
+        console.log(`RANDOM`)
+        const events = new List<[ScratchEvent, number[]]>();
+        const codons = new List<number>()
+
+        seedScratch(String(Randomness.getInitialSeed()))
+
+        // Set up the Scratch-VM and start the game
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
+
+        // Initialise Timer for the timeout
+        let timer = Date.now();
+        this._timeout += Date.now();
+
+        // Play the game until we reach a GameOver state or the timeout
+        while (this._projectRunning && timer < this._timeout) {
+            // Collect the currently available events
+            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
+            if (this.availableEvents.isEmpty()) {
+                console.log("Whisker-Main: No events available for project.");
+                break;
+            }
+
+            // Select the nextEvent, set its parameters and send it to the Scratch-VM
+            const nextEvent: ScratchEvent = this._random.pickRandomElementFromList(this.availableEvents);
+            const args = [];
+            for (let i = 0; i < nextEvent.getNumVariableParameters(); i++) {
+                args.push(this._random.nextDoubleMinMax(-10, 10))
+            }
+            nextEvent.setParameter(args, ParameterTypes.REGRESSION);
+            events.add([nextEvent, args]);
+            this.notify(nextEvent, args);
+            await nextEvent.apply();
+            StatisticsCollector.getInstance().incrementEventsCount();
+
+            // Add a waitEvent in the end of each round.
+            const waitEvent = new WaitEvent(1);
+            events.add([waitEvent, []]);
+            await waitEvent.apply();
+            timer = Date.now();
+        }
+
+        // Save the executed Trace and the covered blocks
+        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
+        // End and reset the VM.
+        this._vmWrapper.end();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+
+        // Save the codons in order to transform the network into a TestChromosome later
+        network.codons = codons;
+        return network.trace;
+    }
+
+    /**
      * Event listener which checks if the project is still running, i.e no GameOver state was reached.
      */
     private projectStopped() {

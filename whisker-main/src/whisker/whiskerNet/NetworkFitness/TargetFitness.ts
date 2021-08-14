@@ -62,10 +62,15 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      * Calculates the distance to the target Sprite.
      * @param network the network to evaluate
      * @param timeout the timeout after which the execution of the Scratch-VM is halted.
+     * @param random if set true networks choose events randomly
      */
-    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, random?: boolean): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        await executor.execute(network);
+        if (random) {
+            await executor.executeRandom(network);
+        } else {
+            await executor.execute(network);
+        }
 
         // If we have no valid path to the target yet, try to find one. Sometimes we need to let some time pass within
         // a game for a valid path to become available.
@@ -112,7 +117,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         const playerEndPosition = new ScratchPosition(playerEnd.x, playerEnd.y)
 
         // TODO: Remove when we found root cause of defect networks (happens like once in 1000 times)
-        if(playerEndPosition.x === 0 && playerEndPosition.y === 0){
+        if (playerEndPosition.x === 0 && playerEndPosition.y === 0) {
             return 0.1;
         }
         // If we've found a valid path from start to the target. The fitness is determined by the index of the

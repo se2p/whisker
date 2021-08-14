@@ -15,11 +15,17 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NetworkCh
      * Calculates the number of reached blocks
      * @param network the network to evaluate
      * @param timeout the timeout after which the execution of the Scratch-VM is halted.
+     * @param random if set true networks choose events randomly
      */
-    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, random?:boolean): Promise<number> {
         // Get the execution Trace
         const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        await executor.execute(network);
+        if(random) {
+            await executor.executeRandom(network);
+        }
+        else{
+            await executor.execute(network)
+        }
         const statementScore = StatementNetworkFitness.getNumberReachedBlocks(network);
         network.networkFitness = statementScore;
         executor.resetState();
