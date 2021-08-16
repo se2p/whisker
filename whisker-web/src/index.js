@@ -265,6 +265,7 @@ const initEvents = function () {
         Whisker.scratch.stop();
     });
     $('#reset').on('click', () => {
+        $('#reset').tooltip('hide');
         if (Whisker.tests === undefined || Whisker.tests.length === 0) {
             showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
@@ -287,6 +288,7 @@ const initEvents = function () {
             .text(i18next.t("start-record"));
     });
     $('#record').on('click', () => {
+        $('#record').tooltip('hide');
             if (Whisker.inputRecorder.isRecording()) {
                 Whisker.inputRecorder.stopRecording();
                 Whisker.scratch.disableInput();
