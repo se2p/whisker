@@ -72,16 +72,6 @@ const enableVMRelatedButtons = function () {
     $('.vm-related').prop('disabled', false);
 }
 
-const disableScratchStartStop = function () {
-    $('#stop-scratch').prop('disabled', true);
-    $('#green-flag').prop('disabled', true);
-}
-
-const enableScratchStartStop = function () {
-    $('#stop-scratch').prop('disabled', false);
-    $('#green-flag').prop('disabled', false);
-}
-
 const runSearch = async function () {
     disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
@@ -124,9 +114,11 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
     if (testsRunning) {
         testsRunning = false;
         _showRunIcon();
+        enableVMRelatedButtons();
         Whisker.scratch.stop();
         Whisker.testRunner.abort();
     } else {
+        disableVMRelatedButtons('#run-all-tests');
         testsRunning = true;
         _showStopIcon();
         $('#green-flag').prop('disabled', true);
@@ -159,9 +151,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             CoverageGenerator.restoreClasses({Thread});
         } finally {
             _showRunIcon()
-            $('#green-flag').prop('disabled', false);
-            $('#reset').prop('disabled', false);
-            $('#record').prop('disabled', false);
+            enableVMRelatedButtons();
             accSlider.slider('enable');
         }
 
@@ -199,11 +189,9 @@ const runAllTests = async function () {
         showModal(i18next.t("test-execution"), i18next.t("no-project"));
         return;
     }
-
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    disableScratchStartStop();
     for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
         const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
         Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
@@ -212,7 +200,6 @@ const runAllTests = async function () {
         Whisker.outputRun.println();
         Whisker.outputLog.println();
     }
-    enableScratchStartStop();
 };
 
 const initScratch = function () {
