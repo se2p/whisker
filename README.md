@@ -75,7 +75,7 @@ Options:
   -k, --isConsoleForwarded            If the browser's console output should be forwarded (default: false)
   -o, --isLiveOutputCoverage          If new output of the coverage should be printed regularly (default: false)
   -l, --isLiveLogEnabled              If the new output of the log should be printed regularly (default: false)
-  -g, --isGeneticSearch               If new tests should be generated via genetic search (default: false)
+  -g, --generateTests [Path]          If new tests should be generated and where to put them
   -h, --help                          display help for command
 ```
 
