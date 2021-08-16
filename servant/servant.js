@@ -50,7 +50,7 @@ async function init () {
 
     if (generateTests) {
         // Todo use correct config
-        const downloadPath = typeof generateTests === 'string' ? generateTests : './';
+        const downloadPath = typeof generateTests === 'string' ? generateTests : __dirname;
         runGeneticSearch(browser, downloadPath)
             .then(() => {
                 browser.close();
@@ -186,7 +186,7 @@ async function runGeneticSearch (browser, downloadPath) {
     async function downloadTests () {
         await page._client.send('Page.setDownloadBehavior', {
             behavior: 'allow',
-            downloadPath: path.join(__dirname, downloadPath),
+            downloadPath: downloadPath
         });
         await (await page.$('.editor-save')).click();
         await page.waitForTimeout(5000);
@@ -198,7 +198,7 @@ async function runGeneticSearch (browser, downloadPath) {
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
-        logger.debug(`Downloading tests to ${downloadPath}`);
+        logger.debug(`Downloading tests to ${downloadPath}/tests.js`);
         await downloadTests();
         await page.close();
         return Promise.resolve(output);
