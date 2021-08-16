@@ -64,18 +64,26 @@ const loadTestsFromString = function (string) {
     return tests;
 };
 
-const disableScratchStartStop = function() {
+const disableVMRelatedButtons = function () {
+    $('.vm-related').prop('disabled', true);
+}
+
+const enableVMRelatedButtons = function () {
+    $('.vm-related').prop('disabled', false);
+}
+
+const disableScratchStartStop = function () {
     $('#stop-scratch').prop('disabled', true);
     $('#green-flag').prop('disabled', true);
 }
 
-const enableScratchStartStop = function() {
+const enableScratchStartStop = function () {
     $('#stop-scratch').prop('disabled', false);
     $('#green-flag').prop('disabled', false);
 }
 
 const runSearch = async function () {
-    disableScratchStartStop();
+    disableVMRelatedButtons();
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
@@ -94,11 +102,11 @@ const runSearch = async function () {
         accelerationFactor);
     Whisker.outputLog.print(res[1]);
     accSlider.slider('enable');
-    if (configName.toLowerCase().includes('neuroevolution')){
+    if (configName.toLowerCase().includes('neuroevolution')) {
         const title = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
         new DownloadContainer(title, `json`, res[2]).download();
     }
-    enableScratchStartStop();
+    enableVMRelatedButtons();
     return res[0];
 };
 
@@ -113,7 +121,6 @@ function _showStopIcon() {
 }
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
-    let running = i18next.t("running");
     if (testsRunning) {
         testsRunning = false;
         _showRunIcon();
@@ -263,8 +270,12 @@ function jumpTo(elem) {
 
 const initEvents = function () {
     $("#acceleration-factor")
-        .on('slide', function (slideEvt) { $("#acceleration-value").text(slideEvt.value);})
-        .on('change', function (clickEvt) { $("#acceleration-value").text(clickEvt.value.newValue);});
+        .on('slide', function (slideEvt) {
+            $("#acceleration-value").text(slideEvt.value);
+        })
+        .on('change', function (clickEvt) {
+            $("#acceleration-value").text(clickEvt.value.newValue);
+        });
     $('#green-flag').on('click', () => {
         if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t("test-generation"), i18next.t("no-project"));
@@ -300,13 +311,13 @@ const initEvents = function () {
     });
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
-            if (Whisker.inputRecorder.isRecording()) {
-                Whisker.inputRecorder.stopRecording();
-                Whisker.scratch.disableInput();
-            } else {
-                Whisker.scratch.enableInput();
-                Whisker.inputRecorder.startRecording();
-            }
+        if (Whisker.inputRecorder.isRecording()) {
+            Whisker.inputRecorder.stopRecording();
+            Whisker.scratch.disableInput();
+        } else {
+            Whisker.scratch.enableInput();
+            Whisker.inputRecorder.startRecording();
+        }
     });
     $('#toggle-advanced').on('change', event => {
         if ($(event.target).is(':checked')) {
@@ -559,10 +570,10 @@ $('.nav-link').on('click', event => {
 });
 
 /* Add border to header if it sticks to the top */
-$(function() {
+$(function () {
     const stickyHeader = $('.sticky');
     const stickyHeaderPosition = stickyHeader.offset().top;
-    $(window).scroll(function() {
+    $(window).scroll(function () {
         const scroll = $(window).scrollTop();
         if (scroll > stickyHeaderPosition + 1) {
             stickyHeader.addClass('scrolled');

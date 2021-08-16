@@ -29,14 +29,14 @@
             <!-- Buttons on the left -->
             <div id="left-btn-group" class="btn-group-toggle" data-toggle="buttons">
                 <!-- Run all tests button -->
-                <button id="run-all-tests" class="btn btn-main" type="button"
+                <button id="run-all-tests" class="btn btn-main vm-related" type="button"
                         data-toggle="tooltip" data-placement="bottom" data-animation="false"
                         data-i18n="[title]t-tests">
                     <i id="run-tests-icon" class="fas fa-play"></i>
                     <i id="stop-tests-icon" class="fas fa-stop hide"></i>
                 </button>
-                <!-- Reset tests button -->
-                <button id="reset" class="btn btn-main" type="button"
+                <!-- Reset program button -->
+                <button id="reset" class="btn btn-main vm-related" type="button"
                         data-toggle="tooltip" data-placement="top" data-animation="false"
                         data-i18n="[title]t-reset;">
                     <i class="fas fa-undo"></i>
@@ -151,7 +151,7 @@
                                         <div class="col-lg-12">
                                             <div class="upload-btn-wrapper">
                                                 <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                <input type="file" id="fileselect-project" accept=".sb3"
+                                                <input type="file" class="vm-related" id="fileselect-project" accept=".sb3"
                                                        name="program-file" title=""/>
                                                 <label id="project-label" class="filename-label"
                                                        for="fileselect-project"
@@ -185,7 +185,7 @@
                                         <div class="col-lg-12">
                                             <div class="upload-btn-wrapper">
                                                 <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                <input type="file" id="fileselect-tests" accept=".js"
+                                                <input type="file" class="vm-related" id="fileselect-tests" accept=".js"
                                                        name="test-file" title=""/>
                                                 <label id="tests-label" class="filename-label"
                                                        for="fileselect-tests"
@@ -264,7 +264,7 @@
                                 <div class="col-lg-12">
                                     <div class="upload-btn-wrapper">
                                         <button class="btnr" data-i18n="browse"></button>
-                                        <input type="file" id="fileselect-config" accept=".json"
+                                        <input type="file" class="vm-related" id="fileselect-config" accept=".json"
                                                name="config-file" title=""/>
                                         <label id="config-label" class="filename-label"
                                                for="fileselect-config"
@@ -296,7 +296,7 @@
                     <h3 data-i18n="input-recording"></h3>
                     <p data-i18n="explain-recording"></p>
                     <!-- Record inputs button -->
-                    <button id="record" type="button" class="btn btn-main btn-sm search-button"
+                    <button id="record" type="button" class="btn btn-main btn-sm search-button vm-related"
                             data-toggle="tooltip" data-placement="top" data-animation="false"
                             data-i18n="[title]t-record;start-record;"></button>
                 </div>
@@ -319,10 +319,10 @@
                             <div class="row">
                                 <input id="acceleration-factor" type="text" data-slider-min="1" data-slider-max="10"
                                        data-slider-step="1" data-slider-value="1">
-                                <button id="green-flag" class="btn btn-outline-success but1" type="button"
+                                <button id="green-flag" class="btn btn-outline-success but1 vm-related" type="button"
                                         data-toggle="tooltip" data-placement="top" data-animation="false"
                                         data-i18n="[title]start"><i class="fas fa-flag"></i></button>
-                                <button id="stop-scratch" class="btn btn-danger but2" type="button"
+                                <button id="stop-scratch" class="btn btn-danger but2 vm-related" type="button"
                                         data-toggle="tooltip" data-placement="top" data-animation="false"
                                         data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
                             </div>
