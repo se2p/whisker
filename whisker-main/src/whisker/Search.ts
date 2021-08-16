@@ -197,6 +197,6 @@ export class Search {
         this.outputCSV(config);
 
         const javaScriptText = this.testsToString(tests);
-        return [javaScriptText, testListWithSummary.summary, testListWithSummary.networkPopulation, testListWithSummary.bestNetwork];
+        return [javaScriptText, testListWithSummary.summary, testListWithSummary.networkPopulation];
     }
 }

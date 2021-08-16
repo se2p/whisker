@@ -10,8 +10,6 @@ import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionPropertie
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
-import {ConnectionGene} from "../../whiskerNet/ConnectionGene";
-import {NodeGene} from "../../whiskerNet/NetworkNodes/NodeGene";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -30,12 +28,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Saves all Networks mapped to the generation they occurred in.
      */
     private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
-
-    /**
-     * The JSON record containing the bestIndividual found so far. Can be used for saving and loading networks
-     * between runs.
-     */
-    private _bestIndividual: Record<string, (number | ConnectionGene | NodeGene)>
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
@@ -105,7 +97,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
         this._populationRecord.set(this._iterations, population.clone());
-        this.updateBestIndividualRecord(population.populationChampion);
     }
 
     /**
@@ -134,25 +125,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
             }
         }
-    }
-
-    /**
-     * Updates the record of the best individual found so far.
-     * @param bestIndividual the current population champion.
-     */
-    private updateBestIndividualRecord(bestIndividual: NetworkChromosome):void {
-        if (this._bestIndividual === undefined || this._bestIndividual.NetworkFitness < bestIndividual.networkFitness) {
-            this._bestIndividual = bestIndividual.toJSON();
-        }
-    }
-
-    /**
-     * Transforms the best individual into a JSON representation.
-     * @return string in JSON format containing the best individual in a format compatible to the
-     * TemplateNetworkGenerator
-     */
-    public getBestIndividualAsJSON(): string {
-        return JSON.stringify(this._bestIndividual, undefined, 4);
     }
 
     /**

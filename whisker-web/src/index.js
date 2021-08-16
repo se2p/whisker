@@ -41,7 +41,14 @@ const LANGUAGE_OPTION = "lng";
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
-const loadTestsFromString = function (string) {
+const loadTestsFromString = async function (string) {
+    const config = await Whisker.configFileSelect.loadAsString();
+    if (config.toLowerCase().includes('neuroevolution')){
+        const tests = `${string}`;
+        Whisker.tests = tests;
+        Whisker.testEditor.setValue(string);
+        return tests;
+    }
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
@@ -84,8 +91,6 @@ const runSearch = async function () {
     if (configName.toLowerCase().includes('neuroevolution')){
         const titlePopulationRecord = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
         new DownloadContainer(titlePopulationRecord, `json`, res[2]).download();
-        const bestNetwork = `${configName.substring(0, configName.indexOf('.json'))}-BestNetwork`;
-        new DownloadContainer(bestNetwork, `json`, res[3]).download();
     }
     return res[0];
 };

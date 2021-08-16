@@ -68,8 +68,13 @@ module.exports = [
     }
 
     save () {
-        const blob = new Blob([this.getValue()], {type: 'application/javascript;charset=utf-8'});
-        FileSaver.saveAs(blob, 'tests.js');
+        if (this.getValue().includes('Network')){
+            const blob = new Blob([this.getValue()], {type: 'application/json;charset=utf-8'});
+            FileSaver.saveAs(blob, 'tests.json');
+        } else {
+            const blob = new Blob([this.getValue()], {type: 'application/javascript;charset=utf-8'});
+            FileSaver.saveAs(blob, 'tests.js');
+        }
     }
 }
 
