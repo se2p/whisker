@@ -267,7 +267,7 @@ class VMWrapper {
      * @returns {Promise<void>} .
      */
     async wait (steps) {
-        this.runForSteps(steps);
+        await this.runForSteps(steps);
     }
 
     /**
