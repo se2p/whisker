@@ -19,7 +19,7 @@
     "search" : "Start test generation",
     "advanced" : "Automated help",
     "show-advanced" : "Show test generation and record input features",
-    "tests" : "Run tests",
+    "t-tests" : "Run all tests",
     "running" : "Running",
     "reset" : "Reset",
     "t-reset" : "Reset program to initial state",

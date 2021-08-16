@@ -123,7 +123,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         $('#green-flag').prop('disabled', false);
         $('#reset').prop('disabled', false);
         let runTests = i18next.t("tests")
-        $('#run-all-tests').prop('disabled', false).text(runTests);
+        $('#run-all-tests').prop('disabled', false).text('').append('<i class="fas fa-play">');
         $('#record').prop('disabled', false);
         accSlider.slider('enable');
     }
@@ -153,6 +153,7 @@ const runTests = async function (tests) {
 };
 
 const runAllTests = async function () {
+    $('#run-all-tests').tooltip('hide');
     if (Whisker.tests === undefined || Whisker.tests.length === 0) {
         showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         return;

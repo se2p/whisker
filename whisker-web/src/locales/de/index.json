@@ -19,7 +19,7 @@
     "search" : "Starte Testgenerierung",
     "advanced" : "Automatisierte Hilfen",
     "show-advanced" : "Zeige Funktionen Testgenerierung und Eingaben aufzeichnen",
-    "tests" : "Starte Tests",
+    "t-tests" : "Starte alle Tests",
     "running" : "Tests laufen",
     "reset" : "Zurücksetzen",
     "t-reset" : "Setze Projekt auf Initialzustand zurück",
