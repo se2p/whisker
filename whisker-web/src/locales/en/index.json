@@ -6,7 +6,7 @@
     "h2" : "Welcome to Whisker",
     "h4" : "Test your Scratch projects",
     "test-generation" : "Test generation",
-    "explain-generation" : "Instead of manually writing and editing your tests, you can automatically generate tests based on your Scratch project. Note that generating tests will discard any of your uploaded or edited tests.",
+    "explain-generation" : "Instead of manually writing and editing your tests, you can automatically generate tests based on your Scratch project. Note that generating tests will discard any of your uploaded or edited tests. Reload the page to stop the test generation.",
     "start" : "Start the program",
     "stop" : "Stop the program",
     "input" : "Enable manual inputs",

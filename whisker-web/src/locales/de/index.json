@@ -6,7 +6,7 @@
     "h2" : "Willkommen bei Whisker",
     "h4" : "Teste deine Scratch Projekte",
     "test-generation" : "Testgenerierung",
-    "explain-generation" : "Anstatt manuell Tests zu schreiben und bearbeiten, kannst Du automatisch Tests generieren lassen, die auf deinem Scratch Projekt basieren. Beachte, dass Tests zu generieren deine bisherigen Tests verwerfen wird.",
+    "explain-generation" : "Anstatt manuell Tests zu schreiben und bearbeiten, kannst Du automatisch Tests generieren lassen, die auf deinem Scratch Projekt basieren. Beachte, dass Tests zu generieren deine bisherigen Tests verwerfen wird. Um die Testgenerierung abzubrechen, lade die Seite neu.",
     "start" : "Starte das Programm",
     "stop" : "Stoppe das Programm",
     "input" : "Erlaube manuelle Eingaben",
