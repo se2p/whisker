@@ -1019,3 +1019,7 @@ input:checked + .slider:before {
 .tooltip {
     z-index: 9999;
 }
+
+.modal-content{
+    transform: translate(0, 100px);
+}
