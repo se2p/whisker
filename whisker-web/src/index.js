@@ -41,6 +41,8 @@ const LANGUAGE_OPTION = "lng";
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
+let testsRunning = false;
+
 const loadTestsFromString = function (string) {
     let tests;
     try {
@@ -88,60 +90,77 @@ const runSearch = async function () {
     return res[0];
 };
 
+function _showRunIcon() {
+    $('#run-tests-icon').show();
+    $('#stop-tests-icon').hide();
+}
+
+function _showStopIcon() {
+    $('#run-tests-icon').hide();
+    $('#stop-tests-icon').show();
+}
+
 const _runTestsWithCoverage = async function (vm, project, tests) {
-    $('#green-flag').prop('disabled', true);
-    $('#reset').prop('disabled', true);
     let running = i18next.t("running");
-    $('#run-all-tests').prop('disabled', true).text(running);
-    $('#record').prop('disabled', true);
+    if (testsRunning) {
+        testsRunning = false;
+        _showRunIcon();
+        Whisker.scratch.stop();
+        Whisker.testRunner.abort();
+    } else {
+        testsRunning = true;
+        _showStopIcon();
+        $('#green-flag').prop('disabled', true);
+        $('#reset').prop('disabled', true);
+        $('#record').prop('disabled', true);
 
-    let summary;
-    let coverage;
-    accSlider.slider('disable');
-    const accelerationFactor = $('#acceleration-value').text();
+        let summary;
+        let coverage;
+        accSlider.slider('disable');
+        const accelerationFactor = $('#acceleration-value').text();
 
-    try {
-        await Whisker.scratch.vm.loadProject(project);
-        CoverageGenerator.prepareClasses({Thread});
-        CoverageGenerator.prepareVM(vm);
+        try {
+            await Whisker.scratch.vm.loadProject(project);
+            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareVM(vm);
 
-        summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
-        coverage = CoverageGenerator.getCoverage();
+            summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
+            coverage = CoverageGenerator.getCoverage();
 
-        if (typeof window.messageServantCallback === 'function') {
-            const coveredBlockIdsPerSprite =
-                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-            const blockIdsPerSprite =
-                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+            if (typeof window.messageServantCallback === 'function') {
+                const coveredBlockIdsPerSprite =
+                    [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+                const blockIdsPerSprite =
+                    [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
 
-            const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-            window.messageServantCallback({serializeableCoverageObject, summary});
+                const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+                window.messageServantCallback({serializeableCoverageObject, summary});
+            }
+
+            CoverageGenerator.restoreClasses({Thread});
+        } finally {
+            _showRunIcon()
+            $('#green-flag').prop('disabled', false);
+            $('#reset').prop('disabled', false);
+            $('#record').prop('disabled', false);
+            accSlider.slider('enable');
         }
 
-        CoverageGenerator.restoreClasses({Thread});
-    } finally {
-        $('#green-flag').prop('disabled', false);
-        $('#reset').prop('disabled', false);
-        let runTests = i18next.t("tests")
-        $('#run-all-tests').prop('disabled', false).text('').append('<i class="fas fa-play">');
-        $('#record').prop('disabled', false);
-        accSlider.slider('enable');
+        if (summary === null) {
+            return;
+        }
+
+        const formattedSummary = TAP13Formatter.formatSummary(summary);
+        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+
+        const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+        Whisker.outputRun.println([
+            summaryString,
+            coverageString
+        ].join('\n'));
     }
-
-    if (summary === null) {
-        return;
-    }
-
-    const formattedSummary = TAP13Formatter.formatSummary(summary);
-    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-
-    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-
-    Whisker.outputRun.println([
-        summaryString,
-        coverageString
-    ].join('\n'));
 };
 
 const runTests = async function (tests) {
@@ -260,8 +279,7 @@ const initEvents = function () {
             Whisker.scratch.greenFlag();
         }
     });
-    $('#stop').on('click', () => {
-        Whisker.testRunner.abort();
+    $('#stop-scratch').on('click', () => {
         Whisker.scratch.stop();
     });
     $('#reset').on('click', () => {
