@@ -352,6 +352,8 @@ const initEvents = function () {
             if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t("test-generation"), i18next.t("no-project"));
             } else {
+                $('#run-search').hide();
+                $('#search-running').show();
                 const tests = runSearch();
                 tests.then(
                     result => {
@@ -360,10 +362,14 @@ const initEvents = function () {
                         //       when the search is done. There must be a nicer way...
                         Whisker.outputRun.println('summary');
                         jumpTo('#test-table')
+                        $('#run-search').show();
+                        $('#search-running').hide();
                     },
                 );
             }
         });
+    $('#run-search').show();
+    $('#search-running').hide();
     _addFileListeners();
 };
 
