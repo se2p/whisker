@@ -12,6 +12,7 @@ const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter'
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
 const CSVConverter = require('./converter.js');
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
+const path = require('path');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
@@ -185,7 +186,7 @@ async function runGeneticSearch (browser) {
     async function downloadTests () {
         await page._client.send('Page.setDownloadBehavior', {
             behavior: 'allow',
-            downloadPath: './'
+            downloadPath: path.join(__dirname, './'),
         });
         await (await page.$('.editor-save')).click();
         await page.waitForTimeout(5000);
