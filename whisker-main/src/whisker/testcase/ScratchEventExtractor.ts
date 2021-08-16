@@ -172,7 +172,6 @@ export abstract class ScratchEventExtractor {
                         sensingRenderedTarget.visible &&
                         (target.x != sensingRenderedTarget.x || target.y != sensingRenderedTarget.y)) {
                         eventList.add(new DragSpriteEvent(target, sensingRenderedTarget.x, sensingRenderedTarget.y));
-                        eventList.add(new DragSpriteEvent(sensingRenderedTarget, target.x, target.y));
                     }
                 }
                 break;
