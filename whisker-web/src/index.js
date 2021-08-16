@@ -64,7 +64,18 @@ const loadTestsFromString = function (string) {
     return tests;
 };
 
+const disableScratchStartStop = function() {
+    $('#stop-scratch').prop('disabled', true);
+    $('#green-flag').prop('disabled', true);
+}
+
+const enableScratchStartStop = function() {
+    $('#stop-scratch').prop('disabled', false);
+    $('#green-flag').prop('disabled', false);
+}
+
 const runSearch = async function () {
+    disableScratchStartStop();
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
@@ -87,6 +98,7 @@ const runSearch = async function () {
         const title = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
         new DownloadContainer(title, `json`, res[2]).download();
     }
+    enableScratchStartStop();
     return res[0];
 };
 
@@ -184,6 +196,7 @@ const runAllTests = async function () {
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
+    disableScratchStartStop();
     for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
         const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
         Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
@@ -192,31 +205,11 @@ const runAllTests = async function () {
         Whisker.outputRun.println();
         Whisker.outputLog.println();
     }
+    enableScratchStartStop();
 };
 
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
-
-    $('#green-flag')
-        .removeClass('btn-success')
-        .addClass('btn-outline-success');
-    $('#stop')
-        .prop('disabled', true);
-
-    Whisker.scratch.vm.on(Runtime.PROJECT_RUN_START, () => {
-        $('#green-flag')
-            .removeClass('btn-outline-success')
-            .addClass('btn-success');
-        $('#stop')
-            .prop('disabled', false);
-    });
-    Whisker.scratch.vm.on(Runtime.PROJECT_RUN_STOP, () => {
-        $('#green-flag')
-            .removeClass('btn-success')
-            .addClass('btn-outline-success');
-        $('#stop')
-            .prop('disabled', true);
-    });
 };
 
 const initComponents = function () {
