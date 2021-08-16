@@ -52,6 +52,7 @@
 FROM node:lts-buster-slim as base
 RUN apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y \
+        tini \
         libnss3 \
         libatk1.0-0 \
         libatk-bridge2.0-0 \
@@ -66,7 +67,6 @@ RUN apt-get update \
         libasound2 \
         libxshmfence1 \
         x11-utils \
-        dumb-init \
     && apt-get autoremove -y \
     && rm -rf /usr/share/icons \
     && rm -rf /usr/local/lib/node_modules
@@ -117,14 +117,11 @@ ENV NODE_ENV=production
 # (devDependencies have already been excluded from the node_modules folder.)
 COPY --from=build /whisker-build /whisker
 
-# Set the image's main command, allowing the image to be run as though it was
-# that command:
-ENTRYPOINT ["/whisker/servant/whisker-docker.sh"]
-
 # Whisker's servant requires this as working directory, as it uses relative
 # and not absolute paths:
 WORKDIR /whisker/servant/
 
-# Set the default arguments for servant, in case none are given explicitly:
-#CMD ["--help"]
+# Set the image's main command, allowing the image to be run as though it was
+# that command:
+ENTRYPOINT ["tini", "--", "/whisker/servant/whisker-docker.sh"]
 
