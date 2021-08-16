@@ -64,8 +64,8 @@ const loadTestsFromString = function (string) {
     return tests;
 };
 
-const disableVMRelatedButtons = function () {
-    $('.vm-related').prop('disabled', true);
+const disableVMRelatedButtons = function (exception) {
+    $(`.vm-related:not(${exception})`).prop('disabled', true);
 }
 
 const enableVMRelatedButtons = function () {
@@ -83,7 +83,7 @@ const enableScratchStartStop = function () {
 }
 
 const runSearch = async function () {
-    disableVMRelatedButtons();
+    disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
@@ -312,9 +312,11 @@ const initEvents = function () {
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
         if (Whisker.inputRecorder.isRecording()) {
+            enableVMRelatedButtons();
             Whisker.inputRecorder.stopRecording();
             Whisker.scratch.disableInput();
         } else {
+            disableVMRelatedButtons('.record-related');
             Whisker.scratch.enableInput();
             Whisker.inputRecorder.startRecording();
         }
