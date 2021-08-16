@@ -5,6 +5,11 @@
 # Dockerfile to build a headless image of Whisker.
 # https://docs.docker.com/language/nodejs/build-images/#create-a-dockerfile-for-nodejs
 # https://nodejs.org/en/docs/guides/nodejs-docker-webapp/#creating-a-dockerfile
+################################################################################
+# Considered unstable because we don't use the Chromium instance bundled with
+# Puppeteer but the one that comes with the docker base image.
+# https://github.com/puppeteer/puppeteer/#q-why-doesnt-puppeteer-vxxx-work-with-chromium-vyyy
+################################################################################
 #
 # This Dockerfile is organized as a multi-stage build, which enables us to
 # reduce the size of the final image while still allowing us to use intermediate
@@ -13,13 +18,14 @@
 # We have the following stages:
 # (1) Build stage:
 #     (a) Prepare base image
-#     (b) Install or update build/library dependencies
-#     (c) Build Whisker from its sources and dependencies
+#     (b) Install or update build/library dependencies (via apt-get)
+#     (c) Install or update build/library dependencies (via yarn)
+#     (d) Build Whisker from its sources and dependencies
 # (2) Execution stage:
 #     Only copy files necessary to run Whisker and set the entry point to
 #     Whisker's servant in headless mode
 #
-# Because an image is built during the final sub-stage (c) of the build stage we
+# Because an image is built during the final sub-stage (d) of the build stage we
 # can minimize the size of image layers by leveraging a build cache. The
 # sub-stages are ordered from the less frequently changed (to ensure the build
 # cache is not busted) to the more frequently changed.
@@ -31,42 +37,17 @@
 # `docker run -it --entrypoint /bin/sh <image name>`
 ################################################################################
 
+
 #-------------------------------------------------------------------------------
 # (1) Build Stage
 #-------------------------------------------------------------------------------
 
-# (a) We use a slim base image that already includes Node.JS, and install only
-#     a minimal set of missing packages required to run Puppeteer. In
-#     particular, this includes various shared libraries (*.so files), and
-#     the x11-utils package. Puppeteer will complain about missing *.so files.
-#     To find out which package provides the missing file, install the apt-file
-#     package and run `apt-file find <missing file>`. If in doubt, or if
-#     Puppeteer still refuses to run (as is the case when x11-utils is not
-#     installed), you can temporarily add Google Chrome to your repsitory as
-#     it's done here
-#       > https://github.com/buildkite/docker-puppeteer/blob/master/Dockerfile
-#     and list all its dependencies via `apt-get show google-chrome-stable`.
-#     Then, just copy this list of dependencies and install them below. This
-#     will most likely pull in a lot of unwanted packages, too, but at least
-#     Puppeteer will work then.
+# (a) We use a slim base image that already includes Node.JS, install Chromium
+#     for Puppeteer, and a minimal set of packages required to run it.
 FROM node:lts-buster-slim as base
 RUN apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y \
-        libnss3 \
-        libatk1.0-0 \
-        libatk-bridge2.0-0 \
-        libcups2 \
-        libdrm2 \
-        libxkbcommon0 \
-        libxcomposite1 \
-        libxdamage1 \
-        libxrandr2 \
-        libgbm1 \
-        libgtk-3-0 \
-        libasound2 \
-        libxshmfence1 \
-        x11-utils \
-    && apt-get autoremove -y \
+        chromium \
     && rm -rf /usr/share/icons \
     && rm -rf /usr/local/lib/node_modules
 
@@ -80,11 +61,17 @@ RUN apt-get update \
         ca-certificates \
         git
 
-# (c) Copy manifest files and install dependencies. This layer is only rebuilt
-#     when a manifest file changes.
-#     Unfortunately, we need a separate COPY command for every file because
-#     docker flattens the subdirectory structure when using wildcards.
+# (c) Copy manifest files and install dependencies. We don't download the
+#     bundled Chromium instance of Puppeteer but reuse the one installed via
+#     apt-get. This makes for a smaller docker image and simplifies dependency
+#     management since apt-get automatically pulls in all system libraries needed to
+#     run Puppeteer. If you want to use bundled Chromium, just remove the ENV
+#     instruction below (or set it to false).
+#     Unfortunately, we need a separate COPY command for every manifest file
+#     because docker flattens the subdirectory structure when using wildcards.
+#     This layer is only rebuilt when a manifest file changes.
 WORKDIR /whisker-build/
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 COPY package.json ./
 COPY scratch-analysis/package.json ./scratch-analysis/
 COPY servant/package.json ./servant/
@@ -105,12 +92,15 @@ RUN yarn build \
 # (2) Execution Stage
 #-------------------------------------------------------------------------------
 
-# We use the base image again to drop build dependencies (installed via `apt-get`)
+# We use the base image again to drop build dependencies (installed via apt-get)
 # and the yarn build cache from the final image.
 FROM base as execute
 
 # https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
-ENV NODE_ENV=production
+# Also, update the path to Chromium since we don't use the instance bundled with
+# Puppeteer.
+ENV NODE_ENV=production \
+    CHROME_BIN=/usr/bin/chromium
 
 # Copy the build of Whisker from the build layer to the execution layer.
 # (devDependencies have already been excluded from the node_modules folder.)
