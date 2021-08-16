@@ -35,6 +35,15 @@ async function init () {
     const browser = await puppeteer.launch(
         {
             headless: !!isHeadless,
+
+            // If specified, use the given version of Chromium instead of the one bundled with Puppeteer.
+            // This feature is currently used with Docker to build smaller images.
+            // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
+            // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#puppeteerlaunchoptions
+            // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#environment-variables
+            // https://github.com/puppeteer/puppeteer/issues/1793#issuecomment-358216238
+            executablePath: process.env.CHROME_BIN || null,
+
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
         });
 
