@@ -182,7 +182,8 @@ p {
 }
 
 .headline-spacer {
-    margin-top: 50px;
+    margin-top: 20px;
+    margin-bottom: -100px;
 }
 
 .grey-spacer {
@@ -210,9 +211,8 @@ p {
     display: none;
 }
 
-#main {
+.main {
     padding-top: 5vh;
-    padding-bottom: 5vh;
     width: 100%;
     margin: auto;
 }
@@ -531,6 +531,12 @@ p {
     padding: 15px;
 }
 
+.scrollTable {
+    height: 500px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
 /* Forward clicks to button underneath */
 .fa-plus, .fa-minus {
     pointer-events: none;
@@ -634,8 +640,8 @@ tr td:nth-child(5) {
 
 
 #tests-header {
-    margin-top: 40px;
-    margin-bottom: -20px;
+    margin-top: 0;
+    margin-bottom: -25px;
 }
 
 
@@ -904,6 +910,34 @@ img {vertical-align: middle;}
     text-overflow: ellipsis;
     margin-left: 160px;
 }
+
+.sticky {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    z-index: 9999;
+    top: 0;
+}
+
+#scroll-background {
+    background-color: white;
+    height: 60px;
+    width: 100%;
+}
+
+#left-btn-group {
+    position: absolute;
+    left: 15%;
+}
+
+#right-btn-group {
+    position: absolute;
+    right: 14.45%;
+}
+
+.btn-group-toggle {
+    padding: 10px;
+}
+
 .small-input {
     max-width: 80px;
     position: absolute;
