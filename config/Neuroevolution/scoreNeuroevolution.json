@@ -2,7 +2,6 @@
     "test-generator": "neuroevolution",
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
-    "randomNetworkEventSelection": "true",
     "populationType": "neat",
     "population-size": 250,
     "numberOfSpecies": 10,
@@ -45,25 +44,22 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 600000
+        "timeout": 60000
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
-                "type": "optimal"
-            },
-            {
                 "type": "fixed-iteration",
-                "iterations": 100
+                "iterations": 50
             },
             {
                 "type": "fixed-time",
-                "duration": 468000000
+                "duration": 432000000
             }
         ]
     },
-    "waitStepUpperBound": 250,
+    "waitStepUpperBound": 50,
     "click-duration": 1,
-    "pressDurationUpperBound": 250
+    "pressDurationUpperBound": 50
 }

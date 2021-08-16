@@ -57,7 +57,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             for (const value of Object.values(target.variables)) {
                 // @ts-ignore
                 const name = value.name.toLowerCase();
-                if (name === 'punkte' || name === 'points' ||name === 'score' || name === 'high score') {
+                if (name === 'punkte' || name === 'points' ||name === 'score' || name === 'high score' || name === 'level') {
                     // @ts-ignore
                     points += Number(value.value)
                 }

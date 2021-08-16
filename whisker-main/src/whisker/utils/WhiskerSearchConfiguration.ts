@@ -146,7 +146,7 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this.dict['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this.dict['compatibility']['weightCoefficient'] as number;
 
-        const timeout = this.dict['network-fitness']['timeout']
+        const timeout = this.dict['network-fitness']['timeout'];
 
         properties.populationType = this.dict[`populationType`] as string;
         properties.randomEventSelection = this.dict['randomNetworkEventSelection'] === 'true'

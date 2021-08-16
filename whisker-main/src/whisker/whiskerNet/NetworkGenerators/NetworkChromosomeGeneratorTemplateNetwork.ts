@@ -9,6 +9,7 @@ import {RegressionNode} from "../NetworkNodes/RegressionNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {HiddenNode} from "../NetworkNodes/HiddenNode";
 import {BiasNode} from "../NetworkNodes/BiasNode";
+import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
 
 export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosomeGenerator {
 
@@ -54,16 +55,16 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
                     allNodes.add(new BiasNode(node.id));
                     break;
                 case "HIDDEN":
-                    allNodes.add(new HiddenNode(node.id, node.activationFunction));
+                    allNodes.add(new HiddenNode(node.id, ActivationFunction.SIGMOID));
                     break;
                 case "CLASSIFICATION": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
-                    allNodes.add(new ClassificationNode(node.id, event, node.activationFunction));
+                    allNodes.add(new ClassificationNode(node.id, event, ActivationFunction.SIGMOID));
                     break;
                 }
                 case "REGRESSION": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
-                    allNodes.add(new RegressionNode(node.id, event, node.eventParameter, node.activationFunction));
+                    allNodes.add(new RegressionNode(node.id, event, node.eventParameter, ActivationFunction.NONE));
                     break;
                 }
             }
@@ -77,7 +78,14 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
             allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.Weight, connection.Enabled,
                 connection.Innovation, recurrent));
         }
-        return new NetworkChromosome(allConnections, allNodes, this._mutationOp, this._crossoverOp);
+        const network = new NetworkChromosome(allConnections, allNodes, this._mutationOp, this._crossoverOp);
+
+        // Only copy the first network. No need to have multiple copies of the same chromosome.
+        if(network.id > 0){
+            network.mutate();
+        }
+        NetworkChromosome.idCounter++;
+        return network
     }
 
     /**

@@ -35,8 +35,6 @@ import {Randomness} from "../utils/Randomness";
 import {DragSpriteEvent} from "./events/DragSpriteEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import Cast from "scratch-vm/src/util/cast";
-import {MouseMoveYEvent} from "./events/MouseMoveYEvent";
-import {MouseMoveXEvent} from "./events/MouseMoveXEvent";
 
 const twgl = require('twgl.js');
 
@@ -83,11 +81,12 @@ export abstract class ScratchEventExtractor {
             // look at the block(s) inside a conditional statement
             if (block.inputs.CONDITION) {
                 const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
-                // Handle conditional statements with two condition blocks
-                if (condition.inputs.OPERAND1) {
+                // Handle conditional statements with two condition blocks; condition may be undefined if there is
+                // an empty condition
+                if (condition && condition.inputs.OPERAND1) {
                     this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
                 }
-                if (condition.inputs.OPERAND1) {
+                if (condition && condition.inputs.OPERAND1) {
                     this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
                 }
                 foundEvents.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
@@ -117,7 +116,7 @@ export abstract class ScratchEventExtractor {
     // TODO: How to handle event parameters?
     protected _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
-        if (typeof block.opcode === 'undefined') {
+        if (!block || typeof block.opcode === 'undefined') {
             return eventList;
         }
 
@@ -135,10 +134,8 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_mousex':
-                eventList.add(new MouseMoveXEvent());
-                break;
             case 'sensing_mousey':
-                eventList.add(new MouseMoveYEvent());
+                eventList.add(new MouseMoveEvent());
                 break;
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);

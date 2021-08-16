@@ -16,7 +16,6 @@ import {RegressionNode} from "./NetworkNodes/RegressionNode";
 import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
-import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {Container} from "../utils/Container";
 import {NetworkChromosomeGeneratorFullyConnected} from "./NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
 
