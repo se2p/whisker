@@ -166,8 +166,9 @@ p {
 }
 
 .links {
-    padding-top: 5px;
-    padding-left:30px;
+    position: absolute;
+    padding-top: 15px;
+    right: 5px;
 }
 
 #form-lang select {
@@ -260,8 +261,13 @@ p {
 }
 
 .btn-group-toggle {
-    box-sizing: revert;
-    padding-left: 10px;
+    position: absolute;
+    padding: 15px;
+    right: 150px;
+}
+
+.btn-group-toggle .btn-main {
+    margin-right: 1rem;
 }
 
 .inline {
@@ -937,20 +943,6 @@ img {vertical-align: middle;}
     left: 40%;
 }
 
-#left-btn-group .btn {
-    margin-left: 20px;
-}
-
-#right-btn-group {
-    position: absolute;
-    right: 5%;
-    display: ruby;
-}
-
-.btn-group-toggle {
-    padding: 10px;
-}
-
 /* The switch - the box around the slider */
 .switch {
     position: relative;
@@ -1023,4 +1015,28 @@ input:checked + .slider:before {
 
 .modal-content{
     transform: translate(0, 100px);
+}
+
+#main-functionality {
+    position: fixed;
+    z-index: 9998;
+    bottom: 40%;
+    display: grid;
+    left: 6vw;
+}
+
+#main-functionality .btn-main {
+    margin: 10px;
+}
+
+@media only screen and (max-width: 1300px) {
+    #main-functionality {
+        left: 10px;
+    }
+}
+
+@media only screen and (max-width: 1000px) {
+    #main-functionality {
+        left: 0;
+    }
 }
