@@ -17,7 +17,7 @@
     "explain-recording" : "Inputs such as \"key pressed\" can be recorded and transformed to code automatically so that you don't have to type inputs out manually. Note that existing tests will be discarded.",
     "acceleration" : "Acceleration:",
     "search" : "Start test generation",
-    "advanced" : "Automated help",
+    "advanced" : "Test automation",
     "show-advanced" : "Show test generation and record input features",
     "t-tests" : "Run all tests",
     "running" : "Running",
