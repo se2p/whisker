@@ -427,7 +427,7 @@ p {
     width: 1em;
     height: 1em;
     margin-right: 0.4em;
-    vertical-align: top
+    vertical-align: middle;
 }
 
 .resp-sharing-button--small svg {
