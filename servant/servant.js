@@ -18,7 +18,7 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
-    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -28,7 +28,7 @@ if (isGenerateWitnessTestOnly) {
 }
 
 /**
- * The entry point of the runners functionallity, handling the test file preperation and the browser instance.
+ * The entry point of the runners functionality, handling the test file preparation and the browser instance.
  */
 async function init () {
 
@@ -48,9 +48,10 @@ async function init () {
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
         });
 
-    if (isGeneticSearch) {
+    if (generateTests) {
         // Todo use correct config
-        runGeneticSearch(browser)
+        const downloadPath = typeof generateTests === 'string' ? generateTests : __dirname;
+        runGeneticSearch(browser, downloadPath)
             .then(() => {
                 browser.close();
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
@@ -108,7 +109,7 @@ async function runTestsOnFile (browser, targetProject) {
     return csvs;
 }
 
-async function runGeneticSearch (browser) {
+async function runGeneticSearch (browser, downloadPath) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
@@ -185,7 +186,7 @@ async function runGeneticSearch (browser) {
     async function downloadTests () {
         await page._client.send('Page.setDownloadBehavior', {
             behavior: 'allow',
-            downloadPath: path.join(__dirname, './'),
+            downloadPath: downloadPath
         });
         await (await page.$('.editor-save')).click();
         await page.waitForTimeout(5000);
@@ -197,7 +198,7 @@ async function runGeneticSearch (browser) {
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
-        logger.debug("Downloading tests");
+        logger.debug(`Downloading tests to ${downloadPath}/tests.js`);
         await downloadTests();
         await page.close();
         return Promise.resolve(output);
