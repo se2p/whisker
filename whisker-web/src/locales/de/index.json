@@ -32,7 +32,7 @@
     "table-name" : "Name",
     "table-categories" : "Kategorie",
     "load" : "Lade Tests",
-    "t-load" : "Lade Tests des Editors",
+    "t-load" : "Lade Tests aus dem Editor",
     "save" : "Tests herunterladen",
     "t-save" : "Tests des Editors als Datei speichern",
     "log-save" : "Logdatei herunterladen",
