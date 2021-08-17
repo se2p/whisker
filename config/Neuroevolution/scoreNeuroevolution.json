@@ -3,7 +3,7 @@
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
     "populationType": "neat",
-    "population-size": 250,
+    "population-size": 25,
     "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -44,14 +44,14 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 60000
+        "timeout": 30000
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 50
+                "iterations": 3
             },
             {
                 "type": "fixed-time",

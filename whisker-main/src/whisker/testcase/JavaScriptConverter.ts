@@ -22,7 +22,6 @@ import {TestChromosome} from "./TestChromosome";
 import {List} from "../utils/List";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
-import {NetworkChromosome} from "../whiskerNet/NetworkChromosome";
 
 export class JavaScriptConverter {
 
@@ -50,9 +49,7 @@ export class JavaScriptConverter {
         if(StatisticsCollector.getInstance().configName.includes("Neuroevolution")) {
             const networkTestSuite = {}
             for (let j = 0; j < tests.size(); j++) {
-                const network = tests.get(j).chromosome;
-                console.log(network)
-                networkTestSuite[`Network ${j}`] = network;
+                networkTestSuite[`Network ${j}`] = tests.get(j).chromosome;
             }
             return JSON.stringify(networkTestSuite, undefined, 4);
         }
