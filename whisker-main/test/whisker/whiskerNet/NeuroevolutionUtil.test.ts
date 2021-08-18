@@ -224,7 +224,7 @@ describe("NeuroevolutionUtil Tests", () => {
 
     test("Test Softmax calculation", () =>{
         const chromosome = generator.get();
-        const stabiliseCount = chromosome.stabilizedCounter(30);
+        const stabiliseCount = chromosome.updateStabilizeCount(30);
         for (let i = 0; i < stabiliseCount + 1; i++) {
             chromosome.activateNetwork(genInputs)
         }

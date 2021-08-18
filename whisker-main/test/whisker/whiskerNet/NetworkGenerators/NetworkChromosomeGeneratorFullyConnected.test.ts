@@ -75,7 +75,7 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         for (let i = 0; i < 100; i++) {
             const chromosome = generator.get();
             chromosomes.push(chromosome);
-            stabCount = chromosome.stabilizedCounter(30);
+            stabCount = chromosome.updateStabilizeCount(30);
         }
         for (const chromosome of chromosomes) {
             chromosome.generateNetwork();

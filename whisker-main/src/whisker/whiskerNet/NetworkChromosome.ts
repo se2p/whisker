@@ -61,6 +61,12 @@ export class NetworkChromosome extends Chromosome {
     private readonly _connections: List<ConnectionGene>
 
     /**
+     * The stabilize count of the network defining how often the network has to be executed in order to reach a
+     * stable state.
+     */
+    private _stabilizeCount: number
+
+    /**
      * Defines the crossover operator of the chromosome
      */
     private readonly _crossoverOp: Crossover<NetworkChromosome>
@@ -175,6 +181,7 @@ export class NetworkChromosome extends Chromosome {
         this._hasLoop = false;
         this._random = Randomness.getInstance();
         this.generateNetwork();
+        this._stabilizeCount = this.updateStabilizeCount(100);
     }
 
     /**
@@ -252,8 +259,7 @@ export class NetworkChromosome extends Chromosome {
                     this.allNodes.add(iNode);
                     // By Chance we connect the new Node to the network.
                     if (this._random.nextDouble() < 0.5 ||
-                        Container.config.getChromosomeGenerator() instanceof  NetworkChromosomeGeneratorFullyConnected)
-                    {
+                        Container.config.getChromosomeGenerator() instanceof NetworkChromosomeGeneratorFullyConnected) {
                         this.connectInputNode(iNode);
                     }
                 })
@@ -279,6 +285,7 @@ export class NetworkChromosome extends Chromosome {
         })
         if (updated) {
             this.generateNetwork();
+            this.updateStabilizeCount(100);
         }
     }
 
@@ -301,8 +308,10 @@ export class NetworkChromosome extends Chromosome {
                 }
             }
         }
-        if (updated)
+        if (updated) {
             this.generateNetwork();
+            this.updateStabilizeCount(100);
+        }
     }
 
     /**
@@ -387,7 +396,7 @@ export class NetworkChromosome extends Chromosome {
      * @param period the number of iterations each outputNode has to be stable until this network is treated stabilised
      * @return the number of activations needed to stabilise this network.
      */
-    public stabilizedCounter(period: number): number {
+    public updateStabilizeCount(period: number): number {
         this.generateNetwork();
         this.flushNodeValues();
 
@@ -453,7 +462,9 @@ export class NetworkChromosome extends Chromosome {
             rounds++;
         }
         this.flushNodeValues();
-        return (level - period + 1);
+        const stableCount = (level - period + 1);
+        this._stabilizeCount = stableCount;
+        return stableCount;
     }
 
     /**
@@ -703,6 +714,14 @@ export class NetworkChromosome extends Chromosome {
 
     get allNodes(): List<NodeGene> {
         return this._allNodes;
+    }
+
+    get stabilizeCount(): number {
+        return this._stabilizeCount;
+    }
+
+    set stabilizeCount(value: number) {
+        this._stabilizeCount = value;
     }
 
     get trace(): ExecutionTrace {

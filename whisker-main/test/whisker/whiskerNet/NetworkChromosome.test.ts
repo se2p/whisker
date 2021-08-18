@@ -218,7 +218,7 @@ describe('Test NetworkChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, true, 6, false))
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        const counter = chromosome.stabilizedCounter(5);
+        const counter = chromosome.updateStabilizeCount(5);
         expect(counter).toEqual(2);
     })
 
@@ -251,7 +251,7 @@ describe('Test NetworkChromosome', () => {
         connections.add(new ConnectionGene(deepHiddenNode, nodes.get(4), 1, true, 10, false))
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        const counter = chromosome.stabilizedCounter(5);
+        const counter = chromosome.updateStabilizeCount(5);
         expect(counter).toEqual(4);
     })
 
@@ -275,7 +275,7 @@ describe('Test NetworkChromosome', () => {
         connections.add(new ConnectionGene(nodes.get(2), nodes.get(4), 0.7, false, 6, false))
 
         chromosome = new NetworkChromosome(connections, nodes, mutationOp, crossoverOp)
-        const counter = chromosome.stabilizedCounter(5);
+        const counter = chromosome.updateStabilizeCount(5);
         expect(counter).toEqual(-1);
     })
 
@@ -420,7 +420,7 @@ describe('Test NetworkChromosome', () => {
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
         const availableEvents = new List<ScratchEvent>([new WaitEvent(), new ClickStageEvent()]);
-        const stabilizeCount = chromosome.stabilizedCounter(30);
+        const stabilizeCount = chromosome.updateStabilizeCount(30);
         for (let i = 0; i < stabilizeCount + 1; i++) {
             chromosome.activateNetwork(inputs)
         }

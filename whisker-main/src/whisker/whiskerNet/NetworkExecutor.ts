@@ -73,7 +73,7 @@ export class NetworkExecutor {
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
         this._random = Randomness.getInstance();
-        this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
+        this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm, true);
         this.recordInitialState();
     }
 
@@ -86,14 +86,11 @@ export class NetworkExecutor {
         let workingNetwork = false;
         const codons = new List<number>()
 
-        // Check how many activations a network needs to stabilise
-        const stabilizeCounter = network.stabilizedCounter(100)
-
         seedScratch(String(Randomness.getInitialSeed()))
 
-        // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
+        // Activate the network <stabilizeCounter> times to stabilise it for classification
         network.flushNodeValues();
-        for (let i = 0; i < stabilizeCounter + 1; i++) {
+        for (let i = 0; i < network.stabilizeCount; i++) {
             workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vmWrapper));
         }
 
@@ -110,7 +107,6 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
-            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
@@ -131,7 +127,7 @@ export class NetworkExecutor {
             // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
             else {
                 network.flushNodeValues();
-                for (let i = 0; i < stabilizeCounter + 1; i++) {
+                for (let i = 0; i < network.stabilizeCount; i++) {
                     workingNetwork = network.activateNetwork(spriteFeatures);
                 }
             }
