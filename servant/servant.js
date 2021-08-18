@@ -131,7 +131,8 @@ async function runGeneticSearch (browser, downloadPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
-        await (await page.$('#toggle-advanced')).click();
+        const toggle = await page.$('#toggle-advanced');
+        await toggle.evaluate(t => t.click());
         await (await page.$('#toggle-tap')).click();
         await (await page.$('#toggle-log')).click();
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
@@ -236,7 +237,8 @@ async function runTests (path, browser, index, targetProject) {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         await (await page.$('#fileselect-tests')).uploadFile(path);
-        await (await page.$('#toggle-advanced')).click();
+        const toggle = await page.$('#toggle-advanced');
+        await toggle.evaluate(t => t.click());
         await (await page.$('#toggle-tap')).click();
         await (await page.$('#toggle-log')).click();
     }

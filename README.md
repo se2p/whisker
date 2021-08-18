@@ -1,4 +1,4 @@
-![Whisker Logo](https://raw.githubusercontent.com/se2p/whisker-main/master/logos/whisker-text-logo.jpg)
+![Whisker Logo](logos/whisker-text-logo.png)
 
 Whisker is an automated testing framework for [Scratch](https://scratch.mit.edu/) projects.
 
@@ -133,12 +133,16 @@ of  the [University of Passau](https://www.uni-passau.de).
 Contributors:
 
 Adina Deiner\
+Patric Feldmeier\
 Christoph Frädrich\
 Gordon Fraser\
 Sophia Geserer\
 Eva Gründinger\
+Nina Körber\
 Marvin Kreis\
+Sebastian Schweikl\
 Andreas Stahlbauer\
+Emma Wang\
 Nik Zantner
 
 
