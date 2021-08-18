@@ -1065,6 +1065,7 @@ input:checked + .slider:before {
 
 #main-functionality .btn-main {
     margin: 10px;
+    border-width: medium;
 }
 
 @media only screen and (max-width: 1300px) {
