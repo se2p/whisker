@@ -147,8 +147,9 @@ p {
 
 #small-logo {
     position: absolute;
-    width: 40px;
-    margin: 10px;
+    width: 200px;
+    margin-left: 30px;
+    margin-top: 7px;
 }
 
 .banner {
@@ -260,7 +261,7 @@ p {
 .btn-group-toggle {
     position: absolute;
     padding: 15px;
-    right: 150px;
+    right: 130px;
 }
 
 .btn-group-toggle .btn-main {
