@@ -15,7 +15,7 @@
     "start-record" : "Starte Aufzeichnung",
     "stop-record" : "Stoppe Aufzeichnung",
     "explain-recording" : "Du kannst Eingaben wie \"Taste gedrückt\" aufzeichnen und in Code umwandeln lassen, statt den Code selbst zu schreiben. Beachte, dass dabei deine bisherigen Tests verloren gehen.",
-    "acceleration" : "Beschleunigung:",
+    "acceleration" : "Testbeschleunigung:",
     "search" : "Starte Testgenerierung",
     "advanced" : "Testautomatisierung",
     "show-advanced" : "Zeige Funktionen Testgenerierung und Eingaben aufzeichnen",

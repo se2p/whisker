@@ -15,7 +15,7 @@
     "start-record" : "Record inputs",
     "stop-record" : "Stop recording",
     "explain-recording" : "Inputs such as \"key pressed\" can be recorded and transformed to code automatically so that you don't have to type inputs out manually. Note that existing tests will be discarded.",
-    "acceleration" : "Acceleration:",
+    "acceleration" : "Test acceleration:",
     "search" : "Start test generation",
     "advanced" : "Test automation",
     "show-advanced" : "Show test generation and record input features",
