@@ -175,8 +175,11 @@ export abstract class ScratchEventExtractor {
                             }
                         }
                     }
-                    // We only create a DragEvent if we found the sensed Sprite and if it's visible.
-                    if (sensingRenderedTarget.sprite && sensingRenderedTarget.visible) {
+                    // We only create a DragEvent if we found the sensed Sprite and if both sprites are visible.
+                    if (target.visible &&
+                        sensingRenderedTarget.sprite &&
+                        sensingRenderedTarget.visible &&
+                        (target.x != sensingRenderedTarget.x || target.y != sensingRenderedTarget.y)) {
                         eventList.add(new DragSpriteEvent(target, sensingRenderedTarget.x, sensingRenderedTarget.y));
                     }
                 }
