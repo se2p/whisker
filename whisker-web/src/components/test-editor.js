@@ -70,7 +70,7 @@ module.exports = [
     save () {
         if (this.getValue().includes('Network')){
             const blob = new Blob([this.getValue()], {type: 'application/json;charset=utf-8'});
-            FileSaver.saveAs(blob, 'tests.json');
+            FileSaver.saveAs(blob, 'network.json');
         } else {
             const blob = new Blob([this.getValue()], {type: 'application/javascript;charset=utf-8'});
             FileSaver.saveAs(blob, 'tests.js');
