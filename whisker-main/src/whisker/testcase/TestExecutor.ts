@@ -29,11 +29,12 @@ import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
 import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
-import VMWrapper = require("../../vm/vm-wrapper.js")
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
 import {ParameterTypes} from "./events/ParameterTypes";
+import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
+import VMWrapper = require("../../vm/vm-wrapper.js");
 
 
 export class TestExecutor {
@@ -100,11 +101,11 @@ export class TestExecutor {
 
             // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
             // focused Algorithm like MIO.
-            if(testChromosome.targetFitness){
+            if (testChromosome.targetFitness) {
                 testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
                 testChromosome.coverage = currentCoverage;
                 const currentFitness = testChromosome.targetFitness.getFitness(testChromosome);
-                if(testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0){
+                if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
                     testChromosome.lastImprovedFitnessCodon = numCodon;
                 }
@@ -145,9 +146,11 @@ export class TestExecutor {
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
-        nextEvent.setParameter(args, ParameterTypes.CODON);
+        const parameterType = this._eventSelector instanceof DynamicScratchEventExtractor ?
+            ParameterTypes.CODON : ParameterTypes.RANDOM;
+        nextEvent.setParameter(args, parameterType);
         events.add([nextEvent, args]);
-        numCodon += nextEvent.getNumVariableParameters();
+        numCodon += nextEvent.numSearchParameter();
         this.notify(nextEvent, args);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();
@@ -168,7 +171,7 @@ export class TestExecutor {
      */
     private static getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
         const args = [];
-        for (let i = 0; i < event.getNumVariableParameters(); i++) {
+        for (let i = 0; i < event.numSearchParameter(); i++) {
             args.push(codons.get(codonPosition++ % codons.size()));
         }
         return args;

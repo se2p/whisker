@@ -23,6 +23,7 @@ import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
 import {ParameterTypes} from "./ParameterTypes";
 import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
+import {Randomness} from "../../utils/Randomness";
 
 export class KeyPressEvent extends ScratchEvent {
 
@@ -61,7 +62,7 @@ new WaitEvent(this._steps).toJavaScript()
         return "KeyPress " + this._keyOption + ": " + this._steps;
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 1;
     }
 
@@ -69,12 +70,15 @@ new WaitEvent(this._steps).toJavaScript()
         return [this._keyOption, this._steps];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return ["Steps"];
     }
 
     setParameter(args:number[], testExecutor:ParameterTypes): void {
         switch (testExecutor){
+            case ParameterTypes.RANDOM:
+                this._steps = Randomness.getInstance().nextInt(1, 421);
+                break;
             case ParameterTypes.CODON:
                 this._steps = args[0];
                 break;

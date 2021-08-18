@@ -29,7 +29,7 @@ describe("Randomness", () => {
         const num = random.nextInt(0, 10);
 
         expect(num).toBeGreaterThanOrEqual(0);
-        expect(num).toBeLessThanOrEqual(10);
+        expect(num).toBeLessThan(10);
     });
 
     test("Create a float in [0,1]", () => {

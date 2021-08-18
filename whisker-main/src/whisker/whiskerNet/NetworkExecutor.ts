@@ -148,7 +148,7 @@ export class NetworkExecutor {
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
             let args = [];
-            if (nextEvent.getNumVariableParameters() > 0) {
+            if (nextEvent.numSearchParameter() > 0) {
                 args = NetworkExecutor.getArgs(nextEvent, network);
                 nextEvent.setParameter(args, ParameterTypes.REGRESSION);
             }

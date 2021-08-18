@@ -21,6 +21,7 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterTypes} from "./ParameterTypes";
+import {Randomness} from "../../utils/Randomness";
 
 export class MouseMoveEvent extends ScratchEvent {
 
@@ -53,7 +54,7 @@ export class MouseMoveEvent extends ScratchEvent {
         return "MouseMove " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 2; // x and y?
     }
 
@@ -61,12 +62,21 @@ export class MouseMoveEvent extends ScratchEvent {
         return [this._x, this._y];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return ["X", "Y"]
     }
 
     setParameter(args: number[], argType: ParameterTypes): void {
         switch (argType) {
+            case ParameterTypes.RANDOM: {
+                const random = Randomness.getInstance();
+                const randomX = random.nextInt(0, 421);
+                const randomY = random.nextInt(0, 361);
+                const fittedCoordinates = this.fitCoordinates(randomX, randomY);
+                this._x = fittedCoordinates.x;
+                this._y = fittedCoordinates.y;
+                break;
+            }
             case ParameterTypes.CODON: {
                 const fittedCoordinates = this.fitCoordinates(args[0], args[1])
                 this._x = fittedCoordinates.x;

@@ -53,7 +53,7 @@ export class MouseMoveToEvent extends ScratchEvent {
         return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
@@ -61,7 +61,7 @@ export class MouseMoveToEvent extends ScratchEvent {
         return [this.x, this.y];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 
