@@ -20,7 +20,7 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 
 export class MouseMoveEvent extends ScratchEvent {
@@ -66,9 +66,9 @@ export class MouseMoveEvent extends ScratchEvent {
         return ["X", "Y"]
     }
 
-    setParameter(args: number[], argType: ParameterTypes): void {
+    setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
-            case ParameterTypes.RANDOM: {
+            case ParameterType.RANDOM: {
                 const random = Randomness.getInstance();
                 const randomX = random.nextInt(0, 421);
                 const randomY = random.nextInt(0, 361);
@@ -77,13 +77,13 @@ export class MouseMoveEvent extends ScratchEvent {
                 this._y = fittedCoordinates.y;
                 break;
             }
-            case ParameterTypes.CODON: {
+            case ParameterType.CODON: {
                 const fittedCoordinates = this.fitCoordinates(args[0], args[1])
                 this._x = fittedCoordinates.x;
                 this._y = fittedCoordinates.y;
                 break;
             }
-            case ParameterTypes.REGRESSION: {
+            case ParameterType.REGRESSION: {
                 this._x = Math.tanh(args[0]) * 240;
                 this._y = Math.tanh(args[1]) * 180;
                 break;

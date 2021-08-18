@@ -20,7 +20,7 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
 import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
 
@@ -57,15 +57,15 @@ export class WaitEvent extends ScratchEvent {
         return ["Duration"];
     }
 
-    setParameter(args:number[], testExecutor:ParameterTypes): void {
+    setParameter(args:number[], testExecutor:ParameterType): void {
         switch (testExecutor){
-            case ParameterTypes.RANDOM:
+            case ParameterType.RANDOM:
                 this.steps = Randomness.getInstance().nextInt(0,421);
                 break;
-            case ParameterTypes.CODON:
+            case ParameterType.CODON:
                 this.steps = args[0];
                 break;
-            case ParameterTypes.REGRESSION:
+            case ParameterType.REGRESSION:
                 this.steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }

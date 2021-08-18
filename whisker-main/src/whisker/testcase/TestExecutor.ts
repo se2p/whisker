@@ -32,7 +32,7 @@ import {Randomness} from "../utils/Randomness";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
-import {ParameterTypes} from "./events/ParameterTypes";
+import {ParameterType} from "./events/ParameterType";
 import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
 import VMWrapper = require("../../vm/vm-wrapper.js");
 
@@ -82,7 +82,6 @@ export class TestExecutor {
 
         while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
-
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
@@ -146,9 +145,7 @@ export class TestExecutor {
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
-        const parameterType = this._eventSelector instanceof DynamicScratchEventExtractor ?
-            ParameterTypes.CODON : ParameterTypes.RANDOM;
-        nextEvent.setParameter(args, parameterType);
+        nextEvent.setParameter(args, ParameterType.CODON);
         events.add([nextEvent, args]);
         numCodon += nextEvent.numSearchParameter();
         this.notify(nextEvent, args);

@@ -21,7 +21,7 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {Container} from "../../utils/Container";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 
 
@@ -57,12 +57,12 @@ export class DragSpriteEvent extends ScratchEvent {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
 
-    setParameter(args: number[], argType: ParameterTypes): void {
+    setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
-            case ParameterTypes.RANDOM:
+            case ParameterType.RANDOM:
                 this.angle = Randomness.getInstance().nextInt(0, 421);
                 break;
-            case ParameterTypes.CODON:
+            case ParameterType.CODON:
                 this.angle = args[0];
                 break;
         }

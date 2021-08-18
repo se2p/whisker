@@ -1,4 +1,4 @@
-export enum ParameterTypes {
+export enum ParameterType {
     "RANDOM",
 
     "CODON",

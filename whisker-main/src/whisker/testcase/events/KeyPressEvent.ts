@@ -21,7 +21,7 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
 import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
 
@@ -74,15 +74,15 @@ new WaitEvent(this._steps).toJavaScript()
         return ["Steps"];
     }
 
-    setParameter(args:number[], testExecutor:ParameterTypes): void {
+    setParameter(args:number[], testExecutor:ParameterType): void {
         switch (testExecutor){
-            case ParameterTypes.RANDOM:
+            case ParameterType.RANDOM:
                 this._steps = Randomness.getInstance().nextInt(1, 421);
                 break;
-            case ParameterTypes.CODON:
+            case ParameterType.CODON:
                 this._steps = args[0];
                 break;
-            case ParameterTypes.REGRESSION:
+            case ParameterType.REGRESSION:
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }

@@ -20,7 +20,7 @@
 
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {Container} from "../../utils/Container";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
 
 
 export abstract class ScratchEvent {
@@ -45,7 +45,7 @@ export abstract class ScratchEvent {
      * @param args the values to which the parameters of this event should be set to
      * @param argType the type of the given arguments decide how they should be interpreted as parameters.
      */
-    abstract setParameter(args: number[], argType: ParameterTypes): void;
+    abstract setParameter(args: number[], argType: ParameterType): void;
 
     /**
      * Returns all parameter(s) of this event.
