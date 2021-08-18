@@ -7,10 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>Whisker Web GUI</title>
-    <link rel="shortcut icon" href="https://beta.scratch.mit.edu/static/favicon.ico">
-
+    <link rel="icon" type="image/png" href="../assets/favicon_whisker.png"/>
     <link rel="stylesheet" href="../whisker-gui.css"/>
     <script defer src="../whisker-gui.js"></script>
+
+    <script> // This should be executed before anything else to prevent loading the whole page twice
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("lng")) {
+        params.set("lng", "de");
+        const base = window.location.pathname
+        window.location.href = base + '?' + params.toString();
+    }
+    </script>
 </head>
 
 
