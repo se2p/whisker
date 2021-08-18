@@ -138,9 +138,19 @@ class TestTable {
         this.setTests(tests);
     }
 
+    updateAfterAbort() {
+        let tests = this.dataTable.data();
+        for (const index of Object.keys(tests)) {
+            if (tests[index].isRunning) {
+                tests[index].isRunning = false;
+            }
+        }
+        this.setTests(tests);
+    }
 
     /**
-     * @param {Test[]} tests    In preprocessing steps the tests might get some more fields:
+     * @param {Object} tests    Either an array or an object with indexes as keys and tests as entries.
+     *                          In preprocessing steps the tests might get some more fields:
      *                          - index: Unique ID to locate the test in the data table // TODO is this always deterministic?
      *                          - isRunning: true if the test is currently running
      *                          - testResultClass: the result status of the test run used for css styling
@@ -182,7 +192,7 @@ class TestTable {
                 },
                 {
                     data: data => data,
-                    render: function (data, type, full, meta) {
+                    render: function (data, type, full) {
                         if (!data.isRunning && data.translatedTestResult && data.testResultSign) {
                             return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.translatedTestResult + '</span></div>';
                         } else if (data.isRunning) {

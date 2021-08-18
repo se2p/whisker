@@ -66,7 +66,7 @@
     "fail" : "Test fehlgeschlagen",
     "skip" : "Test übersprungen",
     "pass" : "Test erfolgreich",
-    "error" : "Test fehlerhaft",
+    "error" : "Fehler während Test",
     "test-editor" : "Test Editor",
     "project" : "Dein Projekt",
     "error-name": "Fehler",

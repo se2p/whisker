@@ -117,6 +117,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         enableVMRelatedButtons();
         Whisker.scratch.stop();
         Whisker.testRunner.abort();
+        Whisker.testTable.updateAfterAbort();
     } else {
         disableVMRelatedButtons('#run-all-tests');
         testsRunning = true;
