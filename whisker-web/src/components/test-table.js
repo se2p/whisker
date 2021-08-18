@@ -184,7 +184,7 @@ class TestTable {
                 },
                 {
                     data: 'name',
-                    width: '50%'
+                    width: '40%'
                 },
                 {
                     data: data => data.categories.join(', '),
@@ -202,7 +202,7 @@ class TestTable {
                         }
                     },
                     defaultContent: '-',
-                    width: "15%"
+                    width: "30%"
                 },
                 {
                     orderable: false,
@@ -221,7 +221,7 @@ class TestTable {
             pagingType: 'simple',
 
             autoWidth: false,
-            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+            dom: '<"row"<"col-sm-12 col-md-6"l><f>>' +
                  '<"row"<"col-sm-12"tr>>' +
                  '<"row"<"col-sm-12 col-md-5"><"col-sm-12 col-md-7"p>>',
 
