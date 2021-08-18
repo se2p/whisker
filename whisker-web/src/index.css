@@ -170,6 +170,11 @@ p {
 }
 
 #form-lang select {
+    border-radius: 5px;
+    border-color: var(--mainColor);
+    border-style: solid;
+    border-width: thin;
+    margin-right: 10px;
     font-size: 14px;
     padding:4px;
     color: var(--textColor);
