@@ -567,8 +567,10 @@ $(function () {
         const scroll = $(window).scrollTop();
         if (scroll > stickyHeaderPosition + 1) {
             stickyHeader.addClass('scrolled');
+            $('#small-logo').show();
         } else {
             stickyHeader.removeClass('scrolled');
+            $('#small-logo').hide();
         }
     });
 });

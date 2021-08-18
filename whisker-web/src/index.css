@@ -154,6 +154,12 @@ p {
     text-align:center;
 }
 
+#small-logo {
+    position: absolute;
+    width: 40px;
+    margin: 10px;
+}
+
 .banner {
     width:100%;
     transform: translateY(-4%);
@@ -162,7 +168,7 @@ p {
 #nav-links {
     position:absolute;
     top:8px;
-    left:16px;
+    left:50px;
 }
 
 .links {
