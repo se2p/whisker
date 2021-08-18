@@ -145,15 +145,6 @@ p {
 
 /* ==== Header Structure ==== */
 
-#header {
-    padding: 1vh 0;
-    width: 100%;
-    min-width:100%;
-    margin: auto;
-    position:relative;
-    text-align:center;
-}
-
 #small-logo {
     position: absolute;
     width: 40px;
