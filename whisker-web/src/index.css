@@ -332,12 +332,41 @@ p {
     cursor: pointer;
 }
 
+.slider.slider-horizontal {
+    width: 210px;
+    height: 14px;
+    background-color: var(--mainColor);
+}
+
+.slide-container .slider.slider::before {
+    display:none;
+}
+
+.slider-handle {
+    background-image: linear-gradient(to bottom, orange, orange);
+}
+
+.slider-handle.round {
+    border-radius: 20px;
+    height: 20px;
+    width: 20px;
+    transform: translateY(-3px);
+}
+
+.slider-track {
+    display: none;
+}
+
 #acceleration {
     padding-left: 5%;
 }
 
 #acceleration-value {
     padding-left: 1%;
+}
+
+#acceleration .slider::before {
+    display: none;
 }
 
 #gender {
