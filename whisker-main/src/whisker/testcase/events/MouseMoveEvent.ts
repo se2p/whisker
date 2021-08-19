@@ -70,11 +70,11 @@ export class MouseMoveEvent extends ScratchEvent {
         switch (argType) {
             case ParameterType.RANDOM: {
                 const random = Randomness.getInstance();
-                const randomX = random.nextInt(0, 421);
-                const randomY = random.nextInt(0, 361);
-                const fittedCoordinates = this.fitCoordinates(randomX, randomY);
-                this._x = fittedCoordinates.x;
-                this._y = fittedCoordinates.y;
+                const stageBounds = Container.vmWrapper.getStageSize();
+                const signedWidth = stageBounds.width / 2;
+                const signedHeight = stageBounds.height / 2;
+                this._x = random.nextInt(-signedWidth, signedWidth + 1);
+                this._y = random.nextInt(-signedHeight, signedHeight + 1);
                 break;
             }
             case ParameterType.CODON: {

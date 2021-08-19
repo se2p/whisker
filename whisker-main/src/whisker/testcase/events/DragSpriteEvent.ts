@@ -60,6 +60,8 @@ export class DragSpriteEvent extends ScratchEvent {
     setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
             case ParameterType.RANDOM:
+                // Arbitrary upper bound aligned to most used codon max value bound.
+                // 360 is not enough since values above 360 indicate not adding any disturbance at all.
                 this.angle = Randomness.getInstance().nextInt(0, 421);
                 break;
             case ParameterType.CODON:

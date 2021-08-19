@@ -77,7 +77,7 @@ new WaitEvent(this._steps).toJavaScript()
     setParameter(args:number[], testExecutor:ParameterType): void {
         switch (testExecutor){
             case ParameterType.RANDOM:
-                this._steps = Randomness.getInstance().nextInt(1, 421);
+                this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
                 break;
             case ParameterType.CODON:
                 this._steps = args[0];

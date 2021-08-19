@@ -57,10 +57,10 @@ export class WaitEvent extends ScratchEvent {
         return ["Duration"];
     }
 
-    setParameter(args:number[], testExecutor:ParameterType): void {
-        switch (testExecutor){
+    setParameter(args: number[], testExecutor: ParameterType): void {
+        switch (testExecutor) {
             case ParameterType.RANDOM:
-                this.steps = Randomness.getInstance().nextInt(0,421);
+                this.steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
                 break;
             case ParameterType.CODON:
                 this.steps = args[0];

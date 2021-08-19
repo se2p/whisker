@@ -3,7 +3,7 @@
     "algorithm": "random",
     "minEventSize": 2,
     "maxEventSize": 30,
-    "extractor": "static",
+    "extractor": "naive",
     "fitness-function": {
         "type": "statement",
         "targets": []
