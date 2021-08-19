@@ -333,15 +333,15 @@ export class WhiskerSearchConfiguration {
                     this.dict['minVarChromosomeLength'],
                     this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork': {
-                const eventExtractor = this.getEventExtractor();
+                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper, true), eventExtractor.extractEvents(Container.vm),
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm),
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper, true), eventExtractor.extractEvents(Container.vm));
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm));
             }
             case 'templateNetwork': {
                 // TODO: Definitely make this more user friendly -> Load networkTemplate from file not from config!!!!

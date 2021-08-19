@@ -19,14 +19,14 @@ export class InputExtraction {
      * @param generator determines if we extract spriteInformation for the generator
      * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
-    static extractSpriteInfo(vmWrapper: VMWrapper, generator = false): Map<string, Map<string, number>> {
+    static extractSpriteInfo(vmWrapper: VMWrapper): Map<string, Map<string, number>> {
         // The position of a clone in the cloneMap determines its unique identifier.
         const cloneMap = this.assignCloneIds(vmWrapper);
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
         for (const target of vmWrapper.vm.runtime.targets) {
             if (!target.isStage && target.hasOwnProperty('blocks')) {
-                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vmWrapper, generator);
+                const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vmWrapper);
                 if (target.isOriginal) {
                     spriteMap.set(target.sprite.name, spriteFeatures);
                 } else {
@@ -70,12 +70,10 @@ export class InputExtraction {
      * @param target the RenderTarget (-> Sprite) from which information is gathered
      * @param vmWrapper the Scratch VM-Wrapper of the given project
      * @param cloneMap The position of a clone in the cloneMap determines its unique identifier.
-     * @param generator Determines if the function was called from a chromosome generator. When called by the
      * generator we add features which might not be informative yet. This helps us to avoid over-speciation.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, List<number>>,
-                                          vmWrapper: VMWrapper, generator = false): Map<string, number> {
+    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, List<number>>, vmWrapper: VMWrapper): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         const stageBounds = vmWrapper.getStageSize();
 
@@ -128,22 +126,13 @@ export class InputExtraction {
                 // Check if the target interacts with a color on the screen or on a target.
                 case "sensing_touchingcolor": {
                     const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                    if (generator) {
-                        // If called by the generator set up the rangeFinder sensor nodes.
-                        const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
-                        for (const angle of rangeFinderAngles) {
-                            const direction = this.assignRangeFinder(angle);
-                            spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, 0);
-                        }
-                    } else {
-                        // If not called by the generator we only active nodes whose rangeFinder sensed something.
-                        const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
-                        for (const direction in distances) {
-                            spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, distances[direction]);
-                        }
+                    // Only active nodes whose rangeFinder sensed something.
+                    const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
+                    for (const direction in distances) {
+                        spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, distances[direction]);
                     }
-                    break;
                 }
+                    break;
 
                 // Check if the target is capable of switching his costume.
                 case "looks_switchcostumeto": {

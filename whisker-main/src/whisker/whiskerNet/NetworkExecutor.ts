@@ -74,7 +74,7 @@ export class NetworkExecutor {
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
         this._random = Randomness.getInstance();
-        this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm, true);
+        this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
         this.recordInitialState();
     }
 
