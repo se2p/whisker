@@ -301,7 +301,7 @@ export class NetworkChromosome extends Chromosome {
                 const classificationNode = new ClassificationNode(this.allNodes.size(), event, ActivationFunction.SIGMOID);
                 this.allNodes.add(classificationNode);
                 this.connectOutputNode(classificationNode);
-                for (const parameter of event.getVariableParameterNames()) {
+                for (const parameter of event.getSearchParameterNames()) {
                     const regressionNode = new RegressionNode(this.allNodes.size(), event, parameter, ActivationFunction.NONE)
                     this.allNodes.add(regressionNode);
                     this.connectOutputNode(regressionNode);

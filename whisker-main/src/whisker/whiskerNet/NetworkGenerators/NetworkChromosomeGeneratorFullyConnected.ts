@@ -71,7 +71,7 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
         }
 
         // Add regression nodes for each parameter of each parameterized Event
-        const parameterizedEvents = this._scratchEvents.filter(event => event.getNumVariableParameters() > 0);
+        const parameterizedEvents = this._scratchEvents.filter(event => event.numSearchParameter() > 0);
         if (!parameterizedEvents.isEmpty()) {
             this.addRegressionNodes(allNodes, parameterizedEvents, nodeId);
         }

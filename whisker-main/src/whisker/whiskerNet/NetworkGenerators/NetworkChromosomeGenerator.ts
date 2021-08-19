@@ -59,7 +59,7 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
      */
     protected addRegressionNodes(allNodes: List<NodeGene>, parameterizedEvents: List<ScratchEvent>, nodeId: number): void {
         for (const event of parameterizedEvents) {
-            for (const parameter of event.getVariableParameterNames()) {
+            for (const parameter of event.getSearchParameterNames()) {
                 // Create the regression Node and add it to the NodeList
                 const regressionNode = new RegressionNode(nodeId++, event, parameter, ActivationFunction.NONE)
                 allNodes.add(regressionNode)

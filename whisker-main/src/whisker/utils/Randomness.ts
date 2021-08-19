@@ -84,8 +84,8 @@ export class Randomness {
 
     /**
      * Pick a random integer from a range
-     * @param min Lower bound of range
-     * @param max Upper bound of range
+     * @param min Lower bound of range, included
+     * @param max Upper bound of range, excluded
      */
     public nextInt(min: number, max: number): number {
         return Math.floor(this.next(min, max));

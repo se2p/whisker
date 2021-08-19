@@ -19,23 +19,21 @@
  */
 
 import {TestGenerator} from './TestGenerator';
-import {ScratchProject} from '../scratch/ScratchProject';
 import {List} from '../utils/List';
-import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {TestChromosome} from "../testcase/TestChromosome";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
-import {Selection} from "../search/Selection";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
 import {FitnessFunction} from "../search/FitnessFunction";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
-import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
+import {Randomness} from "../utils/Randomness";
+import {Container} from "../utils/Container";
+import {TestExecutor} from "../testcase/TestExecutor";
+import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 
 /**
- * A naive approach to generating tests is to simply
- * use the chromosome factory and generate completely
- * random tests.
+ * A naive approach to generating tests by always selecting a random event from the set of available events
+ * determined by the ScratchEventSelector.
  */
 export class RandomTestGenerator extends TestGenerator implements SearchAlgorithm<TestChromosome> {
 
@@ -47,7 +45,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
     /**
      * Saves the number of Generations.
      */
-    private _iterations = 0;
+    private _iterations: number;
 
     /**
      * Saves the best performing chromosomes seen so far.
@@ -59,27 +57,53 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
      */
     private _archive = new Map<number, TestChromosome>();
 
-    async generateTests(project: ScratchProject): Promise<WhiskerTestListWithSummary> {
+    /**
+     * Boolean determining if we have reached full test coverage.
+     */
+    protected _fullCoverageReached = false;
+
+    /**
+     * The minimum number of randomly selected events.
+     */
+    private readonly minSize: number
+
+    /**
+     * The maximum number of randomly selected events.
+     */
+    private readonly maxSize: number
+
+    constructor(configuration: WhiskerSearchConfiguration, minSize: number, maxSize: number) {
+        super(configuration);
+        this.minSize = minSize;
+        this.maxSize = maxSize;
+    }
+
+    /**
+     * Generate tests by randomly sending events to the Scratch-VM.
+     * After each Iteration the archive is updated with the trace of executed events.
+     */
+    async generateTests(): Promise<WhiskerTestListWithSummary> {
+        this._iterations = 0;
+        this._startTime = Date.now();
+        StatisticsCollector.getInstance().iterationCount = 0;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        StatisticsCollector.getInstance().startTime = Date.now();
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
-        let fullCoverageReached = false;
-
-        const chromosomeGenerator = this._config.getChromosomeGenerator();
         const stoppingCondition = this._config.getSearchAlgorithmProperties().getStoppingCondition();
+
+        const eventExtractor = this._config.getEventExtractor();
+        const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
 
         while (!(stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
+            const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
+            const randomEventChromosome = new TestChromosome(new List<number>(), undefined, undefined)
+            await randomTestExecutor.executeRandomEvents(randomEventChromosome, numberOfEvents);
+            this.updateArchive(randomEventChromosome);
             this._iterations++;
-            StatisticsCollector.getInstance().incrementIterationCount();
-            const testChromosome = chromosomeGenerator.get();
-            await testChromosome.evaluate();
-            this.updateArchive(testChromosome);
-            if (this._archive.size == this._fitnessFunctions.size && !fullCoverageReached) {
-                fullCoverageReached = true;
-                StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
-                StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
-            }
+            this.updateStatistics()
         }
         const testSuite = await this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);
@@ -103,6 +127,23 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
                 this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
                 console.log(`Found test for goal: ${fitnessFunction}`);
             }
+        }
+    }
+
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - iterationCount
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
+     */
+    protected updateStatistics(): void {
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._tests.size();
+        StatisticsCollector.getInstance().incrementIterationCount();
+        if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }
 

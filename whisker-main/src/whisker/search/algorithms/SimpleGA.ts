@@ -97,8 +97,10 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         let population = this.generateInitialPopulation();
         await this.evaluatePopulation(population);
 
-        // Evaluate population
-        this.evaluateAndSortPopulation(population);
+        // Evaluate population, but before check if we have already reached our stopping condition
+        if(!(this._stoppingCondition.isFinished(this))) {
+            this.evaluateAndSortPopulation(population);
+        }
 
         while (!(this._stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}, best fitness: ${this._bestFitness}`);
@@ -106,7 +108,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const nextGeneration = this.generateOffspringPopulation(population);
             await this.evaluatePopulation(nextGeneration);
             if(!(this._stoppingCondition.isFinished(this))) {
-                this.evaluateAndSortPopulation(nextGeneration)
+                this.evaluateAndSortPopulation(nextGeneration);
             }
             population = nextGeneration;
             this._iterations++;

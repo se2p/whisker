@@ -21,6 +21,8 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {Container} from "../../utils/Container";
+import {ParameterType} from "./ParameterType";
+import {Randomness} from "../../utils/Randomness";
 
 
 export class DragSpriteEvent extends ScratchEvent {
@@ -55,8 +57,17 @@ export class DragSpriteEvent extends ScratchEvent {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
 
-    setParameter(args: number[]): void {
-        this.angle = args[0];
+    setParameter(args: number[], argType: ParameterType): void {
+        switch (argType) {
+            case ParameterType.RANDOM:
+                // Arbitrary upper bound aligned to most used codon max value bound.
+                // 360 is not enough since values above 360 indicate not adding any disturbance at all.
+                this.angle = Randomness.getInstance().nextInt(0, 421);
+                break;
+            case ParameterType.CODON:
+                this.angle = args[0];
+                break;
+        }
 
         // We only disturb the target point if we have an angle smaller than 360 degrees.
         if (this.angle < 360) {
@@ -78,11 +89,11 @@ export class DragSpriteEvent extends ScratchEvent {
         }
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 1;
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 

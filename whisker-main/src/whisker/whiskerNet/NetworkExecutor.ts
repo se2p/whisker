@@ -12,7 +12,8 @@ import {NetworkChromosome} from "./NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import {ParameterTypes} from "../testcase/events/ParameterTypes";
+import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
+import {ParameterType} from "../testcase/events/ParameterType";
 import Runtime from "scratch-vm/src/engine/runtime"
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
@@ -143,9 +144,9 @@ export class NetworkExecutor {
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
             let args = [];
-            if (nextEvent.getNumVariableParameters() > 0) {
+            if (nextEvent.numSearchParameter() > 0) {
                 args = NetworkExecutor.getArgs(nextEvent, network);
-                nextEvent.setParameter(args, ParameterTypes.REGRESSION);
+                nextEvent.setParameter(args, ParameterType.REGRESSION);
             }
             events.add([nextEvent, args]);
             this.notify(nextEvent, args);
@@ -211,10 +212,10 @@ export class NetworkExecutor {
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this._random.pickRandomElementFromList(this.availableEvents);
             const args = [];
-            for (let i = 0; i < nextEvent.getNumVariableParameters(); i++) {
+            for (let i = 0; i < nextEvent.getNumSearchParameter(); i++) {
                 args.push(this._random.nextDoubleMinMax(-10, 10))
             }
-            nextEvent.setParameter(args, ParameterTypes.REGRESSION);
+            nextEvent.setParameter(args, ParameterType.REGRESSION);
             events.add([nextEvent, args]);
             this.notify(nextEvent, args);
             await nextEvent.apply();

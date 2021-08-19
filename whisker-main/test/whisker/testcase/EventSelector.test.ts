@@ -5,10 +5,10 @@ import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 
 class DummyEvent extends ScratchEvent {
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
        return 0;
     }
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
     stringIdentifier(): string {
