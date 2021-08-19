@@ -36,14 +36,15 @@ import {TypeTextEvent} from "./events/TypeTextEvent";
 
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
-// TODO: Additional keys?
+    // TODO: Additional keys?
     private readonly KEYS = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter'];
 
     private readonly _random: Randomness;
 
     /**
      * StaticScratchEventExtractor only adds event for which corresponding event handler exist. However, as opposed
-     * to the DynamicScratchEventExtractor, the parameters are chosen randomly and not inferred if possible from the VM.
+     * to the DynamicScratchEventExtractor, the parameters are chosen randomly and not inferred from the VM whenever
+     * possible.
      * @param vm the Scratch-VM
      */
     constructor(vm: VirtualMachine) {

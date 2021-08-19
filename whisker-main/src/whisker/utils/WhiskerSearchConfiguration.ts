@@ -78,6 +78,7 @@ export class WhiskerSearchConfiguration {
         this.dict = Preconditions.checkNotUndefined(dict)
     }
 
+    // TODO: Need variation here; we do not always need all properties, e.g MIO has no crossover
     public getSearchAlgorithmProperties(): SearchAlgorithmProperties<any> {
         const populationSize = this.dict['population-size'] as number;
         const chromosomeLength = this.dict['chromosome-length'] as number;
@@ -417,7 +418,7 @@ export class WhiskerSearchConfiguration {
 
     public getTestGenerator(): TestGenerator {
         if (this.dict["test-generator"] == "random") {
-            return new RandomTestGenerator(this);
+            return new RandomTestGenerator(this, this.dict['minEventSize'], this.dict['maxEventSize']);
         } else if (this.dict['test-generator'] == 'iterative') {
             return new IterativeSearchBasedTestGenerator(this);
         } else if (this.dict['test-generator'] == 'many-objective') {

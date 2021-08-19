@@ -33,7 +33,6 @@ import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
 import {ParameterType} from "./events/ParameterType";
-import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
 import VMWrapper = require("../../vm/vm-wrapper.js");
 
 
@@ -63,6 +62,10 @@ export class TestExecutor {
         }
     }
 
+    /**
+     * Executes a chromosome by selecting events according to the chromosome's defined genes.
+     * @param testChromosome the testChromosome that should be executed.
+     */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
 
@@ -129,6 +132,59 @@ export class TestExecutor {
         this.resetState();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         return testChromosome.trace;
+    }
+
+    /**
+     * Randomly executes events selected from the available event Set.
+     * @param randomEventChromosome the chromosome in which the executed trace will be saved in.
+     * @param numberOfEvents the number of events that should be executed.
+     */
+    async executeRandomEvents(randomEventChromosome: TestChromosome, numberOfEvents: number): Promise<ExecutionTrace> {
+        seedScratch(String(Randomness.getInitialSeed()));
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
+        let availableEvents = this._eventExtractor.extractEvents(this._vm);
+        let eventCount = 0;
+        const random = Randomness.getInstance();
+        const events = new List<[ScratchEvent, number[]]>();
+
+        while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+            availableEvents = this._eventExtractor.extractEvents(this._vm);
+            if (availableEvents.isEmpty()) {
+                console.log("Whisker-Main: No events available for project.");
+                break;
+            }
+
+            // Randomly select an event and increase the event count.
+            const eventIndex = random.nextInt(0, availableEvents.size());
+            randomEventChromosome.getGenes().add(eventIndex);
+            const event = availableEvents.get(eventIndex);
+            eventCount++;
+
+            // If the selected required additional parameters; select them randomly as well.
+            if (event.numSearchParameter() > 0) {
+                // args are set in the event itself since the event knows which range of random values makes sense.
+                event.setParameter(null, ParameterType.RANDOM);
+            }
+            events.add([event, event.getParameter()]);
+            await event.apply();
+            StatisticsCollector.getInstance().incrementEventsCount()
+
+            // Send a WaitEvent to the VM
+            const waitEvent = new WaitEvent(1);
+            events.add([waitEvent, []]);
+            await waitEvent.apply();
+
+        }
+        const trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        randomEventChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        randomEventChromosome.trace = trace;
+        this._vmWrapper.end();
+        this.resetState();
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+        return trace;
     }
 
     /**
