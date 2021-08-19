@@ -212,7 +212,7 @@ export class NetworkExecutor {
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this._random.pickRandomElementFromList(this.availableEvents);
             const args = [];
-            for (let i = 0; i < nextEvent.getNumSearchParameter(); i++) {
+            for (let i = 0; i < nextEvent.numSearchParameter(); i++) {
                 args.push(this._random.nextDoubleMinMax(-10, 10))
             }
             nextEvent.setParameter(args, ParameterType.REGRESSION);
