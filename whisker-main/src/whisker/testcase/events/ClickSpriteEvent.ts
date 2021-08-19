@@ -81,7 +81,7 @@ export class ClickSpriteEvent extends ScratchEvent {
         }
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
@@ -93,7 +93,7 @@ export class ClickSpriteEvent extends ScratchEvent {
         return [this._target, this._steps];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 

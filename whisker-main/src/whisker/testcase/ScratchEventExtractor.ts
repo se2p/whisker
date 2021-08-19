@@ -101,8 +101,6 @@ export abstract class ScratchEventExtractor {
         }
     }
 
-
-    // TODO: How to handle event parameters?
     protected _extractEventsFromBlock(target, block): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         if (typeof block.opcode === 'undefined') {
@@ -123,7 +121,8 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_mousex':
-            case 'sensing_mousey': {
+            case 'sensing_mousey':
+            case 'pen_penDown': {
                 // Mouse move
                 eventList.add(new MouseMoveEvent());
                 break;
@@ -190,7 +189,6 @@ export abstract class ScratchEventExtractor {
                 const field = target.blocks.getFields(distanceMenuBlock);
                 const value = field.DISTANCETOMENU.value;
                 if (value == "_mouse_") {
-                    // TODO: Maybe could determine position to move to here?
                     eventList.add(new MouseMoveEvent());
                 }
                 break;
@@ -205,10 +203,6 @@ export abstract class ScratchEventExtractor {
                 // Mouse down
                 const isMouseDown = Container.testDriver.isMouseDown();
                 eventList.add(new MouseDownEvent(!isMouseDown));
-                break;
-            }
-            case 'pen_penDown': {
-                eventList.add(new MouseMoveEvent())
                 break;
             }
             case 'sensing_askandwait':

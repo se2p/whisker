@@ -1,0 +1,42 @@
+{
+    "test-generator": "random",
+    "algorithm": "random",
+    "minEventSize": 2,
+    "maxEventSize": 30,
+    "extractor": "naive",
+    "fitness-function": {
+        "type": "statement",
+        "targets": []
+    },
+    "stopping-condition": {
+        "type": "one-of",
+        "conditions": [
+            {
+                "type": "fixed-time",
+                "duration": 6000000
+            },
+            {
+                "type": "optimal"
+            }
+        ]
+    },
+    "crossover": {
+        "operator": "singlepointrelative",
+        "probability": 1
+    },
+    "mutation": {
+        "operator": "biasedVariablelengthConstrained",
+        "probability": 1,
+        "gaussianMutationPower": 5,
+        "maxMutationCountStart": 0,
+        "maxMutationCountFocusedPhase": 10
+    },
+    "selection": {
+        "operator": "rank",
+        "randomSelectionProbabilityStart": 0.5,
+        "randomSelectionProbabilityFocusedPhase": 0
+    },
+    "waitStepUpperBound": 200,
+    "click-duration": 3,
+    "press-duration": 50
+}
