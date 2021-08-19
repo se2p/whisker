@@ -68,6 +68,10 @@ export class DragSpriteEvent extends ScratchEvent {
                 this._y = random.nextInt(-signedHeight, signedHeight + 1);
                 break;
             }
+            // When using codons, we sometimes want to slightly disturb the position wo which the target should
+            // be dragged to since the position could have some with unintended side effects. Hence, we disturb the
+            // given position with a power equal to the target's size. The direction of the disturbance is determined
+            // through a codon. If we have a codon value above 360, the position is not disturbed at all.
             case ParameterType.CODON:
                 this.angle = args[0];
                 // We only disturb the target point if we have an angle smaller than 360 degrees.
