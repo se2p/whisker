@@ -163,7 +163,7 @@ export class TestExecutor {
             const event = availableEvents.get(eventIndex);
             eventCount++;
 
-            // If the selected required additional parameters; select them randomly as well.
+            // If the selected event requires additional parameters; select them randomly as well.
             if (event.numSearchParameter() > 0) {
                 // args are set in the event itself since the event knows which range of random values makes sense.
                 event.setParameter(null, ParameterType.RANDOM);

@@ -59,33 +59,36 @@ export class DragSpriteEvent extends ScratchEvent {
 
     setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
-            case ParameterType.RANDOM:
-                // Arbitrary upper bound aligned to most used codon max value bound.
-                // 360 is not enough since values above 360 indicate not adding any disturbance at all.
-                this.angle = Randomness.getInstance().nextInt(0, 421);
+            case ParameterType.RANDOM: {
+                const random = Randomness.getInstance();
+                const stageBounds = Container.vmWrapper.getStageSize();
+                const signedWidth = stageBounds.width / 2;
+                const signedHeight = stageBounds.height / 2;
+                this._x = random.nextInt(-signedWidth, signedWidth + 1);
+                this._y = random.nextInt(-signedHeight, signedHeight + 1);
                 break;
+            }
             case ParameterType.CODON:
                 this.angle = args[0];
+                // We only disturb the target point if we have an angle smaller than 360 degrees.
+                if (this.angle < 360) {
+                    // Convert to Radians and fetch the sprite's horizontal and vertical size.
+                    const radians = this.angle / 180 * Math.PI;
+                    const bounds = this._target.getBounds();
+                    const horizontalSize = Math.abs(bounds.right - bounds.left);
+                    const verticalSize = Math.abs(bounds.top - bounds.bottom);
+
+                    // Calculate the distorted position.
+                    const stageWidth = Container.vmWrapper.getStageSize().width / 2;
+                    const stageHeight = Container.vmWrapper.getStageSize().height / 2;
+                    this._x += horizontalSize * Math.cos(radians);
+                    this._y += verticalSize * Math.sin(radians);
+
+                    // Clamp the new position within the stage size
+                    this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
+                    this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
+                }
                 break;
-        }
-
-        // We only disturb the target point if we have an angle smaller than 360 degrees.
-        if (this.angle < 360) {
-            // Convert to Radians and fetch the sprite's horizontal and vertical size.
-            const radians = this.angle / 180 * Math.PI;
-            const bounds = this._target.getBounds();
-            const horizontalSize = Math.abs(bounds.right - bounds.left);
-            const verticalSize = Math.abs(bounds.top - bounds.bottom);
-
-            // Calculate the distorted position.
-            const stageWidth = Container.vmWrapper.getStageSize().width / 2;
-            const stageHeight = Container.vmWrapper.getStageSize().height / 2;
-            this._x += horizontalSize * Math.cos(radians);
-            this._y += verticalSize * Math.sin(radians);
-
-            // Clamp the new position within the stage size
-            this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
-            this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
     }
 
