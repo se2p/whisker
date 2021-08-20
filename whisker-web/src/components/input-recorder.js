@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 
 class InputRecorder extends EventEmitter {
 
-    constructor(scratch) {
+    constructor (scratch) {
         super();
 
         this.scratch = scratch;
@@ -27,14 +27,14 @@ class InputRecorder extends EventEmitter {
 ];`;
     }
 
-    startRecording() {
+    startRecording () {
         this.emit('startRecording');
         this.events = [];
         this.startTime = Date.now();
         this.scratch.on('input', this._onInput);
     }
 
-    stopRecording() {
+    stopRecording () {
         this.emit('stopRecording');
         this.scratch.removeListener('input', this._onInput);
         this.showInputs();
@@ -42,17 +42,18 @@ class InputRecorder extends EventEmitter {
         this.startTime = null;
     }
 
-    isRecording() {
+    isRecording () {
         return this.startTime != null;
     }
 
-    onInput(data) {
+    onInput (data) {
+        const steps = Date.now() - this.startTime;
         switch (data.device) {
             case 'mouse':
-                this.onMouseInput(data);
+                this.onMouseInput(steps, data);
                 break;
             case 'keyboard':
-                this.onKeyboardInput(data);
+                this.onKeyboardInput(steps, data);
                 break;
             case 'text':
                 this.onTextInput(data);
@@ -62,13 +63,17 @@ class InputRecorder extends EventEmitter {
         }
     }
 
-    onMouseInput(data) {
-        const steps = Date.now() - this.startTime;
+    onMouseInput (steps, data) {
         let event;
-
         if (data.isDown) {
-            // TODO: How to distinguish between sprite and stage?
-            event = Util.clickClone(data.x, data.y, steps);
+            const target = Util.getTarget(this.vm);
+            if (target.isStage) {
+                event = Util.clickStage();
+            } else if (target.isOriginal) {
+                event = Util.clickSprite(target.getName(), steps);
+            } else {
+                event = Util.clickClone(target.x, target.y);
+            }
         } else {
             // TODO: How to handle mouse movement?
             event = Util.mouseMove(data.x, data.y);
@@ -76,21 +81,20 @@ class InputRecorder extends EventEmitter {
         this.events.push(event);
     }
 
-    onKeyboardInput(data) {
+    onKeyboardInput (steps, data) {
         if (data.isDown) {
             const key = Util.getScratchKey(this.vm, data.key);
-            const steps = Date.now() - this.startTime;
             const event = Util.keyPress(key, steps);
             this.events.push(event);
         }
     }
 
-    onTextInput(data) {
+    onTextInput (data) {
         const event = Util.typeText(data.answer);
         this.events.push(event);
     }
 
-    showInputs() {
+    showInputs () {
         let inputCode = `${this.events.join('\n')}`;
         Whisker.testEditor.setValue(this.testBegin + inputCode + this.testEnd + this.export);
         location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
