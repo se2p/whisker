@@ -155,7 +155,7 @@ export abstract class ScratchEventExtractor {
                     eventList.add(new DragSpriteEvent(target, x, y));
                 } else {
                     // Target senses another sprite
-                    let sensingRenderedTarget = Container.vmWrapper.getTargetOfSprite(value);
+                    let sensingRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
                     // If the renderedTarget is not visible. Check if we have clones that might be.
                     if (!sensingRenderedTarget.visible) {
                         for (const clone of sensingRenderedTarget.sprite.clones) {
