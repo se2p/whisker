@@ -378,13 +378,14 @@ class Inputs {
      * @param {number} steps .
      */
     clickSprite (spriteName, steps) {
-        const target = this.vmWrapper.getTargetOfSprite(spriteName);
-        this.inputImmediate({
-            device: 'mouse',
-            sprite: this.vmWrapper.sprites.getSprite(target),
-            isDown: true,
-            steps: steps
-        });
+        if (this.vmWrapper.getTargetBySpriteName(spriteName) != null) {
+            this.inputImmediate({
+                device: 'mouse',
+                sprite: this.vmWrapper.sprites.getSprite(spriteName),
+                isDown: true,
+                steps: steps
+            });
+        }
     }
 
     /**
@@ -393,33 +394,28 @@ class Inputs {
      * @param {number} steps .
      */
     clickClone (x, y, steps) {
-        for (const target of this.vmWrapper.vm.runtime.targets) {
-            if (target.x === x && target.y === y) {
-                this.inputImmediate({
-                    device: 'mouse',
-                    x: x,
-                    y: y,
-                    isDown: true,
-                    steps: steps
-                });
-                break;
-            }
+        if (this.vmWrapper.getTargetBySpriteCoords(x, y) != null) {
+            this.inputImmediate({
+                device: 'mouse',
+                x: x,
+                y: y,
+                isDown: true,
+                steps: steps
+            });
         }
     }
 
     /**
      * When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
      *
-     * @param {string} target .
+     * @param {string} spriteName .
      * @param {number} x .
      * @param {number} y .
      */
-    dragSprite (target, x, y) {
-        for (const t of this.vmWrapper.vm.runtime.targets) {
-            if (t.sprite.name === target) {
-                t.setXY(x, y, true);
-                break;
-            }
+    dragSprite (spriteName, x, y) {
+        const target = this.vmWrapper.getTargetBySpriteName(spriteName);
+        if (target != null) {
+            target.setXY(x, y, true);
         }
     }
 

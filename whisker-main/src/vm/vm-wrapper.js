@@ -414,7 +414,7 @@ class VMWrapper {
      * @param {number} timeDuration .
      * @return {number} .
      */
-    convertFromTimeToSteps(timeDuration){
+    convertFromTimeToSteps (timeDuration) {
         const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
         return timeDuration / stepDuration;
     }
@@ -424,9 +424,23 @@ class VMWrapper {
      * @param spriteName the name of the sprite we are searching the RenderedTarget instance for
      * @return {RenderedTarget}
      */
-    getTargetOfSprite(spriteName){
-        for(const target of this.vm.runtime.targets){
-            if(target.sprite.name === spriteName){
+    getTargetBySpriteName (spriteName) {
+        for (const target of this.vm.runtime.targets) {
+            if (target.sprite.name === spriteName) {
+                return target;
+            }
+        }
+    }
+
+    /**
+     * Finds the RenderedTarget instance of a sprite using its coordinates.
+     * @param {number} x .
+     * @param {number} y .
+     * @return {RenderedTarget} .
+     */
+    getTargetBySpriteCoords (x, y) {
+        for (const target of this.vm.runtime.targets) {
+            if (target.x === x && target.y === y) {
                 return target;
             }
         }
