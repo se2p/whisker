@@ -37,7 +37,7 @@ export class ClickStageEvent extends ScratchEvent {
         return "ClickStage"
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
@@ -49,7 +49,7 @@ export class ClickStageEvent extends ScratchEvent {
         return [];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 

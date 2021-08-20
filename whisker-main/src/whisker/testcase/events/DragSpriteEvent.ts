@@ -21,6 +21,8 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
 import {Container} from "../../utils/Container";
+import {ParameterType} from "./ParameterType";
+import {Randomness} from "../../utils/Randomness";
 
 
 export class DragSpriteEvent extends ScratchEvent {
@@ -54,34 +56,50 @@ export class DragSpriteEvent extends ScratchEvent {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
 
-    setParameter(args: number[]): void {
-        this.angle = args[0];
+    setParameter(args: number[], argType: ParameterType): void {
+        switch (argType) {
+            case ParameterType.RANDOM: {
+                const random = Randomness.getInstance();
+                const stageBounds = Container.vmWrapper.getStageSize();
+                const signedWidth = stageBounds.width / 2;
+                const signedHeight = stageBounds.height / 2;
+                this._x = random.nextInt(-signedWidth, signedWidth + 1);
+                this._y = random.nextInt(-signedHeight, signedHeight + 1);
+                break;
+            }
+            // When using codons, we sometimes want to slightly disturb the position wo which the target should
+            // be dragged to since the position could have some with unintended side effects. Hence, we disturb the
+            // given position with a power equal to the target's size. The direction of the disturbance is determined
+            // through a codon. If we have a codon value above 360, the position is not disturbed at all.
+            case ParameterType.CODON:
+                this.angle = args[0];
+                // We only disturb the target point if we have an angle smaller than 360 degrees.
+                if (this.angle < 360) {
+                    // Convert to Radians and fetch the sprite's horizontal and vertical size.
+                    const radians = this.angle / 180 * Math.PI;
+                    const bounds = this._target.getBounds();
+                    const horizontalSize = Math.abs(bounds.right - bounds.left);
+                    const verticalSize = Math.abs(bounds.top - bounds.bottom);
 
-        // We only disturb the target point if we have an angle smaller than 360 degrees.
-        if (this.angle < 360) {
-            // Convert to Radians and fetch the sprite's horizontal and vertical size.
-            const radians = this.angle / 180 * Math.PI;
-            const bounds = this._target.getBounds();
-            const horizontalSize = Math.abs(bounds.right - bounds.left);
-            const verticalSize = Math.abs(bounds.top - bounds.bottom);
+                    // Calculate the distorted position.
+                    const stageWidth = Container.vmWrapper.getStageSize().width / 2;
+                    const stageHeight = Container.vmWrapper.getStageSize().height / 2;
+                    this._x += horizontalSize * Math.cos(radians);
+                    this._y += verticalSize * Math.sin(radians);
 
-            // Calculate the distorted position.
-            const stageWidth = Container.vmWrapper.getStageSize().width / 2;
-            const stageHeight = Container.vmWrapper.getStageSize().height / 2;
-            this._x += horizontalSize * Math.cos(radians);
-            this._y += verticalSize * Math.sin(radians);
-
-            // Clamp the new position within the stage size
-            this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
-            this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
+                    // Clamp the new position within the stage size
+                    this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
+                    this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
+                }
+                break;
         }
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 1;
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 

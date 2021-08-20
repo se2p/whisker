@@ -20,7 +20,8 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
+import {Randomness} from "../../utils/Randomness";
 
 export class MouseMoveEvent extends ScratchEvent {
 
@@ -45,7 +46,7 @@ export class MouseMoveEvent extends ScratchEvent {
         return "MouseMove " + Math.trunc(this._x) + "/" + Math.trunc(this._y);
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 2; // x and y?
     }
 
@@ -53,19 +54,28 @@ export class MouseMoveEvent extends ScratchEvent {
         return [this._x, this._y];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return ["X", "Y"]
     }
 
-    setParameter(args: number[], argType: ParameterTypes): void {
+    setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
-            case ParameterTypes.CODON: {
+            case ParameterType.RANDOM: {
+                const random = Randomness.getInstance();
+                const stageBounds = Container.vmWrapper.getStageSize();
+                const signedWidth = stageBounds.width / 2;
+                const signedHeight = stageBounds.height / 2;
+                this._x = random.nextInt(-signedWidth, signedWidth + 1);
+                this._y = random.nextInt(-signedHeight, signedHeight + 1);
+                break;
+            }
+            case ParameterType.CODON: {
                 const fittedCoordinates = this.fitCoordinates(args[0], args[1])
                 this._x = fittedCoordinates.x;
                 this._y = fittedCoordinates.y;
                 break;
             }
-            case ParameterTypes.REGRESSION: {
+            case ParameterType.REGRESSION: {
                 this._x = Math.tanh(args[0]) * 240;
                 this._y = Math.tanh(args[1]) * 180;
                 break;

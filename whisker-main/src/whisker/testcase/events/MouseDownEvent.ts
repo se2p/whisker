@@ -42,7 +42,7 @@ export class MouseDownEvent extends ScratchEvent {
         return "MouseDown " + this._value;
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
@@ -51,7 +51,7 @@ export class MouseDownEvent extends ScratchEvent {
         return [this._value ? 1 : 0];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 
