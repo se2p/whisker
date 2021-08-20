@@ -12,7 +12,6 @@ import {NetworkChromosome} from "./NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
 import {ParameterType} from "../testcase/events/ParameterType";
 import Runtime from "scratch-vm/src/engine/runtime"
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
@@ -213,9 +212,9 @@ export class NetworkExecutor {
             const nextEvent: ScratchEvent = this._random.pickRandomElementFromList(this.availableEvents);
             const args = [];
             for (let i = 0; i < nextEvent.numSearchParameter(); i++) {
-                args.push(this._random.nextDoubleMinMax(-10, 10))
+                nextEvent.setParameter(args, ParameterType.RANDOM);
+                args.push(nextEvent.getParameter());
             }
-            nextEvent.setParameter(args, ParameterType.REGRESSION);
             events.add([nextEvent, args]);
             this.notify(nextEvent, args);
             await nextEvent.apply();

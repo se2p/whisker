@@ -1,6 +1,7 @@
 {
     "test-generator": "neuroevolution",
     "algorithm": "neat",
+    "dynamicTestSuite": "false",
     "chromosome": "sparseNetwork",
     "populationType": "neat",
     "randomNetworkEventSelection": "true",
@@ -44,7 +45,7 @@
     },
     "network-fitness": {
         "type": "survive",
-        "timeout": 30000
+        "timeout": 6000
     },
     "stopping-condition": {
         "type": "one-of",
@@ -55,7 +56,7 @@
             },
             {
                 "type": "fixed-time",
-                "duration": 432000000
+                "duration": 828000000
             }
         ]
     },

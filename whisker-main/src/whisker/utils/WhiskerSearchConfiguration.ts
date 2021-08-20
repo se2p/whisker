@@ -473,4 +473,8 @@ export class WhiskerSearchConfiguration {
             return Date.now();
         }
     }
+
+    public isDynamicTestsSuite(): boolean {
+        return this.dict['dynamicTestSuite'] === 'true';
+    }
 }

@@ -267,7 +267,7 @@ export class StatisticsCollector {
     public asCsvNeuroevolution(numberOfIterations?:number): string {
 
         let header = [...this._bestNetworkFitness.keys()].sort((a, b) => a -b);
-        let values = [... this._bestNetworkFitness.values()].sort((a, b) => a -b);
+        let values = [... this._bestNetworkFitness.values()];
 
         // Truncate the fitness timeline to the given numberOfIterations count if necessary.
         const truncateFitnessTimeline = numberOfIterations != undefined && 0 <= numberOfIterations;

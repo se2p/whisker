@@ -16,7 +16,6 @@ export class InputExtraction {
     /**
      * Extracts pieces of information from all Sprites of the given Scratch project.
      * @param vmWrapper the Scratch VM-Wrapper.
-     * @param generator determines if we extract spriteInformation for the generator
      * @return Returns a map where each sprite maps to the extracted information map of the specific sprite.
      */
     static extractSpriteInfo(vmWrapper: VMWrapper): Map<string, Map<string, number>> {

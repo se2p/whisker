@@ -21,7 +21,7 @@
 import {TestChromosome} from "./TestChromosome";
 import {List} from "../utils/List";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
-import {StatisticsCollector} from "../utils/StatisticsCollector";
+import {Container} from "../utils/Container";
 
 export class JavaScriptConverter {
 
@@ -46,7 +46,8 @@ export class JavaScriptConverter {
 
     getSuiteText(tests: List<WhiskerTest>): string {
 
-        if(StatisticsCollector.getInstance().configName.includes("Neuroevolution")) {
+        // If we want a dynamic test suite print out the networks instead of static test cases.
+        if(Container.config.isDynamicTestsSuite()) {
             const networkTestSuite = {}
             for (let j = 0; j < tests.size(); j++) {
                 networkTestSuite[`Network ${j}`] = tests.get(j).chromosome;
