@@ -40,6 +40,7 @@ const accSlider = $("#acceleration-factor").slider();
 const LANGUAGE_OPTION = "lng";
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
+let testsRunning = false;
 
 const loadTestsFromString = async function (string) {
     const config = await Whisker.configFileSelect.loadAsString();
@@ -69,7 +70,16 @@ const loadTestsFromString = async function (string) {
     return tests;
 };
 
+const disableVMRelatedButtons = function (exception) {
+    $(`.vm-related:not(${exception})`).prop('disabled', true);
+}
+
+const enableVMRelatedButtons = function () {
+    $('.vm-related').prop('disabled', false);
+}
+
 const runSearch = async function () {
+    disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
@@ -92,63 +102,81 @@ const runSearch = async function () {
         const titlePopulationRecord = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
         new DownloadContainer(titlePopulationRecord, `json`, res[2]).download();
     }
+    enableVMRelatedButtons();
     return res[0];
 };
 
+function _showRunIcon() {
+    $('#run-tests-icon').show();
+    $('#stop-tests-icon').hide();
+}
+
+function _showStopIcon() {
+    $('#run-tests-icon').hide();
+    $('#stop-tests-icon').show();
+}
+
 const _runTestsWithCoverage = async function (vm, project, tests) {
-    $('#green-flag').prop('disabled', true);
-    $('#reset').prop('disabled', true);
-    let running = i18next.t("running");
-    $('#run-all-tests').prop('disabled', true).text(running);
-    $('#record').prop('disabled', true);
+    if (testsRunning) {
+        testsRunning = false;
+        _showRunIcon();
+        enableVMRelatedButtons();
+        Whisker.scratch.stop();
+        Whisker.testRunner.abort();
+        Whisker.testTable.updateAfterAbort();
+    } else {
+        disableVMRelatedButtons('#run-all-tests');
+        testsRunning = true;
+        _showStopIcon();
+        $('#green-flag').prop('disabled', true);
+        $('#reset').prop('disabled', true);
+        $('#record').prop('disabled', true);
 
-    let summary;
-    let coverage;
-    accSlider.slider('disable');
-    const accelerationFactor = $('#acceleration-value').text();
+        let summary;
+        let coverage;
+        accSlider.slider('disable');
+        const accelerationFactor = $('#acceleration-value').text();
 
-    try {
-        await Whisker.scratch.vm.loadProject(project);
-        CoverageGenerator.prepareClasses({Thread});
-        CoverageGenerator.prepareVM(vm);
+        try {
+            await Whisker.scratch.vm.loadProject(project);
+            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareVM(vm);
 
-        summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
-        coverage = CoverageGenerator.getCoverage();
+            summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
+            coverage = CoverageGenerator.getCoverage();
 
-        if (typeof window.messageServantCallback === 'function') {
-            const coveredBlockIdsPerSprite =
-                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-            const blockIdsPerSprite =
-                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+            if (typeof window.messageServantCallback === 'function') {
+                const coveredBlockIdsPerSprite =
+                    [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+                const blockIdsPerSprite =
+                    [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
 
-            const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-            window.messageServantCallback({serializeableCoverageObject, summary});
+                const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+                window.messageServantCallback({serializeableCoverageObject, summary});
+            }
+
+            CoverageGenerator.restoreClasses({Thread});
+        } finally {
+            _showRunIcon()
+            enableVMRelatedButtons();
+            accSlider.slider('enable');
         }
 
-        CoverageGenerator.restoreClasses({Thread});
-    } finally {
-        $('#green-flag').prop('disabled', false);
-        $('#reset').prop('disabled', false);
-        let runTests = i18next.t("tests")
-        $('#run-all-tests').prop('disabled', false).text(runTests);
-        $('#record').prop('disabled', false);
-        accSlider.slider('enable');
+        if (summary === null) {
+            return;
+        }
+
+        const formattedSummary = TAP13Formatter.formatSummary(summary);
+        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+
+        const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+        Whisker.outputRun.println([
+            summaryString,
+            coverageString
+        ].join('\n'));
     }
-
-    if (summary === null) {
-        return;
-    }
-
-    const formattedSummary = TAP13Formatter.formatSummary(summary);
-    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-
-    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-
-    Whisker.outputRun.println([
-        summaryString,
-        coverageString
-    ].join('\n'));
 };
 
 const runTests = async function (tests) {
@@ -160,6 +188,7 @@ const runTests = async function (tests) {
 };
 
 const runAllTests = async function () {
+    $('#run-all-tests').tooltip('hide');
     if (Whisker.tests === undefined || Whisker.tests.length === 0) {
         showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         return;
@@ -167,7 +196,6 @@ const runAllTests = async function () {
         showModal(i18next.t("test-execution"), i18next.t("no-project"));
         return;
     }
-
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
@@ -183,27 +211,6 @@ const runAllTests = async function () {
 
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
-
-    $('#green-flag')
-        .removeClass('btn-success')
-        .addClass('btn-outline-success');
-    $('#stop')
-        .prop('disabled', true);
-
-    Whisker.scratch.vm.on(Runtime.PROJECT_RUN_START, () => {
-        $('#green-flag')
-            .removeClass('btn-outline-success')
-            .addClass('btn-success');
-        $('#stop')
-            .prop('disabled', false);
-    });
-    Whisker.scratch.vm.on(Runtime.PROJECT_RUN_STOP, () => {
-        $('#green-flag')
-            .removeClass('btn-success')
-            .addClass('btn-outline-success');
-        $('#stop')
-            .prop('disabled', true);
-    });
 };
 
 const initComponents = function () {
@@ -244,10 +251,25 @@ const initComponents = function () {
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
 }
 
+function showAndJumpTo(elem) {
+    $(elem).show();
+    jumpTo(elem);
+}
+
+function jumpTo(elem) {
+    location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+    location.href = elem
+    window.scrollBy(0, -100) // respect header size
+}
+
 const initEvents = function () {
     $("#acceleration-factor")
-        .on('slide', function (slideEvt) { $("#acceleration-value").text(slideEvt.value);})
-        .on('change', function (clickEvt) { $("#acceleration-value").text(clickEvt.value.newValue);});
+        .on('slide', function (slideEvt) {
+            $("#acceleration-value").text(slideEvt.value);
+        })
+        .on('change', function (clickEvt) {
+            $("#acceleration-value").text(clickEvt.value.newValue);
+        });
     $('#green-flag').on('click', () => {
         if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t("test-generation"), i18next.t("no-project"));
@@ -255,11 +277,11 @@ const initEvents = function () {
             Whisker.scratch.greenFlag();
         }
     });
-    $('#stop').on('click', () => {
-        Whisker.testRunner.abort();
+    $('#stop-scratch').on('click', () => {
         Whisker.scratch.stop();
     });
     $('#reset').on('click', () => {
+        $('#reset').tooltip('hide');
         if (Whisker.tests === undefined || Whisker.tests.length === 0) {
             showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
@@ -282,21 +304,15 @@ const initEvents = function () {
             .text(i18next.t("start-record"));
     });
     $('#record').on('click', () => {
-        if (Whisker.scratch.isInputEnabled()) {
-            if (Whisker.inputRecorder.isRecording()) {
-                Whisker.inputRecorder.stopRecording();
-            } else {
-                Whisker.inputRecorder.startRecording();
-            }
-        } else {
-            showModal(i18next.t("inputs"), i18next.t("inputs-error"));
-        }
-    });
-    $('#toggle-input').on('change', event => {
-        if ($(event.target).is(':checked')) {
-            Whisker.scratch.enableInput();
-        } else {
+        $('#record').tooltip('hide');
+        if (Whisker.inputRecorder.isRecording()) {
+            enableVMRelatedButtons();
+            Whisker.inputRecorder.stopRecording();
             Whisker.scratch.disableInput();
+        } else {
+            disableVMRelatedButtons('.record-related');
+            Whisker.scratch.enableInput();
+            Whisker.inputRecorder.startRecording();
         }
     });
     $('#toggle-advanced').on('change', event => {
@@ -304,9 +320,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#scratch-controls').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#scratch-controls'
+            showAndJumpTo('#scratch-controls');
         } else {
             $(event.target)
                 .parent()
@@ -319,9 +333,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#output-run').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#output-run'
+            showAndJumpTo('#output-run');
         } else {
             $(event.target)
                 .parent()
@@ -334,9 +346,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#output-log').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#output-log'
+            showAndJumpTo('#output-log');
         } else {
             $(event.target)
                 .parent()
@@ -349,6 +359,8 @@ const initEvents = function () {
             if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t("test-generation"), i18next.t("no-project"));
             } else {
+                $('#run-search').hide();
+                $('#search-running').show();
                 const tests = runSearch();
                 tests.then(
                     result => {
@@ -356,12 +368,15 @@ const initEvents = function () {
                         // TODO: This text is used as a marker to tell servant
                         //       when the search is done. There must be a nicer way...
                         Whisker.outputRun.println('summary');
-                        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-                        location.href = '#test-table'
+                        jumpTo('#test-table')
+                        $('#run-search').show();
+                        $('#search-running').hide();
                     },
                 );
             }
         });
+    $('#run-search').show();
+    $('#search-running').hide();
     _addFileListeners();
 };
 
@@ -437,6 +452,7 @@ $(document)
         initComponents();
         initEvents();
         toggleComponents();
+
     });
 
 window.onbeforeunload = function () {
@@ -547,6 +563,22 @@ $('.nav-link').on('click', event => {
         location.href = href + '?lng=' + lng;
         event.preventDefault();
     }
+});
+
+/* Add border to header if it sticks to the top */
+$(function () {
+    const stickyHeader = $('.sticky');
+    const stickyHeaderPosition = stickyHeader.offset().top;
+    $(window).scroll(function () {
+        const scroll = $(window).scrollTop();
+        if (scroll > stickyHeaderPosition + 1) {
+            stickyHeader.addClass('scrolled');
+            $('#small-logo').show();
+        } else {
+            stickyHeader.removeClass('scrolled');
+            $('#small-logo').hide();
+        }
+    });
 });
 
 export {i18next as i18n};

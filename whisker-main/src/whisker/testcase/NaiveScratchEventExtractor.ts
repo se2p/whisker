@@ -71,9 +71,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         // Add events requiring a targets as parameters.
         for (const target of vm.runtime.targets) {
             if(!target.isStage) {
-                const x = this._random.nextInt(-240, 241);
-                const y = this._random.nextInt(-180, 181);
-                eventList.add(new DragSpriteEvent(target, x, y));
+                eventList.add(new DragSpriteEvent(target));
                 eventList.add(new ClickSpriteEvent(target));
             }
         }

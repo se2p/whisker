@@ -37,7 +37,7 @@ import {TypeTextEvent} from "./events/TypeTextEvent";
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
     // TODO: Additional keys?
-    private readonly KEYS = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter'];
+    private readonly _keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter'];
 
     private readonly _random: Randomness;
 
@@ -88,7 +88,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_keypressed': {
                 // Only add if we have not yet found any keyPress-Events. No need to add all keys several times
                 if (!eventList.getElements().some(event => event instanceof KeyPressEvent)) {
-                    for (const key of this.KEYS) {
+                    for (const key of this._keys) {
                         eventList.add(new KeyPressEvent(key));
                     }
                 }
@@ -103,9 +103,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             }
             case 'sensing_touchingobject':
             case 'sensing_touchingcolor' : {
-                const x = this._random.nextInt(-240, 241);
-                const y = this._random.nextInt(-180, 181);
-                eventList.add(new DragSpriteEvent(target, x, y));
+                eventList.add(new DragSpriteEvent(target));
                 break;
             }
             case 'sensing_distanceto': {
