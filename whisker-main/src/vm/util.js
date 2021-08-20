@@ -161,10 +161,11 @@ class Util {
     }
 
     /**
+     * @param {number} time .
      * @returns {string} .
      */
-    static wait () {
-        return '    await t.wait();';
+    static wait (time) {
+        return '    t.wait('+ time +');';
     }
 }
 

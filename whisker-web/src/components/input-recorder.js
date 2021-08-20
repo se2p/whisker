@@ -1,5 +1,6 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
+const {waitFor} = require("@babel/core/lib/gensync-utils/async");
 
 class InputRecorder extends EventEmitter {
 
@@ -11,6 +12,7 @@ class InputRecorder extends EventEmitter {
 
         this.events = null;
         this.startTime = null;
+        this.waitTime = null;
 
         this._onInput = this.onInput.bind(this);
 
@@ -30,6 +32,7 @@ class InputRecorder extends EventEmitter {
     startRecording () {
         this.emit('startRecording');
         this.events = [];
+        this.waitTime = null;
         this.startTime = Date.now();
         this.scratch.on('input', this._onInput);
     }
@@ -40,6 +43,7 @@ class InputRecorder extends EventEmitter {
         this.showInputs();
         this.events = null;
         this.startTime = null;
+        this.waitTime = null;
     }
 
     isRecording () {
@@ -66,6 +70,7 @@ class InputRecorder extends EventEmitter {
     onMouseInput (steps, data) {
         let event;
         if (data.isDown) {
+            this.checkWaitTime();
             const target = Util.getTargetSprite(this.vm);
             if (target.isStage) {
                 event = Util.clickStage();
@@ -74,15 +79,16 @@ class InputRecorder extends EventEmitter {
             } else {
                 event = Util.clickClone(target.x, target.y);
             }
+            this.events.push(event);
         } else {
             // TODO: How to handle mouse movement?
-            event = Util.mouseMove(data.x, data.y);
+            this.waitTime += steps;
         }
-        this.events.push(event);
     }
 
     onKeyboardInput (steps, data) {
         if (data.isDown) {
+            this.checkWaitTime();
             const key = Util.getScratchKey(this.vm, data.key);
             const event = Util.keyPress(key, steps);
             this.events.push(event);
@@ -90,8 +96,16 @@ class InputRecorder extends EventEmitter {
     }
 
     onTextInput (data) {
+        this.checkWaitTime();
         const event = Util.typeText(data.answer);
         this.events.push(event);
+    }
+
+    checkWaitTime () {
+        if (this.waitTime != null) {
+            this.events.push(Util.wait(this.waitTime));
+            this.waitTime = null;
+        }
     }
 
     showInputs () {
