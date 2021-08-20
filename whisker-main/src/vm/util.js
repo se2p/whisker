@@ -69,7 +69,7 @@ class Util {
      * @param {VirtualMachine} vm .
      * @return {RenderedTarget} .
      */
-    static getTarget (vm) {
+    static getTargetSprite (vm) {
         let stage;
         for (const target of vm.runtime.targets) {
             if (target.isStage) {

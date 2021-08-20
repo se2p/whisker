@@ -66,7 +66,7 @@ class InputRecorder extends EventEmitter {
     onMouseInput (steps, data) {
         let event;
         if (data.isDown) {
-            const target = Util.getTarget(this.vm);
+            const target = Util.getTargetSprite(this.vm);
             if (target.isStage) {
                 event = Util.clickStage();
             } else if (target.isOriginal) {
