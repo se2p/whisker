@@ -34,11 +34,51 @@ class Util {
 
     /**
      * @param {VirtualMachine} vm .
+     * @returns {{x: number, y: number}} .
+     */
+    static getMousePos (vm) {
+        return {
+            x: vm.runtime.ioDevices.mouse.getScratchX(),
+            y: vm.runtime.ioDevices.mouse.getScratchY()
+        };
+    }
+
+    /**
+     * @param {VirtualMachine} vm .
      * @param {string} keyString .
      * @return {string} .
      */
     static getScratchKey (vm, keyString) {
         return vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
+    }
+
+    /**
+     * @param {VirtualMachine} vm .
+     * @param {RenderedTarget} target .
+     * @returns {boolean} .
+     */
+    static isTouchingMouse (vm, target) {
+        const mousePos = this.getMousePos(vm);
+        if (isNaN(mousePos.x) || isNaN(mousePos.y)) {
+            return false;
+        }
+        return target.isTouchingObject('_mouse_');
+    }
+
+    /**
+     * @param {VirtualMachine} vm .
+     * @return {RenderedTarget} .
+     */
+    static getTarget (vm) {
+        let stage;
+        for (const target of vm.runtime.targets) {
+            if (target.isStage) {
+                stage = target;
+            } else if (this.isTouchingMouse(vm, target)) {
+                return target;
+            }
+        }
+        return stage;
     }
 
     /**
@@ -82,7 +122,7 @@ class Util {
      * @param {number} steps .
      * @returns {string} .
      */
-    static keyPress(key, steps) {
+    static keyPress (key, steps) {
         return '    t.keyPress(\''+ key +'\', '+ steps +');';
     }
 
@@ -118,6 +158,13 @@ class Util {
      */
     static typeText (text) {
         return '    t.typeText(\''+ text +'\');';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static wait () {
+        return '    await t.wait();';
     }
 }
 
