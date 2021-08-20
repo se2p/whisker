@@ -27,7 +27,7 @@ class Input {
 
         /**
          * @type {number}
-          */
+         */
         this._steps = steps;
 
         /**
@@ -87,7 +87,7 @@ class Input {
     }
 
     // TODO: split this method for every possible input device
-    _performSingle(data) {
+    _performSingle (data) {
         switch (data.device) {
             case 'mouse':
             case 'keyboard':
@@ -159,12 +159,12 @@ class Input {
 
 
         //Convert time to steps; Ensures backwards compatibility with old Whisker-Tests.
-        if(data.duration !== undefined && data.steps === undefined){
+        if (data.duration !== undefined && data.steps === undefined) {
             data.steps = this._inputs.vmWrapper.convertFromTimeToSteps(data.duration);
         }
 
         // Safety check to ensure having a step duration >= 1
-        if(data.steps < 1){
+        if (data.steps < 1) {
             data.steps = 1;
         }
 
@@ -188,18 +188,18 @@ class Input {
      */
     static scratchKeyToKeyString (scratchKey) {
         switch (scratchKey) {
-        case 'space':
-            return ' ';
-        case 'left arrow':
-            return 'Left';
-        case 'up arrow':
-            return 'Up';
-        case 'right arrow':
-            return 'Right';
-        case 'down arrow':
-            return 'Down';
-        default:
-            return scratchKey;
+            case 'space':
+                return ' ';
+            case 'left arrow':
+                return 'Left';
+            case 'up arrow':
+                return 'Up';
+            case 'right arrow':
+                return 'Right';
+            case 'down arrow':
+                return 'Down';
+            default:
+                return scratchKey;
         }
     }
 }
@@ -247,7 +247,7 @@ class Inputs {
      */
     addInputs (inputs) {
         for (const data of inputs) {
-            if(data.time !== undefined && data.steps === undefined){
+            if (data.time !== undefined && data.steps === undefined) {
                 data.steps = this.vmWrapper.convertFromTimeToSteps(data.time);
             }
             this.addInput(data.steps, data.input);
@@ -274,7 +274,7 @@ class Inputs {
     inputImmediate (dataOrInput, name) {
         let input;
         const executedSteps = this.vmWrapper.isRunning()
-        ? this.vmWrapper.getRunStepsExecuted() : 0
+            ? this.vmWrapper.getRunStepsExecuted() : 0
 
         if (dataOrInput instanceof Input) {
             input = dataOrInput;
@@ -374,21 +374,17 @@ class Inputs {
     }
 
     /**
-     * @param {string} target .
+     * @param {string} spriteName .
      * @param {number} steps .
      */
-    clickSprite (target, steps) {
-        for (const t of this.vmWrapper.vm.runtime.targets) {
-            if (t.sprite.name === target) {
-                this.inputImmediate({
-                    device: 'mouse',
-                    sprite: this.vmWrapper.sprites.getSprite(target),
-                    isDown: true,
-                    steps: steps
-                });
-                break;
-            }
-        }
+    clickSprite (spriteName, steps) {
+        const target = this.vmWrapper.getTargetOfSprite(spriteName);
+        this.inputImmediate({
+            device: 'mouse',
+            sprite: this.vmWrapper.sprites.getSprite(target),
+            isDown: true,
+            steps: steps
+        });
     }
 
     /**
