@@ -5,7 +5,7 @@
     "chromosome": "sparseNetwork",
     "randomNetworkEventSelection": "true",
     "populationType": "neat",
-    "population-size": 100,
+    "population-size": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -46,7 +46,7 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 15000
+        "timeout": 10000
     },
     "stopping-condition": {
         "type": "one-of",
