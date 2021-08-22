@@ -4,7 +4,7 @@
     "chromosome": "sparseNetwork",
     "dynamicTestSuite": "true",
     "populationType": "neat",
-    "population-size": 250,
+    "population-size": 100,
     "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
@@ -44,7 +44,7 @@
     },
     "network-fitness": {
         "type": "survive",
-        "timeout": 6000
+        "timeout": 15000
     },
     "stopping-condition": {
         "type": "one-of",
