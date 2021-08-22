@@ -68,6 +68,30 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     }
 
     /**
+     * Updates the archive of best chromosomes. In NEAT we favor networks having a high network fitness function.
+     *
+     * @param candidateChromosome The candidate chromosome for the archive.
+     */
+    protected updateArchive(candidateChromosome: C): void {
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            let bestNetworkFitness = this._archive.has(fitnessFunctionKey)
+                ? this._archive.get(fitnessFunctionKey).networkFitness
+                : 0;
+            const statementFitness = fitnessFunction.getFitness(candidateChromosome);
+            const candidateNetworkFitness = candidateChromosome.networkFitness;
+            if (fitnessFunction.isOptimal(statementFitness) && candidateNetworkFitness > bestNetworkFitness) {
+                bestNetworkFitness = candidateNetworkFitness;
+                if (!this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                }
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
+            }
+        }
+        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+    }
+
+    /**
      * Generate the desired type of NeuroevolutionPopulation to be used by the NEAT algorithm.
      * @returns NeuroevolutionPopulation defined in the config files.
      */
