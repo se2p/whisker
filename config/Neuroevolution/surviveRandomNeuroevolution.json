@@ -6,7 +6,7 @@
     "populationType": "neat",
     "randomNetworkEventSelection": "true",
     "population-size": 100,
-    "numberOfSpecies": 10,
+    "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
