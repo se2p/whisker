@@ -11,12 +11,14 @@ class InputRecorder extends EventEmitter {
 
         this.events = null;
         this.startTime = null;
+        this.lastInputTime = null;
         this.waitTime = null;
         this.stepCount = null;
 
+
         this._onInput = this.onInput.bind(this);
 
-        this.testBegin = 'const test = async function (t) {\n';
+        this.testBegin = 'const test = async function (t) {';
         this.testEnd = '\n    t.wait(5000);\n    t.end();\n}';
         this.export = '\n\n\n' +
             `module.exports = [
@@ -32,8 +34,9 @@ class InputRecorder extends EventEmitter {
     startRecording () {
         this.emit('startRecording');
         this.events = [];
-        this.waitTime = null;
+        this.lastInputTime = null;
         this.startTime = Date.now();
+        this.waitTime = null;
         this.stepCount = null;
         this.scratch.on('input', this._onInput);
     }
@@ -44,6 +47,7 @@ class InputRecorder extends EventEmitter {
         this.showInputs();
         this.events = null;
         this.startTime = null;
+        this.lastInputTime = null;
         this.waitTime = null;
         this.stepCount = null;
     }
@@ -54,16 +58,20 @@ class InputRecorder extends EventEmitter {
 
     onInput (data) {
         // TODO: GreenFlag, cancelRun
+        this.checkWaitTime();
         const steps = this.calculateSteps();
         switch (data.device) {
             case 'mouse':
                 this.onMouseInput(steps, data);
+                this.lastInputTime = Date.now();
                 break;
             case 'keyboard':
                 this.onKeyboardInput(steps, data);
+                this.lastInputTime = Date.now();
                 break;
             case 'text':
                 this.onTextInput(data);
+                this.lastInputTime = Date.now();
                 break;
             default:
                 console.error(`Unknown input device: "${data.device}".`);
@@ -71,27 +79,33 @@ class InputRecorder extends EventEmitter {
     }
 
     onMouseInput (steps, data) {
-        let event;
         if (data.isDown) {
-            this.checkWaitTime();
-            const target = Util.getTargetSprite(this.vm);
-            if (target.isStage) {
-                event = Util.clickStage();
-            } else if (target.isOriginal) {
-                event = Util.clickSprite(target.getName(), steps);
-            } else {
-                event = Util.clickClone(target.x, target.y);
-            }
-            this.events.push(event);
-        } else {
-            // TODO: Mouse Movement
-            this.waitTime += steps;
+            this._onMouseDown(steps);
+        } else if (this.waitTime > 100) {
+            this._onMouseMove(data);
         }
+    }
+
+    _onMouseDown (steps) {
+        let event;
+        const target = Util.getTargetSprite(this.vm);
+        if (target.isStage) {
+            event = Util.clickStage();
+        } else if (target.isOriginal) {
+            event = Util.clickSprite(target.getName(), steps);
+        } else {
+            event = Util.clickClone(target.x, target.y);
+        }
+        this.events.push(event);
+    }
+
+    _onMouseMove (data) {
+        let event = Util.mouseMove(data.x, data.y);
+        this.events.push(event);
     }
 
     onKeyboardInput (steps, data) {
         if (data.isDown) {
-            this.checkWaitTime();
             const key = Util.getScratchKey(this.vm, data.key);
             const event = Util.keyPress(key, steps);
             this.events.push(event);
@@ -99,9 +113,10 @@ class InputRecorder extends EventEmitter {
     }
 
     onTextInput (data) {
-        this.checkWaitTime();
-        const event = Util.typeText(data.answer);
-        this.events.push(event);
+        if (data.answer) {
+            const event = Util.typeText(data.answer);
+            this.events.push(event);
+        }
     }
 
     calculateSteps () {
@@ -111,15 +126,18 @@ class InputRecorder extends EventEmitter {
     }
 
     checkWaitTime () {
-        if (this.waitTime != null) {
+        if (this.lastInputTime != null) {
+            this.waitTime = Date.now() - this.lastInputTime;
             this.events.push(Util.wait(this.waitTime));
-            this.waitTime = null;
         }
     }
 
     showInputs () {
-        let inputCode = `${this.events.join('\n')}`;
-        Whisker.testEditor.setValue(this.testBegin + inputCode + this.testEnd + this.export);
+        if (this.events != null && this.events.length !== 0) {
+            Whisker.testEditor.setValue(this.testBegin + `\n${this.events.join('\n')}` + this.testEnd + this.export);
+        } else {
+            Whisker.testEditor.setValue(this.testBegin + this.testEnd + this.export);
+        }
         location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
         location.href = '#test-editor'
     }
