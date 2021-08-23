@@ -23,6 +23,8 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
      */
     private readonly _scratchEvents: List<ScratchEvent>;
 
+    private readonly _numberNetworks: number;
+
     /**
      * Constructs a new NetworkGenerator which generates copies of an existing network.
      * @param networkTemplate the template of the existing network from which we want to create a population of.
@@ -31,10 +33,11 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
      * @param scratchEvents all Scratch-Events found in the project.
      */
     constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
-                networkTemplate: Record<string, (number | string | Record<string, (number | string)>)>,
+                networkTemplate: string,
                 scratchEvents: List<ScratchEvent>) {
         super(mutationConfig, crossoverConfig);
-        this._networkTemplate = networkTemplate;
+        this._networkTemplate = JSON.parse(networkTemplate);
+        this._numberNetworks = Object.keys(this._networkTemplate).length;
         this._scratchEvents = scratchEvents;
     }
 
@@ -44,9 +47,11 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
      * @return: generated NetworkChromosome
      */
     get(): NetworkChromosome {
+        const networkKey = Object.keys(this._networkTemplate)[NetworkChromosome.idCounter % this._numberNetworks];
+        const networkTemplate = this._networkTemplate[networkKey];
         const allNodes = new List<NodeGene>();
-        for (const nodeKey of Object.keys(this._networkTemplate.Nodes)) {
-            const node = this._networkTemplate.Nodes[nodeKey];
+        for (const nodeKey in networkTemplate['Nodes']) {
+            const node = networkTemplate['Nodes'][nodeKey];
             switch (node.type) {
                 case "INPUT":
                     allNodes.add(new InputNode(node.id, node.sprite, node.feature));
@@ -70,8 +75,8 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
             }
         }
         const allConnections = new List<ConnectionGene>();
-        for (const connectionKey of Object.keys(this._networkTemplate.Connections)) {
-            const connection = this._networkTemplate.Connections[connectionKey];
+        for (const connectionKey in networkTemplate['Connections']) {
+            const connection = networkTemplate['Connections'][connectionKey];
             const sourceNode = allNodes.find(node => node.id === connection.Source);
             const targetNode = allNodes.find(node => node.id === connection.Target);
             const recurrent = connection.Recurrent === `true`;
@@ -81,7 +86,7 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
         const network = new NetworkChromosome(allConnections, allNodes, this._mutationOp, this._crossoverOp);
 
         // Only copy the first network. No need to have multiple copies of the same chromosome.
-        if(network.id > 0){
+        if(network.id > this._numberNetworks){
             network.mutate();
         }
         NetworkChromosome.idCounter++;

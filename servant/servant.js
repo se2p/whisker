@@ -18,7 +18,8 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
-    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly,
+    networkTemplate
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -131,10 +132,12 @@ async function runGeneticSearch (browser, downloadPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
+        console.log("Template Path: ", networkTemplate)
+        await (await page.$('#fileselect-template')).uploadFile(networkTemplate);
         const toggle = await page.$('#toggle-advanced');
         await toggle.evaluate(t => t.click());
-        await (await page.$('#toggle-tap')).click();
-        await (await page.$('#toggle-log')).click();
+        //await (await page.$('#toggle-tap')).click();
+        //await (await page.$('#toggle-log')).click();
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }

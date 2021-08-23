@@ -166,13 +166,13 @@ export class Search {
      * Main entry point -- called from whisker-web
      */
     public async run(vm, project, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number): Promise<Array<string>> {
+                     accelerationFactor: number, template?:string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
-
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
 
+        Container.networkTemplate = template;
         Container.config = config;
         Container.vm = vm;
         Container.vmWrapper = util.getVMWrapper();

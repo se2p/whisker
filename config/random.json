@@ -1,9 +1,10 @@
 {
     "test-generator": "random",
     "algorithm": "random",
-    "minEventSize": 2,
+    "minEventSize": 5,
     "maxEventSize": 30,
-    "extractor": "naive",
+    "extractor": "dynamic",
+    "selector": "interleaving",
     "fitness-function": {
         "type": "statement",
         "targets": []

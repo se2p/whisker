@@ -7,6 +7,7 @@
     "minVarChromosomeLength": 5,
     "maxVarChromosomeLength": 20,
     "extractor": "dynamic",
+    "selector": "interleaving",
     "crossover": {
         "operator": "singlepointrelative",
         "probability": 0.8

@@ -170,6 +170,11 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _randomEventSelection:boolean
 
     /**
+     * The template of a network if the TemplateNetworkGenerator is used.
+     */
+    private _networkTemplate: Record<string, (number | string | Record<string, (number | string)>)>;
+
+    /**
      * Constructs an object that stores all relevant properties of a Neuroevolution Algorithm.
      * @param populationSize the size of the population
      */
@@ -417,5 +422,14 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     set randomEventSelection(value: boolean) {
         this._randomEventSelection = value;
+    }
+
+    get networkTemplate(): Record<string, (number | string | Record<string, (number | string)>)> {
+        return this._networkTemplate;
+    }
+
+    set networkTemplate(value: Record<string, (number | string | Record<string, (number | string)>)>) {
+        console.log("Setter: ", value)
+        this._networkTemplate = value;
     }
 }

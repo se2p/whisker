@@ -83,9 +83,10 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
+    const template = await Whisker.templateFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, configName,
-        accelerationFactor);
+        accelerationFactor, template);
     Whisker.outputLog.print(res[1]);
     accSlider.slider('enable');
     if (configName.toLowerCase().includes('neuroevolution')){
@@ -239,6 +240,8 @@ const initComponents = function () {
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
+    Whisker.templateFileSelect = new FileSelect($('#fileselect-template')[0],
+        fileSelect => fileSelect.loadAsArrayBuffer());
 
     accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
@@ -384,6 +387,12 @@ const _addFileListeners = function () {
         const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName("label")[0];
         _showTooltipIfTooLong(label, event);
     });
+    $('#fileselect-template').on('change', event => {
+        const fileName = Whisker.templateFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        const label = document.querySelector('#fileselect-template').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
+    });
 }
 
 const _showTooltipIfTooLong = function (label, event) {
@@ -508,6 +517,9 @@ function _updateFilenameLabels() {
     }
     if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
         $('#config-label').html(Whisker.configFileSelect.getName());
+    }
+    if (Whisker.templateFileSelect && Whisker.templateFileSelect.hasName()) {
+        $('#template-label').html(Whisker.templateFileSelect.getName());
     }
 }
 
