@@ -132,8 +132,9 @@ async function runGeneticSearch (browser, downloadPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
-        console.log("Template Path: ", networkTemplate)
-        await (await page.$('#fileselect-template')).uploadFile(networkTemplate);
+        if(networkTemplate) {
+            await (await page.$('#fileselect-template')).uploadFile(networkTemplate);
+        }
         const toggle = await page.$('#toggle-advanced');
         await toggle.evaluate(t => t.click());
         //await (await page.$('#toggle-tap')).click();
