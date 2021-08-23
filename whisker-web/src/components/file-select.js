@@ -73,8 +73,13 @@ class FileSelect {
         } else {
             arrayBuffer = await this.loadAsArrayBuffer(index);
         }
-
-        return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
+        let binary = '';
+        const bytes = new Uint8Array(arrayBuffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return binary;
     }
 }
 
