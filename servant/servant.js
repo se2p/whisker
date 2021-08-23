@@ -136,10 +136,7 @@ async function runGeneticSearch (browser, downloadPath) {
         if(networkTemplate) {
             await (await page.$('#fileselect-template')).uploadFile(networkTemplate);
         }
-        const toggle = await page.$('#toggle-advanced');
-        await toggle.evaluate(t => t.click());
-        //await (await page.$('#toggle-tap')).click();
-        //await (await page.$('#toggle-log')).click();
+        await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
@@ -213,6 +210,21 @@ async function runGeneticSearch (browser, downloadPath) {
     }
 }
 
+/**
+ * Shows the test generation and input recording features, the TAP13 and the log output.
+ * @param {Page} page
+ * @returns {Promise<void>}
+ */
+async function showHiddenFunctionality(page) {
+    // a simple 'await (await page.$('#toggle-log')).click();' does not work here due to the toggle buttons
+    const toggleAdvanced = await page.$('#toggle-advanced');
+    await toggleAdvanced.evaluate(t => t.click());
+    const toggleTap = await page.$('#toggle-tap');
+    await toggleTap.evaluate(t => t.click());
+    const toggleLog = await page.$('#toggle-log');
+    await toggleLog.evaluate(t => t.click());
+}
+
 async function runTests (path, browser, index, targetProject) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
@@ -242,10 +254,7 @@ async function runTests (path, browser, index, targetProject) {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         await (await page.$('#fileselect-tests')).uploadFile(path);
-        const toggle = await page.$('#toggle-advanced');
-        await toggle.evaluate(t => t.click());
-        await (await page.$('#toggle-tap')).click();
-        await (await page.$('#toggle-log')).click();
+        await showHiddenFunctionality(page);
     }
 
     /**
