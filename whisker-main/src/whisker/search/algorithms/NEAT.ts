@@ -77,7 +77,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             let bestNetworkFitness = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).networkFitness
-                : 0;
+                : -1;
             const statementFitness = fitnessFunction.getFitness(candidateChromosome);
             const candidateNetworkFitness = candidateChromosome.networkFitness;
             if (fitnessFunction.isOptimal(statementFitness) && candidateNetworkFitness > bestNetworkFitness) {
