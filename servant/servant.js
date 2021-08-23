@@ -81,10 +81,11 @@ async function init () {
                 fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
             }
         } else {
-            await runTestsOnFile(browser, scratchPath);
+            const output = await runTestsOnFile(browser, scratchPath);
 
             if (csvFile != false) {
-                logger.warn(`Scratch path ${scratchPath} is not a directory, skipping CSV file creation`);
+                console.info("Creating CSV summary in "+csvFile);
+                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(output));
             }
         }
         await browser.close();
