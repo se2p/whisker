@@ -1,6 +1,5 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
-const {waitFor} = require("@babel/core/lib/gensync-utils/async");
 
 class InputRecorder extends EventEmitter {
 
@@ -13,6 +12,7 @@ class InputRecorder extends EventEmitter {
         this.events = null;
         this.startTime = null;
         this.waitTime = null;
+        this.stepCount = null;
 
         this._onInput = this.onInput.bind(this);
 
@@ -34,6 +34,7 @@ class InputRecorder extends EventEmitter {
         this.events = [];
         this.waitTime = null;
         this.startTime = Date.now();
+        this.stepCount = null;
         this.scratch.on('input', this._onInput);
     }
 
@@ -44,6 +45,7 @@ class InputRecorder extends EventEmitter {
         this.events = null;
         this.startTime = null;
         this.waitTime = null;
+        this.stepCount = null;
     }
 
     isRecording () {
@@ -51,7 +53,8 @@ class InputRecorder extends EventEmitter {
     }
 
     onInput (data) {
-        const steps = Date.now() - this.startTime;
+        // TODO: GreenFlag, cancelRun
+        const steps = this.calculateSteps();
         switch (data.device) {
             case 'mouse':
                 this.onMouseInput(steps, data);
@@ -81,7 +84,7 @@ class InputRecorder extends EventEmitter {
             }
             this.events.push(event);
         } else {
-            // TODO: How to handle mouse movement?
+            // TODO: Mouse Movement
             this.waitTime += steps;
         }
     }
@@ -99,6 +102,12 @@ class InputRecorder extends EventEmitter {
         this.checkWaitTime();
         const event = Util.typeText(data.answer);
         this.events.push(event);
+    }
+
+    calculateSteps () {
+        const steps = this.vm.runtime.stepsExecuted - this.stepCount;
+        this.stepCount += steps;
+        return steps > 0 ? steps : 1;
     }
 
     checkWaitTime () {
