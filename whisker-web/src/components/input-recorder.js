@@ -19,7 +19,7 @@ class InputRecorder extends EventEmitter {
         this._onInput = this.onInput.bind(this);
 
         this.testBegin = 'const test = async function (t) {';
-        this.testEnd = '\n    t.wait(5000);\n    t.end();\n}';
+        this.testEnd = '\n    t.greenFlag();\n    t.wait(5000);\n    t.end();\n}';
         this.export = '\n\n\n' +
             `module.exports = [
     {
@@ -56,8 +56,17 @@ class InputRecorder extends EventEmitter {
         return this.startTime != null;
     }
 
+    greenFlag () {
+        let event = Util.greenFlag();
+        this.events.push(event);
+    }
+
+    stop () {
+        let event = Util.end();
+        this.events.push(event);
+    }
+
     onInput (data) {
-        // TODO: GreenFlag, cancelRun
         this.checkWaitTime();
         const steps = this.calculateSteps();
         switch (data.device) {
@@ -134,7 +143,7 @@ class InputRecorder extends EventEmitter {
 
     showInputs () {
         if (this.events != null && this.events.length !== 0) {
-            Whisker.testEditor.setValue(this.testBegin + `\n${this.events.join('\n')}` + this.testEnd + this.export);
+            Whisker.testEditor.setValue(this.testBegin + `\n${this.events.join('\n')}` + `\n}` + this.export);
         } else {
             Whisker.testEditor.setValue(this.testBegin + this.testEnd + this.export);
         }

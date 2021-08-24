@@ -270,9 +270,15 @@ const initEvents = function () {
         } else {
             Whisker.scratch.greenFlag();
         }
+        if (Whisker.inputRecorder.isRecording()) {
+            Whisker.inputRecorder.greenFlag();
+        }
     });
     $('#stop-scratch').on('click', () => {
         Whisker.scratch.stop();
+        if (Whisker.inputRecorder.isRecording()) {
+            Whisker.inputRecorder.stop();
+        }
     });
     $('#reset').on('click', () => {
         $('#reset').tooltip('hide');

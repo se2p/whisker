@@ -144,15 +144,6 @@ class Util {
     }
 
     /**
-     * @param {number} x .
-     * @param {number} y .
-     * @returns {string} .
-     */
-    static mouseMoveToEvent (x, y) {
-        return '    t.mouseMoveToEvent('+ x +', '+ y +');';
-    }
-
-    /**
      * @param {string} text .
      * @returns {string} .
      */
@@ -166,6 +157,20 @@ class Util {
      */
     static wait (time) {
         return '    t.wait('+ time +');';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static greenFlag () {
+        return '    t.greenFlag();';
+    }
+
+    /**
+     * @returns {string} .
+     */
+    static end () {
+        return '    t.end();';
     }
 }
 
