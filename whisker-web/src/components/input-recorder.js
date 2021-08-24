@@ -11,10 +11,9 @@ class InputRecorder extends EventEmitter {
 
         this.events = null;
         this.startTime = null;
-        this.lastInputTime = null;
+        this.inputTime = null;
         this.waitTime = null;
         this.stepCount = null;
-
 
         this._onInput = this.onInput.bind(this);
 
@@ -34,7 +33,7 @@ class InputRecorder extends EventEmitter {
     startRecording () {
         this.emit('startRecording');
         this.events = [];
-        this.lastInputTime = null;
+        this.inputTime = null;
         this.startTime = Date.now();
         this.waitTime = null;
         this.stepCount = null;
@@ -47,7 +46,7 @@ class InputRecorder extends EventEmitter {
         this.showInputs();
         this.events = null;
         this.startTime = null;
-        this.lastInputTime = null;
+        this.inputTime = null;
         this.waitTime = null;
         this.stepCount = null;
     }
@@ -57,30 +56,32 @@ class InputRecorder extends EventEmitter {
     }
 
     greenFlag () {
-        let event = Util.greenFlag();
-        this.events.push(event);
+        this.updateWaitTime();
+        this.inputTime = Date.now();
+        this.events.push(Util.wait(this.waitTime));
+        this.events.push(Util.greenFlag());
     }
 
     stop () {
-        let event = Util.end();
-        this.events.push(event);
+        this.updateWaitTime();
+        this.inputTime = Date.now();
+        this.events.push(Util.wait(this.waitTime));
+        this.events.push(Util.end());
     }
 
     onInput (data) {
-        this.checkWaitTime();
+        this.updateWaitTime();
+        this.inputTime = Date.now();
         const steps = this.calculateSteps();
         switch (data.device) {
             case 'mouse':
                 this.onMouseInput(steps, data);
-                this.lastInputTime = Date.now();
                 break;
             case 'keyboard':
                 this.onKeyboardInput(steps, data);
-                this.lastInputTime = Date.now();
                 break;
             case 'text':
                 this.onTextInput(data);
-                this.lastInputTime = Date.now();
                 break;
             default:
                 console.error(`Unknown input device: "${data.device}".`);
@@ -105,26 +106,26 @@ class InputRecorder extends EventEmitter {
         } else {
             event = Util.clickClone(target.x, target.y);
         }
+        this.events.push(Util.wait(this.waitTime));
         this.events.push(event);
     }
 
     _onMouseMove (data) {
-        let event = Util.mouseMove(data.x, data.y);
-        this.events.push(event);
+        this.events.push(Util.mouseMove(data.x, data.y));
     }
 
     onKeyboardInput (steps, data) {
         if (data.isDown) {
             const key = Util.getScratchKey(this.vm, data.key);
-            const event = Util.keyPress(key, steps);
-            this.events.push(event);
+            this.events.push(Util.wait(this.waitTime));
+            this.events.push(Util.keyPress(key, steps));
         }
     }
 
     onTextInput (data) {
         if (data.answer) {
-            const event = Util.typeText(data.answer);
-            this.events.push(event);
+            this.events.push(Util.wait(this.waitTime));
+            this.events.push(Util.typeText(data.answer));
         }
     }
 
@@ -134,10 +135,9 @@ class InputRecorder extends EventEmitter {
         return steps > 0 ? steps : 1;
     }
 
-    checkWaitTime () {
-        if (this.lastInputTime != null) {
-            this.waitTime = Date.now() - this.lastInputTime;
-            this.events.push(Util.wait(this.waitTime));
+    updateWaitTime () {
+        if (this.inputTime != null) {
+            this.waitTime += Date.now() - this.inputTime;
         }
     }
 

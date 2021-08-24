@@ -156,7 +156,9 @@ class Util {
      * @returns {string} .
      */
     static wait (time) {
-        return '    t.wait('+ time +');';
+        if (time != null) {
+            return '    t.wait(' + time + ');';
+        }
     }
 
     /**
