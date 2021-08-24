@@ -7,8 +7,6 @@ import {DynamicScratchEventExtractor} from "./DynamicScratchEventExtractor";
 
 export class NeuroevolutionScratchEventExtractor extends ScratchEventExtractor {
 
-    private readonly _dynamic: boolean
-
     constructor(vm: VirtualMachine) {
         super(vm);
     }

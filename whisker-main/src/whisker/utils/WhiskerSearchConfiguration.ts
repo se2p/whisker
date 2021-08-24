@@ -350,7 +350,7 @@ export class WhiskerSearchConfiguration {
                     InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm));
             }
             case 'templateNetwork': {
-                const eventExtractor = new StaticScratchEventExtractor(Container.vm);
+                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorTemplateNetwork(this.dict['mutation'], this.dict['crossover'],
                     Container.networkTemplate, eventExtractor.extractEvents(Container.vm));
             }

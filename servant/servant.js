@@ -64,11 +64,6 @@ async function init () {
     // Dynamic test suite
     else if(testPath.endsWith('.json')){
         if (fs.lstatSync(scratchPath).isDirectory()) {
-            if (csvFile !== false && fs.existsSync(csvFile)) {
-                console.error("CSV file already exists, aborting");
-                await browser.close();
-                return;
-            }
             const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
@@ -76,12 +71,17 @@ async function init () {
                     continue;
                 }
                 logger.info("Testing project "+file);
-                csvs.push(...(await runDynamicTestSuite(browser)));
+                const csvOutput = await runDynamicTestSuite(browser, scratchPath + '/' + file);
+                const csvArray = csvOutput.split('\n');
+                if(csvs.length === 0){
+                    csvs.push(csvArray[0]);
+                }
+                csvs.push(csvArray[1]);
             }
-
+            const output = csvs.join('\n');
             if (csvFile !== false) {
                 console.info("Creating CSV summary in "+csvFile);
-                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
+                fs.writeFileSync(csvFile, output);
             }
         } else {
             const output = await runDynamicTestSuite(browser, scratchPath);
@@ -244,7 +244,7 @@ async function runGeneticSearch (browser, downloadPath) {
     }
 }
 
-async function runDynamicTestSuite (browser) {
+async function runDynamicTestSuite (browser, scratchPath) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
