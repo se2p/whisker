@@ -89,10 +89,6 @@ const runSearch = async function () {
         accelerationFactor, template);
     Whisker.outputLog.print(res[1]);
     accSlider.slider('enable');
-    if (configName.toLowerCase().includes('neuroevolution')){
-        const titlePopulationRecord = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
-        new DownloadContainer(titlePopulationRecord, `json`, res[2]).download();
-    }
     return res[0];
 };
 

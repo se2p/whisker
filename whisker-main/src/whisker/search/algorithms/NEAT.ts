@@ -27,7 +27,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     /**
      * Saves all Networks mapped to the generation they occurred in.
      */
-    private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
+    //private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
@@ -120,7 +120,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 (this._iterations + 1) * this._neuroevolutionProperties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
-        this._populationRecord.set(this._iterations, population.clone());
+        //this._populationRecord.set(this._iterations, population.clone());
     }
 
     /**
@@ -154,7 +154,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     /**
      * Transforms the collected information about each Population obtained during the search into a JSON representation.
      * @return string in JSON format containing the collected Population information of each iteration.
-     */
+
     public getPopulationRecordAsJSON(): string {
         const solution = {};
         this.populationRecord.forEach((population, iteration) => {
@@ -162,6 +162,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         })
         return JSON.stringify(solution, undefined, 4);
     }
+     */
 
     getStartTime(): number {
         return this._startTime;
@@ -194,7 +195,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
 
-    get populationRecord(): Map<number, NeuroevolutionPopulation<NetworkChromosome>> {
-        return this._populationRecord;
-    }
+    //get populationRecord(): Map<number, NeuroevolutionPopulation<NetworkChromosome>> {
+        //return this._populationRecord;
+   // }
 }

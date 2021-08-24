@@ -116,7 +116,13 @@ export class WhiskerSearchConfiguration {
     }
 
     public getNeuroevolutionProperties(): NeuroevolutionProperties<any> {
-        const populationSize = this.dict['population-size'] as number;
+        let populationSize = this.dict['population-size'];
+        if(populationSize === 'dynamic'){
+            populationSize =  Object.keys(JSON.parse(Container.networkTemplate)).length;
+        }
+        else{
+            populationSize = this.dict['population-size'] as number;
+        }
         const properties = new NeuroevolutionProperties(populationSize);
 
         const parentsPerSpecies = this.dict['parentsPerSpecies'] as number;

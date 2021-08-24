@@ -3,7 +3,7 @@ import {List} from "../utils/List";
 
 export class WhiskerTestListWithSummary {
     private readonly _testList: List<WhiskerTest>;
-    private readonly _summary: string;
+    private _summary: string;
     private _networkPopulation: string;
 
     constructor(testList: List<WhiskerTest>, summary: string){
@@ -19,6 +19,10 @@ export class WhiskerTestListWithSummary {
 
     get summary(): string {
         return this._summary;
+    }
+
+    set summary(value: string) {
+        this._summary = value;
     }
 
     get networkPopulation(): string {
