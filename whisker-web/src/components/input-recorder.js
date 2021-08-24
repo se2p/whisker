@@ -1,5 +1,6 @@
 const {Util} = require('whisker-main');
 const EventEmitter = require('events');
+const Recorder = require("whisker-main/src/vm/recorder");
 
 class InputRecorder extends EventEmitter {
 
@@ -58,15 +59,15 @@ class InputRecorder extends EventEmitter {
     greenFlag () {
         this.updateWaitTime();
         this.inputTime = Date.now();
-        this.events.push(Util.wait(this.waitTime));
-        this.events.push(Util.greenFlag());
+        this.events.push(Recorder.wait(this.waitTime));
+        this.events.push(Recorder.greenFlag());
     }
 
     stop () {
         this.updateWaitTime();
         this.inputTime = Date.now();
-        this.events.push(Util.wait(this.waitTime));
-        this.events.push(Util.end());
+        this.events.push(Recorder.wait(this.waitTime));
+        this.events.push(Recorder.end());
     }
 
     onInput (data) {
@@ -90,42 +91,26 @@ class InputRecorder extends EventEmitter {
 
     onMouseInput (steps, data) {
         if (data.isDown) {
-            this._onMouseDown(steps);
+            this.events.push(Recorder.wait(this.waitTime));
+            const target = Util.getTargetSprite(this.vm);
+            this.events.push(Recorder.click(target, steps));
         } else if (this.waitTime > 100) {
-            this._onMouseMove(data);
+            this.events.push(Recorder.mouseMove(data.x, data.y));
         }
-    }
-
-    _onMouseDown (steps) {
-        let event;
-        const target = Util.getTargetSprite(this.vm);
-        if (target.isStage) {
-            event = Util.clickStage();
-        } else if (target.isOriginal) {
-            event = Util.clickSprite(target.getName(), steps);
-        } else {
-            event = Util.clickClone(target.x, target.y);
-        }
-        this.events.push(Util.wait(this.waitTime));
-        this.events.push(event);
-    }
-
-    _onMouseMove (data) {
-        this.events.push(Util.mouseMove(data.x, data.y));
     }
 
     onKeyboardInput (steps, data) {
         if (data.isDown) {
             const key = Util.getScratchKey(this.vm, data.key);
-            this.events.push(Util.wait(this.waitTime));
-            this.events.push(Util.keyPress(key, steps));
+            this.events.push(Recorder.wait(this.waitTime));
+            this.events.push(Recorder.keyPress(key, steps));
         }
     }
 
     onTextInput (data) {
         if (data.answer) {
-            this.events.push(Util.wait(this.waitTime));
-            this.events.push(Util.typeText(data.answer));
+            this.events.push(Recorder.wait(this.waitTime));
+            this.events.push(Recorder.typeText(data.answer));
         }
     }
 
