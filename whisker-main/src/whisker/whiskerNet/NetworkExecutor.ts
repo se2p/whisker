@@ -171,7 +171,6 @@ export class NetworkExecutor {
 
         // If we found a defect network let it go extinct!
         if (!workingNetwork) {
-            console.error("Found defect Network", network)
             network.hasDeathMark = true;
         }
         // Save the codons in order to transform the network into a TestChromosome later
