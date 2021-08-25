@@ -47,6 +47,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     async findSolution(): Promise<Map<number, C>> {
         // Report the current state of the search after <reportPeriod> iterations.
         const population = this.getPopulation();
+        console.log("Starting population:", population);
         population.generatePopulation();
         this._iterations = 0;
         this._startTime = Date.now();
@@ -109,6 +110,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, population.populationChampion.networkFitness);
+        StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.networkFitness);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
@@ -122,10 +124,14 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * @param population the population of networks
      */
     private reportOfCurrentIteration(population: NeuroevolutionPopulation<NetworkChromosome>): void {
-        console.log(`Iteration:  ${this._iterations}`)
-        console.log(`Highest Network Fitness:  ${population.highestFitness}`)
-        console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.networkFitness}`)
-        console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`)
+        console.log(`Iteration:  ${this._iterations}`);
+        console.log(`Highest Network Fitness:  ${population.highestFitness}`);
+        console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.networkFitness}`);
+        console.log(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
+        for (const species of population.species) {
+            console.log(`Species ${species.id} has ${species.size()} members and an average fitness of ${species.averageFitness}`);
+        }
+        console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         console.log(`Covered goals: ${this._archive.size + "/" + this._fitnessFunctions.size}`);
         console.log("-----------------------------------------------------")
     }

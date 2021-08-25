@@ -184,6 +184,8 @@ export class Search {
             return this.handleEmptyProject();
         }
 
+        console.log(this.vm);
+
         await util.prepare(accelerationFactor || 1);
         util.start();
         const seed = config.getRandomSeed();

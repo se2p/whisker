@@ -43,6 +43,7 @@ export class StatisticsCollector {
     private _createdTestsToReachFullCoverage: number;
     private _startTime: number;
     private _timeToReachFullCoverage: number;
+    private _highestNetworkFitness: number;
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: List<FitnessFunction<Chromosome>>;
     private readonly _bestNetworkFitness: Map<number, number>;
@@ -66,6 +67,7 @@ export class StatisticsCollector {
         this._startTime = 0;
         this._testEventCount = 0;
         this._numberFitnessEvaluations = 0;
+        this._highestNetworkFitness = 0;
         this._covOverTime = new Map<number, number>();
         this.coveredFitnessFunctions = new List<FitnessFunction<Chromosome>>();
         this._bestNetworkFitness = new Map<number, number>();
@@ -138,8 +140,14 @@ export class StatisticsCollector {
         }
     }
 
-    public updateBestNetworkFitnessTimeline(iteration: number, bestNetworkFitness: number):void {
+    public updateBestNetworkFitnessTimeline(iteration: number, bestNetworkFitness: number): void {
         this._bestNetworkFitness.set(iteration, Math.trunc(bestNetworkFitness));
+    }
+
+    public updateHighestNetworkFitness(networkFitness: number): void {
+        if (networkFitness > this._highestNetworkFitness) {
+            this._highestNetworkFitness = networkFitness;
+        }
     }
 
     get bestCoverage(): number {
@@ -264,10 +272,10 @@ export class StatisticsCollector {
         return [headerRow, dataRow].join("\n");
     }
 
-    public asCsvNeuroevolution(numberOfIterations?:number): string {
+    public asCsvNeuroevolution(numberOfIterations?: number): string {
 
-        let header = [...this._bestNetworkFitness.keys()].sort((a, b) => a -b);
-        let values = [... this._bestNetworkFitness.values()];
+        let header = [...this._bestNetworkFitness.keys()].sort((a, b) => a - b);
+        let values = [...this._bestNetworkFitness.values()];
 
         // Truncate the fitness timeline to the given numberOfIterations count if necessary.
         const truncateFitnessTimeline = numberOfIterations != undefined && 0 <= numberOfIterations;
@@ -295,12 +303,12 @@ export class StatisticsCollector {
 
         // Standard headers
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage"];
+            "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage", "highestNetworkFitness"];
 
         // Average population fitness header depending on max iteration count.
         const headerRow = headers.join(",").concat(",", fitnessHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
-            this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage];
+            this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness];
         const dataRow = data.join(",").concat(",", fitnessValues);
         return [headerRow, dataRow].join("\n");
     }
