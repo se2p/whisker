@@ -106,7 +106,6 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
             this.chromosomes.add(chromosome)
             NeuroevolutionUtil.speciate(chromosome, this, this.properties);
         }
-        console.log("Starting Species: ", this.species);
     }
 
     /**

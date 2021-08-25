@@ -25,11 +25,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     private _networkFitnessFunction: NetworkFitnessFunction<NetworkChromosome>;
 
     /**
-     * Saves all Networks mapped to the generation they occurred in.
-     */
-    //private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
-
-    /**
      * Evaluates the networks by letting them play the given Scratch game.
      * @param networks the networks to evaluate -> Current population
      */
@@ -120,7 +115,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 (this._iterations + 1) * this._neuroevolutionProperties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
-        //this._populationRecord.set(this._iterations, population.clone());
     }
 
     /**
@@ -128,41 +122,13 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * @param population the population of networks
      */
     private reportOfCurrentIteration(population: NeuroevolutionPopulation<NetworkChromosome>): void {
-        console.log("Iteration: " + this._iterations)
-        console.log("Highest fitness last changed: " + population.highestFitnessLastChanged)
-        console.log("Highest Network Fitness: " + population.highestFitness)
-        console.log("Current Iteration Highest Network Fitness: " + population.populationChampion.networkFitness)
-        console.log("Average Fitness: " + population.averageFitness)
-        console.log("Population Size: " + population.populationSize())
-        console.log("Population Champion: ", population.populationChampion)
-        console.log("All Species: ", population.species)
-        for (const specie of population.species) {
-            console.log("Species: " + specie.id + " has a size of " + specie.size() + " and an average fitness of "
-                + specie.averageNetworkFitness);
-        }
-        console.log("Time passed in seconds: " + (Date.now() - this.getStartTime()))
-        console.log("Covered goals: " + this._archive.size + "/" + this._fitnessFunctions.size);
+        console.log(`Iteration:  ${this._iterations}`)
+        console.log(`Highest Network Fitness:  ${population.highestFitness}`)
+        console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.networkFitness}`)
+        console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`)
+        console.log(`Covered goals: ${this._archive.size + "/" + this._fitnessFunctions.size}`);
         console.log("-----------------------------------------------------")
-
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            if (!this._archive.has(fitnessFunctionKey)) {
-                console.log("Not covered: " + this._fitnessFunctions.get(fitnessFunctionKey).toString());
-            }
-        }
     }
-
-    /**
-     * Transforms the collected information about each Population obtained during the search into a JSON representation.
-     * @return string in JSON format containing the collected Population information of each iteration.
-
-    public getPopulationRecordAsJSON(): string {
-        const solution = {};
-        this.populationRecord.forEach((population, iteration) => {
-            solution[`Generation ${iteration}`] = population.toJSON();
-        })
-        return JSON.stringify(solution, undefined, 4);
-    }
-     */
 
     getStartTime(): number {
         return this._startTime;
@@ -194,8 +160,4 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         this._fitnessFunctions = fitnessFunctions;
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
     }
-
-    //get populationRecord(): Map<number, NeuroevolutionPopulation<NetworkChromosome>> {
-        //return this._populationRecord;
-   // }
 }

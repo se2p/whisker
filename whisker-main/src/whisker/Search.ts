@@ -183,7 +183,6 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
-        console.log(this.vm)
 
         await util.prepare(accelerationFactor || 1);
         util.start();
