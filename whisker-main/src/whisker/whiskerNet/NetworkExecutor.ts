@@ -106,8 +106,15 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
-            // Collect the currently available events
-            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
+            // Collect the currently available events.
+            // TODO: This is wrapped in a Try-Catch since this tends to throw an error iff executed on the cluster.
+            //  Find out why this is the case and handle correctly at point of failure! However, works for now...
+            try {
+                this.availableEvents = this._eventExtractor.extractEvents(this._vm)
+            }
+            catch (e) {
+                console.log("Recovered from bad event extraction")
+            }
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;

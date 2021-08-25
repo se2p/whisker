@@ -70,6 +70,10 @@ export class WaitEvent extends ScratchEvent {
                 break;
         }
         this.steps %= Container.config.getWaitStepUpperBound();
+        // If the event has been selected execute if for at least one step.
+        if(this.steps < 1){
+            this.steps = 1;
+        }
     }
 
     stringIdentifier(): string {

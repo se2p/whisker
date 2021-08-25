@@ -87,6 +87,11 @@ new WaitEvent(this._steps).toJavaScript()
                 break;
         }
         this._steps %= Container.config.getPressDurationUpperBound();
+
+        // If the event has been selected execute if for at least one step.
+        if(this._steps < 1){
+            this._steps = 1;
+        }
     }
 
     stringIdentifier(): string {
