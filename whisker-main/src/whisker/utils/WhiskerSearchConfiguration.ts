@@ -60,6 +60,8 @@ import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScr
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
 import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {NetworkChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorTemplateNetwork";
+import {ScratchEvent} from "../testcase/events/ScratchEvent";
+import {WaitEvent} from "../testcase/events/WaitEvent";
 
 class ConfigException implements Error {
     message: string;
@@ -117,10 +119,9 @@ export class WhiskerSearchConfiguration {
 
     public getNeuroevolutionProperties(): NeuroevolutionProperties<any> {
         let populationSize = this.dict['population-size'];
-        if(populationSize === 'dynamic'){
-            populationSize =  Object.keys(JSON.parse(Container.networkTemplate)).length;
-        }
-        else{
+        if (populationSize === 'dynamic') {
+            populationSize = Object.keys(JSON.parse(Container.networkTemplate)).length;
+        } else {
             populationSize = this.dict['population-size'] as number;
         }
         const properties = new NeuroevolutionProperties(populationSize);
@@ -339,9 +340,30 @@ export class WhiskerSearchConfiguration {
                     this.dict['minVarChromosomeLength'],
                     this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork': {
-                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
+                // TODO: Temporary fix for strange EventExtractor failures
+                let scratchEvents: List<ScratchEvent>;
+                let doRetry = true;
+                let retryCount = 0;
+                while (doRetry) {
+                    try {
+                        scratchEvents = new NeuroevolutionScratchEventExtractor(Container.vm).extractEvents(Container.vm);
+                        doRetry = false;
+                    } catch (e) {
+                        if (retryCount > 5) {
+                            doRetry = false;
+                        } else {
+                            retryCount++
+                            console.log(`Retrying to fetch Events for ${retryCount} time`)
+                        }
+                    }
+                }
+                if (!scratchEvents) {
+                    console.log("Was not able to fetch scratchEvents ... creating set with WaitEvent only")
+                    scratchEvents = new List<ScratchEvent>();
+                    scratchEvents.add(new WaitEvent());
+                }
                 return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm),
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper), scratchEvents,
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {

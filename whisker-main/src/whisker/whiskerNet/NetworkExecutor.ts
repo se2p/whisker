@@ -74,6 +74,7 @@ export class NetworkExecutor {
         this._timeout = timeout;
         this._random = Randomness.getInstance();
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
+        this.availableEvents = new List<ScratchEvent>();
         this.recordInitialState();
     }
 
@@ -113,6 +114,12 @@ export class NetworkExecutor {
                 this.availableEvents = this._eventExtractor.extractEvents(this._vm)
             }
             catch (e) {
+                // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
+                // one WaitEvent...
+                if(this.availableEvents.isEmpty()){
+                    console.log("Added Wait to emptyEvent")
+                    this.availableEvents.add(new WaitEvent())
+                }
                 console.log("Recovered from bad event extraction")
             }
             if (this.availableEvents.isEmpty()) {
@@ -208,7 +215,21 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
-            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
+            // TODO: This is wrapped in a Try-Catch since this tends to throw an error iff executed on the cluster.
+            //  Find out why this is the case and handle correctly at point of failure! However, works for now...
+            try {
+                this.availableEvents = this._eventExtractor.extractEvents(this._vm)
+            }
+            catch (e) {
+                // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
+                // one WaitEvent...
+                if(this.availableEvents.isEmpty()){
+                    console.log("Added Wait to emptyEvent")
+                    this.availableEvents.add(new WaitEvent())
+                }
+                console.log("Recovered from bad event extraction")
+            }
+
             if (this.availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
