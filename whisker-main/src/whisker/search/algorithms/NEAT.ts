@@ -81,7 +81,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
                 if (!this._archive.has(fitnessFunctionKey)) {
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 }
-                this._archive.set(fitnessFunctionKey, candidateChromosome);
+                this._archive.set(fitnessFunctionKey, candidateChromosome.clone());
             }
         }
         this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
