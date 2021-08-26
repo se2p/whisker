@@ -455,18 +455,6 @@ class Inputs {
     }
 
     /**
-     * @param {number} x .
-     * @param {number} y .
-     */
-    mouseMoveToEvent (x, y) {
-        this.inputImmediate({
-            device: 'mouse',
-            x: Math.trunc(x),
-            y: Math.trunc(y)
-        });
-    }
-
-    /**
      * @param {string} text .
      */
     typeText (text) {

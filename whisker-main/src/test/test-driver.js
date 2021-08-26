@@ -33,7 +33,6 @@ class TestDriver {
         this.keyPress = vmWrapper.inputs.keyPress.bind(vmWrapper.inputs);
         this.mouseDown = vmWrapper.inputs.mouseDown.bind(vmWrapper.inputs);
         this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
-        this.mouseMoveToEvent = vmWrapper.inputs.mouseMoveToEvent.bind(vmWrapper.inputs);
         this.typeText = vmWrapper.inputs.typeText.bind(vmWrapper.inputs);
         this.wait = vmWrapper.wait.bind(vmWrapper);
 

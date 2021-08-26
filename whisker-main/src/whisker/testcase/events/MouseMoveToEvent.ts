@@ -34,7 +34,7 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.mouseMoveToEvent(this.x, this.y);
+        Container.testDriver.mouseMove(this.x, this.y);
     }
 
     public toJavaScript(): string {
