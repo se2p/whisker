@@ -72,7 +72,7 @@ t.mouseDown(boolean);
 t.mouseMove(x, y);
 t.mouseMoveToEvent(x, y);
 t.typeText(text);
-t.wait();
+t.wait(steps);
 
 /* Sprite information. */
 t.getSprites(condition, skipStage);
