@@ -10,6 +10,7 @@ import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionPropertie
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
+import {StaticTestNetworkPopulation} from "../../whiskerNet/NeuroevolutionPopulations/StaticTestNetworkPopulation";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -31,7 +32,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     private async evaluateNetworks(networks: List<C>): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
-            await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout, this._neuroevolutionProperties.randomEventSelection);
+            await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout, this._neuroevolutionProperties.eventSelection);
             // Update the archive and stop in the middle of the evaluation if we already cover all statements.
             this.updateArchive(network);
             if ((this._stoppingCondition.isFinished(this))) {
@@ -95,8 +96,11 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         switch (this._neuroevolutionProperties.populationType) {
             case 'random':
                 return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
-            default:
+            case 'static':
+                return new StaticTestNetworkPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
+            case 'dynamic':
             case 'neat':
+            default:
                 return new NeatPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
         }
     }
@@ -130,6 +134,11 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         console.log(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
         for (const species of population.species) {
             console.log(`Species ${species.id} has ${species.size()} members and an average fitness of ${species.averageFitness}`);
+        }
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            if (!this._archive.has(fitnessFunctionKey)) {
+                console.log(`Not covered: ${this._fitnessFunctions.get(fitnessFunctionKey).toString()}`);
+            }
         }
         console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         console.log(`Covered goals: ${this._archive.size + "/" + this._fitnessFunctions.size}`);

@@ -41,6 +41,10 @@ class DummyEvent extends ScratchEvent {
         return "";
     }
 
+    public toJSON(): Record<string, number | string> {
+        return undefined
+    }
+
     toString(): string {
         return this._name;
     }

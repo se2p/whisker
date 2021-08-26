@@ -12,10 +12,10 @@ export interface NetworkFitnessFunction<C extends NetworkChromosome> {
      * Computes and returns the fitness value for the given network.
      * @param network the network to evaluate
      * @param timeout the timeout after which a scratch game during evaluation is terminated.
-     * @param random if set to true events are selected randomly
+     * @param eventSelection determines how events should be selected during network evaluation
      * @returns the fitness value of the specified network
      */
-    getFitness(network: C, timeout: number, random?:boolean): Promise<number>;
+    getFitness(network: C, timeout: number, eventSelection?:string): Promise<number>;
 
     /**
      * Computes and returns the fitness value for the given network without playing the game.

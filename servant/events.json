@@ -1,0 +1,174 @@
+{
+    "TestCase 0": {
+        "Event 0": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "left arrow",
+                "steps": 41
+            }
+        },
+        "Event 1": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 2": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "right arrow",
+                "steps": 48
+            }
+        },
+        "Event 3": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 4": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "right arrow",
+                "steps": 34
+            }
+        },
+        "Event 5": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 6": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "left arrow",
+                "steps": 26
+            }
+        },
+        "Event 7": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        }
+    },
+    "TestCase 1": {
+        "Event 0": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "right arrow",
+                "steps": 36
+            }
+        },
+        "Event 1": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 2": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "left arrow",
+                "steps": 49
+            }
+        },
+        "Event 3": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 4": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "left arrow",
+                "steps": 18
+            }
+        },
+        "Event 5": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 6": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "left arrow",
+                "steps": 2
+            }
+        },
+        "Event 7": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 8": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "right arrow",
+                "steps": 14
+            }
+        },
+        "Event 9": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 10": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "right arrow",
+                "steps": 27
+            }
+        },
+        "Event 11": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 12": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 10
+            }
+        },
+        "Event 13": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 14": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "left arrow",
+                "steps": 7
+            }
+        },
+        "Event 15": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        },
+        "Event 16": {
+            "type": "KeyPressEvent",
+            "args": {
+                "key": "right arrow",
+                "steps": 32
+            }
+        },
+        "Event 17": {
+            "type": "WaitEvent",
+            "args": {
+                "steps": 1
+            }
+        }
+    }
+}

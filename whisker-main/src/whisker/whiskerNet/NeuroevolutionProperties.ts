@@ -165,14 +165,14 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _timeout: number
 
     /**
-     * Determines if events should be selected at random.
+     * Determines how the events should be selected.
      */
-    private _randomEventSelection:boolean
+    private _eventSelection: string
 
     /**
-     * The template of a network if the TemplateNetworkGenerator is used.
+     * The template of a static/dynamic test
      */
-    private _networkTemplate: Record<string, (number | string | Record<string, (number | string)>)>;
+    private _testTemplate: string;
 
     /**
      * Constructs an object that stores all relevant properties of a Neuroevolution Algorithm.
@@ -416,20 +416,19 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
         this._timeout = value;
     }
 
-    get randomEventSelection(): boolean {
-        return this._randomEventSelection;
+    get eventSelection(): string {
+        return this._eventSelection;
     }
 
-    set randomEventSelection(value: boolean) {
-        this._randomEventSelection = value;
+    set eventSelection(value: string) {
+        this._eventSelection = value;
     }
 
-    get networkTemplate(): Record<string, (number | string | Record<string, (number | string)>)> {
-        return this._networkTemplate;
+    get testTemplate(): string {
+        return this._testTemplate;
     }
 
-    set networkTemplate(value: Record<string, (number | string | Record<string, (number | string)>)>) {
-        console.log("Setter: ", value)
-        this._networkTemplate = value;
+    set testTemplate(value: string) {
+        this._testTemplate = value;
     }
 }

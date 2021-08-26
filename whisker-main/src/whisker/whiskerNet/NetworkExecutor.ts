@@ -63,26 +63,41 @@ export class NetworkExecutor {
      */
     private _eventExtractor: ScratchEventExtractor;
 
+    private readonly _eventSelection: string
+
     /**
      * Constructs a new NetworkExecutor object.
      * @param vmWrapper the wrapper of the Scratch-VM.
      * @param timeout timeout after which each playthrough is halted.
      */
-    constructor(vmWrapper: VMWrapper, timeout: number) {
+    constructor(vmWrapper: VMWrapper, timeout: number, eventSelection?: string) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
         this._random = Randomness.getInstance();
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
         this.availableEvents = new List<ScratchEvent>();
+        this._eventSelection = eventSelection;
         this.recordInitialState();
+    }
+
+    async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
+        switch (this._eventSelection) {
+            case 'random':
+                return this.executeRandom(network);
+            case 'events':
+                return this.executeStaticTestSuite(network);
+            case 'network':
+            default:
+                return this.executeNetwork(network);
+        }
     }
 
     /**
      * Lets a neural network play the given Scratch game.
      * @param network the network which should play the given game.
      */
-    async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
+    private async executeNetwork(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         let workingNetwork = false;
         const codons = new List<number>()
@@ -112,11 +127,10 @@ export class NetworkExecutor {
             //  Find out why this is the case and handle correctly at point of failure! However, works for now...
             try {
                 this.availableEvents = this._eventExtractor.extractEvents(this._vm)
-            }
-            catch (e) {
+            } catch (e) {
                 // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
                 // one WaitEvent...
-                if(this.availableEvents.isEmpty()){
+                if (this.availableEvents.isEmpty()) {
                     console.log("Added Wait to emptyEvent")
                     this.availableEvents.add(new WaitEvent())
                 }
@@ -196,7 +210,7 @@ export class NetworkExecutor {
      * Lets a neural network play the given Scratch game by randomly choosing events.
      * @param network the network which should play the given game.
      */
-    async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
+    private async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
         const codons = new List<number>()
 
@@ -219,11 +233,10 @@ export class NetworkExecutor {
             //  Find out why this is the case and handle correctly at point of failure! However, works for now...
             try {
                 this.availableEvents = this._eventExtractor.extractEvents(this._vm)
-            }
-            catch (e) {
+            } catch (e) {
                 // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
                 // one WaitEvent...
-                if(this.availableEvents.isEmpty()){
+                if (this.availableEvents.isEmpty()) {
                     console.log("Added Wait to emptyEvent")
                     this.availableEvents.add(new WaitEvent())
                 }
@@ -236,12 +249,14 @@ export class NetworkExecutor {
             }
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
-            const nextEvent: ScratchEvent = this._random.pickRandomElementFromList(this.availableEvents);
+            const randomEventIndex = this._random.nextInt(0, this.availableEvents.size());
+            const nextEvent: ScratchEvent = this.availableEvents.get(randomEventIndex);
             const args = [];
             for (let i = 0; i < nextEvent.numSearchParameter(); i++) {
                 nextEvent.setParameter(args, ParameterType.RANDOM);
                 args.push(nextEvent.getParameter());
             }
+            codons.add(randomEventIndex);
             events.add([nextEvent, args]);
             this.notify(nextEvent, args);
             await nextEvent.apply();
@@ -266,6 +281,50 @@ export class NetworkExecutor {
 
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
+        return network.trace;
+    }
+
+    /**
+     * Lets a neural network play the given Scratch game by always selecting the defined events.
+     * This approach equals an execution of a static test suite containing test case
+     * @param network the network which should play the given game.
+     */
+    private async executeStaticTestSuite(network: NetworkChromosome): Promise<ExecutionTrace> {
+        const events = network.trace.events;
+
+        seedScratch(String(Randomness.getInitialSeed()))
+
+        // Set up the Scratch-VM and start the game
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
+
+        let eventIndex = 0;
+        // Play the game until we reach a GameOver state or the timeout
+        while (this._projectRunning && eventIndex < events.size()) {
+            // Select the nextEvent and get the right codon value.
+            const nextEvent = events.get(eventIndex)[0];
+            const args = events.get(eventIndex)[1];
+            eventIndex++;
+            events.add([nextEvent, args]);
+            this.notify(nextEvent, args);
+            await nextEvent.apply();
+            StatisticsCollector.getInstance().incrementEventsCount();
+        }
+
+        // Save the executed Trace and the covered blocks
+        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
+        // End and reset the VM.
+        this._vmWrapper.end();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+
+        // Codons not needed here
+        network.codons = new List<number>();
         return network.trace;
     }
 

@@ -44,6 +44,13 @@ export class MouseDownEvent extends ScratchEvent {
   });`;
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `MouseDownEvent`;
+        event[`args`] = {"value": this._value}
+        return event;
+    }
+
     public toString = () : string => {
         return "MouseDown " + this._value;
     }

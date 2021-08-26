@@ -11,5 +11,5 @@ export class Container {
     static testDriver: TestDriver;
     static acceleration: number;
     static pathToGoal: ScratchPosition[];
-    static networkTemplate: string;
+    static template: string;
 }

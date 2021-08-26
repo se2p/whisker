@@ -27,10 +27,15 @@ export class ClickSpriteEvent extends ScratchEvent {
     private readonly _target: RenderedTarget;
     private readonly _steps: number;
 
-    constructor(target: RenderedTarget) {
+    constructor(target: RenderedTarget, steps?:number) {
         super()
         this._target = target;
-        this._steps = Container.config.getClickDuration();
+        if(steps){
+            this._steps = steps;
+        }
+        else {
+            this._steps = Container.config.getClickDuration();
+        }
     }
 
     async apply(): Promise<void> {
@@ -71,6 +76,13 @@ export class ClickSpriteEvent extends ScratchEvent {
     steps: ${Container.config.getClickDuration()}
   });`;
         }
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `ClickSpriteEvent`;
+        event[`args`] = {"target": this._target.sprite.name, "steps": this._steps}
+        return event;
     }
 
     public toString(): string {

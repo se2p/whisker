@@ -36,17 +36,12 @@ export abstract class NoveltyFitness implements NetworkFitnessFunction<NetworkCh
      * Calculates the novelty score.
      * @param network the network to evaluate.
      * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     * @param random if set true networks choose events randomly
+     * @param eventSelection defines how a network selects events
      * @returns sparseness which is a metric of novelty.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, random?:boolean): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        if(random) {
-            await executor.executeRandom(network);
-        }
-        else{
-            await executor.execute(network)
-        }
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?:string): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+        await executor.execute(network);
         const sparseness = this.sparseNess(network);
         this.addToBehaviourArchive(network, sparseness);
         network.networkFitness = sparseness;

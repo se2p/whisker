@@ -19,7 +19,7 @@ const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
     isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly,
-    networkTemplate
+    isNeuroevolution
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -61,8 +61,8 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
     }
-    // Dynamic test suite
-    else if(testPath.endsWith('.json')){
+    // Test suite evaluated using Neuroevolution
+    else if(isNeuroevolution){
         if (fs.lstatSync(scratchPath).isDirectory()) {
             const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
@@ -92,7 +92,7 @@ async function init () {
         }
         await browser.close();
     }
-    // Static test suite
+    // Standard TestSuite executed without Neuroevolution
     else {
         if (fs.lstatSync(scratchPath).isDirectory()) {
             if (csvFile !== false && fs.existsSync(csvFile)) {
@@ -167,8 +167,8 @@ async function runGeneticSearch (browser, downloadPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
-        if(networkTemplate) {
-            await (await page.$('#fileselect-template')).uploadFile(networkTemplate);
+        if(testPath) {
+            await (await page.$('#fileselect-template')).uploadFile(testPath);
         }
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
@@ -235,7 +235,7 @@ async function runGeneticSearch (browser, downloadPath) {
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
-        logger.debug(`Downloading tests to ${downloadPath}/tests.js`);
+        logger.debug(`Downloading tests to ${downloadPath}`);
         await downloadTests();
         await page.close();
         return Promise.resolve(output);

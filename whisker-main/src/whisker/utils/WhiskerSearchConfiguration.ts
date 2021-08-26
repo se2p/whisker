@@ -118,9 +118,10 @@ export class WhiskerSearchConfiguration {
     }
 
     public getNeuroevolutionProperties(): NeuroevolutionProperties<any> {
-        let populationSize = this.dict['population-size'];
-        if (populationSize === 'dynamic') {
-            populationSize = Object.keys(JSON.parse(Container.networkTemplate)).length;
+        const populationType = this.dict[`populationType`] as string;
+        let populationSize: number;
+        if (populationType === 'dynamic' || populationType === 'static') {
+            populationSize = Object.keys(JSON.parse(Container.template)).length;
         } else {
             populationSize = this.dict['population-size'] as number;
         }
@@ -157,7 +158,8 @@ export class WhiskerSearchConfiguration {
         const timeout = this.dict['network-fitness']['timeout'];
 
         properties.populationType = this.dict[`populationType`] as string;
-        properties.randomEventSelection = this.dict['randomNetworkEventSelection'] === 'true'
+        properties.eventSelection = this.dict[`eventSelection`] as string;
+        properties.testTemplate = Container.template;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
@@ -324,6 +326,28 @@ export class WhiskerSearchConfiguration {
     }
 
     public getChromosomeGenerator(): ChromosomeGenerator<any> {
+        // TODO: Temporary fix for strange EventExtractor failures
+        let scratchEvents: List<ScratchEvent>;
+        let doRetry = true;
+        let retryCount = 0;
+        while (doRetry) {
+            try {
+                scratchEvents = new NeuroevolutionScratchEventExtractor(Container.vm).extractEvents(Container.vm);
+                doRetry = false;
+            } catch (e) {
+                if (retryCount > 5) {
+                    doRetry = false;
+                } else {
+                    retryCount++
+                    console.log(`Retrying to fetch Events for ${retryCount} time`)
+                }
+            }
+        }
+        if (!scratchEvents) {
+            console.log("Was not able to fetch scratchEvents ... creating set with WaitEvent only")
+            scratchEvents = new List<ScratchEvent>();
+            scratchEvents.add(new WaitEvent());
+        }
         switch (this.dict['chromosome']) {
             case 'bitstring':
                 return new BitstringChromosomeGenerator(this.getSearchAlgorithmProperties(),
@@ -340,41 +364,18 @@ export class WhiskerSearchConfiguration {
                     this.dict['minVarChromosomeLength'],
                     this.dict['maxVarChromosomeLength']);
             case 'sparseNetwork': {
-                // TODO: Temporary fix for strange EventExtractor failures
-                let scratchEvents: List<ScratchEvent>;
-                let doRetry = true;
-                let retryCount = 0;
-                while (doRetry) {
-                    try {
-                        scratchEvents = new NeuroevolutionScratchEventExtractor(Container.vm).extractEvents(Container.vm);
-                        doRetry = false;
-                    } catch (e) {
-                        if (retryCount > 5) {
-                            doRetry = false;
-                        } else {
-                            retryCount++
-                            console.log(`Retrying to fetch Events for ${retryCount} time`)
-                        }
-                    }
-                }
-                if (!scratchEvents) {
-                    console.log("Was not able to fetch scratchEvents ... creating set with WaitEvent only")
-                    scratchEvents = new List<ScratchEvent>();
-                    scratchEvents.add(new WaitEvent());
-                }
                 return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vmWrapper), scratchEvents,
                     this.dict['inputRate']);
             }
             case 'fullyConnectedNetwork': {
-                const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
-                    InputExtraction.extractSpriteInfo(Container.vmWrapper), eventExtractor.extractEvents(Container.vm));
+                    InputExtraction.extractSpriteInfo(Container.vmWrapper), scratchEvents);
             }
             case 'templateNetwork': {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NetworkChromosomeGeneratorTemplateNetwork(this.dict['mutation'], this.dict['crossover'],
-                    Container.networkTemplate, eventExtractor.extractEvents(Container.vm));
+                    Container.template, eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
             default:
@@ -501,7 +502,12 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public isDynamicTestsSuite(): boolean {
-        return this.dict['dynamicTestSuite'] === 'true';
+    public getTestSuiteType(): string {
+        if("testSuiteType" in this.dict){
+           return this.dict['testSuiteType'];
+        }
+        else{
+            return undefined
+        }
     }
 }

@@ -1,14 +1,14 @@
 {
     "test-generator": "neuroevolution",
     "algorithm": "neat",
-    "dynamicTestSuite": "false",
     "chromosome": "sparseNetwork",
-    "randomNetworkEventSelection": "true",
+    "testSuiteType": "static",
+    "eventSelection": "random",
     "populationType": "neat",
-    "population-size": 150,
+    "population-size": 10,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 15,
+    "penalizingAge": 50,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "extractor": "neuroevolution",
@@ -53,7 +53,7 @@
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 50
+                "iterations": 3
             },
             {
                 "type": "fixed-time",

@@ -26,23 +26,30 @@ import {Randomness} from "../../utils/Randomness";
 
 export class WaitEvent extends ScratchEvent {
 
-    private steps: number;
+    private _steps: number;
 
     constructor(steps = 1) {
         super();
-        this.steps = steps;
+        this._steps = steps;
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.runForSteps(this.steps);
+        await Container.testDriver.runForSteps(this._steps);
     }
 
     public toJavaScript(): string {
-        return `await t.runForSteps(${this.steps});`;
+        return `await t.runForSteps(${this._steps});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `WaitEvent`;
+        event[`args`] = {"steps": this._steps}
+        return event;
     }
 
     public toString(): string {
-        return "Wait for " + this.steps + " steps";
+        return "Wait for " + this._steps + " steps";
     }
 
     numSearchParameter(): number {
@@ -50,7 +57,7 @@ export class WaitEvent extends ScratchEvent {
     }
 
     getParameter(): number[] {
-        return [this.steps];
+        return [this._steps];
     }
 
     getSearchParameterNames(): string[] {
@@ -60,19 +67,19 @@ export class WaitEvent extends ScratchEvent {
     setParameter(args: number[], testExecutor: ParameterType): void {
         switch (testExecutor) {
             case ParameterType.RANDOM:
-                this.steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
+                this._steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
                 break;
             case ParameterType.CODON:
-                this.steps = args[0];
+                this._steps = args[0];
                 break;
             case ParameterType.REGRESSION:
-                this.steps = Math.round(NeuroevolutionUtil.relu(args[0]));
+                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }
-        this.steps %= Container.config.getWaitStepUpperBound();
+        this._steps %= Container.config.getWaitStepUpperBound();
         // If the event has been selected execute if for at least one step.
-        if(this.steps < 1){
-            this.steps = 1;
+        if (this._steps < 1) {
+            this._steps = 1;
         }
     }
 

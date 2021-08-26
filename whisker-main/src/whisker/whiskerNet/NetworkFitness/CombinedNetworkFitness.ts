@@ -25,17 +25,12 @@ export class CombinedNetworkFitness implements NetworkFitnessFunction<NetworkChr
      * Calculates the combinedFitness score of the specified fitness functions
      * @param network the network to evaluate
      * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     * @param random if set true networks choose events randomly
+     * @param eventSelection defines how a network selects events
      */
-    async getFitness(network: NetworkChromosome, timeout: number, random?:boolean): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?:string): Promise<number> {
         const start = Date.now();
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
-        if(random){
-            await executor.executeRandom(network);
-        }
-        else {
-            await executor.execute(network);
-        }
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
+        await executor.execute(network);
         const fitness = this.calculateCombinedFitness(network, start);
         network.networkFitness = fitness;
         executor.resetState();

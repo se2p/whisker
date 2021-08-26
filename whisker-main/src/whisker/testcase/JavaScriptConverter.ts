@@ -47,42 +47,53 @@ export class JavaScriptConverter {
     getSuiteText(tests: List<WhiskerTest>): string {
 
         // If we want a dynamic test suite print out the networks instead of static test cases.
-        if(Container.config.isDynamicTestsSuite()) {
-            const networkTestSuite = {}
-            for (let j = 0; j < tests.size(); j++) {
-                networkTestSuite[`Network ${j}`] = tests.get(j).chromosome;
+        if (Container.config.getTestSuiteType() === 'dynamic') {
+            const networkTestSuite = {};
+            for (let i = 0; i < tests.size(); i++) {
+                networkTestSuite[`Network ${i}`] = tests.get(i).chromosome;
             }
             return JSON.stringify(networkTestSuite, undefined, 4);
-        }
-
-        let text = "";
-        let i = 0;
-        let footer = "";
-        for (const test of tests) {
-            text += "const test"+i+" = async function (t) {\n";
-            for (const [scratchEvent, args] of test.chromosome.trace.events) {
-                text += "  " + scratchEvent.toJavaScript() + "\n";
+        } else if (Container.config.getTestSuiteType() === 'static') {
+            const eventTestSuite = {};
+            for (let i = 0; i < tests.size(); i++) {
+                const chromosome = tests.get(i).chromosome;
+                const events = {};
+                for (let j = 0; j < chromosome.trace.events.size(); j++) {
+                    events[`Event ${j}`] = chromosome.trace.events.get(j)[0].toJSON();
+                }
+                eventTestSuite[`TestCase ${i}`] = events;
             }
-            text += "}\n";
+            return JSON.stringify(eventTestSuite, undefined, 4);
+        } else {
+            let text = "";
+            let i = 0;
+            let footer = "";
+            for (const test of tests) {
+                text += "const test" + i + " = async function (t) {\n";
+                for (const [scratchEvent, args] of test.chromosome.trace.events) {
+                    text += "  " + scratchEvent.toJavaScript() + "\n";
+                }
+                text += "}\n";
 
-            footer += "  {\n";
-            footer += "      test: test"+i+",\n";
-            footer += "      name: 'Generated Test',\n";
-            footer += "      description: '',\n";
-            footer += "      categories: []\n";
-            if (i < tests.size() - 1) {
-                footer += "  },\n";
-            } else {
-                footer += "  }\n";
+                footer += "  {\n";
+                footer += "      test: test" + i + ",\n";
+                footer += "      name: 'Generated Test',\n";
+                footer += "      description: '',\n";
+                footer += "      categories: []\n";
+                if (i < tests.size() - 1) {
+                    footer += "  },\n";
+                } else {
+                    footer += "  }\n";
+                }
+
+                i++;
             }
 
-            i++;
+            text += "\nmodule.exports = [\n";
+            text += footer;
+            text += "]\n";
+
+            return text;
         }
-
-        text += "\nmodule.exports = [\n";
-        text += footer;
-        text += "]\n";
-
-        return text;
     }
 }

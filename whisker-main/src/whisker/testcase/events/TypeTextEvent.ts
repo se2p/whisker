@@ -44,6 +44,13 @@ export class TypeTextEvent extends ScratchEvent {
   });`;
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `TypeTextEvent`;
+        event[`args`] = {"text": this._text}
+        return event;
+    }
+
     public toString(): string {
         return `TypeText '${this._text}'`
     }

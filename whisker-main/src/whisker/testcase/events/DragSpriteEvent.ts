@@ -49,6 +49,13 @@ export class DragSpriteEvent extends ScratchEvent {
         return `t.getSprite('${this._target.sprite.name}').getScratchTarget().setXY(${this._x}, ${this._y}, true);`
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `DragSpriteEvent`;
+        event[`args`] = {"x": this._x, "y": this._y, "target": this._target.sprite.name}
+        return event;
+    }
+
     public toString(): string {
         return `DragSprite ${this._target.sprite.name} to  ${Math.trunc(this._x)}/${Math.trunc(this._y)}`;
     }

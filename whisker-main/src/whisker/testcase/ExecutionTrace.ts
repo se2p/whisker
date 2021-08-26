@@ -28,7 +28,7 @@ import {List} from "../utils/List";
 export class ExecutionTrace {
 
     private readonly _blockTraces: [Trace];
-    private readonly _events: List<[ScratchEvent, number[]]>;
+    private _events: List<[ScratchEvent, number[]]>;
 
     constructor(traces: [Trace], events: List<[ScratchEvent, number[]]>) {
         this._blockTraces = traces
@@ -45,5 +45,9 @@ export class ExecutionTrace {
 
     get events(): List<[ScratchEvent, number[]]> {
         return this._events;
+    }
+
+    set events(value: List<[ScratchEvent, number[]]>) {
+        this._events = value;
     }
 }

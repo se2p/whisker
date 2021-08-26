@@ -33,6 +33,13 @@ export class SoundEvent extends ScratchEvent {
         throw new NotYetImplementedException();
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `SoundEvent`;
+        event[`args`] = {"volume": this._volume}
+        return event;
+    }
+
     public toString(): string {
         throw new NotYetImplementedException();
     }

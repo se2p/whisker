@@ -26,7 +26,6 @@ const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
-const DownloadContainer = require('./components/DownloadContainer');
 const InputRecorder = require('./components/input-recorder');
 
 const {showModal, escapeHtml} = require('./utils.js');

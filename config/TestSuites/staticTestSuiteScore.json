@@ -2,14 +2,8 @@
     "test-generator": "neuroevolution",
     "algorithm": "neat",
     "chromosome": "sparseNetwork",
-    "testSuiteType": "dynamic",
-    "populationType": "neat",
-    "population-size": 150,
-    "numberOfSpecies": 5,
-    "parentsPerSpecies": 0.20,
-    "penalizingAge": 50,
-    "ageSignificance": 1.0,
-    "inputRate": 0.3,
+    "eventSelection": "events",
+    "populationType": "static",
     "extractor": "neuroevolution",
     "crossover": {
         "operator": "neatCrossover",
@@ -45,18 +39,21 @@
     },
     "network-fitness": {
         "type": "score",
-        "timeout": 10000
+        "timeout": 30000
     },
     "stopping-condition": {
         "type": "one-of",
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 50
+                "iterations": 1
             },
             {
                 "type": "fixed-time",
-                "duration": 828000000
+                "duration": 36000000
+            },
+            {
+                "type": "optimal"
             }
         ]
     },

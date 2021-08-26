@@ -174,7 +174,7 @@ export class Search {
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
 
-        Container.networkTemplate = template;
+        Container.template = template;
         Container.config = config;
         Container.vm = vm;
         Container.vmWrapper = util.getVMWrapper();
@@ -199,7 +199,8 @@ export class Search {
         this.printTests(tests);
         const csvOutput = this.outputCSV(config);
 
-        if(configName.toLowerCase().includes('dynamictestsuite')){
+        if(Container.config.getNeuroevolutionProperties().populationType === 'static' ||
+            Container.config.getNeuroevolutionProperties().populationType === 'dynamic'){
             testListWithSummary.summary = csvOutput;
         }
 

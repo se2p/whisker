@@ -63,6 +63,11 @@ export abstract class ScratchEvent {
     abstract toString(): string;
 
     /**
+     * Transforms the event into a JSON representation.
+     */
+    abstract toJSON(): Record<string, any>
+
+    /**
      * Returns an identifier as string. Events containing parameters defined during search obtain the same
      * identifier and Events whose parameters are determined by the ScratchEventExtractor get different identifiers.
      * The id is used to query the right RegressionNode if search defined parameters for a specific Event are needed.
