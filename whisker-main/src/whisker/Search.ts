@@ -199,8 +199,9 @@ export class Search {
         this.printTests(tests);
         const csvOutput = this.outputCSV(config);
 
-        if(Container.config.getNeuroevolutionProperties().populationType === 'static' ||
-            Container.config.getNeuroevolutionProperties().populationType === 'dynamic'){
+        if( Container.isNeuroevolution &&
+            (Container.config.getNeuroevolutionProperties().populationType === 'static' ||
+            Container.config.getNeuroevolutionProperties().populationType === 'dynamic')){
             testListWithSummary.summary = csvOutput;
         }
 

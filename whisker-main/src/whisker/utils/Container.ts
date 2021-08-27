@@ -12,4 +12,5 @@ export class Container {
     static acceleration: number;
     static pathToGoal: ScratchPosition[];
     static template: string;
+    static isNeuroevolution: boolean
 }

@@ -464,6 +464,7 @@ export class WhiskerSearchConfiguration {
         } else if (this.dict['test-generator'] == 'many-objective') {
             return new ManyObjectiveTestGenerator(this);
         } else if (this.dict['test-generator'] == 'neuroevolution') {
+            Container.isNeuroevolution = true;
             return new NeuroevolutionTestGenerator(this);
         }
 

@@ -64,12 +64,16 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
                     break;
                 case "CLASSIFICATION": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
-                    allNodes.add(new ClassificationNode(node.id, event, ActivationFunction.SIGMOID));
+                    if(event) {
+                        allNodes.add(new ClassificationNode(node.id, event, ActivationFunction.SIGMOID));
+                    }
                     break;
                 }
                 case "REGRESSION": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
-                    allNodes.add(new RegressionNode(node.id, event, node.eventParameter, ActivationFunction.NONE));
+                    if(event) {
+                        allNodes.add(new RegressionNode(node.id, event, node.eventParameter, ActivationFunction.NONE));
+                    }
                     break;
                 }
             }
@@ -80,8 +84,10 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
             const sourceNode = allNodes.find(node => node.id === connection.Source);
             const targetNode = allNodes.find(node => node.id === connection.Target);
             const recurrent = connection.Recurrent === `true`;
-            allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.Weight, connection.Enabled,
-                connection.Innovation, recurrent));
+            if(sourceNode && targetNode) {
+                allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.Weight, connection.Enabled,
+                    connection.Innovation, recurrent));
+            }
         }
         const network = new NetworkChromosome(allConnections, allNodes, this._mutationOp, this._crossoverOp);
 

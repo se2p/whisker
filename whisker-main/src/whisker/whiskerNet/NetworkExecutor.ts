@@ -307,7 +307,6 @@ export class NetworkExecutor {
             const nextEvent = events.get(eventIndex)[0];
             const args = events.get(eventIndex)[1];
             eventIndex++;
-            events.add([nextEvent, args]);
             this.notify(nextEvent, args);
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
