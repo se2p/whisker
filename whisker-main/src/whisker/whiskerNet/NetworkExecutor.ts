@@ -291,6 +291,7 @@ export class NetworkExecutor {
      */
     private async executeStaticTestSuite(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events = network.trace.events;
+        let eventIndex = 0;
 
         seedScratch(String(Randomness.getInitialSeed()))
 
@@ -300,9 +301,12 @@ export class NetworkExecutor {
         this._projectRunning = true;
         this._vmWrapper.start();
 
-        let eventIndex = 0;
+        // Initialise Timer for the timeout
+        let timer = Date.now();
+        this._timeout += Date.now();
+
         // Play the game until we reach a GameOver state or the timeout
-        while (this._projectRunning && eventIndex < events.size()) {
+        while (this._projectRunning && eventIndex < events.size() && timer < this._timeout) {
             // Select the nextEvent and get the right codon value.
             const nextEvent = events.get(eventIndex)[0];
             const args = events.get(eventIndex)[1];
@@ -310,6 +314,7 @@ export class NetworkExecutor {
             this.notify(nextEvent, args);
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
+            timer = Date.now();
         }
 
         // Save the executed Trace and the covered blocks

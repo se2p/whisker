@@ -5,10 +5,10 @@
     "testSuiteType": "static",
     "eventSelection": "random",
     "populationType": "neat",
-    "population-size": 10,
+    "population-size": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 50,
+    "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "extractor": "neuroevolution",
@@ -53,7 +53,7 @@
         "conditions": [
             {
                 "type": "fixed-iteration",
-                "iterations": 3
+                "iterations": 50
             },
             {
                 "type": "fixed-time",

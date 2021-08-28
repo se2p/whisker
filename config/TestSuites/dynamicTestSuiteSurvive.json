@@ -38,7 +38,7 @@
     },
     "network-fitness": {
         "type": "survive",
-        "timeout": 30000
+        "timeout": 15000
     },
     "stopping-condition": {
         "type": "one-of",
@@ -50,9 +50,6 @@
             {
                 "type": "fixed-time",
                 "duration": 36000000
-            },
-            {
-                "type": "optimal"
             }
         ]
     },

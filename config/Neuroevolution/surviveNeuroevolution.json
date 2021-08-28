@@ -7,7 +7,7 @@
     "population-size": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 50,
+    "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "extractor": "neuroevolution",
