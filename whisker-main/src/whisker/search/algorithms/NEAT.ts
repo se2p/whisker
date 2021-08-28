@@ -27,11 +27,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     private _networkFitnessFunction: NetworkFitnessFunction<NetworkChromosome>;
 
     /**
-     * Holds the best network regarding the chosen network fitness function
-     */
-    private _bestNetwork: NetworkChromosome
-
-    /**
      * Evaluates the networks by letting them play the given Scratch game.
      * @param networks the networks to evaluate -> Current population
      */
@@ -78,52 +73,28 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      */
     protected updateArchive(candidateChromosome: C): void {
 
-        // If we have a dynamic TestSuite we save the first chromosome which managed to cover a block instead of the
-        // best performing network since otherwise the dynamic test suite later fails to cover the easiest blocks,
-        // e.g simple GameOver state. Because we are nonetheless interested in the best performing network, we
-        // include the best performing network as an additional key to the archive.
-        if (Container.config.getTestSuiteType() === 'dynamic') {
-            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                const statementFitness = fitnessFunction.getFitness(candidateChromosome);
-                if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey)) {
-                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                    this._archive.set(fitnessFunctionKey, candidateChromosome);
-                }
+        // We save the first chromosome which managed to cover a block instead of the best performing network since
+        // otherwise the dynamic test suite later fails to cover the easiest blocks, e.g simple GameOver state.
+        // For fairness we do the same if a static test suite is targeted.
+        // Because we are nonetheless interested in the best performing network, we include the best performing
+        // network as an additional key to the archive in the case of a dynamic TestSuite.
+        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            const statementFitness = fitnessFunction.getFitness(candidateChromosome);
+            if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey)) {
+                StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                this._archive.set(fitnessFunctionKey, candidateChromosome);
             }
-
-            // Save the best performing chromosome
-            const bestNetworkKey = this._fitnessFunctions.size + 1;
-            if (!this._archive.has(bestNetworkKey) ||
-                this._archive.get(bestNetworkKey).networkFitness < candidateChromosome.networkFitness) {
-                this._archive.set(bestNetworkKey, candidateChromosome);
-            }
-
-            this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
-            this._bestIndividuals.add(this._bestNetwork);
         }
 
-        // If we target a static testSuite we go with the traditional approach and simply save the shortest test
-        // covering a statement.
-        else {
-            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                let bestLength = this._archive.has(fitnessFunctionKey)
-                    ? this._archive.get(fitnessFunctionKey).getLength()
-                    : Number.MAX_SAFE_INTEGER;
-                const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
-                const candidateLength = candidateChromosome.getLength();
-                if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
-                    bestLength = candidateLength;
-                    if (!this._archive.has(fitnessFunctionKey)) {
-                        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                    }
-                    this._archive.set(fitnessFunctionKey, candidateChromosome);
-                }
-            }
-            this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+        // Save the best performing chromosome
+        const bestNetworkKey = this._fitnessFunctions.size + 1;
+        if (Container.config.getTestSuiteType() === 'dynamic' &&
+            (!this._archive.has(bestNetworkKey) ||
+                this._archive.get(bestNetworkKey).networkFitness < candidateChromosome.networkFitness)) {
+            this._archive.set(bestNetworkKey, candidateChromosome);
         }
-
+        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
     }
 
     /**
