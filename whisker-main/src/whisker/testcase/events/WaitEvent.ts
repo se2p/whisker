@@ -38,7 +38,7 @@ export class WaitEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return `t.wait(${this.steps});`;
+        return `await t.wait(${this.steps});`;
     }
 
     public toString(): string {
