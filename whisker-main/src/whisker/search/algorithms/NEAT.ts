@@ -11,6 +11,7 @@ import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFit
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 import {StaticTestNetworkPopulation} from "../../whiskerNet/NeuroevolutionPopulations/StaticTestNetworkPopulation";
+import {Container} from "../../utils/Container";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -76,23 +77,53 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * @param candidateChromosome The candidate chromosome to update the archive with.
      */
     protected updateArchive(candidateChromosome: C): void {
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            const statementFitness = fitnessFunction.getFitness(candidateChromosome);
-            if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey)) {
-                StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                this._archive.set(fitnessFunctionKey, candidateChromosome);
+
+        // If we have a dynamic TestSuite we save the first chromosome which managed to cover a block instead of the
+        // best performing network since otherwise the dynamic test suite later fails to cover the easiest blocks,
+        // e.g simple GameOver state. Because we are nonetheless interested in the best performing network, we
+        // include the best performing network as an additional key to the archive.
+        if (Container.config.getTestSuiteType() === 'dynamic') {
+            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                const statementFitness = fitnessFunction.getFitness(candidateChromosome);
+                if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey)) {
+                    StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                    this._archive.set(fitnessFunctionKey, candidateChromosome);
+                }
             }
+
+            // Save the best performing chromosome
+            const bestNetworkKey = this._fitnessFunctions.size + 1;
+            if (!this._archive.has(bestNetworkKey) ||
+                this._archive.get(bestNetworkKey).networkFitness < candidateChromosome.networkFitness) {
+                this._archive.set(bestNetworkKey, candidateChromosome);
+            }
+
+            this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
+            this._bestIndividuals.add(this._bestNetwork);
         }
 
-        const bestNetworkKey = this._fitnessFunctions.size + 1;
-        if(!this._archive.has(bestNetworkKey) ||
-            this._archive.get(bestNetworkKey).networkFitness < candidateChromosome.networkFitness){
-            this._archive.set(bestNetworkKey, candidateChromosome);
+        // If we target a static testSuite we go with the traditional approach and simply save the shortest test
+        // covering a statement.
+        else {
+            for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
+                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+                let bestLength = this._archive.has(fitnessFunctionKey)
+                    ? this._archive.get(fitnessFunctionKey).getLength()
+                    : Number.MAX_SAFE_INTEGER;
+                const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+                const candidateLength = candidateChromosome.getLength();
+                if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
+                    bestLength = candidateLength;
+                    if (!this._archive.has(fitnessFunctionKey)) {
+                        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
+                    }
+                    this._archive.set(fitnessFunctionKey, candidateChromosome);
+                }
+            }
+            this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
         }
 
-        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
-        this._bestIndividuals.add(this._bestNetwork);
     }
 
     /**
@@ -119,7 +150,8 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size - 1;
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount =
+            Container.config.getTestSuiteType() === 'dynamic' ? this._archive.size - 1 : this._archive.size
         StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, population.populationChampion.networkFitness);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.networkFitness);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
@@ -148,7 +180,9 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             }
         }
         console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        console.log(`Covered goals: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
+        const coveredGoals = Container.config.getTestSuiteType() === 'dynamic' ?
+            this._archive.size - 1 : this._archive.size
+        console.log(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
         console.log(`Member in Archive: ${this._bestIndividuals.size()}`)
         console.log("-----------------------------------------------------")
     }
