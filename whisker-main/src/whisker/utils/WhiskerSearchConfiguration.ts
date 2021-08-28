@@ -159,6 +159,7 @@ export class WhiskerSearchConfiguration {
 
         properties.populationType = this.dict[`populationType`] as string;
         properties.eventSelection = this.dict[`eventSelection`] as string;
+        properties.testSuiteType = this.getTestSuiteType();
         properties.testTemplate = Container.template;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
@@ -508,7 +509,7 @@ export class WhiskerSearchConfiguration {
            return this.dict['testSuiteType'];
         }
         else{
-            return undefined
+            return "dynamic"
         }
     }
 }

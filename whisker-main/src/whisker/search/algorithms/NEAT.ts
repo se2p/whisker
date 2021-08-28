@@ -11,7 +11,6 @@ import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFit
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 import {StaticTestNetworkPopulation} from "../../whiskerNet/NeuroevolutionPopulations/StaticTestNetworkPopulation";
-import {Container} from "../../utils/Container";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -89,7 +88,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
 
         // Save the best performing chromosome
         const bestNetworkKey = this._fitnessFunctions.size + 1;
-        if (Container.config.getTestSuiteType() === 'dynamic' &&
+        if (this._neuroevolutionProperties.testSuiteType === 'dynamic' &&
             (!this._archive.has(bestNetworkKey) ||
                 this._archive.get(bestNetworkKey).networkFitness < candidateChromosome.networkFitness)) {
             this._archive.set(bestNetworkKey, candidateChromosome);
@@ -122,7 +121,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount =
-            Container.config.getTestSuiteType() === 'dynamic' ? this._archive.size - 1 : this._archive.size
+            this._neuroevolutionProperties.testSuiteType === 'dynamic' ? this._archive.size - 1 : this._archive.size
         StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, population.populationChampion.networkFitness);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.networkFitness);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
@@ -151,7 +150,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
             }
         }
         console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        const coveredGoals = Container.config.getTestSuiteType() === 'dynamic' ?
+        const coveredGoals = this._neuroevolutionProperties.testSuiteType === 'dynamic' ?
             this._archive.size - 1 : this._archive.size
         console.log(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
         console.log(`Member in Archive: ${this._bestIndividuals.size()}`)

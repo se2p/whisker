@@ -170,6 +170,12 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _eventSelection: string
 
     /**
+     * Determines the type of the returned testSuite (static/dynamic)
+     * @private
+     */
+    private _testSuiteType: string
+
+    /**
      * The template of a static/dynamic test
      */
     private _testTemplate: string;
@@ -422,6 +428,14 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     set eventSelection(value: string) {
         this._eventSelection = value;
+    }
+
+    get testSuiteType(): string {
+        return this._testSuiteType;
+    }
+
+    set testSuiteType(value: string) {
+        this._testSuiteType = value;
     }
 
     get testTemplate(): string {
