@@ -1,6 +1,6 @@
 ## How to use
 
-### Initialization and getting the test driver object
+### Initialization and Test Driver Object Retrieval
 
 ```javascript
 const {WhiskerUtil} = require('whisker');
@@ -17,7 +17,7 @@ whisker.start();
 whisker.end();
 ```
 
-### Coverage measurement
+### Coverage Measurement
 
 ```javascript
 const Thread = require('scratch-vm/src/engine/thread');
@@ -36,7 +36,122 @@ const coverage = CoverageGenerator.getCoverage();
 CoverageGenerator.restoreThread(Thread);
 ```
 
-### Functions of the test driver object (t)
+### Test Runner (t)
+
+```javascript
+/* Assertions. */
+t.assert.ok(condition, message);
+t.assert.not(condition, message);
+t.assert.fail(message);
+t.assert.equal(actual, expected, message);
+t.assert.strictEqual(actual, expected, message);
+t.assert.greater(actual, expected, message);
+t.assert.greaterOrEqual(actual, expected, message);
+t.assert.less(actual, expected, message);
+t.assert.lessOrEqual(actual, expected, message);
+t.assert.matches(actual, expected, message);
+
+/* Assumptions. */
+t.assume.ok(condition, message);
+t.assume.not(condition, message);
+t.assume.fail(message);
+t.assume.equal(actual, expected, message);
+t.assume.strictEqual(actual, expected, message);
+t.assume.greater(actual, expected, message);
+t.assume.greaterOrEqual(actual, expected, message);
+t.assume.less(actual, expected, message);
+t.assume.lessOrEqual(actual, expected, message);
+t.assume.matches(actual, expected, message);
+```
+
+### Test Driver Object (t)
+
+```javascript
+/* Key Options */
+Space, Enter, Up, Right, Down, Left
+
+/* Events. */
+await t.wait(steps);
+t.greenFlag();
+t.end();
+t.clickStage();
+t.clickSprite(name, steps);
+t.clickClone(x, y, steps);
+t.dragSprite(name, x, y);
+t.keyPress(key, steps?);
+t.keyRelease(key, steps?);
+t.mouseDown(boolean);
+t.mouseMove(x, y, steps);
+t.typeText(answer);
+
+/* Sprite information. */
+t.getSprites(condition, skipStage?);
+t.getSpritesAtPoint(x, y);
+t.getSpriteAtPoint(x, y);
+t.getSprite(name);
+t.getStage();
+t.getNewSprites(condition);
+t.onSpriteMoved(callback);
+t.onSpriteVisualChange(func);
+
+/* Other Information. */
+t.getStageSize();
+t.getMousePos();
+t.isMouseDown();
+t.isKeyDown(key);
+// Returns the the acceleration factor, for example \texttt{10} at 300 Hz as the execution is accelerated by a
+// factor of 10 compared to the default 30 Hz frequency
+t.getAccelerationFactor(); // returns the accel
+// Takes a string which gets logged into the log and output field
+t.log(message);
+```
+
+### Sprite Object (s)
+
+```javascript
+/* Attributes */
+s.exists;                  s.pos;
+s.old;                     s.direction;
+s.isOriginal;              s.visible;
+s.isStage;                 s.size;
+s.name;                    s.currentCostume;
+s.id;                      s.volume;
+s.effects;                 s.layerOrder;
+s.x;                       s.sayText;
+s.y;                       s.bounds;
+
+/* Get Attributes */
+s.getVariables(condition, skipStage?);
+s.getVariable(name, skipStage?);
+s.getLists(skipStage?);
+s.getList(name, skipStage?);
+s.getInstances();
+s.getOriginal();
+s.getClones(withSelf?);
+s.getNewClones();
+
+/* Check Sprite Touching */
+s.isPointinBounds(x, y);
+s.isIntersectingBounds(otherBounds);
+s.isTouchingMouse();
+s.isTouchingMouse();
+s.isTouchingSprite(name);
+s.isTouchingColor([r,g,b]);
+s.isColorTouchingColor(targetRgb, maskRgb);
+```
+
+### Variable Object (v)
+
+```javascript
+/* Attributes */
+v.name;
+v.value;
+v.old;
+v.sprite;
+v.getScratchVariable();
+```
+
+### Advanced Test Driver Object Functions (t)
 
 ```javascript
 /* Running the program. */
@@ -62,34 +177,6 @@ t.getTotalRealTimeElapsed();
 // returns the amount of time passed since the start of last run, independent of the test acceleration
 t.getRealRunTimeElapsed();
 
-/* Events. */
-t.clickStage();
-t.clickSprite(name, steps);
-t.clickClone(x, y, steps);
-t.dragSprite(name, x, y);
-t.keyPress(keyOption, steps);
-t.mouseDown(boolean);
-t.mouseMove(x, y);
-t.mouseMoveToEvent(x, y);
-t.typeText(text);
-t.wait(steps);
-
-/* Sprite information. */
-t.getSprites(condition, skipStage);
-t.getSpritesAtPoint(x, y);
-t.getSpriteAtPoint(x, y);
-t.getSprite(name);
-t.getStage();
-t.getNewSprites(condition);
-t.onSpriteMoved(callback);
-t.onSpriteVisualChange(func);
-
-/* Callbacks. */
-t.addCallback(func);
-t.reAddCallback(callback);
-t.removeCallback(callback);
-t.clearCallbacks();
-
 /* Inputs. */
 t.addInput(time, ioData);
 t.reAddInput(time, input);
@@ -98,9 +185,6 @@ t.removeInput(input);
 t.clearInputs();
 t.resetMouse();
 t.resetKeyboard();
-t.getMousePos();
-t.isMouseDown();
-t.isKeyDown(key);
 
 /* Random inputs / Automated input generation. */
 t.registerRandomInputs(inputs);
@@ -115,15 +199,9 @@ t.removeConstraint(constraint);
 t.clearConstraints();
 t.onConstraintFailure(action);
 
-/* Other. */
-t.greenFlag();
-t.getStageSize();
-t.end();
-
-// Takes a string which gets logged into the log and output field
-t.log(message);
-
-// Returns the the acceleration factor, for example \texttt{10} at 300 Hz as the execution is accelerated by a
-// factor of 10 compared to the default 30 Hz frequency
-t.getAccelerationFactor(); // returns the accel
+/* Callbacks. */
+t.addCallback(func);
+t.reAddCallback(callback);
+t.removeCallback(callback);
+t.clearCallbacks();
 ```
