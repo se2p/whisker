@@ -360,8 +360,7 @@ class Inputs {
      * @returns {boolean} .
      */
     isKeyDown (key) {
-        const keyString = Input.scratchKeyToKeyString(key);
-        const scratchKey = this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
+        const scratchKey = this.convertKey(key);
         return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
     }
 
@@ -377,7 +376,7 @@ class Inputs {
      * @param {string} spriteName .
      * @param {number} steps .
      */
-    clickSprite (spriteName, steps) {
+    clickSprite (spriteName, steps= 1 ) {
         if (this.vmWrapper.getTargetBySpriteName(spriteName) != null) {
             this.inputImmediate({
                 device: 'mouse',
@@ -393,7 +392,7 @@ class Inputs {
      * @param {number} y .
      * @param {number} steps .
      */
-    clickClone (x, y, steps) {
+    clickClone (x, y, steps= 1) {
         if (this.vmWrapper.getTargetBySpriteCoords(x, y) != null) {
             this.inputImmediate({
                 device: 'mouse',
@@ -420,14 +419,29 @@ class Inputs {
     }
 
     /**
-     * @param {string} keyOption .
+     * @param {string} key .
      * @param {number} steps .
      */
-    keyPress (keyOption, steps) {
+    keyPress (key, steps) {
+        const scratchKey = this.convertKey(key);
         this.inputImmediate({
             device: 'keyboard',
-            key: keyOption,
+            key: scratchKey,
             isDown: true,
+            steps: steps
+        });
+    }
+
+    /**
+     * @param {string} key .
+     * @param {number} steps .
+     */
+    keyRelease (key, steps) {
+        const scratchKey = this.convertKey(key);
+        this.inputImmediate({
+            device: 'keyboard',
+            key: scratchKey,
+            isDown: false,
             steps: steps
         });
     }
@@ -445,23 +459,34 @@ class Inputs {
     /**
      * @param {number} x .
      * @param {number} y .
+     * @param {number} steps .
      */
-    mouseMove (x, y) {
+    mouseMove (x, y, steps) {
         this.inputImmediate({
             device: 'mouse',
             x: Math.trunc(x),
-            y: Math.trunc(y)
+            y: Math.trunc(y),
+            steps: steps
         });
     }
 
     /**
-     * @param {string} text .
+     * @param {string} answer .
      */
-    typeText (text) {
+    typeText (answer) {
         this.inputImmediate({
             device: 'text',
-            answer: text
+            answer: answer
         });
+    }
+
+    /**
+     * @param {string} key .
+     * @returns {string} .
+     */
+    convertKey (key) {
+        const keyString = Input.scratchKeyToKeyString(key);
+        return this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
     }
 }
 
