@@ -95,7 +95,10 @@ RUN yarn install
 #     necessary for execution. This layer is only rebuilt when a source file
 #     changes.
 COPY ./ ./
-RUN yarn build \
+# We run yarn upgrade as a workaround for issue #165 to ensure that our
+# dependency "scratch-vm" is always up-to-date.
+RUN yarn upgrade \
+    && yarn build \
     && yarn install --production
 
 
