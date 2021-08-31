@@ -91,12 +91,12 @@ class Recorder {
     }
 
     /**
-     * @param {number} time .
+     * @param {number} steps .
      * @returns {string} .
      */
-    static wait (time) {
-        if (time != null) {
-            return '    t.wait(' + time + ');';
+    static wait (steps) {
+        if (steps > 0) {
+            return '    await t.wait(' + steps + ');';
         }
     }
 

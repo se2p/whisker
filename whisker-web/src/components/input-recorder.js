@@ -12,9 +12,9 @@ class InputRecorder extends EventEmitter {
 
         this.events = null;
         this.startTime = null;
-        this.inputTime = null;
-        this.waitTime = null;
+        this.waitSteps = null;
         this.stepCount = null;
+        this.mouseMoves = null;
 
         this._onInput = this.onInput.bind(this);
 
@@ -34,10 +34,10 @@ class InputRecorder extends EventEmitter {
     startRecording () {
         this.emit('startRecording');
         this.events = [];
-        this.inputTime = null;
         this.startTime = Date.now();
-        this.waitTime = null;
-        this.stepCount = null;
+        this.waitSteps = 0;
+        this.stepCount = 1;
+        this.mouseMoves = [];
         this.scratch.on('input', this._onInput);
     }
 
@@ -47,33 +47,55 @@ class InputRecorder extends EventEmitter {
         this.showInputs();
         this.events = null;
         this.startTime = null;
-        this.inputTime = null;
-        this.waitTime = null;
-        this.stepCount = null;
+        this.waitSteps = 0;
+        this.stepCount = 0;
+        this.mouseMoves = null;
     }
 
     isRecording () {
         return this.startTime != null;
     }
 
+    step () {
+        const steps = this.vm.runtime.stepsExecuted - this.stepCount;
+        this.stepCount += steps;
+        this.waitSteps += steps;
+        return steps > 0 ? steps : 1;
+    }
+
+    wait () {
+        if (this.waitSteps > 0) {
+            this.events.push(Recorder.wait(this.waitSteps));
+            this.waitSteps = 0;
+        }
+    }
+
     greenFlag () {
-        this.updateWaitTime();
-        this.inputTime = Date.now();
-        this.events.push(Recorder.wait(this.waitTime));
+        this.step();
+        this.mouseMove();
+        this.wait();
         this.events.push(Recorder.greenFlag());
     }
 
     stop () {
-        this.updateWaitTime();
-        this.inputTime = Date.now();
-        this.events.push(Recorder.wait(this.waitTime));
+        this.step();
+        this.mouseMove();
+        this.wait();
         this.events.push(Recorder.end());
     }
 
+    mouseMove () {
+        if (this.mouseMoves.length > 0) {
+            let start = this.mouseMoves[0];
+            let end = this.mouseMoves[this.mouseMoves.length - 1];
+            this.events.push(Recorder.mouseMove(start.x, start.y));
+            this.events.push(Recorder.mouseMove(end.x, end.y));
+            this.mouseMoves = [];
+        }
+    }
+
     onInput (data) {
-        this.updateWaitTime();
-        this.inputTime = Date.now();
-        const steps = this.calculateSteps();
+        const steps = this.step();
         switch (data.device) {
             case 'mouse':
                 this.onMouseInput(steps, data);
@@ -91,38 +113,29 @@ class InputRecorder extends EventEmitter {
 
     onMouseInput (steps, data) {
         if (data.isDown) {
-            this.events.push(Recorder.wait(this.waitTime));
+            this.mouseMove();
+            this.wait();
             const target = Util.getTargetSprite(this.vm);
             this.events.push(Recorder.click(target, steps));
-        } else if (this.waitTime > 100) {
-            this.events.push(Recorder.mouseMove(data.x, data.y));
+        } else {
+            this.mouseMoves.push(data);
         }
     }
 
     onKeyboardInput (steps, data) {
         if (data.isDown) {
+            this.mouseMove();
+            this.wait();
             const key = Util.getScratchKey(this.vm, data.key);
-            this.events.push(Recorder.wait(this.waitTime));
             this.events.push(Recorder.keyPress(key, steps));
         }
     }
 
     onTextInput (data) {
         if (data.answer) {
-            this.events.push(Recorder.wait(this.waitTime));
+            this.mouseMove();
+            this.wait();
             this.events.push(Recorder.typeText(data.answer));
-        }
-    }
-
-    calculateSteps () {
-        const steps = this.vm.runtime.stepsExecuted - this.stepCount;
-        this.stepCount += steps;
-        return steps > 0 ? steps : 1;
-    }
-
-    updateWaitTime () {
-        if (this.inputTime != null) {
-            this.waitTime += Date.now() - this.inputTime;
         }
     }
 
