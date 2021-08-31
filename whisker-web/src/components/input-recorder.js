@@ -19,7 +19,7 @@ class InputRecorder extends EventEmitter {
         this._onInput = this.onInput.bind(this);
 
         this.testBegin = 'const test = async function (t) {';
-        this.testEnd = '\n    t.greenFlag();\n    t.wait(5000);\n    t.end();\n}';
+        this.testEnd = '\n    t.greenFlag();\n    await t.wait(5000);\n    t.end();\n}';
         this.export = '\n\n\n' +
             `module.exports = [
     {
