@@ -58,32 +58,31 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
     } else {
+        if (csvFile != false && fs.existsSync(csvFile)) {
+            console.error("CSV file already exists, aborting");
+            await browser.close();
+            return;
+        }
+        const csvs = [];
+
         if (fs.lstatSync(scratchPath).isDirectory()) {
-            if (csvFile != false && fs.existsSync(csvFile)) {
-                console.error("CSV file already exists, aborting");
-                await browser.close();
-                return;
-            }
-            const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
-                    logger.info("Not a Scratch project: "+file);
+                    logger.info("Not a Scratch project: " + file);
                     continue;
                 }
-                logger.info("Testing project "+file);
-                csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file, modelPath)));
+                logger.info("Testing project " + file);
+                csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
             }
 
-            if (csvFile != false) {
-                console.info("Creating CSV summary in "+csvFile);
-                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
-            }
+
         } else {
-            await runTestsOnFile(browser, scratchPath, modelPath);
+            csvs.push(...await runTestsOnFile(browser, scratchPath));
+        }
 
-            if (csvFile != false) {
-                logger.warn(`Scratch path ${scratchPath} is not a directory, skipping CSV file creation`);
-            }
+        if (csvFile != false) {
+            console.info("Creating CSV summary in " + csvFile);
+            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
         }
         await browser.close();
     }
