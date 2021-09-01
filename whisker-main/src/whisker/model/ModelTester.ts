@@ -69,7 +69,7 @@ export class ModelTester extends EventEmitter {
     }
 
     running() {
-        return this.modelStepCallback.isActive() || this.onTestEndCallback.isActive()
+        return this.isRunning && this.modelStepCallback.isActive() || this.onTestEndCallback.isActive()
     }
 
     getAllModels() {
@@ -242,16 +242,21 @@ export class ModelTester extends EventEmitter {
     }
 
     private onEvent(eventStrings: string[]) {
-        if (this.running() && this.isRunning) {
+        if (this.isRunning) {
             // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
             let models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
-            models.forEach(model => {
+
+            for (let i = 0; i < models.length; i++){
+                if (!this.isRunning) {
+                    return; //stop the complete testing if the run is ending
+                }
+                const model = models[i];
                 let edge = model.testForEvent(this.testDriver, this.checkUtility, eventStrings);
                 if (edge != null && edge instanceof ProgramModelEdge) {
                     this.checkUtility.registerEffectCheck(edge, model);
                     this.edgeTrace(edge);
                 }
-            });
+            }
 
             // check for halt if not yet stopped
             if (this.haltAllCallback.isActive()) {
@@ -296,6 +301,8 @@ export class ModelTester extends EventEmitter {
      * Get the result of the test run as a ModelResult.
      */
     stopAndGetModelResult(testDriver: TestDriver) {
+        this.isRunning = false;
+        this.checkUtility.stop();
         this.modelStepCallback.disable();
         this.onTestEndCallback.disable();
         this.haltAllCallback.disable();
@@ -332,7 +339,7 @@ export class ModelTester extends EventEmitter {
         })
 
         this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
-        console.log(this.result);
+        console.log("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         return this.result;
     }
 

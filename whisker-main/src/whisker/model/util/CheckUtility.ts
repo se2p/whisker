@@ -59,14 +59,6 @@ export class CheckUtility extends EventEmitter {
         this.testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(sprite =>
             this.checkForEvent(this.onVisualChecks, sprite));
         this.testDriver.vmWrapper.sprites.onVariableChangeModel((varName: string) => {
-            if (varName == "Punkte") {
-                console.log("points now", this.testDriver.getStage().getVariable("Punkte").value,
-                    this.testDriver.getStage().getVariable("Punkte").old.value, this.testDriver.getTotalStepsExecuted());
-            }
-            // if (varName == "Zeit") {
-            //     console.log("time now", this.testDriver.getStage().getVariable("Zeit").value,
-            //         this.testDriver.getStage().getVariable("Zeit").old.value, this.testDriver.getTotalStepsExecuted());
-            // }
             if (this.variableChecks[varName] != null) {
                 this.variableChecks[varName].forEach(fun => fun());
                 if (this.eventStrings.length > 0) {
@@ -75,6 +67,17 @@ export class CheckUtility extends EventEmitter {
                 this.eventStrings = [];
             }
         });
+    }
+
+    stop() {
+        this.testDriver.vmWrapper.sprites.onSpriteMovedModel(null);
+        this.testDriver.vmWrapper.sprites.onSayOrThinkModel(null);
+        this.testDriver.vmWrapper.sprites.onSpriteVisualChangeModel(null);
+        this.testDriver.vmWrapper.sprites.onVariableChangeModel(null);
+        this.onMovedChecks = {};
+        this.onVisualChecks = {};
+        this.onSayOrThinkChecks = {};
+        this.variableChecks = {};
     }
 
     /**
