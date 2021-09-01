@@ -489,8 +489,19 @@ export abstract class CheckGenerator {
      */
     static getBackgroundChangeCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean,
                                     newBackground: string): () => boolean {
-        return CheckGenerator.getAttributeComparisonCheck(t, cu, edgeID, negated, false, "Stage",
-            "costume", "=", newBackground)
+        // without movement
+        return () => {
+            const stage = t.getStage();
+            try {
+                    if (ModelUtil.compare(stage["currentCostumeName"], newBackground, "=")) {
+                        return !negated;
+                    }
+            } catch (e) {
+                // should not even happen...
+                throw getErrorForAttribute("Stage", "costume", e.message);
+            }
+            return negated;
+        }
     }
 
     /**
