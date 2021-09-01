@@ -13,11 +13,11 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * @param timeout the timeout after which the execution of the Scratch-VM is halted.
      * @param eventSelection defines how a network selects events.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection:string): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
         let score = ScoreFitness.gatherPoints(Container.vm);
-        if(score < 0){
+        if (score < 0) {
             score = 0.01;
         }
         network.networkFitness = score;
@@ -52,7 +52,17 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             for (const value of Object.values(target.variables)) {
                 // @ts-ignore
                 const name = value.name.toLowerCase();
-                if (name === 'punkte' || name === 'points' ||name === 'score' || name === 'high score' || name === 'level') {
+                if (name.includes('punkte') ||
+                    name.includes('points') ||
+                    name.includes('score') ||
+                    name.includes('level') ||
+                    name.includes('hits') ||
+                    name.includes('treffer') ||
+                    name === 'distance' || // Sprint Game
+                    name === 'länge' || // Snake Game
+                    name === 'geimpfte' || // VirusBuster Game
+                    name === 'progress') // WeightLifter Game
+                {
                     // @ts-ignore
                     points += Number(value.value)
                 }
