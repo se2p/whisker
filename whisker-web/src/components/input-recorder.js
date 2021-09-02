@@ -15,6 +15,7 @@ class InputRecorder extends EventEmitter {
         this.waitSteps = null;
         this.stepCount = null;
         this.mouseMoves = null;
+        this.holdKey = null;
 
         this._onInput = this.onInput.bind(this);
 
@@ -39,6 +40,7 @@ class InputRecorder extends EventEmitter {
         this.stepCount = 1;
         this.mouseMoves = [];
         this.scratch.on('input', this._onInput);
+        this.holdKey = null;
     }
 
     stopRecording () {
@@ -50,10 +52,17 @@ class InputRecorder extends EventEmitter {
         this.waitSteps = 0;
         this.stepCount = 0;
         this.mouseMoves = null;
+        this.holdKey = null;
     }
 
     isRecording () {
         return this.startTime != null;
+    }
+
+    init () {
+        this.mouseMove();
+        this.wait();
+        return this.step();
     }
 
     step () {
@@ -71,16 +80,12 @@ class InputRecorder extends EventEmitter {
     }
 
     greenFlag () {
-        this.step();
-        this.mouseMove();
-        this.wait();
+        this.init();
         this.events.push(Recorder.greenFlag());
     }
 
     stop () {
-        this.step();
-        this.mouseMove();
-        this.wait();
+        this.init();
         this.events.push(Recorder.end());
     }
 
@@ -95,13 +100,12 @@ class InputRecorder extends EventEmitter {
     }
 
     onInput (data) {
-        const steps = this.step();
         switch (data.device) {
             case 'mouse':
-                this.onMouseInput(steps, data);
+                this.onMouseInput(data);
                 break;
             case 'keyboard':
-                this.onKeyboardInput(steps, data);
+                this.onKeyboardInput(data);
                 break;
             case 'text':
                 this.onTextInput(data);
@@ -111,30 +115,30 @@ class InputRecorder extends EventEmitter {
         }
     }
 
-    onMouseInput (steps, data) {
+    onMouseInput (data) {
         if (data.isDown) {
-            this.mouseMove();
-            this.wait();
             const target = Util.getTargetSprite(this.vm);
+            let steps = this.init();
             this.events.push(Recorder.click(target, steps));
         } else {
             this.mouseMoves.push(data);
         }
     }
 
-    onKeyboardInput (steps, data) {
+    onKeyboardInput (data) {
         if (data.isDown) {
-            this.mouseMove();
-            this.wait();
-            const key = Util.getScratchKey(this.vm, data.key);
-            this.events.push(Recorder.keyPress(key, steps));
+            if (this.holdKey === null || this.holdKey !== data.key) {
+                this.holdKey = data.key;
+                const key = Util.getScratchKey(this.vm, data.key);
+                let steps = this.init();
+                this.events.push(Recorder.keyPress(key, steps));
+            }
         }
     }
 
     onTextInput (data) {
         if (data.answer) {
-            this.mouseMove();
-            this.wait();
+            this.init();
             this.events.push(Recorder.typeText(data.answer));
         }
     }
