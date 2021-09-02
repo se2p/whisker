@@ -360,8 +360,8 @@ class Inputs {
      * @returns {boolean} .
      */
     isKeyDown (key) {
-        const scratchKey = this.convertKey(key);
-        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
+        const keyString = Input.scratchKeyToKeyString(key);
+        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyString);
     }
 
     /**
@@ -423,10 +423,10 @@ class Inputs {
      * @param {number} steps .
      */
     keyPress (key, steps) {
-        const scratchKey = this.convertKey(key);
+        const keyString = Input.scratchKeyToKeyString(key);
         this.inputImmediate({
             device: 'keyboard',
-            key: scratchKey,
+            key: keyString,
             isDown: true,
             steps: steps
         });
@@ -437,10 +437,10 @@ class Inputs {
      * @param {number} steps .
      */
     keyRelease (key, steps) {
-        const scratchKey = this.convertKey(key);
+        const keyString = Input.scratchKeyToKeyString(key);
         this.inputImmediate({
             device: 'keyboard',
-            key: scratchKey,
+            key: keyString,
             isDown: false,
             steps: steps
         });
@@ -478,15 +478,6 @@ class Inputs {
             device: 'text',
             answer: answer
         });
-    }
-
-    /**
-     * @param {string} key .
-     * @returns {string} .
-     */
-    convertKey (key) {
-        const keyString = Input.scratchKeyToKeyString(key);
-        return this.vmWrapper.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(keyString);
     }
 }
 

@@ -68,7 +68,7 @@ t.assume.matches(actual, expected, message);
 
 ```javascript
 /* Key Options */
-Space, Enter, Up, Right, Down, Left
+space, enter, up arrow, right arrow, down arrow, left arrow
 
 /* Events. */
 await t.wait(steps);
