@@ -661,4 +661,58 @@ export abstract class CheckGenerator {
             return !negated == anyTouchingEdge;
         }
     }
+
+    /**
+     * Check whether a sprite is set to (pseudo) random x or y positions (new position on move event is not equal to
+     * any of the last two positions). Checks only if only one rendered target of a sprite is visible.
+     * @param t Instance of the test driver.
+     * @param cu Listener for checks.
+     * @param edgeID Id of the parent edge of the check.
+     * @param negated Whether this check is negated.
+     * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
+     * @param spriteNameRegex Regex defining the sprite name.
+     * @param attrName Attribute name, x or y.
+     */
+    static getRandomValueCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
+                               spriteNameRegex: string, attrName: string) {
+        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+
+        if (attrName != "x" && attrName != "y") {
+            throw new Error("Random value check only implemented for x and y value at the moment...");
+        }
+
+        let oldValues = [];
+
+        // updates value on move
+        let check = (sprite) => {
+            // ignore it the value did not change
+            if (oldValues.length && oldValues.length > 0 && oldValues[oldValues.length - 1] == sprite[attrName]) {
+                return !negated;
+            }
+
+            if (oldValues.length && oldValues.length > 1 && oldValues.indexOf(sprite[attrName]) > oldValues.length - 3) {
+                oldValues.push(sprite[attrName]);
+                return negated;
+            }
+            oldValues.push(sprite[attrName]);
+            return !negated;
+        }
+        const eventString = CheckUtility.getEventString(CheckName.RandomValue, negated, spriteNameRegex, attrName);
+        cu.registerOnMoveEvent(spriteName, eventString, edgeID, check);
+
+        return () => {
+            const sprites = t.getSprite(spriteName).getClones(true);
+            if (sprites.length > 1) {
+                return !negated;
+            }
+            let firstIndex = oldValues.indexOf(sprites[0][attrName]);
+
+            // the current value is on the last index of the list (by on moved set), if the previous two are also
+            // the same value it is not random
+            if (firstIndex != oldValues.length - 1 && oldValues.length - firstIndex > 2) {
+                return negated;
+            }
+            return !negated;
+        }
+    }
 }

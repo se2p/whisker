@@ -246,6 +246,25 @@ describe('Effect', () => {
         }
     })
 
+    test("contradictions random value", () => {
+        let randomValue = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite","x"]);
+        let other = new Effect("id", "edgeID", CheckName.AttrChange, false, ["sprite","x","+"]);
+        expect(randomValue.contradicts(other)).toBeFalsy();
+        expect(other.contradicts(randomValue)).toBeFalsy();
+
+        let otherRandom = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite","x"]);
+        expect(randomValue.contradicts(otherRandom)).toBeFalsy();
+        expect(otherRandom.contradicts(randomValue)).toBeFalsy();
+
+        otherRandom = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite","y"]);
+        expect(randomValue.contradicts(otherRandom)).toBeFalsy();
+        expect(otherRandom.contradicts(randomValue)).toBeFalsy();
+
+        otherRandom = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite2","x"]);
+        expect(randomValue.contradicts(otherRandom)).toBeFalsy();
+        expect(otherRandom.contradicts(randomValue)).toBeFalsy();
+    })
+
     test("contradictions output", () => {
         let output = new Effect("id", "edgeID", CheckName.Output, true, ["sprite", "hi"]);
         let output2 = new Effect("id", "edgeID", CheckName.Output, true, ["sprite1", "hi"]);

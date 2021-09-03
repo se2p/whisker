@@ -25,7 +25,8 @@ export enum CheckName {
     NbrOfVisibleClones = "NbrOfVisibleClones", // sprite name, comparison, number
     TouchingEdge = "TouchingEdge", // sprite name regex
     TouchingVerticalEdge = "TouchingVerticalEdge", // sprite name regex
-    TouchingHorizEdge = "TouchingHorizEdge" // sprite name regex
+    TouchingHorizEdge = "TouchingHorizEdge", // sprite name regex
+    RandomValue = "RandomValue" // sprite name regex, attrName
 }
 
 /**
@@ -88,6 +89,7 @@ export class Check {
                 break;
             case CheckName.Output:
             case CheckName.SpriteTouching:
+            case CheckName.RandomValue:
                 _testArgs(2);
                 break;
             case CheckName.VarChange:
@@ -172,6 +174,9 @@ export class Check {
                     this._args[0], true, false);
             case CheckName.TimeAfterEnd:
                 return CheckGenerator.getTimeAfterEndCheck(t, this._negated, this._args[0]);
+            case CheckName.RandomValue:
+                return CheckGenerator.getRandomValueCheck(t, cu, this._edgeID, this.negated, caseSensitive,
+                    this.args[0], this.args[1]);
             default:
                 return undefined;
         }
