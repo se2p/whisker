@@ -41,7 +41,7 @@ class Recorder {
      * @returns {string} .
      */
     static clickSprite (targetName, steps) {
-        if (targetName != null && steps != null) {
+        if (targetName != null && steps > 0) {
             return '    t.clickSprite(\'' + targetName + '\', ' + steps + ');';
         }
     }
@@ -53,7 +53,7 @@ class Recorder {
      * @returns {string} .
      */
     static clickClone (x, y, steps) {
-        if (x != null && y != null && steps != null) {
+        if (x != null && y != null && steps > 0) {
             return '    t.clickClone(' + x + ', ' + y + ', ' + steps + ');';
         }
     }
@@ -61,11 +61,12 @@ class Recorder {
     /**
      * @param {number} x .
      * @param {number} y .
+     * @param {number} steps .
      * @returns {string} .
      */
-    static mouseMove (x, y) {
-        if (x != null && y != null) {
-            return '    t.mouseMove(' + x + ', ' + y + ');';
+    static mouseMove (x, y, steps) {
+        if (x != null && y != null && steps > 0) {
+            return '    t.mouseMove(' + x + ', ' + y + ', ' + steps + ');';
         }
     }
 
@@ -75,7 +76,7 @@ class Recorder {
      * @returns {string} .
      */
     static keyPress (key, steps) {
-        if (key != null && steps != null) {
+        if (key != null && steps > 0) {
             return '    t.keyPress(\'' + key + '\', ' + steps + ');';
         }
     }
