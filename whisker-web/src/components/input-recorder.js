@@ -124,12 +124,13 @@ class InputRecorder extends EventEmitter {
     }
 
     onKeyboardInput (data) {
-        if (data.isDown) {
+        if (data.isDown && data.key !== null) {
             this.mouseMove();
-            if (this.holdKey === null || this.holdKey !== data.key) {
-                this.holdKey = data.key;
-                const key = Util.getScratchKey(this.vm, data.key);
-                this.events.push(Recorder.keyPress(key, this.waitSteps));
+            const key = data.key;
+            if (this.holdKey === null || this.holdKey !== key) {
+                this.holdKey = key;
+                const keyString = Util.getScratchKey(this.vm, key);
+                this.events.push(Recorder.keyPress(keyString, this.waitSteps));
                 this.wait();
             }
             this.step();
@@ -137,7 +138,7 @@ class InputRecorder extends EventEmitter {
     }
 
     onTextInput (data) {
-        if (data.answer) {
+        if (data.answer !== null) {
             this.mouseMove();
             this.events.push(Recorder.typeText(data.answer));
             this.wait();
