@@ -90,7 +90,9 @@ const runSearch = async function () {
     const accelerationFactor = $('#acceleration-value').text();
     const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, configName,
         accelerationFactor);
-    Whisker.outputLog.print(res[1]);
+    // Prints uncovered blocks summary and csv summary separated by a newline
+    Whisker.outputLog.print(`${res[1]}\n`);
+    Whisker.outputLog.print(res[2]);
     accSlider.slider('enable');
     if (configName.toLowerCase().includes('neuroevolution')) {
         const title = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
