@@ -77,6 +77,7 @@ Options:
   -l, --isLiveLogEnabled              If the new output of the log should be printed regularly (default: false)
   -g, --generateTests [Path]          If new tests should be generated and where to put them (default: false)
   -h, --help                          display help for command
+  -n, --isNeuroevolution              If Whisker should use Neuroevolution during testSuite execution (default: false);
 ```
 
 To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
