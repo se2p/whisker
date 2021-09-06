@@ -18,7 +18,9 @@ async function readFitnessLog() {
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('uncoveredBlocks')) {
-            return JSON.parse(log);
+            const csvHeaderIndex = log.split('\n').findIndex(logLine => logLine.includes('projectName'));
+            const uncoveredBlocksLog = log.split('\n').slice(0, csvHeaderIndex).join('\n');
+            return JSON.parse(uncoveredBlocksLog);
         }
     }
 }
