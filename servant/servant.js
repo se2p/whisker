@@ -57,7 +57,7 @@ async function init () {
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
                 // Save results in CSV-file if specified
                 if(csvFile){
-                    console.info("Creating CSV summary in "+csvFile);
+                    console.info(`Creating CSV summary in ${csvFile}`);
                     fs.writeFileSync(csvFile, csv);
                 }
             })
@@ -66,22 +66,22 @@ async function init () {
     } else {
         if (fs.lstatSync(scratchPath).isDirectory()) {
             if (csvFile != false && fs.existsSync(csvFile)) {
-                console.error("CSV file already exists, aborting");
+                console.error(`CSV file already exists, aborting`);
                 await browser.close();
                 return;
             }
             const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
-                    logger.info("Not a Scratch project: "+file);
+                    logger.info(`Not a Scratch project: ${file}`);
                     continue;
                 }
-                logger.info("Testing project "+file);
+                logger.info(`Testing project ${file}`);
                 csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
             }
 
             if (csvFile != false) {
-                console.info("Creating CSV summary in "+csvFile);
+                console.info(`Creating CSV summary in ${csvFile}`);
                 fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
             }
         } else {
@@ -450,6 +450,6 @@ function printTestResultsFromCoverageGenerator (summaries, coverage) {
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
-    logger.info('\nSummary:\n', summaryString);
-    logger.info('\nCoverage:\n', coverageString);
+    logger.info(`\nSummary:\n ${summaryString}`);
+    logger.info(`\nCoverage:\n ${coverageString}`);
 }
