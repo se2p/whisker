@@ -88,18 +88,14 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
-    const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, configName,
-        accelerationFactor);
+    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
+        projectName, config, configName, accelerationFactor);
     // Prints uncovered blocks summary and csv summary separated by a newline
-    Whisker.outputLog.print(`${res[1]}\n`);
-    Whisker.outputLog.print(res[2]);
+    Whisker.outputLog.print(`${testListWithSummary}\n`);
+    Whisker.outputLog.print(csv);
     accSlider.slider('enable');
-    if (configName.toLowerCase().includes('neuroevolution')) {
-        const title = `${configName.substring(0, configName.indexOf('.json'))}-PopulationRecord`;
-        new DownloadContainer(title, `json`, res[2]).download();
-    }
     enableVMRelatedButtons();
-    return res[0];
+    return tests;
 };
 
 function _showRunIcon() {
