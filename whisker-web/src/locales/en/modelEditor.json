@@ -5,5 +5,6 @@
     "addNode": "Add state",
     "editNode": "Edit state",
     "addEdge": "Add transition",
-    "editEdge": "Edit transition"
+    "editEdge": "Edit transition",
+    "save": "Save"
 }

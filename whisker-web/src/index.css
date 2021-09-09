@@ -954,16 +954,6 @@ img {vertical-align: middle;}
     background: white;
 }
 
-.model-editor-canvas .vis-manipulation {
-    position:absolute;
-    top:5px;
-    align-content: center;
-}
-
-.model-editor-canvas .vis-close {
-    display: none;
-}
-
 .tab-model-editor {
     overflow: hidden;
     border: 1px solid #ccc;

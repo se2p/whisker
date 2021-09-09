@@ -19,68 +19,65 @@ class ModelEditor {
         this.container = document.getElementById("model-editor-canvas");
         this.nodes = [];
         this.edges = [];
-        // todo make these empty later on
-        this.dummyNodes = [
-            {id: 1, label: "Start", color: "rgb(0,151,163)", title: "test"},
-            {id: 2, label: "End"}
-        ];
-        this.dummyEdges = [
-            {
-                from: 1, to: 2,
-                font: {align: "top"},
-                condition: "Function:true",
-                effect: "VarComp:Stage:Zeit:=:30,VarComp:Stage:Punkte:=:0,AttrComp:Bowl:x:=:0,AttrComp:Bowl:y:=:-145",
-                color: "#000000",
-                arrows: {
-                    to: {
-                        enabled: true,
-                        type: "triangle",
-                    },
-                },
-            },
-            {
-                from: 2, to: 2,
-                color: "#000000",
-                title: "Keine Bedingung | 4 Effekte ",
-                arrows: {
-                    to: {
-                        enabled: true,
-                        type: "triangle",
-                    },
-                },
-            }
-        ];
+
+        // {id: 1, label: "Start", color: "rgb(0,151,163)", title: "test"},
+        this.dummyNodes = [];
+        // from, to,  font: {align: "top"},
+        //                 condition: "Function:true",
+        //                 effect: "VarComp:Stage:Zeit:=:30,VarComp:Stage:Punkte:=:0,AttrComp:Bowl:x:=:0,AttrComp:Bowl:y:=:-145",
+        //                 color: "#000000",
+        //                 arrows: {
+        //                     to: {
+        //                         enabled: true,
+        //                         type: "triangle",
+        //                     },
+        //                 },
+        this.dummyEdges = [];
 
         const addNode = this.addNode;
         const editNode = this.editNode;
         const addEdge = this.addEdge;
 
         this.options = {
-            layout: {randomSeed: 2},
-            physics: true,
+            edges: {
+                smooth: true,
+                physics: true,
+                arrows: {from: {enabled: false}, to: {enabled: true}}
+            },
+            layout: {
+                improvedLayout: true,
+            },
+            physics: {
+                stabilization: true
+            },
             manipulation: {
+                enabled: true,
+                initiallyActive: true,
                 addNode: addNode,
                 editNode: editNode,
                 addEdge: addEdge
                 // todo edit edge?
             },
             locale: $('#lang-select').val(),
-            autoResize: true,
-            height: '100%',
-            width: '100%',
-            clickToUse: false
-        };
+            clickToUse: false,
+            // width: '700px',
+            height: '420px',
 
-        //Stage.Zeit == 30 && Stage.Punkte == 0 && Bowl.x == 0 &&" +
-        //                     " Bowl.y == -145 & Apple.size == 50 && Bananas.size == 50"
-        //Stage.Zeit <= 30 && Bowl.y == -145 && Apple.size == 50 &&" +
-        //                     " Bananas.size == 50
+            // configure: {
+            //     container: document.getElementById('model-editor-configuration')
+            // }
+            autoResize: true
+        };
         this.data = {nodes: this.dummyNodes, edges: this.dummyEdges};
         this.drawModelEditor();
         this.setUpButtons();
 
         this.modelTester.on(ModelTester.ModelTester.MODEL_ON_LOAD, this.loadModel.bind(this));
-
+        $('#model-editor-save').on('click', () => {
+            let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
+            const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
+            FileSaver.saveAs(blob, 'models.json');
+        })
     }
 
     // todo get new nodes and edges based on the loaded models
@@ -96,28 +93,80 @@ class ModelEditor {
             $('#editor-id').val("");
             $('#editor-label').val("");
         });
+        document.getElementsByClassName('vis-network')[0].style['overflow']='visible';
         // todo is there a delay in the page even if the models are loaded and the editor is not shown?
     }
 
     // todo on click on a model tab
-    loadModel() {
-        // saving
-        // let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
-        // const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
-        // FileSaver.saveAs(blob, 'model.json');
+    loadModel(tabNbr = 0) {
+        this.models = this.modelTester.getAllModels();
+        let nodes, edges;
 
-        // todo load into the first one
-        // this.models = this.modelTester.getAllModels();
-        // let nodes = this.models[0].nodeIds;
-        // let edges = this.models[0].edges;
-        // this.data = {nodes: nodes, edges: edges};
+        if (this.models.length === 0) {
+            nodes = {};
+            edges = {};
+        } else {
+            if (tabNbr >= this.models.length) {
+                throw Error("Tab number higher than number of models.");
+            }
+            console.log(this.models[tabNbr].nodeIds, this.models[tabNbr].edges);
+            nodes = this.setupNodes(this.models[tabNbr]);
+            edges = this.setupEdges(this.models[tabNbr].edges, nodes);
+        }
 
-
-        let nodes = [];
-        let edges = [];
         this.data = {nodes: nodes, edges: edges};
-
+        console.log(this.data);
         this.drawModelEditor();
+    }
+
+    setupNodes(json) {
+        let nodes = [];
+        let nodeIds = json.nodeIds;
+        for (const nodeId in nodeIds) {
+            let label = nodeIds[nodeId];
+           let node = {id: label, label: label};
+            if (label === json.startNodeId) {
+                node.color = "rgb(0,151,163)";
+                node.title = "Start";
+                node.fixed = {x: 1000};
+                node.y = 1000;
+            }
+            nodes.push(node);
+        }
+        return nodes;
+    }
+
+    setupEdges(json, nodes) {
+        let edges = json;
+        let loops = [];
+        nodes.forEach(node => {
+            loops[node.id] = [];
+        })
+
+        for (const edgeId in edges) {
+            if (edges[edgeId].from === edges[edgeId].to) {
+                loops[edges[edgeId].from].push(edges[edgeId]);
+            }
+        }
+        for (const nodeId in loops) {
+            if (loops[nodeId].length > 1) {
+                let i = 0;
+                loops[nodeId].forEach(edge => {
+                    edge.selfReference = {angle: i * 10};
+                    if (loops[nodeId].length > 2) {
+                        edge.selfReference.size = 15;
+                    }
+                    i += 1;
+                })
+                nodes.forEach(node => {
+                    if (node.id === nodeId) {
+                        node.widthConstraint = 100
+                    }
+                })
+            }
+        }
+
+        return edges;
     }
 
     addNode(data, callback) {
@@ -130,7 +179,7 @@ class ModelEditor {
 
     editNode(data, callback) {
         $(ModelEditor.OP_NAME_FIELD).text(i18n.t("model-editor:editNode"));
-        $(ModelEditor.ID_FIELD).val(data.id);
+        $(ModelEditor.ID_FIELD).val(data.x);
         $(ModelEditor.LABEL_FIELD).val(data.label);
 
         document.getElementById("saveButton").onclick = this.saveData;
