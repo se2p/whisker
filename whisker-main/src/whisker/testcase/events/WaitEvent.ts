@@ -34,11 +34,11 @@ export class WaitEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.runForSteps(this.steps);
+        await Container.testDriver.wait(this.steps);
     }
 
     public toJavaScript(): string {
-        return `await t.runForSteps(${this.steps});`;
+        return `await t.wait(${this.steps});`;
     }
 
     public toString(): string {

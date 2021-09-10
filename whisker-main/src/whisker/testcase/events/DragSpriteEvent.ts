@@ -44,9 +44,8 @@ export class DragSpriteEvent extends ScratchEvent {
         this._target.setXY(this._x, this._y, true);
     }
 
-
     public toJavaScript(): string {
-        return `t.getSprite('${this._target.sprite.name}').getScratchTarget().setXY(${this._x}, ${this._y}, true);`
+        return `t.dragSprite('${this._target.sprite.name}', ${this._x}, ${this._y});`;
     }
 
     public toString(): string {
