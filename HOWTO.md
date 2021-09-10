@@ -75,8 +75,9 @@ await t.wait(steps);
 t.greenFlag();
 t.end();
 t.clickStage();
-t.clickSprite(name, steps);
-t.clickClone(x, y, steps);
+t.clickSprite(name, steps?);
+t.clickClone(clone, steps?);
+t.clickCloneByCoords(x, y, steps?);
 t.dragSprite(name, x, y);
 t.keyPress(key, steps?);
 t.keyRelease(key, steps?);
@@ -170,8 +171,11 @@ t.getTotalStepsExecuted();
 t.getRunStepsExecuted();
 t.isProjectRunning();
 
+// Seed tests to replicate results.
+t.seedScratch(seed);
 // returns { covered, total } representing covered and total blocks
 t.getCoverage();
+t.isCoverageEnabled();
 // returns the amount of time passed since the start of the test-suite, independent of the test acceleration
 t.getTotalRealTimeElapsed();
 // returns the amount of time passed since the start of last run, independent of the test acceleration
