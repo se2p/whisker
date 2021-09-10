@@ -52,31 +52,36 @@ async function init () {
         // Todo use correct config
         const downloadPath = typeof generateTests === 'string' ? generateTests : __dirname;
         runGeneticSearch(browser, downloadPath)
-            .then(() => {
+            .then((csv) => {
                 browser.close();
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+                // Save results in CSV-file if specified
+                if(csvFile){
+                    console.info(`Creating CSV summary in ${csvFile}`);
+                    fs.writeFileSync(csvFile, csv);
+                }
             })
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
     } else {
         if (fs.lstatSync(scratchPath).isDirectory()) {
             if (csvFile != false && fs.existsSync(csvFile)) {
-                console.error("CSV file already exists, aborting");
+                console.error(`CSV file already exists, aborting`);
                 await browser.close();
                 return;
             }
             const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
-                    logger.info("Not a Scratch project: "+file);
+                    logger.info(`Not a Scratch project: ${file}`);
                     continue;
                 }
-                logger.info("Testing project "+file);
+                logger.info(`Testing project ${file}`);
                 csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
             }
 
             if (csvFile != false) {
-                console.info("Creating CSV summary in "+csvFile);
+                console.info(`Creating CSV summary in ${csvFile}`);
                 fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
             }
         } else {
@@ -137,44 +142,22 @@ async function runGeneticSearch (browser, downloadPath) {
     }
 
     async function readTestOutput () {
-        const coverageOutput = await page.$('#output-run .output-content');
         const logOutput = await page.$('#output-log .output-content');
-
-        let coverageLog = '';
-        let log = '';
-
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (isLiveLogEnabled) {
-                const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '')
-                    .trim();
-
-                if (newInfoFromLog.length) {
-                    logger.log(newInfoFromLog);
-                }
-
-                log = currentLog;
-            }
-
-            const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
-                .trim();
-            if (newInfoFromCoverage.length && isLiveOutputCoverage) {
-                logger.log(`Coverage: `, newInfoFromCoverage);
-            } else if (newInfoFromCoverage.includes('not ok ')) {
-                logger.warn(`Coverage: `, newInfoFromCoverage);
-            }
-            coverageLog = currentCoverageLog;
-
-            if (currentCoverageLog.includes('summary')) {
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('uncovered')) {
                 break;
             }
-
             await page.waitForTimeout(1000);
         }
-
-        return coverageLog;
+        // Get CSV-Output
+        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+        const coverageLogLines = outputLog.split('\n');
+        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
+        const csvHeader = coverageLogLines[csvHeaderIndex];
+        const csvBody = coverageLogLines[csvHeaderIndex + 1]
+        return `${csvHeader}\n${csvBody}`;
     }
 
     async function executeSearch () {
@@ -467,6 +450,6 @@ function printTestResultsFromCoverageGenerator (summaries, coverage) {
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
-    logger.info('\nSummary:\n', summaryString);
-    logger.info('\nCoverage:\n', coverageString);
+    logger.info(`\nSummary:\n ${summaryString}`);
+    logger.info(`\nCoverage:\n ${coverageString}`);
 }

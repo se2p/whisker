@@ -104,7 +104,7 @@ export class Search {
         return [javaScriptText, 'empty project'];
     }
 
-    private outputCSV(config: WhiskerSearchConfiguration): void {
+    private outputCSV(config: WhiskerSearchConfiguration): string {
         /*
          * When a FixedTimeStoppingCondition is used, the search is allowed to run for at most n seconds. The CSV output
          * contains a fitness timeline, which tells the achieved coverage over time. In our case, we would expect the
@@ -144,6 +144,7 @@ export class Search {
             csvString = StatisticsCollector.getInstance().asCsv();
         }
         console.log(csvString);
+        return csvString;
     }
 
     /*
@@ -178,9 +179,9 @@ export class Search {
         const testListWithSummary = await this.execute(project, config);
         const tests = testListWithSummary.testList;
         this.printTests(tests);
-        this.outputCSV(config);
+        const csvOutput = this.outputCSV(config);
 
         const javaScriptText = this.testsToString(tests);
-        return [javaScriptText, testListWithSummary.summary, testListWithSummary.networkPopulation];
+        return [javaScriptText, testListWithSummary.summary, csvOutput];
     }
 }
