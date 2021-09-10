@@ -37,7 +37,7 @@ export class ClickSpriteEvent extends ScratchEvent {
         if (this._target.isOriginal) {
             Container.testDriver.clickSprite(this._target.sprite.name, this._steps);
         } else {
-            Container.testDriver.clickClone(this._target.x, this._target.y, this._steps);
+            Container.testDriver.clickCloneByCoords(this._target.x, this._target.y, this._steps);
         }
     }
 
