@@ -1,38 +1,42 @@
 const {isAssertionError} = require('../util/is-error');
 
+/**
+ * Represents a constraint that has to be met by the whisker tests.
+ */
 class Constraint {
     constructor (constraints, callback, name) {
 
         /**
-         * @type {Constraints}
+         * @type {Constraints} The given constraints this object is wrapping.
          * @private
          */
         this._constraints = constraints;
 
         /**
-         * @type {Function}
+         * @type {Function} The given function that works as a callback.
          * @private
          */
         this._callback = callback;
 
         /**
-         * @type {boolean}
+         * @type {boolean} Indicates if this constraint is currently active.
          */
         this._active = false;
 
         /**
-         * @type {?any}
+         * @type {?any} The given constraint name.
          */
         this.name = name;
 
         /**
-         * @type {Error}
+         * @type {Error} The error message.
          */
         this.error = null;
     }
 
     /**
-     * @returns {?AssertionError} .
+     * Executes the {@link Callback} function and throws an {@link AssertionError} if a {@link Constraint} is violated.
+     * @returns {?AssertionError} Null or the thrown assertion error.
      */
     _check () {
         try {
@@ -48,35 +52,53 @@ class Constraint {
         }
     }
 
+    /**
+     * Re-adds this {@link Constraint} to the stored array.
+     */
     enable () {
         this._constraints.reAddConstraint(this);
     }
 
+    /**
+     * Removes this {@link Constraint} from the stored array.
+     */
     disable () {
         this._constraints.removeConstraint(this);
     }
 
+    /**
+     * Indicates if this {@link Constraint} is currently active.
+     * @returns {boolean}
+     */
     isActive () {
         return this._active;
     }
 }
 
+/**
+ * Manages all constraints of a whisker test.
+ */
 class Constraints {
+
+    /**
+     * @param {VMWrapper} vmWrapper The currently used vm wrapper.
+     */
     constructor (vmWrapper) {
 
         /**
-         * @type {VMWrapper}
+         * @type {VMWrapper} The given vm wrapper.
          */
         this.vmWrapper = vmWrapper;
 
         /**
-         * @type {Constraint[]}
+         * @type {Constraint[]} An array of stored constraints.
          */
         this.constraints = [];
     }
 
     /**
-     * @returns {?AssertionError} .
+     * Performs a {@link Constraint} check of all currently stored constraints.
+     * @returns {?AssertionError} Null or the thrown assertion error.
      */
     checkConstraints () {
         const constraintsToCheck = [...this.constraints];
@@ -94,9 +116,10 @@ class Constraints {
     }
 
     /**
-     * @param {Function} func .
-     * @param {any=} name .
-     * @returns {Constraint} .
+     * Wraps a given {@link Function} into a new {@link Constraint} and adds it to the stored constraints array.
+     * @param {Function} func The function to wrap.
+     * @param {any=} name The constraint name.
+     * @returns {Constraint} The newly created and added constraint.
      */
     addConstraint (func, name) {
         const constraint = new Constraint(this, func, name);
@@ -106,8 +129,9 @@ class Constraints {
     }
 
     /**
-     * @param {Constraint} constraint .
-     * @returns {Constraint} .
+     * Enables and adds an already existing {@link Constraint} to the stored constraints array.
+     * @param {Constraint} constraint The constraint to add.
+     * @returns {Constraint} The added constraint.
      */
     reAddConstraint (constraint) {
         this.removeConstraint(constraint);
@@ -118,8 +142,9 @@ class Constraints {
     }
 
     /**
-     * @param {Constraint} constraint .
-     * @returns {boolean} .
+     * Disables and removes an existing {@link Constraint } from the stored constraints array.
+     * @param {Constraint} constraint The constraint to remove.
+     * @returns {boolean} true if the constraint was removed, false otherwise.
      */
     removeConstraint (constraint) {
         constraint._active = false;
@@ -130,6 +155,9 @@ class Constraints {
         return index !== -1;
     }
 
+    /**
+     * Disables and removes all constraints from the stored array.
+     */
     clearConstraints () {
         for (const constraint of this.constraints) {
             constraint._active = false;

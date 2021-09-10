@@ -2,8 +2,10 @@ const {Util} = require('whisker-main');
 const EventEmitter = require('events');
 const Recorder = require("whisker-main/src/vm/recorder");
 
+/**
+ * Enables to record user input for test recordings.
+ */
 class InputRecorder extends EventEmitter {
-
     constructor (scratch) {
         super();
 
@@ -32,6 +34,9 @@ class InputRecorder extends EventEmitter {
 ];`;
     }
 
+    /**
+     * Sets the {@link InputRecorder} into its default setting for the test recording.
+     */
     startRecording () {
         this.emit('startRecording');
         this.events = [];
@@ -43,6 +48,9 @@ class InputRecorder extends EventEmitter {
         this.holdKey = null;
     }
 
+    /**
+     * Resets the {@link InputRecorder} into its default setting after test recording.
+     */
     stopRecording () {
         this.emit('stopRecording');
         this.scratch.removeListener('input', this._onInput);
@@ -55,97 +63,148 @@ class InputRecorder extends EventEmitter {
         this.holdKey = null;
     }
 
+    /**
+     * Evaluates if the {@link InputRecorder} is currently active.
+     * @returns {boolean} true if the recorder is active, false otherwise.
+     */
     isRecording () {
         return this.startTime != null;
     }
 
-    wait () {
+    /**
+     * Updates the step count of the {@link InputRecorder}.
+     * @private
+     */
+    _step () {
+        const steps = this.vm.runtime.stepsExecuted - this.stepCount;
+        this.stepCount += steps;
+        this.waitSteps += steps;
+    }
+
+    /**
+     * After checking for mouse movement, a green flag event is added to the recorded events.
+     * The step count is also updated after the event was recorded.
+     */
+    greenFlag () {
+        this._mouseMove();
+        this.events.push(Recorder.greenFlag());
+        this._step();
+    }
+
+    /**
+     * After checking for mouse movement, an end event is added to the recorded events.
+     * The step count is also updated after the event was recorded.
+     */
+    stop () {
+        this._mouseMove();
+        this.events.push(Recorder.end());
+        this._step();
+    }
+
+    /**
+     * Adds a wait event to the recorded events.
+     * @private
+     */
+    _wait () {
         if (this.waitSteps > 0) {
             this.events.push(Recorder.wait(this.waitSteps));
             this.waitSteps = 0;
         }
     }
 
-    step () {
-        const steps = this.vm.runtime.stepsExecuted - this.stepCount;
-        this.stepCount += steps;
-        this.waitSteps += steps;
-    }
-
-    greenFlag () {
-        this.mouseMove();
-        this.events.push(Recorder.greenFlag());
-        this.step();
-    }
-
-    stop () {
-        this.mouseMove();
-        this.events.push(Recorder.end());
-        this.step();
-    }
-
-    mouseMove () {
+    /**
+     * Adds a mouse move event to the recorded events.
+     * The step count is also updated after the event was recorded.
+     * @private
+     */
+    _mouseMove () {
         if (this.mouseMoves.length > 0) {
             let end = this.mouseMoves[this.mouseMoves.length - 1];
             this.events.push(Recorder.mouseMove(end.x, end.y, this.waitSteps));
             this.mouseMoves = [];
-            this.wait();
+            this._wait();
         }
-        this.step();
+        this._step();
     }
 
+    /**
+     * Records input data of I/O devices and handles it accordingly.
+     * @param {Object} data The recorded input.
+     */
     onInput (data) {
         switch (data.device) {
             case 'mouse':
-                this.onMouseInput(data);
+                this._onMouseInput(data);
                 break;
             case 'keyboard':
-                this.onKeyboardInput(data);
+                this._onKeyboardInput(data);
                 break;
             case 'text':
-                this.onTextInput(data);
+                this._onTextInput(data);
                 break;
             default:
                 console.error(`Unknown input device: "${data.device}".`);
         }
     }
 
-    onMouseInput (data) {
+    /**
+     * Divides the input into mouse click and mouse movement events.
+     * The wait event and step count are also updated afterwards.
+     * @param data The recorded input.
+     * @private
+     */
+    _onMouseInput (data) {
         if (data.isDown) {
-            this.mouseMove();
+            this._mouseMove();
             const target = Util.getTargetSprite(this.vm);
             this.events.push(Recorder.click(target, this.waitSteps));
-            this.wait();
-            this.step();
+            this._wait();
+            this._step();
         } else {
             this.mouseMoves.push(data);
-            this.step();
+            this._step();
         }
     }
 
-    onKeyboardInput (data) {
+    /**
+     * After checking for mouse movement, stores the corresponding key press event.
+     * The keyboard key event has to be converted into a scratch key.
+     * The wait event and step count are also updated afterwards.
+     * @param data The recorded input.
+     * @private
+     */
+    _onKeyboardInput (data) {
         if (data.isDown && data.key !== null) {
-            this.mouseMove();
+            this._mouseMove();
             const key = data.key;
             if (this.holdKey === null || this.holdKey !== key) {
                 this.holdKey = key;
-                const keyString = Util.getScratchKey(this.vm, key);
+                const keyString = this.vm.runtime.ioDevices.keyboard._keyStringToScratchKey(key);
                 this.events.push(Recorder.keyPress(keyString, this.waitSteps));
-                this.wait();
+                this._wait();
             }
-            this.step();
+            this._step();
         }
     }
 
-    onTextInput (data) {
+    /**
+     * After checking for mouse movement, stores the corresponding type text event.
+     * The wait event and step count are also updated afterwards.
+     * @param data The recorded input.
+     * @private
+     */
+    _onTextInput (data) {
         if (data.answer !== null) {
-            this.mouseMove();
+            this._mouseMove();
             this.events.push(Recorder.typeText(data.answer));
-            this.wait();
-            this.step();
+            this._wait();
+            this._step();
         }
     }
 
+    /**
+     * Displays the recorded test in the {@link TestEditor}.
+     */
     showInputs () {
         if (this.events != null && this.events.length !== 0) {
             Whisker.testEditor.setValue(this.testBegin + `\n${this.events.join('\n')}` + `\n}` + this.export);

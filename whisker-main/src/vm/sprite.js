@@ -3,45 +3,49 @@ const RenderedTarget = require('scratch-vm/src/sprites/rendered-target');
 const ScratchVariable = require('scratch-vm/src/engine/variable');
 const Scratch3LooksBlocks = require('scratch-vm/src/blocks/scratch3_looks');
 
+/**
+ * Represents a scratch {@link Sprite} by wrapping a {@link RenderedTarget} and gives the user basic functionality to
+ * access and manipulate a specific sprite.
+ */
 class Sprite {
     constructor (target, sprites, runtime) {
 
         /**
-         * @type {Sprites}
+         * @type {Sprites} An array of sprites.
          * @private
          */
         this._sprites = sprites;
 
         /**
-         * @type {Runtime}
+         * @type {Runtime} The current runtime environment.
          * @private
          */
         this._runtime = runtime;
 
         /**
-         * @type {RenderedTarget}
+         * @type {RenderedTarget} The target this sprite is wrapping.
          */
         this._target = target;
 
         /**
-         * @type {Object}
+         * @type {Object} The old value of the sprite.
          * @private
          */
         this._old = {};
 
         /**
-         * @type {Object<string,Variable>}
+         * @type {Object<string,Variable>} An array of variables of the sprite.
          * @private
          */
         this._variables = {};
 
         /**
-         * @type {Function}
+         * @type {Function} A function that is called when this sprite moves.
          */
         this.onMoved = null;
 
         /**
-         * @type {Function}
+         * @type {Function} A function that is called when this sprite changes its visual appearance.
          */
         this.onVisualChange = null;
 
@@ -59,13 +63,15 @@ class Sprite {
     }
 
     /**
-     * @returns {boolean} .
+     * Evaluates if the wrapped {@link RenderedTarget} can be found.
+     * @returns {boolean} true if target exists, false otherwise.
      */
     get exists () {
         return Boolean(this._runtime.getTargetById(this.id));
     }
 
     /**
+     * Gives back the old value of this {@link Sprite}.
      * @returns {object} .
      */
     get old () {
@@ -73,56 +79,64 @@ class Sprite {
     }
 
     /**
-     * @returns {boolean} .
+     * Gives back if the wrapped {@link RenderedTarget} is its original version.
+     * @returns {boolean} true if sprite is original, false otherwise.
      */
     get isOriginal () {
         return this._target.isOriginal;
     }
 
     /**
-     * @returns {boolean} .
+     * Gives back if the wrapped {@link RenderedTarget} is a stage.
+     * @returns {boolean} true if sprite is stage, false otherwise.
      */
     get isStage () {
         return this._target.isStage;
     }
 
     /**
-     * @returns {string} .
+     * Gives back the name of the name of the wrapped {@link RenderedTarget}.
+     * @returns {string} The sprite name.
      */
     get name () {
         return this._target.sprite.name;
     }
 
     /**
-     * @returns {string} .
+     * Gives back the id of the wrapped {@link RenderedTarget}.
+     * @returns {string} The sprite id.
      */
     get id () {
         return this._target.id;
     }
 
     /**
-     * @returns {object.<string, number>} .
+     * Gives back the stored effects of the wrapped {@link RenderedTarget}.
+     * @returns {Object.<string, number>} Map of graphic effect values.
      */
     get effects () {
         return {...this._target.effects};
     }
 
     /**
-     * @returns {number} .
+     * Gives back the x coordinate of the wrapped {@link RenderedTarget} on the scratch canvas.
+     * @returns {number} The x coordinate.
      */
     get x () {
         return this._target.x;
     }
 
     /**
-     * @returns {number} .
+     * Gives back the y coordinate of the wrapped {@link RenderedTarget} on the scratch canvas.
+     * @returns {number} The y coordinate.
      */
     get y () {
         return this._target.y;
     }
 
     /**
-     * @return {{x: number, y: number}} .
+     * Gives back the position of the wrapped {@link RenderedTarget} on the scratch canvas.
+     * @return {{x: number, y: number}} The sprite coordinates.
      */
     get pos () {
         return {
@@ -132,49 +146,56 @@ class Sprite {
     }
 
     /**
-     * @returns {number} .
+     * Gives back the direction of the wrapped {@link RenderedTarget}.
+     * @returns {number} The sprite direction with range between -179 to 180.
      */
     get direction () {
         return this._target.direction;
     }
 
     /**
-     * @returns {boolean} .
+     * Gives back if the wrapped {@link RenderedTarget} is currently visible on the scratch canvas.
+     * @returns {boolean} true if sprite is visible, false otherwise.
      */
     get visible () {
         return this._target.visible;
     }
 
     /**
-     * @returns {number} .
+     * Gives back the size of the wrapped {@link RenderedTarget} on the scratch canvas.
+     * @returns {number} The size as a percentage of the costume size.
      */
     get size () {
         return this._target.size;
     }
 
     /**
-     * @returns {number} .
+     * Gives back the costume the wrapped {@link RenderedTarget} is currently wearing.
+     * @returns {number} The currently selected costume index.
      */
     get currentCostume () {
         return this._target.currentCostume;
     }
 
     /**
-     * @returns {number} .
+     * Gives back the volume of the wrapped {@link RenderedTarget}.
+     * @returns {number} Sound loudness as percentage.
      */
     get volume () {
         return this._target.volume;
     }
 
     /**
-     * @returns {number} .
+     * Gives back the current layer order.
+     * @returns {number} The layer order.
      */
     get layerOrder () {
         return this._target.getLayerOrder();
     }
 
     /**
-     * @returns {?string} .
+     * Gives back text message the {@link Sprite} is currently saying.
+     * @returns {?string} The said text if sprite is talking, null otherwise.
      */
     get sayText () {
         const bubbleState = this._target.getCustomState(Scratch3LooksBlocks.STATE_KEY);
@@ -185,12 +206,13 @@ class Sprite {
     }
 
     /**
+     * Gives back the bounds in which the wrapped {@link RenderedTarget} can be found on the scratch canvas.
      * @returns {{
      *     left: number,
      *     right: number,
      *     top: number,
      *     bottom: number
-     * }} .
+     * }} Tight bounding box or null.
      */
     get bounds () {
         return this._target.getBounds();
@@ -199,9 +221,10 @@ class Sprite {
     /* ===== Target functions ===== */
 
     /**
-     * @param {number} x .
-     * @param {number} y .
-     * @returns {boolean} .
+     * Evaluates if specific coordinates (x, y) on the scratch canvas are inside of the {@link Sprite Sprite's} bounds.
+     * @param {number} x The x coordinate.
+     * @param {number} y The y coordinate.
+     * @returns {boolean} true if point is in bounds, false otherwise.
      */
     isPointInBounds (x, y) {
         const bounds = this.bounds;
@@ -212,13 +235,14 @@ class Sprite {
     }
 
     /**
+     * Evaluates if two bounding boxes are overlapping each other.
      * @param {{
      *     left: number,
      *     right: number,
      *     top: number,
      *     bottom: number
-     * }} otherBounds .
-     * @returns {boolean} .
+     * }} otherBounds Bounds to check overlap with.
+     * @returns {boolean} true if bounds are intersecting, false otherwise.
      */
     isIntersectingBounds (otherBounds) {
         const bounds = this.bounds;
@@ -229,7 +253,8 @@ class Sprite {
     }
 
     /**
-     * @returns {boolean} .
+     * Evaluates if this {@link Sprite} is touching the mouse.
+     * @returns {boolean} true if mouse is touched, false otherwise.
      */
     isTouchingMouse () {
         const mousePos = this._sprites.vmWrapper.inputs.getMousePos();
@@ -240,41 +265,46 @@ class Sprite {
     }
 
     /**
-     * @returns {boolean} .
+     * Evaluates if this {@link Sprite} is touching the edge of the scratch canvas.
+     * @returns {boolean} true if the edge is touched, false otherwise.
      */
     isTouchingEdge () {
         return this._target.isTouchingEdge();
     }
 
     /**
-     * @param {string} spriteName .
-     * @returns {boolean} .
+     * Evaluates if another {@link Sprite} is touching this one.
+     * @param {string} spriteName Name of the sprite to check.
+     * @returns {boolean} true if sprites are touching each other, false otherwise.
      */
     isTouchingSprite (spriteName) {
         return this._target.isTouchingSprite(spriteName);
     }
 
     /**
-     * @param {number[]} rgb .
-     * @returns {boolean} .
+     * Evaluates if this {@link Sprite} is touching a specific color.
+     * @param {number[]} rgb The color to check.
+     * @returns {boolean} true if the color is touched, false otherwise.
      */
     isTouchingColor (rgb) {
         return this._target.isTouchingColor(rgb);
     }
 
     /**
-     * @param {number[]} targetRgb .
-     * @param {number[]} maskRgb .
-     * @returns {boolean} .
+     * Evaluates if two colors are touching each other.
+     * @param {number[]} targetRgb The first color in rgb form.
+     * @param {number[]} maskRgb The second color in rgb form.
+     * @returns {boolean} true if colors are touching each other, false otherwise.
      */
     isColorTouchingColor (targetRgb, maskRgb) {
         return this._target.colorIsTouchingColor(targetRgb, maskRgb);
     }
 
     /**
-     * @param {Function=} condition .
-     * @param {boolean=} skipStage .
-     * @returns {Variable[]} .
+     * Gives back all {@link Variable Variables} that are stored in this {@link Sprite}.
+     * @param {Function=} condition Condition the variables have to meet.
+     * @param {boolean=} skipStage Indicates if the scratch stage should be included.
+     * @returns {Variable[]} An array of scratch variables.
      */
     getVariables (condition, skipStage = true) {
         const originalVariables = this._target.getAllVariableNamesInScopeByType(ScratchVariable.SCALAR_TYPE, skipStage)
@@ -290,8 +320,9 @@ class Sprite {
     }
 
     /**
-     * @param {boolean=} skipStage .
-     * @returns {Variable[]} .
+     * Gives back all lists that are stored in this {@link Sprite}.
+     * @param {boolean=} skipStage Indicates if the scratch stage should be included.
+     * @returns {Variable[]} An array of scratch variables.
      */
     getLists (skipStage = true) {
         const originalVariables = this._target.getAllVariableNamesInScopeByType(ScratchVariable.LIST_TYPE, skipStage)
@@ -301,9 +332,10 @@ class Sprite {
     }
 
     /**
-     * @param {string} name .
-     * @param {boolean=} skipStage .
-     * @returns {Variable} .
+     * Gives back a {@link Variable} with a specific name.
+     * @param {string} name The name of the search variable.
+     * @param {boolean=} skipStage Indicates if the scratch stage is included.
+     * @returns {Variable} The searched scratch variable or null.
      */
     getVariable (name, skipStage = true) {
         for (const variable of this.getVariables(() => true, skipStage)) {
@@ -314,9 +346,10 @@ class Sprite {
     }
 
     /**
-     * @param {string} name .
-     * @param {boolean=} skipStage .
-     * @returns {Variable} .
+     * Gives back a specific list of this {@link Sprite}.
+     * @param {string} name The name of the searched list.
+     * @param {boolean=} skipStage Indicates if the scratch stage is included.
+     * @returns {Variable} The searched variable or null.
      */
     getList (name, skipStage = true) {
         for (const list of this.getLists(skipStage)) {
@@ -327,14 +360,16 @@ class Sprite {
     }
 
     /**
-     * @returns {Sprite[]} .
+     * Gives back all instances of this {@link Sprite}, which includes the original as well as all clones.
+     * @returns {Sprite[]} An array of sprites.
      */
     getInstances () {
         return this._target.sprite.clones.map(this._sprites.wrapTarget.bind(this._sprites));
     }
 
     /**
-     * @returns {Sprite} .
+     * Gives back the original of this scratch {@link Sprite}.
+     * @returns {Sprite} The original sprite.
      */
     getOriginal () {
         for (const target of this._target.sprite.clones) {
@@ -345,8 +380,9 @@ class Sprite {
     }
 
     /**
-     * @param {boolean=} withSelf .
-     * @returns {Sprite[]} .
+     * Gives back all clones of this {@link Sprite}.
+     * @param {boolean=} withSelf Indicates if the original sprite is included.
+     * @returns {Sprite[]} An array of sprites.
      */
     getClones (withSelf = false) {
         return this._target.sprite.clones
@@ -355,7 +391,8 @@ class Sprite {
     }
 
     /**
-     * @returns {Sprite[]} .
+     * Gives back all newly created clones.
+     * @returns {Sprite[]} An array of sprites.
      */
     getNewClones () {
         const cloneTargets = this._target.sprite.clones;
@@ -363,12 +400,16 @@ class Sprite {
     }
 
     /**
-     * @returns {RenderedTarget} .
+     * Gives back the wrapped {@link RenderedTarget} of this {@link Sprite}.
+     * @returns {RenderedTarget} The wrapped target.
      */
     getScratchTarget () {
         return this._target;
     }
 
+    /**
+     * Updates the old attribute values of this {@link Sprite}.
+     */
     updateOld () {
         this._old.effects = this.effects;
         this._old.x = this.x;
@@ -383,6 +424,10 @@ class Sprite {
         this._old.sayText = this.sayText;
     }
 
+    /**
+     * Updates the old attribute values of this {@link Sprite} as well as its stored variables.
+     * @private
+     */
     _update () {
         this.updateOld();
         for (const variable of Object.values(this._variables)) {
@@ -391,8 +436,9 @@ class Sprite {
     }
 
     /**
-     * @param {ScratchVariable} variable .
-     * @returns {Variable} .
+     * Creates a new {@link Variable} by wrapping a {@link ScratchVariable} into an object.
+     * @param {ScratchVariable} variable The variable to wrap.
+     * @returns {Variable} The new variable object.
      * @private
      */
     _wrapVariable (variable) {
