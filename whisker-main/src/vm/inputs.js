@@ -15,23 +15,21 @@
  *         A duration of 0 means only one action
  * }
  */
-
-
 class Input {
     constructor (inputs, steps, data, name) {
 
         /**
-         * @type {Inputs}
+         * @type {Inputs} The given inputs.
          */
         this._inputs = inputs;
 
         /**
-         * @type {number}
+         * @type {number} The given steps duration.
          */
         this._steps = steps;
 
         /**
-         * @type {object}
+         * @type {object} The given data object.
          */
         this._data = data;
 
@@ -40,30 +38,30 @@ class Input {
         }
 
         /**
-         * @type {boolean}
+         * @type {boolean} Indicates if the input is currently active.
          */
         this._active = false;
 
         /**
-         * @type {*}
-         * Initial state is always null.
+         * @type {*} Initial state is always null.
          */
         this._state = null;
 
         /**
-         * @type {number}
+         * @type {number} The number of executed steps before the input.
          */
         this._stepsExecutedBefore = 0;
 
         /**
-         * @type {?any}
+         * @type {?any} The input name.
          */
         this.name = name;
     }
 
     /**
-     * @param {number} executedSteps .
-     * @returns {boolean} If the input is done and should be removed.
+     * Performs the scratch input.
+     * @param {number} executedSteps Indicates the steps to execute.
+     * @returns {boolean} true if the input is done and should be removed, false otherwise.
      */
     // TODO: split this method for every possible input device
     _perform (executedSteps) {
@@ -86,6 +84,11 @@ class Input {
         return false;
     }
 
+    /**
+     * Performs a single data input and executes it according to the input device.
+     * @param data The recorded input.
+     * @private
+     */
     // TODO: split this method for every possible input device
     _performSingle (data) {
         switch (data.device) {
@@ -105,8 +108,9 @@ class Input {
     }
 
     /**
-     * @param {object} data .
-     * @returns {object} .
+     * Converts the given data input.
+     * @param {object} data The input data.
+     * @returns {object} The converted data.
      */
     _convertData (data) {
         data = {...data};
@@ -171,6 +175,10 @@ class Input {
         return data;
     }
 
+    /**
+     * Resets the input state and steps.
+     * @private
+     */
     _reset () {
         this._active = false;
         this._state = null;
@@ -178,13 +186,18 @@ class Input {
         this._stepsExecutedBefore = 0;
     }
 
+    /**
+     * Evaluates if the input is currently active.
+     * @returns {boolean} true if input is active, false otherwise.
+     */
     isActive () {
         return this._active;
     }
 
     /**
-     * @param {string} scratchKey .
-     * @return {string} .
+     * Converts the scratch key string into a keyboard key event string.
+     * @param {string} scratchKey The scratch key to convert.
+     * @return {string} The converted keyboard key.
      */
     static scratchKeyToKeyString (scratchKey) {
         switch (scratchKey) {
@@ -208,16 +221,19 @@ class Inputs {
     constructor (vmWrapper) {
 
         /**
-         * @type {VMWrapper}
+         * @type {VMWrapper} The given vm wrapper.
          */
         this.vmWrapper = vmWrapper;
 
         /**
-         * @type {Input[]}
+         * @type {Input[]} The stored inputs.
          */
         this.inputs = [];
     }
 
+    /**
+     * Executes the stored inputs.
+     */
     performInputs () {
         const stepsExecuted = this.vmWrapper.getRunStepsExecuted();
         const inputsToPerform = [...this.inputs];
@@ -230,10 +246,11 @@ class Inputs {
     }
 
     /**
-     * @param {number} steps.
-     * @param {object} data .
-     * @param {any=} name .
-     * @returns {Input} .
+     * Adds one input to execute.
+     * @param {number} steps The step duration.
+     * @param {object} data The input data.
+     * @param {any=} name The input name.
+     * @returns {Input} The added input.
      */
     addInput (steps, data, name) {
         const input = new Input(this, steps, {...data}, name);
@@ -243,7 +260,8 @@ class Inputs {
     }
 
     /**
-     * @param {[{steps: number, input: object}]} inputs .
+     * Adds an array of inputs to execute.
+     * @param {[{steps: number, input: object}]} inputs An array of input data with corresponding steps.
      */
     addInputs (inputs) {
         for (const data of inputs) {
@@ -255,9 +273,10 @@ class Inputs {
     }
 
     /**
-     * @param {number} steps.
-     * @param {Input} input .
-     * @returns {Input} .
+     * Re-adds an input to execute.
+     * @param {number} steps The step duration.
+     * @param {Input} input The input to add.
+     * @returns {Input} The added input.
      */
     reAddInput (steps, input) {
         input._steps = steps;
@@ -267,9 +286,10 @@ class Inputs {
     }
 
     /**
-     * @param {(object|Input)} dataOrInput .
-     * @param {any=} name .
-     * @returns {Input} .
+     * Executes a specific input data immediately.
+     * @param {(object|Input)} dataOrInput  The input or data to execute.
+     * @param {any=} name The name of the input.
+     * @returns {Input} The executed input.
      */
     inputImmediate (dataOrInput, name) {
         let input;
@@ -293,8 +313,9 @@ class Inputs {
     }
 
     /**
-     * @param {Input} input .
-     * @return {boolean} .
+     * Deletes a specific input from the inputs array.
+     * @param {Input} input The input to remove.
+     * @return {boolean} true if the input was successfully removed, false otherwise.
      */
     removeInput (input) {
         input._reset();
@@ -305,6 +326,9 @@ class Inputs {
         return index !== -1;
     }
 
+    /**
+     * Clears the whole input array after resetting the input data inside.
+     */
     clearInputs () {
         for (const input of this.inputs) {
             input._reset();
@@ -312,6 +336,9 @@ class Inputs {
         this.inputs = [];
     }
 
+    /**
+     * Resets the mouse to its default settings.
+     */
     resetMouse () {
         const clientPos = this.vmWrapper.getClientCoords(0, 0);
         const canvasRect = this.vmWrapper.getCanvasRect();
@@ -325,12 +352,16 @@ class Inputs {
         });
     }
 
+    /**
+     * Resets the keyboard to its default settings.
+     */
     resetKeyboard () {
         this.vmWrapper.vm.runtime.ioDevices.keyboard._keysPressed = [];
     }
 
     /**
-     * @param {number} stepsExecuted
+     * Updates the executed steps before the input is executed.
+     * @param {number} stepsExecuted The steps to add.
      */
     updateInputs (stepsExecuted) {
         for (const input of this.inputs) {
@@ -339,7 +370,8 @@ class Inputs {
     }
 
     /**
-     * @returns {{x: number, y: number}} .
+     * Gives back the current position of the mouse on the scratch canvas.
+     * @returns {{x: number, y: number}} The mouse pos.
      */
     getMousePos () {
         return {
@@ -349,15 +381,17 @@ class Inputs {
     }
 
     /**
-     * @returns {boolean} .
+     * Evaluates if the mouse is currently pressed.
+     * @returns {boolean} true if mouse is down, false otherwise.
      */
     isMouseDown () {
         return this.vmWrapper.vm.runtime.ioDevices.mouse.getIsDown();
     }
 
     /**
-     * @param {string} key .
-     * @returns {boolean} .
+     * Evaluates if a specific key is currently pressed.
+     * @param {string} key The key to check.
+     * @returns {boolean} true if key is pressed, false otherwise.
      */
     isKeyDown (key) {
         const keyString = Input.scratchKeyToKeyString(key);
@@ -365,6 +399,7 @@ class Inputs {
     }
 
     /**
+     * Clicks the stage on the scratch canvas.
      * Activates "when stage clicked" hats.
      */
     clickStage () {
@@ -373,8 +408,9 @@ class Inputs {
     }
 
     /**
-     * @param {string} spriteName .
-     * @param {number} steps .
+     * Clicks a specific {@link Sprite} for a number of steps.
+     * @param {string} spriteName The name of the sprite to click.
+     * @param {number} steps The time in steps.
      */
     clickSprite (spriteName, steps= 1 ) {
         if (this.vmWrapper.getTargetBySpriteName(spriteName) != null) {
@@ -388,11 +424,27 @@ class Inputs {
     }
 
     /**
-     * @param {number} x .
-     * @param {number} y .
-     * @param {number} steps .
+     * Clicks the given clone of a sprite for a number of steps.
+     * @param {Sprite} clone The given clone to click.
+     * @param {number} steps The time in steps.
      */
-    clickClone (x, y, steps= 1) {
+    clickClone (clone, steps= 1) {
+        this.inputImmediate({
+            device: 'mouse',
+            x: clone.x,
+            y: clone.y,
+            isDown: true,
+            steps: steps
+        });
+    }
+
+    /**
+     * Clicks the clone of a sprite by its (x, y) position on the scratch canvas for a number of steps.
+     * @param x The x coordinate of the clone.
+     * @param y The y coordinate of the clone.
+     * @param {number} steps The time in steps.
+     */
+    clickCloneByCoords (x, y, steps = 1) {
         if (this.vmWrapper.getTargetBySpriteCoords(x, y) != null) {
             this.inputImmediate({
                 device: 'mouse',
@@ -405,11 +457,11 @@ class Inputs {
     }
 
     /**
+     * Drags a specific {@link Sprite} to the position (x, y) on the scratch canvas.
      * When writing Whisker-Tests we first have to find the corresponding target by searching for its name.
-     *
-     * @param {string} spriteName .
-     * @param {number} x .
-     * @param {number} y .
+     * @param {string} spriteName The name of the sprite to move.
+     * @param {number} x The x coordinate of the end position.
+     * @param {number} y The y coordinate of the end position.
      */
     dragSprite (spriteName, x, y) {
         const target = this.vmWrapper.getTargetBySpriteName(spriteName);
@@ -419,8 +471,10 @@ class Inputs {
     }
 
     /**
-     * @param {string} key .
-     * @param {number} steps .
+     * Presses a specific key for a number of steps.
+     * The given scratch key has to be converted into a keyboard key event.
+     * @param {string} key The key to press.
+     * @param {number} steps The time in steps.
      */
     keyPress (key, steps) {
         const keyString = Input.scratchKeyToKeyString(key);
@@ -433,8 +487,10 @@ class Inputs {
     }
 
     /**
-     * @param {string} key .
-     * @param {number} steps .
+     * Releases a specific key for a number of steps.
+     * The given scratch key has to be converted into a keyboard key event.
+     * @param {string} key The key to release.
+     * @param {number} steps The time in steps.
      */
     keyRelease (key, steps) {
         const keyString = Input.scratchKeyToKeyString(key);
@@ -447,7 +503,8 @@ class Inputs {
     }
 
     /**
-     * @param {boolean} value .
+     * Sets the mouse down property to the given value.
+     * @param {boolean} value Indicates if the mouse is pressed or not.
      */
     mouseDown (value) {
         this.inputImmediate({
@@ -457,9 +514,10 @@ class Inputs {
     }
 
     /**
-     * @param {number} x .
-     * @param {number} y .
-     * @param {number} steps .
+     * Moves the mouse to a specific position (x, y) for a number of steps.
+     * @param {number} x The x coordinate of the end position.
+     * @param {number} y The y coordinate of the end position.
+     * @param {number} steps The time in steps.
      */
     mouseMove (x, y, steps) {
         this.inputImmediate({
@@ -471,7 +529,8 @@ class Inputs {
     }
 
     /**
-     * @param {string} answer .
+     * Sets the answer string for a scratch ask block.
+     * @param {string} answer The given input answer.
      */
     typeText (answer) {
         this.inputImmediate({
