@@ -944,6 +944,11 @@ img {vertical-align: middle;}
     right: 0;
 }
 
+.model-button {
+    border-radius: 2px;
+    border-color: lightgray;
+}
+
 .model-editor-canvas {
     border: 1px solid lightgray;
     height: 500px;

@@ -1,10 +1,14 @@
 {
     "title": "Modell Editor",
+    "general-settings-header": "Modell Einstellungen",
     "right-title": "Optionen: ",
     "placeholder": "Zum Bearbeiten einen Knoten oder eine Kante anklicken.",
     "addNode": "Zustand hinzufügen",
     "editNode": "Zustand bearbeiten",
     "addEdge": "Übergang hinzufügen",
     "editEdge": "Übergang bearbeiten",
-    "save": "Speichern"
+    "save": "Speichern",
+    "type": "Modell-Typ",
+    "type-program": "Program Modell",
+    "type-user": "User Modell"
 }

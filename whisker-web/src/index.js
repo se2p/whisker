@@ -289,7 +289,6 @@ const initComponents = function () {
         fileSelect => fileSelect.loadAsArrayBuffer());
 
     Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
-    Whisker.modelEditor.drawModelEditor();
 
     accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);

@@ -222,26 +222,56 @@
                                 </button>
                             </div>
                             <div class="row spacer10">
-                                <div class="col col-lg-8">
+                                <div class="col">
                                     <div id="model-editor-canvas" class="row model-editor-canvas"></div>
                                 </div>
                                 <div class="col col-lg-4">
                                     <div data-i18n="model-editor:placeholder" id="model-editor-placeholder"></div>
+                                    <div id="model-general-settings">
+                                        <div  class="row">
+                                            <h4 data-i18n="modelEditor:general-settings-header"></h4>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <label for="model-id">ID</label>
+                                                <input id="model-id">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="row">
+                                                    <label data-i18n="modelEditor:type"></label>
+                                                </div>
+                                                <div class="row">
+                                                    <input type="radio" id="model-type-program" name="model-type"
+                                                           value="program" checked>
+                                                    <label for="model-type-program"
+                                                           data-i18n="modelEditor:type-program"></label>
+                                                </div>
+                                                <div class="row">
+                                                    <input type="radio" id="model-type-user" name="model-type"
+                                                           value="user">
+                                                    <label for="model-type-user"
+                                                           data-i18n="modelEditor:type-user"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row center">
+                                            <button data-i18n="modelEditor:save" class="model-button btn" type="button"
+                                                    id="model-general-save"></button>
+                                        </div>
+                                    </div>
                                     <div id="model-editor-configuration">
                                         <div  class="row">
-                                            <h3 data-i18n="modelEditor:right-title"></h3>
-                                            <h3 id="model-editor-operation"></h3>
+                                            <h4 data-i18n="modelEditor:right-title"></h4>
+                                            <h4 id="model-editor-operation"></h4>
                                         </div>
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="row">
                                                     <div class="col">
-                                                        <label for="editor-id">ID</label>
-                                                        <input id="editor-id">
-                                                    </div>
-                                                    <div class="col">
-                                                        <label for="editor-label">Name</label>
-                                                        <input id="editor-label">
+                                                        <label for="model-node-label">Name</label>
+                                                        <input id="model-node-label">
                                                     </div>
                                                 </div>
                                                 <div class="row" style="align-content: center">
