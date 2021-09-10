@@ -45,7 +45,7 @@ export class ClickSpriteEvent extends ScratchEvent {
         if (this._target.isOriginal) {
             return `t.clickSprite('${this._target.sprite.name}', ${this._steps});`;
         } else {
-            return `t.clickClone(${this._target.x}, ${this._target.y}, ${this._steps});`;
+            return `t.clickCloneByCoords(${this._target.x}, ${this._target.y}, ${this._steps});`;
         }
     }
 
