@@ -24,7 +24,7 @@ import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analy
 import {CustomFilter, ControlFilter, StatementFilter} from 'scratch-analysis/src/block-filter'
 import {List} from "../../utils/List";
 
-export class StatementCoverageFitness implements FitnessFunction<TestChromosome> {
+export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
     private readonly _targetNode: GraphNode;
     private readonly _cdg: ControlDependenceGraph;
@@ -99,11 +99,11 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         let cfgDistanceNormalized;
         if (approachLevel === 0 && branchDistance === 0) {
-            cfgDistanceNormalized = StatementCoverageFitness._normalize(this.getCFGDistance(chromosome));
+            cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome));
         } else {
             cfgDistanceNormalized = 1;
         }
-        return approachLevel + StatementCoverageFitness._normalize(branchDistance) + cfgDistanceNormalized;
+        return approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -335,7 +335,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
      * @param fitnessFunctions the fitnessFunctions  which will be filtered to contain only independent functions.
      * @returns Map mapping hatBlocks or branchingBlocks to their last independent Block
      */
-    public static getMergeNodeMap(fitnessFunctions: List<StatementCoverageFitness>): Map<StatementCoverageFitness, List<StatementCoverageFitness>> {
+    public static getMergeNodeMap(fitnessFunctions: List<StatementFitnessFunction>): Map<StatementFitnessFunction, List<StatementFitnessFunction>> {
         const mergeNodeMap = new Map<GraphNode, List<GraphNode>>();
         for (const fitnessFunction of fitnessFunctions) {
             // Handling of branching blocks
@@ -347,7 +347,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 // has no child and is not another branch block -> end of branch
                 // or has another branch block as child -> nested branches
                 mergeNodes = mergeNodes.filter(node => (node.block !== undefined) && (!node.block.next ||
-                    ControlFilter.branch(StatementCoverageFitness.getChildOfNode(node, fitnessFunction._cdg).block)));
+                    ControlFilter.branch(StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg).block)));
 
                 // Filter other branch blocks, they are contained within their own mergeMap key.
                 mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
@@ -378,19 +378,19 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
                 // Add hatBlock.
                 mergeNodes.add(hatNode);
                 // Find and add the last statement in the block of statements being dependent on the hatBlock.
-                let childNode = StatementCoverageFitness.getChildOfNode(hatNode, fitnessFunction._cdg);
+                let childNode = StatementFitnessFunction.getChildOfNode(hatNode, fitnessFunction._cdg);
                 while (childNode) {
                     if (!childNode.block.next) {
                         mergeNodes.add(childNode);
                         break;
                     }
-                    childNode = StatementCoverageFitness.getChildOfNode(childNode, fitnessFunction._cdg);
+                    childNode = StatementFitnessFunction.getChildOfNode(childNode, fitnessFunction._cdg);
                 }
                 mergeNodeMap.set(fitnessFunction._targetNode, mergeNodes);
             }
         }
         // Map the independent Nodes to the corresponding StatementCoverageFitness-Functions.
-        const statementMap = new Map<StatementCoverageFitness, List<StatementCoverageFitness>>();
+        const statementMap = new Map<StatementFitnessFunction, List<StatementFitnessFunction>>();
         mergeNodeMap.forEach(((value, key) => {
             const keyStatement = fitnessFunctions.get(fitnessFunctions.findIndex(fitnessFunction => fitnessFunction._targetNode === key));
             const valueStatements = fitnessFunctions.filter(fitnessFunction => value.contains(fitnessFunction._targetNode));
@@ -427,20 +427,20 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
      * @param controlFitness the branching fitnessFunction all potential mergeNodes depend on.
      * @returns List of true mergeNodes.
      */
-    private static findLastDescendants(nodes: List<GraphNode>, controlFitness: StatementCoverageFitness): List<GraphNode> {
+    private static findLastDescendants(nodes: List<GraphNode>, controlFitness: StatementFitnessFunction): List<GraphNode> {
         const controlNode = controlFitness._targetNode;
         const nodesToRemove = new List<GraphNode>();
         for (const node of nodes) {
             if (node === controlNode) {
                 continue;
             }
-            let parent = StatementCoverageFitness.getParentOfNode(node, controlFitness._cdg);
+            let parent = StatementFitnessFunction.getParentOfNode(node, controlFitness._cdg);
             while (parent.id !== controlNode.id) {
                 // We found another potential lastDescendant so the found one cannot be the last one.
                 if (nodes.contains(parent)) {
                     nodesToRemove.add(parent);
                 }
-                parent = StatementCoverageFitness.getParentOfNode(parent, controlFitness._cdg);
+                parent = StatementFitnessFunction.getParentOfNode(parent, controlFitness._cdg);
             }
         }
         return nodes.filter(node => !nodesToRemove.contains(node));

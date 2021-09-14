@@ -32,7 +32,7 @@ import {SearchAlgorithmType} from "./algorithms/SearchAlgorithmType";
 import {OnePlusOneEA} from "./algorithms/OnePlusOneEA";
 import {RandomSearch} from "./algorithms/RandomSearch";
 import {Chromosome} from "./Chromosome";
-import {StatementCoverageFitness} from "../testcase/fitness/StatementFitnessFunction";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {BitstringChromosomeGenerator} from "../bitstring/BitstringChromosomeGenerator";
 import {BitstringChromosome} from "../bitstring/BitstringChromosome";
@@ -331,7 +331,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _initializeStatementFitness(chromosomeLength: number, targets: List<string>) {
         // TODO: Check if this is done correctly
         const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
-        const fitnesses: List<StatementCoverageFitness> = factory.extractFitnessFunctions(Container.vm, targets);
+        const fitnesses: List<StatementFitnessFunction> = factory.extractFitnessFunctions(Container.vm, targets);
 
         if (fitnesses.size() == 1) {
             this._fitnessFunction = fitnesses.get(0) as unknown as FitnessFunction<C>;
