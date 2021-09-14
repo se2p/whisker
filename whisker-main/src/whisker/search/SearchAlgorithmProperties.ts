@@ -20,7 +20,6 @@
 
 import {StoppingCondition} from "./StoppingCondition";
 import {Chromosome} from "./Chromosome";
-import {TestGenerator} from "../testgenerator/TestGenerator";
 
 /**
  * This class stores all relevant properties from a search algorithm.
@@ -108,8 +107,6 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
      * Constructs an object that stores all relevant properties of a search algorithm.
      * @param populationSize the size of the population
      * @param chromosomeLength the length of each chromosome
-     * @param crossoverProbability the probability for crossover
-     * @param mutationProbability the probability for mutation
      */
     constructor(populationSize: number, chromosomeLength: number) {
         this._populationSize = populationSize;

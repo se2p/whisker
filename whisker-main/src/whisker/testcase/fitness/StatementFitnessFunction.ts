@@ -99,11 +99,11 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
 
         let cfgDistanceNormalized;
         if (approachLevel === 0 && branchDistance === 0) {
-            cfgDistanceNormalized = this._normalize(this.getCFGDistance(chromosome));
+            cfgDistanceNormalized = StatementCoverageFitness._normalize(this.getCFGDistance(chromosome));
         } else {
             cfgDistanceNormalized = 1;
         }
-        return approachLevel + this._normalize(branchDistance) + cfgDistanceNormalized;
+        return approachLevel + StatementCoverageFitness._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -251,11 +251,11 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
     }
 
 
-    private _normalize(x: number): number {
+    private static _normalize(x: number): number {
         return x / (x + 1.0);
     }
 
-    _checkControlBlock(statement, controlNode): boolean {
+    private _checkControlBlock(statement: GraphNode, controlNode: GraphNode): boolean {
         let requiredCondition;
         switch (controlNode.block.opcode) {
             case 'control_forever': { // Todo not sure about forever
@@ -310,7 +310,7 @@ export class StatementCoverageFitness implements FitnessFunction<TestChromosome>
         return requiredCondition;
     }
 
-    _matchesBranchStart(statement, controlNode, branchStartId): boolean {
+    _matchesBranchStart(statement: GraphNode, controlNode: GraphNode, branchStartId: string): boolean {
         let cur = statement;
         const traversed = []
         while (cur && cur.id !== controlNode.id && !traversed.includes(cur)) {

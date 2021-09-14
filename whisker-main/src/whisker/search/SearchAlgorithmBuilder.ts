@@ -156,6 +156,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * Initializes the necessary fitness functions.
      * @param fitnessFunctionType the type of the fitness function to initialize
      * @param length the length of the chromosome
+     * @param targets specific lines that should be covered
      */
     initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: List<string>): SearchAlgorithmBuilder<C> {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();

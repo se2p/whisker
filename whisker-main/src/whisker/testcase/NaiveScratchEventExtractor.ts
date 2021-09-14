@@ -32,7 +32,6 @@ import {DragSpriteEvent} from "./events/DragSpriteEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {Randomness} from "../utils/Randomness";
-import {SoundEvent} from "./events/SoundEvent";
 
 export class NaiveScratchEventExtractor extends ScratchEventExtractor {
 

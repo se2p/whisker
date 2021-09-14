@@ -265,7 +265,7 @@ export class TestExecutor {
         return events.filter(event => !(event instanceof WaitEvent)).size() > 0;
     }
 
-    public resetState() {
+    public resetState(): void {
         // Delete clones
         const clones = [];
         for (const targetsKey in this._vm.runtime.targets) {

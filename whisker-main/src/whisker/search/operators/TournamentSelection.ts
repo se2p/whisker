@@ -32,16 +32,17 @@ import {Preconditions} from "../../utils/Preconditions";
  */
 export class TournamentSelection<C extends Chromosome> implements Selection<C> {
 
-    private readonly _tournamentSize = 2;
+    private readonly _tournamentSize;
 
-    constructor(tournamentSize) {
+    constructor(tournamentSize: number) {
         this._tournamentSize = tournamentSize;
     }
 
     /**
      * Selects a chromosome from the given population and returns the result.
      *
-     * @param population The population of chromosomes from which to select, sorted in ascending order.
+     * @param population the population of chromosomes from which to select, sorted in ascending order.
+     * @param fitnessFunction the fitness function on which the selection is based
      * @returns the selected chromosome.
      */
     apply(population: List<C>, fitnessFunction: FitnessFunction<C>): C {

@@ -25,8 +25,6 @@ import {BitstringChromosome} from './BitstringChromosome';
 import {Randomness} from "../utils/Randomness";
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
-import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
-import {BitflipMutation} from "./BitflipMutation";
 
 export class BitstringChromosomeGenerator implements ChromosomeGenerator<BitstringChromosome> {
 
@@ -45,7 +43,7 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
     }
 
     get(): BitstringChromosome {
-        let bits = new List<Boolean>();
+        const bits = new List<boolean>();
         for(let i = 0; i < this._length; i++) {
             bits.add(Randomness.getInstance().nextDouble() > 0.5);
         }
