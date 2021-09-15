@@ -393,6 +393,9 @@ const initEvents = function () {
             $('#model-editor').show();
             location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
             location.href = '#model-editor'
+
+            // fix bug of not showing models
+            Whisker.modelEditor.reposition();
         } else {
             $(event.target)
                 .parent()
@@ -602,6 +605,9 @@ function _updateFilenameLabels() {
     }
     if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
         $('#config-label').html(Whisker.configFileSelect.getName());
+    }
+    if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
+        $('#model-label').html(Whisker.modelFileSelect.getName());
     }
 }
 

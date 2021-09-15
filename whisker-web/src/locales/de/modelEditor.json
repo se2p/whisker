@@ -7,8 +7,11 @@
     "editNode": "Zustand bearbeiten",
     "addEdge": "Übergang hinzufügen",
     "editEdge": "Übergang bearbeiten",
-    "save": "Speichern",
     "type": "Modell-Typ",
     "type-program": "Program Modell",
-    "type-user": "User Modell"
+    "type-user": "User Modell",
+    "load" : "Lade Modelle",
+    "t-load" : "Lade Modelle des Editors",
+    "save" : "Modelle herunterladen",
+    "t-save" : "Modelle des Editors als Datei speichern"
 }

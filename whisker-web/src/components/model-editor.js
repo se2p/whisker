@@ -11,15 +11,28 @@ class ModelEditor {
     static MODEL_ID_FIELD = '#model-id';
     static PROGRAM_TYPE_CHOICE = '#model-type-program';
     static USER_TYPE_CHOICE = '#model-type-user';
-    static SAVE_GENERAL_SETTINGS = '#model-general-save';
+
+    static SAVE_BUTTON = '#model-editor-save';
+    static APPLY_BUTTON = '#model-editor-apply';
 
     /**
      * @param {ModelTester} modelTester
      */
     constructor(modelTester) {
         this.modelTester = modelTester;
+        this.modelTester.on(ModelTester.ModelTester.MODEL_ON_LOAD, this.loadModel.bind(this));
+
+        // setup default model
         this.currentTab = 0;
-        this.container = document.getElementById("model-editor-canvas");
+        this.models = [{
+            id: 'model0',
+            usage: 'program',
+            startNodeId: 'start',
+            nodeIds: ['start'],
+            stopNodeIds: [],
+            stopAllNodeIds: [],
+            edges: []
+        }];
         // const addNode = this.addNode;
         // const editNode = this.editNode;
         // const addEdge = this.addEdge;
@@ -31,7 +44,9 @@ class ModelEditor {
                 arrows: {from: {enabled: false}, to: {enabled: true}}
             },
             physics: {
-                enabled: true,
+                stabilization: {
+                    iterations: 1200,
+                },
             },
             manipulation: {
                 enabled: true
@@ -45,130 +60,26 @@ class ModelEditor {
             height: '420px',
             autoResize: false
         };
-        this.data = {nodes: [], edges: []};
-        this.modelTester.on(ModelTester.ModelTester.MODEL_ON_LOAD, this.loadModel.bind(this));
-        this.network = new vis.Network(this.container, this.data, this.options);
+        this.data = {nodes: [{id: 'start', label: 'start', color: "rgb(0,151,163)"}], edges: []};
+        this.network = new vis.Network($('#model-editor-canvas')[0], this.data, this.options);
+        this.network.focus('start');
         document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
         this.network.enableEditMode();
-        // this.setUpButtons();
-    }
-
-    drawModelEditor() {
-        this.network.redraw();
-
-        // todo why is the graph moved to the upper left corner?!
-        // console.log(this.network.getViewPosition())
-        // let options = {
-        //     // position: {x: 100, y: 100},
-        //     offset: {x: 0, y: 0},
-        //     duration: 0,
-        //     easingFunction: 'easeInOutQuad'
-        // };
-        // this.network.focus("init")
-        // // this.network.redraw();
-        // console.log(this.network.getViewPosition())
-        // // this.network.moveTo( {position:{x:0,y:0}})
-        // this.network.fit();
-
-        // set css attributes here as css file is ignored by framework redraw
-        document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
-        document.getElementsByClassName('vis-close')[0].value = "Löschen";
-    }
-
-    // todo on click on a model tab
-    loadModel(tabNbr = 0) {
-        this.currentTab = tabNbr;
-        this.models = this.modelTester.getAllModels();
-
-        if (this.models.length === 0) {
-            this.nodes = [];
-            this.edges = [];
-        } else {
-            if (tabNbr >= this.models.length) {
-                throw Error("Tab number higher than number of models.");
-            }
-            this.nodes = this.setupNodes(this.models[tabNbr]);
-            this.edges = this.setupEdges(this.models[tabNbr].edges, this.nodes);
-            console.log(this.models[tabNbr].id);
-            $('#model-editor-first-tab').html(this.models[tabNbr].id);
-        }
-
-        // todo create tabs for each model (scrollable?)
-
-        this.data = {nodes: this.nodes, edges: this.edges};
-        this.network.setData(this.data);
-        console.log(this.data);
+        this.setUpButtons();
         this.drawModelEditor();
-        this.showGeneralSettings(tabNbr);
+        this.showGeneralSettings(0);
+
+
+// todo
+        this.network.on('selectNode', this.network.editNode); // todo needed?
+        this.network.on('deselectNode', () => {
+            $('#model-editor-operation').text(i18n.t(""));
+            $('#editor-id').val("");
+            $('#editor-label').val("");
+        });
     }
 
-    // todo show when making new tab on new graph
-    showGeneralSettings(tabNbr) {
-        document.getElementById('model-general-settings').style.display = 'block';
-        document.getElementById('model-editor-configuration').style.display = 'none';
-
-        if (this.models != undefined) {
-            // load into the header etc
-            $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
-            console.log(this.models[tabNbr])
-
-            if (this.models[tabNbr].usage === "program" || this.models[tabNbr].usage === undefined) {
-                $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked',true);
-                $(ModelEditor.USER_TYPE_CHOICE).prop('checked',false);
-            } else {
-                $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked',false);
-                $(ModelEditor.USER_TYPE_CHOICE).prop('checked',true);
-            }
-        }
-    }
-
-    setupNodes(json) {
-        let nodes = [];
-        let nodeIds = json.nodeIds;
-        for (const nodeId in nodeIds) {
-            let label = nodeIds[nodeId];
-            let node = {id: label, label: label};
-            if (label === json.startNodeId) {
-                node.color = "rgb(0,151,163)";
-                node.title = "Start";
-            }
-            nodes.push(node);
-        }
-        return nodes;
-    }
-
-    setupEdges(json, nodes) {
-        let edges = json;
-        let loops = [];
-        nodes.forEach(node => {
-            loops[node.id] = [];
-        })
-
-        for (const edgeId in edges) {
-            if (edges[edgeId].from === edges[edgeId].to) {
-                loops[edges[edgeId].from].push(edges[edgeId]);
-            }
-        }
-        for (const nodeId in loops) {
-            if (loops[nodeId].length > 1) {
-                let i = 0;
-                loops[nodeId].forEach(edge => {
-                    edge.selfReference = {angle: i * 10};
-                    if (loops[nodeId].length > 2) {
-                        edge.selfReference.size = 15;
-                    }
-                    i += 1;
-                })
-                nodes.forEach(node => {
-                    if (node.id === nodeId) {
-                        node.widthConstraint = 100
-                    }
-                })
-            }
-        }
-
-        return edges;
-    }
+// ###################### Graph manipulation ###########################
 
     addNode(data, callback) {
         $(ModelEditor.OP_NAME_FIELD).text(i18n.t("model-editor:addNode"));
@@ -204,31 +115,152 @@ class ModelEditor {
         }
     }
 
+    // ############################# Plotting ############################
+
+    drawModelEditor() {
+        this.network.redraw();
+        this.network.fit();
+
+        // set css attributes here as css file is ignored by framework redraw
+        document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
+        // todo fix delete button
+        // document.getElementsByClassName('vis-close')[0].val("Löschen");
+    }
+
+    // todo on click on a model tab
+    loadModel(tabNbr = 0) {
+        this.currentTab = tabNbr;
+        this.models = this.modelTester.getAllModels();
+
+        if (this.models.length === 0) {
+            this.nodes = [];
+            this.edges = [];
+        } else {
+            if (tabNbr >= this.models.length) {
+                throw Error("Tab number higher than number of models.");
+            }
+            this.nodes = this.setupNodes(this.models[tabNbr]);
+            this.edges = this.setupEdges(this.models[tabNbr].edges, this.nodes);
+            console.log(this.models[tabNbr].id);
+            $('#model-editor-first-tab').html(this.models[tabNbr].id);
+        }
+
+        // todo create tabs for each model (scrollable?)
+
+        this.data = {nodes: this.nodes, edges: this.edges};
+        this.network.setData(this.data);
+        console.log(this.data);
+        this.drawModelEditor();
+        this.showGeneralSettings(tabNbr);
+    }
+
+    // todo show when making new tab on new graph
+    showGeneralSettings(tabNbr) {
+        document.getElementById('model-general-settings').style.display = 'block';
+        document.getElementById('model-editor-configuration').style.display = 'none';
+        // load into the header etc
+        $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
+        console.log(this.models[tabNbr])
+
+        if (this.models[tabNbr].usage === "program" || this.models[tabNbr].usage === undefined) {
+            $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', true);
+            $(ModelEditor.USER_TYPE_CHOICE).prop('checked', false);
+        } else {
+            $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', false);
+            $(ModelEditor.USER_TYPE_CHOICE).prop('checked', true);
+        }
+    }
+
+    hideGeneralSettings() {
+        document.getElementById('model-general-settings').style.display = 'none';
+        document.getElementById('model-editor-configuration').style.display = 'block';
+    }
+
+    /**
+     * Style the nodes of the graph.
+     */
+    setupNodes(json) {
+        let nodes = [];
+        let nodeIds = json.nodeIds;
+        for (const nodeId in nodeIds) {
+            let label = nodeIds[nodeId];
+            let node = {id: label, label: label};
+            if (label === json.startNodeId) {
+                node.color = "rgb(0,151,163)";
+                node.title = "Start";
+            }
+            nodes.push(node);
+        }
+        return nodes;
+    }
+
+    /**
+     * Style the edges and move loops to different angles.. Could be solves better if the
+     */
+    setupEdges(json, nodes) {
+        let edges = json;
+        let loops = [];
+        nodes.forEach(node => {
+            loops[node.id] = [];
+        })
+
+        for (const edgeId in edges) {
+            if (edges[edgeId].from === edges[edgeId].to) {
+                loops[edges[edgeId].from].push(edges[edgeId]);
+            }
+        }
+        for (const nodeId in loops) {
+            if (loops[nodeId].length > 1) {
+                let i = 0;
+                loops[nodeId].forEach(edge => {
+                    edge.selfReference = {angle: i * 10};
+                    if (loops[nodeId].length > 2) {
+                        edge.selfReference.size = 15;
+                    }
+                    i += 1;
+                })
+                nodes.forEach(node => {
+                    if (node.id === nodeId) {
+                        node.widthConstraint = 100
+                    }
+                })
+            }
+        }
+
+        return edges;
+    }
+
     setUpButtons() {
-        this.network.on('selectNode', this.network.editNode); // todo needed?
-        this.network.on('deselectNode', () => {
-            $('#model-editor-operation').text(i18n.t(""));
-            $('#editor-id').val("");
-            $('#editor-label').val("");
-        });
-        $('#model-editor-save').on('click', () => {
+        // apply
+        $(ModelEditor.APPLY_BUTTON).on('click', () => {
+            let json = JSON.stringify(this.models, null, 4);
+            this.modelTester.load(json);
+            $('#model-label').html('Loaded from model editor');
+            // $('#modelfile') todo maybe delete the fileselects content with clear
+        })
+
+        // download
+        $(ModelEditor.SAVE_BUTTON).on('click', () => {
             let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
             const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
             FileSaver.saveAs(blob, 'models.json');
+        });
+
+        // General settings of model
+        $(ModelEditor.MODEL_ID_FIELD).on('keyup change', () => {
+            this.models[this.currentTab].id = $(ModelEditor.MODEL_ID_FIELD).value;
+            console.log(this.models);
         })
-
-        // todo this listener is not yet reacting.... why?!
-        document.getElementById(ModelEditor.SAVE_GENERAL_SETTINGS).onclick = () => {
-            // todo id
-
-            console.log(this.models[this.currentTab]);
-            if ($(ModelEditor.PROGRAM_TYPE_CHOICE).checked) {
-                this.models[this.currentTab].usage = "program";
-            } else {
-                this.models[this.currentTab].usage = "user";
-            }
-            console.log(this.models[this.currentTab]);
-        }
+        $(ModelEditor.PROGRAM_TYPE_CHOICE).on('click', () => {
+            this.models[this.currentTab].usage = "program";
+            console.log(this.network.getViewPosition());
+            this.network.moveTo({position:{x:0, y:0}})
+            console.log(this.models);
+        })
+        $(ModelEditor.USER_TYPE_CHOICE).on('click', () => {
+            this.models[this.currentTab].usage = "user";
+            console.log(this.models);
+        })
     }
 
     // editNode(data, cancelAction, callback) {
@@ -288,6 +320,10 @@ class ModelEditor {
     //     callback(data);
     // }
 
+    // for fixing model position after loading the element
+    reposition() {
+        this.network.fit();
+    }
 }
 
 module.exports = ModelEditor;

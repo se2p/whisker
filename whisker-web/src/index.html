@@ -147,7 +147,7 @@
                                                 <button class="btnr" data-i18n="browse"></button>
                                                 <input type="file" id="fileselect-models" accept=".json"
                                                        name="model-file" title=""/>
-                                                <label id=model-lavel" class="filename-label" for="fileselect-models"
+                                                <label id="model-label" class="filename-label" for="fileselect-models"
                                                        data-i18n="no-file"></label>
                                             </div>
                                             <div class="form-group">
@@ -217,9 +217,6 @@
                             <div class="row tab-model-editor">
                                 <button id="model-editor-first-tab" class="active">Modell 1</button>
                                 <button id="model-editor-add-tab"> <b>+</b> </button>
-                                <button id="model-editor-save">
-                                    <label for="model-editor-save" data-i18n="modelEditor:save"></label>
-                                </button>
                             </div>
                             <div class="row spacer10">
                                 <div class="col">
@@ -244,21 +241,17 @@
                                                 </div>
                                                 <div class="row">
                                                     <input type="radio" id="model-type-program" name="model-type"
-                                                           value="program" checked>
+                                                           value="program" class="model-radio">
                                                     <label for="model-type-program"
                                                            data-i18n="modelEditor:type-program"></label>
                                                 </div>
                                                 <div class="row">
-                                                    <input type="radio" id="model-type-user" name="model-type"
-                                                           value="user">
+                                                    <input type="radio" class="model-radio" id="model-type-user"
+                                                           name="model-type" value="user">
                                                     <label for="model-type-user"
                                                            data-i18n="modelEditor:type-user"></label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row center">
-                                            <button data-i18n="modelEditor:save" class="model-button btn" type="button"
-                                                    id="model-general-save"></button>
                                         </div>
                                     </div>
                                     <div id="model-editor-configuration">
@@ -274,19 +267,26 @@
                                                         <input id="model-node-label">
                                                     </div>
                                                 </div>
-                                                <div class="row" style="align-content: center">
-                                                    <div class="col">
-                                                        <input type="button" value="save" id="saveButton" />
-                                                    </div>
-                                                    <div class="col">
-                                                        <input type="button" value="cancel" id="cancelButton" />
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Buttons belonging to model editor -->
+                        <div class="col-lg-12 spacer50">
+
+                            <!-- Load tests button -->
+                            <button id="model-editor-apply" class="btn btn-sm btn-main" type="button"
+                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                    data-i18n="[title]modelEditor:t-load;modelEditor:load;"></button>
+
+                            <!-- Download tests button -->
+                            <button id="model-editor-save" class="btn btn-sm btn-main" type="button"
+                                    data-toggle="tooltip" data-placement="top" data-animation="false"
+                                    data-i18n="[title]modelEditor:t-save;modelEditor:save;"></button>
+
                         </div>
                     </div>
                 </form>

@@ -7,8 +7,11 @@
     "editNode": "Edit state",
     "addEdge": "Add transition",
     "editEdge": "Edit transition",
-    "save": "Save",
     "type": "Model type",
     "type-program": "Program model",
-    "type-user": "User model"
+    "type-user": "User model",
+    "load" : "Load models",
+    "t-load" : "Load all models of editor",
+    "save" : "Download models",
+    "t-save" : "Save the models of the test editor"
 }

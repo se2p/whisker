@@ -959,6 +959,11 @@ img {vertical-align: middle;}
     background: white;
 }
 
+.model-radio {
+    margin-top: 5px;
+    margin-right: 5px;
+}
+
 .tab-model-editor {
     overflow: hidden;
     border: 1px solid #ccc;
