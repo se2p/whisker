@@ -440,7 +440,7 @@ class Sprite {
      * @returns {Object} The requested costume.
      */
     getCostumeByName (name) {
-        return this._target.getCostumes().filter(costume => costume.name === name);
+        return this.getCostumes().filter(costume => costume.name.match(name))[0];
     }
 
     /**
