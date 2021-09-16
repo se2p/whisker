@@ -28,7 +28,7 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import {TestChromosome} from "../../testcase/TestChromosome";
-import {StatementCoverageFitness} from "../../testcase/fitness/StatementFitnessFunction";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -282,16 +282,16 @@ open independent goals: ${this._archiveUncovered.size}`);
      * statement.
      */
     private getIndependentStatements(): Map<number, FitnessFunction<C>> {
-        const fitnessFunctions = new List<StatementCoverageFitness>([...this._fitnessFunctions.values()]);
+        const fitnessFunctions = new List<StatementFitnessFunction>([...this._fitnessFunctions.values()]);
         // We can only extract independent block statements if we indeed deal with scratch blocks.
-        if(fitnessFunctions.get(0) instanceof StatementCoverageFitness) {
-            const mergeNodeStatements = StatementCoverageFitness.getMergeNodeMap(fitnessFunctions);
-            let independentFitnessFunctions = new List<StatementCoverageFitness>();
+        if(fitnessFunctions.get(0) instanceof StatementFitnessFunction) {
+            const mergeNodeStatements = StatementFitnessFunction.getMergeNodeMap(fitnessFunctions);
+            let independentFitnessFunctions = new List<StatementFitnessFunction>();
             [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.addList(statementList));
             independentFitnessFunctions = independentFitnessFunctions.distinct();
             const independentFitnessFunctionMap = new Map<number, FitnessFunction<C>>();
             this._fitnessFunctions.forEach((value, key) => {
-                if (independentFitnessFunctions.contains(value as unknown as StatementCoverageFitness)) {
+                if (independentFitnessFunctions.contains(value as unknown as StatementFitnessFunction)) {
                     independentFitnessFunctionMap.set(key, value);
                 }
             })

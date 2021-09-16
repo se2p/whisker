@@ -26,13 +26,13 @@ import {BitflipMutation} from "../../../src/whisker/bitstring/BitflipMutation";
 describe('BitstringSinglePointCrossover', () => {
 
     test('False to true', () => {
-        const parent1Bits = new List<Boolean>();
+        const parent1Bits = new List<boolean>();
         parent1Bits.add(false);
         parent1Bits.add(false);
         const parent1 = new BitstringChromosome(parent1Bits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const parent2Bits = new List<Boolean>();
+        const parent2Bits = new List<boolean>();
         parent2Bits.add(true);
         parent2Bits.add(true);
         const parent2 = new BitstringChromosome(parent2Bits,

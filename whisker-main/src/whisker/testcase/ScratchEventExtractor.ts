@@ -44,7 +44,7 @@ export abstract class ScratchEventExtractor {
     protected availableTextSnippets = new List<string>();
     protected proceduresMap = new Map<string, List<ScratchEvent>>();
 
-    constructor(vm: VirtualMachine) {
+    protected constructor(vm: VirtualMachine) {
         this.extractAvailableTextSnippets(vm);
         this.extractProcedures(vm);
     }
@@ -280,7 +280,7 @@ export abstract class ScratchEventExtractor {
         return answer;
     }
 
-    private _extractWaitDurations(target, block): number {
+    private static _extractWaitDurations(target, block): number {
         const inputs = target.blocks.getInputs(block);
         if (target.blocks.getOpcode(block) == 'control_wait') {
             const op = target.blocks.getBlock(inputs.DURATION.block);

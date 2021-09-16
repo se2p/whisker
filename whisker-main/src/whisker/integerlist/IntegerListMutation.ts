@@ -26,9 +26,9 @@ import {IntegerListChromosome} from './IntegerListChromosome';
 
 export class IntegerListMutation implements Mutation<IntegerListChromosome> {
 
-    private _min: number;
+    private readonly _min: number;
 
-    private _max: number;
+    private readonly _max: number;
 
     constructor(min: number, max: number) {
         this._min = min;

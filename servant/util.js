@@ -14,24 +14,24 @@ const logger = {
     clear: () => console.clear()
 };
 
-const validateCommandLineArguments = args => {
-    const noOptionsGiven = args.rawArgs.length < 3;
+const validateCommandLineArguments = commander => {
+    const noOptionsGiven = commander.rawArgs.length < 3;
     if (noOptionsGiven) {
-        args.help();
+        commander.help();
     }
-
-    if (!args.scratchPath && !args.isGenerateWitnessTestOnly) {
+    const options = commander._optionValues
+    if (!options.scratchPath && !options.isGenerateWitnessTestOnly) {
         logger.error('No path to a Scratch file was given, please use the -s option');
         process.exit(1);
     }
 
-    if (!args.testPath && !args.generateTests) {
+    if (!options.testPath && !options.generateTests) {
         logger.error('No path to a test file was given, please use the -t option');
         process.exit(1);
     }
 
-    if (args.numberOfTabs > os.cpus().length) {
-        logger.error(`You selected to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
+    if (options.numberOfTabs > os.cpus().length) {
+        logger.error(`You selected to parallelize the tests in ${options.numberOfTabs} tabs, while only having ` +
             `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
             `otherwise tests might fail and will need longer to initialize.`);
         process.exit(1);
@@ -76,7 +76,7 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests
-        } = commander;
+        } = commander._optionValues;
 
         validateCommandLineArguments(commander);
 

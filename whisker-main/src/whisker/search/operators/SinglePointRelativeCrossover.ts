@@ -21,7 +21,6 @@
 import { Crossover } from "../Crossover";
 import { Pair } from "../../utils/Pair";
 import {ListChromosome} from "../ListChromosome";
-import {Preconditions} from "../../utils/Preconditions";
 import {Randomness} from "../../utils/Randomness";
 
 export class SinglePointRelativeCrossover<C extends ListChromosome<any>> implements Crossover<C> {

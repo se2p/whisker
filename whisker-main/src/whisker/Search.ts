@@ -42,6 +42,7 @@ import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGenerator";
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
+import {ScratchProject} from "./scratch/ScratchProject";
 
 export class Search {
 
@@ -51,7 +52,7 @@ export class Search {
         this.vm = vm;
     }
 
-    private async execute(project, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
+    private async execute(project: ScratchProject, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
         console.log("Whisker-Main: test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
@@ -150,8 +151,8 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm, project, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number): Promise<Array<string>> {
+    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
+                     configName: string, accelerationFactor: number): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);

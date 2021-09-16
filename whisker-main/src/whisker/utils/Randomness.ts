@@ -35,8 +35,6 @@ export class Randomness {
 
     /**
      * Private constructor to prevent construction with new
-     *
-     * @param seed -- seed to initialize with
      */
     private constructor() {
         if(Randomness._initialSeed) {

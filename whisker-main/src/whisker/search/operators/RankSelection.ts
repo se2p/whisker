@@ -36,6 +36,7 @@ export class RankSelection<C extends Chromosome> implements Selection<C> {
      * Selects a chromosome from the given population and returns the result.
      *
      * @param sortedPopulation The population of chromosomes from which to select, sorted in ascending order.
+     * @param fitnessFunction Fitness function to satisfy interface, not used
      * @returns the selected chromosome.
      */
     apply(sortedPopulation: List<C>, fitnessFunction?: FitnessFunction<C>): C {
