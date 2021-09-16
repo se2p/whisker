@@ -13,5 +13,7 @@
     "load" : "Lade Modelle",
     "t-load" : "Lade Modelle des Editors",
     "save" : "Modelle herunterladen",
-    "t-save" : "Modelle des Editors als Datei speichern"
+    "t-save" : "Modelle des Editors als Datei speichern",
+    "tabContent": "Modell",
+    "newTab": "+ Neues Modell"
 }

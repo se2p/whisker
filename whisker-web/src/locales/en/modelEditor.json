@@ -13,5 +13,7 @@
     "load" : "Load models",
     "t-load" : "Load all models of editor",
     "save" : "Download models",
-    "t-save" : "Save the models of the test editor"
+    "t-save" : "Save the models of the test editor",
+    "tabContent": "Model",
+    "newTab": "+ New model"
 }

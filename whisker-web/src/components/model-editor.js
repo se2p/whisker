@@ -5,6 +5,11 @@ const {i18n} = require("../index");
 
 class ModelEditor {
 
+    // head line
+    static ADD_TAB = '#model-editor-add-tab';
+    static TABS = '#model-tabs';
+
+    // configuration right pane
     static ID_FIELD = "#editor-id";
     static LABEL_FIELD = '#editor-label';
     static OP_NAME_FIELD = '#model-editor-operation';
@@ -12,6 +17,7 @@ class ModelEditor {
     static PROGRAM_TYPE_CHOICE = '#model-type-program';
     static USER_TYPE_CHOICE = '#model-type-user';
 
+    // below the model editor
     static SAVE_BUTTON = '#model-editor-save';
     static APPLY_BUTTON = '#model-editor-apply';
 
@@ -20,19 +26,12 @@ class ModelEditor {
      */
     constructor(modelTester) {
         this.modelTester = modelTester;
-        this.modelTester.on(ModelTester.ModelTester.MODEL_ON_LOAD, this.loadModel.bind(this));
+        this.modelTester.on(ModelTester.ModelTester.MODEL_ON_LOAD, this.onLoadEvent.bind(this));
 
         // setup default model
         this.currentTab = 0;
-        this.models = [{
-            id: 'model0',
-            usage: 'program',
-            startNodeId: 'start',
-            nodeIds: ['start'],
-            stopNodeIds: [],
-            stopAllNodeIds: [],
-            edges: []
-        }];
+        this.models = [];
+        this.insertNewGraph();
         // const addNode = this.addNode;
         // const editNode = this.editNode;
         // const addEdge = this.addEdge;
@@ -66,8 +65,9 @@ class ModelEditor {
         document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
         this.network.enableEditMode();
         this.setUpButtons();
+        this.addTab(i18n.t('modelEditor:tabContent') + "1", "1");
+        this.changeToTab(0);
         this.drawModelEditor();
-        this.showGeneralSettings(0);
 
 
 // todo
@@ -77,6 +77,13 @@ class ModelEditor {
             $('#editor-id').val("");
             $('#editor-label').val("");
         });
+    }
+
+    onLoadEvent() {
+        this.models = this.modelTester.getAllModels();
+        this.createAllTabs();
+        this.changeToTab(0);
+        this.showGeneralSettings(0);
     }
 
 // ###################### Graph manipulation ###########################
@@ -115,7 +122,22 @@ class ModelEditor {
         }
     }
 
-    // ############################# Plotting ############################
+    // ############################# Actual data manipulation ######################
+
+    insertNewGraph() {
+        let id = i18n.t("modelEditor:tabContent") + (this.models.length + 1);
+        this.models.push({
+            id: id,
+            usage: 'program',
+            startNodeId: 'start',
+            nodeIds: ['start'],
+            stopNodeIds: [],
+            stopAllNodeIds: [],
+            edges: []
+        })
+    }
+
+    // ############################# Plotting and GUI setup ############################
 
     drawModelEditor() {
         this.network.redraw();
@@ -130,7 +152,6 @@ class ModelEditor {
     // todo on click on a model tab
     loadModel(tabNbr = 0) {
         this.currentTab = tabNbr;
-        this.models = this.modelTester.getAllModels();
 
         if (this.models.length === 0) {
             this.nodes = [];
@@ -141,26 +162,21 @@ class ModelEditor {
             }
             this.nodes = this.setupNodes(this.models[tabNbr]);
             this.edges = this.setupEdges(this.models[tabNbr].edges, this.nodes);
-            console.log(this.models[tabNbr].id);
-            $('#model-editor-first-tab').html(this.models[tabNbr].id);
         }
-
-        // todo create tabs for each model (scrollable?)
 
         this.data = {nodes: this.nodes, edges: this.edges};
         this.network.setData(this.data);
-        console.log(this.data);
         this.drawModelEditor();
-        this.showGeneralSettings(tabNbr);
     }
 
-    // todo show when making new tab on new graph
+    /**
+     * Show the general settings for a model, id, usage etc.
+     */
     showGeneralSettings(tabNbr) {
         document.getElementById('model-general-settings').style.display = 'block';
         document.getElementById('model-editor-configuration').style.display = 'none';
         // load into the header etc
         $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
-        console.log(this.models[tabNbr])
 
         if (this.models[tabNbr].usage === "program" || this.models[tabNbr].usage === undefined) {
             $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', true);
@@ -230,6 +246,9 @@ class ModelEditor {
         return edges;
     }
 
+    /**
+     * Set up gui buttons such as save, apply, add tab etc.
+     */
     setUpButtons() {
         // apply
         $(ModelEditor.APPLY_BUTTON).on('click', () => {
@@ -246,21 +265,78 @@ class ModelEditor {
             FileSaver.saveAs(blob, 'models.json');
         });
 
+        // tab behaviour
+        $(ModelEditor.ADD_TAB).on('click', () => {
+            this.insertNewGraph();
+            this.addTab(i18n.t("modelEditor:tabContent") + this.models.length, this.models.length - 1);
+            this.changeToTab(this.models.length - 1);
+        })
+
         // General settings of model
         $(ModelEditor.MODEL_ID_FIELD).on('keyup change', () => {
             this.models[this.currentTab].id = $(ModelEditor.MODEL_ID_FIELD).value;
-            console.log(this.models);
         })
         $(ModelEditor.PROGRAM_TYPE_CHOICE).on('click', () => {
             this.models[this.currentTab].usage = "program";
-            console.log(this.network.getViewPosition());
-            this.network.moveTo({position:{x:0, y:0}})
-            console.log(this.models);
         })
         $(ModelEditor.USER_TYPE_CHOICE).on('click', () => {
             this.models[this.currentTab].usage = "user";
-            console.log(this.models);
         })
+    }
+
+    // todo dont allow two identical model ids
+
+    /**
+     * Change the view to a model based on a clicked tab.
+     * @param tabNr Number of the tab
+     */
+    changeToTab(tabNr) {
+        this.loadModel(tabNr);
+
+        let children = $(ModelEditor.TABS).children();
+        let oldAttr = children[tabNr].getAttribute('class')
+        let isActive = oldAttr.indexOf("active");
+        if (isActive !== -1) {
+            oldAttr = oldAttr.substring(0, isActive) + oldAttr.substring(isActive + 6, oldAttr.length);
+        }
+        for (let i = 0; i < children.length; i++) {
+            children[i].setAttribute('class', oldAttr);
+        }
+        children[tabNr].setAttribute('class', oldAttr + ' active');
+        $(ModelEditor.TABS).scrollTop(children[tabNr].offsetTop);
+        this.showGeneralSettings(tabNr);
+    }
+
+    /**
+     * Create tabs based on the models loaded.
+     */
+    createAllTabs() {
+        // clear tabs
+        $(ModelEditor.TABS).children().remove();
+
+        if (!this.models.length || this.models.length === 0) {
+            return;
+        }
+
+        for (let i = 0; i < this.models.length; i++) {
+            this.addTab(this.models[i].id, i);
+        }
+    }
+
+    /**
+     * Add a new tab to the editor with the model having the given name.
+     */
+    addTab(name, nbr) {
+        let button = document.createElement("button");
+        button.type = "button";
+        button.setAttribute('class', 'tab-model-editor-button');
+        button.textContent = name;
+        button.setAttribute('value', nbr);
+
+        button.onclick = () => {
+            this.changeToTab(button.value);
+        }
+        $(ModelEditor.TABS).append(button);
     }
 
     // editNode(data, cancelAction, callback) {

@@ -79,5 +79,5 @@
     "model-case-sensitive-hover": "Wenn diese Option deaktiviert ist, wird Groß-/Kleinschreibung bei Namen ignoriert.",
     "model-output-no-user-model": "Kein User Modell für Input Generierung gefunden",
     "model-output-user-model": "Input Generierung mit User Modell",
-    "model-editor": "Modell Editor öffnen"
+    "model-editor": "Modell Editor"
 }

@@ -235,7 +235,7 @@ p {
 }
 
 .btn-wrapper {
-    width: 300px;
+    width: 400px;
     float: right;
 }
 
@@ -970,8 +970,21 @@ img {vertical-align: middle;}
     background-color: #f1f1f1;
 }
 
+#model-tabs {
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+#model-add-tab-container {
+    max-width: 145px;
+    padding-right: 0;
+    padding-left: 0;
+}
+
 /* Style the buttons that are used to open the tab content */
-.tab-model-editor button {
+.tab-model-editor-button {
     background-color: inherit;
     float: left;
     border: none;
@@ -982,11 +995,16 @@ img {vertical-align: middle;}
 }
 
 /* Change background color of buttons on hover */
-.tab-model-editor button:hover {
+.tab-model-editor-button:hover {
     background-color: #ddd;
 }
 
 /* Create an active/current tablink class */
-.tab-model-editor button.active {
+.tab-model-editor-button.active {
     background-color: #ccc;
+}
+
+#model-editor-add-tab {
+    position: absolute;
+    right: 0;
 }
