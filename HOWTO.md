@@ -148,6 +148,17 @@ s.isTouchingColor([r,g,b]);
 s.isColorTouchingColor(targetRgb, maskRgb);
 ```
 
+### Costume Object (c)
+
+```javascript
+/* Attributes */
+c.skinId;
+c.name;
+c.bitmapResolution;
+c.rotationCenterX;
+c.rotationCenterY;
+```
+
 ### Variable Object (v)
 
 ```javascript
