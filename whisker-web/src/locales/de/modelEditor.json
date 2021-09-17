@@ -19,5 +19,8 @@
     "save" : "Modelle herunterladen",
     "t-save" : "Modelle des Editors als Datei speichern",
     "tabContent": "Modell",
-    "newTab": "+ Neues Modell"
+    "newTab": "+ Neues Modell",
+    "delModel": "X",
+    "t-delModel": "Modell löschen",
+    "deletePromptMessage": "Dieses Modell wirklich löschen?"
 }

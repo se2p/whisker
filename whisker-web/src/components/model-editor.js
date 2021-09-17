@@ -21,6 +21,7 @@ class ModelEditor {
     // below the model editor
     static SAVE_BUTTON = '#model-editor-save';
     static APPLY_BUTTON = '#model-editor-apply';
+    static MODEL_DELETE_BUTTON = '#model-delete-button';
 
     /**
      * @param {ModelTester} modelTester
@@ -66,7 +67,8 @@ class ModelEditor {
         document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
         this.network.enableEditMode();
         this.setUpButtons();
-        this.addTab(i18n.t('modelEditor:tabContent') + "1", "1");
+        this.addTab(i18n.t('modelEditor:tabContent') + "1", 0);
+        this.nextTabIndex = 2;
         this.changeToTab(0);
         this.drawModelEditor();
 
@@ -138,6 +140,10 @@ class ModelEditor {
         })
     }
 
+    deleteCurrentModel() {
+        this.models.splice(this.currentTab, 1);
+    }
+
     // ############################# Plotting and GUI setup ############################
 
     drawModelEditor() {
@@ -151,15 +157,16 @@ class ModelEditor {
     }
 
     loadModel(tabNbr = 0) {
+        if (tabNbr < 0 || tabNbr >= this.models.length) {
+            throw Error("Tab number negative or higher than number of models.");
+        }
+
         this.currentTab = tabNbr;
 
         if (this.models.length === 0) {
             this.nodes = [];
             this.edges = [];
         } else {
-            if (tabNbr >= this.models.length) {
-                throw Error("Tab number higher than number of models.");
-            }
             this.nodes = this.setupNodes(this.models[tabNbr]);
             this.edges = this.setupEdges(this.models[tabNbr].edges, this.nodes);
         }
@@ -190,6 +197,12 @@ class ModelEditor {
             $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', false);
             $(ModelEditor.USER_TYPE_CHOICE).prop('checked', false);
             $(ModelEditor.END_TYPE_CHOICE).prop('checked', true);
+        }
+
+        if (this.models.length === 1) {
+            $(ModelEditor.MODEL_DELETE_BUTTON).addClass('hide');
+        } else {
+            $(ModelEditor.MODEL_DELETE_BUTTON).removeClass('hide');
         }
     }
 
@@ -263,7 +276,8 @@ class ModelEditor {
         // tab behaviour
         $(ModelEditor.ADD_TAB).on('click', () => {
             this.insertNewGraph();
-            this.addTab(i18n.t("modelEditor:tabContent") + this.models.length, this.models.length - 1);
+            this.addTab(i18n.t("modelEditor:tabContent") + this.nextTabIndex, this.models.length - 1);
+            this.nextTabIndex++;
             this.changeToTab(this.models.length - 1);
         })
 
@@ -278,6 +292,7 @@ class ModelEditor {
         $(ModelEditor.END_TYPE_CHOICE).on('click', () => {
             this.models[this.currentTab].usage = "end";
         })
+        $(ModelEditor.MODEL_DELETE_BUTTON).on('click', this.onDeleteModelButton.bind(this));
     }
 
     /**
@@ -385,6 +400,41 @@ class ModelEditor {
             this.models[this.currentTab].id = newValue;
         }
         $(ModelEditor.TABS).children('.active')[0].textContent = this.models[this.currentTab].id;
+    }
+
+    onDeleteModelButton() {
+        let dialog = $('<div/>', {class: 'popup'})
+            .append(
+                $('<p/>').html(i18n.t('modelEditor:deletePromptMessage'))
+            )
+            // CREATE THE BUTTONS
+            .append(
+                $('<div/>', {class: 'text-right'})
+                    .append($('<button/>', {class: 'btn btn-cancel'}).html('Cancel')
+                        .click(() => {
+                            $('#model-editor-content').children('.overlay').remove()
+                        }))
+                    .append($('<button/>', {class: 'btn btn-main'}).html('Ok')
+                        .click(() => {
+                            this.deleteCurrentModel();
+                            this.removeCurrentTab();
+                            $('#model-editor-content').children('.overlay').remove()
+                        }))
+            );
+
+        // create overlay and popup over the model editor
+        let overlay = $('<div/>', {class: 'overlay'})
+            .append(dialog);
+        $('#model-editor-content').append(overlay);
+    }
+
+    /**
+     * Remove the currently active tab and move to the previous one
+     */
+    removeCurrentTab() {
+        $(ModelEditor.TABS).children('.active').remove();
+        this.createAllTabs();
+        this.changeToTab(this.currentTab == 0 ? 0 : this.currentTab - 1);
     }
 
     // editNode(data, cancelAction, callback) {

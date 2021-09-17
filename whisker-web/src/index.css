@@ -1008,3 +1008,38 @@ img {vertical-align: middle;}
     position: absolute;
     right: 0;
 }
+
+/* Style the buttons that are used to open the tab content */
+#model-delete-button {
+    background-color: darkgrey;
+    float: left;
+    border: 1px solid grey;
+    outline: none;
+    cursor: pointer;
+    padding: 1px;
+    transition: 0.3s;
+    height: 30px;
+    width: 30px;
+}
+.popup {
+    width: 33.33%;
+    padding: 15px;
+    left: 0;
+    margin-left: 33.333333%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: white;
+    position: absolute;
+    top: 25%;
+    z-index: 10001;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,.50);
+    z-index: 10000;
+}

@@ -19,5 +19,8 @@
     "save" : "Download models",
     "t-save" : "Save the models of the test editor",
     "tabContent": "Model",
-    "newTab": "+ New model"
+    "newTab": "+ New model",
+    "delModel": "X",
+    "t-delModel": "Delete model",
+    "deletePromptMessage": "Really delete current model?"
 }
