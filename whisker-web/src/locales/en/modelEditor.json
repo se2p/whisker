@@ -25,5 +25,8 @@
     "addEdge": "Add edge",
     "cancel": "Cancel",
     "explanationNode": "Click on desired position.",
-    "explanationEdge": "Click on start node, hold  down and drag to end node."
+    "explanationEdge": "Click on start node, hold  down and drag to end node.",
+    "startNode": "Start node",
+    "stopNode": "Stop node",
+    "stopAllNode": "Stop node (all models)"
 }

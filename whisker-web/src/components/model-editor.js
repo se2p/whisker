@@ -247,7 +247,14 @@ class ModelEditor {
         for (const node in nodes) {
             if (nodes[node].id === json.startNodeId) {
                 nodes[node].color = "rgb(0,151,163)";
-                nodes[node].title = "Start";
+                nodes[node].title = i18n.t('modelEditor:startNode');
+            } else if (json.stopAllNodeIds.indexOf(nodes[node].id) !== -1) {
+                nodes[node].color = "rgb(102,102,102)";
+                nodes[node].font  = {color:"rgb(230,230,230)"};
+                nodes[node].title = i18n.t('modelEditor:stopAllNode');
+            } else if (json.stopNodeIds.indexOf(nodes[node].id) !== -1) {
+                nodes[node].color = "rgb(201,201,201)";
+                nodes[node].title = i18n.t('modelEditor:stopNode');
             }
         }
         return nodes;

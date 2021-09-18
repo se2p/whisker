@@ -25,5 +25,8 @@
     "addEdge": "Kante hinzufügen",
     "cancel": "Abbrechen",
     "explanationNode": "Auf gewünschte Position klicken.",
-    "explanationEdge": "Startknoten anklicken, gedrückt halten und zum Ziel ziehen."
+    "explanationEdge": "Startknoten anklicken, gedrückt halten und zum Ziel ziehen.",
+    "startNode": "Startknoten",
+    "stopNode": "Stopknoten",
+    "stopAllNode": "Stopknoten (alle Modelle)"
 }
