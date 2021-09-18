@@ -3,10 +3,6 @@
     "general-settings-header": "Modell Einstellungen",
     "right-title": "Optionen: ",
     "placeholder": "Zum Bearbeiten einen Knoten oder eine Kante anklicken.",
-    "addNode": "Zustand hinzufügen",
-    "editNode": "Zustand bearbeiten",
-    "addEdge": "Übergang hinzufügen",
-    "editEdge": "Übergang bearbeiten",
     "type": "Modell-Typ",
     "type-program": "Program-Modell",
     "t-type-program": "Gibt das Verhalten des Programms wieder",
@@ -24,5 +20,10 @@
     "t-delModel": "Modell löschen",
     "deletePromptMessage": "Dieses Modell wirklich löschen?",
     "okButton": "Ok",
-    "cancelButton": "Abbrechen"
+    "cancelButton": "Abbrechen",
+    "addNode": "Knoten hinzufügen",
+    "addEdge": "Kante hinzufügen",
+    "cancel": "Abbrechen",
+    "explanationNode": "Auf gewünschte Position klicken.",
+    "explanationEdge": "Startknoten anklicken, gedrückt halten und zum Ziel ziehen."
 }

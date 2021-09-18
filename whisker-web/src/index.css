@@ -944,15 +944,21 @@ img {vertical-align: middle;}
     right: 0;
 }
 
-.model-button {
-    border-radius: 2px;
-    border-color: lightgray;
+.model-editor {
+    border: 1px solid gray;
 }
 
 .model-editor-canvas {
     border: 1px solid lightgray;
-    height: 500px;
+    height: 425px;
     margin-right: 5px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 2px;
+}
+
+.model-editor-canvas-wrap {
+    height: 425px;
 }
 
 .model-editor-canvas canvas {
@@ -1009,11 +1015,16 @@ img {vertical-align: middle;}
     right: 0;
 }
 
+.model-button {
+    background-color: #ccc;
+}
+
 /* Style the buttons that are used to open the tab content */
 #model-delete-button {
-    background-color: darkgrey;
-    float: left;
-    border: 1px solid grey;
+    background-color: #ccc;
+    float: right;
+    border: none;
+    border-radius: 0.2em;
     outline: none;
     cursor: pointer;
     padding: 1px;
@@ -1042,4 +1053,9 @@ img {vertical-align: middle;}
     bottom: 0;
     background: rgba(0,0,0,.50);
     z-index: 10000;
+}
+
+#model-cancel-add {
+    margin-right:0;
+    margin-left:auto;
 }

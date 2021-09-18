@@ -488,7 +488,7 @@
         <!-- Model editor -->
         <h3 data-i18n="modelEditor:title"></h3>
         <div id="model-editor" class="mt-4 spacer10 hide">
-            <div class="form col-lg-12">
+            <div class="col" style="background-color: #f1f1f1; border-radius: 5px;">
                 <div class="row tab-model-editor">
                     <div id="model-tabs" class="col"></div>
                     <div id="model-add-tab-container" class="col">
@@ -499,14 +499,34 @@
                 </div>
                 <div class="row spacer10" id="model-editor-content">
                     <div class="col">
-                        <div id="model-editor-canvas" class="row model-editor-canvas"></div>
+                        <div class="row model-editor-canvas-wrap">
+                            <div id="model-editor-canvas" class="col model-editor-canvas"></div>
+                        </div>
+                        <div class="row my-2">
+                            <div class="col" id="model-add-node-div">
+                                <button id="model-add-node" type="button" class="btn btn-sm model-button"
+                                        data-i18n="modelEditor:addNode" style="float:right"></button>
+                            </div>
+                            <div class="col" id="model-add-edge-div">
+                                <button id="model-add-edge" type="button" class="btn btn-sm model-button"
+                                        data-i18n="modelEditor:addEdge"></button>
+                            </div>
+                            <div class="col hide model-cancel-add-div">
+                                <!-- For the explanation, filled by buttons  -->
+                                <label id="model-explanation"></label>
+                            </div>
+                            <div class="col-2 hide model-cancel-add-div">
+                                <button id="model-cancel-add" type="button" class="btn btn-sm model-button"
+                                        data-i18n="modelEditor:cancel"></button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-4">
-                        <div class="row" id="model-general-settings">
+                    <div class="col-4 mt-1">
+                        <div id="model-general-settings">
                             <div class="col">
                                 <div class="row">
-                                    <h4 data-i18n="modelEditor:general-settings-header"></h4>
-                                    <div style="position: absolute; right:0; margin-left: auto">
+                                    <h4 data-i18n="modelEditor:general-settings-header" class="col"></h4>
+                                    <div class="col-1" style="padding-right: 0">
                                         <button id="model-delete-button" type="button" data-toggle="tooltip"
                                                 data-placement="top" data-animation="false"
                                                 data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"

@@ -2,6 +2,7 @@ const {ModelTester} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const {i18n} = require("../index");
+const {CheckName} = require("whisker-main/src/whisker/model/components/Check");
 
 class ModelEditor {
 
@@ -17,11 +18,18 @@ class ModelEditor {
     static PROGRAM_TYPE_CHOICE = '#model-type-program';
     static USER_TYPE_CHOICE = '#model-type-user';
     static END_TYPE_CHOICE = '#model-type-end';
+    static MODEL_DELETE_BUTTON = '#model-delete-button';
 
     // below the model editor
     static SAVE_BUTTON = '#model-editor-save';
     static APPLY_BUTTON = '#model-editor-apply';
-    static MODEL_DELETE_BUTTON = '#model-delete-button';
+    static ADD_NODE = '#model-add-node';
+    static ADD_EDGE = '#model-add-edge';
+    static CANCEL_ADD = '#model-cancel-add';
+    static ADD_NODE_DIV = '#model-add-node-div';
+    static ADD_EDGE_DIV = '#model-add-edge-div';
+    static CANCEL_ADD_DIV = '.model-cancel-add-div';
+    static EXPLANATION = '#model-explanation';
 
     /**
      * @param {ModelTester} modelTester
@@ -34,9 +42,6 @@ class ModelEditor {
         this.currentTab = 0;
         this.models = [];
         this.insertNewGraph();
-        // const addNode = this.addNode;
-        // const editNode = this.editNode;
-        // const addEdge = this.addEdge;
 
         this.options = {
             edges: {
@@ -50,11 +55,9 @@ class ModelEditor {
                 },
             },
             manipulation: {
-                enabled: true,
+                enabled: false,
                 addNode: this.addNode.bind(this),
-                editNode: this.editNode.bind(this),
                 addEdge: this.addEdge.bind(this)
-                // todo edit edge?
             },
             locale: $('#lang-select').val(),
             clickToUse: false,
@@ -65,7 +68,6 @@ class ModelEditor {
         this.network = new vis.Network($('#model-editor-canvas')[0], this.data, this.options);
         this.network.focus('start');
         document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
-        // this.network.enableEditMode();
         this.setUpButtons();
         this.addTab(i18n.t('modelEditor:tabContent') + "1", 0);
         this.nextTabIndex = 2;
@@ -74,7 +76,7 @@ class ModelEditor {
 
 
 // todo
-        this.network.on('selectNode', this.network.editNode); // todo needed?
+        this.network.on('selectNode', this.network.editNode);
         this.network.on('deselectNode', () => {
             $('#model-editor-operation').text(i18n.t(""));
             $('#editor-id').val("");
@@ -93,6 +95,7 @@ class ModelEditor {
 
     addNode(data, callback) {
         this.models[this.currentTab].nodes.push({id: data.id, label: data.label});
+        this.showAddButtons();
         callback(data);
     }
 
@@ -106,22 +109,48 @@ class ModelEditor {
     }
 
     addEdge(data, callback) {
-        console.log(data);
-
-        let newEdge = {
+        this.models[this.currentTab].edges.push({
             id: data.id,
             label: data.label,
             forceTestAfter: -1,
             forceTestAt: -1,
             conditions: [],
             effects: []
-        };
-
-        this.models[this.currentTab].edges.push(newEdge);
+        });
+        this.showAddButtons();
         callback(data);
     }
 
+    // Checks in Check.ts
+    // [
+    //     "AttrChange", // sprite name, attr name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
+    //     "AttrComp",// args: sprite name, attribute name, comparison (=,>,<...), value to compare to
+    //     "BackgroundChange",
+    //      "Click", // args: sprite name
+    //     "Function",
+    //     "Key", // args: key name
+    //     "Output", // sprite name, string output
+    //     "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
+    //     "SpriteTouching", // two sprites touching each other, args: two sprite names
+    //     "VarChange", // sprite name, var name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
+    //     "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
+    //     "Expr", // evaluate an expression, args: expression
+    //     "Probability", // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks
+    //     // rand<=prob) (but this probability depends on the other edge conditions tested before -> edge conditions are
+    //     // tested one for one and not tested if another edge is taken before it)
+    //     "TimeElapsed", // time from the test start on, time in milliseconds
+    //     "TimeBetween", //  time from the last edge transition in the model, in milliseconds
+    //     "TimeAfterEnd", // time from program end (for after end models)
+    //     "NbrOfClones", // sprite name, comparison, number
+    //     "NbrOfVisibleClones", // sprite name, comparison, number
+    //     "TouchingEdge", // sprite name regex
+    //     "TouchingVerticalEdge", // sprite name regex
+    //     "TouchingHorizEdge", // sprite name regex
+    //     "RandomValue" // sprite name regex, attrName
+    // ]
+
     editEdge(data, callback) {
+        console.log("edit edge")
         //     if (typeof data.to === "object") data.to = data.to.id;
         //     if (typeof data.from === "object") data.from = data.from.id;
     }
@@ -291,6 +320,34 @@ class ModelEditor {
             this.models[this.currentTab].usage = "end";
         })
         $(ModelEditor.MODEL_DELETE_BUTTON).on('click', this.onDeleteModelButton.bind(this));
+
+        // Graph manipulation
+        $(ModelEditor.ADD_NODE).on('click', () => {
+            $(ModelEditor.EXPLANATION).text(i18n.t('modelEditor:explanationNode'));
+            this.hideAddButtons();
+            this.network.addNodeMode()
+        });
+        $(ModelEditor.ADD_EDGE).on('click', () => {
+            this.hideAddButtons();
+            $(ModelEditor.EXPLANATION).text(i18n.t('modelEditor:explanationEdge'));
+            this.network.addEdgeMode();
+        });
+        $(ModelEditor.CANCEL_ADD).on('click', () => {
+            this.showAddButtons();
+            this.network.disableEditMode();
+        })
+    }
+
+    hideAddButtons() {
+        $(ModelEditor.ADD_NODE_DIV).addClass("hide");
+        $(ModelEditor.ADD_EDGE_DIV).addClass("hide");
+        $(ModelEditor.CANCEL_ADD_DIV).removeClass("hide");
+    }
+
+    showAddButtons() {
+        $(ModelEditor.ADD_NODE_DIV).removeClass("hide");
+        $(ModelEditor.ADD_EDGE_DIV).removeClass("hide");
+        $(ModelEditor.CANCEL_ADD_DIV).addClass("hide");
     }
 
     /**

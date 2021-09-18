@@ -3,10 +3,6 @@
     "general-settings-header": "Model Settings",
     "right-title": "Options: ",
     "placeholder": "To edit click on a node or edge.",
-    "addNode": "Add state",
-    "editNode": "Edit state",
-    "addEdge": "Add transition",
-    "editEdge": "Edit transition",
     "type": "Model type",
     "type-program": "Program model",
     "t-type-program": "Represents the program's behavior",
@@ -24,5 +20,10 @@
     "t-delModel": "Delete model",
     "deletePromptMessage": "Really delete current model?",
     "okButton": "Ok",
-    "cancelButton": "Cancel"
+    "cancelButton": "Cancel",
+    "addNode": "Add node",
+    "addEdge": "Add edge",
+    "cancel": "Cancel",
+    "explanationNode": "Click on desired position.",
+    "explanationEdge": "Click on start node, hold  down and drag to end node."
 }
