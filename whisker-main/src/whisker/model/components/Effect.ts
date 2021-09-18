@@ -12,13 +12,13 @@ export class Effect extends Check {
     /**
      * Get an effect representation, checks the arguments.
      * @param id  Id for this effect.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
      * @param name Name of the effect type.
      * @param negated Whether the effect is negated (e.g. it does not output "hello")
      * @param args Arguments for the effect e.g. sprite names.
      */
-    constructor(id: string, edgeID: string, name: CheckName, negated: boolean, args: any[]) {
-        super(id, edgeID, name, args, negated);
+    constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: any[]) {
+        super(id, edgeLabel, name, args, negated);
         if (name == CheckName.Output || ((name == CheckName.AttrComp || name == CheckName.AttrChange) && (args[1] == "sayText"))) {
             this.dependsOnSayText = true;
         } else if (name == CheckName.Function || name == CheckName.Expr) {
@@ -40,12 +40,12 @@ export class Effect extends Check {
     /**
      * Register the check listener and test driver and check the effect for errors.
      */
-    registerComponents(t: TestDriver, cu: CheckUtility, caseSensitive: boolean) {
+    registerComponents(t: TestDriver, cu: CheckUtility, caseSensitive: boolean, graphID: string) {
         try {
-            this._effect = this.checkArgsWithTestDriver(t, cu, caseSensitive);
+            this._effect = this.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
         } catch (e) {
             this._effect = () => false;
-            cu.addErrorOutput(this._edgeID, e);
+            cu.addErrorOutput(this._edgeLabel, graphID, e);
         }
     }
 

@@ -12,6 +12,9 @@ import {Check} from "./Check";
  */
 export abstract class ModelEdge {
     readonly id: string;
+    readonly label: string;
+    readonly graphID: string;
+
     /* Id of the source node */
     readonly from: string;
     /* Id of the target node*/
@@ -25,8 +28,11 @@ export abstract class ModelEdge {
     private forceTestAtSteps: number;
     protected failedForcedTest: boolean;
 
-    protected constructor(id: string, from: string, to: string, forceTestAfter: number, forceTestAt: number) {
+    protected constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
+                          forceTestAt: number) {
         this.id = id;
+        this.label = label;
+        this.graphID = graphID;
         this.from = from;
         this.to = to;
         this.forceTestAfter = forceTestAfter;
@@ -70,7 +76,7 @@ export abstract class ModelEdge {
                         cu.addTimeLimitFailOutput(this.getTimeLimitFailedOutput(this.conditions[i], t));
                     }
                 } catch (e) {
-                    cu.addErrorOutput(this.id, e);
+                    cu.addErrorOutput(this.label, this.graphID, e);
                     failedConditions.push(this.conditions[i]);
                 }
             }
@@ -85,7 +91,7 @@ export abstract class ModelEdge {
                 }
             } catch (e) {
                 failedConditions.push(this.conditions[i]);
-                cu.addErrorOutput(this.id, e);
+                cu.addErrorOutput(this.label, this.graphID, e);
             }
         }
 
@@ -138,7 +144,7 @@ export abstract class ModelEdge {
             this.forceTestAfterSteps = t.vmWrapper.convertFromTimeToSteps(this.forceTestAfter) + 1;
         }
         this.conditions.forEach(cond => {
-            cond.registerComponents(checkListener, t, caseSensitive);
+            cond.registerComponents(checkListener, t, caseSensitive, this.graphID);
         })
     }
 
@@ -155,7 +161,8 @@ export abstract class ModelEdge {
             conditions.push(condition.simplifyForSave());
         })
         return {
-            id: this.id.substring(this.id.indexOf("-") + 1, this.id.length),
+            id: this.id,
+            label: this.label,
             from: this.from,
             to: this.to,
             forceTestAfter: this.forceTestAfter,
@@ -175,13 +182,16 @@ export class ProgramModelEdge extends ModelEdge {
     /**
      * Create a new edge.
      * @param id ID of the edge.
+     * @param label Label of the edge.
+     * @param graphID Id of the parent graph.
      * @param from Index of the source node.
      * @param to Index of the target node.
      * @param forceTestAfter Force testing this condition after given amount of milliseconds.
      * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
      */
-    constructor(id: string, from: string, to: string, forceTestAfter: number, forceTestAt: number) {
-        super(id, from, to, forceTestAfter, forceTestAt);
+    constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
+                forceTestAt: number) {
+        super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
     }
 
     reset(): void {
@@ -203,7 +213,7 @@ export class ProgramModelEdge extends ModelEdge {
     registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean): void {
         super.registerComponents(cu, testDriver, caseSensitive);
         this.effects.forEach(effect => {
-            effect.registerComponents(testDriver, cu, caseSensitive);
+            effect.registerComponents(testDriver, cu, caseSensitive, this.graphID);
         })
     }
 
@@ -286,13 +296,16 @@ export class UserModelEdge extends ModelEdge {
     /**
      * Create a new edge.
      * @param id ID of the edge.
+     * @param label Label of the edge.
+     * @param graphID Id of the parent graph.
      * @param from Index of the source node.
      * @param to Index of the target node.
      * @param forceTestAfter Force testing this condition after given amount of milliseconds.
      * @param forceTestAt Force testing this condition after the test run a given amount of milliseconds.
      */
-    constructor(id: string, from: string, to: string, forceTestAfter: number, forceTestAt: number) {
-        super(id, from, to, forceTestAfter, forceTestAt);
+    constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
+                forceTestAt: number) {
+        super(id, label, graphID, from, to, forceTestAfter, forceTestAt);
     }
 
     /**

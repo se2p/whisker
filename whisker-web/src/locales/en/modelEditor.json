@@ -22,5 +22,7 @@
     "newTab": "+ New model",
     "delModel": "X",
     "t-delModel": "Delete model",
-    "deletePromptMessage": "Really delete current model?"
+    "deletePromptMessage": "Really delete current model?",
+    "okButton": "Ok",
+    "cancelButton": "Cancel"
 }

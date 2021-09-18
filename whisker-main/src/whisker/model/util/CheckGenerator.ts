@@ -64,7 +64,8 @@ export abstract class CheckGenerator {
      *
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param spriteNameRegex Regex describing the name of the sprite having the variable.
      * @param varNameRegex Regex describing the name of the variable.
      * @param comparison Mode of comparison, e.g. =, <, >, <=, >=
@@ -72,8 +73,8 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getVariableComparisonCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean,
-                                      caseSensitive: boolean, spriteNameRegex: string,
+    static getVariableComparisonCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
+                                      negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
                                       varNameRegex: string, comparison: string, varValue: string): () => boolean {
         const {
             sprite: foundSprite,
@@ -100,7 +101,7 @@ export abstract class CheckGenerator {
             }
         }
 
-        cu.registerVarEvent(variableName, eventString, edgeID, check);
+        cu.registerVarEvent(variableName, eventString, edgeLabel, graphID, check);
         return check;
     }
 
@@ -109,7 +110,8 @@ export abstract class CheckGenerator {
      *
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param spriteNameRegex Regex describing the name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param comparison  Mode of comparison, e.g. =, <, >, <=, >=
@@ -117,9 +119,9 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getAttributeComparisonCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                                       spriteNameRegex: string, attrName: string, comparison: string,
-                                       attrValue: string): () => boolean {
+    static getAttributeComparisonCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
+                                       negated: boolean, caseSensitive: boolean, spriteNameRegex: string,
+                                       attrName: string, comparison: string, attrValue: string): () => boolean {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
@@ -134,12 +136,12 @@ export abstract class CheckGenerator {
 
         // on movement listener
         if (attrName == "x" || attrName == "y") {
-            CheckGenerator.attributeCompOnMove(cu, edgeID, negated, spriteName, spriteNameRegex, attrName, comparison,
-                attrValue);
+            CheckGenerator.attributeCompOnMove(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex, attrName,
+                comparison, attrValue);
         } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
             || attrName == "currentCostumeName" || attrName == "rotationStyle") {
-            CheckGenerator.attributeCompOnVisual(cu, edgeID, negated, spriteName, spriteNameRegex, attrName, comparison,
-                attrValue);
+            CheckGenerator.attributeCompOnVisual(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex, attrName,
+                comparison, attrValue);
         }
 
         // without movement
@@ -158,9 +160,9 @@ export abstract class CheckGenerator {
         }
     }
 
-    private static attributeCompOnVisual(cu: CheckUtility, edgeID: string, negated: boolean, spriteName: string,
-                                         spriteNameRegex: string, attrName: string, comparison: string,
-                                         attrValue: string) {
+    private static attributeCompOnVisual(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                         spriteName: string, spriteNameRegex: string, attrName: string,
+                                         comparison: string, attrValue: string) {
         let eventString;
         if (attrName == "currentCostumeName") {
             eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, "costume",
@@ -170,7 +172,7 @@ export abstract class CheckGenerator {
                 comparison, attrValue);
         }
 
-        cu.registerOnVisualChange(spriteName, eventString, edgeID, (sprite) => {
+        cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
@@ -179,12 +181,12 @@ export abstract class CheckGenerator {
         });
     }
 
-    private static attributeCompOnMove(cu: CheckUtility, edgeID: string, negated: boolean, spriteName: string,
-                                       spriteNameRegex: string, attrName: string, comparison: string,
-                                       attrValue: string) {
+    private static attributeCompOnMove(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                       spriteName: string, spriteNameRegex: string, attrName: string,
+                                       comparison: string, attrValue: string) {
         const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
             comparison, attrValue);
-        cu.registerOnMoveEvent(spriteName, eventString, edgeID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
@@ -197,13 +199,14 @@ export abstract class CheckGenerator {
      * Get a method checking another method.
      * @param t Instance of the test driver.
      * @param cu Listener for checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param caseSensitive Whether the sprite and variable names are case sensitive.
      * @param negated Whether it should be negated.
      * @param f the function as a string.
      */
-    static getFunctionCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                            f: string): () => boolean {
+    static getFunctionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                            caseSensitive: boolean, f: string): () => boolean {
         let fun;
 
         if (f == "true" && negated || f == "false" && !negated) {
@@ -224,7 +227,7 @@ export abstract class CheckGenerator {
 
         let {varDependencies, attrDependencies} = ModelUtil.getDependencies(f);
         let eventString = CheckUtility.getEventString(CheckName.Function, negated, f);
-        this.setupDependencies(cu, eventString, edgeID, varDependencies, attrDependencies, () => {
+        this.setupDependencies(cu, eventString, edgeLabel, graphID, varDependencies, attrDependencies, () => {
             return !negated == fun(t);
         });
         return () => {
@@ -232,20 +235,20 @@ export abstract class CheckGenerator {
         };
     }
 
-    private static setupDependencies(cu: CheckUtility, eventString: string, edgeID: string, varDependencies,
-                                     attrDependencies, predicate: (...sprite) => boolean) {
+    private static setupDependencies(cu: CheckUtility, eventString: string, edgeLabel: string, graphID: string,
+                                     varDependencies, attrDependencies, predicate: (...sprite) => boolean) {
         if (varDependencies.length > 0) {
             varDependencies.forEach(({spriteName, varName}) => {
-                cu.registerVarEvent(varName, eventString, edgeID, predicate);
+                cu.registerVarEvent(varName, eventString, edgeLabel, graphID, predicate);
             })
         }
         if (attrDependencies.length > 0) {
             attrDependencies.forEach(({spriteName, attrName}) => {
                 if (attrName == "x" || attrName == "y") {
-                    cu.registerOnMoveEvent(spriteName, eventString, edgeID, predicate);
+                    cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, predicate);
                 } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
                     || attrName == "currentCostumeName" || attrName == "rotationStyle") {
-                    cu.registerOnVisualChange(spriteName, eventString, edgeID, predicate)
+                    cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, predicate)
                 }
             })
         }
@@ -256,14 +259,16 @@ export abstract class CheckGenerator {
      *
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param spriteName1Regex  Regex describing the name of the first sprite.
      * @param spriteName2Regex  Regex describing the name of the second sprite.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getSpriteTouchingCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                                  spriteName1Regex: string, spriteName2Regex: string): () => boolean {
+    static getSpriteTouchingCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                  caseSensitive: boolean, spriteName1Regex: string,
+                                  spriteName2Regex: string): () => boolean {
         const spriteName1 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName1Regex).name;
         const spriteName2 = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteName2Regex).name;
 
@@ -271,7 +276,7 @@ export abstract class CheckGenerator {
             spriteName2Regex);
         // on movement check sprite touching other sprite, sprite is given by movement event caller and
         // isTouchingSprite is checking all clones with spriteName2
-        cu.registerOnMoveEvent(spriteName1, eventString, edgeID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName1, eventString, edgeLabel, graphID, (sprite) => {
             return !negated == sprite.isTouchingSprite(spriteName2);
         });
 
@@ -295,7 +300,8 @@ export abstract class CheckGenerator {
 
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param spriteNameRegex  Regex describing the name of the sprite.
      * @param r RGB red color value.
      * @param g RGB green color value.
@@ -303,7 +309,8 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getSpriteColorTouchingCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
+    static getSpriteColorTouchingCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
+                                       negated: boolean, caseSensitive: boolean,
                                        spriteNameRegex: string, r: number, g: number, b: number): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255) {
@@ -311,7 +318,7 @@ export abstract class CheckGenerator {
         }
         const eventString = CheckUtility.getEventString(CheckName.SpriteColor, negated, spriteNameRegex, r, g, b);
         // on movement check sprite color
-        cu.registerOnMoveEvent(spriteName, eventString, edgeID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             return !negated == sprite.isTouchingColor([r, g, b]);
         });
 
@@ -334,19 +341,20 @@ export abstract class CheckGenerator {
      * Get a method checking whether a sprite has the given output included in their sayText.
      * @param t Instance of the test driver.
      * @param cu  Listener for the checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param spriteNameRegex  Regex describing the name of the sprite.
      * @param output Output to say.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                                  spriteNameRegex: string, output: string): () => boolean {
+    static getOutputOnSpriteCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                  caseSensitive: boolean, spriteNameRegex: string, output: string): () => boolean {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
         const expression = ModelUtil.getExpressionForEval(t, caseSensitive, output).expr;
 
         const eventString = CheckUtility.getEventString(CheckName.Output, negated, spriteNameRegex, output);
-        cu.registerOutput(spriteName, eventString, edgeID, (sprite) => {
+        cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             let sayText = !caseSensitive ? sprite.sayText.toLowerCase() : sprite.sayText;
             return !negated == (sayText && sayText.indexOf(eval(expression)(t)) != -1);
         })
@@ -370,7 +378,8 @@ export abstract class CheckGenerator {
      * Get a method checking whether a variable value of a sprite changed.
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param spriteNameRegex Regex describing the name of the sprite having the variable.
      * @param varNameRegex Regex describing the name of the variable.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
@@ -379,8 +388,9 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getVariableChangeCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                                  spriteNameRegex: string, varNameRegex: string, change): () => boolean {
+    static getVariableChangeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                  caseSensitive: boolean, spriteNameRegex: string, varNameRegex: string,
+                                  change): () => boolean {
         let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
         let {
             sprite: foundSprite,
@@ -401,7 +411,7 @@ export abstract class CheckGenerator {
             }
         }
 
-        cu.registerVarEvent(variableName, eventString, edgeID, check);
+        cu.registerVarEvent(variableName, eventString, edgeLabel, graphID, check);
         return check;
     }
 
@@ -410,7 +420,8 @@ export abstract class CheckGenerator {
      * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText;
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param spriteNameRegex  Regex describing the name of the sprite having the variable.
      * @param attrName Name of the attribute.
      * @param change For integer variable '+'|'++' for increase, '-'|'--' for decrease. '='|'==' for staying the same-.
@@ -419,7 +430,8 @@ export abstract class CheckGenerator {
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
-    static getAttributeChangeCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
+    static getAttributeChangeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string,
+                                   negated: boolean, caseSensitive: boolean,
                                    spriteNameRegex: string, attrName: string, change): () => boolean {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
@@ -429,10 +441,12 @@ export abstract class CheckGenerator {
         ModelUtil.checkAttributeExistence(t, sprite, attrName);
 
         if (attrName == "x" || attrName == "y") {
-            CheckGenerator.registerOnMoveAttrChange(cu, edgeID, negated, spriteName, spriteNameRegex, attrName, change);
+            CheckGenerator.registerOnMoveAttrChange(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
+                attrName, change);
         } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
             || attrName == "currentCostumeName" || attrName == "rotationStyle") {
-            CheckGenerator.registerOnVisualAttrChange(cu, edgeID, negated, spriteName, spriteNameRegex, attrName, change);
+            CheckGenerator.registerOnVisualAttrChange(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
+                attrName, change);
         }
 
         return () => {
@@ -450,15 +464,15 @@ export abstract class CheckGenerator {
         }
     }
 
-    private static registerOnVisualAttrChange(cu: CheckUtility, edgeID: string, negated: boolean, spriteName: string,
-                                              spriteNameRegex: string, attrName: string, change) {
+    private static registerOnVisualAttrChange(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                              spriteName: string, spriteNameRegex: string, attrName: string, change) {
         let eventString;
         if (attrName == "currentCostumeName") {
             eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, "costume", change);
         } else {
             eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, attrName, change);
         }
-        cu.registerOnVisualChange(spriteName, eventString, edgeID, (sprite) => {
+        cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
@@ -467,10 +481,10 @@ export abstract class CheckGenerator {
         });
     }
 
-    private static registerOnMoveAttrChange(cu: CheckUtility, edgeID: string, negated: boolean, spriteName: string,
-                                            spriteNameRegex: string, attrName: string, change) {
+    private static registerOnMoveAttrChange(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                            spriteName: string, spriteNameRegex: string, attrName: string, change) {
         const eventString = CheckUtility.getEventString(CheckName.AttrChange, negated, spriteNameRegex, attrName, change);
-        cu.registerOnMoveEvent(spriteName, eventString, edgeID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.testChange(sprite.old[attrName], sprite[attrName], change);
             } catch (e) {
@@ -483,19 +497,19 @@ export abstract class CheckGenerator {
      * Get a method checking whether the background of the stage changed.
      * @param t Instance of the test driver.
      * @param cu Listener for checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
      * @param newBackground Name of the new background.
      * @param negated Whether this check is negated.
      */
-    static getBackgroundChangeCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean,
+    static getBackgroundChangeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, negated: boolean,
                                     newBackground: string): () => boolean {
         // without movement
         return () => {
             const stage = t.getStage();
             try {
-                    if (ModelUtil.compare(stage["currentCostumeName"], newBackground, "=")) {
-                        return !negated;
-                    }
+                if (ModelUtil.compare(stage["currentCostumeName"], newBackground, "=")) {
+                    return !negated;
+                }
             } catch (e) {
                 // should not even happen...
                 throw getErrorForAttribute("Stage", "costume", e.message);
@@ -508,13 +522,14 @@ export abstract class CheckGenerator {
      * Get a method checking whether an expression such as "$(Cat.x) > 25" is fulfilled.
      * @param t Instance of the test driver.
      * @param cu Listener for checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param expr The expression string.
      */
-    static getExpressionCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                              expr: string) {
+    static getExpressionCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                              caseSensitive: boolean, expr: string) {
         let {
             expr: expression,
             varDependencies,
@@ -522,7 +537,7 @@ export abstract class CheckGenerator {
         } = ModelUtil.getExpressionForEval(t, caseSensitive, expr);
 
         let eventString = CheckUtility.getEventString(CheckName.Expr, negated, expr);
-        this.setupDependencies(cu, eventString, edgeID, varDependencies, attrDependencies, () => {
+        this.setupDependencies(cu, eventString, edgeLabel, graphID, varDependencies, attrDependencies, () => {
             return !negated == eval(expression)(t);
         });
         return () => {
@@ -622,15 +637,17 @@ export abstract class CheckGenerator {
      * Get a method to check whether a sprite is touching an edge.
      * @param t Test driver.
      * @param cu Listener for checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param spriteNameRegex Regex defining the sprite name.
      * @param verticalEdge Whether the vertical edges should be considered for the check.
      * @param horizEdge Whether the horizontal edges should be considered for the check.
      * */
-    static getTouchingEdgeCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                                spriteNameRegex: string, verticalEdge = true, horizEdge = true) {
+    static getTouchingEdgeCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                caseSensitive: boolean, spriteNameRegex: string, verticalEdge = true,
+                                horizEdge = true) {
         if (!verticalEdge && !horizEdge) {
             throw new Error("Check touching edge not valid. Either vertical, horizontal or both.");
         }
@@ -646,7 +663,7 @@ export abstract class CheckGenerator {
             eventString = CheckUtility.getEventString(CheckName.TouchingVerticalEdge, negated, spriteNameRegex);
         }
 
-        cu.registerOnMoveEvent(spriteName, eventString, edgeID, (sprite) => {
+        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             return !negated == check(sprite);
         })
         return () => {
@@ -667,14 +684,15 @@ export abstract class CheckGenerator {
      * any of the last two positions). Checks only if only one rendered target of a sprite is visible.
      * @param t Instance of the test driver.
      * @param cu Listener for checks.
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
+     * @param graphID ID of the parent graph of the check.
      * @param negated Whether this check is negated.
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      * @param spriteNameRegex Regex defining the sprite name.
      * @param attrName Attribute name, x or y.
      */
-    static getRandomValueCheck(t: TestDriver, cu: CheckUtility, edgeID: string, negated: boolean, caseSensitive: boolean,
-                               spriteNameRegex: string, attrName: string) {
+    static getRandomValueCheck(t: TestDriver, cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                               caseSensitive: boolean, spriteNameRegex: string, attrName: string) {
         const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
 
         if (attrName != "x" && attrName != "y") {
@@ -698,7 +716,7 @@ export abstract class CheckGenerator {
             return !negated;
         }
         const eventString = CheckUtility.getEventString(CheckName.RandomValue, negated, spriteNameRegex, attrName);
-        cu.registerOnMoveEvent(spriteName, eventString, edgeID, check);
+        cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, check);
 
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);

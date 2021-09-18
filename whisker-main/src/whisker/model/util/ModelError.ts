@@ -17,7 +17,7 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
         }
     }
 
-    let result = edge.id + ": " + effect.toString();
+    let result = edge.graphID + "-" + edge.label + ": " + effect.toString();
     if (containsElapsed != undefined) {
         result += " before " + containsElapsed + "ms elapsed";
     }
@@ -28,15 +28,15 @@ function getEffectFailedOutput(edge: ModelEdge, effect: Effect) {
 }
 
 function getTimeLimitFailedAfterOutput(edge: ModelEdge, condition: Condition, ms: number) {
-    return edge.id + ": " + condition.toString() + " after " + ms + "ms";
+    return edge.graphID + "-" + edge.label + ": " + condition.toString() + " after " + ms + "ms";
 }
 
 function getTimeLimitFailedAtOutput(edge: ModelEdge, condition: Condition, ms: number) {
-    return edge.id + ": " + condition.toString() + " at " + ms + "ms";
+    return edge.graphID + "-" + edge.label + ": " + condition.toString() + " at " + ms + "ms";
 }
 
-function getErrorOnEdgeOutput(edgeID: string, error: string) {
-    return "Error " + edgeID + ": " + error;
+function getErrorOnEdgeOutput(edgeLabel: string, graphLabel: string, error: string) {
+    return "Error " + graphLabel + "-" + edgeLabel + ": " + error;
 }
 
 // ----- Variables, sprites, attributes not found and other initialization errors

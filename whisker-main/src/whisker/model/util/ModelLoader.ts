@@ -105,21 +105,25 @@ export class ModelLoader {
         }
         this.graphIDs.push(graphID);
 
-        // create all nodes
+        // create all nodes, allowed are either a 'nodeIds' string array or an array 'nodes' with{id:string,
+        // label:string}
         const nodeIDs = graph.nodeIds;
-        if (!Array.isArray(nodeIDs) || nodeIDs.length == 0) {
-            throw new Error(graphID + ": No node ids given.");
+        const nodes = graph.nodes;
+        if ((!Array.isArray(nodeIDs) || nodeIDs.length == 0) && (!Array.isArray(nodes) || nodes.length == 0)) {
+            throw new Error(graphID + ": No nodes given.");
         }
-        this.loadNode(nodeIDs);
+        if (nodes) {
+            this.loadNodes(nodes);
+        } else {
+            this.loadNodesFromIds(nodeIDs);
+        }
 
         // Load the edges
-
         try {
             graph.edges.forEach(edge => this.loadEdge(graph.usage, graphID, edge));
         } catch (e) {
             throw new Error(graphID + ": " + e.message);
         }
-
 
         let model;
         switch (graph.usage) {
@@ -141,14 +145,30 @@ export class ModelLoader {
         }
     }
 
-    private loadNode(nodeIds: string[]): void {
+    private loadNodes(nodes) {
+        nodes.forEach(node => {
+            if ((this.nodesMap)[node.id]) {
+                throw new Error("Node id '" + node.id + "' already defined.");
+            }
+            if (!node.label) {
+                node.label = node.id;
+            }
+
+            (this.nodesMap)[node.id] = new ModelNode(node.id, node.label);
+        })
+    }
+
+    private loadNodesFromIds(nodeIds: string[]): void {
         nodeIds.forEach(id => {
             if ((this.nodesMap)[id]) {
                 throw new Error("Node id '" + id + "' already defined.");
             }
-            (this.nodesMap)[id] = new ModelNode(id);
+            (this.nodesMap)[id] = new ModelNode(id, id);
         })
+        this.setupNodes();
+    }
 
+    private setupNodes() {
         this.nodesMap[this.startNodeId].isStartNode = true;
         this.stopNodeIds.forEach(id => {
             this.nodesMap[id].isStopNode = true;
@@ -161,18 +181,23 @@ export class ModelLoader {
     private loadEdge(usage: string, graphID: string, edge): void {
         let edgeID;
         if (edge.id == undefined) {
-            edgeID = graphID + "-edge-undef-" + this.idUndefined;
+            edgeID = "edge-undef-" + this.idUndefined;
             this.idUndefined++;
             console.warn("Warning: ID for an edge not given.");
-        } else if ((this.edgesMapProgram)[graphID + "-" + edge.id]) {
-            edgeID = graphID + "-" + edge.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
-            console.warn("Warning: ID '" + graphID + "-" + edge.id + "' already defined.");
+        } else if ((this.edgesMapProgram)[edge.id]) {
+            edgeID = edge.id + "_dup_" + Object.keys(this.edgesMapProgram).length;
+            console.warn("Warning: ID '" + edge.id + "' already defined.");
         } else {
-            edgeID = graphID + "-" + edge.id;
+            edgeID = edge.id;
         }
 
         const from = edge.from;
         const to = edge.to;
+        let label = edge.label;
+
+        if (label == undefined) {
+            label = edgeID;
+        }
 
         if (from == undefined) {
             throw new Error(edgeID + ": source node (from) not defined.");
@@ -203,7 +228,7 @@ export class ModelLoader {
         }
 
         if (usage != ModelLoader.USER_MODEL_ID) {
-            const newEdge = new ProgramModelEdge(edgeID, from, to, forceTestAfter, forceTestAt);
+            const newEdge = new ProgramModelEdge(edgeID, label, graphID, from, to, forceTestAfter, forceTestAt);
 
             if (!edge.conditions) {
                 throw new Error("Edge '" + edgeID + "': Condition not given.");
@@ -217,15 +242,19 @@ export class ModelLoader {
             this.nodesMap[from].addOutgoingEdge(newEdge);
             this.edgesMapProgram[edgeID] = newEdge;
         } else {
-            const newEdge = new UserModelEdge(edgeID, from, to, forceTestAfter, forceTestAt);
+            const newEdge = new UserModelEdge(edgeID, label, graphID, from, to, forceTestAfter, forceTestAt);
 
             if (!edge.conditions) {
                 throw new Error("Edge '" + edgeID + "': Condition not given.");
             }
 
             this.loadConditions(newEdge, edge.conditions);
+
+            // old models have inputEffects in json, modelEditor writes just effects so this is just as a precaution
             if (edge.inputEffects) {
                 this.loadInputEffect(newEdge, edge.inputEffects);
+            } else if (edge.effects) {
+                this.loadInputEffect(newEdge, edge.effects);
             }
 
             this.nodesMap[from].addOutgoingEdge(newEdge);

@@ -7,6 +7,7 @@ import {CheckUtility} from "../util/CheckUtility";
  */
 export class ModelNode {
     readonly id: string;
+    readonly label: string;
     edges: ModelEdge[] = []; //outgoing edges
 
     isStartNode = false;
@@ -15,10 +16,12 @@ export class ModelNode {
 
     /**
      * Node of a graph with an unique id identifier.
-     * @param id
+     * @param id Id of the node
+     * @param label Label of the node
      */
-    constructor(id: string) {
+    constructor(id: string, label: string) {
         this.id = id;
+        this.label = label;
     }
 
     /**
@@ -89,9 +92,7 @@ export class ModelNode {
     simplifyForSave() {
         return {
             id: this.id,
-            isStartNode: this.isStartNode,
-            isStopNode: this.isStopNode,
-            stopAllModels: this.isStopAllNode
+            label: this.label
         }
     }
 }

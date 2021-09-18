@@ -109,12 +109,16 @@ export class UserModel {
         for (let edgesKey in this.edges) {
             edges.push(this.edges[edgesKey].simplifyForSave());
         }
+        let nodes = [];
+        for (let nodesKey in this.nodes) {
+            nodes.push(this.nodes[nodesKey].simplifyForSave());
+        }
         return {
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodeIds: Object.keys(this.nodes),
+            nodes: nodes,
             edges: edges
         }
     }

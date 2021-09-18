@@ -1,7 +1,7 @@
 import TestDriver from "../../../test/test-driver";
 import ModelResult from "../../../test-runner/model-result";
 import {Effect} from "../components/Effect";
-import {ProgramModelEdge} from "../components/ModelEdge";
+import {ModelEdge, ProgramModelEdge} from "../components/ModelEdge";
 import {getEffectFailedOutput, getErrorOnEdgeOutput} from "./ModelError";
 import {ProgramModel} from "../components/ProgramModel";
 import EventEmitter from "events";
@@ -84,14 +84,16 @@ export class CheckUtility extends EventEmitter {
      * Register a listener on the movement of a sprite with a certain predicate to be fulfilled for the event to be
      * triggered.
      * @param spriteName Name of the sprite.
-     * @param edgeID ID of the edge containing the check that is registered on the event listener.
+     * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
+     * @param graphID ID of the parent graph of the check.
      * @param predicate Function checking if the predicate for the event is fulfilled.
      * @param eventString String defining the event (see CheckUtility.getEventString)
      */
-    registerOnMoveEvent(spriteName: string, eventString: string, edgeID, predicate: (sprite: Sprite) => boolean) {
+    registerOnMoveEvent(spriteName: string, eventString: string, edgeLabel, graphID: string,
+                        predicate: (sprite: Sprite) => boolean) {
         if (this.registeredOnMove.indexOf(eventString) == -1) {
             this.registeredOnMove.push(eventString);
-            this.register(this.onMovedChecks, eventString, spriteName, edgeID, predicate);
+            this.register(this.onMovedChecks, eventString, spriteName, edgeLabel, graphID, predicate);
         }
     }
 
@@ -100,13 +102,15 @@ export class CheckUtility extends EventEmitter {
      * rotationStyle.  Also and x,y motions, but should be registered on move)
      * @param spriteName Name of the actual sprite.
      * @param eventString Function checking if the predicate for the event is fulfilled.
-     * @param edgeID ID of the edge containing the check that is registered on the event listener.
+     * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
+     * @param graphID ID of the parent graph of the check.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOnVisualChange(spriteName: string, eventString: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
+    registerOnVisualChange(spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                           predicate: (sprite: Sprite) => boolean) {
         if (this.registeredVisualChange.indexOf(eventString) == -1) {
             this.registeredVisualChange.push(eventString);
-            this.register(this.onVisualChecks, eventString, spriteName, edgeID, predicate);
+            this.register(this.onVisualChecks, eventString, spriteName, edgeLabel, graphID, predicate);
         }
     }
 
@@ -114,18 +118,20 @@ export class CheckUtility extends EventEmitter {
      * Register an output event on the visual change checks.
      * @param spriteName Name of the sprite.
      * @param eventString Function checking if the predicate for the event is fulfilled.
-     * @param edgeID ID of the edge containing the check that is registered on the event listener.
+     * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
+     * @param graphID ID of the parent graph of the check.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerOutput(spriteName: string, eventString: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
+    registerOutput(spriteName: string, eventString: string, edgeLabel: string, graphID: string,
+                   predicate: (sprite: Sprite) => boolean) {
         if (this.registeredOutput.indexOf(eventString) == -1) {
             this.registeredOutput.push(eventString);
-            this.register(this.onSayOrThinkChecks, eventString, spriteName, edgeID, predicate);
+            this.register(this.onSayOrThinkChecks, eventString, spriteName, edgeLabel, graphID, predicate);
         }
     }
 
     private register(predicateChecker: { [key: string]: ((sprite) => void)[] }, eventString: string,
-                     spriteName: string, edgeID: string, predicate: (sprite: Sprite) => boolean) {
+                     spriteName: string, edgeLabel: string, graphID, predicate: (sprite: Sprite) => boolean) {
         // no check for this sprite till now
         if (predicateChecker[spriteName] == undefined || predicateChecker[spriteName] == null) {
             predicateChecker[spriteName] = [];
@@ -136,7 +142,7 @@ export class CheckUtility extends EventEmitter {
             try {
                 predicateResult = predicate(sprite);
             } catch (e) {
-                this.addErrorOutput(edgeID, e);
+                this.addErrorOutput(edgeLabel, graphID, e);
             }
             if (predicateResult) {
                 this.eventStrings.push(eventString);
@@ -147,11 +153,12 @@ export class CheckUtility extends EventEmitter {
     /**
      * Register an variable change event for a variable.
      * @param varName Name of the variable.
-     * @param edgeID ID of the edge containing the check that is registered on the event listener.
+     * @param edgeLabel Label of the edge containing the check that is registered on the event listener.
+     * @param graphID ID of the parent graph of the check.
      * @param eventString Function checking if the predicate for the event is fulfilled.
      * @param predicate String defining the event (see CheckUtility.getEventString)
      */
-    registerVarEvent(varName: string, eventString: string, edgeID: string, predicate: () => boolean) {
+    registerVarEvent(varName: string, eventString: string, edgeLabel: string, graphID: string, predicate: () => boolean) {
         if (this.registeredVarEvents.indexOf(eventString) == -1) {
             this.registeredVarEvents.push(eventString);
 
@@ -163,7 +170,7 @@ export class CheckUtility extends EventEmitter {
                 try {
                     predicateResult = predicate();
                 } catch (e) {
-                    this.addErrorOutput(edgeID, e);
+                    this.addErrorOutput(edgeLabel, graphID, e);
                 }
                 if (predicateResult) {
                     this.eventStrings.push(eventString);
@@ -256,7 +263,7 @@ export class CheckUtility extends EventEmitter {
                         newEffects.push(this.effectChecks[i]);
                     }
                 } catch (e) {
-                    this.addErrorOutput(this.effectChecks[i].edge.id, e);
+                    this.addErrorOutput(this.effectChecks[i].edge.label, this.effectChecks[i].edge.graphID, e);
                 }
             } else {
                 contradictingEffects.push(this.effectChecks[i].effect);
@@ -267,19 +274,34 @@ export class CheckUtility extends EventEmitter {
         return contradictingEffects;
     }
 
+    /**
+     * Add a failed condition that was not fulfilled in a time limit.
+     * @param output The time limit output.
+     */
     addTimeLimitFailOutput(output: string) {
         this.failOrError(output, this.failOutputs);
         this.modelResult.addFail(output);
     }
 
-    addFailOutput(edge, effect) {
+    /**
+     * Add an edge's effect to the failed output of the test.
+     * @param edge Edge that has a failed effect.
+     * @param effect Effect that failed.
+     */
+    addFailOutput(edge: ModelEdge, effect) {
         let output = getEffectFailedOutput(edge, effect);
         this.failOrError(output, this.failOutputs);
         this.modelResult.addFail(output);
     }
 
-    addErrorOutput(edgeID: string, e: Error) {
-        let output = getErrorOnEdgeOutput(edgeID, e.message);
+    /**
+     * Add an error to the error list of the test.
+     * @param edgeLabel Label of the edge that had the error.
+     * @param graphID ID of the graph, where the error was thrown.
+     * @param e Error that was thrown
+     */
+    addErrorOutput(edgeLabel: string, graphID: string, e: Error) {
+        let output = getErrorOnEdgeOutput(edgeLabel, graphID, e.message);
         this.failOrError(output, this.errorOutputs)
         this.modelResult.addError(output);
     }
@@ -343,7 +365,7 @@ export class CheckUtility extends EventEmitter {
                     newFailedList.push(checks[i]);
                 }
             } catch (e) {
-                this.addErrorOutput(checks[i].edge.id, e);
+                this.addErrorOutput(checks[i].edge.label, checks[i].edge.graphID, e);
             }
         }
         return newFailedList;

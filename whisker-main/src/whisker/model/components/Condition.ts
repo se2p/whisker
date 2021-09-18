@@ -11,23 +11,23 @@ export class Condition extends Check {
     /**
      * Get a condition instance. Checks the number of arguments for a condition type.
      * @param id Id of the condition
-     * @param edgeID Id of the parent edge of the check.
+     * @param edgeLabel Label of the parent edge of the check.
      * @param name Type name of the condition.
      * @param negated Whether the condition is negated.
      * @param args The arguments for the condition to check later on.
      */
-    constructor(id: string, edgeID: string, name: CheckName, negated: boolean, args: any[]) {
-        super(id, edgeID, name, args, negated);
+    constructor(id: string, edgeLabel: string, name: CheckName, negated: boolean, args: any[]) {
+        super(id, edgeLabel, name, args, negated);
     }
 
     /**
      * Register the check listener and test driver and check the condition for errors.
      */
-    registerComponents(cu: CheckUtility, t: TestDriver, caseSensitive: boolean) {
+    registerComponents(cu: CheckUtility, t: TestDriver, caseSensitive: boolean, graphID: string) {
         try {
-            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive);
+            this._condition = this.checkArgsWithTestDriver(t, cu, caseSensitive, graphID);
         } catch (e) {
-            cu.addErrorOutput(this._edgeID, e)
+            cu.addErrorOutput(this._edgeLabel, graphID, e)
             this._condition = () => false;
         }
     }

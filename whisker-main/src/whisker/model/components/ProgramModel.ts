@@ -120,7 +120,8 @@ export class ProgramModel {
             if (this.coverageTotal[key]) {
                 covered.push(key);
             } else {
-                missedEdges.push(key);
+                let id = this.edges[key].graphID + "-" + key;
+                missedEdges.push(id);
             }
             this.coverageTotal[key] = false;
         }
@@ -179,12 +180,16 @@ export class ProgramModel {
         for (let edgesKey in this.edges) {
             edges.push(this.edges[edgesKey].simplifyForSave());
         }
+        let nodes = [];
+        for (let nodesKey in this.nodes) {
+            nodes.push(this.nodes[nodesKey].simplifyForSave());
+        }
         return {
             id: this.id,
             startNodeId: this.startNodeId,
             stopNodeIds: this.stopNodeIds,
             stopAllNodeIds: this.stopAllNodeIds,
-            nodeIds: Object.keys(this.nodes),
+            nodes: nodes,
             edges: edges
         }
     }

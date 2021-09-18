@@ -46,14 +46,14 @@ class ModelEditor {
             },
             physics: {
                 stabilization: {
-                    iterations: 1200,
+                    iterations: 1200
                 },
             },
             manipulation: {
-                enabled: true
-                // addNode: addNode,
-                // editNode: editNode,
-                // addEdge: addEdge
+                enabled: true,
+                addNode: this.addNode.bind(this),
+                editNode: this.editNode.bind(this),
+                addEdge: this.addEdge.bind(this)
                 // todo edit edge?
             },
             locale: $('#lang-select').val(),
@@ -65,7 +65,7 @@ class ModelEditor {
         this.network = new vis.Network($('#model-editor-canvas')[0], this.data, this.options);
         this.network.focus('start');
         document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
-        this.network.enableEditMode();
+        // this.network.enableEditMode();
         this.setUpButtons();
         this.addTab(i18n.t('modelEditor:tabContent') + "1", 0);
         this.nextTabIndex = 2;
@@ -92,40 +92,39 @@ class ModelEditor {
 // ###################### Graph manipulation ###########################
 
     addNode(data, callback) {
-        $(ModelEditor.OP_NAME_FIELD).text(i18n.t("model-editor:addNode"));
-        $(ModelEditor.ID_FIELD).val(data.id);
-        $(ModelEditor.LABEL_FIELD).val(data.label);
-        document.getElementById("saveButton").onclick = this.saveData;
-        // document.getElementById("cancelButton").onclick = clearPopUp.bind();
+        this.models[this.currentTab].nodes.push({id: data.id, label: data.label});
+        callback(data);
     }
 
     editNode(data, callback) {
-        $(ModelEditor.OP_NAME_FIELD).text(i18n.t("model-editor:editNode"));
-        $(ModelEditor.ID_FIELD).val(data.x);
-        $(ModelEditor.LABEL_FIELD).val(data.label);
+        console.log(data);
+        // $(ModelEditor.OP_NAME_FIELD).text(i18n.t("model-editor:editNode"));
+        // $(ModelEditor.ID_FIELD).val(data.x);
+        // $(ModelEditor.LABEL_FIELD).val(data.label);
 
-        document.getElementById("saveButton").onclick = this.saveData;
-        // document.getElementById("cancelButton").onclick = cancelEdit.bind(this, callback);
-    }
-
-    saveData(data, callback) {
-        data.id = $(ModelEditor.ID_FIELD).val();
-        data.label = $(ModelEditor.LABEL_FIELD).val();
         callback(data);
     }
 
     addEdge(data, callback) {
-        if (data.from === data.to) {
-            let r = confirm("Do you want to connect the node to itself?");
-            if (r === true) {
-                callback(data);
-            }
-        } else {
-            callback(data);
-        }
+        console.log(data);
+
+        let newEdge = {
+            id: data.id,
+            label: data.label,
+            forceTestAfter: -1,
+            forceTestAt: -1,
+            conditions: [],
+            effects: []
+        };
+
+        this.models[this.currentTab].edges.push(newEdge);
+        callback(data);
     }
 
-    // ############################# Actual data manipulation ######################
+    editEdge(data, callback) {
+        //     if (typeof data.to === "object") data.to = data.to.id;
+        //     if (typeof data.from === "object") data.from = data.from.id;
+    }
 
     insertNewGraph() {
         let id = i18n.t("modelEditor:tabContent") + (this.models.length + 1);
@@ -133,7 +132,7 @@ class ModelEditor {
             id: id,
             usage: 'program',
             startNodeId: 'start',
-            nodeIds: ['start'],
+            nodes: [{id: 0, label: 'start'}],
             stopNodeIds: [],
             stopAllNodeIds: [],
             edges: []
@@ -215,16 +214,12 @@ class ModelEditor {
      * Style the nodes of the graph.
      */
     setupNodes(json) {
-        let nodes = [];
-        let nodeIds = json.nodeIds;
-        for (const nodeId in nodeIds) {
-            let label = nodeIds[nodeId];
-            let node = {id: label, label: label};
-            if (label === json.startNodeId) {
-                node.color = "rgb(0,151,163)";
-                node.title = "Start";
+        let nodes = json.nodes;
+        for (const node in nodes) {
+            if (nodes[node].id === json.startNodeId) {
+                nodes[node].color = "rgb(0,151,163)";
+                nodes[node].title = "Start";
             }
-            nodes.push(node);
         }
         return nodes;
     }
@@ -248,11 +243,14 @@ class ModelEditor {
             if (loops[nodeId].length > 1) {
                 let i = 0;
                 loops[nodeId].forEach(edge => {
-                    edge.selfReference = {angle: i * 10};
-                    if (loops[nodeId].length > 2) {
-                        edge.selfReference.size = 15;
+                    edge.selfReference = {angle: i + i * loops[nodeId].length};
+                    edge.font = {align: "horizontal"};
+                    if (i % 2 === 0) {
+                        edge.font.vadjust = -20 - loops[nodeId].length;
+                    } else {
+                        edge.font.vadjust = 20 + loops[nodeId].length;
                     }
-                    i += 1;
+                    i++;
                 })
                 nodes.forEach(node => {
                     if (node.id === nodeId) {
@@ -348,6 +346,10 @@ class ModelEditor {
         $(ModelEditor.TABS).append(button);
     }
 
+    /**
+     * Load the models from the editor into the modelTester and change to the last active tab (as the order of
+     * models can switch based on model type).
+     */
     applyButton() {
         // get current active tab
         let lastFocus = $(ModelEditor.TABS).children('.active')[0].textContent;
@@ -370,12 +372,17 @@ class ModelEditor {
         this.changeToTab(lastIndex);
     }
 
+    /** Download the models in the editor. */
     downloadButton() {
         let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'models.json');
     }
 
+    /**
+     * When the id input field sends a keyup change event, check for duplicate model ids (if true add a number to
+     * the id) and update the model.
+     */
     onModelIDChange() {
         let newValue = $(ModelEditor.MODEL_ID_FIELD).val();
 
@@ -402,30 +409,18 @@ class ModelEditor {
         $(ModelEditor.TABS).children('.active')[0].textContent = this.models[this.currentTab].id;
     }
 
+    /**
+     * When the delete model button is clicked show a popup to confirm.
+     */
     onDeleteModelButton() {
-        let dialog = $('<div/>', {class: 'popup'})
-            .append(
-                $('<p/>').html(i18n.t('modelEditor:deletePromptMessage'))
-            )
-            // CREATE THE BUTTONS
-            .append(
-                $('<div/>', {class: 'text-right'})
-                    .append($('<button/>', {class: 'btn btn-cancel'}).html('Cancel')
-                        .click(() => {
-                            $('#model-editor-content').children('.overlay').remove()
-                        }))
-                    .append($('<button/>', {class: 'btn btn-main'}).html('Ok')
-                        .click(() => {
-                            this.deleteCurrentModel();
-                            this.removeCurrentTab();
-                            $('#model-editor-content').children('.overlay').remove()
-                        }))
-            );
-
-        // create overlay and popup over the model editor
-        let overlay = $('<div/>', {class: 'overlay'})
-            .append(dialog);
-        $('#model-editor-content').append(overlay);
+        this.showPopUp(i18n.t('modelEditor:deletePromptMessage'),
+            () => {
+                this.deleteCurrentModel();
+                this.removeCurrentTab();
+                $('#model-editor-content').children('.overlay').remove()
+            }, () => {
+                $('#model-editor-content').children('.overlay').remove()
+            })
     }
 
     /**
@@ -437,64 +432,34 @@ class ModelEditor {
         this.changeToTab(this.currentTab == 0 ? 0 : this.currentTab - 1);
     }
 
-    // editNode(data, cancelAction, callback) {
-    //     $("model-node-label").value = data.label;
-    //     $("model-node-saveButton").onclick = this.saveNodeData.bind(
-    //         this,
-    //         data,
-    //         callback
-    //     );
-    //     $("model-node-cancelButton").onclick = cancelAction.bind(
-    //         this,
-    //         callback
-    //     );
-    // }
+    /**
+     * Make an overlay over the model editor and show a popup.
+     * @param message Message of the popup
+     * @param callbackOnOk Callback function on ok button click.
+     * @param callbackOnCancel Callback function on cancel button click
+     */
+    showPopUp(message, callbackOnOk, callbackOnCancel) {
+        let dialog = $('<div/>', {class: 'popup'})
+            .append(
+                $('<p/>').html(message)
+            )
+            // CREATE THE BUTTONS
+            .append(
+                $('<div/>', {class: 'text-right'})
+                    .append($('<button/>', {class: 'btn btn-cancel'}).html(i18n.t("modelEditor:cancelButton"))
+                        .click(callbackOnCancel)
+                    )
+                    .append($('<button/>', {class: 'btn btn-main'}).html(i18n.t("modelEditor:okButton"))
+                        .click(callbackOnOk))
+            );
 
-// Callback passed as parameter is ignored
-//     clearNodePopUp() {
-//         $("model-node-saveButton").onclick = null;
-//         $("model-node-cancelButton").onclick = null;
-//     }
+        // create overlay and popup over the model editor
+        let overlay = $('<div/>', {class: 'overlay'})
+            .append(dialog);
+        $('#model-editor-content').append(overlay);
+    }
 
-    // cancelNodeEdit(callback) {
-    //     this.clearNodePopUp();
-    //     callback(null);
-    // }
-
-    // saveNodeData(data, callback) {
-    //     data.label = $("model-node-label").value;
-    //     this.clearNodePopUp();
-    //     callback(data);
-    // }
-
-    // editEdgeWithoutDrag(data, callback) {
-    //     // filling in the popup DOM elements
-    //     $("model-edge-label").value = data.label;
-    //     $("model-edge-saveButton").onclick = this.saveEdgeData.bind(this, data, callback);
-    //     $("model-edge-cancelButton").onclick = this.cancelEdgeEdit.bind(this, callback);
-    //     $("model-edge-popUp").style.display = "block";
-    // }
-
-    // clearEdgePopUp() {
-    //     $("model-edge-saveButton").onclick = null;
-    //     $("model-edge-cancelButton").onclick = null;
-    //     $("model-edge-popUp").style.display = "none";
-    // }
-
-    // cancelEdgeEdit(callback) {
-    //     this.clearEdgePopUp();
-    //     callback(null);
-    // }
-    //
-    // saveEdgeData(data, callback) {
-    //     if (typeof data.to === "object") data.to = data.to.id;
-    //     if (typeof data.from === "object") data.from = data.from.id;
-    //     data.label = $("model-edge-label").value;
-    //     this.clearEdgePopUp();
-    //     callback(data);
-    // }
-
-    // for fixing model position after loading the element
+    /** for fixing model position after loading the element */
     reposition() {
         this.network.fit();
     }
