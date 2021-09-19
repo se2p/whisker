@@ -279,6 +279,7 @@ class ModelEditor {
         } else {
             $(ModelEditor.MODEL_DELETE_BUTTON).removeClass('hide');
         }
+        this.showAddButtons();
     }
 
     /**
@@ -621,39 +622,19 @@ class ModelEditor {
      * Setup the click events on nodes and edges.
      */
     setUpClickEvents() {
-        this.network.on('selectNode', (data) => {
-            if (data.nodes.length === 1) {
-                this.showNodeOptions(data.nodes[0]);
-            }
-        });
-        this.network.on('deselectNode', (data) => {
-            // only show general settings if there is not still an edge selected
-            if (data.edges.length === 0) {
-                this.showGeneralSettings(this.currentTab);
-            }
-        });
-        this.network.on('selectEdge', (data) => {
-            // there is no node selected and only one edge
-            if (data.edges.length === 1 && data.nodes.length === 0) {
-                this.showEdgeOptions(data.edges[0]);
-            }
-        });
-        this.network.on('deselectEdge', () => {
-            this.showGeneralSettings(this.currentTab);
-        });
-
         // Control the buttons on select
-        let selectedCount = 0;
         this.network.on('select', (data) => {
-            if (selectedCount === 0) {
-                this.showDeleteButton();
-            }
-
             if (data.edges.length + data.nodes.length === 0) {
+                this.showGeneralSettings(this.currentTab);
                 this.showAddButtons();
+            } else {
+                this.showDeleteButton();
+                if (data.nodes.length === 1) {
+                    this.showNodeOptions(data.nodes[0]);
+                } else if (data.edges.length === 1 && data.nodes.length === 0) {
+                    this.showEdgeOptions(data.edges[0]);
+                }
             }
-
-            selectedCount = data.edges.length + data.nodes.length;
         })
 
     }
