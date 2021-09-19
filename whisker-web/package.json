@@ -31,6 +31,7 @@
         "jquery": "^3.5.1",
         "keycharm": "^0.2.0 || ^0.3.0 || ^0.4.0",
         "loc-i18next": "^0.1.4",
+        "lodash.clonedeep": "^4.5.0",
         "popper.js": "^1.16.1",
         "scratch-audio": "0.1.0-prerelease.20200528195344",
         "scratch-render": "0.1.0-prerelease.20201113223804",

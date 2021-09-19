@@ -1,6 +1,7 @@
 const {ModelTester} = require('whisker-main');
 const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
+const cloneDeep = require('lodash.clonedeep')
 const {i18n} = require("../index");
 const {CheckName} = require("whisker-main/src/whisker/model/components/Check");
 
@@ -12,9 +13,6 @@ class ModelEditor {
 
     // configuration right pane, general settings
     static GENERAL_SETTINGS_DIV = '#model-general-settings';
-    static ID_FIELD = "#editor-id";
-    static LABEL_FIELD = '#editor-label';
-    static OP_NAME_FIELD = '#model-editor-operation';
     static MODEL_ID_FIELD = '#model-id';
     static PROGRAM_TYPE_CHOICE = '#model-type-program';
     static USER_TYPE_CHOICE = '#model-type-user';
@@ -83,12 +81,18 @@ class ModelEditor {
         this.data = {nodes: [{id: 'start', label: 'start', color: "rgb(0,151,163)"}], edges: []};
         this.network = new vis.Network($('#model-editor-canvas')[0], this.data, this.options);
         this.network.focus('start');
-        this.setUpButtons();
+
+        // setup gui
+        this.setUpGUI();
+        this.setupGeneralSettings();
+        this.setupNodeConfiguration();
+        this.setupEdgeConfiguration();
+        this.setUpClickEvents();
+
         this.addTab(i18n.t('modelEditor:tabContent') + "1", 0);
         this.nextTabIndex = 2;
         this.changeToTab(0);
         this.drawModelEditor();
-        this.setUpClickEvents();
     }
 
     // todo move tooltip on showing title higher
@@ -105,15 +109,6 @@ class ModelEditor {
     addNode(data, callback) {
         this.models[this.currentTab].nodes.push({id: data.id, label: data.label});
         this.showAddButtons();
-        callback(data);
-    }
-
-    editNode(data, callback) {
-        console.log(data);
-        // $(ModelEditor.OP_NAME_FIELD).text(i18n.t("model-editor:editNode"));
-        // $(ModelEditor.ID_FIELD).val(data.x);
-        // $(ModelEditor.LABEL_FIELD).val(data.label);
-
         callback(data);
     }
 
@@ -157,12 +152,6 @@ class ModelEditor {
     //     "TouchingHorizEdge", // sprite name regex
     //     "RandomValue" // sprite name regex, attrName
     // ]
-
-    editEdge(data, callback) {
-        console.log("edit edge")
-        //     if (typeof data.to === "object") data.to = data.to.id;
-        //     if (typeof data.from === "object") data.from = data.from.id;
-    }
 
     insertNewGraph() {
         let id = i18n.t("modelEditor:tabContent") + (this.models.length + 1);
@@ -244,8 +233,7 @@ class ModelEditor {
             this.edges = this.setupEdges(this.models[tabNbr].edges, this.nodes);
         }
 
-        this.data = {nodes: this.nodes, edges: this.edges};
-        this.network.setData(this.data);
+        this.network.setData({nodes: this.nodes, edges: this.edges});
         this.drawModelEditor();
     }
 
@@ -286,7 +274,7 @@ class ModelEditor {
      * Style the nodes of the graph.
      */
     setupNodes(json) {
-        let nodes = json.nodes;
+        let nodes = cloneDeep(json.nodes);
         for (const node in nodes) {
             if (nodes[node].id === json.startNodeId) {
                 nodes[node].color = "rgb(0,151,163)";
@@ -307,7 +295,7 @@ class ModelEditor {
      * Style the edges and move loops to different angles.. Could be solves better if the
      */
     setupEdges(json, nodes) {
-        let edges = json;
+        let edges = cloneDeep(json);
         let loops = [];
         nodes.forEach(node => {
             loops[node.id] = [];
@@ -345,7 +333,7 @@ class ModelEditor {
     /**
      * Set up gui buttons such as save, apply, add tab etc.
      */
-    setUpButtons() {
+    setUpGUI() {
         // apply and download below model editor
         $(ModelEditor.APPLY_BUTTON).on('click', this.applyButton.bind(this));
         $(ModelEditor.SAVE_BUTTON).on('click', this.downloadButton.bind(this));
@@ -358,19 +346,6 @@ class ModelEditor {
             this.nextTabIndex++;
             this.changeToTab(this.models.length - 1);
         })
-
-        // General settings of model
-        $(ModelEditor.MODEL_ID_FIELD).on('keyup change', this.onModelIDChange.bind(this));
-        $(ModelEditor.PROGRAM_TYPE_CHOICE).on('click', () => {
-            this.models[this.currentTab].usage = "program";
-        })
-        $(ModelEditor.USER_TYPE_CHOICE).on('click', () => {
-            this.models[this.currentTab].usage = "user";
-        })
-        $(ModelEditor.END_TYPE_CHOICE).on('click', () => {
-            this.models[this.currentTab].usage = "end";
-        })
-        $(ModelEditor.MODEL_DELETE_BUTTON).on('click', this.onDeleteModelButton.bind(this));
 
         // Graph manipulation
         $(ModelEditor.ADD_NODE).on('click', () => {
@@ -396,6 +371,64 @@ class ModelEditor {
                     this.showPopup(i18n.t('modelEditor:deletionError'));
                 }
             })
+        })
+    }
+
+    /**
+     * Buttons and input fields of general settings
+     */
+    setupGeneralSettings() {
+        $(ModelEditor.MODEL_ID_FIELD).on('keyup change', this.onModelIDChange.bind(this));
+        $(ModelEditor.PROGRAM_TYPE_CHOICE).on('click', () => {
+            this.models[this.currentTab].usage = "program";
+        })
+        $(ModelEditor.USER_TYPE_CHOICE).on('click', () => {
+            this.models[this.currentTab].usage = "user";
+        })
+        $(ModelEditor.END_TYPE_CHOICE).on('click', () => {
+            this.models[this.currentTab].usage = "end";
+        })
+        $(ModelEditor.MODEL_DELETE_BUTTON).on('click', this.onDeleteModelButton.bind(this));
+
+    }
+
+    /**
+     * Buttons and input fields on node select
+     */
+    setupNodeConfiguration() {
+        $(ModelEditor.CONFIG_EDGE_LABEL).on('keyup change', () => {
+            let text = $(ModelEditor.CONFIG_EDGE_LABEL).val();
+
+            let currentEdge = this.network.getSelectedEdges()[0];
+            for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
+                if (this.models[this.currentTab].edges[i].id === currentEdge) {
+                    this.models[this.currentTab].edges[i].label = text;
+                    break;
+                }
+            }
+            let selection = this.network.getSelection();
+            this.loadModel(this.currentTab)
+            this.network.setSelection(selection);
+        })
+    }
+
+    /**
+     * Buttons and input fields on edge select
+     */
+    setupEdgeConfiguration() {
+        $(ModelEditor.CONFIG_NODE_LABEL).on('keyup change', () => {
+            let text = $(ModelEditor.CONFIG_NODE_LABEL).val();
+
+            let currentNodeID = this.network.getSelectedNodes()[0];
+            for (let i = 0; i < this.models[this.currentTab].nodes.length; i++) {
+                if (this.models[this.currentTab].nodes[i].id === currentNodeID) {
+                    this.models[this.currentTab].nodes[i].label = text;
+                    break;
+                }
+            }
+            let selection = this.network.getSelection();
+            this.loadModel(this.currentTab)
+            this.network.setSelection(selection);
         })
     }
 
@@ -501,7 +534,7 @@ class ModelEditor {
 
     /** Download the models in the editor. */
     downloadButton() {
-        let json = JSON.stringify(this.modelTester.getAllModels(), null, 4);
+        let json = JSON.stringify(this.models, null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'models.json');
     }
