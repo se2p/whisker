@@ -30,5 +30,9 @@
     "optionsNode": "Knoten Optionen",
     "optionsEdge": "Kanten Optionen",
     "nodeLabel": "Name",
-    "edgeLabel": "Name"
+    "edgeLabel": "Name",
+    "deleteSelection": "Auswahl löschen",
+    "deleteSelectionMsg": "Auswahl wirklich löschen?",
+    "selection-explanation": "Mehrere Elemente auswählen mit Strg+Click",
+    "deletionError": "Startknoten kann nicht gelöscht werden."
 }

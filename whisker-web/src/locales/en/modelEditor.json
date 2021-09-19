@@ -30,5 +30,9 @@
     "optionsNode": "Node Options",
     "optionsEdge": "Edge Options",
     "nodeLabel": "Name",
-    "edgeLabel": "Name"
+    "edgeLabel": "Name",
+    "deleteSelection": "Delete selection",
+    "deleteSelectionMsg": "Really delete selection?",
+    "selection-explanation": "Choose multiple elements with Ctrl+Click",
+    "deletionError": "Start node cannot be deleted."
 }

@@ -31,9 +31,10 @@ class ModelEditor {
     static ADD_EDGE_DIV = '#model-add-edge-div';
     static CANCEL_ADD_DIV = '.model-cancel-add-div';
     static EXPLANATION = '#model-explanation';
+    static DELETE_DIV = '.model-delete-div';
+    static DELETE_SELECTION = '#model-delete-selection';
 
     // todo condition, effect builder
-    // todo hiding general settings etc
     // configuration right pane, node settings
     static CONFIG_NODE = '#model-node-configuration';
     static CONFIG_NODE_LABEL = '#model-node-label';
@@ -61,6 +62,9 @@ class ModelEditor {
                 physics: true,
                 arrows: {from: {enabled: false}, to: {enabled: true}}
             },
+            interaction: {
+                multiselect: true
+            },
             physics: {
                 stabilization: {
                     iterations: 1200
@@ -79,7 +83,6 @@ class ModelEditor {
         this.data = {nodes: [{id: 'start', label: 'start', color: "rgb(0,151,163)"}], edges: []};
         this.network = new vis.Network($('#model-editor-canvas')[0], this.data, this.options);
         this.network.focus('start');
-        document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
         this.setUpButtons();
         this.addTab(i18n.t('modelEditor:tabContent') + "1", 0);
         this.nextTabIndex = 2;
@@ -87,6 +90,8 @@ class ModelEditor {
         this.drawModelEditor();
         this.setUpClickEvents();
     }
+
+    // todo move tooltip on showing title higher
 
     onLoadEvent() {
         this.models = this.modelTester.getAllModels();
@@ -176,16 +181,52 @@ class ModelEditor {
         this.models.splice(this.currentTab, 1);
     }
 
+    /**
+     * Delete the selected nodes and edges from the graph, only if the start node is not contained.
+     * @return {boolean} Whether they were deleted.
+     */
+    deleteSelection() {
+        let selection = this.network.getSelection();
+
+        if (selection.nodes.indexOf(this.models[this.currentTab].startNodeId) !== -1) {
+            return false;
+        }
+        this.models[this.currentTab].stopNodeIds =
+            this.getNotRemovedOnesByString(this.models[this.currentTab].stopNodeIds, selection.nodes);
+        this.models[this.currentTab].stopAllNodeIds =
+            this.getNotRemovedOnesByString(this.models[this.currentTab].stopAllNodeIds, selection.nodes);
+        this.models[this.currentTab].nodes =
+            this.getNotRemovedOnesByID(this.models[this.currentTab].nodes, selection.nodes);
+        this.models[this.currentTab].edges =
+            this.getNotRemovedOnesByID(this.models[this.currentTab].edges, selection.edges);
+        return true;
+    }
+
+    getNotRemovedOnesByString(original, toRemove) {
+        let notRemoved = [];
+        for (let i = 0; i < original.length; i++) {
+            if (toRemove.indexOf(original[i]) === -1) {
+                notRemoved.push(original[i]);
+            }
+        }
+        return notRemoved;
+    }
+
+    getNotRemovedOnesByID(original, toRemove) {
+        let notRemoved = [];
+        for (let i = 0; i < original.length; i++) {
+            if (toRemove.indexOf(original[i].id) === -1) {
+                notRemoved.push(original[i]);
+            }
+        }
+        return notRemoved;
+    }
+
     // ############################# Plotting and GUI setup ############################
 
     drawModelEditor() {
         this.network.redraw();
         this.network.fit();
-
-        // set css attributes here as css file is ignored by framework redraw
-        document.getElementsByClassName('vis-network')[0].style['overflow'] = 'visible';
-        // todo fix delete button
-        // document.getElementsByClassName('vis-close')[0].val("Löschen");
     }
 
     loadModel(tabNbr = 0) {
@@ -345,18 +386,37 @@ class ModelEditor {
             this.showAddButtons();
             this.network.disableEditMode();
         })
+        $(ModelEditor.DELETE_SELECTION).on('click', () => {
+            this.showConfirmPopup(i18n.t('modelEditor:deleteSelectionMsg'), () => {
+                if (this.deleteSelection()) {
+                    this.network.deleteSelected();
+                    this.showAddButtons();
+                } else {
+                    this.showPopup(i18n.t('modelEditor:deletionError'));
+                }
+            })
+        })
     }
 
     hideAddButtons() {
         $(ModelEditor.ADD_NODE_DIV).addClass("hide");
         $(ModelEditor.ADD_EDGE_DIV).addClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).removeClass("hide");
+        $(ModelEditor.DELETE_DIV).addClass("hide");
     }
 
     showAddButtons() {
         $(ModelEditor.ADD_NODE_DIV).removeClass("hide");
         $(ModelEditor.ADD_EDGE_DIV).removeClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).addClass("hide");
+        $(ModelEditor.DELETE_DIV).addClass("hide");
+    }
+
+    showDeleteButton() {
+        $(ModelEditor.ADD_NODE_DIV).addClass("hide");
+        $(ModelEditor.ADD_EDGE_DIV).addClass("hide");
+        $(ModelEditor.CANCEL_ADD_DIV).addClass("hide");
+        $(ModelEditor.DELETE_DIV).removeClass("hide");
     }
 
     /**
@@ -479,13 +539,10 @@ class ModelEditor {
      * When the delete model button is clicked show a popup to confirm.
      */
     onDeleteModelButton() {
-        this.showPopUp(i18n.t('modelEditor:deletePromptMessage'),
+        this.showConfirmPopup(i18n.t('modelEditor:deletePromptMessage'),
             () => {
                 this.deleteCurrentModel();
                 this.removeCurrentTab();
-                $('#model-editor-content').children('.overlay').remove()
-            }, () => {
-                $('#model-editor-content').children('.overlay').remove()
             })
     }
 
@@ -495,16 +552,41 @@ class ModelEditor {
     removeCurrentTab() {
         $(ModelEditor.TABS).children('.active').remove();
         this.createAllTabs();
+        // note: currentTab can also be "0" because of tabButton.value on change....
         this.changeToTab(this.currentTab == 0 ? 0 : this.currentTab - 1);
     }
 
     /**
-     * Make an overlay over the model editor and show a popup.
+     * Make an overlay over the model editor and show a confirm popup.
+     * @param message Message of the popup
+     */
+    showPopup(message) {
+        let dialog = $('<div/>', {class: 'popup'})
+            .append(
+                $('<p/>').html(message)
+            )
+            // CREATE THE BUTTONS
+            .append(
+                $('<div/>', {class: 'text-right'})
+                    .append($('<button/>', {class: 'btn btn-main'}).html(i18n.t("modelEditor:okButton"))
+                        .click(() => {
+                            $('#model-editor-content').children('#model-popup').remove();
+                        }))
+            );
+
+        // create overlay and popup over the model editor
+        let overlay = $('<div/>', {class: 'overlay', id: 'model-popup'})
+            .append(dialog);
+        $('#model-editor-content').append(overlay);
+    }
+
+    /**
+     * Make an overlay over the model editor and show a confirm popup.
      * @param message Message of the popup
      * @param callbackOnOk Callback function on ok button click.
      * @param callbackOnCancel Callback function on cancel button click
      */
-    showPopUp(message, callbackOnOk, callbackOnCancel) {
+    showConfirmPopup(message, callbackOnOk, callbackOnCancel) {
         let dialog = $('<div/>', {class: 'popup'})
             .append(
                 $('<p/>').html(message)
@@ -513,14 +595,24 @@ class ModelEditor {
             .append(
                 $('<div/>', {class: 'text-right'})
                     .append($('<button/>', {class: 'btn btn-cancel'}).html(i18n.t("modelEditor:cancelButton"))
-                        .click(callbackOnCancel)
+                        .click(() => {
+                            if (callbackOnCancel) {
+                                callbackOnCancel();
+                            }
+                            $('#model-editor-content').children('#model-confirm').remove()
+                        })
                     )
                     .append($('<button/>', {class: 'btn btn-main'}).html(i18n.t("modelEditor:okButton"))
-                        .click(callbackOnOk))
+                        .click(() => {
+                            if (callbackOnOk) {
+                                callbackOnOk();
+                            }
+                            $('#model-editor-content').children('#model-confirm').remove();
+                        }))
             );
 
         // create overlay and popup over the model editor
-        let overlay = $('<div/>', {class: 'overlay'})
+        let overlay = $('<div/>', {class: 'overlay', id: 'model-confirm'})
             .append(dialog);
         $('#model-editor-content').append(overlay);
     }
@@ -530,29 +622,39 @@ class ModelEditor {
      */
     setUpClickEvents() {
         this.network.on('selectNode', (data) => {
-            console.log("selected node", data);
             if (data.nodes.length === 1) {
                 this.showNodeOptions(data.nodes[0]);
             }
         });
         this.network.on('deselectNode', (data) => {
-            console.log("deselect node", data);
             // only show general settings if there is not still an edge selected
             if (data.edges.length === 0) {
                 this.showGeneralSettings(this.currentTab);
             }
         });
         this.network.on('selectEdge', (data) => {
-            console.log("selected edge", data);
             // there is no node selected and only one edge
             if (data.edges.length === 1 && data.nodes.length === 0) {
                 this.showEdgeOptions(data.edges[0]);
             }
         });
-        this.network.on('deselectEdge', (data) => {
-            console.log("deselect edge", data);
+        this.network.on('deselectEdge', () => {
             this.showGeneralSettings(this.currentTab);
         });
+
+        // Control the buttons on select
+        let selectedCount = 0;
+        this.network.on('select', (data) => {
+            if (selectedCount === 0) {
+                this.showDeleteButton();
+            }
+
+            if (data.edges.length + data.nodes.length === 0) {
+                this.showAddButtons();
+            }
+
+            selectedCount = data.edges.length + data.nodes.length;
+        })
 
     }
 
@@ -563,7 +665,7 @@ class ModelEditor {
 
         // get the corresponding node
         let node;
-        for (let i = 0; i < this.models[this.currentTab].nodes.length; i++){
+        for (let i = 0; i < this.models[this.currentTab].nodes.length; i++) {
             const n = this.models[this.currentTab].nodes[i];
             if (n.id === nodeID) {
                 node = n;
@@ -582,7 +684,7 @@ class ModelEditor {
 
         // get the corresponding edge
         let edge;
-        for (let i = 0; i < this.models[this.currentTab].edges.length; i++){
+        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
             const e = this.models[this.currentTab].edges[i];
             if (e.id === edgeID) {
                 edge = e;

@@ -1058,6 +1058,13 @@ img {vertical-align: middle;}
 }
 
 #model-cancel-add {
-    margin-right:0;
-    margin-left:auto;
+    transform: translate(-50%,0);
+    position: relative;
+    left: 50%;
+}
+
+#model-delete-selection {
+    transform: translate(-50%,0);
+    position: relative;
+    left: 50%;
 }
