@@ -10,7 +10,8 @@ class ModelEditor {
     static ADD_TAB = '#model-editor-add-tab';
     static TABS = '#model-tabs';
 
-    // configuration right pane
+    // configuration right pane, general settings
+    static GENERAL_SETTINGS_DIV = '#model-general-settings';
     static ID_FIELD = "#editor-id";
     static LABEL_FIELD = '#editor-label';
     static OP_NAME_FIELD = '#model-editor-operation';
@@ -30,6 +31,17 @@ class ModelEditor {
     static ADD_EDGE_DIV = '#model-add-edge-div';
     static CANCEL_ADD_DIV = '.model-cancel-add-div';
     static EXPLANATION = '#model-explanation';
+
+    // todo condition, effect builder
+    // todo hiding general settings etc
+    // configuration right pane, node settings
+    static CONFIG_NODE = '#model-node-configuration';
+    static CONFIG_NODE_LABEL = '#model-node-label';
+
+
+    // configuration right pane, edge settings
+    static CONFIG_EDGE = '#model-edge-configuration';
+    static CONFIG_EDGE_LABEL = '#model-edge-label';
 
     /**
      * @param {ModelTester} modelTester
@@ -73,15 +85,7 @@ class ModelEditor {
         this.nextTabIndex = 2;
         this.changeToTab(0);
         this.drawModelEditor();
-
-
-// todo
-        this.network.on('selectNode', this.network.editNode);
-        this.network.on('deselectNode', () => {
-            $('#model-editor-operation').text(i18n.t(""));
-            $('#editor-id').val("");
-            $('#editor-label').val("");
-        });
+        this.setUpClickEvents();
     }
 
     onLoadEvent() {
@@ -208,8 +212,10 @@ class ModelEditor {
      * Show the general settings for a model, id, usage etc.
      */
     showGeneralSettings(tabNbr) {
-        document.getElementById('model-general-settings').style.display = 'block';
-        document.getElementById('model-editor-configuration').style.display = 'none';
+        $(ModelEditor.GENERAL_SETTINGS_DIV).removeClass("hide");
+        $(ModelEditor.CONFIG_NODE).addClass("hide");
+        $(ModelEditor.CONFIG_EDGE).addClass("hide");
+
         // load into the header etc
         $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
 
@@ -234,11 +240,6 @@ class ModelEditor {
         }
     }
 
-    hideGeneralSettings() {
-        document.getElementById('model-general-settings').style.display = 'none';
-        document.getElementById('model-editor-configuration').style.display = 'block';
-    }
-
     /**
      * Style the nodes of the graph.
      */
@@ -250,7 +251,7 @@ class ModelEditor {
                 nodes[node].title = i18n.t('modelEditor:startNode');
             } else if (json.stopAllNodeIds.indexOf(nodes[node].id) !== -1) {
                 nodes[node].color = "rgb(102,102,102)";
-                nodes[node].font  = {color:"rgb(230,230,230)"};
+                nodes[node].font = {color: "rgb(230,230,230)"};
                 nodes[node].title = i18n.t('modelEditor:stopAllNode');
             } else if (json.stopNodeIds.indexOf(nodes[node].id) !== -1) {
                 nodes[node].color = "rgb(201,201,201)";
@@ -311,6 +312,7 @@ class ModelEditor {
         $(ModelEditor.ADD_TAB).on('click', () => {
             this.insertNewGraph();
             this.addTab(i18n.t("modelEditor:tabContent") + this.nextTabIndex, this.models.length - 1);
+            $(ModelEditor.MODEL_ID_FIELD).focus();
             this.nextTabIndex++;
             this.changeToTab(this.models.length - 1);
         })
@@ -521,6 +523,74 @@ class ModelEditor {
         let overlay = $('<div/>', {class: 'overlay'})
             .append(dialog);
         $('#model-editor-content').append(overlay);
+    }
+
+    /**
+     * Setup the click events on nodes and edges.
+     */
+    setUpClickEvents() {
+        this.network.on('selectNode', (data) => {
+            console.log("selected node", data);
+            if (data.nodes.length === 1) {
+                this.showNodeOptions(data.nodes[0]);
+            }
+        });
+        this.network.on('deselectNode', (data) => {
+            console.log("deselect node", data);
+            // only show general settings if there is not still an edge selected
+            if (data.edges.length === 0) {
+                this.showGeneralSettings(this.currentTab);
+            }
+        });
+        this.network.on('selectEdge', (data) => {
+            console.log("selected edge", data);
+            // there is no node selected and only one edge
+            if (data.edges.length === 1 && data.nodes.length === 0) {
+                this.showEdgeOptions(data.edges[0]);
+            }
+        });
+        this.network.on('deselectEdge', (data) => {
+            console.log("deselect edge", data);
+            this.showGeneralSettings(this.currentTab);
+        });
+
+    }
+
+    showNodeOptions(nodeID) {
+        $(ModelEditor.GENERAL_SETTINGS_DIV).addClass("hide");
+        $(ModelEditor.CONFIG_NODE).removeClass("hide");
+        $(ModelEditor.CONFIG_EDGE).addClass("hide");
+
+        // get the corresponding node
+        let node;
+        for (let i = 0; i < this.models[this.currentTab].nodes.length; i++){
+            const n = this.models[this.currentTab].nodes[i];
+            if (n.id === nodeID) {
+                node = n;
+                break;
+            }
+        }
+
+        $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
+
+    }
+
+    showEdgeOptions(edgeID) {
+        $(ModelEditor.GENERAL_SETTINGS_DIV).addClass("hide");
+        $(ModelEditor.CONFIG_NODE).addClass("hide");
+        $(ModelEditor.CONFIG_EDGE).removeClass("hide");
+
+        // get the corresponding edge
+        let edge;
+        for (let i = 0; i < this.models[this.currentTab].edges.length; i++){
+            const e = this.models[this.currentTab].edges[i];
+            if (e.id === edgeID) {
+                edge = e;
+                break;
+            }
+        }
+
+        $(ModelEditor.CONFIG_EDGE_LABEL).val(edge.label);
     }
 
     /** for fixing model position after loading the element */

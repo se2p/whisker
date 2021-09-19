@@ -1031,6 +1031,8 @@ img {vertical-align: middle;}
     transition: 0.3s;
     height: 30px;
     width: 30px;
+    margin-left: auto;
+    margin-right: 5px;
 }
 .popup {
     width: 33.33%;

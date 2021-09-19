@@ -1,8 +1,6 @@
 {
     "title": "Modell Editor",
     "general-settings-header": "Modell Einstellungen",
-    "right-title": "Optionen: ",
-    "placeholder": "Zum Bearbeiten einen Knoten oder eine Kante anklicken.",
     "type": "Modell-Typ",
     "type-program": "Program-Modell",
     "t-type-program": "Gibt das Verhalten des Programms wieder",
@@ -28,5 +26,9 @@
     "explanationEdge": "Startknoten anklicken, gedrückt halten und zum Ziel ziehen.",
     "startNode": "Startknoten",
     "stopNode": "Stopknoten",
-    "stopAllNode": "Stopknoten (alle Modelle)"
+    "stopAllNode": "Stopknoten (alle Modelle)",
+    "optionsNode": "Knoten Optionen",
+    "optionsEdge": "Kanten Optionen",
+    "nodeLabel": "Name",
+    "edgeLabel": "Name"
 }

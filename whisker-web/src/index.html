@@ -523,68 +523,78 @@
                     </div>
                     <div class="col-4 mt-1">
                         <div id="model-general-settings">
-                            <div class="col">
-                                <div class="row">
-                                    <h4 data-i18n="modelEditor:general-settings-header" class="col"></h4>
-                                    <div class="col-1" style="padding-right: 0">
-                                        <button id="model-delete-button" type="button" data-toggle="tooltip"
-                                                data-placement="top" data-animation="false"
-                                                data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"
-                                        ></button>
-                                    </div>
+                            <div class="row">
+                                <h4 data-i18n="modelEditor:general-settings-header"></h4>
+                                <button id="model-delete-button" type="button" data-toggle="tooltip"
+                                        data-placement="top" data-animation="false"
+                                        data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"
+                                ></button>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="model-id">ID</label>
+                                    <input id="model-id" required>
                                 </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <label for="model-id">ID</label>
-                                        <input id="model-id" required>
-                                    </div>
+                            </div>
+                            <div class="row">
+                                <label data-i18n="modelEditor:type"></label>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="radio" id="model-type-program" name="model-type"
+                                           value="program" class="model-radio">
+                                    <label for="model-type-program"
+                                           data-toggle="tooltip" data-placement="right" data-animation="false"
+                                           data-i18n="[title]modelEditor:t-type-program;modelEditor:type-program">
+                                    </label>
                                 </div>
-                                <div class="row">
-                                    <label data-i18n="modelEditor:type"></label>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="radio" class="model-radio" id="model-type-user"
+                                           name="model-type" value="user">
+                                    <label for="model-type-user"
+                                           data-toggle="tooltip" data-placement="right" data-animation="false"
+                                           data-i18n="[title]modelEditor:t-type-user;modelEditor:type-user">
+                                    </label>
                                 </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <input type="radio" id="model-type-program" name="model-type"
-                                               value="program" class="model-radio">
-                                        <label for="model-type-program"
-                                               data-toggle="tooltip" data-placement="right" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-type-program;modelEditor:type-program">
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <input type="radio" class="model-radio" id="model-type-user"
-                                               name="model-type" value="user">
-                                        <label for="model-type-user"
-                                               data-toggle="tooltip" data-placement="right" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-type-user;modelEditor:type-user">
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <input type="radio" class="model-radio" id="model-type-end"
-                                               name="model-type" value="user">
-                                        <label for="model-type-end"
-                                               data-toggle="tooltip" data-placement="right" data-animation="false"
-                                               data-i18n="[title]modelEditor:t-type-end;modelEditor:type-end">
-                                        </label>
-                                    </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="radio" class="model-radio" id="model-type-end"
+                                           name="model-type" value="user">
+                                    <label for="model-type-end"
+                                           data-toggle="tooltip" data-placement="right" data-animation="false"
+                                           data-i18n="[title]modelEditor:t-type-end;modelEditor:type-end">
+                                    </label>
                                 </div>
                             </div>
                         </div>
-                        <div id="model-editor-configuration">
+                        <div id="model-node-configuration" class="hide">
                             <div class="row">
-                                <h4 data-i18n="modelEditor:right-title"></h4>
-                                <h4 id="model-editor-operation"></h4>
+                                <h4 data-i18n="modelEditor:optionsNode"></h4>
                             </div>
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="row">
                                         <div class="col">
-                                            <label for="model-node-label">Name</label>
+                                            <label for="model-node-label" data-i18n="modelEditor:nodeLabel"></label>
                                             <input id="model-node-label">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="model-edge-configuration" class="hide">
+                            <div class="row">
+                                <h4 data-i18n="modelEditor:optionsEdge"></h4>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="model-edge-label" data-i18n="modelEditor:edgeLabel">Name</label>
+                                            <input id="model-edge-label">
                                         </div>
                                     </div>
                                 </div>

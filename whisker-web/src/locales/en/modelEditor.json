@@ -1,8 +1,6 @@
 {
     "title": "Model Editor",
     "general-settings-header": "Model Settings",
-    "right-title": "Options: ",
-    "placeholder": "To edit click on a node or edge.",
     "type": "Model type",
     "type-program": "Program model",
     "t-type-program": "Represents the program's behavior",
@@ -28,5 +26,9 @@
     "explanationEdge": "Click on start node, hold  down and drag to end node.",
     "startNode": "Start node",
     "stopNode": "Stop node",
-    "stopAllNode": "Stop node (all models)"
+    "stopAllNode": "Stop node (all models)",
+    "optionsNode": "Node Options",
+    "optionsEdge": "Edge Options",
+    "nodeLabel": "Name",
+    "edgeLabel": "Name"
 }
