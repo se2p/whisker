@@ -25,19 +25,23 @@ class ModelEditor {
     static ADD_NODE = '#model-add-node';
     static ADD_EDGE = '#model-add-edge';
     static CANCEL_ADD = '#model-cancel-add';
-    static ADD_NODE_DIV = '#model-add-node-div';
-    static ADD_EDGE_DIV = '#model-add-edge-div';
+    static STANDARD_DIV = '.model-standard-div';
     static CANCEL_ADD_DIV = '.model-cancel-add-div';
     static EXPLANATION = '#model-explanation';
     static DELETE_DIV = '.model-delete-div';
     static DELETE_SELECTION = '#model-delete-selection';
+    static LAYOUT = '#model-layout';
+    static FIT = '#model-fit';
 
     // todo condition, effect builder
+    // todo edit mode of edge on double click
     // configuration right pane, node settings
     static CONFIG_NODE = '#model-node-configuration';
     static CONFIG_NODE_LABEL = '#model-node-label';
+    static CONFIG_NODE_STOP1 = '#model-stopNode';
 
 
+    static CONFIG_NODE_STOP2 = '#model-stopAllNode';
     // configuration right pane, edge settings
     static CONFIG_EDGE = '#model-edge-configuration';
     static CONFIG_EDGE_LABEL = '#model-edge-label';
@@ -62,6 +66,9 @@ class ModelEditor {
             },
             interaction: {
                 multiselect: true
+            },
+            layout: {
+                hierarchical:  {enabled: false},
             },
             physics: {
                 stabilization: {
@@ -94,8 +101,6 @@ class ModelEditor {
         this.changeToTab(0);
         this.drawModelEditor();
     }
-
-    // todo move tooltip on showing title higher
 
     onLoadEvent() {
         this.models = this.modelTester.getAllModels();
@@ -278,14 +283,14 @@ class ModelEditor {
         for (const node in nodes) {
             if (nodes[node].id === json.startNodeId) {
                 nodes[node].color = "rgb(0,151,163)";
-                nodes[node].title = i18n.t('modelEditor:startNode');
+                nodes[node].title = i18n.t('modelEditor:startNodeTitle');
             } else if (json.stopAllNodeIds.indexOf(nodes[node].id) !== -1) {
                 nodes[node].color = "rgb(102,102,102)";
                 nodes[node].font = {color: "rgb(230,230,230)"};
-                nodes[node].title = i18n.t('modelEditor:stopAllNode');
+                nodes[node].title = i18n.t('modelEditor:stopAllNodeTitle');
             } else if (json.stopNodeIds.indexOf(nodes[node].id) !== -1) {
                 nodes[node].color = "rgb(201,201,201)";
-                nodes[node].title = i18n.t('modelEditor:stopNode');
+                nodes[node].title = i18n.t('modelEditor:stopNodeTitle');
             }
         }
         return nodes;
@@ -305,6 +310,7 @@ class ModelEditor {
             if (edges[edgeId].from === edges[edgeId].to) {
                 loops[edges[edgeId].from].push(edges[edgeId]);
             }
+            edges[edgeId].length = 200;
         }
         for (const nodeId in loops) {
             if (loops[nodeId].length > 1) {
@@ -321,7 +327,7 @@ class ModelEditor {
                 })
                 nodes.forEach(node => {
                     if (node.id === nodeId) {
-                        node.widthConstraint = 100
+                        node.widthConstraint = 80;
                     }
                 })
             }
@@ -372,6 +378,33 @@ class ModelEditor {
                 }
             })
         })
+
+        // layout
+        $(ModelEditor.LAYOUT).on('click', () => {
+            let value = $(ModelEditor.LAYOUT).val()
+            if (value === "none") {
+                let newOptions = {...this.options};
+                newOptions.layout.hierarchical = {enabled: false};
+                newOptions.edges.font= {align: "horizontal"};
+                newOptions.edges.length = 200;
+                this.network.setOptions(newOptions);
+            } else if (value === "treeLR") {
+                let newOptions = {...this.options};
+                newOptions.layout.hierarchical = {direction: "LR"};
+                newOptions.edges.font= {align: "top"};
+                this.network.setOptions(newOptions);
+            } else if (value === "treeUD") {
+                let newOptions = {...this.options};
+                newOptions.layout.hierarchical = {direction: "UD"};
+                newOptions.edges.font= {align: "horizontal"};
+                this.network.setOptions(newOptions);
+            }
+            this.network.fit();
+        })
+
+        $(ModelEditor.FIT).on('click', () => {
+            this.network.fit();
+        })
     }
 
     /**
@@ -410,6 +443,29 @@ class ModelEditor {
             this.loadModel(this.currentTab)
             this.network.setSelection(selection);
         })
+        $(ModelEditor.CONFIG_NODE_STOP1).on('click', () => {
+            if ($(ModelEditor.CONFIG_NODE_STOP1).prop('checked')) {
+                this.models[this.currentTab].stopNodeIds.push(this.network.getSelectedNodes()[0]);
+            } else {
+                let index = this.models[this.currentTab].stopNodeIds.indexOf(this.network.getSelectedNodes()[0]);
+                this.models[this.currentTab].stopNodeIds.splice(index, 1);
+            }
+            this.loadModel(this.currentTab);
+        })
+        $(ModelEditor.CONFIG_NODE_STOP2).on('click', () => {
+            // when its a stop all node it is also a stop node
+            if ($(ModelEditor.CONFIG_NODE_STOP2).prop('checked')) {
+                $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
+                $(ModelEditor.CONFIG_NODE_STOP1).attr("disabled", true);
+                this.models[this.currentTab].stopAllNodeIds.push(this.network.getSelectedNodes()[0]);
+                this.models[this.currentTab].stopNodeIds.push(this.network.getSelectedNodes()[0]);
+            } else {
+                $(ModelEditor.CONFIG_NODE_STOP1).removeAttr("disabled");
+                let index = this.models[this.currentTab].stopAllNodeIds.indexOf(this.network.getSelectedNodes()[0]);
+                this.models[this.currentTab].stopAllNodeIds.splice(index, 1);
+            }
+            this.loadModel(this.currentTab);
+        })
     }
 
     /**
@@ -433,22 +489,19 @@ class ModelEditor {
     }
 
     hideAddButtons() {
-        $(ModelEditor.ADD_NODE_DIV).addClass("hide");
-        $(ModelEditor.ADD_EDGE_DIV).addClass("hide");
+        $(ModelEditor.STANDARD_DIV).addClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).removeClass("hide");
         $(ModelEditor.DELETE_DIV).addClass("hide");
     }
 
     showAddButtons() {
-        $(ModelEditor.ADD_NODE_DIV).removeClass("hide");
-        $(ModelEditor.ADD_EDGE_DIV).removeClass("hide");
+        $(ModelEditor.STANDARD_DIV).removeClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).addClass("hide");
         $(ModelEditor.DELETE_DIV).addClass("hide");
     }
 
     showDeleteButton() {
-        $(ModelEditor.ADD_NODE_DIV).addClass("hide");
-        $(ModelEditor.ADD_EDGE_DIV).addClass("hide");
+        $(ModelEditor.STANDARD_DIV).addClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).addClass("hide");
         $(ModelEditor.DELETE_DIV).removeClass("hide");
     }
@@ -669,7 +722,6 @@ class ModelEditor {
                 }
             }
         })
-
     }
 
     showNodeOptions(nodeID) {
@@ -688,7 +740,26 @@ class ModelEditor {
         }
 
         $(ModelEditor.CONFIG_NODE_LABEL).val(node.label);
-
+        if (this.models[this.currentTab].stopNodeIds.indexOf(node.id) !== -1) {
+            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
+        } else {
+            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', false);
+        }
+        if (this.models[this.currentTab].stopAllNodeIds.indexOf(node.id) !== -1) {
+            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', true);
+            $(ModelEditor.CONFIG_NODE_STOP1).prop('checked', true);
+            $(ModelEditor.CONFIG_NODE_STOP1).attr("disabled", true);
+        } else {
+            $(ModelEditor.CONFIG_NODE_STOP2).prop('checked', false);
+            $(ModelEditor.CONFIG_NODE_STOP1).attr("disabled", false);
+        }
+        if (this.models[this.currentTab].startNodeId === node.id) {
+            $(ModelEditor.CONFIG_NODE_STOP1).attr("disabled", true);
+            $(ModelEditor.CONFIG_NODE_STOP2).attr("disabled", true);
+        } else {
+            $(ModelEditor.CONFIG_NODE_STOP1).attr("disabled", false);
+            $(ModelEditor.CONFIG_NODE_STOP2).attr("disabled", false);
+        }
     }
 
     showEdgeOptions(edgeID) {

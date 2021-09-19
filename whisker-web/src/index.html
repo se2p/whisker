@@ -503,27 +503,38 @@
                             <div id="model-editor-canvas" class="col model-editor-canvas"></div>
                         </div>
                         <div class="row my-2">
-                            <div class="col" id="model-add-node-div">
-                                <button id="model-add-node" type="button" class="btn btn-sm model-button"
-                                        data-i18n="modelEditor:addNode" style="float:right"></button>
+                            <div class="col model-standard-div">
+                                <button id="model-add-node" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:addNode"></button>
                             </div>
-                            <div class="col" id="model-add-edge-div">
-                                <button id="model-add-edge" type="button" class="btn btn-sm model-button"
+                            <div class="col model-standard-div">
+                                <button id="model-add-edge" type="button" class="btn btn-sm model-button center"
                                         data-i18n="modelEditor:addEdge"></button>
+                            </div>
+                            <div class="col model-standard-div">
+                                <button id="model-fit" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:fit"></button>
+                            </div>
+                            <div class="col model-standard-div">
+                                <select name="model-layout" id="model-layout" class="center">
+                                    <option value="none" data-i18n="modelEditor:layout1"></option>
+                                    <option value="treeLR" data-i18n="modelEditor:layout2"></option>
+                                    <option value="treeUD" data-i18n="modelEditor:layout3"></option>
+                                </select>
                             </div>
                             <div class="col hide model-cancel-add-div">
                                 <!-- For the explanation, filled by buttons  -->
                                 <label id="model-explanation"></label>
                             </div>
                             <div class="col-2 hide model-cancel-add-div">
-                                <button id="model-cancel-add" type="button" class="btn btn-sm model-button"
+                                <button id="model-cancel-add" type="button" class="btn btn-sm model-button center"
                                         data-i18n="modelEditor:cancel"></button>
                             </div>
                             <div class="col hide model-delete-div">
                                 <label data-i18n="modelEditor:selection-explanation"></label>
                             </div>
                             <div class="col hide model-delete-div">
-                                <button id="model-delete-selection" type="button" class="btn btn-sm model-button"
+                                <button id="model-delete-selection" type="button" class="btn btn-sm model-button center"
                                         data-i18n="modelEditor:deleteSelection"></button>
                             </div>
                         </div>
@@ -582,13 +593,25 @@
                                 <h4 data-i18n="modelEditor:optionsNode"></h4>
                             </div>
                             <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="row">
-                                        <div class="col">
-                                            <label for="model-node-label" data-i18n="modelEditor:nodeLabel"></label>
-                                            <input id="model-node-label">
-                                        </div>
-                                    </div>
+                                <div class="col">
+                                    <label for="model-node-label" data-i18n="modelEditor:nodeLabel"></label>
+                                    <input id="model-node-label">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="checkbox" id="model-stopNode">
+                                    <label for="model-stopNode"
+                                           data-i18n="[title]modelEditor:t-stopNode;modelEditor:stopNode"
+                                           data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="checkbox" id="model-stopAllNode">
+                                    <label for="model-stopAllNode" data-toggle="tooltip" data-placement="top"
+                                           data-i18n="[title]modelEditor:t-stopAllNode;modelEditor:stopAllNode"
+                                           data-animation="false"></label>
                                 </div>
                             </div>
                         </div>
@@ -597,13 +620,9 @@
                                 <h4 data-i18n="modelEditor:optionsEdge"></h4>
                             </div>
                             <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="row">
-                                        <div class="col">
-                                            <label for="model-edge-label" data-i18n="modelEditor:edgeLabel">Name</label>
-                                            <input id="model-edge-label">
-                                        </div>
-                                    </div>
+                                <div class="col">
+                                    <label for="model-edge-label" data-i18n="modelEditor:edgeLabel">Name</label>
+                                    <input id="model-edge-label">
                                 </div>
                             </div>
                         </div>
