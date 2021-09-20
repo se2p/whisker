@@ -42,5 +42,13 @@
     "layout1": "Kein Layout",
     "layout2": "Baum Links-nach-Rechts",
     "layout3": "Baum Oben-nach-Unten",
-    "fit": "Zoom anpassen"
+    "fit": "Zoom anpassen",
+    "conditions": "Bedingungen",
+    "condition": "Neue Bedingung",
+    "t-conditions": "Müssen erfüllt sein für eine Transition der Kante",
+    "effects": "Effekte",
+    "effect": "Neuer Effekt",
+    "t-effects": "Werden nach der Transition getestet.",
+    "back": "Abbrechen",
+    "add": "+"
 }

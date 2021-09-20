@@ -5,6 +5,16 @@ const cloneDeep = require('lodash.clonedeep')
 const {i18n} = require("../index");
 const {CheckName} = require("whisker-main/src/whisker/model/components/Check");
 
+/**
+ * Model editor for building and editing models for testing in Scratch.
+ *
+ * Note: only problem with the framework are the built-in buttons to edit (that are not correctly displayed).
+ * Replaced them with custom buttons, however as they can not triggering the edit mode of the framework, after
+ * editing something on the graph the layout is reset. The built-in buttons are removed by
+ * this.options.manipulation.enabled = false. If setting this to true, a div with class vis-manipulation and
+ * vis-edit-mode are appended to the canvas but positioning and styling of the buttons was reset by any action, so
+ * they were not correctly displayed.
+ */
 class ModelEditor {
 
     // head line
@@ -39,12 +49,27 @@ class ModelEditor {
     static CONFIG_NODE = '#model-node-configuration';
     static CONFIG_NODE_LABEL = '#model-node-label';
     static CONFIG_NODE_STOP1 = '#model-stopNode';
-
-
     static CONFIG_NODE_STOP2 = '#model-stopAllNode';
+
     // configuration right pane, edge settings
     static CONFIG_EDGE = '#model-edge-configuration';
     static CONFIG_EDGE_LABEL = '#model-edge-label';
+    static CHECK_DIV = '#model-edge-check-div';
+    static CHECK_CHOOSER = '#model-edge-check';
+    static CHECK_BACK = '#model-check-back';
+    static CONDITIONS = '#model-conditions';
+    static EFFECTS = '#model-effects';
+    static CHECK_INPUT1 = '#model-check-input1';
+    static CHECK_INPUT2 = '#model-check-input2';
+    static CHECK_INPUT3 = '#model-check-input3';
+    static CHECK_INPUT4 = '#model-check-input4';
+    static CHECK_INPUT1_LABEL = '#model-check-input1-label';
+    static CHECK_INPUT2_LABEL = '#model-check-input1-label';
+    static CHECK_INPUT3_LABEL = '#model-check-input1-label';
+    static CHECK_INPUT4_LABEL = '#model-check-input1-label';
+    static ADD_CONDITION = '#model-editor-addC';
+    static ADD_EFFECT = '#model-editor-addE';
+    static CHECK_LABEL = '#model-check-label';
 
     /**
      * @param {ModelTester} modelTester
@@ -65,10 +90,12 @@ class ModelEditor {
                 arrows: {from: {enabled: false}, to: {enabled: true}}
             },
             interaction: {
-                multiselect: true
+                multiselect: true,
+                dragNodes: true,
+                dragView: true
             },
             layout: {
-                hierarchical:  {enabled: false},
+                hierarchical: {enabled: false},
             },
             physics: {
                 stabilization: {
@@ -78,7 +105,7 @@ class ModelEditor {
             manipulation: {
                 enabled: false,
                 addNode: this.addNode.bind(this),
-                addEdge: this.addEdge.bind(this)
+                addEdge: this.addEdge.bind(this),
             },
             locale: $('#lang-select').val(),
             clickToUse: false,
@@ -99,7 +126,6 @@ class ModelEditor {
         this.addTab(i18n.t('modelEditor:tabContent') + "1", 0);
         this.nextTabIndex = 2;
         this.changeToTab(0);
-        this.drawModelEditor();
     }
 
     onLoadEvent() {
@@ -218,11 +244,6 @@ class ModelEditor {
 
     // ############################# Plotting and GUI setup ############################
 
-    drawModelEditor() {
-        this.network.redraw();
-        this.network.fit();
-    }
-
     loadModel(tabNbr = 0) {
         if (tabNbr < 0 || tabNbr >= this.models.length) {
             throw Error("Tab number negative or higher than number of models.");
@@ -239,7 +260,6 @@ class ModelEditor {
         }
 
         this.network.setData({nodes: this.nodes, edges: this.edges});
-        this.drawModelEditor();
     }
 
     /**
@@ -249,6 +269,7 @@ class ModelEditor {
         $(ModelEditor.GENERAL_SETTINGS_DIV).removeClass("hide");
         $(ModelEditor.CONFIG_NODE).addClass("hide");
         $(ModelEditor.CONFIG_EDGE).addClass("hide");
+        $(ModelEditor.CHECK_DIV).addClass("hide");
 
         // load into the header etc
         $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
@@ -385,18 +406,18 @@ class ModelEditor {
             if (value === "none") {
                 let newOptions = {...this.options};
                 newOptions.layout.hierarchical = {enabled: false};
-                newOptions.edges.font= {align: "horizontal"};
+                newOptions.edges.font = {align: "horizontal"};
                 newOptions.edges.length = 200;
                 this.network.setOptions(newOptions);
             } else if (value === "treeLR") {
                 let newOptions = {...this.options};
                 newOptions.layout.hierarchical = {direction: "LR"};
-                newOptions.edges.font= {align: "top"};
+                newOptions.edges.font = {align: "top"};
                 this.network.setOptions(newOptions);
             } else if (value === "treeUD") {
                 let newOptions = {...this.options};
                 newOptions.layout.hierarchical = {direction: "UD"};
-                newOptions.edges.font= {align: "horizontal"};
+                newOptions.edges.font = {align: "horizontal"};
                 this.network.setOptions(newOptions);
             }
             this.network.fit();
@@ -429,13 +450,14 @@ class ModelEditor {
      * Buttons and input fields on node select
      */
     setupNodeConfiguration() {
-        $(ModelEditor.CONFIG_EDGE_LABEL).on('keyup change', () => {
-            let text = $(ModelEditor.CONFIG_EDGE_LABEL).val();
+        $(ModelEditor.CONFIG_NODE_LABEL).on('keyup change', () => {
+            let text = $(ModelEditor.CONFIG_NODE_LABEL).val();
 
-            let currentEdge = this.network.getSelectedEdges()[0];
-            for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
-                if (this.models[this.currentTab].edges[i].id === currentEdge) {
-                    this.models[this.currentTab].edges[i].label = text;
+            let currentNodeID = this.network.getSelectedNodes()[0];
+            for (let i = 0; i < this.models[this.currentTab].nodes.length; i++) {
+                if (this.models[this.currentTab].nodes[i].id === currentNodeID) {
+                    this.models[this.currentTab].nodes[i].label = text;
+                    this.nodes[i].label = text;
                     break;
                 }
             }
@@ -472,18 +494,18 @@ class ModelEditor {
      * Buttons and input fields on edge select
      */
     setupEdgeConfiguration() {
-        $(ModelEditor.CONFIG_NODE_LABEL).on('keyup change', () => {
-            let text = $(ModelEditor.CONFIG_NODE_LABEL).val();
+        $(ModelEditor.CONFIG_EDGE_LABEL).on('keyup change', () => {
+            let text = $(ModelEditor.CONFIG_EDGE_LABEL).val();
 
-            let currentNodeID = this.network.getSelectedNodes()[0];
-            for (let i = 0; i < this.models[this.currentTab].nodes.length; i++) {
-                if (this.models[this.currentTab].nodes[i].id === currentNodeID) {
-                    this.models[this.currentTab].nodes[i].label = text;
+            let currentEdge = this.network.getSelectedEdges()[0];
+            for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
+                if (this.models[this.currentTab].edges[i].id === currentEdge) {
+                    this.models[this.currentTab].edges[i].label = text;
                     break;
                 }
             }
             let selection = this.network.getSelection();
-            this.loadModel(this.currentTab)
+            this.loadModel(this.currentTab);
             this.network.setSelection(selection);
         })
     }
@@ -722,6 +744,10 @@ class ModelEditor {
                 }
             }
         })
+        this.network.on('dragging', () => {
+            this.showGeneralSettings(this.currentTab);
+            this.network.unselectAll();
+        })
     }
 
     showNodeOptions(nodeID) {
@@ -778,6 +804,29 @@ class ModelEditor {
         }
 
         $(ModelEditor.CONFIG_EDGE_LABEL).val(edge.label);
+
+        $(ModelEditor.ADD_CONDITION).on('click', () => {
+            console.log("add condition")
+            $(ModelEditor.CONFIG_EDGE).addClass('hide');
+            $(ModelEditor.CHECK_DIV).removeClass('hide');
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:condition'));
+        })
+
+        $(ModelEditor.ADD_EFFECT).on('click', () => {
+            $(ModelEditor.CONFIG_EDGE).addClass('hide');
+            $(ModelEditor.CHECK_DIV).removeClass('hide');
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'));
+        })
+
+        $(ModelEditor.CHECK_BACK).on('click', () => {
+            $(ModelEditor.CHECK_DIV).addClass('hide');
+            $(ModelEditor.CONFIG_EDGE).removeClass('hide');
+        })
+
+
+        // fill up conditions of current edge todo
+
+        // fill up effects of current edge todo
     }
 
     /** for fixing model position after loading the element */

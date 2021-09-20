@@ -1017,22 +1017,17 @@ img {vertical-align: middle;}
 
 .model-button {
     background-color: #ccc;
-}
-
-/* Style the buttons that are used to open the tab content */
-#model-delete-button {
-    background-color: #ccc;
-    float: right;
     border: none;
     border-radius: 0.2em;
     outline: none;
     cursor: pointer;
+}
+
+.model-small-button {
+    float: right;
     padding: 1px;
-    transition: 0.3s;
     height: 30px;
     width: 30px;
-    margin-left: auto;
-    margin-right: 5px;
 }
 .popup {
     width: 33.33%;
@@ -1066,4 +1061,17 @@ img {vertical-align: middle;}
     transform: translate(-50%,0);
     position: relative;
     left: 50%;
+}
+
+.right {
+    margin-left: auto;
+    margin-right: 5px;
+    position: relative;
+}
+
+.check-container {
+    border: 2px solid #cccccc;
+    border-radius: 0.2em;
+    height: 150px;
+    padding: 5px;
 }
