@@ -66,7 +66,7 @@ const getCoverage = function (str) {
     }
 
     coverageString = coverageString.replace(/^# /gm, '');
-    const coverage = yaml.safeLoad(coverageString);
+    const coverage = yaml.load(coverageString);
     return coverage.combined.match(/(.*)\s\((\d+)\/(\d+)\)/)[1];
 }
 
