@@ -1,36 +1,44 @@
 {
-    "test-generator": "many-objective",
+    "testGenerator": "manyObjective",
     "algorithm": "mio",
-    "chromosome": "variablelengthtest",
-    "minVarChromosomeLength": 5,
-    "maxVarChromosomeLength": 20,
-    "chromosome-length": 30,
     "extractor": "dynamic",
-    "crossover": {
-        "operator": "singlepointrelative",
-        "probability": 1
+    "eventSelector": "interleaving",
+    "startOfFocusedPhase": 0.5,
+    "chromosome": {
+        "type": "variableLengthTest",
+        "maxLength": 40,
+        "minSampleLength": 2,
+        "maxSampleLength": 20
     },
     "mutation": {
-        "operator": "variablelength",
-        "probability": 1,
+        "operator": "variableLength",
         "gaussianMutationPower": 5,
         "maxMutationCountStart": 0,
         "maxMutationCountFocusedPhase": 10
     },
+    "localSearch": [
+        {
+            "type": "Extension",
+            "probability": 0.1
+        },
+        {
+            "type": "Reduction",
+            "probability": 0.3
+        }
+    ],
     "selection": {
-        "operator": "rank",
         "randomSelectionProbabilityStart": 0.5,
         "randomSelectionProbabilityFocusedPhase": 0
     },
-    "fitness-function": {
+    "fitnessFunction": {
         "type": "statement",
         "targets": []
     },
-    "stopping-condition": {
-        "type": "one-of",
+    "stoppingCondition": {
+        "type": "combined",
         "conditions": [
             {
-                "type": "fixed-time",
+                "type": "fixedTime",
                 "duration": 1000000
             },
             {
@@ -42,12 +50,13 @@
         "maxArchiveSizeStart": 10,
         "maxArchiveSizeFocusedPhase": 1
     },
-    "startOfFocusedPhase": 0.5,
     "integerRange": {
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 50,
-    "click-duration": 3,
-    "press-duration": 3
+    "durations": {
+        "waitStepUpperBound": 100,
+        "clickDuration": 3,
+        "pressDuration": 10
+    }
 }

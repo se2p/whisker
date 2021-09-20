@@ -118,7 +118,7 @@ export class Search {
             stoppingCondition = config.getNeuroevolutionProperties().stoppingCondition;
         }
         else {
-            stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+            stoppingCondition = config.searchAlgorithmProperties.getStoppingCondition();
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.

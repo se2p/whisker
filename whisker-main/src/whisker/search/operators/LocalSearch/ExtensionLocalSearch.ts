@@ -51,7 +51,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return chromosome.getGenes().size() < Container.config.getSearchAlgorithmProperties().getChromosomeLength() &&
+        return chromosome.getGenes().size() < Container.config.searchAlgorithmProperties.getChromosomeLength() &&
             this._originalChromosomes.indexOf(chromosome) < 0 && this.calculateFitnessValues(chromosome).length > 0;
     }
 
@@ -126,7 +126,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      */
     private async _extendGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>,
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
-        const upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
+        const upperLengthBound = Container.config.searchAlgorithmProperties.getChromosomeLength();
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
         let done = false;
