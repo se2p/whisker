@@ -6,9 +6,9 @@
     "startOfFocusedPhase": 0.5,
     "chromosome": {
         "type": "variableLengthTest",
-        "maxLength": 40,
         "minSampleLength": 2,
-        "maxSampleLength": 20
+        "maxSampleLength": 20,
+        "maxLength": 40
     },
     "mutation": {
         "operator": "variableLength",
@@ -16,16 +16,6 @@
         "maxMutationCountStart": 0,
         "maxMutationCountFocusedPhase": 10
     },
-    "localSearch": [
-        {
-            "type": "Extension",
-            "probability": 0.1
-        },
-        {
-            "type": "Reduction",
-            "probability": 0.3
-        }
-    ],
     "selection": {
         "randomSelectionProbabilityStart": 0.5,
         "randomSelectionProbabilityFocusedPhase": 0

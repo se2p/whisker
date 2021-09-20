@@ -115,7 +115,7 @@ export class Search {
          */
         let stoppingCondition : StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
-            stoppingCondition = config.getNeuroevolutionProperties().stoppingCondition;
+            stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
         }
         else {
             stoppingCondition = config.searchAlgorithmProperties.getStoppingCondition();

@@ -3,26 +3,26 @@
     "algorithm": "mosa",
     "extractor": "dynamic",
     "eventSelector": "interleaving",
-    "populationSize": 70,
+    "populationSize": 3,
     "chromosome": {
         "type": "variableLengthTest",
-        "maxLength": 40,
         "minSampleLength": 2,
-        "maxSampleLength": 20
+        "maxSampleLength": 2,
+        "maxLength": 50
     },
     "mutation": {
         "operator": "variableLength",
-        "probability": 1,
+        "probability": 0,
         "gaussianMutationPower": 5
     },
     "crossover": {
         "operator": "singlePointRelative",
-        "probability": 0.8
+        "probability": 0
     },
     "localSearch": [
         {
             "type": "Extension",
-            "probability": 0.1
+            "probability": 1
         }
     ],
     "selection": {

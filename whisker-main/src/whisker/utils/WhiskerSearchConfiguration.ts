@@ -52,7 +52,7 @@ import {JustWaitScratchEventExtractor} from "../testcase/JustWaitScratchEventExt
 import {LocalSearch} from "../search/operators/LocalSearch/LocalSearch";
 import {ExtensionLocalSearch} from "../search/operators/LocalSearch/ExtensionLocalSearch";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
-import {EventSelector, ClusteringEventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
+import {ClusteringEventSelector, EventSelector, InterleavingEventSelector} from "../testcase/EventSelector";
 import {BiasedVariableLengthMutation} from "../integerlist/BiasedVariableLengthMutation";
 import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
 import {TargetFitness} from "../whiskerNet/NetworkFitness/TargetFitness";
@@ -73,24 +73,33 @@ class ConfigException implements Error {
 export class WhiskerSearchConfiguration {
 
     private readonly dict: Record<string, any>;
-    private readonly _searchAlgorithmProperties: SearchAlgorithmProperties<any>
+    private readonly _searchAlgorithmProperties: (SearchAlgorithmProperties<any> | NeuroevolutionProperties<any>)
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
-        this.dict = Preconditions.checkNotUndefined(dict)
-        this._searchAlgorithmProperties = this.setSearchAlgorithmProperties();
+        this.dict = Preconditions.checkNotUndefined(dict);
+        if (this.getAlgorithm() === SearchAlgorithmType.NEAT) {
+            this._searchAlgorithmProperties = this.setNeuroevolutionProperties();
+        } else {
+            this._searchAlgorithmProperties = this.setSearchAlgorithmProperties();
+        }
     }
 
     private setSearchAlgorithmProperties(): SearchAlgorithmProperties<any> {
         const properties = new SearchAlgorithmProperties();
 
         // Properties all search algorithms have in common
-        properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
         properties.setTestGenerator(this.dict['testGenerator'] as string);
-        properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
         properties.setStoppingCondition(this._getStoppingCondition(this.dict['stoppingCondition']));
+
+        // Random does not need additional properties
+        if (properties.getTestGenerator() === 'random') {
+            return properties;
+        }
 
         switch (this.getAlgorithm()) {
             case SearchAlgorithmType.MIO:
+                properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
+                properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
                 properties.setMaxMutationCounter(this.dict['mutation']['maxMutationCountStart'] as number,
                     this.dict['mutation']['maxMutationCountFocusedPhase'] as number);
                 properties.setSelectionProbabilities(this.dict['selection']['randomSelectionProbabilityStart'] as number,
@@ -99,11 +108,16 @@ export class WhiskerSearchConfiguration {
                 properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
                     this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
                 break;
-            case SearchAlgorithmType.RANDOM:
             case SearchAlgorithmType.ONE_PLUS_ONE:
+                properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
+                properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
+                properties.setMutationProbability(this.dict['mutation']['probability'] as number);
+                break;
             case SearchAlgorithmType.SIMPLEGA:
             case SearchAlgorithmType.MOSA:
             default:
+                properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
+                properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
                 properties.setPopulationSize(this.dict['populationSize'] as number);
                 properties.setCrossoverProbability(this.dict['crossover']['probability'] as number);
                 properties.setMutationProbability(this.dict['mutation']['probability'] as number);
@@ -112,11 +126,11 @@ export class WhiskerSearchConfiguration {
     }
 
     get searchAlgorithmProperties(): SearchAlgorithmProperties<any> {
-        return this._searchAlgorithmProperties;
+        return this._searchAlgorithmProperties as SearchAlgorithmProperties<any>;
     }
 
-    public getNeuroevolutionProperties(): NeuroevolutionProperties<any> {
-        const populationSize = this.dict['population-size'] as number;
+    public setNeuroevolutionProperties(): NeuroevolutionProperties<any> {
+        const populationSize = this.dict['populationSize'] as number;
         const properties = new NeuroevolutionProperties(populationSize);
 
         const parentsPerSpecies = this.dict['parentsPerSpecies'] as number;
@@ -147,7 +161,7 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this.dict['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this.dict['compatibility']['weightCoefficient'] as number;
 
-        const timeout = this.dict['network-fitness']['timeout']
+        const timeout = this.dict['networkFitness']['timeout']
 
         properties.populationType = this.dict[`populationType`] as string;
         properties.numberOfSpecies = numberOfSpecies;
@@ -181,8 +195,12 @@ export class WhiskerSearchConfiguration {
         properties.timeout = timeout;
 
         properties.stoppingCondition = this._getStoppingCondition(this.dict['stoppingCondition']);
-        properties.networkFitness = this.getNetworkFitnessFunction(this.dict['network-fitness'])
+        properties.networkFitness = this.getNetworkFitnessFunction(this.dict['networkFitness'])
         return properties;
+    }
+
+    get neuroevolutionProperties(): NeuroevolutionProperties<any> {
+        return this._searchAlgorithmProperties as NeuroevolutionProperties<any>;
     }
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
@@ -234,7 +252,7 @@ export class WhiskerSearchConfiguration {
     }
 
     private _getCrossoverOperator(): Crossover<any> {
-        // Some algorithms don't use crossover operators (e.g MIO)
+        // Some algorithms don't use crossover operators
         if (!this.dict['crossover']) {
             return undefined;
         }
@@ -250,6 +268,10 @@ export class WhiskerSearchConfiguration {
     }
 
     public getSelectionOperator(): Selection<any> {
+        // Some algorithms don't use a selection operator
+        if (!this.dict['selection']) {
+            return undefined;
+        }
         switch (this.dict['selection']['operator']) {
             case 'tournament':
                 return new TournamentSelection(this.dict['selection']['tournamentSize']) as unknown as Selection<any>;
@@ -399,9 +421,10 @@ export class WhiskerSearchConfiguration {
     }
 
     public getAlgorithm(): SearchAlgorithmType {
+        if (this.dict['testGenerator'] === 'random') {
+            return SearchAlgorithmType.RANDOM;
+        }
         switch (this.dict['algorithm']) {
-            case 'random':
-                return SearchAlgorithmType.RANDOM;
             case 'onePlusOne':
                 return SearchAlgorithmType.ONE_PLUS_ONE;
             case 'simpleGA':
