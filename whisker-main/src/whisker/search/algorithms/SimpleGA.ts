@@ -191,10 +191,10 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 child1 = crossover.getFirst();
                 child2 = crossover.getSecond();
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbablity()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbability()) {
                 child1 = child1.mutate();
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbablity()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbability()) {
                 child2 = child2.mutate();
             }
             offspringPopulation.add(child1);

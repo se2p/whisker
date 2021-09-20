@@ -39,14 +39,14 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     private _chromosomeLength: number;
 
     /**
-     * The propability for applying crossover to chromosomes.
+     * The probability for applying crossover to chromosomes.
      */
     private _crossoverProbability: number;
 
     /**
      * The probability to apply mutation to a chromosome.
      */
-    private _mutationProbablity: number;
+    private _mutationProbability: number;
 
     /**
      * The number of mutations on the same chromosome at start.
@@ -104,16 +104,6 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
     private _testGenerator: string
 
     /**
-     * Constructs an object that stores all relevant properties of a search algorithm.
-     * @param populationSize the size of the population
-     * @param chromosomeLength the length of each chromosome
-     */
-    constructor(populationSize: number, chromosomeLength: number) {
-        this._populationSize = populationSize;
-        this._chromosomeLength = chromosomeLength;
-    }
-
-    /**
      * Returns the population size.
      * @returns population size
      */
@@ -141,8 +131,8 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
      * Returns the mutation probability.
      * @returns probability to apply mutation
      */
-    getMutationProbablity(): number {
-        return this._mutationProbablity;
+    getMutationProbability(): number {
+        return this._mutationProbability;
     }
 
     /**
@@ -259,10 +249,10 @@ export class SearchAlgorithmProperties<C extends Chromosome> {
 
     /**
      * Sets the probability for mutation to the specified number.
-     * @param mutationProbablity the new mutation probability
+     * @param mutationProbability the new mutation probability
      */
-    setMutationProbablity(mutationProbablity: number): void {
-        this._mutationProbablity = mutationProbablity;
+    setMutationProbability(mutationProbability: number): void {
+        this._mutationProbability = mutationProbability;
     }
 
     /**

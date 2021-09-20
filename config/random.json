@@ -1,18 +1,17 @@
 {
-    "test-generator": "random",
-    "algorithm": "random",
+    "testGenerator": "random",
     "minEventSize": 2,
-    "maxEventSize": 30,
+    "maxEventSize": 40,
     "extractor": "naive",
-    "fitness-function": {
+    "fitnessFunction": {
         "type": "statement",
         "targets": []
     },
-    "stopping-condition": {
-        "type": "one-of",
+    "stoppingCondition": {
+        "type": "combined",
         "conditions": [
             {
-                "type": "fixed-time",
+                "type": "fixedTime",
                 "duration": 6000000
             },
             {
@@ -20,23 +19,9 @@
             }
         ]
     },
-    "crossover": {
-        "operator": "singlepointrelative",
-        "probability": 1
-    },
-    "mutation": {
-        "operator": "biasedVariablelengthConstrained",
-        "probability": 1,
-        "gaussianMutationPower": 5,
-        "maxMutationCountStart": 0,
-        "maxMutationCountFocusedPhase": 10
-    },
-    "selection": {
-        "operator": "rank",
-        "randomSelectionProbabilityStart": 0.5,
-        "randomSelectionProbabilityFocusedPhase": 0
-    },
-    "waitStepUpperBound": 200,
-    "click-duration": 3,
-    "press-duration": 50
+    "durations": {
+        "waitStepUpperBound": 100,
+        "clickDuration": 3,
+        "pressDuration": 10
+    }
 }
