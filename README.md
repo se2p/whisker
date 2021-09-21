@@ -72,7 +72,7 @@ Options:
                                       "../config/default.json")
   -d, --isHeadless                    If should run headless (d like in decapitated)
   -p, --numberOfTabs <Integer>        The number of tabs to execute the tests in (default: 1)
-  -k, --isConsoleForwarded            If the console output of the browser's should be forwarded (default: false)
+  -k, --isConsoleForwarded            If the browser's console output should be forwarded (default: false)
   -o, --isLiveOutputCoverage          If new output of the coverage should be printed regularly (default: false)
   -l, --isLiveLogEnabled              If the new output of the log should be printed regularly (default: false)
   -g, --generateTests [Path]          If new tests should be generated and where to put them (default: false)
