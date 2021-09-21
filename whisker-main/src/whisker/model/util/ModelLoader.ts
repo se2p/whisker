@@ -330,6 +330,18 @@ export class ModelLoader {
             name = effect.name;
             args = effect.args;
 
+            if (name == InputEffectName.InputKey) {
+                if (args[0].toLowerCase() == "left") {
+                    args[0] = "left arrow"
+                } else if (args[0].toLowerCase() == "right") {
+                    args[0] = "right arrow"
+                } else if (args[0].toLowerCase() == "up") {
+                    args[0] = "up arrow"
+                } else if (args[0].toLowerCase() == "down") {
+                    args[0] = "down arrow"
+                }
+            }
+
             if (id == undefined) {
                 id = "condition" + this.idUndefined;
                 console.warn("Warning: " + newEdge.id + " ID for an input effect not given.");

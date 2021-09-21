@@ -3,7 +3,7 @@ const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep')
 const {i18n} = require("../index");
-const {CheckName} = require("whisker-main/src/whisker/model/components/Check");
+const {argType, checkLabelCodes, keys} = require("./model-editor-labelCodes");
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -43,7 +43,6 @@ class ModelEditor {
     static LAYOUT = '#model-layout';
     static FIT = '#model-fit';
 
-    // todo condition, effect builder
     // todo edit mode of edge on double click
     // configuration right pane, node settings
     static CONFIG_NODE = '#model-node-configuration';
@@ -57,19 +56,22 @@ class ModelEditor {
     static CHECK_DIV = '#model-edge-check-div';
     static CHECK_CHOOSER = '#model-edge-check';
     static CHECK_BACK = '#model-check-back';
+    static CHECK_SAVE = '#model-check-save';
     static CONDITIONS = '#model-conditions';
     static EFFECTS = '#model-effects';
-    static CHECK_INPUT1 = '#model-check-input1';
-    static CHECK_INPUT2 = '#model-check-input2';
-    static CHECK_INPUT3 = '#model-check-input3';
-    static CHECK_INPUT4 = '#model-check-input4';
-    static CHECK_INPUT1_LABEL = '#model-check-input1-label';
-    static CHECK_INPUT2_LABEL = '#model-check-input1-label';
-    static CHECK_INPUT3_LABEL = '#model-check-input1-label';
-    static CHECK_INPUT4_LABEL = '#model-check-input1-label';
     static ADD_CONDITION = '#model-editor-addC';
     static ADD_EFFECT = '#model-editor-addE';
     static CHECK_LABEL = '#model-check-label';
+    static CHECK_NEGATED = '#model-check-negated';
+    static CHECK_NEGATED_DIV = '#model-negated-div';
+
+    static INPUT_ID = 'model-check-input';
+    static CHANGE_PATTERN = /^(-=|\+=|=|([+-]?)[0-9]*)$/g;
+    static TIME_PATTERN = /^([0-9]+)$/g;
+    static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
+    static RGB_PATTERN = /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/g;
+    static X_PATTERN = /^(-?([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-3][0-9]|240))$/g; // scratch window with -240 - 240
+    static Y_PATTERN = /^(-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180))$/g; // scratch window height -180 - 180
 
     /**
      * @param {ModelTester} modelTester
@@ -156,34 +158,6 @@ class ModelEditor {
         callback(data);
     }
 
-    // Checks in Check.ts
-    // [
-    //     "AttrChange", // sprite name, attr name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
-    //     "AttrComp",// args: sprite name, attribute name, comparison (=,>,<...), value to compare to
-    //     "BackgroundChange",
-    //      "Click", // args: sprite name
-    //     "Function",
-    //     "Key", // args: key name
-    //     "Output", // sprite name, string output
-    //     "SpriteColor", // sprite touching a color, args: sprite name, red, green, blue values
-    //     "SpriteTouching", // two sprites touching each other, args: two sprite names
-    //     "VarChange", // sprite name, var name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
-    //     "VarComp",// args: sprite name, variable name, comparison (=,>,<...), value to compare to
-    //     "Expr", // evaluate an expression, args: expression
-    //     "Probability", // for randomness, e.g. take an edge with probability 0.5. arg: probability (checks
-    //     // rand<=prob) (but this probability depends on the other edge conditions tested before -> edge conditions are
-    //     // tested one for one and not tested if another edge is taken before it)
-    //     "TimeElapsed", // time from the test start on, time in milliseconds
-    //     "TimeBetween", //  time from the last edge transition in the model, in milliseconds
-    //     "TimeAfterEnd", // time from program end (for after end models)
-    //     "NbrOfClones", // sprite name, comparison, number
-    //     "NbrOfVisibleClones", // sprite name, comparison, number
-    //     "TouchingEdge", // sprite name regex
-    //     "TouchingVerticalEdge", // sprite name regex
-    //     "TouchingHorizEdge", // sprite name regex
-    //     "RandomValue" // sprite name regex, attrName
-    // ]
-
     insertNewGraph() {
         let id = i18n.t("modelEditor:tabContent") + (this.models.length + 1);
         this.models.push({
@@ -256,6 +230,8 @@ class ModelEditor {
             this.edges = [];
         } else {
             this.nodes = this.setupNodes(this.models[tabNbr]);
+
+// todo add priorities on edges
             this.edges = this.setupEdges(this.models[tabNbr].edges, this.nodes);
         }
 
@@ -332,6 +308,7 @@ class ModelEditor {
                 loops[edges[edgeId].from].push(edges[edgeId]);
             }
             edges[edgeId].length = 200;
+            this.makeLabel(edges[edgeId]);
         }
         for (const nodeId in loops) {
             if (loops[nodeId].length > 1) {
@@ -355,6 +332,16 @@ class ModelEditor {
         }
 
         return edges;
+    }
+
+    makeLabel(edge) {
+        let effectsLength = 0;
+        if (edge.effects) {
+            effectsLength = edge.effects.length;
+        } else if (edge.inputEffects) {
+            effectsLength = edge.inputEffects.length;
+        }
+        edge.label += " (" + edge.conditions.length + "|" + effectsLength + ")";
     }
 
     /**
@@ -507,6 +494,13 @@ class ModelEditor {
             let selection = this.network.getSelection();
             this.loadModel(this.currentTab);
             this.network.setSelection(selection);
+        })
+
+        let checkNames = Object.keys(checkLabelCodes);
+        checkNames.forEach(name => {
+            let option = $('<option/>', {value: name}).text(i18n.t('modelEditor:' + name))
+                .click(() => this.showEmptyArgsForCheckType(name));
+            $(ModelEditor.CHECK_CHOOSER).append(option);
         })
     }
 
@@ -754,6 +748,7 @@ class ModelEditor {
         $(ModelEditor.GENERAL_SETTINGS_DIV).addClass("hide");
         $(ModelEditor.CONFIG_NODE).removeClass("hide");
         $(ModelEditor.CONFIG_EDGE).addClass("hide");
+        $(ModelEditor.CHECK_DIV).addClass("hide");
 
         // get the corresponding node
         let node;
@@ -792,6 +787,7 @@ class ModelEditor {
         $(ModelEditor.GENERAL_SETTINGS_DIV).addClass("hide");
         $(ModelEditor.CONFIG_NODE).addClass("hide");
         $(ModelEditor.CONFIG_EDGE).removeClass("hide");
+        $(ModelEditor.CHECK_DIV).addClass("hide");
 
         // get the corresponding edge
         let edge;
@@ -806,16 +802,26 @@ class ModelEditor {
         $(ModelEditor.CONFIG_EDGE_LABEL).val(edge.label);
 
         $(ModelEditor.ADD_CONDITION).on('click', () => {
-            console.log("add condition")
             $(ModelEditor.CONFIG_EDGE).addClass('hide');
             $(ModelEditor.CHECK_DIV).removeClass('hide');
-            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:condition'));
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newCondition'));
+
+            $(ModelEditor.CHECK_CHOOSER).val("AttrChange");
+            this.showEmptyArgsForCheckType("AttrChange");
         })
 
         $(ModelEditor.ADD_EFFECT).on('click', () => {
             $(ModelEditor.CONFIG_EDGE).addClass('hide');
             $(ModelEditor.CHECK_DIV).removeClass('hide');
-            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'));
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newEffect'));
+
+            if (this.models[this.currentTab].usage === "user") {
+                $(ModelEditor.CHECK_NEGATED_DIV).addClass('hide');
+            } else {
+                $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
+            }
+            $(ModelEditor.CHECK_CHOOSER).val("AttrChange");
+            this.showEmptyArgsForCheckType("AttrChange");
         })
 
         $(ModelEditor.CHECK_BACK).on('click', () => {
@@ -823,10 +829,316 @@ class ModelEditor {
             $(ModelEditor.CONFIG_EDGE).removeClass('hide');
         })
 
+        $(ModelEditor.CHECK_SAVE).on('click', () => {
+            // todo check argument of types
+            // todo save condition/effect
+            $(ModelEditor.CHECK_DIV).addClass('hide');
+            $(ModelEditor.CONFIG_EDGE).removeClass('hide');
+        })
 
+
+        // clear the conditions and effects
+        $(ModelEditor.CONDITIONS).children('.model-check').remove();
+        $(ModelEditor.EFFECTS).children('.model-check').remove();
+
+// todo add information element that these conditions are connected by and
         // fill up conditions of current edge todo
+        edge.conditions.forEach(condition => {
+            $(ModelEditor.CONDITIONS).append(this.getCheckElement(condition));
+        });
+
 
         // fill up effects of current edge todo
+        if (edge.effects) {
+            edge.effects.forEach(effect => {
+                $(ModelEditor.EFFECTS).append(this.getCheckElement(effect));
+            });
+        } else if (edge.inputEffects) {
+            edge.inputEffects.forEach(effect => {
+                $(ModelEditor.EFFECTS).append(this.getCheckInputElement(effect));
+            });
+        }
+    }
+
+    showCheckOptions(check, isAnEffect = false, isAnInputEffect = false) {
+        $(ModelEditor.CONFIG_EDGE).addClass('hide');
+        $(ModelEditor.CHECK_DIV).removeClass('hide');
+        if (!isAnEffect) {
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:condition'))
+        } else if (isAnEffect) {
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'))
+        }
+        if (isAnInputEffect) {
+            $(ModelEditor.CHECK_NEGATED_DIV).addClass('hide');
+        } else {
+            $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
+            $(ModelEditor.CHECK_NEGATED).prop('checked', check.negated);
+        }
+
+        $(ModelEditor.CHECK_CHOOSER).val(check.name);
+        this.changeCheckType(check.name, check.id, check.args);
+    }
+
+    showEmptyArgsForCheckType(type) {
+        $(ModelEditor.CHECK_DIV).children('.model-arg').remove();
+
+        const argNames = checkLabelCodes[type];
+        for (let i = 0; i < argNames.length; i++) {
+            switch (argNames[i]) {
+                case argType.spriteNameRegex:
+                    this.appendInput(i18n.t('modelEditor:spriteName'), "", "(Regex)", i);
+                    break;
+                case argType.varNameRegex:
+                    this.appendInput(i18n.t('modelEditor:varName'), "", "(Regex)", i);
+                    break;
+                case argType.attrName:
+                    this.appendInput(i18n.t('modelEditor:attrName'), "", undefined, i);
+                    break;
+                case argType.costumeName:
+                    this.appendInput(i18n.t('modelEditor:costumeName'), "", undefined, i);
+                    break;
+                case argType.value:
+                    this.appendInput(i18n.t('modelEditor:value'), "", undefined, i);
+                    break;
+                case argType.change:
+                    this.appendInputWithPattern(i18n.t("modelEditor:change"), "", ModelEditor.CHANGE_PATTERN,
+                        undefined, undefined, i);
+                    break;
+                case argType.comp:
+                    this.appendComparisonSelection("==", i);
+                    break;
+                case argType.probValue:
+                    // todo when saving divide by 100
+                    this.appendInputWithPattern(i18n.t("modelEditor:prob"), 0,
+                        ModelEditor.PROB_PATTERN, "%", "max-width:60px; position:absolute; right:5px", i);
+                    break;
+                case argType.time:
+                    this.appendInputWithPattern(i18n.t("modelEditor:time"), "", ModelEditor.TIME_PATTERN,
+                        "ms", "max-width:60px;position:absolute; right:5px", i);
+                    break;
+                case argType.keyName:
+                    this.appendKeys("space", i);
+                    break;
+                case argType.bool:
+                    this.appendBool("true", i);
+                    break;
+                case argType.r:
+                    this.appendInputWithPattern(i18n.t("modelEditor:rValue"), 0, ModelEditor.RGB_PATTERN,
+                        undefined, "max-width:60px;", i);
+                    break;
+                case argType.g:
+                    this.appendInputWithPattern(i18n.t("modelEditor:gValue"), 0, ModelEditor.RGB_PATTERN,
+                        undefined, "max-width:60px;", i);
+                    break;
+                case argType.b:
+                    this.appendInputWithPattern(i18n.t("modelEditor:bValue"), 0, ModelEditor.RGB_PATTERN,
+                        undefined, "max-width:60px;", i);
+                    break;
+                case argType.coordX:
+                    this.appendInputWithPattern(i18n.t("modelEditor:xCoord"), 0, ModelEditor.X_PATTERN,
+                        undefined, "max-width:60px;", i); // todo test
+                    break;
+                case argType.coordY:
+                    this.appendInputWithPattern(i18n.t("modelEditor:yCoord"), 0, ModelEditor.Y_PATTERN,
+                        undefined, "max-width:60px;", i); // todo test
+                    break;
+                case argType.functionC:
+                    this.appendAreaInput(i18n.t('modelEditor:function'), "true", "javascript code...",
+                        i);
+                    break;
+                case argType.expr:
+                    // todo add explanation!!
+                    this.appendAreaInput(i18n.t('modelEditor:expr'), "", "expression ...", i);
+                    break;
+            }
+        }
+    }
+    //todo on input change save the values
+
+    /**
+     * By changing the selected type of check on the check configuration panel. Shows all needed inputs of the check
+     * with nothing or placeholders.
+     * @param type Type of check, has to be of checkLabelCodes
+     * @param id Id of the check.
+     * @param args Arguments of the check
+     */
+    changeCheckType(type, id, args) {
+        const argNames = checkLabelCodes[type];
+        if (args.length !== argNames.length) {
+            console.error('Loaded model has a check with wrong number of arguments. Check.id:' + id);
+        }
+        $(ModelEditor.CHECK_DIV).children('.model-arg').remove();
+
+        for (let i = 0; i < argNames.length; i++) {
+            switch (argNames[i]) {
+                case argType.spriteNameRegex:
+                    this.appendInput(i18n.t('modelEditor:spriteName'), args[i], "(Regex)", i);
+                    break;
+                case argType.varNameRegex:
+                    this.appendInput(i18n.t('modelEditor:varName'), args[i], "(Regex)", i);
+                    break;
+                case argType.attrName:
+                    this.appendInput(i18n.t('modelEditor:attrName'), args[i], undefined, i);
+                    break;
+                case argType.costumeName:
+                    this.appendInput(i18n.t('modelEditor:costumeName'), args[i], undefined, i);
+                    break;
+                case argType.value:
+                    this.appendInput(i18n.t('modelEditor:value'), args[i], undefined, i);
+                    break;
+                case argType.change:
+                    // todo make an explanation are,                 i18n.t('modelEditor:t-change')
+                    this.appendInputWithPattern(i18n.t("modelEditor:change"), args[i], ModelEditor.CHANGE_PATTERN,
+                        undefined, undefined, i);
+                    break;
+                case argType.comp:
+                    this.appendComparisonSelection(args[i], i);
+                    break;
+                case argType.probValue:
+                    // todo when saving divide by 100
+                    this.appendInputWithPattern(i18n.t("modelEditor:prob"), args[i] * 100,
+                        ModelEditor.PROB_PATTERN, "%", "max-width:60px; position:absolute; right:5px", i);
+                    break;
+                case argType.time:
+                    this.appendInputWithPattern(i18n.t("modelEditor:time"), args[i], ModelEditor.TIME_PATTERN,
+                        "ms", "max-width:60px;position:absolute; right:5px", i);
+                    break;
+                case argType.keyName:
+                    this.appendKeys(args[i], i);
+                    break;
+                case argType.bool:
+                    this.appendBool(args[i], i); // todo test
+                    break;
+                case argType.r:
+                    this.appendInputWithPattern(i18n.t("modelEditor:rValue"), args[i], ModelEditor.RGB_PATTERN,
+                        undefined, "max-width:60px;", i);
+                    break;
+                case argType.g:
+                    this.appendInputWithPattern(i18n.t("modelEditor:gValue"), args[i], ModelEditor.RGB_PATTERN,
+                        undefined, "max-width:60px;", i);
+                    break;
+                case argType.b:
+                    this.appendInputWithPattern(i18n.t("modelEditor:bValue"), args[i], ModelEditor.RGB_PATTERN,
+                        undefined, "max-width:60px;", i);
+                    break;
+                case argType.coordX:
+                    this.appendInputWithPattern(i18n.t("modelEditor:xCoord"), args[i], ModelEditor.X_PATTERN,
+                        undefined, "max-width:60px;", i); // todo test
+                    break;
+                case argType.coordY:
+                    this.appendInputWithPattern(i18n.t("modelEditor:yCoord"), args[i], ModelEditor.Y_PATTERN,
+                        undefined, "max-width:60px;", i); // todo test
+                    break;
+                case argType.functionC:
+                    this.appendAreaInput(i18n.t('modelEditor:function'), args[i], "javascript code...",
+                        i);
+                    break;
+                case argType.expr:
+                    // todo add explanation!!
+                    this.appendAreaInput(i18n.t('modelEditor:expr'), args[i], "expression ...", i);
+                    break;
+            }
+        }
+    }
+
+    appendAreaInput(title, value, placeholder, idNbr) {
+        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+            $('<div/>', {class: "col mt-1"}).append($('<label/>').text(title))
+        ));
+        let textarea = $('<textarea/>', {
+            class: "col mr-2", style: "overflow:auto;", rows: 6,
+            id: ModelEditor.INPUT_ID + idNbr, placeholder: placeholder
+        }).val(value);
+        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(textarea));
+    }
+
+    appendInput(title, value, placeholder, style, idNbr) {
+        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+            $('<div/>', {class: "col mt-1"}).append($('<label/>').text(title))
+        ).append(
+            $('<div/>', {class: "col", style: style}).append($('<input/>', {
+                id: ModelEditor.INPUT_ID + idNbr,
+                placeholder: placeholder
+            })
+                .val(value))
+        ));
+    }
+
+    appendInputWithPattern(title, value, pattern, unit, style, idNbr) {
+        let id = ModelEditor.INPUT_ID + idNbr;
+        let row = $('<div/>', {class: "row mt-2 model-arg"}).append(
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(title))
+        ).append(
+            $('<div/>', {class: "col"}).append($('<input/>', {id: id, style: style})
+                .val(value).on('keyup change', () => {
+                    let queryID = '#' + id;
+                    if ($(queryID).val().match(pattern) != null) {
+                        $(queryID).removeClass('model-invalid-input');
+                    } else {
+                        $(queryID).addClass('model-invalid-input');
+                    }
+                })
+            ));
+
+        if (unit) {
+            row.append($('<div/>', {
+                class: "col-1 mt-1 mr-1",
+                style: "padding-left:0;"
+            }).append($('<label/>').text(unit)));
+        }
+        $(ModelEditor.CHECK_DIV).append(row);
+    }
+
+    appendComparisonSelection(value, idNbr) {
+        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
+        ).append(
+            $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
+                $('<select/>', {name: 'selectChange' + idNbr, id: 'model-check-input' + idNbr})
+                    .append($('<option/>', {value: '='}).text('=='))
+                    .append($('<option/>', {value: '>'}).text('>'))
+                    .append($('<option/>', {value: '<'}).text('<'))
+                    .append($('<option/>', {value: '>='}).text('>='))
+                    .append($('<option/>', {value: '<='}).text('<=')).val(value)
+            )
+        ));
+    }
+
+    appendKeys(value, idNbr) {
+        let select = $('<select/>', {name: 'selectKey' + idNbr, id: 'model-check-input' + idNbr});
+        for (let i = 0; i < keys.length; i++) {
+            select.append($('<option/>', {value: keys[i]}).text(keys[i]));
+        }
+        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:key')))
+        ).append($('<div/>', {class: "col mt-1", style: "float:left;"}).append(select)));
+        select.val(value);
+    }
+
+    appendBool(value, idNbr) {
+        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
+        ).append(
+            $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
+                $('<select/>', {name: 'selectBool' + idNbr, id: 'model-check-input' + idNbr})
+                    .append($('<option/>', {value: 'true'}).text(i18n.t('modelEditor:true')))
+                    .append($('<option/>', {value: 'false'}).text(i18n.t('modelEditor:false'))).val(value)
+            )
+        ));
+    }
+
+    getCheckElement(check, isAnEffect = false) {
+        let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
+        return $('<label/>', {class: 'model-check row'}).text(name).click(() => {
+            this.showCheckOptions(check, isAnEffect);
+        });
+    }
+
+    getCheckInputElement(check) {
+        let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
+        return $('<label/>', {class: 'model-check row'}).text(name).click(() => {
+            this.showCheckOptions(check, false, true);
+        });
     }
 
     /** for fixing model position after loading the element */
