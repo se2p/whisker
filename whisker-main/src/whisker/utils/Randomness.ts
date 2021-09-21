@@ -161,7 +161,6 @@ export class Randomness {
      * Sets a seed for the Scratch-VM to enable reproduction of scratch project execution.
      */
     public static seedScratch(): void {
-        console.log("Seed: ", Randomness._initialSeed)
         seed(Randomness._initialSeed, {global: true});
     }
 
