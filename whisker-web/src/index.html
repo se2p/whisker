@@ -543,8 +543,8 @@
                         <div id="model-general-settings">
                             <div class="row">
                                 <h4 data-i18n="modelEditor:general-settings-header"></h4>
-                                <button id="model-delete-button" class="model-button model-small-button" type="button"
-                                        data-toggle="tooltip"
+                                <button id="model-delete-button" class="model-button model-small-button right"
+                                        type="button" data-toggle="tooltip"
                                         data-placement="top" data-animation="false"
                                         data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"
                                 ></button>
@@ -632,56 +632,39 @@
                                 <button type="button" data-i18n="modelEditor:add" id="model-editor-addC"
                                         class="model-button model-small-button right" style="float:right;"></button>
                             </div>
-                            <div class="row check-container" id="model-conditions"></div>
+                            <div class="row" style="padding-right:5px;">
+                                <div class="col check-container" id="model-conditions" style="overflow:auto"></div>
+                            </div>
                             <div class="row mt-1">
                                 <label data-i18n="[title]modelEditor:t-effects;modelEditor:effects"
                                        data-toggle="tooltip" data-placement="top" data-animation="false"></label>
                                 <button type="button" data-i18n="modelEditor:add" id="model-editor-addE"
                                         class="model-button model-small-button right" style="float:right;"></button>
                             </div>
-                            <div id="model-effects" class="row check-container"></div>
+                            <div class="row" style="padding-right:5px;">
+                                <div id="model-effects" class="col check-container" style="overflow:auto"></div>
+                            </div>
                         </div>
                         <div id="model-edge-check-div" class="hide">
-                            <div class="row">
+                            <div class="row mt-2">
                                 <h4 id="model-check-label" class="col4"></h4>
-                                <button type="button" id="model-check-back" class="col2 right model-button"
+                                <button type="button" id="model-check-back" class="col2 right model-button btn-sm"
                                         data-i18n="modelEditor:back"></button>
+                                <button type="button" id="model-check-save" class="col2 right model-button btn-sm"
+                                        data-i18n="modelEditor:saveCheck"></button>
                             </div>
-                            <div class="row">
-                                <select name="model-edge-check" id="model-edge-check" class="center">
-                                    <option>Type1</option>
-                                </select>
-                            </div>
-                            <div class="row">
+                            <div class="row mt-4">
                                 <div class="col">
-                                    <label for="model-check-input1" id="model-check-input1-label"></label>
-                                </div>
-                                <div class="col">
-                                    <input id="model-check-input1">
+                                    <label data-i18n="modelEditor:edgeCheckType" for="model-edge-check"></label>
+                                    <select name="model-edge-check" id="model-edge-check" class="center">
+                                    </select>
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row mt-2" id="model-negated-div">
                                 <div class="col">
-                                    <label for="model-check-input2" id="model-check-input2-label"></label>
-                                </div>
-                                <div class="col">
-                                    <input id="model-check-input2">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <label for="model-check-input3" id="model-check-input3-label"></label>
-                                </div>
-                                <div class="col">
-                                    <input id="model-check-input3">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <label for="model-check-input4" id="model-check-input4-label"></label>
-                                </div>
-                                <div class="col">
-                                    <input id="model-check-input4">
+                                    <input type="checkbox" id="model-check-negated">
+                                    <label for="model-check-negated"
+                                           data-i18n="[title]modelEditor:t-negated;modelEditor:negated"></label>
                                 </div>
                             </div>
                         </div>
