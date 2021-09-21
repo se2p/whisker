@@ -38,7 +38,7 @@ const validateCommandLineArguments = commander => {
     }
 };
 
-// Defines the CLI interface of the runner, including checks and defaults.
+// Defines the CLI of the runner, including checks and defaults.
 const cli = {
     start: () => {
         commander
