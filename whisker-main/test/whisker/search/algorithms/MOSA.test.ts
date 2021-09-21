@@ -57,8 +57,10 @@ describe('MOSA', () => {
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
-        properties.setMutationProbablity(mutationProbability);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(populationSize);
+        properties.setChromosomeLength(chromosomeLength);
+        properties.setMutationProbability(mutationProbability);
         properties.setCrossoverProbability(crossoverProbability);
         properties.setStoppingCondition(new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition()));
 
@@ -106,9 +108,11 @@ describe('MOSA', () => {
 
     test('Setter', () => {
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(populationSize);
+        properties.setChromosomeLength(chromosomeLength);
         properties.setCrossoverProbability(crossoverProbability);
-        properties.setMutationProbablity(mutationProbability);
+        properties.setMutationProbability(mutationProbability);
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition());
         properties.setStoppingCondition(stoppingCondition);
 

@@ -115,10 +115,10 @@ export class Search {
          */
         let stoppingCondition : StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
-            stoppingCondition = config.getNeuroevolutionProperties().stoppingCondition;
+            stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
         }
         else {
-            stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+            stoppingCondition = config.searchAlgorithmProperties.getStoppingCondition();
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.

@@ -123,9 +123,11 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         const maxMutationCountFocusedPhase = 10;
         const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
 
-        this._properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        this._properties = new SearchAlgorithmProperties();
+        this._properties.setPopulationSize(populationSize);
+        this._properties.setChromosomeLength(chromosomeLength);
         this._properties.setCrossoverProbability(crossoverProbability);
-        this._properties.setMutationProbablity(mutationProbability);
+        this._properties.setMutationProbability(mutationProbability);
         this._properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
         this._properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
         this._properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
