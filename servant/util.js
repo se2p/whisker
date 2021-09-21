@@ -56,7 +56,8 @@ const cli = {
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
-            .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false);
+            .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
+            .option('-se, --seed <Integer>', ' Seeds the Scratch-VM using the specified integer', Date.now());
 
         commander.parse(process.argv);
 
@@ -75,7 +76,8 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            generateTests
+            generateTests,
+            seed
         } = commander._optionValues;
 
         validateCommandLineArguments(commander);
@@ -95,7 +97,8 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            generateTests
+            generateTests,
+            seed
         };
     }
 };

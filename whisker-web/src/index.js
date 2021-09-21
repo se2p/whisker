@@ -128,13 +128,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         let coverage;
         accSlider.slider('disable');
         const accelerationFactor = $('#acceleration-value').text();
+        const seed = document.getElementById('scratch-project').getAttribute('data-seed');
 
         try {
             await Whisker.scratch.vm.loadProject(project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(vm);
 
-            summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
+            summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor, seed});
             coverage = CoverageGenerator.getCoverage();
 
             if (typeof window.messageServantCallback === 'function') {
