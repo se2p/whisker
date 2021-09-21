@@ -9,7 +9,7 @@ const TAP13Formatter = {
     descriptionToYAML (description) {
         return [
             '  ---',
-            yaml.safeDump(description)
+            yaml.dump(description)
                 .trim()
                 .replace(/^/mg, '  '),
             '  ...'
@@ -21,7 +21,7 @@ const TAP13Formatter = {
      * @return {string} .
      */
     extraToYAML (extra) {
-        return yaml.safeDump(extra)
+        return yaml.dump(extra)
             .trim()
             .replace(/^/mg, '# ');
     },
