@@ -200,10 +200,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 child1 = crossover.getFirst();
                 child2 = crossover.getSecond();
             }
-            if (this._random.nextDouble() < this._properties.getMutationProbablity()) {
+            if (this._random.nextDouble() < this._properties.getMutationProbability()) {
                 child1 = parent1.mutate();
             }
-            if (this._random.nextDouble() < this._properties.getMutationProbablity()) {
+            if (this._random.nextDouble() < this._properties.getMutationProbability()) {
                 child2 = parent2.mutate();
             }
             offspringPopulation.add(child1);
