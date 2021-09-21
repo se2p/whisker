@@ -4,7 +4,7 @@ const TestResult = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
 const {assert, assume} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
-const Random = require('../util/random');
+const {Randomness} = require("../whisker/utils/Randomness");
 
 class TestRunner extends EventEmitter {
 
@@ -102,7 +102,8 @@ class TestRunner extends EventEmitter {
         this.emit(TestRunner.TEST_START, test);
 
         util.start();
-        testDriver.seedScratch(props.seed);
+        Randomness.setInitialSeed(props.seed);
+        Randomness.seedScratch();
 
         try {
             await test.test(testDriver);

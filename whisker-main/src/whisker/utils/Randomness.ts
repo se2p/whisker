@@ -19,6 +19,8 @@
  */
 
 import {List} from "./List";
+import seed from 'seed-random';
+
 
 /**
  * Seeded singleton random number generator
@@ -37,12 +39,12 @@ export class Randomness {
      * Private constructor to prevent construction with new
      */
     private constructor() {
-        if(Randomness._initialSeed) {
+        if (Randomness._initialSeed) {
             this._seed = Randomness._initialSeed;
         } else {
             this._seed = Date.now();
         }
-        console.log("Using random seed ",this._seed);
+        console.log(`Using random seed ${this._seed}`);
     }
 
     /**
@@ -152,7 +154,15 @@ export class Randomness {
      * @param std the std of the gaussian distribution
      */
     public nextGaussianInt(mean: number, std: number): number {
-        return Math.round(this.nextGaussian(mean,std))
+        return Math.round(this.nextGaussian(mean, std))
+    }
+
+    /**
+     * Sets a seed for the Scratch-VM to enable reproduction of scratch project execution.
+     */
+    public static seedScratch(): void {
+        console.log("Seed: ", Randomness._initialSeed)
+        seed(Randomness._initialSeed, {global: true});
     }
 
 }

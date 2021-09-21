@@ -1,5 +1,5 @@
 const defaults = require('lodash.defaults');
-const random = require('../util/random');
+const {Randomness} = require("../whisker/utils/Randomness");
 const Coverage = require('../coverage/coverage');
 
 /**
@@ -63,7 +63,10 @@ class TestDriver {
         this.isProjectRunning = vmWrapper.isProjectRunning.bind(vmWrapper);
 
         /* Further Test Tools  */
-        this.seedScratch = random.seedScratch;
+        this.seedScratch = (seed) => {
+            Randomness.setInitialSeed(seed);
+            Randomness.seedScratch();
+        }
         this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;
         this.getRealRunTimeElapsed = () => this.getRunTimeElapsed() / vmWrapper.accelerationFactor;
         this.getAccelerationFactor = () => vmWrapper.accelerationFactor;

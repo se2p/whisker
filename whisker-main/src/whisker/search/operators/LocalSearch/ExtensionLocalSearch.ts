@@ -21,7 +21,6 @@
 import {List} from '../../../utils/List';
 import {Randomness} from '../../../utils/Randomness';
 import {TestChromosome} from "../../../testcase/TestChromosome";
-import {seedScratch} from "../../../../util/random";
 import {WaitEvent} from "../../../testcase/events/WaitEvent";
 import {Container} from "../../../utils/Container";
 import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
@@ -72,7 +71,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const newCodons = new List<number>();
         const events = new List<[ScratchEvent, number[]]>();
         newCodons.addList(chromosome.getGenes());
-        seedScratch(String(Randomness.getInitialSeed()));
+        Randomness.seedScratch();
         this._vmWrapper.start();
 
         // Execute the original codons to obtain the state of the VM after executing the original chromosome.

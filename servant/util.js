@@ -57,7 +57,7 @@ const cli = {
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
             .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
-            .option('-se, --seed <Integer>', ' Seeds the Scratch-VM using the specified integer', Date.now());
+            .option('-se, --seed <Integer>', ' Seeds the Scratch-VM using the specified integer');
 
         commander.parse(process.argv);
 

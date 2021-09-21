@@ -139,6 +139,7 @@ async function runGeneticSearch (browser, downloadPath) {
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
