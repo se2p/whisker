@@ -75,5 +75,6 @@
     "function": "Funktion",
     "expr": "Expression",
     "priority": "Reihenfolge Kanten",
-    "t-priority": "In dieser Reihenfolge werden die Kanten abgestestet."
+    "t-priority": "In dieser Reihenfolge werden die Kanten abgestestet.",
+    "notValid": "Sie haben nicht valide Eingaben."
 }

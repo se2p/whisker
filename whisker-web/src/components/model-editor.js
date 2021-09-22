@@ -3,7 +3,7 @@ const {$, FileSaver} = require('../web-libs');
 const vis = require('vis-network');
 const cloneDeep = require('lodash.clonedeep')
 const {i18n} = require("../index");
-const {argType, checkLabelCodes, keys} = require("./model-editor-labelCodes");
+const {argType, checkLabelCodes, keys, placeholders, inputLabelCodes} = require("./model-editor-labelCodes");
 
 /**
  * Model editor for building and editing models for testing in Scratch.
@@ -68,12 +68,14 @@ class ModelEditor {
     static CHECK_NEGATED = '#model-check-negated';
     static CHECK_NEGATED_DIV = '#model-negated-div';
     static INPUT_ID = 'model-check-input';
-    static CHANGE_PATTERN = /^(-=|\+=|=|([+-]?)[0-9]*)$/g;
+    static NOT_EMPTY_PATTERN = /^\S+$/g;
+    static CHANGE_PATTERN = /^(-=|\+=|=|[+-]|([+-]?)[0-9]+)$/g;
     static TIME_PATTERN = /^([0-9]+)$/g;
     static PROB_PATTERN = /^([0-9]|[1-9][0-9]|100)$/g;
     static RGB_PATTERN = /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/g;
     static X_PATTERN = /^(-?([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-3][0-9]|240))$/g; // scratch window with -240 - 240
     static Y_PATTERN = /^(-?([0-9]|[1-9][0-9]|1[0-7][0-9]|180))$/g; // scratch window height -180 - 180
+    static INVALID_INPUT_CLASS = 'model-invalid-input';
 
     /**
      * @param {ModelTester} modelTester
@@ -499,11 +501,8 @@ class ModelEditor {
             this.network.setSelection(selection);
         })
 
-        let checkNames = Object.keys(checkLabelCodes);
-        checkNames.forEach(name => {
-            let option = $('<option/>', {value: name}).text(i18n.t('modelEditor:' + name))
-                .click(() => this.showEmptyArgsForCheckType(name));
-            $(ModelEditor.CHECK_CHOOSER).append(option);
+        $(ModelEditor.CHECK_CHOOSER).on('change', () => {
+            this.showEmptyArgsForCheckType($(ModelEditor.CHECK_CHOOSER).val())
         })
     }
 
@@ -870,6 +869,12 @@ class ModelEditor {
             $(ModelEditor.CONFIG_EDGE).addClass('hide');
             $(ModelEditor.CHECK_DIV).removeClass('hide');
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newCondition'));
+            $(ModelEditor.CHECK_CHOOSER).children().remove();
+
+            let checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
+            checkNames.forEach(name => {
+                $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name}).text(name));
+            })
 
             $(ModelEditor.CHECK_CHOOSER).val("AttrChange");
             this.showEmptyArgsForCheckType("AttrChange");
@@ -879,14 +884,26 @@ class ModelEditor {
             $(ModelEditor.CONFIG_EDGE).addClass('hide');
             $(ModelEditor.CHECK_DIV).removeClass('hide');
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newEffect'));
+            $(ModelEditor.CHECK_CHOOSER).children().remove();
 
+            let checkNames;
+            let defValue;
             if (this.models[this.currentTab].usage === "user") {
+                defValue = "InputClickSprite";
+                checkNames = Object.keys(inputLabelCodes).sort((a, b) => a < b ? -1 : 0);
                 $(ModelEditor.CHECK_NEGATED_DIV).addClass('hide');
             } else {
+                defValue = "AttrChange";
+                checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
                 $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
             }
-            $(ModelEditor.CHECK_CHOOSER).val("AttrChange");
-            this.showEmptyArgsForCheckType("AttrChange");
+
+            checkNames.forEach(name => {
+                $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name}).text(name));
+            })
+
+            $(ModelEditor.CHECK_CHOOSER).val(defValue);
+            this.showEmptyArgsForCheckType(defValue);
         })
 
         $(ModelEditor.CHECK_BACK).on('click', () => {
@@ -895,10 +912,48 @@ class ModelEditor {
         })
 
         $(ModelEditor.CHECK_SAVE).on('click', () => {
-            // todo check argument of types
-            // todo save condition/effect
-            $(ModelEditor.CHECK_DIV).addClass('hide');
-            $(ModelEditor.CONFIG_EDGE).removeClass('hide');
+            let type = $(ModelEditor.CHECK_CHOOSER).val();
+            let argNumber = checkLabelCodes[type];
+            if (argNumber === undefined) {
+                argNumber = inputLabelCodes[type];
+            }
+
+            let args = [];
+            let valid = true;
+            for (let i = 0; i < argNumber.length; i++) {
+                args[i] = $('#' + ModelEditor.INPUT_ID + i).val();
+
+                if (argNumber[i] === argType.change) {
+                    valid = args[i].match(ModelEditor.CHANGE_PATTERN);
+                } else if (argNumber[i] === argType.probValue) {
+                    valid = args[i].match(ModelEditor.PROB_PATTERN);
+                    args[i] = args[i] / 100;
+                } else if (argNumber[i] === argType.time) {
+                    valid = args[i].match(ModelEditor.TIME_PATTERN);
+                } else if (argNumber[i] === argType.r || argNumber[i] === argType.g || argNumber[i] === argType.b) {
+                    valid = args[i].match(ModelEditor.RGB_PATTERN);
+                } else if (argNumber[i] === argType.coordX) {
+                    valid = args[i].match(ModelEditor.X_PATTERN);
+                } else if (argNumber[i] === argType.coordY) {
+                    valid = args[i].match(ModelEditor.Y_PATTERN);
+                } else {
+                    valid = args[i].match(ModelEditor.NOT_EMPTY_PATTERN);
+                }
+
+                if (!valid) {
+                    $('#' + ModelEditor.INPUT_ID + i).addClass(ModelEditor.INVALID_INPUT_CLASS);
+                }
+            }
+
+            // if any arg is empty string
+            if (!valid) {
+                this.showPopup(i18n.t('modelEditor:notValid'))
+            } else {
+
+                // todo on save
+                // $(ModelEditor.CHECK_DIV).addClass('hide');
+                // $(ModelEditor.CONFIG_EDGE).removeClass('hide');
+            }
         })
 
 
@@ -906,17 +961,16 @@ class ModelEditor {
         $(ModelEditor.CONDITIONS).children('.model-check').remove();
         $(ModelEditor.EFFECTS).children('.model-check').remove();
 
-// todo add information element that these conditions are connected by and
+        // todo add information element that these conditions are connected by and
         // fill up conditions of current edge todo
         edge.conditions.forEach(condition => {
             $(ModelEditor.CONDITIONS).append(this.getCheckElement(condition));
         });
 
-
-        // fill up effects of current edge todo
+        // fill up effects of current edge
         if (edge.effects) {
             edge.effects.forEach(effect => {
-                $(ModelEditor.EFFECTS).append(this.getCheckElement(effect));
+                $(ModelEditor.EFFECTS).append(this.getCheckElement(effect, true));
             });
         } else if (edge.inputEffects) {
             edge.inputEffects.forEach(effect => {
@@ -929,6 +983,7 @@ class ModelEditor {
     showCheckOptions(check, isAnEffect = false, isAnInputEffect = false) {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
+        let checkNames;
         if (!isAnEffect) {
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:condition'))
         } else if (isAnEffect) {
@@ -936,175 +991,128 @@ class ModelEditor {
         }
         if (isAnInputEffect) {
             $(ModelEditor.CHECK_NEGATED_DIV).addClass('hide');
+            checkNames = Object.keys(inputLabelCodes).sort((a, b) => a < b ? -1 : 0);
         } else {
             $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
             $(ModelEditor.CHECK_NEGATED).prop('checked', check.negated);
+            checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
         }
+        checkNames.forEach(name => {
+            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name}).text(name));
+        })
 
         $(ModelEditor.CHECK_CHOOSER).val(check.name);
         this.changeCheckType(check.name, check.id, check.args);
     }
 
+    /**
+     * Show argument inputs for a new check of a type.
+     */
     showEmptyArgsForCheckType(type) {
         $(ModelEditor.CHECK_DIV).children('.model-arg').remove();
 
-        const argNames = checkLabelCodes[type];
+        let argNames = checkLabelCodes[type];
+        if (argNames === undefined) {
+            argNames = inputLabelCodes[type];
+        }
         for (let i = 0; i < argNames.length; i++) {
-            switch (argNames[i]) {
-                case argType.spriteNameRegex:
-                    this.appendInput(i18n.t('modelEditor:spriteName'), "", "(Regex)", i);
-                    break;
-                case argType.varNameRegex:
-                    this.appendInput(i18n.t('modelEditor:varName'), "", "(Regex)", i);
-                    break;
-                case argType.attrName:
-                    this.appendInput(i18n.t('modelEditor:attrName'), "", undefined, i);
-                    break;
-                case argType.costumeName:
-                    this.appendInput(i18n.t('modelEditor:costumeName'), "", undefined, i);
-                    break;
-                case argType.value:
-                    this.appendInput(i18n.t('modelEditor:value'), "", undefined, i);
-                    break;
-                case argType.change:
-                    this.appendInputWithPattern(i18n.t("modelEditor:change"), "", ModelEditor.CHANGE_PATTERN,
-                        undefined, undefined, i);
-                    break;
-                case argType.comp:
-                    this.appendComparisonSelection("==", i);
-                    break;
-                case argType.probValue:
-                    // todo when saving divide by 100
-                    this.appendInputWithPattern(i18n.t("modelEditor:prob"), 0,
-                        ModelEditor.PROB_PATTERN, "%", "max-width:60px; position:absolute; right:5px", i);
-                    break;
-                case argType.time:
-                    this.appendInputWithPattern(i18n.t("modelEditor:time"), "", ModelEditor.TIME_PATTERN,
-                        "ms", "max-width:60px;position:absolute; right:5px", i);
-                    break;
-                case argType.keyName:
-                    this.appendKeys("space", i);
-                    break;
-                case argType.bool:
-                    this.appendBool("true", i);
-                    break;
-                case argType.r:
-                    this.appendInputWithPattern(i18n.t("modelEditor:rValue"), 0, ModelEditor.RGB_PATTERN,
-                        undefined, "max-width:60px;", i);
-                    break;
-                case argType.g:
-                    this.appendInputWithPattern(i18n.t("modelEditor:gValue"), 0, ModelEditor.RGB_PATTERN,
-                        undefined, "max-width:60px;", i);
-                    break;
-                case argType.b:
-                    this.appendInputWithPattern(i18n.t("modelEditor:bValue"), 0, ModelEditor.RGB_PATTERN,
-                        undefined, "max-width:60px;", i);
-                    break;
-                case argType.coordX:
-                    this.appendInputWithPattern(i18n.t("modelEditor:xCoord"), 0, ModelEditor.X_PATTERN,
-                        undefined, "max-width:60px;", i); // todo test
-                    break;
-                case argType.coordY:
-                    this.appendInputWithPattern(i18n.t("modelEditor:yCoord"), 0, ModelEditor.Y_PATTERN,
-                        undefined, "max-width:60px;", i); // todo test
-                    break;
-                case argType.functionC:
-                    this.appendAreaInput(i18n.t('modelEditor:function'), "true", "javascript code...",
-                        i);
-                    break;
-                case argType.expr:
-                    // todo add explanation!!
-                    this.appendAreaInput(i18n.t('modelEditor:expr'), "", "expression ...", i);
-                    break;
-            }
+            this.appendInputBasedOnType(argNames[i], placeholders[argNames[i]], i);
         }
     }
 
-    //todo on input change save the values
-
     /**
-     * By changing the selected type of check on the check configuration panel. Shows all needed inputs of the check
-     * with nothing or placeholders.
+     * Show check argument inputs for the chosen type.
      * @param type Type of check, has to be of checkLabelCodes
      * @param id Id of the check.
      * @param args Arguments of the check
      */
     changeCheckType(type, id, args) {
-        const argNames = checkLabelCodes[type];
+        let argNames = checkLabelCodes[type];
+        if (argNames === undefined) {
+            argNames = inputLabelCodes[type];
+        }
+
         if (args.length !== argNames.length) {
             console.error('Loaded model has a check with wrong number of arguments. Check.id:' + id);
         }
         $(ModelEditor.CHECK_DIV).children('.model-arg').remove();
 
         for (let i = 0; i < argNames.length; i++) {
-            switch (argNames[i]) {
-                case argType.spriteNameRegex:
-                    this.appendInput(i18n.t('modelEditor:spriteName'), args[i], "(Regex)", i);
-                    break;
-                case argType.varNameRegex:
-                    this.appendInput(i18n.t('modelEditor:varName'), args[i], "(Regex)", i);
-                    break;
-                case argType.attrName:
-                    this.appendInput(i18n.t('modelEditor:attrName'), args[i], undefined, i);
-                    break;
-                case argType.costumeName:
-                    this.appendInput(i18n.t('modelEditor:costumeName'), args[i], undefined, i);
-                    break;
-                case argType.value:
-                    this.appendInput(i18n.t('modelEditor:value'), args[i], undefined, i);
-                    break;
-                case argType.change:
-                    // todo make an explanation are,                 i18n.t('modelEditor:t-change')
-                    this.appendInputWithPattern(i18n.t("modelEditor:change"), args[i], ModelEditor.CHANGE_PATTERN,
-                        undefined, undefined, i);
-                    break;
-                case argType.comp:
-                    this.appendComparisonSelection(args[i], i);
-                    break;
-                case argType.probValue:
-                    // todo when saving divide by 100
-                    this.appendInputWithPattern(i18n.t("modelEditor:prob"), args[i] * 100,
-                        ModelEditor.PROB_PATTERN, "%", "max-width:60px; position:absolute; right:5px", i);
-                    break;
-                case argType.time:
-                    this.appendInputWithPattern(i18n.t("modelEditor:time"), args[i], ModelEditor.TIME_PATTERN,
-                        "ms", "max-width:60px;position:absolute; right:5px", i);
-                    break;
-                case argType.keyName:
-                    this.appendKeys(args[i], i);
-                    break;
-                case argType.bool:
-                    this.appendBool(args[i], i); // todo test
-                    break;
-                case argType.r:
-                    this.appendInputWithPattern(i18n.t("modelEditor:rValue"), args[i], ModelEditor.RGB_PATTERN,
-                        undefined, "max-width:60px;", i);
-                    break;
-                case argType.g:
-                    this.appendInputWithPattern(i18n.t("modelEditor:gValue"), args[i], ModelEditor.RGB_PATTERN,
-                        undefined, "max-width:60px;", i);
-                    break;
-                case argType.b:
-                    this.appendInputWithPattern(i18n.t("modelEditor:bValue"), args[i], ModelEditor.RGB_PATTERN,
-                        undefined, "max-width:60px;", i);
-                    break;
-                case argType.coordX:
-                    this.appendInputWithPattern(i18n.t("modelEditor:xCoord"), args[i], ModelEditor.X_PATTERN,
-                        undefined, "max-width:60px;", i); // todo test
-                    break;
-                case argType.coordY:
-                    this.appendInputWithPattern(i18n.t("modelEditor:yCoord"), args[i], ModelEditor.Y_PATTERN,
-                        undefined, "max-width:60px;", i); // todo test
-                    break;
-                case argType.functionC:
-                    this.appendAreaInput(i18n.t('modelEditor:function'), args[i], "javascript code...",
-                        i);
-                    break;
-                case argType.expr:
-                    // todo add explanation!!
-                    this.appendAreaInput(i18n.t('modelEditor:expr'), args[i], "expression ...", i);
-                    break;
-            }
+            this.appendInputBasedOnType(argNames[i], args[i], i);
+        }
+    }
+
+    appendInputBasedOnType(type, value, i) {
+        switch (type) {
+            case argType.spriteNameRegex:
+                this.appendInputWithPattern(i18n.t('modelEditor:spriteName'), value,
+                    ModelEditor.NOT_EMPTY_PATTERN, i, undefined, undefined, "(Regex)");
+                break;
+            case argType.varNameRegex:
+                this.appendInputWithPattern(i18n.t('modelEditor:varName'), value,
+                    ModelEditor.NOT_EMPTY_PATTERN, i, undefined, undefined, "(Regex)");
+                break;
+            case argType.attrName:
+                this.appendInputWithPattern(i18n.t('modelEditor:attrName'), value,
+                    ModelEditor.NOT_EMPTY_PATTERN, i);
+                break;
+            case argType.costumeName:
+                this.appendInputWithPattern(i18n.t('modelEditor:costumeName'), value,
+                    ModelEditor.NOT_EMPTY_PATTERN, i);
+                break;
+            case argType.value:
+                this.appendInputWithPattern(i18n.t('modelEditor:value'), value,
+                    ModelEditor.NOT_EMPTY_PATTERN, i);
+                break;
+            case argType.change:
+                // todo make an explanation are,                 i18n.t('modelEditor:t-change')
+                this.appendInputWithPattern(i18n.t("modelEditor:change"), value, ModelEditor.CHANGE_PATTERN, i);
+                break;
+            case argType.comp:
+                this.appendComparisonSelection(value, i);
+                break;
+            case argType.probValue:
+                this.appendInputWithPattern(i18n.t("modelEditor:prob"), value * 100,
+                    ModelEditor.PROB_PATTERN, i, "max-width:60px; position:absolute; right:5px", "%");
+                break;
+            case argType.time:
+                this.appendInputWithPattern(i18n.t("modelEditor:time"), value, ModelEditor.TIME_PATTERN,
+                    i, "max-width:60px;position:absolute; right:5px", "ms");
+                break;
+            case argType.keyName:
+                this.appendKeys(value, i);
+                break;
+            case argType.bool:
+                this.appendBool(value, i);
+                break;
+            case argType.r:
+                this.appendInputWithPattern(i18n.t("modelEditor:rValue"), value, ModelEditor.RGB_PATTERN,
+                    i, "max-width:60px;");
+                break;
+            case argType.g:
+                this.appendInputWithPattern(i18n.t("modelEditor:gValue"), value, ModelEditor.RGB_PATTERN,
+                    i, "max-width:60px;");
+                break;
+            case argType.b:
+                this.appendInputWithPattern(i18n.t("modelEditor:bValue"), value, ModelEditor.RGB_PATTERN,
+                    i, "max-width:60px;");
+                break;
+            case argType.coordX:
+                this.appendInputWithPattern(i18n.t("modelEditor:xCoord"), value, ModelEditor.X_PATTERN,
+                    i, "max-width:60px;");
+                break;
+            case argType.coordY:
+                this.appendInputWithPattern(i18n.t("modelEditor:yCoord"), value, ModelEditor.Y_PATTERN,
+                    i, "max-width:60px;");
+                break;
+            case argType.functionC:
+                this.appendAreaInput(i18n.t('modelEditor:function'), value, "javascript code...",
+                    i);
+                break;
+            case argType.expr:
+                // todo add explanation!!
+                this.appendAreaInput(i18n.t('modelEditor:expr'), value, "expression ...", i);
+                break;
         }
     }
 
@@ -1115,34 +1123,29 @@ class ModelEditor {
         let textarea = $('<textarea/>', {
             class: "col mr-2", style: "overflow:auto;", rows: 6,
             id: ModelEditor.INPUT_ID + idNbr, placeholder: placeholder
-        }).val(value);
+        }).val(value).on('keyup change', () => {
+            if (textarea.val().match(ModelEditor.NOT_EMPTY_PATTERN) != null) {
+                textarea.removeClass(ModelEditor.INVALID_INPUT_CLASS);
+            } else {
+                textarea.addClass(ModelEditor.INVALID_INPUT_CLASS);
+            }
+        });
         $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(textarea));
     }
 
-    appendInput(title, value, placeholder, style, idNbr) {
-        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
-            $('<div/>', {class: "col mt-1"}).append($('<label/>').text(title))
-        ).append(
-            $('<div/>', {class: "col", style: style}).append($('<input/>', {
-                id: ModelEditor.INPUT_ID + idNbr,
-                placeholder: placeholder
-            })
-                .val(value))
-        ));
-    }
-
-    appendInputWithPattern(title, value, pattern, unit, style, idNbr) {
+    appendInputWithPattern(title, value, pattern, idNbr, style = undefined, unit = undefined,
+                           placeholder = undefined) {
         let id = ModelEditor.INPUT_ID + idNbr;
         let row = $('<div/>', {class: "row mt-2 model-arg"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(title))
         ).append(
-            $('<div/>', {class: "col"}).append($('<input/>', {id: id, style: style})
+            $('<div/>', {class: "col"}).append($('<input/>', {id: id, style: style, placeholder: placeholder})
                 .val(value).on('keyup change', () => {
                     let queryID = '#' + id;
                     if ($(queryID).val().match(pattern) != null) {
-                        $(queryID).removeClass('model-invalid-input');
+                        $(queryID).removeClass(ModelEditor.INVALID_INPUT_CLASS);
                     } else {
-                        $(queryID).addClass('model-invalid-input');
+                        $(queryID).addClass(ModelEditor.INVALID_INPUT_CLASS);
                     }
                 })
             ));
@@ -1157,11 +1160,12 @@ class ModelEditor {
     }
 
     appendComparisonSelection(value, idNbr) {
+        let id = ModelEditor.INPUT_ID + idNbr;
         $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
         ).append(
             $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
-                $('<select/>', {name: 'selectChange' + idNbr, id: 'model-check-input' + idNbr})
+                $('<select/>', {name: 'selectChange' + idNbr, id: id})
                     .append($('<option/>', {value: '='}).text('=='))
                     .append($('<option/>', {value: '>'}).text('>'))
                     .append($('<option/>', {value: '<'}).text('<'))
@@ -1172,7 +1176,8 @@ class ModelEditor {
     }
 
     appendKeys(value, idNbr) {
-        let select = $('<select/>', {name: 'selectKey' + idNbr, id: 'model-check-input' + idNbr});
+        let id = ModelEditor.INPUT_ID + idNbr;
+        let select = $('<select/>', {name: 'selectKey' + idNbr, id: id});
         for (let i = 0; i < keys.length; i++) {
             select.append($('<option/>', {value: keys[i]}).text(keys[i]));
         }
@@ -1183,17 +1188,19 @@ class ModelEditor {
     }
 
     appendBool(value, idNbr) {
+        let id = ModelEditor.INPUT_ID + idNbr;
         $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
         ).append(
             $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
-                $('<select/>', {name: 'selectBool' + idNbr, id: 'model-check-input' + idNbr})
+                $('<select/>', {name: 'selectBool' + idNbr, id: id})
                     .append($('<option/>', {value: 'true'}).text(i18n.t('modelEditor:true')))
                     .append($('<option/>', {value: 'false'}).text(i18n.t('modelEditor:false'))).val(value)
             )
         ));
     }
 
+    /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement(check, isAnEffect = false) {
         let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
         return $('<label/>', {class: 'model-check row'}).text(name).click(() => {
@@ -1201,6 +1208,7 @@ class ModelEditor {
         });
     }
 
+    /** Append a row element that shows an input effect and its argument */
     getCheckInputElement(check) {
         let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
         return $('<label/>', {class: 'model-check row'}).text(name).click(() => {

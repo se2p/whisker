@@ -21,6 +21,21 @@ const argType = {
     coordY: "coordY"
 }
 
+const inputLabelCodes = {
+    // sprite name
+    InputClickSprite: [argType.spriteNameRegex],
+    // nothing
+    InputClickStage: [],
+    // key name (input for one step)
+    InputKey: [argType.keyName],
+    // true | false
+    InputMouseDown: [argType.bool],
+    // x, y
+    InputMouseMove: [argType.coordX, argType.coordY],
+    // answer| text
+    InputText: [argType.value]
+}
+
 const checkLabelCodes = {
     //3 args:  sprite name, attr name, ( + | - | = | += | -= | +<number> | <number> | -<number>)
     AttrChange: [argType.spriteNameRegex, argType.attrName, argType.change],
@@ -66,21 +81,31 @@ const checkLabelCodes = {
     TouchingHorizEdge: [argType.spriteNameRegex],
     // 2 // sprite name regex, attrName
     RandomValue: [argType.spriteNameRegex, argType.attrName],
-    // sprite name
-    InputClickSprite: [argType.spriteNameRegex],
-    // nothing
-    InputClickStage: [],
-    // key name (input for one step)
-    InputKey: [argType.keyName],
-    // true | false
-    InputMouseDown: [argType.bool],
-    // x, y
-    InputMouseMove: [argType.coord, argType.coord],
-    // answer| text
-    InputText: [argType.value]
 }
 
 const keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
     'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
-export {argType, checkLabelCodes, keys};
+const placeholders = {
+    spriteNameRegex: "",
+    attrName: "",
+    change: "",
+    comp: "=",
+    costumeName: "",
+    value: "",
+    functionC: "true",
+    keyName: "space",
+    r: "0",
+    g: "0",
+    b: "0",
+    varNameRegex: "",
+    expr: "",
+    probValue: "0",
+    time: "0",
+    bool: "true",
+    coordX: "0",
+    coordY: "0"
+}
+
+
+export {argType, checkLabelCodes, inputLabelCodes, keys, placeholders};

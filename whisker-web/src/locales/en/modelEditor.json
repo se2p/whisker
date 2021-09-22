@@ -75,5 +75,6 @@
     "function": "Function",
     "expr": "Expression",
     "priority": "Order of Edges.",
-    "t-priority": "The edges are tested in this order."
+    "t-priority": "The edges are tested in this order.",
+    "notValid": "There are not valid inputs."
 }
