@@ -20,6 +20,7 @@
     "okButton": "Ok",
     "cancelButton": "Abbrechen",
     "addNode": "Neuer Knoten",
+    "newNode": "neu",
     "addEdge": "Neue Kante",
     "cancel": "Abbrechen",
     "explanationNode": "Auf gewünschte Position klicken.",
@@ -76,5 +77,6 @@
     "expr": "Expression",
     "priority": "Reihenfolge Kanten",
     "t-priority": "In dieser Reihenfolge werden die Kanten abgestestet.",
-    "notValid": "Sie haben nicht valide Eingaben."
+    "notValid": "Sie haben nicht valide Eingaben.",
+    "effectsError": "Das Modell enthält Effekte auf Kanten zugehörig zum alten Modell-typ. Diese werden gelöscht. Möchten Sie trotzdem fortfahren?"
 }

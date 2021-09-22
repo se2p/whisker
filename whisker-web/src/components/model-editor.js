@@ -146,15 +146,28 @@ class ModelEditor {
 // ###################### Graph manipulation ###########################
 
     addNode(data, callback) {
+        if (data.label === "new") {
+            data.label = i18n.t('modelEditor:newNode');
+        }
         this.models[this.currentTab].nodes.push({id: data.id, label: data.label});
         this.showAddButtons();
         callback(data);
     }
 
     addEdge(data, callback) {
+        console.log(data);
+        console.log(this.models);
+        if (data.label === undefined) {
+            data.label = "";
+        }
+        if (data.id === undefined) {
+            data.id = Math.random().toString(16).slice(2);
+        }
         this.models[this.currentTab].edges.push({
             id: data.id,
             label: data.label,
+            from: data.from,
+            to: data.to,
             forceTestAfter: -1,
             forceTestAt: -1,
             conditions: [],
@@ -169,8 +182,8 @@ class ModelEditor {
         this.models.push({
             id: id,
             usage: 'program',
-            startNodeId: 'start',
-            nodes: [{id: 0, label: 'start'}],
+            startNodeId: '0',
+            nodes: [{id: '0', label: 'start'}],
             stopNodeIds: [],
             stopAllNodeIds: [],
             edges: []
@@ -235,24 +248,10 @@ class ModelEditor {
         for (let i = 0; i < argNumber.length; i++) {
             let element = $('#' + ModelEditor.INPUT_ID + i);
             args[i] = element.val();
-
-            if (argNumber[i] === argType.change) {
-                valid = args[i].match(ModelEditor.CHANGE_PATTERN);
-            } else if (argNumber[i] === argType.probValue) {
-                valid = args[i].match(ModelEditor.PROB_PATTERN);
+            valid = this.checkValidCheckArgument(argNumber[i], args[i]);
+            if (argNumber[i] === argType.probValue) {
                 args[i] = args[i] / 100;
-            } else if (argNumber[i] === argType.time) {
-                valid = args[i].match(ModelEditor.TIME_PATTERN);
-            } else if (argNumber[i] === argType.r || argNumber[i] === argType.g || argNumber[i] === argType.b) {
-                valid = args[i].match(ModelEditor.RGB_PATTERN);
-            } else if (argNumber[i] === argType.coordX) {
-                valid = args[i].match(ModelEditor.X_PATTERN);
-            } else if (argNumber[i] === argType.coordY) {
-                valid = args[i].match(ModelEditor.Y_PATTERN);
-            } else {
-                valid = args[i].match(ModelEditor.NOT_EMPTY_PATTERN);
             }
-
             if (!valid) {
                 element.addClass(ModelEditor.INVALID_INPUT_CLASS);
             }
@@ -260,8 +259,7 @@ class ModelEditor {
 
         // if any arg is empty string or invalid stop and mark it
         if (!valid) {
-            this.showPopup(i18n.t('modelEditor:notValid'));
-            return;
+            return false;
         }
 
         // get the list that check gets added to
@@ -287,6 +285,36 @@ class ModelEditor {
         console.log(this.models[this.currentTab]);
         this.checkIndex = -1;
         this.chosenList = undefined;
+        return true;
+    }
+
+    checkValidCheckArgument(type, value) {
+        switch (type) {
+            case argType.change:
+                return value.match(ModelEditor.CHANGE_PATTERN);
+            case argType.probValue:
+                return value.match(ModelEditor.PROB_PATTERN);
+            case argType.time:
+                return value.match(ModelEditor.TIME_PATTERN);
+            case argType.r:
+            case argType.g:
+            case argType.b:
+                return value.match(ModelEditor.RGB_PATTERN);
+            case argType.coordX:
+                return value.match(ModelEditor.X_PATTERN);
+            case argType.coordY:
+                return value.match(ModelEditor.Y_PATTERN);
+            case argType.spriteNameRegex:
+            case argType.varNameRegex:
+            case argType.attrName:
+            case argType.costumeName:
+            case argType.value:
+            case argType.functionC:
+            case argType.expr:
+                return value.match(ModelEditor.NOT_EMPTY_PATTERN);
+            default:
+                return true;
+        }
     }
 
     getEdgeById(edgeID) {
@@ -296,6 +324,25 @@ class ModelEditor {
                 return e;
             }
         }
+    }
+
+    /** Delete all effects of edges of the current model if there are any */
+    deleteEffects() {
+        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
+            if (this.models[this.currentTab].edges[i].effects !== []) {
+                this.models[this.currentTab].edges[i].effects = [];
+            }
+        }
+    }
+
+    /** Check whether the current model has effects on any edges */
+    hasEffects() {
+        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
+            if (this.models[this.currentTab].edges[i].effects.length !== 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ############################# Plotting and GUI setup ############################
@@ -331,17 +378,11 @@ class ModelEditor {
         $(ModelEditor.MODEL_ID_FIELD).val(this.models[tabNbr].id);
 
         if (this.models[tabNbr].usage === "program" || this.models[tabNbr].usage === undefined) {
-            $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', true);
-            $(ModelEditor.USER_TYPE_CHOICE).prop('checked', false);
-            $(ModelEditor.END_TYPE_CHOICE).prop('checked', false);
+            this.changeModelType();
         } else if (this.models[tabNbr].usage === "user") {
-            $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', false);
-            $(ModelEditor.USER_TYPE_CHOICE).prop('checked', true);
-            $(ModelEditor.END_TYPE_CHOICE).prop('checked', false);
+            this.changeModelType(true);
         } else {
-            $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', false);
-            $(ModelEditor.USER_TYPE_CHOICE).prop('checked', false);
-            $(ModelEditor.END_TYPE_CHOICE).prop('checked', true);
+            this.changeModelType(false, true);
         }
 
         if (this.models.length === 1) {
@@ -497,17 +538,39 @@ class ModelEditor {
      */
     setupGeneralSettings() {
         $(ModelEditor.MODEL_ID_FIELD).on('keyup change', this.onModelIDChange.bind(this));
-        $(ModelEditor.PROGRAM_TYPE_CHOICE).on('click', () => {
-            this.models[this.currentTab].usage = "program";
-        })
-        $(ModelEditor.USER_TYPE_CHOICE).on('click', () => {
-            this.models[this.currentTab].usage = "user";
-        })
-        $(ModelEditor.END_TYPE_CHOICE).on('click', () => {
-            this.models[this.currentTab].usage = "end";
-        })
+        $(ModelEditor.PROGRAM_TYPE_CHOICE).on('click', () => this.checkForTypeChange("program"));
+        $(ModelEditor.USER_TYPE_CHOICE).on('click', () => this.checkForTypeChange("user"))
+        $(ModelEditor.END_TYPE_CHOICE).on('click', () => this.checkForTypeChange("end"));
         $(ModelEditor.MODEL_DELETE_BUTTON).on('click', this.onDeleteModelButton.bind(this));
+    }
 
+    checkForTypeChange(newType) {
+        // if there are no effects of a program model than save it
+        if (!this.hasEffects()) {
+            this.models[this.currentTab].usage = newType;
+            return;
+        }
+
+        this.showConfirmPopup(i18n.t('modelEditor:effectsError'), () => {
+            this.deleteEffects();
+            this.models[this.currentTab].usage = newType;
+            this.loadModel(this.currentTab);
+        }, () => {
+            if (this.models[this.currentTab].usage === "program") {
+                this.changeModelType();
+            } else if (this.models[this.currentTab].usage === "user") {
+                this.changeModelType(true);
+            } else {
+                this.changeModelType(false, true);
+            }
+        })
+
+    }
+
+    changeModelType(userModel = false, endModel = false) {
+        $(ModelEditor.PROGRAM_TYPE_CHOICE).prop('checked', !userModel && !endModel);
+        $(ModelEditor.USER_TYPE_CHOICE).prop('checked', userModel);
+        $(ModelEditor.END_TYPE_CHOICE).prop('checked', endModel);
     }
 
     /**
@@ -521,12 +584,11 @@ class ModelEditor {
             for (let i = 0; i < this.models[this.currentTab].nodes.length; i++) {
                 if (this.models[this.currentTab].nodes[i].id === currentNodeID) {
                     this.models[this.currentTab].nodes[i].label = text;
-                    this.nodes[i].label = text;
                     break;
                 }
             }
             let selection = this.network.getSelection();
-            this.loadModel(this.currentTab)
+            this.loadModel(this.currentTab);
             this.network.setSelection(selection);
         })
         $(ModelEditor.CONFIG_NODE_STOP1).on('click', () => {
@@ -584,11 +646,14 @@ class ModelEditor {
         })
 
         $(ModelEditor.CHECK_SAVE).on('click', () => {
-            this.saveCheck();
-            let selection = this.network.getSelection();
-            this.loadModel(this.currentTab);
-            this.network.setSelection(selection);
-            this.showEdgeOptions(this.network.getSelectedEdges()[0]);
+            if (this.saveCheck()) {
+                let selection = this.network.getSelection();
+                this.loadModel(this.currentTab);
+                this.network.setSelection(selection);
+                this.showEdgeOptions(this.network.getSelectedEdges()[0]);
+            } else {
+                this.showPopup(i18n.t('modelEditor:notValid'));
+            }
         });
     }
 
@@ -597,7 +662,7 @@ class ModelEditor {
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newCondition'));
         $(ModelEditor.CHECK_CHOOSER).children().remove();
-        $(ModelEditor.CHECK_NEGATED).prop('checked', 'false');
+        $(ModelEditor.CHECK_NEGATED).prop('checked', false);
 
         let checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
         checkNames.forEach(name => {
@@ -615,7 +680,7 @@ class ModelEditor {
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newEffect'));
         $(ModelEditor.CHECK_CHOOSER).children().remove();
-        $(ModelEditor.CHECK_NEGATED).prop('checked', 'false');
+        $(ModelEditor.CHECK_NEGATED).prop('checked', false);
 
         let checkNames;
         let defValue;

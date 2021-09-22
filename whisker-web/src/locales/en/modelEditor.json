@@ -20,6 +20,7 @@
     "okButton": "Ok",
     "cancelButton": "Cancel",
     "addNode": "New node",
+    "newNode": "new",
     "addEdge": "New edge",
     "cancel": "Cancel",
     "explanationNode": "Click on desired position.",
@@ -76,5 +77,6 @@
     "expr": "Expression",
     "priority": "Order of Edges.",
     "t-priority": "The edges are tested in this order.",
-    "notValid": "There are not valid inputs."
+    "notValid": "There are not valid inputs.",
+    "effectsError": "The model contains effects on edges belonging to the old model type. These will be deleted. Continue?"
 }
