@@ -342,7 +342,7 @@ export class UserModelEdge extends ModelEdge {
         })
         return {
             ...super.simplifyForSave(),
-            inputEffects: inputEffects
+            effects: inputEffects
         };
     }
 }

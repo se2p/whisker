@@ -31,8 +31,6 @@ export class UserModel {
     stepNbrOfProgramEnd: number;
     protected currentState: ModelNode;
 
-    // todo should the coverage of the user models be considered too?
-
     /**
      * Construct a user model (graph) with a string identifier. This model acts as a user playing/using the Scratch
      * program and provides inputs for the program.
