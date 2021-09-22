@@ -73,5 +73,7 @@
     "xCoord": "X Koordinate",
     "yCoord": "Y Koordinate",
     "function": "Funktion",
-    "expr": "Expression"
+    "expr": "Expression",
+    "priority": "Reihenfolge Kanten",
+    "t-priority": "In dieser Reihenfolge werden die Kanten abgestestet."
 }

@@ -43,12 +43,13 @@ class ModelEditor {
     static LAYOUT = '#model-layout';
     static FIT = '#model-fit';
 
-    // todo edit mode of edge on double click
     // configuration right pane, node settings
     static CONFIG_NODE = '#model-node-configuration';
     static CONFIG_NODE_LABEL = '#model-node-label';
     static CONFIG_NODE_STOP1 = '#model-stopNode';
     static CONFIG_NODE_STOP2 = '#model-stopAllNode';
+    static PRIORITY_CHANGER = '#model-priority-changer'
+    static PRIORITY_CHANGER_DIV = '.model-priority-div'
 
     // configuration right pane, edge settings
     static CONFIG_EDGE = '#model-edge-configuration';
@@ -61,10 +62,11 @@ class ModelEditor {
     static EFFECTS = '#model-effects';
     static ADD_CONDITION = '#model-editor-addC';
     static ADD_EFFECT = '#model-editor-addE';
+
+    // checks
     static CHECK_LABEL = '#model-check-label';
     static CHECK_NEGATED = '#model-check-negated';
     static CHECK_NEGATED_DIV = '#model-negated-div';
-
     static INPUT_ID = 'model-check-input';
     static CHANGE_PATTERN = /^(-=|\+=|=|([+-]?)[0-9]*)$/g;
     static TIME_PATTERN = /^([0-9]+)$/g;
@@ -107,7 +109,7 @@ class ModelEditor {
             manipulation: {
                 enabled: false,
                 addNode: this.addNode.bind(this),
-                addEdge: this.addEdge.bind(this),
+                addEdge: this.addEdge.bind(this)
             },
             locale: $('#lang-select').val(),
             clickToUse: false,
@@ -230,8 +232,6 @@ class ModelEditor {
             this.edges = [];
         } else {
             this.nodes = this.setupNodes(this.models[tabNbr]);
-
-// todo add priorities on edges
             this.edges = this.setupEdges(this.models[tabNbr].edges, this.nodes);
         }
 
@@ -299,8 +299,10 @@ class ModelEditor {
     setupEdges(json, nodes) {
         let edges = cloneDeep(json);
         let loops = [];
+        let priorities = [];
         nodes.forEach(node => {
             loops[node.id] = [];
+            priorities[node.id] = 1;
         })
 
         for (const edgeId in edges) {
@@ -308,7 +310,8 @@ class ModelEditor {
                 loops[edges[edgeId].from].push(edges[edgeId]);
             }
             edges[edgeId].length = 200;
-            this.makeLabel(edges[edgeId]);
+            this.makeLabel(edges[edgeId], priorities[edges[edgeId].from]);
+            priorities[edges[edgeId].from]++;
         }
         for (const nodeId in loops) {
             if (loops[nodeId].length > 1) {
@@ -334,14 +337,14 @@ class ModelEditor {
         return edges;
     }
 
-    makeLabel(edge) {
+    makeLabel(edge, priority) {
         let effectsLength = 0;
         if (edge.effects) {
             effectsLength = edge.effects.length;
         } else if (edge.inputEffects) {
             effectsLength = edge.inputEffects.length;
         }
-        edge.label += " (" + edge.conditions.length + "|" + effectsLength + ")";
+        edge.label = priority + ": " + edge.label + " (" + edge.conditions.length + "|" + effectsLength + ")";
     }
 
     /**
@@ -781,6 +784,68 @@ class ModelEditor {
             $(ModelEditor.CONFIG_NODE_STOP1).attr("disabled", false);
             $(ModelEditor.CONFIG_NODE_STOP2).attr("disabled", false);
         }
+
+        this.showPriorityChanger(nodeID, node);
+    }
+
+    /** to sort the edge priorities */
+    showPriorityChanger(nodeID, node) {
+        let outgoingEdges = this.models[this.currentTab].edges.filter(edge => {
+            return edge.from === nodeID;
+        })
+
+        let tag = 'model-priority-row';
+        $(ModelEditor.PRIORITY_CHANGER).children('.' + tag).remove();
+
+        if (outgoingEdges.length <= 1) {
+            $(ModelEditor.PRIORITY_CHANGER_DIV).addClass("hide");
+        } else {
+            $(ModelEditor.PRIORITY_CHANGER_DIV).removeClass("hide");
+
+            let oldValues = [];
+            for (let i = 0; i < outgoingEdges.length; i++) {
+                let select = $('<select/>', {name: "model-priority" + i, id: tag + i, style: "min-width:200px"});
+
+                outgoingEdges.forEach(edge => {
+                    select.append($('<option/>', {value: edge.id}).text(edge.label));
+                })
+                select.val(outgoingEdges[i].id);
+                oldValues.push(outgoingEdges[i].id);
+
+                select.change(() => {
+                    this.setPriority(node, oldValues[i], select.val(), oldValues);
+                });
+
+                $(ModelEditor.PRIORITY_CHANGER).append(
+                    $('<div/>', {class: "row mt-1 " + tag}).append(
+                        $('<div/>', {class: "col-2"}).append($('<label/>').html("<b>" + (i + 1) + ".</b>"))
+                    ).append(
+                        $('<div/>', {class: "col"}).append(select)
+                    ))
+            }
+        }
+    }
+
+    /** set the edge with edgeID of node to the new position */
+    setPriority(node, oldEdgeId, edgeID) {
+        let firstIndex = -1;
+        let secondIndex = -1;
+
+        for (let i = 0; i < this.models[this.currentTab].edges.length; i++) {
+            if (this.edges[i].id === oldEdgeId) {
+                firstIndex = i;
+            } else if (this.edges[i].id === edgeID) {
+                secondIndex = i;
+            }
+        }
+        let temp = this.models[this.currentTab].edges[firstIndex];
+        this.models[this.currentTab].edges[firstIndex] = this.models[this.currentTab].edges[secondIndex];
+        this.models[this.currentTab].edges[secondIndex] = temp;
+
+        let selection = this.network.getSelectedNodes();
+        this.loadModel(this.currentTab);
+        this.network.selectNodes(selection);
+        this.showNodeOptions(node.id);
     }
 
     showEdgeOptions(edgeID) {
@@ -860,6 +925,7 @@ class ModelEditor {
         }
     }
 
+    // todo saving check options
     showCheckOptions(check, isAnEffect = false, isAnInputEffect = false) {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
@@ -953,6 +1019,7 @@ class ModelEditor {
             }
         }
     }
+
     //todo on input change save the values
 
     /**

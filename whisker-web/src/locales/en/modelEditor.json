@@ -73,5 +73,7 @@
     "xCoord": "X Coordinate",
     "yCoord": "Y Coordinate",
     "function": "Function",
-    "expr": "Expression"
+    "expr": "Expression",
+    "priority": "Order of Edges.",
+    "t-priority": "The edges are tested in this order."
 }
