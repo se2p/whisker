@@ -400,6 +400,58 @@ class Sprite {
     }
 
     /**
+     * Gives back clone of the given index.
+     * @param index The index of the clone.
+     * @returns {!RenderedTarget} The requested clone.
+     */
+    getClone (index) {
+        return this._target.sprite.clones[index];
+    }
+
+    /**
+     * Gives back the number of clones for this {@link RenderedTarget}.
+     * @param withSelf Indicates if the original sprite is included.
+     * @returns {number} The number of clones.
+     */
+    getCloneCount (withSelf = false) {
+        return this.getClones(withSelf).length;
+    }
+
+    /**
+     * Gives back the list of all stored costumes of this {@link RenderedTarget}.
+     * @returns {Object[]} List of costumes.
+     */
+    getCostumes () {
+        return this._target.getCostumes();
+    }
+
+    /**
+     * Gives back the costume with the given index.
+     * @param index The index of the searched costume.
+     * @returns {Object} The requested costume.
+     */
+    getCostumeByIndex (index) {
+        return this._target.getCostumes()[index];
+    }
+
+    /**
+     * Gives back the costume with the given name.
+     * @param name The name of the searched costume.
+     * @returns {Object} The requested costume.
+     */
+    getCostumeByName (name) {
+        return this.getCostumes().filter(costume => costume.name.match(name))[0];
+    }
+
+    /**
+     * Gives back the number of costumes this {@link RenderedTarget} has.
+     * @returns {number} The number of costumes.
+     */
+    getCostumeCount () {
+        return this._target.getCostumes().length;
+    }
+
+    /**
      * Gives back the wrapped {@link RenderedTarget} of this {@link Sprite}.
      * @returns {RenderedTarget} The wrapped target.
      */

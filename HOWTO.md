@@ -119,7 +119,8 @@ s.name;                    s.currentCostume;
 s.id;                      s.volume;
 s.effects;                 s.layerOrder;
 s.x;                       s.sayText;
-s.y;                       s.bounds;
+s.y;                       s.sayText;
+s.bounds;
 
 /* Get Attributes */
 s.getVariables(condition, skipStage?);
@@ -129,7 +130,13 @@ s.getList(name, skipStage?);
 s.getInstances();
 s.getOriginal();
 s.getClones(withSelf?);
+s.getClone(index);
+s.getCloneCount(withSelf?);
 s.getNewClones();
+s.getCostumes();
+s.getCostumeByIndex(index);
+s.getCostumeByName(name);
+s.getCostumeCount();
 
 /* Check Sprite Touching */
 s.isPointinBounds(x, y);
@@ -139,6 +146,17 @@ s.isTouchingMouse();
 s.isTouchingSprite(name);
 s.isTouchingColor([r,g,b]);
 s.isColorTouchingColor(targetRgb, maskRgb);
+```
+
+### Costume Object (c)
+
+```javascript
+/* Attributes */
+c.skinId;
+c.name;
+c.bitmapResolution;
+c.rotationCenterX;
+c.rotationCenterY;
 ```
 
 ### Variable Object (v)
