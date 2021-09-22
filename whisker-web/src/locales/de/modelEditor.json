@@ -78,5 +78,11 @@
     "priority": "Reihenfolge Kanten",
     "t-priority": "In dieser Reihenfolge werden die Kanten abgestestet.",
     "notValid": "Sie haben nicht valide Eingaben.",
-    "effectsError": "Das Modell enthält Effekte auf Kanten zugehörig zum alten Modell-typ. Diese werden gelöscht. Möchten Sie trotzdem fortfahren?"
+    "effectsError": "Das Modell enthält Effekte auf Kanten zugehörig zum alten Modell-typ. Diese werden gelöscht. Möchten Sie trotzdem fortfahren?",
+    "forceTest": "Test der Kante erzwingen wenn",
+    "forceTestAfter": "zwischen Kantentransitionen",
+    "forceTestAt": "seit Testbeginn",
+    "t-forceTestAfter": "Erzwingt das Testen der Bedingungen dieser Kante nach gegebener Zeit seit der letzten Transition einer Kante in diesem Modell.",
+    "t-forceTestAt": "Erzwingt das Testen der Bedingungen dieser Kante nach gegebener Zeit seit Beginn des Tests.",
+    "ms": "ms"
 }

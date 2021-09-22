@@ -1072,7 +1072,10 @@ img {vertical-align: middle;}
 .check-container {
     border: 2px solid #cccccc;
     border-radius: 0.2em;
-    height: 150px;
+    height: 100px;
+    overflow: auto;
+    padding: 2px;
+    margin-right: 5px;
 }
 
 .model-check {

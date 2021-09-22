@@ -489,6 +489,7 @@
         <h3 data-i18n="modelEditor:title"></h3>
         <div id="model-editor" class="mt-4 spacer10 hide">
             <div class="col" style="background-color: #f1f1f1; border-radius: 5px;">
+                <!-- model editor TABS -->
                 <div class="row tab-model-editor">
                     <div id="model-tabs" class="col"></div>
                     <div id="model-add-tab-container" class="col">
@@ -497,11 +498,16 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- model editor CANVAS and RIGHT PANE-->
                 <div class="row spacer10" id="model-editor-content">
                     <div class="col">
+                        <!-- model editor CANVAS -->
                         <div class="row model-editor-canvas-wrap">
                             <div id="model-editor-canvas" class="col model-editor-canvas"></div>
                         </div>
+
+                        <!-- model editor BUTTONS -->
                         <div class="row my-2">
                             <div class="col model-standard-div">
                                 <button id="model-add-node" type="button" class="btn btn-sm model-button center"
@@ -539,7 +545,11 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- model editor RIGHT PANE -->
                     <div class="col-4 mt-1">
+
+                        <!-- model editor MODEL CONFIG PANEL-->
                         <div id="model-general-settings">
                             <div class="row">
                                 <h4 data-i18n="modelEditor:general-settings-header"></h4>
@@ -589,6 +599,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- model editor NODE PANEL-->
                         <div id="model-node-configuration" class="hide">
                             <div class="row">
                                 <h4 data-i18n="modelEditor:optionsNode"></h4>
@@ -625,6 +637,8 @@
                                 <div class="col" id="model-priority-changer"></div>
                             </div>
                         </div>
+
+                        <!-- model editor EDGE PANEL -->
                         <div id="model-edge-configuration" class="hide">
                             <div class="row">
                                 <h4 data-i18n="modelEditor:optionsEdge"></h4>
@@ -635,25 +649,55 @@
                                     <input id="model-edge-label">
                                 </div>
                             </div>
+                            <div class="row mt-1">
+                                <label data-i18n="modelEditor:forceTest"
+                                       data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                            </div>
                             <div class="row">
+                                <div class="col mt-1" style="padding-right: 0;">
+                                    <label for="model-forceTestAfter"
+                                           data-i18n="[title]modelEditor:t-forceTestAfter;modelEditor:forceTestAfter"
+                                           data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                                </div>
+                                <div class="col-4" style="padding-left: 0;">
+                                    <input id="model-forceTestAfter" style="max-width: 80px;">
+                                    <label class="mt-1" style="right: 10px; position: absolute;"
+                                           data-i18n="modelEditor:ms"></label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col mt-1" style="padding-right: 0;">
+                                    <label for="model-forceTestAt" data-toggle="tooltip" data-placement="top"
+                                           data-i18n="[title]modelEditor:t-forceTestAt;modelEditor:forceTestAt"
+                                           data-animation="false"></label>
+                                </div>
+                                <div class="col-4" style="padding-left: 0;">
+                                    <input id="model-forceTestAt" style="max-width: 80px;">
+                                    <label class="mt-1" style="right: 10px; position: absolute"
+                                           data-i18n="modelEditor:ms"></label>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
                                 <label data-i18n="[title]modelEditor:t-conditions;modelEditor:conditions"
                                        data-toggle="tooltip" data-placement="top" data-animation="false"></label>
                                 <button type="button" data-i18n="modelEditor:add" id="model-editor-addC"
                                         class="model-button model-small-button right" style="float:right;"></button>
                             </div>
-                            <div class="row" style="padding-right:5px;">
-                                <div class="col check-container" id="model-conditions" style="overflow:auto"></div>
+                            <div class="row">
+                                <div class="col check-container" id="model-conditions"></div>
                             </div>
-                            <div class="row mt-1">
+                            <div class="row mt-2">
                                 <label data-i18n="[title]modelEditor:t-effects;modelEditor:effects"
                                        data-toggle="tooltip" data-placement="top" data-animation="false"></label>
                                 <button type="button" data-i18n="modelEditor:add" id="model-editor-addE"
                                         class="model-button model-small-button right" style="float:right;"></button>
                             </div>
-                            <div class="row" style="padding-right:5px;">
-                                <div id="model-effects" class="col check-container" style="overflow:auto"></div>
+                            <div class="row">
+                                <div id="model-effects" class="col check-container"></div>
                             </div>
                         </div>
+
+                        <!-- model editor EDGE CHECK PANEL -->
                         <div id="model-edge-check-div" class="hide">
                             <div class="row mt-2">
                                 <h4 id="model-check-label" class="col4"></h4>

@@ -1057,20 +1057,23 @@ class ModelEditor {
 
         $(ModelEditor.CONFIG_EDGE_LABEL).val(edge.label);
         // clear the conditions and effects
-        $(ModelEditor.CONDITIONS).children('.model-check').remove();
-        $(ModelEditor.EFFECTS).children('.model-check').remove();
+        $(ModelEditor.CONDITIONS).children().remove();
+        $(ModelEditor.EFFECTS).children().remove();
 
         let isAUserModel = this.models[this.currentTab].usage === "user";
         // todo add information element that these conditions are connected by and
         // fill up conditions of current edge todo
         for (let i = 0; i < edge.conditions.length; i++) {
-            $(ModelEditor.CONDITIONS).append(this.getCheckElement(edge.conditions[i], i, isAUserModel));
+            $(ModelEditor.CONDITIONS).append(this.getCheckElement(edge.conditions[i], i, isAUserModel))
+                .append($('<br>'));
         }
 
         // fill up effects of current edge
         for (let i = 0; i < edge.effects.length; i++) {
-            $(ModelEditor.EFFECTS).append(this.getCheckElement(edge.effects[i], i, true, isAUserModel));
+            $(ModelEditor.EFFECTS).append(this.getCheckElement(edge.effects[i], i, true, isAUserModel))
+                .append($('<br>'));
         }
+        // todo on forcetestAFter / at typing, saving
     }
 
     showCheckOptions(check, isAnEffect = false, isAUserModel = false) {
@@ -1300,7 +1303,7 @@ class ModelEditor {
     /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement(check, index, isAnEffect = false, isAUserModel = false) {
         let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
-        return $('<label/>', {class: 'model-check row'}).text(name).click(() => {
+        return $('<label/>', {class: 'model-check'}).text(name).click(() => {
             console.log("element clicked")
             this.checkIndex = index;
             this.chosenList = isAnEffect ? "effect" : "condition";

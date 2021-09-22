@@ -78,5 +78,11 @@
     "priority": "Order of Edges.",
     "t-priority": "The edges are tested in this order.",
     "notValid": "There are not valid inputs.",
-    "effectsError": "The model contains effects on edges belonging to the old model type. These will be deleted. Continue?"
+    "effectsError": "The model contains effects on edges belonging to the old model type. These will be deleted. Continue?",
+    "forceTest": "Force testing of the edge when",
+    "forceTestAfter": "between edge transitions",
+    "forceTestAt": "since test start",
+    "t-forceTestAfter": "Forces testing the conditions of this edge after given time elapsed since last edge transition in this model.",
+    "t-forceTestAt": "Forces testing the conditions of this edge after given time elapsed since test start.",
+    "ms": "ms"
 }
