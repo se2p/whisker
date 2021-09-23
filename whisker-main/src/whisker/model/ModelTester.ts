@@ -95,7 +95,7 @@ export class ModelTester extends EventEmitter {
      * @param caseSensitive Whether the names in the model should be checked with case sensitivity or not.
      */
     async prepareModel(t: TestDriver, caseSensitive: boolean) {
-        console.log("----Preparing model----");
+        // console.log("----Preparing model----");
         this.emit(ModelTester.MODEL_LOG, "Preparing model...");
         this.testDriver = t;
         Container.testDriver = t;
@@ -103,7 +103,8 @@ export class ModelTester extends EventEmitter {
         let allModels = [...this.programModels, ...this.userModels, ...this.onTestEndModels];
         this.result = new ModelResult();
         this.checkUtility = new CheckUtility(t, allModels.length, this.result);
-        this.checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this.onEvent.bind(this));
+        this.checkUtility.on(CheckUtility.CHECK_UTILITY_EVENT, this.onVMEvent.bind(this));
+        this.checkUtility.on(CheckUtility.CHECK_LOG_FAIL, this.onLogEvent.bind(this));
 
         // reset the models and register the new test driver and check listener. Log errors on edges in initialisation
         allModels.forEach(model => {
@@ -228,7 +229,7 @@ export class ModelTester extends EventEmitter {
                 })
                 userModels = notStoppedUserModels;
                 if (userModels.length == 0) {
-                    console.log("Input generation per user models stopped.");
+                    // console.log("Input generation per user models stopped.");
                     callback.disable();
                 }
             }
@@ -241,7 +242,7 @@ export class ModelTester extends EventEmitter {
         return this.testDriver.vmWrapper.modelCallbacks.addCallback(fun, afterStep, name);
     }
 
-    private onEvent(eventStrings: string[]) {
+    private onVMEvent(eventStrings: string[]) {
         if (this.isRunning) {
             // console.log(eventStrings, this.testDriver.getTotalStepsExecuted());
             let models = this.modelStepCallback.isActive() ? this.programModels : this.onTestEndModels;
@@ -276,6 +277,10 @@ export class ModelTester extends EventEmitter {
         }
     }
 
+    private onLogEvent(output) {
+        this.emit(ModelTester.MODEL_LOG, output);
+    }
+
     private edgeTrace(transition: ModelEdge) {
         let edgeID = transition.id;
         let conditions = transition.conditions;
@@ -292,7 +297,8 @@ export class ModelTester extends EventEmitter {
             }
         }
         this.result.edgeTrace.push(edgeTrace);
-        this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
+        // for debugging...
+        // this.emit(ModelTester.MODEL_LOG, "- Edge trace: " + edgeTrace);
         // if (transition.id.startsWith("points"))
         //     console.log("Edge trace: " + edgeTrace, this.testDriver.getTotalStepsExecuted());
     }
@@ -309,7 +315,7 @@ export class ModelTester extends EventEmitter {
         let models = [...this.programModels, ...this.onTestEndModels];
         models.forEach(model => {
             if (model.stopped()) {
-                console.log("Model '" + model.id + "' stopped.");
+                // console.log("Model '" + model.id + "' stopped.");
                 this.result.log.push("Model '" + model.id + "' stopped.");
                 this.emit(ModelTester.MODEL_LOG, "---Model '" + model.id + "' stopped.");
             }
@@ -339,7 +345,7 @@ export class ModelTester extends EventEmitter {
         })
 
         this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
-        console.log("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
+        // console.log("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         return this.result;
     }
 

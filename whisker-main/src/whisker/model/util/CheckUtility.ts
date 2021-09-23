@@ -15,7 +15,8 @@ export class CheckUtility extends EventEmitter {
     private readonly testDriver: TestDriver;
     private readonly modelResult: ModelResult;
 
-    static readonly CHECK_UTILITY_EVENT = "CheckUtilityEvent"
+    static readonly CHECK_UTILITY_EVENT = "CheckUtilityEvent";
+    static readonly CHECK_LOG_FAIL = "CheckLogFail";
     private onMovedChecks: { [key: string]: ((sprite) => void)[] } = {};
     private onVisualChecks: { [key: string]: ((sprite) => void)[] } = {};
     private onSayOrThinkChecks: { [key: string]: ((sprite) => void)[] } = {};
@@ -316,12 +317,15 @@ export class CheckUtility extends EventEmitter {
             }
             failureList[output]++;
             if (failureList[output] == 10) {
-                console.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
+                this.emit(CheckUtility.CHECK_LOG_FAIL, output + "(10th time, no more outputs for this)");
+                // console.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
             } else if (failureList[output] < 10) {
-                console.error(output, this.testDriver.getTotalStepsExecuted());
+                this.emit(CheckUtility.CHECK_LOG_FAIL, output);
+                // console.error(output, this.testDriver.getTotalStepsExecuted());
             }
         } else {
-            console.error(output, this.testDriver.getTotalStepsExecuted());
+            this.emit(CheckUtility.CHECK_LOG_FAIL, output);
+            // console.error(output, this.testDriver.getTotalStepsExecuted());
         }
     }
 

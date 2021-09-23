@@ -51,7 +51,7 @@ export class ProgramModel {
         this.startNodeId = startNodeId;
         this.currentState = nodes[startNodeId];
         if (this.currentState == undefined) {
-            console.error("udnefined")
+            throw Error("Start state id has to be defined!");
         }
         this.nodes = nodes;
         this.edges = edges;
