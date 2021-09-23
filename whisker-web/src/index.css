@@ -948,6 +948,10 @@ img {vertical-align: middle;}
     border: 1px solid gray;
 }
 
+#model-editor-content {
+    min-height: 477px;
+}
+
 .model-editor-canvas {
     border: 1px solid lightgray;
     height: 425px;

@@ -756,6 +756,7 @@ class ModelEditor {
             defValue = "AttrChange";
             checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
             $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
+            this.addExplanation("AttrChange");
         }
 
         checkNames.forEach(name => {
@@ -766,7 +767,6 @@ class ModelEditor {
         this.showEmptyArgsForCheckType(defValue);
         this.chosenList = "effect";
         this.checkIndex = -1;
-        this.addExplanation("AttrChange");
     }
 
     hideAddButtons() {
