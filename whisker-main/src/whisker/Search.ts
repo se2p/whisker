@@ -29,7 +29,6 @@ import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
 import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
-import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {ExecutionTrace} from "./testcase/ExecutionTrace";
@@ -152,7 +151,7 @@ export class Search {
      * Main entry point -- called from whisker-web
      */
     public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
-                     configName: string, accelerationFactor: number): Promise<Array<string>> {
+                     configName: string, accelerationFactor: number, seedString: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -171,9 +170,27 @@ export class Search {
 
         await util.prepare(accelerationFactor || 1);
         util.start();
-        const seed = config.getRandomSeed();
+
+        // Specify seed
+        const configSeed = config.getRandomSeed();
+        let seed: number;
+        // Prioritize seed set by CLI
+        if (seedString !== 'undefined') {
+            seed = parseInt(seedString);
+            if (configSeed) {
+                console.warn(`Replacing seed ${configSeed} defined within configuration file with seed\
+${seed} specified via command line options`)
+            }
+        }
+        // If no seed was set by CLI check if the configuration file specifies a seed.
+        else if (configSeed) {
+            seed = configSeed;
+        }
+        // Ultimately, use Date.now() if no seed has been set via the CLI or the configuration file
+        else {
+            seed = Date.now();
+        }
         Randomness.setInitialSeed(seed);
-        seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();
         StatisticsCollector.getInstance().projectName = projectName;
         StatisticsCollector.getInstance().configName = configName;

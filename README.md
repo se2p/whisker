@@ -76,6 +76,7 @@ Options:
   -o, --isLiveOutputCoverage          If new output of the coverage should be printed regularly (default: false)
   -l, --isLiveLogEnabled              If the new output of the log should be printed regularly (default: false)
   -g, --generateTests [Path]          If new tests should be generated and where to put them (default: false)
+  -se, --seed <Integer>               Sets the specified integer as a seed for the Scratch-VM and the random number generator contained within Whisker.
   -h, --help                          display help for command
 ```
 

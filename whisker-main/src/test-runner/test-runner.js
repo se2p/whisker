@@ -4,7 +4,7 @@ const TestResult = require('./test-result');
 const WhiskerUtil = require('../test/whisker-util');
 const {assert, assume} = require('./assert');
 const {isAssertionError, isAssumptionError} = require('../util/is-error');
-const Random = require('../util/random');
+const {Randomness} = require("../whisker/utils/Randomness");
 
 class TestRunner extends EventEmitter {
 
@@ -102,7 +102,14 @@ class TestRunner extends EventEmitter {
         this.emit(TestRunner.TEST_START, test);
 
         util.start();
-        testDriver.seedScratch(Random.INITIAL_SEED);
+        if(props.seed !== 'undefined') {
+            Randomness.setInitialSeed(props.seed);
+        }
+        // If no seed is specified via the CLI use Date.now() but only set it once to keep consistent between test cases
+        else if (Randomness.getInitialSeed() === undefined){
+            Randomness.setInitialSeed(Date.now());
+        }
+        Randomness.seedScratch();
 
         try {
             await test.test(testDriver);

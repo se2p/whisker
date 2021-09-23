@@ -88,8 +88,9 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
+    const seed = document.getElementById('scratch-project').getAttribute('data-seed');
     const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
-        projectName, config, configName, accelerationFactor);
+        projectName, config, configName, accelerationFactor, seed);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
@@ -128,13 +129,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         let coverage;
         accSlider.slider('disable');
         const accelerationFactor = $('#acceleration-value').text();
+        const seed = document.getElementById('scratch-project').getAttribute('data-seed');
 
         try {
             await Whisker.scratch.vm.loadProject(project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(vm);
 
-            summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
+            summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor, seed});
             coverage = CoverageGenerator.getCoverage();
 
             if (typeof window.messageServantCallback === 'function') {

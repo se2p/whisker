@@ -482,7 +482,7 @@ export class WhiskerSearchConfiguration {
         if ("seed" in this.dict && typeof this.dict["seed"] === "number") {
             return this.dict["seed"];
         } else {
-            return Date.now();
+            return undefined;
         }
     }
 }

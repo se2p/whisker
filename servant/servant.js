@@ -18,7 +18,8 @@ const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
-    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly
+    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests,
+    isGenerateWitnessTestOnly, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -138,6 +139,7 @@ async function runGeneticSearch (browser, downloadPath) {
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
@@ -230,6 +232,7 @@ async function runTests (path, browser, index, targetProject) {
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         await (await page.$('#fileselect-tests')).uploadFile(path);
         await showHiddenFunctionality(page);
