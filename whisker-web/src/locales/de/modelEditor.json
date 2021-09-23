@@ -47,7 +47,7 @@
     "conditions": "Bedingungen",
     "newCondition": "Neue Bedingung",
     "condition": "Bedingung",
-    "t-conditions": "Müssen erfüllt sein für eine Transition der Kante",
+    "t-conditions": "Alle Bedingungen müssen gleichzeitig für eine Transition der Kante erfüllt sein.",
     "effects": "Effekte",
     "newEffect": "Neuer Effekt",
     "effect": "Effekt",
@@ -68,6 +68,7 @@
     "prob": "Wahrscheinlichkeit",
     "time": "Zeit",
     "comp": "Vergleich",
+    "key": "Taste",
     "rValue": "Rot",
     "gValue": "Grün",
     "bValue": "Blau",
@@ -84,5 +85,8 @@
     "forceTestAt": "seit Testbeginn",
     "t-forceTestAfter": "Erzwingt das Testen der Bedingungen dieser Kante nach gegebener Zeit seit der letzten Transition einer Kante in diesem Modell.",
     "t-forceTestAt": "Erzwingt das Testen der Bedingungen dieser Kante nach gegebener Zeit seit Beginn des Tests.",
-    "ms": "ms"
+    "ms": "ms",
+    "hintTitle": "Tip: ",
+    "exprHint": "Eine Expression ist eine Kurznotation für eine JavaScript Funktion. Attribute und Variable von Sprites können mit $(Sprite.Attr/Var) abgerufen werden. Beispiel: $(Cat.x)>100",
+    "changeHint": "Änderungen: + (Erhöhung), - (Abnahme), = (keine Änderung), += (Erhöhung oder keine Ä.), -= (Abnahme oder keine Ä.), +WERT (Erhöhung um), -WERT (Abnahme um)"
 }

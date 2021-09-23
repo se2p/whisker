@@ -1081,6 +1081,11 @@ img {vertical-align: middle;}
 .model-check {
     cursor: pointer;
     padding-left: 5px;
+    margin: 0;
+}
+
+.model-check:hover {
+    background-color: #cccccc;
 }
 
 #model-edge-check {
@@ -1096,4 +1101,8 @@ img {vertical-align: middle;}
     border: 2px solid red;
     border-radius: 0.2em;
     outline: red;
+}
+
+.model-check-line {
+    margin: 3px;
 }

@@ -54,20 +54,26 @@ class ModelEditor {
     // configuration right pane, edge settings
     static CONFIG_EDGE = '#model-edge-configuration';
     static CONFIG_EDGE_LABEL = '#model-edge-label';
-    static CHECK_DIV = '#model-edge-check-div';
-    static CHECK_CHOOSER = '#model-edge-check';
-    static CHECK_BACK = '#model-check-back';
-    static CHECK_SAVE = '#model-check-save';
     static CONDITIONS = '#model-conditions';
     static EFFECTS = '#model-effects';
     static ADD_CONDITION = '#model-editor-addC';
     static ADD_EFFECT = '#model-editor-addE';
+    static FORCE_TEST_AT = '#model-forceTestAt';
+    static FORCE_TEST_AFTER = '#model-forceTestAfter';
 
     // checks
+    static CHECK_DIV = '#model-edge-check-div';
+    static CHECK_CHOOSER = '#model-edge-check';
+    static CHECK_BACK = '#model-check-back';
+    static CHECK_SAVE = '#model-check-save';
     static CHECK_LABEL = '#model-check-label';
     static CHECK_NEGATED = '#model-check-negated';
     static CHECK_NEGATED_DIV = '#model-negated-div';
+    static CHECK_ARGS_DIV = '#model-check-args';
+    static CHECK_EXPLANATION = '#model-check-explanation';
     static INPUT_ID = 'model-check-input';
+
+    // checking arguments
     static NOT_EMPTY_PATTERN = /^\S+$/g;
     static CHANGE_PATTERN = /^(-=|\+=|=|[+-]|([+-]?)[0-9]+)$/g;
     static TIME_PATTERN = /^([0-9]+)$/g;
@@ -636,7 +642,9 @@ class ModelEditor {
         })
 
         $(ModelEditor.CHECK_CHOOSER).on('change', () => {
-            this.showEmptyArgsForCheckType($(ModelEditor.CHECK_CHOOSER).val())
+            let value = $(ModelEditor.CHECK_CHOOSER).val();
+            this.showEmptyArgsForCheckType(value);
+            this.addExplanation(value);
         })
         $(ModelEditor.ADD_CONDITION).on('click', () => this.addConditionAction())
         $(ModelEditor.ADD_EFFECT).on('click', () => this.addEffectAction())
@@ -655,6 +663,32 @@ class ModelEditor {
                 this.showPopup(i18n.t('modelEditor:notValid'));
             }
         });
+        $(ModelEditor.FORCE_TEST_AT).on('keyup change', () => {
+            let field = $(ModelEditor.FORCE_TEST_AT);
+            let value = field.val();
+            if (value.match(ModelEditor.TIME_PATTERN) == null) {
+                field.addClass(ModelEditor.INVALID_INPUT_CLASS);
+            } else {
+                field.removeClass(ModelEditor.INVALID_INPUT_CLASS);
+
+                let edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
+                edge.forceTestAt = parseInt(value);
+                console.log(this.models[this.currentTab])
+            }
+        });
+        $(ModelEditor.FORCE_TEST_AFTER).on('keyup change', () => {
+            let field = $(ModelEditor.FORCE_TEST_AFTER);
+            let value = field.val();
+            if (value.match(ModelEditor.TIME_PATTERN) == null) {
+                field.addClass(ModelEditor.INVALID_INPUT_CLASS);
+            } else {
+                field.removeClass(ModelEditor.INVALID_INPUT_CLASS);
+
+                let edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
+                edge.forceTestAfter = parseInt(value);
+                console.log(this.models[this.currentTab])
+            }
+        })
     }
 
     addConditionAction() {
@@ -673,7 +707,9 @@ class ModelEditor {
         this.showEmptyArgsForCheckType("AttrChange");
         this.checkIndex = -1;
         this.chosenList = "condition";
+        this.addExplanation("AttrChange");
     }
+
 
     addEffectAction() {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
@@ -702,6 +738,7 @@ class ModelEditor {
         this.showEmptyArgsForCheckType(defValue);
         this.chosenList = "effect";
         this.checkIndex = -1;
+        this.addExplanation("AttrChange");
     }
 
     hideAddButtons() {
@@ -727,7 +764,7 @@ class ModelEditor {
      * @param tabNr Number of the tab
      */
     changeToTab(tabNr) {
-        this.loadModel(tabNr);
+        this.loadModel(parseInt(tabNr));
 
         let children = $(ModelEditor.TABS).children();
         let oldAttr = children[tabNr].getAttribute('class')
@@ -855,8 +892,7 @@ class ModelEditor {
     removeCurrentTab() {
         $(ModelEditor.TABS).children('.active').remove();
         this.createAllTabs();
-        // note: currentTab can also be "0" because of tabButton.value on change....
-        this.changeToTab(this.currentTab == 0 ? 0 : this.currentTab - 1);
+        this.changeToTab(this.currentTab === 0 ? 0 : this.currentTab - 1);
     }
 
     /**
@@ -1061,30 +1097,42 @@ class ModelEditor {
         $(ModelEditor.EFFECTS).children().remove();
 
         let isAUserModel = this.models[this.currentTab].usage === "user";
-        // todo add information element that these conditions are connected by and
-        // fill up conditions of current edge todo
-        for (let i = 0; i < edge.conditions.length; i++) {
-            $(ModelEditor.CONDITIONS).append(this.getCheckElement(edge.conditions[i], i, isAUserModel))
-                .append($('<br>'));
+        if (edge.conditions.length > 0) {
+            $(ModelEditor.CONDITIONS).append(this.getCheckElement(edge.conditions[0], 0))
+            for (let i = 1; i < edge.conditions.length; i++) {
+                $(ModelEditor.CONDITIONS).append($('<hr/>', {class: 'model-check-line'}))
+                    .append(this.getCheckElement(edge.conditions[i], i, isAUserModel))
+            }
         }
 
         // fill up effects of current edge
-        for (let i = 0; i < edge.effects.length; i++) {
-            $(ModelEditor.EFFECTS).append(this.getCheckElement(edge.effects[i], i, true, isAUserModel))
-                .append($('<br>'));
+        if (edge.effects.length > 0) {
+            $(ModelEditor.EFFECTS).append(this.getCheckElement(edge.effects[0], 0, true, isAUserModel))
+            for (let i = 1; i < edge.effects.length; i++) {
+                $(ModelEditor.EFFECTS).append($('<hr/>', {class: 'model-check-line'}))
+                    .append(this.getCheckElement(edge.effects[i], i, true, isAUserModel));
+            }
         }
-        // todo on forcetestAFter / at typing, saving
+
+        // force timers
+        if (edge.forceTestAfter && edge.forceTestAfter !== -1) {
+            $(ModelEditor.FORCE_TEST_AFTER).val(edge.forceTestAfter);
+        }
+        if (edge.forceTestAt && edge.forceTestAt !== -1) {
+            $(ModelEditor.FORCE_TEST_AT).val(edge.forceTestAt);
+        }
     }
 
     showCheckOptions(check, isAnEffect = false, isAUserModel = false) {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         let checkNames;
+        console.log(check, isAnEffect, isAUserModel);
 
         if (!isAnEffect) {
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:condition'));
             $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
-            checkNames = Object.keys(inputLabelCodes).sort((a, b) => a < b ? -1 : 0);
+            checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
         } else if (isAnEffect) {
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'))
             if (isAUserModel) {
@@ -1103,13 +1151,38 @@ class ModelEditor {
         $(ModelEditor.CHECK_NEGATED).prop('checked', check.negated);
         $(ModelEditor.CHECK_CHOOSER).val(check.name);
         this.changeCheckType(check.name, check.id, check.args);
+
+        this.addExplanation(check.name);
+    }
+
+    addExplanation(type) {
+        $(ModelEditor.CHECK_EXPLANATION).children().remove();
+        let argTypes = checkLabelCodes[type];
+        if (argTypes === undefined) {
+            argTypes = inputLabelCodes[type];
+        }
+        console.log(argTypes, i18n.t('modelEditor:' + type));
+        let children = [];
+        for (let i = 0; i < argTypes.length; i++) {
+            let hint = i18n.t('modelEditor:' + argTypes[i] + "Hint");
+            if (hint !== argTypes[i] + "Hint") {
+                children.push($('<label/>', {style: "ml-1"}).text(hint));
+            }
+        }
+
+        if (children.length > 0) {
+            $(ModelEditor.CHECK_EXPLANATION).append($('<label/>').text(i18n.t('modelEditor:hintTitle')));
+            for (let i = 0; i < children.length; i++) {
+                $(ModelEditor.CHECK_EXPLANATION).append(children[i]);
+            }
+        }
     }
 
     /**
      * Show argument inputs for a new check of a type.
      */
     showEmptyArgsForCheckType(type) {
-        $(ModelEditor.CHECK_DIV).children('.model-arg').remove();
+        $(ModelEditor.CHECK_ARGS_DIV).children().remove();
 
         let argNames = checkLabelCodes[type];
         if (argNames === undefined) {
@@ -1135,7 +1208,7 @@ class ModelEditor {
         if (args.length !== argNames.length) {
             console.error('Loaded model has a check with wrong number of arguments. Check.id:' + id);
         }
-        $(ModelEditor.CHECK_DIV).children('.model-arg').remove();
+        $(ModelEditor.CHECK_ARGS_DIV).children().remove();
 
         for (let i = 0; i < argNames.length; i++) {
             this.appendInputBasedOnType(argNames[i], args[i], i);
@@ -1165,7 +1238,6 @@ class ModelEditor {
                     ModelEditor.NOT_EMPTY_PATTERN, i);
                 break;
             case argType.change:
-                // todo make an explanation are,                 i18n.t('modelEditor:t-change')
                 this.appendInputWithPattern(i18n.t("modelEditor:change"), value, ModelEditor.CHANGE_PATTERN, i);
                 break;
             case argType.comp:
@@ -1210,16 +1282,12 @@ class ModelEditor {
                     i);
                 break;
             case argType.expr:
-                // todo add explanation!!
                 this.appendAreaInput(i18n.t('modelEditor:expr'), value, "expression ...", i);
                 break;
         }
     }
 
     appendAreaInput(title, value, placeholder, idNbr) {
-        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
-            $('<div/>', {class: "col mt-1"}).append($('<label/>').text(title))
-        ));
         let textarea = $('<textarea/>', {
             class: "col mr-2", style: "overflow:auto;", rows: 6,
             id: ModelEditor.INPUT_ID + idNbr, placeholder: placeholder
@@ -1230,13 +1298,15 @@ class ModelEditor {
                 textarea.addClass(ModelEditor.INVALID_INPUT_CLASS);
             }
         });
-        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(textarea));
+        $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
+            $('<div/>', {class: "col mt-1"}).append($('<label/>').text(title))
+        )).append($('<div/>', {class: "row"}).append(textarea));
     }
 
     appendInputWithPattern(title, value, pattern, idNbr, style = undefined, unit = undefined,
                            placeholder = undefined) {
         let id = ModelEditor.INPUT_ID + idNbr;
-        let row = $('<div/>', {class: "row mt-2 model-arg"}).append(
+        let row = $('<div/>', {class: "row"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(title))
         ).append(
             $('<div/>', {class: "col"}).append($('<input/>', {id: id, style: style, placeholder: placeholder})
@@ -1256,12 +1326,12 @@ class ModelEditor {
                 style: "padding-left:0;"
             }).append($('<label/>').text(unit)));
         }
-        $(ModelEditor.CHECK_DIV).append(row);
+        $(ModelEditor.CHECK_ARGS_DIV).append(row);
     }
 
     appendComparisonSelection(value, idNbr) {
         let id = ModelEditor.INPUT_ID + idNbr;
-        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+        $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
         ).append(
             $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
@@ -1281,7 +1351,7 @@ class ModelEditor {
         for (let i = 0; i < keys.length; i++) {
             select.append($('<option/>', {value: keys[i]}).text(keys[i]));
         }
-        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+        $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:key')))
         ).append($('<div/>', {class: "col mt-1", style: "float:left;"}).append(select)));
         select.val(value);
@@ -1289,7 +1359,7 @@ class ModelEditor {
 
     appendBool(value, idNbr) {
         let id = ModelEditor.INPUT_ID + idNbr;
-        $(ModelEditor.CHECK_DIV).append($('<div/>', {class: "row mt-2 model-arg"}).append(
+        $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
         ).append(
             $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
@@ -1303,12 +1373,12 @@ class ModelEditor {
     /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement(check, index, isAnEffect = false, isAUserModel = false) {
         let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
-        return $('<label/>', {class: 'model-check'}).text(name).click(() => {
-            console.log("element clicked")
-            this.checkIndex = index;
-            this.chosenList = isAnEffect ? "effect" : "condition";
-            this.showCheckOptions(check, isAnEffect, isAUserModel);
-        });
+        return $('<div/>', {class: 'model-check'}).append($('<label/>', {class: 'model-check'}).text(name))
+            .click(() => {
+                this.checkIndex = index;
+                this.chosenList = isAnEffect ? "effect" : "condition";
+                this.showCheckOptions(check, isAnEffect, isAUserModel);
+            });
     }
 
     /** for fixing model position after loading the element */

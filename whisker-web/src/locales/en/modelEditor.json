@@ -47,7 +47,7 @@
     "conditions": "Conditions",
     "newCondition": "Neue Condition",
     "condition": "Condition",
-    "t-conditions": "Have to be fulfilled for a transition of the edge.",
+    "t-conditions": "All conditions have to be fulfilled simultaneously for a transition of the edge.",
     "effects": "Effects",
     "effect": "Effect",
     "newEffect": "Neuer Effect",
@@ -68,6 +68,7 @@
     "prob": "Probability",
     "time": "Time",
     "comp": "Comparison",
+    "key": "Key",
     "rValue": "Red",
     "gValue": "Green",
     "bValue": "Blue",
@@ -84,5 +85,8 @@
     "forceTestAt": "since test start",
     "t-forceTestAfter": "Forces testing the conditions of this edge after given time elapsed since last edge transition in this model.",
     "t-forceTestAt": "Forces testing the conditions of this edge after given time elapsed since test start.",
-    "ms": "ms"
+    "ms": "ms",
+    "hintTitle": "Tip: ",
+    "exprHint": "Expression is a short hand notation for a JavaScript function. You can use Sprite's attributes and variables by writing $(Sprite.Attr/Var). Example: $(Cat.x)>100",
+    "changeHint": "Changes: + (Increase), - (Decrease), = (No Change), += (Increase or No Change), -= (Decrease or No Change), +VALUE (Increase by), -VALUE (Decrease by)"
 }
