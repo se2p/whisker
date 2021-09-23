@@ -153,13 +153,13 @@ class ModelEditor {
         let edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
         for (let i = 0; i < edge.conditions.length; i++) {
             if (edge.conditions[i] === check) {
-                edge.conditions.splice(i,1);
+                edge.conditions.splice(i, 1);
                 return;
             }
         }
         for (let i = 0; i < edge.effects.length; i++) {
             if (edge.effects[i] === check) {
-                edge.effects.splice(i,1);
+                edge.effects.splice(i, 1);
                 return;
             }
         }
@@ -362,6 +362,23 @@ class ModelEditor {
             }
         }
         return false;
+    }
+
+    /** Fill all empty conditions of edges with a always true condition */
+    fillEmptyConditions() {
+        const emptyConditions = {
+            id: Math.random().toString(16).slice(2),
+            name: "Function",
+            args: ['true'],
+            negated: false
+        }
+        this.models.forEach(model => {
+            model.edges.forEach(edge => {
+                if (edge.conditions.length === 0) {
+                    edge.conditions.push(emptyConditions);
+                }
+            })
+        })
     }
 
     // ############################# Plotting and GUI setup ############################
@@ -828,6 +845,7 @@ class ModelEditor {
      * models can switch based on model type).
      */
     applyButton() {
+        this.fillEmptyConditions();
         // get current active tab
         let lastFocus = $(ModelEditor.TABS).children('.active')[0].textContent;
 
@@ -851,6 +869,7 @@ class ModelEditor {
 
     /** Download the models in the editor. */
     downloadButton() {
+        this.fillEmptyConditions();
         let json = JSON.stringify(this.models, null, 4);
         const blob = new Blob([json], {type: 'text/plain;charset=utf-8'});
         FileSaver.saveAs(blob, 'models.json');
