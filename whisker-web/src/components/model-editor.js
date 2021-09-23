@@ -149,6 +149,22 @@ class ModelEditor {
         this.showGeneralSettings(0);
     }
 
+    removeCheck(check) {
+        let edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
+        for (let i = 0; i < edge.conditions.length; i++) {
+            if (edge.conditions[i] === check) {
+                edge.conditions.splice(i,1);
+                return;
+            }
+        }
+        for (let i = 0; i < edge.effects.length; i++) {
+            if (edge.effects[i] === check) {
+                edge.effects.splice(i,1);
+                return;
+            }
+        }
+    }
+
 // ###################### Graph manipulation ###########################
 
     addNode(data, callback) {
@@ -161,8 +177,6 @@ class ModelEditor {
     }
 
     addEdge(data, callback) {
-        console.log(data);
-        console.log(this.models);
         if (data.label === undefined) {
             data.label = "";
         }
@@ -179,8 +193,9 @@ class ModelEditor {
             conditions: [],
             effects: []
         });
-        this.showAddButtons();
         callback(data);
+        this.loadModel(this.currentTab);
+        this.showAddButtons();
     }
 
     insertNewGraph() {
@@ -287,8 +302,6 @@ class ModelEditor {
             let id = Math.random().toString(16).slice(2);
             chosenCheckList.push({id, args, negated, name});
         }
-
-        console.log(this.models[this.currentTab]);
         this.checkIndex = -1;
         this.chosenList = undefined;
         return true;
@@ -522,12 +535,12 @@ class ModelEditor {
                 this.network.setOptions(newOptions);
             } else if (value === "treeLR") {
                 let newOptions = {...this.options};
-                newOptions.layout.hierarchical = {direction: "LR"};
+                newOptions.layout.hierarchical = {direction: "LR", shakeTowards: "leaves"};
                 newOptions.edges.font = {align: "top"};
                 this.network.setOptions(newOptions);
             } else if (value === "treeUD") {
                 let newOptions = {...this.options};
-                newOptions.layout.hierarchical = {direction: "UD"};
+                newOptions.layout.hierarchical = {direction: "UD", shakeTowards: "leaves"};
                 newOptions.edges.font = {align: "horizontal"};
                 this.network.setOptions(newOptions);
             }
@@ -673,7 +686,6 @@ class ModelEditor {
 
                 let edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
                 edge.forceTestAt = parseInt(value);
-                console.log(this.models[this.currentTab])
             }
         });
         $(ModelEditor.FORCE_TEST_AFTER).on('keyup change', () => {
@@ -686,7 +698,6 @@ class ModelEditor {
 
                 let edge = this.getEdgeById(this.network.getSelectedEdges()[0]);
                 edge.forceTestAfter = parseInt(value);
-                console.log(this.models[this.currentTab])
             }
         })
     }
@@ -1117,9 +1128,13 @@ class ModelEditor {
         // force timers
         if (edge.forceTestAfter && edge.forceTestAfter !== -1) {
             $(ModelEditor.FORCE_TEST_AFTER).val(edge.forceTestAfter);
+        } else {
+            $(ModelEditor.FORCE_TEST_AFTER).val("");
         }
         if (edge.forceTestAt && edge.forceTestAt !== -1) {
             $(ModelEditor.FORCE_TEST_AT).val(edge.forceTestAt);
+        } else {
+            $(ModelEditor.FORCE_TEST_AT).val("");
         }
     }
 
@@ -1127,7 +1142,6 @@ class ModelEditor {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         let checkNames;
-        console.log(check, isAnEffect, isAUserModel);
 
         if (!isAnEffect) {
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:condition'));
@@ -1161,7 +1175,6 @@ class ModelEditor {
         if (argTypes === undefined) {
             argTypes = inputLabelCodes[type];
         }
-        console.log(argTypes, i18n.t('modelEditor:' + type));
         let children = [];
         for (let i = 0; i < argTypes.length; i++) {
             let hint = i18n.t('modelEditor:' + argTypes[i] + "Hint");
@@ -1373,12 +1386,22 @@ class ModelEditor {
     /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement(check, index, isAnEffect = false, isAUserModel = false) {
         let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
-        return $('<div/>', {class: 'model-check'}).append($('<label/>', {class: 'model-check'}).text(name))
-            .click(() => {
-                this.checkIndex = index;
-                this.chosenList = isAnEffect ? "effect" : "condition";
-                this.showCheckOptions(check, isAnEffect, isAUserModel);
-            });
+        return $('<div/>', {class: "row", style: "margin:0;"})
+            .append($('<div/>', {class: 'col model-check'}).append($('<label/>', {class: 'model-check'}).text(name))
+                .click(() => {
+                    this.checkIndex = index;
+                    this.chosenList = isAnEffect ? "effect" : "condition";
+                    this.showCheckOptions(check, isAnEffect, isAUserModel);
+                }))
+            .append($('<button/>', {class: 'model-button check-delete', type: 'button'})
+                .text(i18n.t('modelEditor:delModel'))
+                .click(() => {
+                    this.removeCheck(check);
+                    let selection = this.network.getSelectedEdges()[0];
+                    this.loadModel(this.currentTab);
+                    this.network.selectEdges([selection]);
+                    this.showEdgeOptions(selection);
+                }));
     }
 
     /** for fixing model position after loading the element */
