@@ -195,7 +195,9 @@ export class CheckUtility extends EventEmitter {
      * @param keyName Name of the key.
      */
     isKeyDown(keyName: string) {
-        return this.testDriver.isKeyDown(keyName);
+        return this.testDriver.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyName);
+        // replaced because of bug in test driver...
+        // return this.testDriver.isKeyDown(keyName);
     }
 
     /**
@@ -318,14 +320,14 @@ export class CheckUtility extends EventEmitter {
             failureList[output]++;
             if (failureList[output] == 10) {
                 this.emit(CheckUtility.CHECK_LOG_FAIL, output + "(10th time, no more outputs for this)");
-                // console.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
+                console.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
             } else if (failureList[output] < 10) {
                 this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-                // console.error(output, this.testDriver.getTotalStepsExecuted());
+                console.error(output, this.testDriver.getTotalStepsExecuted());
             }
         } else {
             this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-            // console.error(output, this.testDriver.getTotalStepsExecuted());
+            console.error(output, this.testDriver.getTotalStepsExecuted());
         }
     }
 

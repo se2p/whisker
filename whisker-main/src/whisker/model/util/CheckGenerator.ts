@@ -724,11 +724,12 @@ export abstract class CheckGenerator {
             if (sprites.length > 1) {
                 return !negated;
             }
-            let firstIndex = oldValues.indexOf(sprites[0][attrName]);
+            let currentValue = oldValues[oldValues.length - 1];
 
             // the current value is on the last index of the list (by on moved set), if the previous two are also
             // the same value it is not random
-            if (firstIndex != oldValues.length - 1 && oldValues.length - firstIndex > 2) {
+            if (oldValues.length > 2 && currentValue == oldValues[oldValues.length - 2]
+                && currentValue == oldValues[oldValues.length - 3]) {
                 return negated;
             }
             return !negated;
