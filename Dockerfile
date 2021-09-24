@@ -13,13 +13,14 @@
 # We have the following stages:
 # (1) Build stage:
 #     (a) Prepare base image
-#     (b) Install or update build/library dependencies
-#     (c) Build Whisker from its sources and dependencies
+#     (b) Install or update build/library dependencies (via apt)
+#     (c) Install or update build/library dependencies (via yarn)
+#     (d) Build Whisker from its sources and dependencies
 # (2) Execution stage:
 #     Only copy files necessary to run Whisker and set the entry point to
 #     Whisker's servant in headless mode
 #
-# Because an image is built during the final sub-stage (c) of the build stage we
+# Because an image is built during the final sub-stage (d) of the build stage we
 # can minimize the size of image layers by leveraging a build cache. The
 # sub-stages are ordered from the less frequently changed (to ensure the build
 # cache is not busted) to the more frequently changed.
@@ -30,6 +31,7 @@
 # at that stage and run the container in interactive mode:
 # `docker run -it --entrypoint /bin/sh <image name>`
 ################################################################################
+
 
 #-------------------------------------------------------------------------------
 # (1) Build Stage
@@ -52,6 +54,7 @@
 FROM node:lts-buster-slim as base
 RUN apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y \
+        tini \
         libnss3 \
         libatk1.0-0 \
         libatk-bridge2.0-0 \
@@ -97,7 +100,10 @@ RUN yarn install
 #     necessary for execution. This layer is only rebuilt when a source file
 #     changes.
 COPY ./ ./
-RUN yarn build \
+# We run yarn upgrade as a workaround for issue #165 to ensure that our
+# dependency "scratch-vm" is always up-to-date.
+RUN yarn upgrade \
+    && yarn build \
     && yarn install --production
 
 
@@ -116,14 +122,25 @@ ENV NODE_ENV=production
 # (devDependencies have already been excluded from the node_modules folder.)
 COPY --from=build /whisker-build /whisker
 
-# Set the image's main command, allowing the image to be run as though it was
-# that command:
-ENTRYPOINT ["/whisker/servant/whisker-docker.sh"]
-
 # Whisker's servant requires this as working directory, as it uses relative
 # and not absolute paths:
 WORKDIR /whisker/servant/
 
-# Set the default arguments for servant, in case none are given explicitly:
-#CMD ["--help"]
+# Set the image's main command, allowing the image to be run as though it was
+# that command. We use a wrapper script instead of invoking Whisker directly.
+# The script makes sure Whisker runs in headless mode, forwards console output,
+# etc. It uses the `exec` bash command [1] so that Whisker is not spawned as
+# child process of the wrapper script, but instead takes over the current process,
+# making it the container's PID 1. This is important as Unix signals (such as
+# SIGINT) sent to the container would otherwise not be received by the
+# application [2]. Yet, a Node.JS application only responds to signals when
+# **NOT** running as PID 1 [3]. Thus, we use a leightweight init system called
+# "tini" as entrypoint [4] that spawns Whisker as child process and forwards
+# all signals properly.
+#
+# [1] https://wiki.bash-hackers.org/commands/builtin/exec
+# [2] https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
+# [3] https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
+# [4] https://github.com/krallin/tini#existing-entrypoint
+ENTRYPOINT ["tini", "--", "/whisker/servant/whisker-docker.sh"]
 

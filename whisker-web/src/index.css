@@ -108,21 +108,23 @@ p {
 }
 
 .btn-main {
-    color: var(--mainColor);
+    color: white;
     background-color: var(--textColor);
     border-color: var(--textColorHover);
 }
 
 .btn-main:not(.active) {
     color: var(--subheadingColor);
-    background-color: var(--mainColor);
+    background-color: white;
     border-color: var(--mainColor);
 }
 
 .btn-main:hover {
-    background-color: var(--mainColorHover);
-    border-color: var(--mainColorHover);
+    background-color: white;
+    border-color: var(--mainColor);
+    color: var(--subColor)
 }
+
 
 .btn-circle.btn-sm {
     width: 30px;
@@ -143,35 +145,40 @@ p {
 
 /* ==== Header Structure ==== */
 
-#header {
-    padding: 1vh 0;
-    width: 100%;
-    min-width:100%;
-    margin: auto;
-    position:relative;
-    text-align:center;
+#small-logo {
+    position: absolute;
+    width: 180px;
+    margin-left: 30px;
+    margin-top: 10px;
 }
 
 .banner {
     width:100%;
-    padding-top:10px;
+    transform: translateY(-4%);
 }
 
 #nav-links {
     position:absolute;
     top:8px;
-    right:16px;
+    left:50px;
 }
 
 .links {
-    padding-top: 5px;
-    padding-left:30px;
+    position: absolute;
+    padding-top: 15px;
+    right: 5px;
 }
 
 #form-lang select {
+    border-radius: 5px;
+    border-color: var(--mainColor);
+    border-style: solid;
+    border-width: thin;
+    margin-right: 10px;
     font-size: 14px;
     padding:4px;
     color: var(--textColor);
+    background-color: white;
     font-family: Verdana, sans-serif;
 }
 
@@ -235,7 +242,7 @@ p {
 }
 
 .btn-wrapper {
-    width: 400px;
+    width: max-content;
     float: right;
 }
 
@@ -257,8 +264,13 @@ p {
 }
 
 .btn-group-toggle {
-    box-sizing: revert;
-    padding-left: 10px;
+    position: absolute;
+    padding: 15px;
+    right: 130px;
+}
+
+.btn-group-toggle .btn-main {
+    margin-right: 1rem;
 }
 
 .inline {
@@ -282,7 +294,7 @@ p {
 }
 
 .but1 {
-    margin-left: 35%;
+    margin-left: 80%;
 }
 
 .but2 {
@@ -320,12 +332,41 @@ p {
     cursor: pointer;
 }
 
+.slider.slider-horizontal {
+    width: 210px;
+    height: 14px;
+    background-color: var(--mainColor);
+}
+
+.slide-container .slider.slider::before {
+    display:none;
+}
+
+.slider-handle {
+    background-image: linear-gradient(to bottom, orange, orange);
+}
+
+.slider-handle.round {
+    border-radius: 20px;
+    height: 20px;
+    width: 20px;
+    transform: translateY(-3px);
+}
+
+.slider-track {
+    display: none;
+}
+
 #acceleration {
     padding-left: 5%;
 }
 
 #acceleration-value {
     padding-left: 1%;
+}
+
+#acceleration .slider::before {
+    display: none;
 }
 
 #gender {
@@ -386,6 +427,7 @@ p {
 
 #logo img {
     max-height:70px;
+    margin-top: 20px;
     padding-bottom:20px;
 }
 
@@ -418,7 +460,7 @@ p {
     width: 1em;
     height: 1em;
     margin-right: 0.4em;
-    vertical-align: top
+    vertical-align: middle;
 }
 
 .resp-sharing-button--small svg {
@@ -535,6 +577,11 @@ p {
     height: 500px;
     overflow-x: hidden;
     overflow-y: scroll;
+}
+
+input[type="search"] {
+    border-radius: 5px;
+    border-style: solid;
 }
 
 /* Forward clicks to button underneath */
@@ -914,7 +961,7 @@ img {vertical-align: middle;}
 .sticky {
     position: -webkit-sticky; /* Safari */
     position: sticky;
-    z-index: 9999;
+    z-index: 9998;
     top: 0;
 }
 
@@ -924,18 +971,113 @@ img {vertical-align: middle;}
     width: 100%;
 }
 
+.scrolled {
+    border-bottom-color: var(--mainColor);
+    border-bottom-style: solid;
+}
+
 #left-btn-group {
     position: absolute;
-    left: 15%;
+    left: 40%;
 }
 
-#right-btn-group {
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
     position: absolute;
-    right: 14.45%;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
 }
 
-.btn-group-toggle {
-    padding: 10px;
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--subColor);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--subColor);
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.toggleWrapper {
+    margin: 5px;
+}
+
+.tooltip {
+    z-index: 9999;
+}
+
+.modal-content{
+    transform: translate(0, 100px);
+}
+
+#main-functionality {
+    position: fixed;
+    z-index: 9998;
+    bottom: 40%;
+    display: grid;
+    left: 6vw;
+}
+
+#main-functionality .btn-main {
+    margin: 10px;
+    border-width: medium;
+}
+
+@media only screen and (max-width: 1300px) {
+    #main-functionality {
+        left: 10px;
+    }
+}
+
+@media only screen and (max-width: 1000px) {
+    #main-functionality {
+        left: 0;
+    }
 }
 
 .small-input {

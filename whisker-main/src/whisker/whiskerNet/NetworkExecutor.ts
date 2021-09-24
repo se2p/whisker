@@ -5,17 +5,14 @@ import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {EventObserver} from "../testcase/EventObserver";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
-import {seedScratch} from "../../util/random"
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NetworkChromosome} from "./NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import {StaticScratchEventExtractor} from "../testcase/StaticScratchEventExtractor";
-import {ParameterTypes} from "../testcase/events/ParameterTypes";
+import {ParameterType} from "../testcase/events/ParameterType";
 import Runtime from "scratch-vm/src/engine/runtime"
-import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
 export class NetworkExecutor {
@@ -90,9 +87,7 @@ export class NetworkExecutor {
 
         // Check how many activations a network needs to stabilise
         const stabilizeCounter = network.stabilizedCounter(100)
-
-        seedScratch(String(Randomness.getInitialSeed()))
-
+        Randomness.seedScratch();
         // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
         network.flushNodeValues();
         for (let i = 0; i < stabilizeCounter + 1; i++) {
@@ -148,9 +143,9 @@ export class NetworkExecutor {
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
             let args = [];
-            if (nextEvent.getNumVariableParameters() > 0) {
+            if (nextEvent.numSearchParameter() > 0) {
                 args = NetworkExecutor.getArgs(nextEvent, network);
-                nextEvent.setParameter(args, ParameterTypes.REGRESSION);
+                nextEvent.setParameter(args, ParameterType.REGRESSION);
             }
             events.add([nextEvent, args]);
             this.notify(nextEvent, args);

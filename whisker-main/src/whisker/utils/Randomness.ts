@@ -19,6 +19,8 @@
  */
 
 import {List} from "./List";
+import seed from 'seed-random';
+
 
 /**
  * Seeded singleton random number generator
@@ -35,16 +37,14 @@ export class Randomness {
 
     /**
      * Private constructor to prevent construction with new
-     *
-     * @param seed -- seed to initialize with
      */
     private constructor() {
-        if(Randomness._initialSeed) {
+        if (Randomness._initialSeed) {
             this._seed = Randomness._initialSeed;
         } else {
             this._seed = Date.now();
         }
-        console.log("Using random seed ",this._seed);
+        console.log(`Using random seed ${this._seed}`);
     }
 
     /**
@@ -84,8 +84,8 @@ export class Randomness {
 
     /**
      * Pick a random integer from a range
-     * @param min Lower bound of range
-     * @param max Upper bound of range
+     * @param min Lower bound of range inclusive
+     * @param max Upper bound of range exclusive
      */
     public nextInt(min: number, max: number): number {
         return Math.floor(this.next(min, max));
@@ -154,7 +154,14 @@ export class Randomness {
      * @param std the std of the gaussian distribution
      */
     public nextGaussianInt(mean: number, std: number): number {
-        return Math.round(this.nextGaussian(mean,std))
+        return Math.round(this.nextGaussian(mean, std))
+    }
+
+    /**
+     * Sets a seed for the Scratch-VM to enable reproduction of scratch project execution.
+     */
+    public static seedScratch(): void {
+        seed(Randomness._initialSeed, {global: true});
     }
 
 }

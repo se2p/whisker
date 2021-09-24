@@ -1,36 +1,42 @@
 const ScratchVariable = require('scratch-vm/src/engine/variable');
 
+/**
+ * Represents a {@link ScratchVariable} and gives the user basic functionality to access variable attributes in whisker
+ * tests.
+ */
 class Variable {
     constructor (variable, sprite) {
 
         /**
-         * @type {ScratchVariable}
+         * @type {ScratchVariable} The scratch variable itself.
          * @private
          */
         this._variable = variable;
 
         /**
-         * @type {RenderedTarget}
+         * @type {RenderedTarget} The sprite the variable belongs to.
          * @private
          */
         this._sprite = sprite;
 
         /**
-         * @type {Object}
+         * @type {Object} The old variable value.
          * @private
          */
         this._old = {};
     }
 
     /**
-     * @returns {string} .
+     * Gives back the name of the scratch variable.
+     * @returns {string} The variable name.
      */
     get name () {
         return this._variable.name;
     }
 
     /**
-     * @returns {number|number[]} .
+     * Gives back the value of the scratch variable.
+     * @returns {number|number[]} A number array if the variable is of type list, a single number otherwise.
      */
     get value () {
         if (this._variable.type === ScratchVariable.SCALAR_TYPE) {
@@ -42,26 +48,32 @@ class Variable {
     }
 
     /**
-     * @returns {object} .
+     * Gives back the old value of the scratch variable.
+     * @returns {object} The old variable.
      */
     get old () {
         return {...this._old};
     }
 
     /**
-     * @returns {object} .
+     * Gives back the corresponding {@link Sprite} the scratch variable belongs to.
+     * @returns {object} The sprite of the variable.
      */
     get sprite () {
         return this._sprite;
     }
 
     /**
-     * @returns {ScratchVariable} .
+     * Gives back the scratch variable itself.
+     * @returns {ScratchVariable} The variable.
      */
     getScratchVariable () {
         return this._variable;
     }
 
+    /**
+     * Replaces the old scratch variable value with the new value.
+     */
     updateOld () {
         this._old.value = this.value;
     }

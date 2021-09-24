@@ -1,97 +1,95 @@
 const Runtime = require('scratch-vm/src/engine/runtime');
-
 const Stepper = require('./stepper');
-
 const log = require('minilog')('vm-wrapper');
-
 const Sprites = require('./sprites');
 const {Callbacks} = require('./callbacks');
 const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
 
+/**
+ * Wraps the used virtual machine and extends existing functionality.
+ */
 class VMWrapper {
-    /**
-     * @param {VirtualMachine} vm .
-     */
     constructor (vm) {
+
         /**
-         * @type {VirtualMachine}
+         * @type {VirtualMachine} The used virtual machine.
          */
         this.vm = vm;
 
         /**
-         * @type {Stepper}
+         * @type {Stepper} The stepper that counts steps of the virtual machine.
          */
         this.stepper = new Stepper(Runtime.THREAD_STEP_INTERVAL);
 
         /**
-         * @type {Sprites}
+         * @type {Sprites} Sprite specific functionality.
          */
         this.sprites = new Sprites(this);
 
         /**
-         * @type {Callbacks}
+         * @type {Callbacks} Callback specific functionality.
          */
         this.callbacks = new Callbacks(this);
 
         /**
-         * @type {Callbacks}
+         * @type {Callbacks} Callback specific functionality for models.
          */
         this.modelCallbacks = new Callbacks(this);
 
         /**
-         * @type {Inputs}
+         * @type {Inputs} Input specific functionality.
          */
         this.inputs = new Inputs(this);
 
         /**
-         * @type {RandomInputs}
+         * @type {RandomInputs} Random input specific functionality.
          */
         this.randomInputs = new RandomInputs(this);
 
         /**
-         * @type {Constraints}
+         * @type {Constraints} Constraint specific functionality.
          */
         this.constraints = new Constraints(this);
 
         /**
-         * @type {string}
+         * @type {string} Error text when action fails because of a constraint.
          */
         this.actionOnConstraintFailure = VMWrapper.ON_CONSTRAINT_FAILURE_FAIL;
 
         /**
-         * @type {number}
+         * @type {number} Time the virtual machine starts.
          */
         this.startTime = 0;
 
         /**
-         * @type {number}
+         * @type {number} The overall count of executed steps.
          */
         this.stepsExecuted = 0;
 
         /**
-         * @type {number}
+         * @type {number} The executed steps after a new run starts.
          */
         this.runStartStepsExecuted = 0;
 
         /**
-         * @type {boolean}
+         * @type {boolean} Indicates is the virtual machine is running.
          */
         this.running = false;
 
         /**
-         * @type {boolean}
+         * @type {boolean} Indicates if the virtual machine is aborted.
          */
         this.aborted = false;
 
         /**
-         * @type {boolean}
+         * @type {boolean} Indicates if the tested project is currently running.
          */
         this.projectRunning = false;
 
         /**
-         * @type {string}
+         * @type {string} Text for a question.
          */
         this.question = null;
 
@@ -105,8 +103,9 @@ class VMWrapper {
     }
 
     /**
-     * @param {string} action .
-     * @returns {string} .
+     * If a run fails due to a constraint, gives back a message for the user to take a specific action.
+     * @param {string} action The message about the action to take.
+     * @returns {string} The action message..
      */
     onConstraintFailure (action) {
         if (action) {
@@ -115,6 +114,10 @@ class VMWrapper {
         return this.actionOnConstraintFailure;
     }
 
+    /**
+     * Takes a run step.
+     * @returns {Promise<*>} Returns AssertionError, if constraint failed.
+     */
     async step () {
         this.callbacks.callCallbacks(false);
         await this._yield();
@@ -153,10 +156,11 @@ class VMWrapper {
     }
 
     /**
-     * @param {Function?} condition .
-     * @param {number=} timeout .
-     * @param {number=} steps .
-     * @returns {number} runtime in ms.
+     * Starts another run for project testing.
+     * @param {Function?} condition Run condition.
+     * @param {number=} timeout Time after which run is aborted.
+     * @param {number=} steps Number of steps the run is lasting.
+     * @returns {number} Runtime in ms.
      */
     async run (condition, timeout, steps) {
         if (this.isRunning()) {
@@ -165,7 +169,7 @@ class VMWrapper {
         }
 
         condition = condition || (() => false);
-        if(timeout !== undefined && steps === undefined){
+        if (timeout !== undefined && steps === undefined) {
             steps = this.convertFromTimeToSteps(timeout);
         }
         steps = steps === undefined ? Infinity : steps;
@@ -204,26 +208,29 @@ class VMWrapper {
     }
 
     /**
-     * @param {number} time .
-     * @returns {number} runtime in ms.
+     * Starts another run for a specific amount of time.
+     * @param {number} time Time constraint for runtime.
+     * @returns {number} Runtime in ms.
      */
     async runForTime (time) {
         return await this.run(undefined, time);
     }
 
     /**
-     * @param {Function} condition .
-     * @param {number=} timeout .
-     * @returns {number} runtime in ms.
+     * Starts another run until a specific condition occurs.
+     * @param {Function} condition Condition that stops the run.
+     * @param {number=} timeout Time constraint for runtime.
+     * @returns {number} Runtime in ms.
      */
     async runUntil (condition, timeout) {
         return await this.run(condition, timeout);
     }
 
     /**
-     * @param {Function} callback .
-     * @param {number=} timeout .
-     * @returns {number} runtime in ms .
+     * Starts another run until a specific callback.
+     * @param {Function} callback Callback that stops run.
+     * @param {number=} timeout Time constraint for runtime.
+     * @returns {number} Runtime in ms .
      */
     async runUntilChanges (callback, timeout) {
         const initialValue = callback();
@@ -231,17 +238,24 @@ class VMWrapper {
     }
 
     /**
-     * @param {number} steps .
-     * @returns {number} runtime in steps.
+     * Starts another run that lasts for a specific number of steps.
+     * @param {number} steps Step constraint for run.
+     * @returns {number} Runtime in steps.
      */
     async runForSteps (steps) {
         return this.convertFromTimeToSteps(await this.run(undefined, undefined, steps));
     }
 
+    /**
+     * Cancels the current run by setting the running property to false.
+     */
     cancelRun () {
         this.running = false;
     }
 
+    /**
+     * Cancels and aborts the current run.
+     */
     abort () {
         this.cancelRun();
         this.aborted = true;
@@ -249,38 +263,51 @@ class VMWrapper {
     }
 
     /**
-     * @return {number} .
+     * Gives back the total timespan since the start of the test suite taking the acceleration factor into account.
+     * @return {number} Runtime in ms.
      */
     getTotalTimeElapsed () {
         return this.getTotalStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
     /**
-     * @return {number} .
+     * Gives back the timespan since the last run started taking the acceleration factor into account.
+     * @return {number} Runtime in ms.
      */
     getRunTimeElapsed () {
         return this.getRunStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
     /**
-     * @return {number} .
+     * Gives back the total executed steps since the start of the test suite.
+     * @return {number} Runtime in steps.
      */
     getTotalStepsExecuted () {
         return this.stepsExecuted;
     }
 
     /**
-     * @return {number} .
+     * Gives back the executed steps since the start of the last run.
+     * @return {number} Runtime in steps.
      */
     getRunStepsExecuted () {
         return this.stepsExecuted - this.runStartStepsExecuted;
     }
 
     /**
-     * @param {string} project .
-     * @param {number} accelerationFactor .
-     *
-     * @returns {Promise<void>} .
+     * Runs the virtual machine for a specific number of steps.
+     * @param {number} steps Number of steps to wait.
+     * @returns {Promise<void>} Promise that resolves after targets are installed.
+     */
+    async wait (steps) {
+        await this.runForSteps(steps);
+    }
+
+    /**
+     * Initializes the vm wrapper with the project and acceleration factor that should be used for testing.
+     * @param {string} project The project to test.
+     * @param {number} accelerationFactor The used acceleration factor.
+     * @returns {Promise<void>} Promise that resolves after targets are installed.
      */
     async setup (project, accelerationFactor = 1) {
         delete Runtime.THREAD_STEP_INTERVAL;
@@ -303,6 +330,11 @@ class VMWrapper {
         return returnValue;
     }
 
+    /**
+     * Instrumentation of a new runtime device.
+     * @param deviceName Name of the device to set.
+     * @param method Device method to set.
+     */
     instrumentDevice (deviceName, method) {
         const device = this.vm.runtime.ioDevices[deviceName];
         let original = device[method];
@@ -317,6 +349,11 @@ class VMWrapper {
         device[method] = instrumented;
     }
 
+    /**
+     * Instrumentation of a new runtime primitive.
+     * @param primitive Runtime primitive to set.
+     * @param argument Primitive argument to set.
+     */
     instrumentPrimitive (primitive, argument) {
         let original = this.vm.runtime._primitives[primitive];
 
@@ -334,6 +371,9 @@ class VMWrapper {
         this.vm.runtime._primitives[primitive] = instrumented;
     }
 
+    /**
+     * Start the vm wrapper by resetting it to its original state and starting the virtual machine.
+     */
     start () {
         this.callbacks.clearCallbacks();
         this.inputs.clearInputs();
@@ -359,6 +399,9 @@ class VMWrapper {
         this.aborted = false;
     }
 
+    /**
+     * Stop the vm wrapper by resetting it to its original state and stopping the virtual machine.
+     */
     end () {
         this.cancelRun();
         this.vm.stopAll();
@@ -377,15 +420,19 @@ class VMWrapper {
         this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange)
     }
 
+    /**
+     * Start the tested project by activating the greenFlag block.
+     */
     // TODO: reset sprites on green flag?
     greenFlag () {
         this.vm.greenFlag();
     }
 
     /**
-     * @param {number} x .
-     * @param {number} y .
-     * @return {{x: number, y: number}} .
+     * Converts coordinates to be relative to the scratch canvas.
+     * @param {number} x The x coordinate on the client.
+     * @param {number} y The y coordinate on the client.
+     * @return {{x: number, y: number}} The converted coordinates.
      */
     getScratchCoords (x, y) {
         const rect = this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
@@ -397,9 +444,10 @@ class VMWrapper {
     }
 
     /**
-     * @param {number} x .
-     * @param {number} y .
-     * @return {{x: number, y: number}} .
+     * Converts scratch coordinates to be relative to the client.
+     * @param {number} x The x coordinate on the scratch canvas.
+     * @param {number} y The y coordinate on the scratch canvas.
+     * @return {{x: number, y: number}} The converted coordinates.
      */
     getClientCoords (x, y) {
         const rect = this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
@@ -411,7 +459,8 @@ class VMWrapper {
     }
 
     /**
-     * @return {{width: number, height: number}} .
+     * Gives back the width and height of the scratch stage.
+     * @return {{width: number, height: number}} The stage size.
      */
     getStageSize () {
         const [width, height] = this.vm.runtime.renderer.getNativeSize();
@@ -422,32 +471,45 @@ class VMWrapper {
     }
 
     /**
-     * Converts the unit of time into the unit of steps
-     * @param {number} timeDuration .
-     * @return {number} .
+     * Converts the unit of time into the unit of steps.
+     * @param {number} timeDuration The time in ms to convert.
+     * @return {number} The converted time in steps.
      */
-    convertFromTimeToSteps(timeDuration){
+    convertFromTimeToSteps (timeDuration) {
         const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
         return timeDuration / stepDuration;
     }
 
     /**
      * Finds the RenderedTarget instance of a sprite using the sprite's name.
-     * @param spriteName the name of the sprite we are searching the RenderedTarget instance for
-     * @return {RenderedTarget}
+     * @param spriteName The name of the sprite we are searching the RenderedTarget instance for.
+     * @return {RenderedTarget} The found target.
      */
-    getTargetOfSprite(spriteName){
-        for(const target of this.vm.runtime.targets){
-            if(target.sprite.name === spriteName){
+    getTargetBySpriteName (spriteName) {
+        for (const target of this.vm.runtime.targets) {
+            if (target.sprite.name === spriteName) {
                 return target;
             }
         }
     }
 
     /**
-     * Gets the answer given to the ask-and-wait block.
-     *
-     * @return {string} .
+     * Finds the RenderedTarget instance of a sprite using its coordinates.
+     * @param {number} x The x coordinate of the target.
+     * @param {number} y The y coordinate of the target.
+     * @return {RenderedTarget} The found target.
+     */
+    getTargetBySpriteCoords (x, y) {
+        for (const target of this.vm.runtime.targets) {
+            if (target.x === x && target.y === y) {
+                return target;
+            }
+        }
+    }
+
+    /**
+     * Gives back the answer given to the ask-and-wait block.
+     * @return {string} Answer text.
      */
     getAnswer () {
         return this.vm.runtime._primitives.sensing_answer();
@@ -455,41 +517,63 @@ class VMWrapper {
 
     /**
      * Tests whether the ask block is currently active for a given target (a sprite or the stage).
-     *
-     * @param target
-     * @return {boolean}
+     * @return {boolean} true if ask block is active, false otherwise.
      */
     isQuestionAsked () {
         return this.question !== null;
     }
 
+    /**
+     * Sets the new ask block that is displayed.
+     * @param question The new ask block.
+     */
     onQuestion (question) {
         this.question = question; // question can be null when questions are cleared
     }
 
+    /**
+     * Resets the ask block if an answer is given.
+     * @param answer The given answer.
+     */
     onAnswer (answer) {
         this.question = null;
     }
 
     /**
-     * @return {DOMRect} .
+     * Gives back a {@code DOMRect} object that provides information about the size of the scratch canvas and its
+     * position relative to the viewport.
+     * @return {DOMRect} The canvas rectangle object.
      */
     getCanvasRect () {
         return this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
     }
 
+    /**
+     * Gives back if the virtual machine is currently running.
+     * @returns {boolean} true if running, false otherwise.
+     */
     isRunning () {
         return this.running;
     }
 
+    /**
+     * Gives back if the tested project is currently running.
+     * @returns {boolean} true if running, false otherwise.
+     */
     isProjectRunning () {
         return this.projectRunning;
     }
 
+    /**
+     * Sets the project to running on start.
+     */
     onRunStart () {
         this.projectRunning = true;
     }
 
+    /**
+     * Sets the project to not running on stop.
+     */
     onRunStop () {
         this.projectRunning = false;
     }
@@ -503,21 +587,24 @@ class VMWrapper {
     }
 
     /**
-     * @returns {string} .
+     * Message to fail on constraint failure.
+     * @returns {string} Failure message.
      */
     static get ON_CONSTRAINT_FAILURE_FAIL () {
         return 'fail';
     }
 
     /**
-     * @returns {string} .
+     * Message to stop on constraint failure.
+     * @returns {string} Failure message.
      */
     static get ON_CONSTRAINT_FAILURE_STOP () {
         return 'stop';
     }
 
     /**
-     * @returns {string} .
+     * Message to do nothing on constraint failure.
+     * @returns {string} Failure message.
      */
     static get ON_CONSTRAINT_FAILURE_NOTHING () {
         return 'nothing';

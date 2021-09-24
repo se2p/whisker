@@ -21,7 +21,6 @@
 import {List} from '../../../utils/List';
 import {Randomness} from '../../../utils/Randomness';
 import {TestChromosome} from "../../../testcase/TestChromosome";
-import {seedScratch} from "../../../../util/random";
 import {WaitEvent} from "../../../testcase/events/WaitEvent";
 import {Container} from "../../../utils/Container";
 import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
@@ -51,7 +50,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return chromosome.getGenes().size() < Container.config.getSearchAlgorithmProperties().getChromosomeLength() &&
+        return chromosome.getGenes().size() < Container.config.searchAlgorithmProperties.getChromosomeLength() &&
             this._originalChromosomes.indexOf(chromosome) < 0 && this.calculateFitnessValues(chromosome).length > 0;
     }
 
@@ -72,7 +71,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const newCodons = new List<number>();
         const events = new List<[ScratchEvent, number[]]>();
         newCodons.addList(chromosome.getGenes());
-        seedScratch(String(Randomness.getInitialSeed()));
+        Randomness.seedScratch();
         this._vmWrapper.start();
 
         // Execute the original codons to obtain the state of the VM after executing the original chromosome.
@@ -126,7 +125,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      */
     private async _extendGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>,
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
-        const upperLengthBound = Container.config.getSearchAlgorithmProperties().getChromosomeLength();
+        const upperLengthBound = Container.config.searchAlgorithmProperties.getChromosomeLength();
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
         let done = false;

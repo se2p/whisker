@@ -5,7 +5,8 @@ const ACCELERATION = 10;
 
 async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-    await (await page.$('#toggle-advanced')).click();
+    const toggle = await page.$('#toggle-advanced');
+    await toggle.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
 }
 
@@ -17,7 +18,9 @@ async function readFitnessLog() {
     while (true) {
         const log = await (await output.getProperty('innerHTML')).jsonValue();
         if (log.includes('uncoveredBlocks')) {
-            return JSON.parse(log);
+            const csvHeaderIndex = log.split('\n').findIndex(logLine => logLine.includes('projectName'));
+            const uncoveredBlocksLog = log.split('\n').slice(0, csvHeaderIndex).join('\n');
+            return JSON.parse(uncoveredBlocksLog);
         }
     }
 }

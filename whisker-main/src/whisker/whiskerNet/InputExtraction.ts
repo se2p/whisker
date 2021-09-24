@@ -3,7 +3,8 @@ import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {List} from "../utils/List";
 
-const twgl = require('twgl.js');
+import * as twgl from 'twgl.js';
+//const twgl = require('twgl.js');
 
 
 export class InputExtraction {

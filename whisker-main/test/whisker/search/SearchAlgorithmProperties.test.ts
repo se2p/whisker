@@ -27,7 +27,7 @@ describe('Search algorithm properties', () => {
     let searchAlgorithmProperties;
 
     beforeEach(() => {
-       searchAlgorithmProperties = new SearchAlgorithmProperties(0, 0);
+       searchAlgorithmProperties = new SearchAlgorithmProperties();
     });
 
     test('Getter/Setter: Chromosome length and population size', () => {
@@ -48,8 +48,8 @@ describe('Search algorithm properties', () => {
         expect(searchAlgorithmProperties.getCrossoverProbability()).toBe(probability);
 
         probability = 0.6;
-        searchAlgorithmProperties.setMutationProbablity(probability);
-        expect(searchAlgorithmProperties.getMutationProbablity()).toBe(probability);
+        searchAlgorithmProperties.setMutationProbability(probability);
+        expect(searchAlgorithmProperties.getMutationProbability()).toBe(probability);
 
         const maxMutCountStart = 4;
         const maxMutCountFocus = 8;

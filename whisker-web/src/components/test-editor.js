@@ -21,11 +21,13 @@ class TestEditor {
 
         $('.editor-apply')
             .on('click', () => {
+                $('.editor-apply').tooltip('hide');
                 loadTests(this.getValue());
             });
 
         $('.editor-save')
             .on('click', () => {
+                $('.editor-save').tooltip('hide');
                 this.save();
             });
     }
@@ -43,7 +45,7 @@ class TestEditor {
 `const test = async function (t) {
     /* your code here */
     let sprite = t.getSprite('SpriteName');
-    await t.runForTime(5000);
+    await t.wait(5000);
     t.end();
 }
 

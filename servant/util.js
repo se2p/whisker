@@ -14,32 +14,32 @@ const logger = {
     clear: () => console.clear()
 };
 
-const validateCommandLineArguments = args => {
-    const noOptionsGiven = args.rawArgs.length < 3;
+const validateCommandLineArguments = commander => {
+    const noOptionsGiven = commander.rawArgs.length < 3;
     if (noOptionsGiven) {
-        args.help();
+        commander.help();
     }
-
-    if (!args.scratchPath && !args.isGenerateWitnessTestOnly) {
+    const options = commander._optionValues
+    if (!options.scratchPath && !options.isGenerateWitnessTestOnly) {
         logger.error('No path to a Scratch file was given, please use the -s option');
         process.exit(1);
     }
 
-    if (!args.testPath && !args.isGeneticSearch && !args.modelPath) {
+    if (!options.testPath && !options.generateTests && !options.modelPath) {
         logger.error('No path to a test or model file was given, please use the -t option for a test, -m option for' +
             ' a model');
         process.exit(1);
     }
 
-    if (args.numberOfTabs > os.cpus().length) {
-        logger.error(`You selected to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
+    if (options.numberOfTabs > os.cpus().length) {
+        logger.error(`You selected to parallelize the tests in ${options.numberOfTabs} tabs, while only having ` +
             `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
             `otherwise tests might fail and will need longer to initialize.`);
         process.exit(1);
     }
 };
 
-// Defines the CLI interface of the runner, including checks and defaults.
+// Defines the CLI of the runner, including checks and defaults.
 const cli = {
     start: () => {
         commander
@@ -61,7 +61,8 @@ const cli = {
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
-            .option('-g, --isGeneticSearch', 'If new tests should be generated via genetic search', false);
+            .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
+            .option('-se, --seed <Integer>', 'Seeds the Scratch-VM using the specified integer');
 
         commander.parse(process.argv);
 
@@ -84,8 +85,9 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            isGeneticSearch
-        } = commander;
+            generateTests,
+            seed
+        } = commander._optionValues;
 
         validateCommandLineArguments(commander);
 
@@ -108,7 +110,8 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            isGeneticSearch
+            generateTests,
+            seed
         };
     }
 };

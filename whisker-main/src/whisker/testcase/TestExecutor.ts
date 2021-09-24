@@ -27,13 +27,12 @@ import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
-import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
-import VMWrapper = require("../../vm/vm-wrapper.js")
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
-import {ParameterTypes} from "./events/ParameterTypes";
+import {ParameterType} from "./events/ParameterType";
+import VMWrapper = require("../../vm/vm-wrapper.js");
 
 
 export class TestExecutor {
@@ -62,10 +61,14 @@ export class TestExecutor {
         }
     }
 
+    /**
+     * Executes a chromosome by selecting events according to the chromosome's defined genes.
+     * @param testChromosome the testChromosome that should be executed.
+     */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
 
-        seedScratch(String(Randomness.getInitialSeed()));
+        Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -81,7 +84,6 @@ export class TestExecutor {
 
         while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
-
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
@@ -100,11 +102,11 @@ export class TestExecutor {
 
             // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
             // focused Algorithm like MIO.
-            if(testChromosome.targetFitness){
+            if (testChromosome.targetFitness) {
                 testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
                 testChromosome.coverage = currentCoverage;
                 const currentFitness = testChromosome.targetFitness.getFitness(testChromosome);
-                if(testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0){
+                if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
                     testChromosome.lastImprovedFitnessCodon = numCodon;
                 }
@@ -132,6 +134,59 @@ export class TestExecutor {
     }
 
     /**
+     * Randomly executes events selected from the available event Set.
+     * @param randomEventChromosome the chromosome in which the executed trace will be saved in.
+     * @param numberOfEvents the number of events that should be executed.
+     */
+    async executeRandomEvents(randomEventChromosome: TestChromosome, numberOfEvents: number): Promise<ExecutionTrace> {
+        Randomness.seedScratch();
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
+        let availableEvents = this._eventExtractor.extractEvents(this._vm);
+        let eventCount = 0;
+        const random = Randomness.getInstance();
+        const events = new List<[ScratchEvent, number[]]>();
+
+        while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+            availableEvents = this._eventExtractor.extractEvents(this._vm);
+            if (availableEvents.isEmpty()) {
+                console.log("Whisker-Main: No events available for project.");
+                break;
+            }
+
+            // Randomly select an event and increase the event count.
+            const eventIndex = random.nextInt(0, availableEvents.size());
+            randomEventChromosome.getGenes().add(eventIndex);
+            const event = availableEvents.get(eventIndex);
+            eventCount++;
+
+            // If the selected event requires additional parameters; select them randomly as well.
+            if (event.numSearchParameter() > 0) {
+                // args are set in the event itself since the event knows which range of random values makes sense.
+                event.setParameter(null, ParameterType.RANDOM);
+            }
+            events.add([event, event.getParameter()]);
+            await event.apply();
+            StatisticsCollector.getInstance().incrementEventsCount()
+
+            // Send a WaitEvent to the VM
+            const waitEvent = new WaitEvent(1);
+            events.add([waitEvent, []]);
+            await waitEvent.apply();
+
+        }
+        const trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        randomEventChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+        randomEventChromosome.trace = trace;
+        this._vmWrapper.end();
+        this.resetState();
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+        return trace;
+    }
+
+    /**
      * Selects and sends the next Event to the VM
      * @param codons the list of codons deciding which event and parameters to take
      * @param numCodon the current position in the codon list
@@ -145,9 +200,9 @@ export class TestExecutor {
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
-        nextEvent.setParameter(args, ParameterTypes.CODON);
+        nextEvent.setParameter(args, ParameterType.CODON);
         events.add([nextEvent, args]);
-        numCodon += nextEvent.getNumVariableParameters();
+        numCodon += nextEvent.numSearchParameter();
         this.notify(nextEvent, args);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();
@@ -168,7 +223,7 @@ export class TestExecutor {
      */
     private static getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
         const args = [];
-        for (let i = 0; i < event.getNumVariableParameters(); i++) {
+        for (let i = 0; i < event.numSearchParameter(); i++) {
             args.push(codons.get(codonPosition++ % codons.size()));
         }
         return args;
@@ -209,7 +264,7 @@ export class TestExecutor {
         return events.filter(event => !(event instanceof WaitEvent)).size() > 0;
     }
 
-    public resetState() {
+    public resetState(): void {
         // Delete clones
         const clones = [];
         for (const targetsKey in this._vm.runtime.targets) {

@@ -20,8 +20,9 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
 import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
+import {Randomness} from "../../utils/Randomness";
 
 export class WaitEvent extends ScratchEvent {
 
@@ -33,18 +34,18 @@ export class WaitEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.runForSteps(this.steps);
+        await Container.testDriver.wait(this.steps);
     }
 
     public toJavaScript(): string {
-        return `await t.runForSteps(${this.steps});`;
+        return `await t.wait(${this.steps});`;
     }
 
     public toString(): string {
         return "Wait for " + this.steps + " steps";
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 1;
     }
 
@@ -52,16 +53,19 @@ export class WaitEvent extends ScratchEvent {
         return [this.steps];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return ["Duration"];
     }
 
-    setParameter(args:number[], testExecutor:ParameterTypes): void {
-        switch (testExecutor){
-            case ParameterTypes.CODON:
+    setParameter(args: number[], testExecutor: ParameterType): void {
+        switch (testExecutor) {
+            case ParameterType.RANDOM:
+                this.steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
+                break;
+            case ParameterType.CODON:
                 this.steps = args[0];
                 break;
-            case ParameterTypes.REGRESSION:
+            case ParameterType.REGRESSION:
                 this.steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }

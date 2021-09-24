@@ -30,14 +30,14 @@ export class ClickStageEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return 't.clickStage()';
+        return 't.clickStage();';
     }
 
     public toString(): string {
         return "ClickStage"
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
@@ -49,7 +49,7 @@ export class ClickStageEvent extends ScratchEvent {
         return [];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 

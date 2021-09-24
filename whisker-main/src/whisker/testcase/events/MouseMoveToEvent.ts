@@ -34,26 +34,18 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            x: Math.trunc(this.x),
-            y: Math.trunc(this.y)
-        });
+        Container.testDriver.mouseMove(this.x, this.y);
     }
 
     public toJavaScript(): string {
-        return `t.inputImmediate({
-    device: 'mouse',
-    x: ${Math.trunc(this.x)},
-    y: ${Math.trunc(this.y)}
-  });`;
+        return `t.mouseMoveToEvent(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
     }
 
     public toString(): string {
-        return "MouseMove " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
+        return "MouseMoveToEvent " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 0;
     }
 
@@ -61,7 +53,7 @@ export class MouseMoveToEvent extends ScratchEvent {
         return [this.x, this.y];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 

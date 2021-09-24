@@ -21,8 +21,9 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {WaitEvent} from "./WaitEvent";
-import {ParameterTypes} from "./ParameterTypes";
+import {ParameterType} from "./ParameterType";
 import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
+import {Randomness} from "../../utils/Randomness";
 
 export class KeyPressEvent extends ScratchEvent {
 
@@ -37,31 +38,20 @@ export class KeyPressEvent extends ScratchEvent {
 
     async apply(): Promise<void> {
         // Press the specified key
-        Container.testDriver.inputImmediate({
-            device: 'keyboard',
-            key: this._keyOption,
-            isDown: true,
-            steps: this._steps
-        });
+        Container.testDriver.keyPress(this._keyOption, this._steps);
         // Wait for the key to be released again.
         await new WaitEvent(this._steps).apply();
     }
 
     public toJavaScript(): string {
-        return `t.inputImmediate({
-    device: 'keyboard',
-    key: '${this._keyOption}',
-    isDown: 'true',
-    steps: ${this._steps}
-});`+ `\n`+
-new WaitEvent(this._steps).toJavaScript()
+        return `t.keyPress('${this._keyOption}', ${this._steps});`;
     }
 
     public toString(): string {
         return "KeyPress " + this._keyOption + ": " + this._steps;
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 1;
     }
 
@@ -69,16 +59,19 @@ new WaitEvent(this._steps).toJavaScript()
         return [this._keyOption, this._steps];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return ["Steps"];
     }
 
-    setParameter(args:number[], testExecutor:ParameterTypes): void {
+    setParameter(args:number[], testExecutor:ParameterType): void {
         switch (testExecutor){
-            case ParameterTypes.CODON:
+            case ParameterType.RANDOM:
+                this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
+                break;
+            case ParameterType.CODON:
                 this._steps = args[0];
                 break;
-            case ParameterTypes.REGRESSION:
+            case ParameterType.REGRESSION:
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }

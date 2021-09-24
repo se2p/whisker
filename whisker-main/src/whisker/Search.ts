@@ -29,7 +29,6 @@ import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
 import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
-import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {ExecutionTrace} from "./testcase/ExecutionTrace";
@@ -42,6 +41,7 @@ import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGenerator";
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
+import {ScratchProject} from "./scratch/ScratchProject";
 
 export class Search {
 
@@ -51,7 +51,7 @@ export class Search {
         this.vm = vm;
     }
 
-    private async execute(project, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
+    private async execute(project: ScratchProject, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
         console.log("Whisker-Main: test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
@@ -104,7 +104,7 @@ export class Search {
         return [javaScriptText, 'empty project'];
     }
 
-    private outputCSV(config: WhiskerSearchConfiguration): void {
+    private outputCSV(config: WhiskerSearchConfiguration): string {
         /*
          * When a FixedTimeStoppingCondition is used, the search is allowed to run for at most n seconds. The CSV output
          * contains a fitness timeline, which tells the achieved coverage over time. In our case, we would expect the
@@ -114,10 +114,10 @@ export class Search {
          */
         let stoppingCondition : StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
-            stoppingCondition = config.getNeuroevolutionProperties().stoppingCondition;
+            stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
         }
         else {
-            stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+            stoppingCondition = config.searchAlgorithmProperties.getStoppingCondition();
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.
@@ -144,13 +144,14 @@ export class Search {
             csvString = StatisticsCollector.getInstance().asCsv();
         }
         console.log(csvString);
+        return csvString;
     }
 
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm, project, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number): Promise<Array<string>> {
+    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
+                     configName: string, accelerationFactor: number, seedString: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
 
         const util = new WhiskerUtil(vm, project);
@@ -169,18 +170,36 @@ export class Search {
 
         await util.prepare(accelerationFactor || 1);
         util.start();
-        const seed = config.getRandomSeed();
+
+        // Specify seed
+        const configSeed = config.getRandomSeed();
+        let seed: number;
+        // Prioritize seed set by CLI
+        if (seedString !== 'undefined') {
+            seed = parseInt(seedString);
+            if (configSeed) {
+                console.warn(`Replacing seed ${configSeed} defined within configuration file with seed\
+${seed} specified via command line options`)
+            }
+        }
+        // If no seed was set by CLI check if the configuration file specifies a seed.
+        else if (configSeed) {
+            seed = configSeed;
+        }
+        // Ultimately, use Date.now() if no seed has been set via the CLI or the configuration file
+        else {
+            seed = Date.now();
+        }
         Randomness.setInitialSeed(seed);
-        seedScratch(String(seed));
         StatisticsCollector.getInstance().reset();
         StatisticsCollector.getInstance().projectName = projectName;
         StatisticsCollector.getInstance().configName = configName;
         const testListWithSummary = await this.execute(project, config);
         const tests = testListWithSummary.testList;
         this.printTests(tests);
-        this.outputCSV(config);
+        const csvOutput = this.outputCSV(config);
 
         const javaScriptText = this.testsToString(tests);
-        return [javaScriptText, testListWithSummary.summary, testListWithSummary.networkPopulation];
+        return [javaScriptText, testListWithSummary.summary, csvOutput];
     }
 }

@@ -1,20 +1,23 @@
 {
-    "test-generator": "many-objective",
+    "testGenerator": "manyObjective",
     "algorithm": "mosa",
-    "chromosome": "variablelengthtest",
-    "population-size": 3,
-    "chromosome-length": 50,
-    "minVarChromosomeLength": 2,
-    "maxVarChromosomeLength": 2,
     "extractor": "dynamic",
-    "crossover": {
-        "operator": "singlepointrelative",
-        "probability": 0
+    "eventSelector": "interleaving",
+    "populationSize": 3,
+    "chromosome": {
+        "type": "variableLengthTest",
+        "minSampleLength": 2,
+        "maxSampleLength": 2,
+        "maxLength": 50
     },
     "mutation": {
-        "operator": "variablelength",
+        "operator": "variableLength",
         "probability": 0,
         "gaussianMutationPower": 5
+    },
+    "crossover": {
+        "operator": "singlePointRelative",
+        "probability": 0
     },
     "localSearch": [
         {
@@ -25,15 +28,15 @@
     "selection": {
         "operator": "rank"
     },
-    "fitness-function": {
+    "fitnessFunction": {
         "type": "statement",
         "targets": []
     },
-    "stopping-condition": {
-        "type": "one-of",
+    "stoppingCondition": {
+        "type": "combined",
         "conditions": [
             {
-                "type": "fixed-time",
+                "type": "fixedTime",
                 "duration": 1000000
             },
             {
@@ -45,7 +48,9 @@
         "min": 0,
         "max": 480
     },
-    "waitStepUpperBound": 200,
-    "click-duration": 3,
-    "pressDurationUpperBound": 50
+    "durations": {
+        "waitStepUpperBound": 100,
+        "clickDuration": 3,
+        "pressDuration": 10
+    }
 }

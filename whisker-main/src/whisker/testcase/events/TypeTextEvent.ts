@@ -31,24 +31,18 @@ export class TypeTextEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'text',
-            answer: this._text
-        });
+        Container.testDriver.typeText(this._text);
     }
 
     public toJavaScript(): string {
-        return `t.inputImmediate({
-    device: 'text',
-    answer: '${this._text}'
-  });`;
+        return `t.typeText('${this._text}');`;
     }
 
     public toString(): string {
         return `TypeText '${this._text}'`
     }
 
-    getNumVariableParameters(): number {
+    numSearchParameter(): number {
         return 0; // Text
     }
 
@@ -56,7 +50,7 @@ export class TypeTextEvent extends ScratchEvent {
         return [this._text];
     }
 
-    getVariableParameterNames(): string[] {
+    getSearchParameterNames(): string[] {
         return [];
     }
 

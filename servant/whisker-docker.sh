@@ -7,27 +7,24 @@ if [ ! -f /.dockerenv ]; then
     exit 1
 fi
 
-# The base command for Whisker.
+# The base command for Whisker. We enable headless mode, console and log
+# forwarding, and already set the file URL of the Whisker instance.
 WHISKER="node servant.js -d -k -l -u ../whisker-web/dist/index.html"
 
-# Function that copies the artefacts created by Whisker to the given
-# destination directory.
-copy_artefacts() {
-    destination="$1"
-    if [ -f "tests.js" ]; then
-        cp "tests.js" "${destination}"
-    fi
-}
-
-# Check if copying of artefacts to the host and redirection of stdout and stderr
-# are desired, and adjust the base command accordingly.
+# Check if redirection of stdout and stderr to files are desired, and adjust
+# the base command accordingly.
+# Finally, run Whisker with the command line arguments passed to this script.
+# Make sure to use `exec` here (instead of `eval`). This allows Whisker to 
+# receive any Unix signals sent to this wrapper script.
+# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#entrypoint
 REDIRECT_OUTPUT="${2}"
 if [ "${REDIRECT_OUTPUT}" = "--" ]; then
     OUTPUT_DIR="${1}"
     shift 2
-    trap "copy_artefacts ${OUTPUT_DIR}" INT TERM HUP QUIT EXIT
-    WHISKER=">${OUTPUT_DIR}/log-out.txt 2>${OUTPUT_DIR}/log-err.txt ${WHISKER}"
+    exec ${WHISKER} "$@" \
+        >"${OUTPUT_DIR}/log-out.txt" \
+        2>"${OUTPUT_DIR}/log-err.txt"
+else
+    exec ${WHISKER} "$@"
 fi
 
-# Run Whisker with the command line arguments passed to this script.
-eval "${WHISKER} $*"

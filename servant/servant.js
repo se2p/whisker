@@ -12,13 +12,14 @@ const TAP13Formatter = require('../whisker-main/src/test-runner/tap13-formatter'
 const CoverageGenerator = require('../whisker-main/src/coverage/coverage');
 const CSVConverter = require('./converter.js');
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
+const path = require('path');
 
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, errorWitnessPath,
     addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLiveOutputCoverage, isLiveLogEnabled, isGeneticSearch, isGenerateWitnessTestOnly
+    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -28,7 +29,7 @@ if (isGenerateWitnessTestOnly) {
 }
 
 /**
- * The entry point of the runners functionallity, handling the test file preperation and the browser instance.
+ * The entry point of the runners functionality, handling the test file preparation and the browser instance.
  */
 async function init () {
 
@@ -48,18 +49,24 @@ async function init () {
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
         });
 
-    if (isGeneticSearch) {
+    if (generateTests) {
         // Todo use correct config
-        runGeneticSearch(browser)
-            .then(() => {
+        const downloadPath = typeof generateTests === 'string' ? generateTests : __dirname;
+        runGeneticSearch(browser, downloadPath)
+            .then((csv) => {
                 browser.close();
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+                // Save results in CSV-file if specified
+                if(csvFile){
+                    console.info(`Creating CSV summary in ${csvFile}`);
+                    fs.writeFileSync(csvFile, csv);
+                }
             })
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
     } else {
         if (csvFile != false && fs.existsSync(csvFile)) {
-            console.error("CSV file already exists, aborting");
+            console.error(`CSV file already exists, aborting`);
             await browser.close();
             return;
         }
@@ -68,10 +75,10 @@ async function init () {
         if (fs.lstatSync(scratchPath).isDirectory()) {
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
-                    logger.info("Not a Scratch project: " + file);
+                    logger.info(`Not a Scratch project: ${file}`);
                     continue;
                 }
-                logger.info("Testing project " + file);
+                logger.info(`Testing project ${file}`);
                 csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file, modelPath)));
             }
 
@@ -81,7 +88,7 @@ async function init () {
         }
 
         if (csvFile != false) {
-            console.info("Creating CSV summary in " + csvFile);
+            console.info(`Creating CSV summary in ${csvFile}`);
             fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
         }
         await browser.close();
@@ -123,7 +130,7 @@ async function runTestsOnFile (browser, targetProject, modelPath) {
     return csvs;
 }
 
-async function runGeneticSearch (browser) {
+async function runGeneticSearch (browser, downloadPath) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
@@ -145,52 +152,29 @@ async function runGeneticSearch (browser) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
-        await (await page.$('#toggle-advanced')).click();
-        await (await page.$('#toggle-tap')).click();
-        await (await page.$('#toggle-log')).click();
+        await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
     async function readTestOutput () {
-        const coverageOutput = await page.$('#output-run .output-content');
         const logOutput = await page.$('#output-log .output-content');
-
-        let coverageLog = '';
-        let log = '';
-
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (isLiveLogEnabled) {
-                const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '')
-                    .trim();
-
-                if (newInfoFromLog.length) {
-                    logger.log(newInfoFromLog);
-                }
-
-                log = currentLog;
-            }
-
-            const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
-                .trim();
-            if (newInfoFromCoverage.length && isLiveOutputCoverage) {
-                logger.log(`Coverage: `, newInfoFromCoverage);
-            } else if (newInfoFromCoverage.includes('not ok ')) {
-                logger.warn(`Coverage: `, newInfoFromCoverage);
-            }
-            coverageLog = currentCoverageLog;
-
-            if (currentCoverageLog.includes('summary')) {
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('uncovered')) {
                 break;
             }
-
             await page.waitForTimeout(1000);
         }
-
-        return coverageLog;
+        // Get CSV-Output
+        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+        const coverageLogLines = outputLog.split('\n');
+        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
+        const csvHeader = coverageLogLines[csvHeaderIndex];
+        const csvBody = coverageLogLines[csvHeaderIndex + 1]
+        return `${csvHeader}\n${csvBody}`;
     }
 
     async function executeSearch () {
@@ -200,7 +184,7 @@ async function runGeneticSearch (browser) {
     async function downloadTests () {
         await page._client.send('Page.setDownloadBehavior', {
             behavior: 'allow',
-            downloadPath: './'
+            downloadPath: downloadPath
         });
         await (await page.$('.editor-save')).click();
         await page.waitForTimeout(5000);
@@ -212,13 +196,30 @@ async function runGeneticSearch (browser) {
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
-        logger.debug("Downloading tests");
+        logger.debug(`Downloading tests to ${downloadPath}/tests.js`);
         await downloadTests();
         await page.close();
         return Promise.resolve(output);
     } catch (e) {
         return Promise.reject(e);
     }
+}
+
+/**
+ * Shows the test generation and input recording features, the TAP13 and the log output.
+ * @param {Page} page
+ * @returns {Promise<void>}
+ */
+async function showHiddenFunctionality(page) {
+    // a simple 'await (await page.$('#toggle-log')).click();' does not work here due to the toggle buttons
+    const toggleAdvanced = await page.$('#toggle-advanced');
+    await toggleAdvanced.evaluate(t => t.click());
+    const toggleTap = await page.$('#toggle-tap');
+    await toggleTap.evaluate(t => t.click());
+    const toggleLog = await page.$('#toggle-log');
+    await toggleLog.evaluate(t => t.click());
+    const toggleModelEditor = await page.$('#toggle-model-editor');
+    await toggleModelEditor.evaluate(t => t.click());
 }
 
 async function runTests (path, browser, index, targetProject, modelPath) {
@@ -248,6 +249,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(path);
@@ -260,9 +262,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
                 await (await page.$('#model-case-sensitive')).click();
             }
         }
-        await (await page.$('#toggle-advanced')).click();
-        await (await page.$('#toggle-tap')).click();
-        await (await page.$('#toggle-log')).click();
+        await showHiddenFunctionality(page);
     }
 
     /**
@@ -503,7 +503,8 @@ function printTestResultsFromCoverageGenerator (summaries, coverage ,modelCovera
     const formattedModelCoverage = TAP13Formatter.formatModelCoverage(modelCoverage);
     const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
 
-    logger.info('\nSummary:\n', summaryString);
-    logger.info('\nCoverage:\n', coverageString);
-    logger.info('\nModel coverage:\n', modelCoverageString);
+    logger.info(`\nSummary:\n ${summaryString}`);
+    logger.info(`\nCoverage:\n ${coverageString}`);
+    logger.info(`\nModel coverage:\n ${modelCoverageString}`);
+
 }
