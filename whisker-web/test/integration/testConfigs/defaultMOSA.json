@@ -3,7 +3,7 @@
     "algorithm": "mosa",
     "extractor": "dynamic",
     "eventSelector": "interleaving",
-    "populationSize": 70,
+    "populationSize": 10,
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
