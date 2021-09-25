@@ -208,7 +208,7 @@ class TestTable {
                     orderable: false,
                     data: null,
                     defaultContent:
-                        '<button class="btn btn-sm btn-xs btn-outline-secondary run-test vm-related" disabled>' +
+                        '<button class="btn btn-sm btn-xs btn-outline-secondary run-test vm-related">' +
                         '<i class="fas fa-play"></i></button>',
                     width: '0.5em'
                 }
