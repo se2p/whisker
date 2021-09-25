@@ -394,8 +394,7 @@ class Inputs {
      * @returns {boolean} true if key is pressed, false otherwise.
      */
     isKeyDown (key) {
-        const keyString = Input.scratchKeyToKeyString(key);
-        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyString);
+        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(key);
     }
 
     /**
