@@ -328,23 +328,24 @@ export class ModelTester extends EventEmitter {
             sprite.getVariables().forEach(variable => {
                 let varOutput = sprite.name + "." + variable.name + " = " + variable.value;
                 this.result.state.push(varOutput);
-                log.push(varOutput);
+                log.push("--- " + varOutput);
             })
         })
         if (log.length > 1) {
             this.emit(ModelTester.MODEL_LOG, log.join("\n"));
         }
 
-        this.emit(ModelTester.MODEL_LOG, "--- Model Coverage");
-        let coverages = {};
+        let coverages = {covered: [], total: 0};
 
         let programModels = [...this.programModels, ...this.onTestEndModels];
         programModels.forEach(model => {
-            coverages[model.id] = model.getCoverageCurrentRun();
-            this.result.coverage[model.id] = coverages[model.id];
+            let currentCov = model.getCoverageCurrentRun();
+            coverages.covered.push(currentCov.covered);
+            coverages.total += currentCov.total;
+            this.result.coverage[model.id] = currentCov;
         })
 
-        this.emit(ModelTester.MODEL_LOG_COVERAGE, coverages);
+        this.emit(ModelTester.MODEL_LOG_COVERAGE, [coverages]);
         // console.log("ModelResult", this.result, this.testDriver.getTotalStepsExecuted());
         return this.result;
     }

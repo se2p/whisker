@@ -377,7 +377,7 @@ const initEvents = function () {
         Whisker.outputLog.println("MODEL WARNING: " + msg);
     };
     let modelCoverage = (coverage) => {
-        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverage);
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverageLastRun(coverage);
         Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
     }
     let modelCheckbox = $('#model-logs-checkbox');

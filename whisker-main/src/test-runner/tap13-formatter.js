@@ -123,35 +123,50 @@ const TAP13Formatter = {
     formatModelCoverage(coveragePerModel) {
         let covered = 0;
         let total = 0;
-        let missedEdges = new Set();
+        let missedEdges = [];
 
         const formattedCoverage = {};
         for (const modelName of Object.keys(coveragePerModel)) {
             const coverageRecord = coveragePerModel[modelName];
             covered += coverageRecord.covered.length;
             total += coverageRecord.total;
-            if (coverageRecord.missedEdges) {
-                coverageRecord.missedEdges.forEach(edge => {
-                    missedEdges.add(edge);
-                });
+            if (coverageRecord.missedEdges.length > 0) {
+                missedEdges.push(coverageRecord.missedEdges);
             }
             formattedCoverage[modelName] =
                 this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
         }
 
-        if (missedEdges.size === 0) {
-            return {
-                combined: this.formatCoverageRecord({covered, total}),
-                individual: formattedCoverage
-            }
-        } else {
-            return {
-                combined: this.formatCoverageRecord({covered, total}),
-                individual: formattedCoverage,
-                missedEdges: [...missedEdges]
-            };
+        return {
+            combined: this.formatCoverageRecord({covered, total}),
+            individual: formattedCoverage,
+            missedEdges: missedEdges
+        };
+    },
+
+    /**
+     * Format model coverage for one repetition.
+     * @param {Map|{}} coveragePerModel .
+     * @return {object} .
+     */
+    formatModelCoverageLastRun(coveragePerModel) {
+        let covered = 0;
+        let total = 0;
+
+        const formattedCoverage = {};
+        for (const modelName of Object.keys(coveragePerModel)) {
+            const coverageRecord = coveragePerModel[modelName];
+            covered += coverageRecord.covered.length;
+            total += coverageRecord.total;
+            formattedCoverage[modelName] =
+                this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
+        }
+
+        return {
+            combined: this.formatCoverageRecord({covered, total})
         }
     },
+
 
     /**
      * @param {object} coverageRecord .
