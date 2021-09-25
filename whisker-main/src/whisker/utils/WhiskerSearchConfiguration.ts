@@ -479,7 +479,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getRandomSeed(): number {
-        if ("seed" in this.dict && typeof this.dict["seed"] === "number") {
+        if ("seed" in this.dict) {
             return this.dict["seed"];
         } else {
             return undefined;

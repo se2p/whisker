@@ -173,24 +173,16 @@ export class Search {
 
         // Specify seed
         const configSeed = config.getRandomSeed();
-        let seed: number;
-        // Prioritize seed set by CLI
         if (seedString !== 'undefined') {
-            seed = parseInt(seedString);
+            // Prioritize seed set by CLI
             if (configSeed) {
-                console.warn(`Replacing seed ${configSeed} defined within configuration file with seed\
-${seed} specified via command line options`)
+                console.warn(`Using seed ${seedString} from CLI while ignoring ${configSeed} defined within config files`)
             }
+            Randomness.setInitialSeed(seedString);
+        } else if (configSeed) {
+            Randomness.setInitialSeed(configSeed);
         }
-        // If no seed was set by CLI check if the configuration file specifies a seed.
-        else if (configSeed) {
-            seed = configSeed;
-        }
-        // Ultimately, use Date.now() if no seed has been set via the CLI or the configuration file
-        else {
-            seed = Date.now();
-        }
-        Randomness.setInitialSeed(seed);
+
         StatisticsCollector.getInstance().reset();
         StatisticsCollector.getInstance().projectName = projectName;
         StatisticsCollector.getInstance().configName = configName;
