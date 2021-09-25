@@ -154,6 +154,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             _showRunIcon()
             enableVMRelatedButtons();
             accSlider.slider('enable');
+            testsRunning = false;
         }
 
         if (summary === null) {
