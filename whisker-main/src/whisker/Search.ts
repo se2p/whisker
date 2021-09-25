@@ -176,7 +176,8 @@ export class Search {
         if (seedString !== 'undefined') {
             // Prioritize seed set by CLI
             if (configSeed) {
-                console.warn(`Using seed ${seedString} from CLI while ignoring ${configSeed} defined within config files`)
+                console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
+seed ${configSeed} defined within the config files.`)
             }
             Randomness.setInitialSeed(seedString);
         } else if (configSeed) {
