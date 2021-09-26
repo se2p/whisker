@@ -123,24 +123,19 @@ const TAP13Formatter = {
     formatModelCoverage(coveragePerModel) {
         let covered = 0;
         let total = 0;
-        let missedEdges = [];
 
         const formattedCoverage = {};
         for (const modelName of Object.keys(coveragePerModel)) {
             const coverageRecord = coveragePerModel[modelName];
             covered += coverageRecord.covered.length;
             total += coverageRecord.total;
-            if (coverageRecord.missedEdges.length > 0) {
-                missedEdges.push(coverageRecord.missedEdges);
-            }
             formattedCoverage[modelName] =
                 this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
         }
 
         return {
             combined: this.formatCoverageRecord({covered, total}),
-            individual: formattedCoverage,
-            missedEdges: missedEdges
+            individual: formattedCoverage
         };
     },
 

@@ -115,18 +115,14 @@ export class ProgramModel {
      */
     getTotalCoverage() {
         let covered = [];
-        let missedEdges = "";
+        let missedEdges = [];
         for (const key in this.edges) {
             if (this.coverageTotal[key]) {
                 covered.push(key);
             } else {
-                missedEdges += key + ", ";
+                missedEdges.push(key);
             }
             this.coverageTotal[key] = false;
-        }
-        if (missedEdges.length > 0) {
-            missedEdges = this.id + ": " + missedEdges;
-            missedEdges = missedEdges.substring(0, missedEdges.length - 2)
         }
         return {
             covered: covered,

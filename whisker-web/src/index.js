@@ -384,6 +384,8 @@ const initEvents = function () {
     modelCheckbox.prop('checked',true);
     Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG, modelLog);
     Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_MISSED_EDGES, edges =>
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML(edges)))
     Whisker.modelTester.on(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
     modelCheckbox.on('change', event => {
         if ($(event.target).is(':checked')) {
