@@ -173,15 +173,15 @@ export class Search {
 
         // Specify seed
         const configSeed = config.getRandomSeed();
-        if (seedString !== 'undefined') {
+        if (seedString !== 'undefined' && seedString !== "") {
             // Prioritize seed set by CLI
             if (configSeed) {
                 console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
 seed ${configSeed} defined within the config files.`)
             }
-            Randomness.setInitialSeed(seedString);
+            Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {
-            Randomness.setInitialSeed(configSeed);
+            Randomness.setInitialSeeds(configSeed);
         }
 
         StatisticsCollector.getInstance().reset();
