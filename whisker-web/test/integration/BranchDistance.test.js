@@ -2,12 +2,14 @@ const fileUrl = require('file-url');
 
 const timeout = process.env.SLOWMO ? 70000 : 80000;
 const ACCELERATION = 10;
+const seed = 10;
 
 async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     const toggle = await page.$('#toggle-advanced');
     await toggle.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
+    await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
 }
 
 /**
