@@ -13,6 +13,10 @@ const imprintDE = require('./locales/de/imprint.json');
 const imprintEN = require('./locales/en/imprint.json');
 const privacyDE = require('./locales/de/privacy.json');
 const privacyEN = require('./locales/en/privacy.json');
+const footerDE = require('./locales/de/footer.json');
+const footerEN = require('./locales/en/footer.json');
+const headerDE = require('./locales/de/header.json');
+const headerEN = require('./locales/en/header.json');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
@@ -28,6 +32,8 @@ const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
 const DownloadContainer = require('./components/DownloadContainer');
 const InputRecorder = require('./components/input-recorder');
+const Footer = require('./components/footer');
+const Header = require('./components/header');
 
 const {showModal, escapeHtml} = require('./utils.js');
 
@@ -42,6 +48,7 @@ const initialParams = new URLSearchParams(window.location.search); // This is on
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 let testsRunning = false;
+let stickyHeader;
 
 const loadTestsFromString = function (string) {
     let tests;
@@ -422,12 +429,10 @@ const toggleComponents = function () {
                 $('#acceleration-value').text(accelerationFactor);
             }
         }
+
+
     }
 };
-
-const hideAdvanced = function () {
-    $('#scratch-controls').hide();
-}
 
 const initLangSelect = function () {
     const newLabel = document.createElement('label');
@@ -444,16 +449,47 @@ const initLangSelect = function () {
     document.querySelector('#form-lang').appendChild(newLabel);
 }
 
+const loadHeader = function () {
+    stickyHeader = $('.sticky');
+    initLangSelect();
+    localize('#header');
+    if (window.location.href.includes('index')) {
+        $('#link').attr('href', 'index.html');
+        $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
+        $('#banner').attr('src', 'assets/banner_slim.jpg');
+    } else {
+        $('#link').attr('href', '../index.html');
+        $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
+        $('#banner').attr('src', '../assets/banner_slim.jpg');
+    }
+}
+
+const loadFooter = function () {
+    localize('#footer');
+    if (window.location.href.includes('index')) {
+        $('#imprint').attr('href', 'html/imprint.html');
+        $('#privacy').attr('href', 'html/privacy.html');
+        $('#logo-img').attr('src', 'assets/uniPassauLogo.png');
+    } else {
+        $('#imprint').attr('href', './imprint.html');
+        $('#privacy').attr('href', './privacy.html');
+        $('#logo-img').attr('src', '../assets/uniPassauLogo.png');
+    }
+}
+
 $(document)
     .ready(() => {
-        initLangSelect();
-        hideAdvanced();
+        $('#scratch-controls').hide();
         initScratch();
         initComponents();
         initEvents();
         toggleComponents();
-
     });
+
+window.onload = function () {
+    loadHeader();
+    loadFooter();
+}
 
 window.onbeforeunload = function () {
     if (window.localStorage) {
@@ -481,7 +517,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
+        ns: ['index', 'faq', 'contact', 'imprint', 'privacy', 'footer', 'header'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false,
@@ -492,14 +528,18 @@ i18next
                 faq: faqDE,
                 contact: contactDE,
                 imprint: imprintDE,
-                privacy: privacyDE
+                privacy: privacyDE,
+                footer: footerDE,
+                header: headerDE
             },
             en: {
                 index: indexEN,
                 faq: faqEN,
                 contact: contactEN,
                 imprint: imprintEN,
-                privacy: privacyEN
+                privacy: privacyEN,
+                footer: footerEN,
+                header: headerEN
             }
         }
     }, function () {
@@ -567,7 +607,6 @@ $('.nav-link').on('click', event => {
 
 /* Add border to header if it sticks to the top */
 $(function () {
-    const stickyHeader = $('.sticky');
     const stickyHeaderPosition = stickyHeader.offset().top;
     $(window).scroll(function () {
         const scroll = $(window).scrollTop();
