@@ -1,0 +1,8 @@
+{
+    "t-tap" : "Show result in TAP13 format",
+    "tap" : "TAP13",
+    "t-log" : "Show log file",
+    "log" : "Log",
+    "show-advanced" : "Show test generation and record input features",
+    "advanced" : "Test automation"
+}
