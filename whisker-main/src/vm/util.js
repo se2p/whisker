@@ -1,9 +1,91 @@
 /**
+ * Names used internally for keys used in scratch, also known as 'scratch keys'.
+ * @type {{SPACE: string, DOWN: string, LEFT: string, RIGHT: string, ENTER: string, UP: string}}
+ */
+const SCRATCH_KEY = {
+    SPACE: 'space',
+    LEFT: 'left arrow',
+    UP: 'up arrow',
+    RIGHT: 'right arrow',
+    DOWN: 'down arrow',
+    ENTER: 'enter'
+};
+
+/**
+ * Names used for events, when a key is pressed, also known as 'keyboard keys'.
+ * @type {{SPACE: string, DOWN: string, LEFT: string, ARROW_RIGHT: string, ARROW_DOWN: string, RIGHT: string, ENTER: string, UP: string, ARROW_UP: string, ARROW_LEFT: string}}
+ */
+const KEYBOARD_KEY = {
+    SPACE: ' ',
+    LEFT: 'Left',
+    ARROW_LEFT: 'ArrowLeft',
+    UP: 'Up',
+    ARROW_UP: 'ArrowUp',
+    RIGHT: 'Right',
+    ARROW_RIGHT: 'ArrowRight',
+    DOWN: 'Down',
+    ARROW_DOWN: 'ArrowDown',
+    ENTER: 'Enter'
+};
+
+/**
  * Utility functionality for whisker tests.
  */
 // TODO: Split vm-wrapper it two: One wrapper that provides utility functions
 // and another wrapper around it, that the controls the testing.
 class Util {
+
+    /**
+     * Converts the scratch key string into a keyboard key event string.
+     * @param {string} scratchKey The scratch key to convert.
+     * @return {string} The converted keyboard key.
+     */
+    static scratchKeyToKeyString (scratchKey) {
+        switch (scratchKey) {
+            case SCRATCH_KEY.SPACE:
+                return KEYBOARD_KEY.SPACE;
+            case SCRATCH_KEY.LEFT:
+                return KEYBOARD_KEY.LEFT;
+            case SCRATCH_KEY.UP:
+                return KEYBOARD_KEY.UP;
+            case SCRATCH_KEY.RIGHT:
+                return KEYBOARD_KEY.RIGHT;
+            case SCRATCH_KEY.DOWN:
+                return KEYBOARD_KEY.DOWN;
+            case SCRATCH_KEY.ENTER:
+                return KEYBOARD_KEY.ENTER;
+            default:
+                return scratchKey;
+        }
+    }
+
+    /**
+     * Converts the keyboard key event string into a scratch key string.
+     * @param {string} keyString The keyboard key to convert.
+     * @return keyString The converted scratch key.
+     */
+    static keyStringToScratchKey (keyString) {
+        switch (keyString) {
+            case KEYBOARD_KEY.SPACE:
+                return SCRATCH_KEY.SPACE;
+            case KEYBOARD_KEY.ARROW_LEFT:
+            case KEYBOARD_KEY.LEFT:
+                return SCRATCH_KEY.LEFT;
+            case KEYBOARD_KEY.ARROW_UP:
+            case KEYBOARD_KEY.UP:
+                return SCRATCH_KEY.UP;
+            case KEYBOARD_KEY.ARROW_RIGHT:
+            case KEYBOARD_KEY.RIGHT:
+                return SCRATCH_KEY.RIGHT;
+            case KEYBOARD_KEY.ARROW_DOWN:
+            case KEYBOARD_KEY.DOWN:
+                return SCRATCH_KEY.DOWN;
+            case KEYBOARD_KEY.ENTER:
+                return SCRATCH_KEY.ENTER;
+            default:
+                return keyString;
+        }
+    }
 
     /**
      * Converts scratch coordinates to be relative to the client.
