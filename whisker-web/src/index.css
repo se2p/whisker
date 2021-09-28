@@ -1055,35 +1055,10 @@ input:checked + .slider:before {
     transform: translate(0, 100px);
 }
 
-#main-functionality {
-    position: fixed;
-    z-index: 9998;
-    bottom: 40%;
-    display: grid;
-    left: 6vw;
-}
-
-#main-functionality .btn-main {
-    margin: 10px;
-    border-width: medium;
-}
-
-@media only screen and (max-width: 1300px) {
-    #main-functionality {
-        left: 10px;
-    }
-}
-
-@media only screen and (max-width: 1000px) {
-    #main-functionality {
-        left: 0;
-    }
-}
-
-.small-input {
+.model-small-input {
     max-width: 80px;
     position: absolute;
-    right: 0;
+    right: 5px;
 }
 
 .model-editor {
@@ -1229,6 +1204,8 @@ input:checked + .slider:before {
     padding-left: 5px;
     margin-bottom: 2px;
     margin-top: 1px;
+    width: 100%;
+    padding-right: 0;
 }
 
 .model-check:hover {
@@ -1236,7 +1213,7 @@ input:checked + .slider:before {
 }
 
 #model-edge-check {
-    min-width: 250px;
+    width: 80%;
 }
 
 .model-invalid-input {
@@ -1260,4 +1237,52 @@ input:checked + .slider:before {
     width: 28px;
     margin-right: 5px;
     float: right;
+}
+
+.model-add-buttons-div {
+    padding-left: 2%;
+    padding-right: 2%;
+}
+
+#model-layout {
+    width: 100%;
+}
+
+.model-input {
+    width: 75%;
+    padding-right: 5px;
+}
+
+.model-unit {
+    width: 15%;
+    padding-right: 5px;
+}
+
+.fill-parent {
+    width: 100%;
+}
+
+#main-functionality {
+    position: fixed;
+    z-index: 9998;
+    bottom: 40%;
+    display: grid;
+    left: 6vw;
+}
+
+#main-functionality .btn-main {
+    margin: 10px;
+    border-width: medium;
+}
+
+@media only screen and (max-width: 1300px) {
+    #main-functionality {
+        left: 10px;
+    }
+}
+
+@media only screen and (max-width: 1000px) {
+    #main-functionality {
+        left: 0;
+    }
 }

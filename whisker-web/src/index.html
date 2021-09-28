@@ -245,7 +245,7 @@
                                             <label class="spacer10" data-i18n="model-duration"
                                                    for="model-duration"></label>
                                             <input type="text" id="model-duration" name="model-duration"
-                                                   placeholder="(optional)" class="small-input">
+                                                   placeholder="(optional)" class="model-small-input">
                                         </div>
                                     </div>
                                     <div class="row">
@@ -253,7 +253,7 @@
                                             <label class="spacer10" data-i18n="model-repetitions"
                                                    for="model-repetitions"></label>
                                             <input type="text" id="model-repetitions" name="model-repetitions"
-                                                   placeholder="1" class="small-input">
+                                                   placeholder="1" class="model-small-input">
                                         </div>
                                     </div>
                                     <div class="row">
@@ -514,19 +514,19 @@
 
                         <!-- model editor BUTTONS -->
                         <div class="row my-2">
-                            <div class="col model-standard-div">
+                            <div class="col model-add-buttons-div">
                                 <button id="model-add-node" type="button" class="btn btn-sm model-button center"
                                         data-i18n="modelEditor:addNode"></button>
                             </div>
-                            <div class="col model-standard-div">
+                            <div class="col model-add-buttons-div">
                                 <button id="model-add-edge" type="button" class="btn btn-sm model-button center"
                                         data-i18n="modelEditor:addEdge"></button>
                             </div>
-                            <div class="col model-standard-div">
+                            <div class="col model-add-buttons-div">
                                 <button id="model-fit" type="button" class="btn btn-sm model-button center"
                                         data-i18n="modelEditor:fit"></button>
                             </div>
-                            <div class="col model-standard-div">
+                            <div class="col model-add-buttons-div">
                                 <select name="model-layout" id="model-layout" class="center">
                                     <option value="none" data-i18n="modelEditor:layout1"></option>
                                     <option value="treeLR" data-i18n="modelEditor:layout2"></option>
@@ -544,7 +544,7 @@
                             <div class="col hide model-delete-div">
                                 <label data-i18n="modelEditor:selection-explanation"></label>
                             </div>
-                            <div class="col hide model-delete-div">
+                            <div class="col-4 hide model-delete-div">
                                 <button id="model-delete-selection" type="button" class="btn btn-sm model-button center"
                                         data-i18n="modelEditor:deleteSelection"></button>
                             </div>
@@ -557,7 +557,7 @@
                         <!-- model editor MODEL CONFIG PANEL-->
                         <div id="model-general-settings">
                             <div class="row">
-                                <h4 data-i18n="modelEditor:general-settings-header"></h4>
+                                <h4 data-i18n="modelEditor:general-settings-header" style="width:80%;"></h4>
                                 <button id="model-delete-button" class="model-button model-small-button right"
                                         type="button" data-toggle="tooltip"
                                         data-placement="top" data-animation="false"
@@ -567,7 +567,7 @@
                             <div class="row">
                                 <div class="col">
                                     <label for="model-id">ID</label>
-                                    <input id="model-id" required>
+                                    <input class="model-input" id="model-id" required>
                                 </div>
                             </div>
                             <div class="row">
@@ -613,7 +613,7 @@
                             <div class="row">
                                 <div class="col">
                                     <label for="model-node-label" data-i18n="modelEditor:nodeLabel"></label>
-                                    <input id="model-node-label">
+                                    <input class="model-input" id="model-node-label">
                                 </div>
                             </div>
                             <div class="row">
@@ -651,7 +651,7 @@
                             <div class="row">
                                 <div class="col">
                                     <label for="model-edge-label" data-i18n="modelEditor:edgeLabel">Name</label>
-                                    <input id="model-edge-label">
+                                    <input class="model-input" id="model-edge-label">
                                 </div>
                             </div>
                             <div class="row mt-1">
@@ -665,9 +665,8 @@
                                            data-toggle="tooltip" data-placement="top" data-animation="false"></label>
                                 </div>
                                 <div class="col-4" style="padding-left: 0;">
-                                    <input id="model-forceTestAfter" style="max-width: 80px;">
-                                    <label class="mt-1" style="right: 10px; position: absolute;"
-                                           data-i18n="modelEditor:ms"></label>
+                                    <input id="model-forceTestAfter" class="model-input">
+                                    <label class="mt-1 model-unit" data-i18n="modelEditor:ms"></label>
                                 </div>
                             </div>
                             <div class="row">
@@ -677,9 +676,8 @@
                                            data-animation="false"></label>
                                 </div>
                                 <div class="col-4" style="padding-left: 0;">
-                                    <input id="model-forceTestAt" style="max-width: 80px;">
-                                    <label class="mt-1" style="right: 10px; position: absolute"
-                                           data-i18n="modelEditor:ms"></label>
+                                    <input id="model-forceTestAt" class="model-input">
+                                    <label class="mt-1 model-unit" data-i18n="modelEditor:ms"></label>
                                 </div>
                             </div>
                             <div class="row mt-2">
@@ -704,21 +702,23 @@
 
                         <!-- model editor EDGE CHECK PANEL -->
                         <div id="model-edge-check-div" class="hide">
-                            <div class="row mt-2">
-                                <h4 id="model-check-label" class="col4"></h4>
-                                <button type="button" id="model-check-back" class="col2 right model-button btn-sm"
+                            <div class="row">
+                                <button type="button" id="model-check-back" class="col2 model-button btn-sm"
                                         data-i18n="modelEditor:back"></button>
                                 <button type="button" id="model-check-save" class="col2 right model-button btn-sm"
                                         data-i18n="modelEditor:saveCheck"></button>
                             </div>
-                            <div class="row mt-4">
-                                <div class="col">
+                            <div class="row mt-2">
+                                <h4 id="model-check-label" data-i18n="modelEditor:condition"></h4>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col" style="padding-left: 0;">
                                     <label data-i18n="modelEditor:edgeCheckType" for="model-edge-check"></label>
-                                    <select name="model-edge-check" id="model-edge-check" class="center">
+                                    <select name="model-edge-check" id="model-edge-check">
                                     </select>
                                 </div>
                             </div>
-                            <div class="row mt-2" id="model-negated-div">
+                            <div class="row mt-1" id="model-negated-div">
                                 <div class="col">
                                     <input type="checkbox" id="model-check-negated">
                                     <label for="model-check-negated"

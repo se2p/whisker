@@ -35,7 +35,7 @@ class ModelEditor {
     static ADD_NODE = '#model-add-node';
     static ADD_EDGE = '#model-add-edge';
     static CANCEL_ADD = '#model-cancel-add';
-    static STANDARD_DIV = '.model-standard-div';
+    static ADD_BUTTONS_DIV = '.model-add-buttons-div';
     static CANCEL_ADD_DIV = '.model-cancel-add-div';
     static EXPLANATION = '#model-explanation';
     static DELETE_DIV = '.model-delete-div';
@@ -97,8 +97,6 @@ class ModelEditor {
 
         this.options = {
             edges: {
-                smooth: true,
-                physics: true,
                 arrows: {from: {enabled: false}, to: {enabled: true}}
             },
             interaction: {
@@ -110,9 +108,8 @@ class ModelEditor {
                 hierarchical: {enabled: false},
             },
             physics: {
-                stabilization: {
-                    iterations: 1200
-                },
+                enabled: true,
+                barnesHut: {centralGravity: 0.1}
             },
             manipulation: {
                 enabled: false,
@@ -518,12 +515,14 @@ class ModelEditor {
         // Graph manipulation
         $(ModelEditor.ADD_NODE).on('click', () => {
             $(ModelEditor.EXPLANATION).text(i18n.t('modelEditor:explanationNode'));
+            $(ModelEditor.EXPLANATION).attr('data-i18n', 'modelEditor:explanationNode');
             this.hideAddButtons();
             this.network.addNodeMode()
         });
         $(ModelEditor.ADD_EDGE).on('click', () => {
             this.hideAddButtons();
             $(ModelEditor.EXPLANATION).text(i18n.t('modelEditor:explanationEdge'));
+            $(ModelEditor.EXPLANATION).attr('data-i18n', 'modelEditor:explanationEdge');
             this.network.addEdgeMode();
         });
         $(ModelEditor.CANCEL_ADD).on('click', () => {
@@ -723,12 +722,14 @@ class ModelEditor {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
         $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newCondition'));
+        $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:newCondition');
         $(ModelEditor.CHECK_CHOOSER).children().remove();
         $(ModelEditor.CHECK_NEGATED).prop('checked', false);
 
         let checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
         checkNames.forEach(name => {
-            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name}).text(name));
+            let key = 'modelEditor:' + name;
+            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name, 'data-i18n': key}).text(i18n.t(key)));
         })
 
         $(ModelEditor.CHECK_CHOOSER).val("AttrChange");
@@ -742,6 +743,7 @@ class ModelEditor {
     addEffectAction() {
         $(ModelEditor.CONFIG_EDGE).addClass('hide');
         $(ModelEditor.CHECK_DIV).removeClass('hide');
+        $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:newEffect');
         $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:newEffect'));
         $(ModelEditor.CHECK_CHOOSER).children().remove();
         $(ModelEditor.CHECK_NEGATED).prop('checked', false);
@@ -760,7 +762,8 @@ class ModelEditor {
         }
 
         checkNames.forEach(name => {
-            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name}).text(name));
+            let key = 'modelEditor:' + name;
+            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name, 'data-i18n': key}).text(i18n.t(key)));
         })
 
         $(ModelEditor.CHECK_CHOOSER).val(defValue);
@@ -770,19 +773,19 @@ class ModelEditor {
     }
 
     hideAddButtons() {
-        $(ModelEditor.STANDARD_DIV).addClass("hide");
+        $(ModelEditor.ADD_BUTTONS_DIV).addClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).removeClass("hide");
         $(ModelEditor.DELETE_DIV).addClass("hide");
     }
 
     showAddButtons() {
-        $(ModelEditor.STANDARD_DIV).removeClass("hide");
+        $(ModelEditor.ADD_BUTTONS_DIV).removeClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).addClass("hide");
         $(ModelEditor.DELETE_DIV).addClass("hide");
     }
 
     showDeleteButton() {
-        $(ModelEditor.STANDARD_DIV).addClass("hide");
+        $(ModelEditor.ADD_BUTTONS_DIV).addClass("hide");
         $(ModelEditor.CANCEL_ADD_DIV).addClass("hide");
         $(ModelEditor.DELETE_DIV).removeClass("hide");
     }
@@ -1068,7 +1071,7 @@ class ModelEditor {
 
             let oldValues = [];
             for (let i = 0; i < outgoingEdges.length; i++) {
-                let select = $('<select/>', {name: "model-priority" + i, id: tag + i, style: "min-width:200px"});
+                let select = $('<select/>', {name: "model-priority" + i, id: tag + i, style: "width:100%;"});
 
                 outgoingEdges.forEach(edge => {
                     select.append($('<option/>', {value: edge.id}).text(edge.label));
@@ -1163,11 +1166,13 @@ class ModelEditor {
         let checkNames;
 
         if (!isAnEffect) {
+            $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:condition');
             $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:condition'));
             $(ModelEditor.CHECK_NEGATED_DIV).removeClass('hide');
             checkNames = Object.keys(checkLabelCodes).sort((a, b) => a < b ? -1 : 0);
         } else if (isAnEffect) {
-            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'))
+            $(ModelEditor.CHECK_LABEL).attr('data-i18n', 'modelEditor:effect');
+            $(ModelEditor.CHECK_LABEL).text(i18n.t('modelEditor:effect'));
             if (isAUserModel) {
                 $(ModelEditor.CHECK_NEGATED_DIV).addClass('hide');
                 checkNames = Object.keys(inputLabelCodes).sort((a, b) => a < b ? -1 : 0);
@@ -1178,7 +1183,8 @@ class ModelEditor {
         }
 
         checkNames.forEach(name => {
-            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name}).text(name));
+            let key = 'modelEditor:' + name;
+            $(ModelEditor.CHECK_CHOOSER).append($('<option/>', {value: name, 'data-i18n': key}).text(i18n.t(key)));
         })
 
         $(ModelEditor.CHECK_NEGATED).prop('checked', check.negated);
@@ -1196,14 +1202,16 @@ class ModelEditor {
         }
         let children = [];
         for (let i = 0; i < argTypes.length; i++) {
-            let hint = i18n.t('modelEditor:' + argTypes[i] + "Hint");
+            let key = 'modelEditor:' + argTypes[i] + "Hint";
+            let hint = i18n.t(key);
             if (hint !== argTypes[i] + "Hint") {
-                children.push($('<label/>', {style: "ml-1"}).text(hint));
+                children.push($('<label/>', {style: "ml-1", "data-i18n": key}).text(hint));
             }
         }
 
         if (children.length > 0) {
-            $(ModelEditor.CHECK_EXPLANATION).append($('<label/>').text(i18n.t('modelEditor:hintTitle')));
+            $(ModelEditor.CHECK_EXPLANATION).append($('<label/>', {"data-i18n": 'modelEditor:hintTitle'})
+                .text(i18n.t('modelEditor:hintTitle')));
             for (let i = 0; i < children.length; i++) {
                 $(ModelEditor.CHECK_EXPLANATION).append(children[i]);
             }
@@ -1250,37 +1258,37 @@ class ModelEditor {
     appendInputBasedOnType(type, value, i) {
         switch (type) {
             case argType.spriteNameRegex:
-                this.appendInputWithPattern(i18n.t('modelEditor:spriteName'), value,
+                this.appendInputWithPattern('modelEditor:spriteName', value,
                     ModelEditor.NOT_EMPTY_PATTERN, i, undefined, undefined, "(Regex)");
                 break;
             case argType.varNameRegex:
-                this.appendInputWithPattern(i18n.t('modelEditor:varName'), value,
+                this.appendInputWithPattern('modelEditor:varName', value,
                     ModelEditor.NOT_EMPTY_PATTERN, i, undefined, undefined, "(Regex)");
                 break;
             case argType.attrName:
-                this.appendInputWithPattern(i18n.t('modelEditor:attrName'), value,
+                this.appendInputWithPattern('modelEditor:attrName', value,
                     ModelEditor.NOT_EMPTY_PATTERN, i);
                 break;
             case argType.costumeName:
-                this.appendInputWithPattern(i18n.t('modelEditor:costumeName'), value,
+                this.appendInputWithPattern('modelEditor:costumeName', value,
                     ModelEditor.NOT_EMPTY_PATTERN, i);
                 break;
             case argType.value:
-                this.appendInputWithPattern(i18n.t('modelEditor:value'), value,
+                this.appendInputWithPattern('modelEditor:value', value,
                     ModelEditor.NOT_EMPTY_PATTERN, i);
                 break;
             case argType.change:
-                this.appendInputWithPattern(i18n.t("modelEditor:change"), value, ModelEditor.CHANGE_PATTERN, i);
+                this.appendInputWithPattern("modelEditor:change", value, ModelEditor.CHANGE_PATTERN, i);
                 break;
             case argType.comp:
                 this.appendComparisonSelection(value, i);
                 break;
             case argType.probValue:
-                this.appendInputWithPattern(i18n.t("modelEditor:prob"), value * 100,
+                this.appendInputWithPattern("modelEditor:prob", value * 100,
                     ModelEditor.PROB_PATTERN, i, "max-width:60px; position:absolute; right:5px", "%");
                 break;
             case argType.time:
-                this.appendInputWithPattern(i18n.t("modelEditor:time"), value, ModelEditor.TIME_PATTERN,
+                this.appendInputWithPattern("modelEditor:time", value, ModelEditor.TIME_PATTERN,
                     i, "max-width:60px;position:absolute; right:5px", "ms");
                 break;
             case argType.keyName:
@@ -1290,36 +1298,35 @@ class ModelEditor {
                 this.appendBool(value, i);
                 break;
             case argType.r:
-                this.appendInputWithPattern(i18n.t("modelEditor:rValue"), value, ModelEditor.RGB_PATTERN,
+                this.appendInputWithPattern("modelEditor:rValue", value, ModelEditor.RGB_PATTERN,
                     i, "max-width:60px;");
                 break;
             case argType.g:
-                this.appendInputWithPattern(i18n.t("modelEditor:gValue"), value, ModelEditor.RGB_PATTERN,
+                this.appendInputWithPattern("modelEditor:gValue", value, ModelEditor.RGB_PATTERN,
                     i, "max-width:60px;");
                 break;
             case argType.b:
-                this.appendInputWithPattern(i18n.t("modelEditor:bValue"), value, ModelEditor.RGB_PATTERN,
+                this.appendInputWithPattern("modelEditor:bValue", value, ModelEditor.RGB_PATTERN,
                     i, "max-width:60px;");
                 break;
             case argType.coordX:
-                this.appendInputWithPattern(i18n.t("modelEditor:xCoord"), value, ModelEditor.X_PATTERN,
+                this.appendInputWithPattern("modelEditor:xCoord", value, ModelEditor.X_PATTERN,
                     i, "max-width:60px;");
                 break;
             case argType.coordY:
-                this.appendInputWithPattern(i18n.t("modelEditor:yCoord"), value, ModelEditor.Y_PATTERN,
+                this.appendInputWithPattern("modelEditor:yCoord", value, ModelEditor.Y_PATTERN,
                     i, "max-width:60px;");
                 break;
             case argType.functionC:
-                this.appendAreaInput(i18n.t('modelEditor:function'), value, "javascript code...",
-                    i);
+                this.appendAreaInput('modelEditor:function', value, "javascript code...", i);
                 break;
             case argType.expr:
-                this.appendAreaInput(i18n.t('modelEditor:expr'), value, "expression ...", i);
+                this.appendAreaInput('modelEditor:expr', value, "expression ...", i);
                 break;
         }
     }
 
-    appendAreaInput(title, value, placeholder, idNbr) {
+    appendAreaInput(key, value, placeholder, idNbr) {
         let textarea = $('<textarea/>', {
             class: "col mr-2", style: "overflow:auto;", rows: 6,
             id: ModelEditor.INPUT_ID + idNbr, placeholder: placeholder
@@ -1331,25 +1338,30 @@ class ModelEditor {
             }
         });
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
-            $('<div/>', {class: "col mt-1"}).append($('<label/>').text(title))
+            $('<div/>', {class: "col mt-1"}).append($('<label/>', {"data-i18n": key}).text(i18n.t(key)))
         )).append($('<div/>', {class: "row"}).append(textarea));
     }
 
-    appendInputWithPattern(title, value, pattern, idNbr, style = undefined, unit = undefined,
+    appendInputWithPattern(key, value, pattern, idNbr, style = undefined, unit = undefined,
                            placeholder = undefined) {
         let id = ModelEditor.INPUT_ID + idNbr;
         let row = $('<div/>', {class: "row"}).append(
-            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(title))
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>', {"data-i18n": key}).text(i18n.t(key)))
         ).append(
-            $('<div/>', {class: "col"}).append($('<input/>', {id: id, style: style, placeholder: placeholder})
-                .val(value).on('keyup change', () => {
-                    let queryID = '#' + id;
-                    if ($(queryID).val().match(pattern) != null) {
-                        $(queryID).removeClass(ModelEditor.INVALID_INPUT_CLASS);
-                    } else {
-                        $(queryID).addClass(ModelEditor.INVALID_INPUT_CLASS);
-                    }
+            $('<div/>', {class: "col"}).append($('<input/>', {
+                    id: id,
+                    class: "fill-parent",
+                    style: style,
+                    placeholder: placeholder
                 })
+                    .val(value).on('keyup change', () => {
+                        let queryID = '#' + id;
+                        if ($(queryID).val().match(pattern) != null) {
+                            $(queryID).removeClass(ModelEditor.INVALID_INPUT_CLASS);
+                        } else {
+                            $(queryID).addClass(ModelEditor.INVALID_INPUT_CLASS);
+                        }
+                    })
             ));
 
         if (unit) {
@@ -1364,7 +1376,8 @@ class ModelEditor {
     appendComparisonSelection(value, idNbr) {
         let id = ModelEditor.INPUT_ID + idNbr;
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
-            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>', {"data-i18n": 'modelEditor:comp'})
+                .text(i18n.t('modelEditor:comp')))
         ).append(
             $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
                 $('<select/>', {name: 'selectChange' + idNbr, id: id})
@@ -1384,7 +1397,8 @@ class ModelEditor {
             select.append($('<option/>', {value: keys[i]}).text(keys[i]));
         }
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
-            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:key')))
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>', {'data-i18n': 'modelEditor:key'})
+                .text(i18n.t('modelEditor:key')))
         ).append($('<div/>', {class: "col mt-1", style: "float:left;"}).append(select)));
         select.val(value);
     }
@@ -1392,27 +1406,37 @@ class ModelEditor {
     appendBool(value, idNbr) {
         let id = ModelEditor.INPUT_ID + idNbr;
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
-            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>').text(i18n.t('modelEditor:comp')))
+            $('<div/>', {class: "col-4 mt-1"}).append($('<label/>', {"data-i18n": 'modelEditor:bool'})
+                .text(i18n.t('modelEditor:bool')))
         ).append(
             $('<div/>', {class: "col mt-1", style: "float:left;"}).append(
                 $('<select/>', {name: 'selectBool' + idNbr, id: id})
-                    .append($('<option/>', {value: 'true'}).text(i18n.t('modelEditor:true')))
-                    .append($('<option/>', {value: 'false'}).text(i18n.t('modelEditor:false'))).val(value)
+                    .append($('<option/>', {value: 'true', "data-i18n": 'modelEditor:true'})
+                        .text(i18n.t('modelEditor:true')))
+                    .append($('<option/>', {
+                        value: 'false',
+                        "data-i18n": 'modelEditor:false'
+                    }).text(i18n.t('modelEditor:false'))).val(value)
             )
         ));
     }
 
     /** Append a row element that shows a condition or effect and its arguments.     */
     getCheckElement(check, index, isAnEffect = false, isAUserModel = false) {
-        let name = (check.negated ? "!" : "") + check.name + "(" + check.args + ")";
+        let key = 'modelEditor:' + check.name;
+        let name = (check.negated ? "!" : "") + i18n.t(key);
         return $('<div/>', {class: "row", style: "margin:0;"})
-            .append($('<div/>', {class: 'col model-check'}).append($('<label/>', {class: 'model-check'}).text(name))
+            .append($('<div/>', {class: 'col model-check'}).append($('<label/>',
+                {class: 'model-check', 'data-i18n': key})
+                .text(name))
                 .click(() => {
                     this.checkIndex = index;
                     this.chosenList = isAnEffect ? "effect" : "condition";
                     this.showCheckOptions(check, isAnEffect, isAUserModel);
                 }))
-            .append($('<button/>', {class: 'model-button check-delete', type: 'button'})
+            .append($('<button/>', {
+                class: 'model-button check-delete', type: 'button', 'data-i18n': 'modelEditor:delModel'
+            })
                 .text(i18n.t('modelEditor:delModel'))
                 .click(() => {
                     this.removeCheck(check);
