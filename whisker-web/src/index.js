@@ -48,7 +48,6 @@ const initialParams = new URLSearchParams(window.location.search); // This is on
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
 let testsRunning = false;
-let stickyHeader;
 
 const loadTestsFromString = function (string) {
     let tests;
@@ -450,7 +449,6 @@ const initLangSelect = function () {
 }
 
 const loadHeader = function () {
-    stickyHeader = $('.sticky');
     initLangSelect();
     localize('#header');
     if (window.location.href.includes('index')) {
@@ -462,6 +460,38 @@ const loadHeader = function () {
         $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
         $('#banner').attr('src', '../assets/banner_slim.jpg');
     }
+    /* Add border to header if it sticks to the top */
+    $(function () {
+        const stickyHeader = $('.sticky');
+        const stickyHeaderPosition = stickyHeader.offset().top;
+        $(window).scroll(function () {
+            const scroll = $(window).scrollTop();
+            if (scroll > stickyHeaderPosition + 1) {
+                stickyHeader.addClass('scrolled');
+                $('#small-logo').show();
+            } else {
+                stickyHeader.removeClass('scrolled');
+                $('#small-logo').hide();
+            }
+        });
+    });
+    $('#form-lang').on('change', () => {
+        $('[data-toggle="tooltip"]').tooltip('dispose');
+        const lng = $('#lang-select').val();
+        _translateTestTableTooltips(i18next.language, lng); // This has to be executed before the current language is changed
+        const params = new URLSearchParams(window.location.search);
+        params.set(LANGUAGE_OPTION, lng);
+        window.history.pushState('', '', '?' + params.toString());
+        i18next.changeLanguage(lng).then(updateContent());
+    });
+    $('.nav-link').on('click', event => {
+        const lng = $('#lang-select').val();
+        const href = event.target.getAttribute('href');
+        if (href) {
+            location.href = href + '?lng=' + lng;
+            event.preventDefault();
+        }
+    });
 }
 
 const loadFooter = function () {
@@ -585,40 +615,6 @@ function _translateTooltip(tooltipElement, oldData, newData) {
 function _getKeyByValue(langData, value) {
     return Object.keys(langData).find(key => langData[key] === value);
 }
-
-$('#form-lang').on('change', () => {
-    $('[data-toggle="tooltip"]').tooltip('dispose');
-    const lng = $('#lang-select').val();
-    _translateTestTableTooltips(i18next.language, lng); // This has to be executed before the current language is changed
-    const params = new URLSearchParams(window.location.search);
-    params.set(LANGUAGE_OPTION, lng);
-    window.history.pushState('', '', '?' + params.toString());
-    i18next.changeLanguage(lng).then(updateContent());
-});
-
-$('.nav-link').on('click', event => {
-    const lng = $('#lang-select').val();
-    const href = event.target.getAttribute('href');
-    if (href) {
-        location.href = href + '?lng=' + lng;
-        event.preventDefault();
-    }
-});
-
-/* Add border to header if it sticks to the top */
-$(function () {
-    const stickyHeaderPosition = stickyHeader.offset().top;
-    $(window).scroll(function () {
-        const scroll = $(window).scrollTop();
-        if (scroll > stickyHeaderPosition + 1) {
-            stickyHeader.addClass('scrolled');
-            $('#small-logo').show();
-        } else {
-            stickyHeader.removeClass('scrolled');
-            $('#small-logo').hide();
-        }
-    });
-});
 
 export {i18next as i18n};
 
