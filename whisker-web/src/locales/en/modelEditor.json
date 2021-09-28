@@ -116,5 +116,10 @@
     "InputKey": "Input Key",
     "InputMouseDown": "Input Mouse Click",
     "InputMouseMove": "Move Mouse",
-    "InputText": "Input Text"
+    "InputText": "Input Text",
+    "left arrow": "left",
+    "right arrow": "right",
+    "up arrow": "up",
+    "down arrow": "down",
+    "enter": "enter"
 }

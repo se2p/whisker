@@ -116,5 +116,11 @@
     "InputKey": "Tasten Klick Eingabe",
     "InputMouseDown": "Maus Klick Eingabe",
     "InputMouseMove": "Bewege Maus",
-    "InputText": "Text Eingabe"
+    "InputText": "Text Eingabe",
+    "space": "Leertaste",
+    "left arrow": "links",
+    "right arrow": "rechts",
+    "up arrow": "oben",
+    "down arrow": "unten",
+    "enter": "Enter"
 }

@@ -1394,7 +1394,8 @@ class ModelEditor {
         let id = ModelEditor.INPUT_ID + idNbr;
         let select = $('<select/>', {name: 'selectKey' + idNbr, id: id});
         for (let i = 0; i < keys.length; i++) {
-            select.append($('<option/>', {value: keys[i]}).text(keys[i]));
+            let key = 'modelEditor:' + keys[i];
+            select.append($('<option/>', {value: keys[i], 'data-i18n': key}).text(i18n.t(key)));
         }
         $(ModelEditor.CHECK_ARGS_DIV).append($('<div/>', {class: "row"}).append(
             $('<div/>', {class: "col-4 mt-1"}).append($('<label/>', {'data-i18n': 'modelEditor:key'})
@@ -1425,6 +1426,13 @@ class ModelEditor {
     getCheckElement(check, index, isAnEffect = false, isAUserModel = false) {
         let key = 'modelEditor:' + check.name;
         let name = (check.negated ? "!" : "") + i18n.t(key);
+
+        if (check.name !== "Expr" && check.name !== "Function" && check.name !== "Key") {
+            name += " (" + check.args + ")";
+        } else if (check.name === "Key") {
+            name += " (" + i18n.t('modelEditor:' + check.args[0]) + ")";
+        }
+
         return $('<div/>', {class: "row", style: "margin:0;"})
             .append($('<div/>', {class: 'col model-check'}).append($('<label/>',
                 {class: 'model-check', 'data-i18n': key})
