@@ -1,3 +1,5 @@
+const Util = require("./util");
+
 /**
  * Input data parameters:
  * {
@@ -34,7 +36,7 @@ class Input {
         this._data = data;
 
         if (this._data.hasOwnProperty('key')) {
-            this._data.key = Input.scratchKeyToKeyString(this._data.key);
+            this._data.key = Util.scratchKeyToKeyString(this._data.key);
         }
 
         /**
@@ -192,28 +194,6 @@ class Input {
      */
     isActive () {
         return this._active;
-    }
-
-    /**
-     * Converts the scratch key string into a keyboard key event string.
-     * @param {string} scratchKey The scratch key to convert.
-     * @return {string} The converted keyboard key.
-     */
-    static scratchKeyToKeyString (scratchKey) {
-        switch (scratchKey) {
-            case 'space':
-                return ' ';
-            case 'left arrow':
-                return 'Left';
-            case 'up arrow':
-                return 'Up';
-            case 'right arrow':
-                return 'Right';
-            case 'down arrow':
-                return 'Down';
-            default:
-                return scratchKey;
-        }
     }
 }
 
@@ -390,12 +370,12 @@ class Inputs {
 
     /**
      * Evaluates if a specific key is currently pressed.
-     * @param {string} key The key to check.
+     * @param {string} keyString The key to check.
      * @returns {boolean} true if key is pressed, false otherwise.
      */
-    isKeyDown (key) {
-        const keyString = Input.scratchKeyToKeyString(key);
-        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyString);
+    isKeyDown (keyString) {
+        const scratchKey = Util.keyStringToScratchKey(keyString);
+        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
     }
 
     /**
@@ -477,7 +457,7 @@ class Inputs {
      * @param {number} steps The time in steps.
      */
     keyPress (key, steps) {
-        const keyString = Input.scratchKeyToKeyString(key);
+        const keyString = Util.scratchKeyToKeyString(key);
         this.inputImmediate({
             device: 'keyboard',
             key: keyString,
@@ -493,7 +473,7 @@ class Inputs {
      * @param {number} steps The time in steps.
      */
     keyRelease (key, steps) {
-        const keyString = Input.scratchKeyToKeyString(key);
+        const keyString = Util.scratchKeyToKeyString(key);
         this.inputImmediate({
             device: 'keyboard',
             key: keyString,
