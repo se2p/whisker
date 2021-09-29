@@ -105,7 +105,8 @@ class TestRunner extends EventEmitter {
         if(props.seed !== 'undefined') {
             Randomness.setInitialSeed(props.seed);
         }
-        // If no seed is specified via the CLI use Date.now() but only set it once to keep consistent between test cases
+        // If no seed is specified via the CLI use Date.now() but only set it once to keep consistent if
+        // several test runs are executed at once
         else if (Randomness.getInitialSeed() === undefined){
             Randomness.setInitialSeed(Date.now());
         }

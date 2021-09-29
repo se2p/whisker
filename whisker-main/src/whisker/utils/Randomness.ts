@@ -64,11 +64,20 @@ export class Randomness {
      *
      * @param seed the initial seed
      */
-    public static setInitialSeed(seed: number) {
+    public static setInitialSeed(seed: (number | string)): void {
+        if (typeof seed === "string") {
+            // If the string represents a number but has typeof string parse it into a number
+            let parsedSeed = parseInt(seed, 10);
+            // If the seed does not represent a number ( e.g "whisker") sum up the UTF-16 code units
+            if (isNaN(parsedSeed)) {
+                parsedSeed = [...seed].map(char => char.charCodeAt(0)).reduce((current, previous) => previous + current)
+            }
+            seed = parsedSeed;
+        }
         Randomness._initialSeed = seed;
     }
 
-    public static getInitialSeed() {
+    public static getInitialSeed(): number {
         return Randomness._initialSeed;
     }
 
