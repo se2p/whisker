@@ -2,49 +2,36 @@ const fileUrl = require('file-url');
 
 const timeout = process.env.SLOWMO ? 500000 : 300000;
 const ACCELERATION = 10;
+const seed = 10;
 
-async function loadProject (scratchPath, modelPath) {
+async function loadProject(scratchPath, modelPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     await (await page.$('#fileselect-models')).uploadFile(modelPath);
     const toggle = await page.$('#toggle-advanced');
     await toggle.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
+    await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
 }
 
-async function readModelErrors () {
+async function readModelErrors() {
     const coverageOutput = await page.$('#output-run .output-content');
-    let coverageLog = '';
-
-    let errorsInModel;
-    let failsInModel;
-    let modelCoverage;
+    const errorsInModelR = /errors_in_model: (\d)+/i;
+    const failsInModelR = /fails_in_model: (\d)+/i;
+    const modelCoverageR = /modelCoverage:\n(.)*combined: (\d+\.\d+)/i;
 
     while (true) {
-        const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-        coverageLog = currentCoverageLog;
-
-        if (currentCoverageLog.includes('summary')) {
-            var re = /errors_in_model: (\d)+/i;
-            var matches_array = currentCoverageLog.match(re);
-            errorsInModel = matches_array[1];
-
-            re = /fails_in_model: (\d)+/i;
-            matches_array = currentCoverageLog.match(re);
-            failsInModel = matches_array[1];
-
-            re = /modelCoverage:\n(.)*combined: (\d+\.\d+)/i;
-            matches_array = currentCoverageLog.match(re);
-            modelCoverage = matches_array[2];
-            break;
+        const log = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
+        if (log.includes('summary')) {
+            return {
+                errorsInModel: log.match(errorsInModelR)[1],
+                failsInModel: log.match(failsInModelR)[1],
+                modelCoverage: log.match(modelCoverageR)[2]
+            };
         }
-
-        await page.waitForTimeout(1000);
     }
-
-    return {errorsInModel, failsInModel, modelCoverage};
 }
 
-beforeEach(async() => {
+beforeEach(async () => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});

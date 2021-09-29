@@ -320,14 +320,14 @@ export class CheckUtility extends EventEmitter {
             failureList[output]++;
             if (failureList[output] == 10) {
                 this.emit(CheckUtility.CHECK_LOG_FAIL, output + "(10th time, no more outputs for this)");
-                console.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
+                // console.error(output + "(10th time, no more outputs for this)", this.testDriver.getTotalStepsExecuted());
             } else if (failureList[output] < 10) {
                 this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-                console.error(output, this.testDriver.getTotalStepsExecuted());
+                // console.error(output, this.testDriver.getTotalStepsExecuted());
             }
         } else {
             this.emit(CheckUtility.CHECK_LOG_FAIL, output);
-            console.error(output, this.testDriver.getTotalStepsExecuted());
+            // console.error(output, this.testDriver.getTotalStepsExecuted());
         }
     }
 
