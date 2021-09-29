@@ -217,6 +217,11 @@ const PenFilter = {
         block.opcode.startsWith('pen_')
 }
 
+const Text2SpeechFilter = {
+    text2speechBlock: block =>
+        block.opcode.startsWith('text2speech_')
+}
+
 const StatementFilter = {
     isStatementBlock: block => {
         if (block.topLevel) {
@@ -235,7 +240,8 @@ const StatementFilter = {
             VariableFilter.variableBlock(block) ||
             MusicFilter.musicBlock(block) ||
             CustomFilter.customBlock(block) ||
-            PenFilter.penBlock(block);
+            PenFilter.penBlock(block) ||
+            Text2SpeechFilter.text2speechBlock(block);
     }
 };
 
@@ -251,5 +257,6 @@ export {
     StatementFilter,
     MusicFilter,
     CustomFilter,
-    PenFilter
+    PenFilter,
+    Text2SpeechFilter
 };
