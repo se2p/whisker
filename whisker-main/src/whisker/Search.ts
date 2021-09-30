@@ -163,6 +163,7 @@ export class Search {
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
+        Container.debugLog = config.getLoggingFunction();
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
