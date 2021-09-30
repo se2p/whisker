@@ -488,7 +488,7 @@ export class WhiskerSearchConfiguration {
 
     public getLoggingFunction(): typeof console.log {
         if (this.dict["debugLogging"] == true) {
-            return console.log;
+            return (...data: any[]) => console.log('DEBUG:', ...data);
         } else {
             return () => { /* no-op */ };
         }
