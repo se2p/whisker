@@ -55,6 +55,8 @@ describe('MOSA', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
+        Container.debugLog = () => { /* suppress output */ };
+
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
 
         const properties = new SearchAlgorithmProperties();

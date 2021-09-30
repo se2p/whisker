@@ -41,6 +41,8 @@ describe('OnePlusOneEa', () => {
         mock.init()
         // @ts-ignore
         Container.vmWrapper = mock;
+
+        Container.debugLog = () => { /* suppress output */ };
     });
 
     test('Trivial bitstring with OneMax', async () => {
