@@ -485,4 +485,12 @@ export class WhiskerSearchConfiguration {
             return undefined;
         }
     }
+
+    public getLoggingFunction(): typeof console.log {
+        if (this.dict["debugLogging"] == true) {
+            return console.log;
+        } else {
+            return () => { /* no-op */ };
+        }
+    }
 }
