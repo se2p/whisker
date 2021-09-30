@@ -27,6 +27,7 @@ import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
 import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
 import {LocalSearch} from "./LocalSearch";
 import Runtime from "scratch-vm/src/engine/runtime";
+import {TypeTextEvent} from "../../../testcase/events/TypeTextEvent";
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
@@ -146,6 +147,15 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
+
+            const typeEvents = availableEvents.filter(event => event instanceof TypeTextEvent);
+            if (!typeEvents.isEmpty()) {
+                const typeEvent = Randomness.getInstance().pickRandomElementFromList(typeEvents);
+                const typeEventCodon = availableEvents.findElement(typeEvent);
+                codons.add(typeEventCodon);
+                events.add([typeEvent, []]);
+                await typeEvent.apply();
+            }
             // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
             const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
             codons.add(waitEventCodon);
@@ -158,6 +168,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             const waitEvent = new WaitEvent(waitDurationCodon);
             events.add([waitEvent, [waitDurationCodon]]);
             await waitEvent.apply();
+
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
