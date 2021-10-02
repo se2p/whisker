@@ -184,7 +184,11 @@ class Sprite {
      * @return {string} The currently selected costume name.
      */
     get currentCostumeName () {
-        return this._target.sprite.costumes[this._target.currentCostume].name;
+        if (this._target.sprite.costumes) {
+            return this._target.sprite.costumes[this._target.currentCostume].name;
+        } else {
+            return undefined;
+        }
     }
 
     /**
