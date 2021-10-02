@@ -59,7 +59,6 @@ export class Randomness {
         } else {
             this._RNGSeed = Date.now();
         }
-        console.log(`Seeding the RNG to ${this._RNGSeed}`);
     }
 
     /**
@@ -78,11 +77,10 @@ export class Randomness {
      * @param seed the seed to which the RNG and the Scratch-VM should be set to.
      */
     public static setInitialSeeds(seed: (number | string)): void {
-        const convertedSeed = this.convertSeed(seed);
-        Randomness.setInitialRNGSeed(convertedSeed);
+        Randomness.setInitialRNGSeed(seed);
         // Only set the seed if one has been specified
         if (seed !== "") {
-            Randomness.setScratchSeed(convertedSeed);
+            Randomness.setScratchSeed(seed);
         }
     }
 
@@ -91,7 +89,9 @@ export class Randomness {
      * @param seed the random number generator seed
      */
     public static setInitialRNGSeed(seed: (number | string)): void {
-        Randomness._initialRNGSeed = this.convertSeed(seed);
+        const convertedSeed = this.convertSeed(seed);
+        console.log(`Seeding the RNG to ${convertedSeed}`)
+        Randomness._initialRNGSeed = convertedSeed;
     }
 
     /**
@@ -100,6 +100,7 @@ export class Randomness {
      */
     public static setScratchSeed(seed: (number | string)): void {
         const convertedSeed = this.convertSeed(seed);
+        console.log(`Seeding the Scratch-VM to ${convertedSeed}`)
         Randomness._scratchSeed = convertedSeed;
     }
 
