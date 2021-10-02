@@ -57,16 +57,16 @@
             <img id="small-logo" src="assets/whisker-text-logo.png" class="hide" alt="Whisker Icon">
         </a>
         <!-- Navigation -->
-<!-- Currently disabled as it is the only navigation item as long as faq/demo is disabled. Logo has the functionality now.
-        <ul id="nav-links" class="nav justify-content-center">
-            <li class="nav-item">
-                <a id="link" class="nav-link active" href="index.html" data-i18n="project-link"></a>
-            </li>
-            <li class="nav-item">
-                <a id="faq" class="nav-link" href="./faq.html" data-i18n="faq"></a>
-            </li>
-        </ul>
--->
+        <!-- Currently disabled as it is the only navigation item as long as faq/demo is disabled. Logo has the functionality now.
+                <ul id="nav-links" class="nav justify-content-center">
+                    <li class="nav-item">
+                        <a id="link" class="nav-link active" href="index.html" data-i18n="project-link"></a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="faq" class="nav-link" href="./faq.html" data-i18n="faq"></a>
+                    </li>
+                </ul>
+        -->
 
         <!-- Toggles -->
         <div class="btn-group-toggle">
@@ -163,7 +163,8 @@
                                         <div class="col-lg-12">
                                             <div class="upload-btn-wrapper">
                                                 <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                <input type="file" class="vm-related" id="fileselect-project" accept=".sb3"
+                                                <input type="file" class="vm-related" id="fileselect-project"
+                                                       accept=".sb3"
                                                        name="program-file" title=""/>
                                                 <label id="project-label" class="filename-label"
                                                        for="fileselect-project"
@@ -213,18 +214,19 @@
                             </div>
                         </div>
 
-                        <!-- Model upload -->
+                        <!-- Model upload and settings -->
                         <div class="col-lg-12">
                             <div id="model-upload" class="row form">
-                                <div class="col-lg-5">
-                                    <div class="row">
-                                        <div class="col-lg-10 label-padding">
+                                <div class="col-lg-6">
+                                    <div class="row mr-2">
+                                        <div class="col label-padding">
                                             <label id="fileselect-model-label" for="fileselect-models"
                                                    data-i18n="model"></label>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-lg-12">
+                                        <div class="col-lg-2">
+                                            <img class="img" src="assets/json.png" alt="json"/>
+                                        </div>
+                                        <div class="col">
                                             <div class="upload-btn-wrapper">
                                                 <button class="btnr" data-i18n="browse"></button>
                                                 <input type="file" id="fileselect-models" accept=".json"
@@ -239,47 +241,47 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-4">
+                                <div class="col ml-2  mt-2">
                                     <div class="row">
-                                        <div class="col-lg-12 label-padding">
-                                            <label class="spacer10" data-i18n="model-duration"
-                                                   for="model-duration"></label>
+                                        <div class="col label-padding">
+                                            <label data-i18n="model-duration" for="model-duration"></label>
+                                        </div>
+                                        <div class="col-4" style="padding:0">
                                             <input type="text" id="model-duration" name="model-duration"
-                                                   placeholder="(optional)" class="model-small-input">
+                                                   placeholder="(optional)" class="model-small-input mt-1">
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-lg-12 label-padding">
-                                            <label class="spacer10" data-i18n="model-repetitions"
-                                                   for="model-repetitions"></label>
+                                    <div class="row mt-1">
+                                        <div class="col label-padding">
+                                            <label data-i18n="model-repetitions" for="model-repetitions"></label>
+                                        </div>
+                                        <div class="col-4" style="padding:0">
                                             <input type="text" id="model-repetitions" name="model-repetitions"
-                                                   placeholder="1" class="model-small-input">
+                                                   placeholder="1" class="model-small-input mt-1">
                                         </div>
                                     </div>
+                                </div>
+                                <div class="col  mt-2 ml-2">
                                     <div class="row">
-                                        <div class="form-group col-lg-12">
-                                            <div class="custom-control custom-checkbox inline spacer10">
-                                                <input id="model-logs-checkbox" class="checkbox-button"
-                                                       type="checkbox" style="margin-top:10px;" autocomplete="off">
+                                        <div class="form-group col">
+                                            <div class="mt-1">
+                                                <input id="model-logs-checkbox" class="mt-1" type="checkbox"
+                                                       autocomplete="off">
                                                 <label for="model-logs-checkbox"
                                                        data-i18n="model-logs-checkbox"></label>
                                             </div>
-                                            <div class="custom-control custom-checkbox inline spacer10">
-                                                <input id="model-case-sensitive" class="checkbox-button"
-                                                       type="checkbox" style="margin-top:10px;" autocomplete="off">
+                                            <div class="mt-1">
+                                                <input id="model-case-sensitive" type="checkbox" class="mt-1"
+                                                       autocomplete="off">
                                                 <label for="model-case-sensitive"
                                                        data-i18n="model-case-sensitive;[title]model-case-sensitive-hover"
                                                        data-toggle="tooltip" data-placement="top"
                                                        data-animation="false"></label>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3">
-                                    <div class="row spacer10">
-                                        <div class="col-lg-12 label-padding">
-                                            <label id="model-user-loaded"
-                                                   data-i18n="model-output-no-user-model"></label>
+                                            <div class="mt-1">
+                                                <label id="model-user-loaded"
+                                                       data-i18n="model-output-no-user-model"></label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -381,7 +383,8 @@
                     <h3 data-i18n="input-recording"></h3>
                     <p data-i18n="explain-recording"></p>
                     <!-- Record inputs button -->
-                    <button id="record" type="button" class="btn btn-main btn-sm search-button vm-related record-related"
+                    <button id="record" type="button"
+                            class="btn btn-main btn-sm search-button vm-related record-related"
                             data-toggle="tooltip" data-placement="top" data-animation="false"
                             data-i18n="[title]t-record;start-record;"></button>
                 </div>
@@ -404,10 +407,12 @@
                             <div class="row">
                                 <input id="acceleration-factor" type="text" data-slider-min="1" data-slider-max="10"
                                        data-slider-step="1" data-slider-value="1">
-                                <button id="green-flag" class="btn btn-outline-success but1 vm-related record-related" type="button"
+                                <button id="green-flag" class="btn btn-outline-success but1 vm-related record-related"
+                                        type="button"
                                         data-toggle="tooltip" data-placement="top" data-animation="false"
                                         data-i18n="[title]start"><i class="fas fa-flag"></i></button>
-                                <button id="stop-scratch" class="btn btn-danger but2 vm-related record-related" type="button"
+                                <button id="stop-scratch" class="btn btn-danger but2 vm-related record-related"
+                                        type="button"
                                         data-toggle="tooltip" data-placement="top" data-animation="false"
                                         data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
                             </div>
