@@ -47,6 +47,8 @@ describe('MIO', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
+        Container.debugLog = () => { /* suppress output */ };
+
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
 
         const chromosomeLength = 10;
