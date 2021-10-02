@@ -117,6 +117,7 @@
     "InputMouseDown": "Input Mouse Click",
     "InputMouseMove": "Move Mouse",
     "InputText": "Input Text",
+    "space": "space",
     "left arrow": "left",
     "right arrow": "right",
     "up arrow": "up",
