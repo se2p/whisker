@@ -23,6 +23,39 @@ import {List} from "../../../src/whisker/utils/List";
 
 describe("Randomness", () => {
 
+    test("Set initial seed as number type", () =>{
+        const seed = 5;
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBe(seed);
+    })
+
+    test("Set initial seed as string type", () =>{
+        const seed = "5";
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBe(5);
+        expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
+    })
+
+    test("Set initial seed as string", () =>{
+        const seed = "whisker";
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBeGreaterThan(0);
+        expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
+    })
+
+    test("Set initial seed as empty string", () =>{
+        const seed = "";
+        Randomness.setInitialSeeds(seed);
+        expect(Date.now() - Randomness.getInitialRNGSeed()).toBeLessThan(10);
+        expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
+    })
+
+    test("Same Seed same result", () =>{
+        const seed = 5;
+        Randomness.setInitialSeeds(seed);
+        expect(Randomness.getInitialRNGSeed()).toBe(seed);
+    })
+
     test("Create an integer from a range", () => {
 
         const random = Randomness.getInstance();
@@ -63,8 +96,16 @@ describe("Randomness", () => {
 
     test("Pick a random element from a collection", () => {
         const random = Randomness.getInstance();
-        const list: number[] = [1, 2, 3];
-        const num = random.pick(list);
+        const array: number[] = [1, 2, 3];
+        const num = random.pick(array);
+
+        expect(array).toContain(num);
+    });
+
+    test("Pick a random element from a List", () => {
+        const random = Randomness.getInstance();
+        const list = new List([1,2,3])
+        const num = random.pickRandomElementFromList(list);
 
         expect(list).toContain(num);
     });
@@ -72,12 +113,12 @@ describe("Randomness", () => {
     test("Different seed, different sequence", () => {
 
         const random = Randomness.getInstance();
-        Randomness.setInitialSeed(0);
+        Randomness.setInitialSeeds(0);
         const sequence1 = [];
         for (let i = 0; i < 100; i++) {
             sequence1.push(random.nextInt(0, 100));
         }
-        Randomness.setInitialSeed(42);
+        Randomness.setInitialSeeds(42);
         const sequence2 = [];
         for (let i = 0; i < 100; i++) {
             sequence2.push(random.nextInt(0, 100));
