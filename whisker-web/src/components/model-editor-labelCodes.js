@@ -50,7 +50,7 @@ const checkLabelCodes = {
     // 1 args: key name
     Key: [argType.keyName],
     // 2 sprite name, string output
-    Output: [argType.spriteNameRegex, argType.value],
+    Output: [argType.spriteNameRegex, argType.expr],
     // 4  args: sprite name, red, green, blue values
     SpriteColor: [argType.spriteNameRegex, argType.r, argType.g, argType.b],
     // 2  args: two sprite names
