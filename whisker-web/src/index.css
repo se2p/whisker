@@ -273,6 +273,11 @@ p {
     margin-right: 1rem;
 }
 
+.toggleDescription {
+    position: relative;
+    top: 4px;
+}
+
 .inline {
     display: inline-block;
 }

@@ -79,7 +79,7 @@
                         <span class="slider round"></span>
                     </label>
                 </span>
-            <span data-i18n="tap"></span>
+            <span data-i18n="tap" class="toggleDescription"></span>
             <!-- Log toggle -->
             <span class="toggleWrapper">
                 <label class="switch" data-i18n="[title]t-log"
@@ -89,7 +89,7 @@
                     <span class="slider round"></span>
                 </label>
             </span>
-            <span data-i18n="log"></span>
+            <span data-i18n="log" class="toggleDescription"></span>
             <!-- Test generation toggle -->
             <span class="toggleWrapper">
                     <label class="switch" data-i18n="[title]show-advanced"
@@ -99,7 +99,16 @@
                         <span class="slider round"></span>
                     </label>
                 </span>
-            <span data-i18n="advanced"></span>
+            <span data-i18n="advanced" class="toggleDescription"></span>
+            <!-- Test editor toggle -->
+            <span class="toggleWrapper">
+                    <label class="switch">
+                        <input id="toggle-test-editor" class="checkbox-button" type="checkbox"
+                               autocomplete="off">
+                        <span class="slider round"></span>
+                    </label>
+                </span>
+            <span data-i18n="test-editor" class="toggleDescription"></span>
             <!-- Model editor toggle -->
             <span class="toggleWrapper">
                     <label class="switch">
@@ -108,7 +117,7 @@
                         <span class="slider round"></span>
                     </label>
                 </span>
-            <span data-i18n="model-editor"></span>
+            <span data-i18n="model-editor" class="toggleDescription"></span>
 
         </div>
         <!-- Language selector -->
@@ -448,8 +457,10 @@
         </div>
 
         <!-- Test editor -->
-        <h3 data-i18n="test-editor"></h3>
-        <div id="test-editor" class="mt-4 spacer10 hide"></div>
+        <div id="test-editor-div" class="mt-4 spacer10 hide">
+            <h3 data-i18n="test-editor"></h3>
+            <div id="test-editor"></div>
+        </div>
 
         <!-- TAP13 output -->
         <div id="output-run" class="mt-4 spacer50 hide">

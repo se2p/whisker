@@ -411,6 +411,20 @@ const initEvents = function () {
             $('#scratch-controls').hide();
         }
     });
+    $('#toggle-test-editor').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            showAndJumpTo('#test-editor-div');
+            Whisker.testEditor.show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#test-editor-div').hide();
+        }
+    });
     $('#toggle-model-editor').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
