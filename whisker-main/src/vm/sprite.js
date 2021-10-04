@@ -296,7 +296,7 @@ class Sprite {
 
     /**
      * Whether the wrapped {@link RenderedTarget} touches a vertical boundary of the Scratch canvas.
-     * @returns {boolean}  true if a vertical edge is touched, false otherwise..
+     * @returns {boolean}  true if a vertical edge is touched, false otherwise.
      */
     isTouchingVerticalEdge () {
         return this._target.isTouchingVerticalEdge();
@@ -304,7 +304,7 @@ class Sprite {
 
     /**
      * Whether the wrapped {@link RenderedTarget} touches a horizontal boundary of the Scratch canvas.
-     * @returns {boolean}  true if a horizontal edge is touched, false otherwise..
+     * @returns {boolean}  true if a horizontal edge is touched, false otherwise.
      */
     isTouchingHorizEdge () {
         return this._target.isTouchingHorizEdge();

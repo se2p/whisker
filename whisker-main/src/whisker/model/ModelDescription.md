@@ -110,12 +110,12 @@ in.
 The attributes 'forceTestAt' and 'forceTestAfter' of edges are timing conditions. -1 as default value, when not needed.
 Examples
 <ul>
-    <li> forceTestAt: 30000. Forces the test of the edge's condition after 30s since game start.</li>
+    <li>forceTestAt: 30000. Forces the test of the edge's condition after 30s since game start.</li>
     <li>forceTestAfter: 1000. Forces the test of the edge's condition after 1s after the last edge transition in the
         same model.</li>
 </ul>
 
-## Check Name and Argumgents for Edges
+## Check Name and Arguments for Edges
 
 Following conditions can be added to any edge:
 
