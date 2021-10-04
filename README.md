@@ -79,7 +79,7 @@ Options:
   -g,   --generateTests [Path]            If new tests should be generated and where to put them (default: false)
   -se,  --seed <Integer>                  Sets the specified integer as a seed for the Scratch-VM and the random number
                                            generator contained within Whisker.
-  -mr,  --modelRepetition <Integer>       Repetition of the test with only a model (default: 1)
+  -mr,  --modelRepetition <Integer>       Model test repetitions. Ignored if a test suite is specified. (default: 1)
   -mt,  --modelDuration <Integer>         Maximal time of one model test run in seconds (default: 30)
   -mcs, --modelCaseSensitive <Boolean>    Whether model test should test names case sensitive (default: false)
   -h,   --help                            Display help for command

@@ -26,8 +26,8 @@ const validateCommandLineArguments = commander => {
     }
 
     if (!options.testPath && !options.generateTests && !options.modelPath) {
-        logger.error('No path to a test or model file was given, please use the -t option for a test, -m option for' +
-            ' a model');
+        logger.error('Missing testing mode argument. Please use the -t option for a test suite, -m option for ' +
+            'model tests, or -g option for test generation.');
         process.exit(1);
     }
 
@@ -47,7 +47,8 @@ const cli = {
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-m, --modelPath <Path>', 'Model to test with', false)
-            .option('-mr, --modelRepetition <Integer>', 'Repetition of the test with only a model', "1")
+            // todo not clear with model repetition
+            .option('-mr, --modelRepetition <Integer>', 'Model test repetitions. Ignored if a test suite is specified.', "1")
             .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run in seconds', "30")
             .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
