@@ -57,16 +57,16 @@
             <img id="small-logo" src="assets/whisker-text-logo.png" class="hide" alt="Whisker Icon">
         </a>
         <!-- Navigation -->
-<!-- Currently disabled as it is the only navigation item as long as faq/demo is disabled. Logo has the functionality now.
-        <ul id="nav-links" class="nav justify-content-center">
-            <li class="nav-item">
-                <a id="link" class="nav-link active" href="index.html" data-i18n="project-link"></a>
-            </li>
-            <li class="nav-item">
-                <a id="faq" class="nav-link" href="./faq.html" data-i18n="faq"></a>
-            </li>
-        </ul>
--->
+        <!-- Currently disabled as it is the only navigation item as long as faq/demo is disabled. Logo has the functionality now.
+                <ul id="nav-links" class="nav justify-content-center">
+                    <li class="nav-item">
+                        <a id="link" class="nav-link active" href="index.html" data-i18n="project-link"></a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="faq" class="nav-link" href="./faq.html" data-i18n="faq"></a>
+                    </li>
+                </ul>
+        -->
 
         <!-- Toggles -->
         <div class="btn-group-toggle">
@@ -79,7 +79,7 @@
                         <span class="slider round"></span>
                     </label>
                 </span>
-            <span data-i18n="tap"></span>
+            <span data-i18n="tap" class="toggleDescription"></span>
             <!-- Log toggle -->
             <span class="toggleWrapper">
                 <label class="switch" data-i18n="[title]t-log"
@@ -89,7 +89,7 @@
                     <span class="slider round"></span>
                 </label>
             </span>
-            <span data-i18n="log"></span>
+            <span data-i18n="log" class="toggleDescription"></span>
             <!-- Test generation toggle -->
             <span class="toggleWrapper">
                     <label class="switch" data-i18n="[title]show-advanced"
@@ -99,7 +99,26 @@
                         <span class="slider round"></span>
                     </label>
                 </span>
-            <span data-i18n="advanced"></span>
+            <span data-i18n="advanced" class="toggleDescription"></span>
+            <!-- Test editor toggle -->
+            <span class="toggleWrapper">
+                    <label class="switch">
+                        <input id="toggle-test-editor" class="checkbox-button" type="checkbox"
+                               autocomplete="off">
+                        <span class="slider round"></span>
+                    </label>
+                </span>
+            <span data-i18n="test-editor" class="toggleDescription"></span>
+            <!-- Model editor toggle -->
+            <span class="toggleWrapper">
+                    <label class="switch">
+                        <input id="toggle-model-editor" class="checkbox-button" type="checkbox"
+                               autocomplete="off">
+                        <span class="slider round"></span>
+                    </label>
+                </span>
+            <span data-i18n="model-editor" class="toggleDescription"></span>
+
         </div>
         <!-- Language selector -->
         <div class="links">
@@ -127,6 +146,8 @@
 
 
 <!-- Upload of sb3 project and test file -->
+
+<!-- Upload of sb3 project and test file -->
 <div class="main">
     <div class="container">
         <div class="row">
@@ -151,7 +172,8 @@
                                         <div class="col-lg-12">
                                             <div class="upload-btn-wrapper">
                                                 <button class="btnr" title="browse" data-i18n="browse"></button>
-                                                <input type="file" class="vm-related" id="fileselect-project" accept=".sb3"
+                                                <input type="file" class="vm-related" id="fileselect-project"
+                                                       accept=".sb3"
                                                        name="program-file" title=""/>
                                                 <label id="project-label" class="filename-label"
                                                        for="fileselect-project"
@@ -194,6 +216,80 @@
                                             <div class="form-group">
                                                 <small id="help-text2" class="form-text text-muted"
                                                        data-i18n="choose-file"></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Model upload and settings -->
+                        <div class="col-lg-12">
+                            <div id="model-upload" class="row form">
+                                <div class="col-lg-6">
+                                    <div class="row mr-2">
+                                        <div class="col-lg-10 label-padding">
+                                            <label id="fileselect-model-label" for="fileselect-models"
+                                                   data-i18n="model"></label>
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <img class="img" src="assets/json.png" alt="json"/>
+                                        </div>
+                                        <div class="col">
+                                            <div class="upload-btn-wrapper">
+                                                <button class="btnr" data-i18n="browse"></button>
+                                                <input type="file" id="fileselect-models" accept=".json"
+                                                       name="model-file" title="" class="vm-related"/>
+                                                <label id="model-label" class="filename-label" for="fileselect-models"
+                                                       data-i18n="no-file"></label>
+                                            </div>
+                                            <div class="form-group">
+                                                <small id="help-text4" class="form-text text-muted"
+                                                       data-i18n="choose-file"></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col ml-2  mt-2">
+                                    <div class="row">
+                                        <div class="col label-padding">
+                                            <label data-i18n="model-duration" for="model-duration"></label>
+                                        </div>
+                                        <div class="col-4" style="padding:0">
+                                            <input type="text" id="model-duration" name="model-duration"
+                                                   placeholder="(optional)" class="model-small-input mt-1">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-1">
+                                        <div class="col label-padding">
+                                            <label data-i18n="model-repetitions" for="model-repetitions"></label>
+                                        </div>
+                                        <div class="col-4" style="padding:0">
+                                            <input type="text" id="model-repetitions" name="model-repetitions"
+                                                   placeholder="1" class="model-small-input mt-1">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col  mt-2 ml-2">
+                                    <div class="row">
+                                        <div class="form-group col">
+                                            <div class="mt-1">
+                                                <input id="model-logs-checkbox" class="mt-1" type="checkbox"
+                                                       autocomplete="off">
+                                                <label for="model-logs-checkbox"
+                                                       data-i18n="model-logs-checkbox"></label>
+                                            </div>
+                                            <div class="mt-1">
+                                                <input id="model-case-sensitive" type="checkbox" class="mt-1"
+                                                       autocomplete="off">
+                                                <label for="model-case-sensitive"
+                                                       data-i18n="model-case-sensitive;[title]model-case-sensitive-hover"
+                                                       data-toggle="tooltip" data-placement="top"
+                                                       data-animation="false"></label>
+                                            </div>
+                                            <div class="mt-1">
+                                                <label id="model-user-loaded"
+                                                       data-i18n="model-output-no-user-model"></label>
                                             </div>
                                         </div>
                                     </div>
@@ -296,7 +392,8 @@
                     <h3 data-i18n="input-recording"></h3>
                     <p data-i18n="explain-recording"></p>
                     <!-- Record inputs button -->
-                    <button id="record" type="button" class="btn btn-main btn-sm search-button vm-related record-related"
+                    <button id="record" type="button"
+                            class="btn btn-main btn-sm search-button vm-related record-related"
                             data-toggle="tooltip" data-placement="top" data-animation="false"
                             data-i18n="[title]t-record;start-record;"></button>
                 </div>
@@ -319,10 +416,12 @@
                             <div class="row">
                                 <input id="acceleration-factor" type="text" data-slider-min="1" data-slider-max="10"
                                        data-slider-step="1" data-slider-value="1">
-                                <button id="green-flag" class="btn btn-outline-success but1 vm-related record-related" type="button"
+                                <button id="green-flag" class="btn btn-outline-success but1 vm-related record-related"
+                                        type="button"
                                         data-toggle="tooltip" data-placement="top" data-animation="false"
                                         data-i18n="[title]start"><i class="fas fa-flag"></i></button>
-                                <button id="stop-scratch" class="btn btn-danger but2 vm-related record-related" type="button"
+                                <button id="stop-scratch" class="btn btn-danger but2 vm-related record-related"
+                                        type="button"
                                         data-toggle="tooltip" data-placement="top" data-animation="false"
                                         data-i18n="[title]stop"><i class="fas fa-stop"></i></button>
                             </div>
@@ -358,8 +457,10 @@
         </div>
 
         <!-- Test editor -->
-        <h3 data-i18n="test-editor"></h3>
-        <div id="test-editor" class="mt-4 spacer10 hide"></div>
+        <div id="test-editor-div" class="mt-4 spacer10 hide">
+            <h3 data-i18n="test-editor"></h3>
+            <div id="test-editor"></div>
+        </div>
 
         <!-- TAP13 output -->
         <div id="output-run" class="mt-4 spacer50 hide">
@@ -403,6 +504,266 @@
                     </div>
                 </div>
             </form>
+        </div>
+
+        <!-- Model editor -->
+        <div id="model-editor" class="mt-4 spacer10 hide">
+            <h3 data-i18n="modelEditor:title"></h3>
+            <div class="col" style="background-color: #f1f1f1; border-radius: 5px;">
+                <!-- model editor TABS -->
+                <div class="row tab-model-editor">
+                    <div id="model-tabs" class="col"></div>
+                    <div id="model-add-tab-container" class="col">
+                        <button id="model-editor-add-tab" data-i18n="modelEditor:newTab" type="button"
+                                class="tab-model-editor-button">
+                        </button>
+                    </div>
+                </div>
+
+                <!-- model editor CANVAS and RIGHT PANE-->
+                <div class="row spacer10" id="model-editor-content">
+                    <div class="col">
+                        <!-- model editor CANVAS -->
+                        <div class="row model-editor-canvas-wrap">
+                            <div id="model-editor-canvas" class="col model-editor-canvas"></div>
+                        </div>
+
+                        <!-- model editor BUTTONS -->
+                        <div class="row my-2">
+                            <div class="col model-add-buttons-div">
+                                <button id="model-add-node" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:addNode"></button>
+                            </div>
+                            <div class="col model-add-buttons-div">
+                                <button id="model-add-edge" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:addEdge"></button>
+                            </div>
+                            <div class="col model-add-buttons-div">
+                                <button id="model-fit" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:fit"></button>
+                            </div>
+                            <div class="col model-add-buttons-div">
+                                <select name="model-layout" id="model-layout" class="center">
+                                    <option value="none" data-i18n="modelEditor:layout1"></option>
+                                    <option value="treeLR" data-i18n="modelEditor:layout2"></option>
+                                    <option value="treeUD" data-i18n="modelEditor:layout3"></option>
+                                </select>
+                            </div>
+                            <div class="col hide model-cancel-add-div">
+                                <!-- For the explanation, filled by buttons  -->
+                                <label id="model-explanation"></label>
+                            </div>
+                            <div class="col-2 hide model-cancel-add-div">
+                                <button id="model-cancel-add" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:cancel"></button>
+                            </div>
+                            <div class="col hide model-delete-div">
+                                <label data-i18n="modelEditor:selection-explanation"></label>
+                            </div>
+                            <div class="col-4 hide model-delete-div">
+                                <button id="model-delete-selection" type="button" class="btn btn-sm model-button center"
+                                        data-i18n="modelEditor:deleteSelection"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- model editor RIGHT PANE -->
+                    <div class="col-4 mt-1">
+
+                        <!-- model editor MODEL CONFIG PANEL-->
+                        <div id="model-general-settings">
+                            <div class="row">
+                                <h4 data-i18n="modelEditor:general-settings-header" style="width:80%;"></h4>
+                                <button id="model-delete-button" class="model-button model-small-button right"
+                                        type="button" data-toggle="tooltip"
+                                        data-placement="top" data-animation="false"
+                                        data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"
+                                ></button>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="model-id">ID</label>
+                                    <input class="model-input" id="model-id" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label data-i18n="modelEditor:type"></label>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="radio" id="model-type-program" name="model-type"
+                                           value="program" class="model-radio">
+                                    <label for="model-type-program"
+                                           data-toggle="tooltip" data-placement="right" data-animation="false"
+                                           data-i18n="[title]modelEditor:t-type-program;modelEditor:type-program">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="radio" class="model-radio" id="model-type-user"
+                                           name="model-type" value="user">
+                                    <label for="model-type-user"
+                                           data-toggle="tooltip" data-placement="right" data-animation="false"
+                                           data-i18n="[title]modelEditor:t-type-user;modelEditor:type-user">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="radio" class="model-radio" id="model-type-end"
+                                           name="model-type" value="user">
+                                    <label for="model-type-end"
+                                           data-toggle="tooltip" data-placement="right" data-animation="false"
+                                           data-i18n="[title]modelEditor:t-type-end;modelEditor:type-end">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- model editor NODE PANEL-->
+                        <div id="model-node-configuration" class="hide">
+                            <div class="row">
+                                <h4 data-i18n="modelEditor:optionsNode"></h4>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="model-node-label" data-i18n="modelEditor:nodeLabel"></label>
+                                    <input class="model-input" id="model-node-label">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="checkbox" id="model-stopNode">
+                                    <label for="model-stopNode"
+                                           data-i18n="[title]modelEditor:t-stopNode;modelEditor:stopNode"
+                                           data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="checkbox" id="model-stopAllNode">
+                                    <label for="model-stopAllNode" data-toggle="tooltip" data-placement="top"
+                                           data-i18n="[title]modelEditor:t-stopAllNode;modelEditor:stopAllNode"
+                                           data-animation="false"></label>
+                                </div>
+                            </div>
+                            <div class="row mt-2 model-priority-div">
+                                <div class="col">
+                                    <label data-i18n="[title]modelEditor:t-priority;modelEditor:priority"
+                                           data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                                </div>
+                            </div>
+                            <div class="row model-priority-div">
+                                <div class="col" id="model-priority-changer"></div>
+                            </div>
+                        </div>
+
+                        <!-- model editor EDGE PANEL -->
+                        <div id="model-edge-configuration" class="hide">
+                            <div class="row">
+                                <h4 data-i18n="modelEditor:optionsEdge"></h4>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="model-edge-label" data-i18n="modelEditor:edgeLabel">Name</label>
+                                    <input class="model-input" id="model-edge-label">
+                                </div>
+                            </div>
+                            <div class="row mt-1">
+                                <label data-i18n="modelEditor:forceTest"
+                                       data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                            </div>
+                            <div class="row">
+                                <div class="col mt-1" style="padding-right: 0;">
+                                    <label for="model-forceTestAfter"
+                                           data-i18n="[title]modelEditor:t-forceTestAfter;modelEditor:forceTestAfter"
+                                           data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                                </div>
+                                <div class="col-4" style="padding-left: 0;">
+                                    <input id="model-forceTestAfter" class="model-input">
+                                    <label class="mt-1 model-unit" data-i18n="modelEditor:ms"></label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col mt-1" style="padding-right: 0;">
+                                    <label for="model-forceTestAt" data-toggle="tooltip" data-placement="top"
+                                           data-i18n="[title]modelEditor:t-forceTestAt;modelEditor:forceTestAt"
+                                           data-animation="false"></label>
+                                </div>
+                                <div class="col-4" style="padding-left: 0;">
+                                    <input id="model-forceTestAt" class="model-input">
+                                    <label class="mt-1 model-unit" data-i18n="modelEditor:ms"></label>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <label class="mt-1" data-i18n="[title]modelEditor:t-conditions;modelEditor:conditions"
+                                       data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                                <button type="button" data-i18n="modelEditor:add" id="model-editor-addC"
+                                        class="model-button model-small-button right" style="float:right;"></button>
+                            </div>
+                            <div class="row">
+                                <div class="col check-container" id="model-conditions"></div>
+                            </div>
+                            <div class="row mt-1">
+                                <label class="mt-1" data-i18n="[title]modelEditor:t-effects;modelEditor:effects"
+                                       data-toggle="tooltip" data-placement="top" data-animation="false"></label>
+                                <button type="button" data-i18n="modelEditor:add" id="model-editor-addE"
+                                        class="model-button model-small-button right" style="float:right;"></button>
+                            </div>
+                            <div class="row">
+                                <div id="model-effects" class="col check-container"></div>
+                            </div>
+                        </div>
+
+                        <!-- model editor EDGE CHECK PANEL -->
+                        <div id="model-edge-check-div" class="hide">
+                            <div class="row">
+                                <button type="button" id="model-check-back" class="col2 model-button btn-sm"
+                                        data-i18n="modelEditor:back"></button>
+                                <button type="button" id="model-check-save" class="col2 right model-button btn-sm"
+                                        data-i18n="modelEditor:saveCheck"></button>
+                            </div>
+                            <div class="row mt-2">
+                                <h4 id="model-check-label" data-i18n="modelEditor:condition"></h4>
+                            </div>
+                            <div class="row mt-1">
+                                <div class="col" style="padding-left: 0;">
+                                    <label data-i18n="modelEditor:edgeCheckType" for="model-edge-check"></label>
+                                    <select name="model-edge-check" id="model-edge-check">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-1" id="model-negated-div">
+                                <div class="col">
+                                    <input type="checkbox" id="model-check-negated">
+                                    <label for="model-check-negated"
+                                           data-i18n="[title]modelEditor:t-negated;modelEditor:negated"></label>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col" id="model-check-args"></div>
+                            </div>
+                            <div class="row mt-2" id="model-check-explanation"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons belonging to model editor -->
+            <div class="col-lg-12 spacer50">
+
+                <!-- Load tests button -->
+                <button id="model-editor-apply" class="btn btn-sm btn-main vm-related" type="button"
+                        data-toggle="tooltip" data-placement="top" data-animation="false"
+                        data-i18n="[title]modelEditor:t-load;modelEditor:load;"></button>
+
+                <!-- Download tests button -->
+                <button id="model-editor-save" class="btn btn-sm btn-main" type="button"
+                        data-toggle="tooltip" data-placement="top" data-animation="false"
+                        data-i18n="[title]modelEditor:t-save;modelEditor:save;"></button>
+
+            </div>
         </div>
     </div>
 </div>

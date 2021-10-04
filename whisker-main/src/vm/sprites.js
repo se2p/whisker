@@ -30,7 +30,37 @@ class Sprites {
         /**
          * @type {(Function|null)} A function that is called when a sprite changes its visual appearance.
          */
+        this._onSpriteMovedModel = null;
+
+        /**
+         * @type {(Function|null)}
+         */
         this._onSpriteVisualChange = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onSpriteVisualChangeModel = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onSayOrThink = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onSayOrThinkModel = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onVariableChange = null;
+
+        /**
+         * @type {(Function|null)}
+         */
+        this._onVariableChangeModel = null;
     }
 
     /**
@@ -177,6 +207,9 @@ class Sprites {
         if (this._onSpriteMoved) {
             this._onSpriteMoved(this.wrapTarget(target));
         }
+        if (this._onSpriteMovedModel) {
+            this._onSpriteMovedModel(this.wrapTarget(target));
+        }
     }
 
     /**
@@ -186,6 +219,38 @@ class Sprites {
     doOnSpriteVisualChange (target) {
         if (this._onSpriteVisualChange) {
             this._onSpriteVisualChange(this.wrapTarget(target));
+        }
+        if (this._onSpriteVisualChangeModel) {
+            this._onSpriteVisualChangeModel(this.wrapTarget(target));
+        }
+    }
+
+    /**
+     * @param {RenderedTarget} target .
+     */
+    doOnSayOrThink (target) {
+        if (this._onSayOrThink) {
+            this._onSayOrThink(this.wrapTarget(target));
+        }
+        if (this._onSayOrThinkModel) {
+            this._onSayOrThinkModel(this.wrapTarget(target));
+        }
+    }
+
+    /**
+     * @param {string} variableName .
+     * @param newValue
+     * @param oldValue
+     */
+    doOnVariableChange (variableName, newValue, oldValue) {
+        for (const sprite of Object.values(this.sprites)) {
+            sprite.updateVariables(variableName, newValue, oldValue);
+        }
+        if (this._onVariableChange) {
+            this._onVariableChange(variableName);
+        }
+        if (this._onVariableChangeModel) {
+            this._onVariableChangeModel(variableName);
         }
     }
 
@@ -198,11 +263,54 @@ class Sprites {
     }
 
     /**
+     * Duplicated function for model tests.
+     * @param {(Function|null)} func
+     */
+    onSpriteMovedModel(func) {
+        this._onSpriteMovedModel = func;
+    }
+
+    /**
      * When a {@link Sprite} changes its visual appearance, a specific function is called.
      * @param {(Function|null)} func The function to call.
      */
     onSpriteVisualChange (func) {
         this._onSpriteVisualChange = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onSpriteVisualChangeModel (func) {
+        this._onSpriteVisualChangeModel = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onSayOrThink (func) {
+        this._onSayOrThink = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onSayOrThinkModel (func) {
+        this._onSayOrThinkModel = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onVariableChange (func) {
+        this._onVariableChange = func;
+    }
+
+    /**
+     * @param {(Function|null)} func .
+     */
+    onVariableChangeModel (func) {
+        this._onVariableChangeModel = func;
     }
 }
 

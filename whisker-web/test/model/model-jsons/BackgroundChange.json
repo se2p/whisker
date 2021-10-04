@@ -1,0 +1,35 @@
+[
+  {
+    "id": "background",
+    "usage": "program",
+    "startNodeId": "n0",
+    "stopNodeIds": [
+      "n1"
+    ],
+    "stopAllNodeIds": [],
+    "nodeIds": [
+      "n0",
+      "n1"
+    ],
+    "edges": [
+      {
+        "id": "change",
+        "from": "n0",
+        "to": "n1",
+        "forceTestAfter": -1,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "BackgroundChange",
+            "args": [
+              "Soccer 2"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      }
+    ]
+  }
+]

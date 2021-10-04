@@ -34,6 +34,11 @@ class VMWrapper {
         this.callbacks = new Callbacks(this);
 
         /**
+         * @type {Callbacks} Callback specific functionality for models.
+         */
+        this.modelCallbacks = new Callbacks(this);
+
+        /**
          * @type {Inputs} Input specific functionality.
          */
         this.inputs = new Inputs(this);
@@ -93,6 +98,8 @@ class VMWrapper {
         this._onQuestion = this.onQuestion.bind(this);
         this._onAnswer   = this.onAnswer.bind(this);
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
+        this._onSayOrThink = this.sprites.doOnSayOrThink.bind(this.sprites);
+        this._onVariableChange = this.sprites.doOnVariableChange.bind(this.sprites);
     }
 
     /**
@@ -123,10 +130,17 @@ class VMWrapper {
         this.inputs.performInputs();
         await this._yield();
 
+        this.modelCallbacks.callCallbacks(false);
+        await this._yield();
+
         this.sprites.update();
         await this._yield();
 
         this.vm.runtime._step();
+        await this._yield();
+
+        // do not stop even if this.isRunning=false!
+        this.modelCallbacks.callCallbacks(true);
         await this._yield();
 
         if (!this.isRunning()) return;
@@ -374,6 +388,9 @@ class VMWrapper {
         this.vm.runtime.on('targetWasCreated', this._onTargetCreated);
         this.vm.runtime.on('QUESTION', this._onQuestion);
         this.vm.runtime.on('ANSWER', this._onAnswer);
+        this.vm.runtime.on('SAY', this._onSayOrThink)
+        this.vm.runtime.on('DELETE_SAY_OR_THINK', this._onSayOrThink)
+        this.vm.runtime.on('CHANGE_VARIABLE', this._onVariableChange)
 
         this.vm.greenFlag();
         this.startTime = Date.now();
@@ -398,6 +415,9 @@ class VMWrapper {
         this.vm.runtime.removeListener('targetWasCreated', this._onTargetCreated);
         this.vm.runtime.removeListener('QUESTION', this._onQuestion);
         this.vm.runtime.removeListener('ANSWER', this._onAnswer);
+        this.vm.runtime.removeListener('SAY', this._onSayOrThink)
+        this.vm.runtime.removeListener('DELETE_SAY_OR_THINK', this._onSayOrThink)
+        this.vm.runtime.removeListener('CHANGE_VARIABLE', this._onVariableChange)
     }
 
     /**

@@ -12,10 +12,12 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test[]} tests .
+     * @param {ModelTester} modelTester
      * @param {{extend: object}=} props .
+     * @param {{duration: number, repetitions: number}} modelProps
      * @returns {Promise<Array>} .
      */
-    async runTests (vm, project, tests, props) {
+    async runTests(vm, project, tests, modelTester, props, modelProps) {
         this.aborted = false;
 
         if (typeof props === 'undefined' || props === null) {
@@ -28,28 +30,48 @@ class TestRunner extends EventEmitter {
 
         this.emit(TestRunner.RUN_START, tests);
 
-        for (const test of tests) {
-            let result;
+        if (modelTester && (!tests || tests.length === 0)) {
+            // test only by models
 
-            if (test.skip) {
-                result = new TestResult(test);
-                result.status = Test.SKIP;
-                this.emit(TestRunner.TEST_SKIP, result);
-
-            } else {
-                result = await this._executeTest(vm, project, test, props);
-                switch (result.status) {
-                case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
-                case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
-                case Test.ERROR: this.emit(TestRunner.TEST_ERROR, result); break;
-                case Test.SKIP: this.emit(TestRunner.TEST_SKIP, result); break;
-                }
+            if (!modelProps.repetitions) {
+                modelProps.repetitions = 1;
+            }
+            if (!modelProps.duration) {
+                modelProps.duration = 35000;
             }
 
-            results.push(result);
+            for (let i = 0; i < modelProps.repetitions; i++) {
+                let result = await this._executeTest(vm, project, undefined, modelTester, props, modelProps);
+                result.modelResult.testNbr = i;
+                this.emit(TestRunner.TEST_MODEL, result);
+                results.push(result);
+            }
+        } else {
+            // test by JS test suite, with models or without models. When a model is given it is restarted with every
+            // test case as long as the test case runs or the model stops.
+            for (const test of tests) {
+                let result;
 
-            if (this.aborted) {
-                return null;
+                if (test.skip) {
+                    result = new TestResult(test);
+                    result.status = Test.SKIP;
+                    this.emit(TestRunner.TEST_SKIP, result);
+
+                } else {
+                    result = await this._executeTest(vm, project, test, modelTester, props, modelProps);
+                    switch (result.status) {
+                       case Test.PASS: this.emit(TestRunner.TEST_PASS, result); break;
+                       case Test.FAIL: this.emit(TestRunner.TEST_FAIL, result); break;
+                       case Test.ERROR: this.emit(TestRunner.TEST_ERROR, result); break;
+                       case Test.SKIP: this.emit(TestRunner.TEST_SKIP, result); break;
+                    }
+                }
+
+                results.push(result);
+
+                if (this.aborted) {
+                    return null;
+                }
             }
         }
 
@@ -69,12 +91,14 @@ class TestRunner extends EventEmitter {
      * @param {VirtualMachine} vm .
      * @param {string} project .
      * @param {Test} test .
+     * @param {ModelTester} modelTester
      * @param {{extend: object}} props .
      *
+     * @param {duration:number,repetitions:number,caseSensitive:boolean} modelProps
      * @returns {Promise<TestResult>} .
      * @private
      */
-    async _executeTest (vm, project, test, props) {
+    async _executeTest(vm, project, test, modelTester, props, modelProps) {
         const result = new TestResult(test);
 
         const util = new WhiskerUtil(vm, project);
@@ -99,8 +123,8 @@ class TestRunner extends EventEmitter {
             },
         );
 
-        this.emit(TestRunner.TEST_START, test);
 
+        this.emit(TestRunner.TEST_START, test);
         util.start();
         if(props.seed !== 'undefined' && props.seed !== "") {
             Randomness.setInitialSeeds(props.seed);
@@ -112,25 +136,51 @@ class TestRunner extends EventEmitter {
         }
         Randomness.seedScratch();
 
-        try {
-            await test.test(testDriver);
-            result.status = Test.PASS;
-
-        } catch (e) {
-            result.error = e;
-
-            if (isAssertionError(e)) {
-                result.status = Test.FAIL;
-            } else if (isAssumptionError(e)) {
-                result.status = Test.SKIP;
-            } else {
-                result.status = Test.ERROR;
-            }
-
-        } finally {
-            util.end();
+        if (modelTester && modelTester.someModelLoaded()) {
+            await modelTester.prepareModel(testDriver, modelProps.caseSensitive);
         }
 
+        if (test) {
+            try {
+                await test.test(testDriver);
+                result.status = Test.PASS;
+
+            } catch (e) {
+                result.error = e;
+
+                if (isAssertionError(e)) {
+                    result.status = Test.FAIL;
+                } else if (isAssumptionError(e)) {
+                    result.status = Test.SKIP;
+                } else {
+                    result.status = Test.ERROR;
+                }
+            }
+
+            if (modelTester && modelTester.someModelLoaded()) {
+                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
+            }
+        } else if (modelTester && modelTester.someModelLoaded()) {
+            // Start the test run with either a maximal duration or until the model stops
+            try {
+                await testDriver.runUntil(() => {
+                    return !modelTester.running();
+                }, modelProps.duration);
+                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
+                if (result.modelResult.errors.length > 0) {
+                    result.status = Test.ERROR;
+                } else {
+                    result.status = result.modelResult.fails.length === 0 ? Test.PASS : Test.FAIL;
+                }
+            } catch (e) {
+                // probably run aborted
+                console.error(e);
+                result.modelResult = modelTester.stopAndGetModelResult(testDriver);
+                result.status = Test.ERROR;
+            }
+        }
+
+        util.end();
         return result;
     }
 
@@ -176,6 +226,13 @@ class TestRunner extends EventEmitter {
      */
     static get TEST_START () {
         return 'testStart';
+    }
+
+    /**
+     * @return {string}
+     */
+    static get TEST_MODEL () {
+        return 'testModel';
     }
 
     /**

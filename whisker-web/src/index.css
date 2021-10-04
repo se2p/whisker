@@ -273,6 +273,11 @@ p {
     margin-right: 1rem;
 }
 
+.toggleDescription {
+    position: relative;
+    top: 4px;
+}
+
 .inline {
     display: inline-block;
 }
@@ -1053,6 +1058,211 @@ input:checked + .slider:before {
 
 .modal-content{
     transform: translate(0, 100px);
+}
+
+.model-small-input {
+    max-width: 80px;
+}
+
+.model-editor {
+    border: 1px solid gray;
+}
+
+#model-editor-content {
+    min-height: 477px;
+}
+
+.model-editor-canvas {
+    border: 1px solid lightgray;
+    height: 425px;
+    margin-right: 5px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 2px;
+}
+
+.model-editor-canvas-wrap {
+    height: 425px;
+}
+
+.model-editor-canvas canvas {
+    background: white;
+}
+
+.model-radio {
+    margin-top: 6px;
+    margin-right: 2px;
+}
+
+.tab-model-editor {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+#model-tabs {
+    max-height: 100px;
+    overflow-y: auto;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+#model-add-tab-container {
+    max-width: 145px;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab-model-editor-button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab-model-editor-button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab-model-editor-button.active {
+    background-color: #ccc;
+}
+
+#model-editor-add-tab {
+    position: absolute;
+    right: 0;
+}
+
+.model-button {
+    background-color: #ccc;
+    border: none;
+    border-radius: 0.2em;
+    outline: none;
+    cursor: pointer;
+}
+
+.model-small-button {
+    float: right;
+    padding: 1px;
+    height: 30px;
+    width: 30px;
+}
+.popup {
+    width: 33.33%;
+    padding: 15px;
+    left: 0;
+    margin-left: 33.333333%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: white;
+    position: absolute;
+    top: 25%;
+    z-index: 10001;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,.50);
+    z-index: 10000;
+}
+
+.vis-tooltip {
+    position: absolute;
+    color: #5e5e5e;
+}
+
+.center {
+    transform: translate(-50%,0);
+    position: relative;
+    left: 50%;
+}
+
+.right {
+    margin-left: auto;
+    margin-right: 5px;
+    position: relative;
+}
+
+.check-container {
+    border: 2px solid #cccccc;
+    border-radius: 0.2em;
+    height: 105px;
+    overflow: auto;
+    padding: 2px;
+    margin-right: 5px;
+}
+
+.model-check {
+    cursor: pointer;
+    padding-left: 5px;
+    margin-bottom: 2px;
+    margin-top: 1px;
+    width: 100%;
+    padding-right: 0;
+}
+
+.model-check:hover {
+    background-color: #cccccc;
+}
+
+#model-edge-check {
+    width: 80%;
+}
+
+.model-invalid-input {
+    border: 2px solid red;
+    border-radius: 0.2em;
+}
+
+.model-invalid-input:focus {
+    border: 2px solid red;
+    border-radius: 0.2em;
+    outline: red;
+}
+
+.model-check-line {
+    margin: 1px;
+}
+
+.check-delete {
+    border: 2px solid white;
+    height: 28px;
+    width: 28px;
+    margin-right: 5px;
+    float: right;
+}
+
+.model-add-buttons-div {
+    padding-left: 2%;
+    padding-right: 2%;
+}
+
+#model-layout {
+    width: 100%;
+}
+
+.model-input {
+    width: 75%;
+    padding-right: 5px;
+}
+
+.model-unit {
+    width: 15%;
+    padding-right: 5px;
+}
+
+.fill-parent {
+    width: 100%;
 }
 
 #main-functionality {
