@@ -21,7 +21,7 @@ class ModelResult {
         this.coverage = {};
 
         /**
-         * @type {any[]}
+         * @type {string[]}
          */
         this.log = [];
 

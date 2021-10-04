@@ -31,7 +31,7 @@ class TestRunner extends EventEmitter {
         this.emit(TestRunner.RUN_START, tests);
 
         if (modelTester && (!tests || tests.length === 0)) {
-            // test only by model
+            // test only by models
 
             if (!modelProps.repetitions) {
                 modelProps.repetitions = 1;
@@ -47,7 +47,8 @@ class TestRunner extends EventEmitter {
                 results.push(result);
             }
         } else {
-            // test by both, tests and model
+            // test by JS test suite, with models or without models. When a model is given it is restarted with every
+            // test case as long as the test case runs or the model stops.
             for (const test of tests) {
                 let result;
 

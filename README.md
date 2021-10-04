@@ -147,6 +147,7 @@ Patric Feldmeier\
 Christoph Frädrich\
 Gordon Fraser\
 Sophia Geserer\
+Katharina Götz\
 Eva Gründinger\
 Nina Körber\
 Marvin Kreis\
@@ -154,8 +155,7 @@ Sebastian Schweikl\
 Andreas Stahlbauer\
 Emma Wang\
 Phil Werli\
-Nik Zantner\
-Katharina Götz
+Nik Zantner
 
 
 Whisker is supported by the project FR 2955/3-1 funded by the
