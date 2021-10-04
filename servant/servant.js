@@ -34,20 +34,27 @@ if (isGenerateWitnessTestOnly) {
 async function init () {
 
     // args: ['--use-gl=desktop'] could be used next to headless, but pages tend to quit unexpectedly
-    const browser = await puppeteer.launch(
-        {
-            headless: !!isHeadless,
+    const production = process.env.NODE_ENV === "production";
+    const puppeteerDefaultArgs = [
+        '--disable-gpu',
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
+    ];
+    const puppeteerDebuggingArgs = [...puppeteerDefaultArgs, '--remote-debugging-port=9222'];
+    const args = production ? puppeteerDefaultArgs : puppeteerDebuggingArgs;
+    const browser = await puppeteer.launch({
+        headless: !!isHeadless,
 
-            // If specified, use the given version of Chromium instead of the one bundled with Puppeteer.
-            // This feature is currently used with Docker to build smaller images.
-            // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
-            // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#puppeteerlaunchoptions
-            // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#environment-variables
-            // https://github.com/puppeteer/puppeteer/issues/1793#issuecomment-358216238
-            executablePath: process.env.CHROME_BIN || null,
+        // If specified, use the given version of Chromium instead of the one bundled with Puppeteer.
+        // This feature is currently used with Docker to build smaller images.
+        // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
+        // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#puppeteerlaunchoptions
+        // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#environment-variables
+        // https://github.com/puppeteer/puppeteer/issues/1793#issuecomment-358216238
+        executablePath: process.env.CHROME_BIN || null,
 
-            args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
-        });
+        args: args,
+    });
 
     if (generateTests) {
         // Todo use correct config
@@ -139,12 +146,15 @@ async function runGeneticSearch (browser, downloadPath) {
 
     function optionallyEnableConsoleForward () {
         if (isConsoleForwarded) {
+            // https://github.com/puppeteer/puppeteer/issues/1512#issuecomment-349784408
             page.on('console', msg => {
-                if (msg._args.length) {
-                    logger.info(`Forwarded: `, msg._args.map(arg => arg._remoteObject.value)
-                        .join(' '));
+                // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#class-consolemessage
+                if (msg.type() === "warning") {
+                    logger.warn(`Forwarded: ${msg.text()}`);
+                } else {
+                    logger.info(`Forwarded: ${msg.text()}`);
                 }
-            });
+            }).on('pageerror', error => logger.error(`Forwarded: ${error.message}`));
         }
     }
 
