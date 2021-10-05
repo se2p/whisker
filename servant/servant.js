@@ -14,6 +14,7 @@ const CSVConverter = require('./converter.js');
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
 const path = require('path');
 
+const production = process.env.NODE_ENV === "production";
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
@@ -34,14 +35,11 @@ if (isGenerateWitnessTestOnly) {
 async function init () {
 
     // args: ['--use-gl=desktop'] could be used next to headless, but pages tend to quit unexpectedly
-    const production = process.env.NODE_ENV === "production";
-    const puppeteerDefaultArgs = [
+    const args = [
         '--disable-gpu',
         '--no-sandbox',
         '--disable-setuid-sandbox'
     ];
-    const puppeteerDebuggingArgs = [...puppeteerDefaultArgs, '--remote-debugging-port=9222'];
-    const args = production ? puppeteerDefaultArgs : puppeteerDebuggingArgs;
     const browser = await puppeteer.launch({
         headless: !!isHeadless,
 
@@ -54,6 +52,8 @@ async function init () {
         executablePath: process.env.CHROME_BIN || null,
 
         args: args,
+
+        devtools: !production
     });
 
     if (generateTests) {
@@ -203,6 +203,11 @@ async function runGeneticSearch (browser, downloadPath) {
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
+
+        if (!production) {
+            await page.evaluate(() => { debugger; });
+        }
+
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
