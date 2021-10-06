@@ -2,7 +2,6 @@ const fileUrl = require('file-url');
 
 const timeout = process.env.SLOWMO ? 500000 : 300000;
 const ACCELERATION = 10;
-const seed = 10;
 
 async function loadProject(scratchPath, modelPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
@@ -10,7 +9,6 @@ async function loadProject(scratchPath, modelPath) {
     const toggle = await page.$('#toggle-advanced');
     await toggle.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
-    await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
 }
 
 async function readModelErrors() {
@@ -138,4 +136,18 @@ describe('Model tests on multiple events per step', () => {
         await expect(failsInModel).toBe("0");
         await expect(modelCoverage).toBe("1.00");
     }, timeout);
+
+    jest.setTimeout(60000);
+    test('fruitcatcher with random model input', async () => {
+        await loadProject('test/model/scratch-programs/fruitcatcher.sb3',
+            'test/model/model-jsons/fruitcatcher-random-fruit.json');
+        await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 33);
+        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 5);
+
+        await (await page.$('#run-all-tests')).click();
+        let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
+        await expect(errorsInModel).toBe("0");
+        await expect(failsInModel).toBe("0");
+        await expect(modelCoverage).toBe("1.00");
+    })
 });
