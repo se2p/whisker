@@ -70,7 +70,7 @@ export class ModelTester extends EventEmitter {
     }
 
     running() {
-        return this.isRunning && this.modelStepCallback.isActive() || this.onTestEndCallback.isActive()
+        return this.isRunning && (this.modelStepCallback.isActive() || this.onTestEndCallback.isActive());
     }
 
     getAllModels() {
@@ -172,7 +172,7 @@ export class ModelTester extends EventEmitter {
             let steps = this.testDriver.getTotalStepsExecuted() + 1;
             this.onTestEndModels.forEach(model => {
                 model.setTransitionsStartTo(steps);
-                model.stepNbrOfProgramEnd = steps;
+                model.programEndStep = steps;
             })
             this.userModels.forEach(model => {
                 model.stepNbrOfProgramEnd = steps;

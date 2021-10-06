@@ -2,6 +2,7 @@ import {ModelNode} from "./ModelNode";
 import {ModelEdge, ProgramModelEdge} from "./ModelEdge";
 import TestDriver from "../../../test/test-driver";
 import {CheckUtility} from "../util/CheckUtility";
+import {start} from "repl";
 
 /**
  * Graph structure for a program model representing the program behaviour of a Scratch program.
@@ -29,9 +30,9 @@ export class ProgramModel {
     protected coverageCurrentRun: { [key: string]: boolean } = {};
     protected coverageTotal: { [key: string]: boolean } = {};
 
-    stepNbrOfLastTransition: number = 0;
-    stepNbrOfScndLastTransition: number = 0;
-    stepNbrOfProgramEnd: number;
+    lastTransitionStep: number = 0;
+    secondLastTransitionStep: number = 0;
+    programEndStep: number;
     currentState: ModelNode;
 
     /**
@@ -47,12 +48,15 @@ export class ProgramModel {
      */
     constructor(id: string, startNodeId: string, nodes: { [key: string]: ModelNode },
                 edges: { [key: string]: ProgramModelEdge }, stopNodeIds: string[], stopAllNodeIds: string[]) {
+        if (!id) {
+            throw new Error("No id given.");
+        }
+        if (!startNodeId || !nodes[startNodeId]) {
+            throw new Error("No start node (id or in node set) given.");
+        }
         this.id = id;
         this.startNodeId = startNodeId;
         this.currentState = nodes[startNodeId];
-        if (this.currentState == undefined) {
-            throw Error("Start state id has to be defined!");
-        }
         this.nodes = nodes;
         this.edges = edges;
         this.stopNodeIds = stopNodeIds;
@@ -63,9 +67,9 @@ export class ProgramModel {
      * Simulate transitions on the graph. Edges are tested only once if they are reached.
      */
     makeOneTransition(t: TestDriver, checkUtility: CheckUtility): ModelEdge {
-        let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.stepNbrOfLastTransition;
+        let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
         let edge = this.currentState.testEdgeConditions(t, checkUtility, stepsSinceLastTransition,
-            this.stepNbrOfProgramEnd);
+            this.programEndStep);
 
 
         if (edge != null) {
@@ -75,8 +79,8 @@ export class ProgramModel {
     }
 
     testForEvent(t: TestDriver, cu: CheckUtility, eventStrings: string[]): ModelEdge {
-        let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.stepNbrOfLastTransition;
-        let edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.stepNbrOfProgramEnd,
+        let stepsSinceLastTransition = (t.getTotalStepsExecuted() + 1) - this.lastTransitionStep;
+        let edge = this.currentState.testForEvent(t, cu, stepsSinceLastTransition, this.programEndStep,
             eventStrings);
 
         if (edge != null) {
@@ -89,8 +93,8 @@ export class ProgramModel {
         this.coverageCurrentRun[edge.id] = true;
         this.coverageTotal[edge.id] = true;
         this.currentState = this.nodes[edge.getEndNodeId()];
-        this.stepNbrOfScndLastTransition = this.stepNbrOfLastTransition;
-        this.stepNbrOfLastTransition = t.getTotalStepsExecuted() + 1;
+        this.secondLastTransitionStep = this.lastTransitionStep;
+        this.lastTransitionStep = t.getTotalStepsExecuted() + 1;
 
     }
 
@@ -113,7 +117,7 @@ export class ProgramModel {
     /**
      * Get the coverage of all test runs with this model. Resets the total coverage.
      */
-    getTotalCoverage() {
+    getTotalCoverage(): {covered: ProgramModelEdge[], total: number, missedEdges: ProgramModelEdge[]} {
         let covered = [];
         let missedEdges = [];
         for (const key in this.edges) {
@@ -127,7 +131,7 @@ export class ProgramModel {
         return {
             covered: covered,
             total: Object.keys(this.edges).length,
-            missedEdges
+            missedEdges: missedEdges
         }
     }
 
@@ -150,8 +154,8 @@ export class ProgramModel {
      */
     reset(): void {
         this.currentState = this.nodes[this.startNodeId];
-        this.stepNbrOfLastTransition = 0;
-        this.stepNbrOfScndLastTransition = 0;
+        this.lastTransitionStep = 0;
+        this.secondLastTransitionStep = 0;
         Object.values(this.nodes).forEach(node => {
             node.reset()
         });
@@ -170,8 +174,8 @@ export class ProgramModel {
     }
 
     setTransitionsStartTo(steps: number) {
-        this.stepNbrOfLastTransition = steps;
-        this.stepNbrOfScndLastTransition = steps;
+        this.lastTransitionStep = steps;
+        this.secondLastTransitionStep = steps;
     }
 
     simplifyForSave() {
