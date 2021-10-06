@@ -14,37 +14,42 @@ const logger = {
     clear: () => console.clear()
 };
 
-const validateCommandLineArguments = args => {
-    const noOptionsGiven = args.rawArgs.length < 3;
+const validateCommandLineArguments = commander => {
+    const noOptionsGiven = commander.rawArgs.length < 3;
     if (noOptionsGiven) {
-        args.help();
+        commander.help();
     }
-
-    if (!args.scratchPath && !args.isGenerateWitnessTestOnly) {
+    const options = commander._optionValues
+    if (!options.scratchPath && !options.isGenerateWitnessTestOnly) {
         logger.error('No path to a Scratch file was given, please use the -s option');
         process.exit(1);
     }
 
-    if (!args.testPath && !args.generateTests) {
-        logger.error('No path to a test file was given, please use the -t option');
+    if (!options.testPath && !options.generateTests && !options.modelPath) {
+        logger.error('Missing testing mode argument. Please use the -t option for a test suite, -m option for ' +
+            'model tests, or -g option for test generation.');
         process.exit(1);
     }
 
-    if (args.numberOfTabs > os.cpus().length) {
-        logger.error(`You selected to parallelize the tests in ${args.numberOfTabs} tabs, while only having ` +
+    if (options.numberOfTabs > os.cpus().length) {
+        logger.error(`You selected to parallelize the tests in ${options.numberOfTabs} tabs, while only having ` +
             `${os.cpus().length} threads / CPUs available. Please do not use more than ${os.cpus().length}, as ` +
             `otherwise tests might fail and will need longer to initialize.`);
         process.exit(1);
     }
 };
 
-// Defines the CLI interface of the runner, including checks and defaults.
+// Defines the CLI of the runner, including checks and defaults.
 const cli = {
     start: () => {
         commander
             .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../whisker-web/dist/index.html')
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
+            .option('-m, --modelPath <Path>', 'Model to test with', false)
+            .option('-mr, --modelRepetition <Integer>', 'Model test repetitions. Ignored if a test suite is specified.', "1")
+            .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run in seconds', "30")
+            .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
@@ -57,7 +62,8 @@ const cli = {
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
             .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
-            .option('-n, --isNeuroevolution', 'If Whisker should use Neuroevolution during testSuite execution', false);
+            .option('-n, --isNeuroevolution', 'If Whisker should use dynamic test suites', false)
+            .option('-se, --seed <Integer>', 'Seeds the Scratch-VM using the specified integer');
 
         commander.parse(process.argv);
 
@@ -65,6 +71,10 @@ const cli = {
             whiskerURL,
             scratchPath,
             testPath,
+            modelPath,
+            modelRepetition,
+            modelDuration,
+            modelCaseSensitive,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -77,8 +87,9 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
-            isNeuroevolution
-        } = commander;
+            isNeuroevolution,
+            seed
+        } = commander._optionValues;
 
         validateCommandLineArguments(commander);
 
@@ -86,6 +97,10 @@ const cli = {
             whiskerURL: `file://${path.resolve(whiskerURL)}`,
             scratchPath,
             testPath,
+            modelPath,
+            modelRepetition,
+            modelDuration,
+            modelCaseSensitive,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -98,7 +113,8 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
-            isNeuroevolution
+            isNeuroevolution,
+            seed
         };
     }
 };

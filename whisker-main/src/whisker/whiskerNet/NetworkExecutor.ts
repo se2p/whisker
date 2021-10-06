@@ -5,7 +5,6 @@ import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {EventObserver} from "../testcase/EventObserver";
 import {ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
-import {seedScratch} from "../../util/random"
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
 import {NetworkChromosome} from "./NetworkChromosome";
@@ -105,7 +104,7 @@ export class NetworkExecutor {
         let workingNetwork = false;
         const codons = new List<number>()
 
-        seedScratch(String(Randomness.getInitialSeed()))
+        Randomness.seedScratch();
 
         // Activate the network <stabilizeCounter> times to stabilise it for classification
         network.flushNodeValues();
@@ -202,6 +201,7 @@ export class NetworkExecutor {
 
         // If we found a defect network let it go extinct!
         if (!workingNetwork) {
+            console.error("Found defect Network", network)
             network.hasDeathMark = true;
         }
         // Save the codons in order to transform the network into a TestChromosome later
@@ -217,7 +217,7 @@ export class NetworkExecutor {
         const events = new List<[ScratchEvent, number[]]>();
         const codons = new List<number>()
 
-        seedScratch(String(Randomness.getInitialSeed()))
+        Randomness.seedScratch();
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this.projectStopped.bind(this);
@@ -296,7 +296,7 @@ export class NetworkExecutor {
         const events = network.trace.events;
         let eventIndex = 0;
 
-        seedScratch(String(Randomness.getInitialSeed()))
+        Randomness.seedScratch();
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this.projectStopped.bind(this);
@@ -346,7 +346,7 @@ export class NetworkExecutor {
         const events = network.trace.events;
         let eventIndex = 0;
 
-        seedScratch(String(Randomness.getInitialSeed()))
+        Randomness.seedScratch();
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this.projectStopped.bind(this);
@@ -363,13 +363,13 @@ export class NetworkExecutor {
             // Select the nextEvent by fetching the nextEvent from the staticTestSuite if there are events left
             let nextEvent: ScratchEvent
             let args = []
-            if(eventIndex < events.size()) {
+            if (eventIndex < events.size()) {
                 nextEvent = events.get(eventIndex)[0];
                 args = events.get(eventIndex)[1];
                 eventIndex++;
             }
             // If there are no events left, fall back to random event selection
-            else{
+            else {
                 // Collect the currently available events
                 // TODO: This is wrapped in a Try-Catch since this tends to throw an error iff executed on the cluster.
                 //  Find out why this is the case and handle correctly at point of failure! However, works for now...

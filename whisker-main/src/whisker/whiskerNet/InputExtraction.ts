@@ -6,7 +6,8 @@ import VMWrapper from "../../vm/vm-wrapper"
 import {Container} from "../utils/Container";
 import {Pair} from "../utils/Pair";
 
-const twgl = require('twgl.js');
+import * as twgl from 'twgl.js';
+//const twgl = require('twgl.js');
 
 
 export class InputExtraction {

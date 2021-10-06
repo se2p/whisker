@@ -31,7 +31,7 @@ export abstract class ListChromosome<T> extends Chromosome {
 
     private _genes: List<T>;
 
-    constructor(genes: List<T>) {
+    protected constructor(genes: List<T>) {
         super();
         this._genes = genes.clone();
     }

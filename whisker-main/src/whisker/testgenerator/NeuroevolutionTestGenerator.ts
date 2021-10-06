@@ -34,7 +34,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
      */
     protected buildSearchAlgorithm(initializeFitnessFunction: boolean): SearchAlgorithm<any> {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
-            .addProperties(this._config.getNeuroevolutionProperties() as unknown as SearchAlgorithmProperties<any>);
+            .addProperties(this._config.neuroevolutionProperties as unknown as SearchAlgorithmProperties<any>);
 
         if (initializeFitnessFunction) {
             builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),

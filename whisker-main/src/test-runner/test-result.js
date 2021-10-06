@@ -23,7 +23,13 @@ class TestResult {
          * @type {any[]}
          */
         this.log = [];
+
+        /**
+         * @type {ModelResult}
+         */
+        this.modelResult = null;
     }
 }
+
 
 module.exports = TestResult;

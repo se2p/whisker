@@ -32,6 +32,8 @@ describe('Test NEAT', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
+        Container.debugLog = () => { /* suppress output */ };
+
         const crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,

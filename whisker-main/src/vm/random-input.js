@@ -1,4 +1,4 @@
-const Random = require('../util/random');
+const {Randomness} = require("../whisker/utils/Randomness");
 
 /**
  * {
@@ -17,33 +17,33 @@ const Random = require('../util/random');
  *     TODO "group": only have one input active at a time for every group?
  * }
  */
-
 class RandomInput {
     constructor (data) {
         /**
-         * @type {object}
+         * @type {object} Given input data.
          */
         this.data = data;
 
         /**
-         * @type {number}
+         * @type {number} Weight property of data input.
          */
         this.weight = data.hasOwnProperty('weight') ? data.weight : 1;
 
         /**
-         * @type {(Input|null)}
+         * @type {(Input|null)} Converted input from given data.
          */
         this.input = null;
     }
 
     /**
-     * @param {Inputs} inputs .
+     * Registers the random input data.
+     * @param {Inputs} inputs Input from vm wrapper to register.
      */
     register (inputs) {
         const randomData = {...this.data};
 
         if (randomData.isDown === 'random') {
-            randomData.isDown = Random.randomBoolean();
+            randomData.isDown = Randomness.getInstance().randomBoolean();
         }
 
         for (const prop of ['duration', 'x', 'y', 'xOffset', 'yOffset', 'length']) {
@@ -59,7 +59,7 @@ class RandomInput {
                 '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
 
             for (let i = 0; i < length; i++) {
-                answer += chars.charAt(Random.randomInt(0, chars.length - 1));
+                answer += chars.charAt(Randomness.getInstance().nextInt(0, chars.length - 1));
             }
 
             randomData.answer = answer;
@@ -69,15 +69,17 @@ class RandomInput {
     }
 
     /**
-     * @return {boolean} .
+     * Evaluates if a current input exists or is active.
+     * @return {boolean} true if input exists, false otherwise.
      */
     isActive () {
         return this.input !== null && this.input.isActive();
     }
 
     /**
-     * @param {(number|number[])} prop .
-     * @return {?number} .
+     * Gives back a random property from a given properties array.
+     * @param {(number|number[])} prop The properties to choose from.
+     * @return {?number} A random property.
      */
     static getRandomProp (prop) {
         if (typeof prop === 'number') {
@@ -87,35 +89,39 @@ class RandomInput {
                 return prop[0];
             } else if (prop.length >= 2) {
                 const [min, max] = prop;
-                return Random.randomInt(min, max);
+                return Randomness.getInstance().nextInt(min, max);
             }
         }
     }
 }
 
+
 class RandomInputs {
     constructor (vmWrapper) {
         /**
-         * @type {VMWrapper}
+         * @type {VMWrapper} The given vm wrapper.
          */
         this.vmWrapper = vmWrapper;
 
         /**
-         * @type {RandomInput[]}
+         * @type {RandomInput[]} Array of random inputs.
          */
         this.randomInputs = [];
 
         /**
-         * @type {number}
+         * @type {number} The random input interval time.
          */
         this.frequency = 100;
 
         /**
-         * @type {number}
+         * @type {number} The last time an input data was given.
          */
         this.lastInputTime = 0;
     }
 
+    /**
+     * Generated a random input and registers it.
+     */
     performRandomInput () {
         if (!this.randomInputs.length) {
             return;
@@ -142,7 +148,7 @@ class RandomInputs {
             return;
         }
 
-        let randomWeight = Random.randomFloat(0, sumOfWeights);
+        let randomWeight = Randomness.getInstance().nextDoubleMinMax(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
                 this.lastInputTime = timeElapsed;
@@ -154,23 +160,32 @@ class RandomInputs {
     }
 
     /**
-     * @param {object[]} randomInputs .
+     * Generates an array of random inputs.
+     * @param {object[]} randomInputs An array of random inputs.
      */
     registerRandomInputs (randomInputs) {
         this.randomInputs = this.randomInputs.concat(randomInputs.map(data => new RandomInput(data)));
     }
 
+    /**
+     * Clears the stored array of random inputs.
+     */
     clearRandomInputs () {
         this.randomInputs = [];
     }
 
     /**
-     * @param {number} frequency .
+     * Sets a new value for the random input interval times.
+     * @param {number} frequency The new frequency value.
      */
     setRandomInputInterval (frequency) {
         this.frequency = frequency;
     }
 
+    /**
+     * Detects random inputs.
+     * @param props A list of properties.
+     */
     detectRandomInputs (props) {
         if (typeof props === 'undefined') {
             props = {};
@@ -195,13 +210,14 @@ class RandomInputs {
     }
 
     /**
-     * @param {RenderedTarget} target .
-     * @param {object} block .
+     * Detects random input of a specific target block.
+     * @param {RenderedTarget} target The target sprite.
+     * @param {object} block A block to work on.
      * @param {{
      *      duration:(number[]|number),
      *      xOffset: (number[]|number),
      *      yOffset: (number[]|number)
-     * }} props .
+     * }} props A list of properties.
      * @private
      */
     _detectRandomInput (target, block, props) {

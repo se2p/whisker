@@ -34,11 +34,11 @@ export class WaitEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.runForSteps(this._steps);
+        await Container.testDriver.wait(this._steps);
     }
 
     public toJavaScript(): string {
-        return `await t.runForSteps(${this._steps});`;
+        return `await t.wait(${this._steps});`;
     }
 
     public toJSON(): Record<string, any> {
@@ -77,7 +77,7 @@ export class WaitEvent extends ScratchEvent {
                 break;
         }
         this._steps %= Container.config.getWaitStepUpperBound();
-        // If the event has been selected execute if for at least one step.
+        // If the event has been selected execute it for at least one step.
         if (this._steps < 1) {
             this._steps = 1;
         }

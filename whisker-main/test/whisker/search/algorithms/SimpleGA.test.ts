@@ -43,17 +43,21 @@ describe('SimpleGA', () => {
         mock.init()
         // @ts-ignore
         Container.vmWrapper = mock;
+
+        Container.debugLog = () => { /* suppress output */ };
     });
 
     test('Trivial bitstring with SimpleGA', async () => {
 
         const n = 10;
-        const properties = new SearchAlgorithmProperties(50, n);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(50);
+        properties.setChromosomeLength(n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
         properties.setStoppingCondition(new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition()));
-        properties.setMutationProbablity(0.2);
+        properties.setMutationProbability(0.2);
         properties.setCrossoverProbability(0.8);
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.SIMPLEGA)
@@ -74,7 +78,9 @@ describe('SimpleGA', () => {
 
     test('Setter', () => {
         const n = 10;
-        const properties = new SearchAlgorithmProperties(1, n);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(1);
+        properties.setChromosomeLength(n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(

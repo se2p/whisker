@@ -27,7 +27,6 @@ import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {EventObserver} from "./EventObserver";
-import {seedScratch} from "../../util/random";
 import {Randomness} from "../utils/Randomness";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
@@ -69,7 +68,7 @@ export class TestExecutor {
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
         const events = new List<[ScratchEvent, number[]]>();
 
-        seedScratch(String(Randomness.getInitialSeed()));
+        Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -140,7 +139,7 @@ export class TestExecutor {
      * @param numberOfEvents the number of events that should be executed.
      */
     async executeRandomEvents(randomEventChromosome: TestChromosome, numberOfEvents: number): Promise<ExecutionTrace> {
-        seedScratch(String(Randomness.getInitialSeed()));
+        Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
@@ -265,7 +264,7 @@ export class TestExecutor {
         return events.filter(event => !(event instanceof WaitEvent)).size() > 0;
     }
 
-    public resetState() {
+    public resetState(): void {
         // Delete clones
         const clones = [];
         for (const targetsKey in this._vm.runtime.targets) {

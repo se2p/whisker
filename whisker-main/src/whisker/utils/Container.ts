@@ -13,4 +13,5 @@ export class Container {
     static pathToGoal: ScratchPosition[];
     static template: string;
     static isNeuroevolution: boolean
+    static debugLog: typeof console.log;
 }

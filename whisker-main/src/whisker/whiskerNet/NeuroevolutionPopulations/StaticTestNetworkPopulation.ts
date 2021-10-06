@@ -60,7 +60,7 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
             const event = testCase[eventKey];
             switch (event.type) {
                 case "ClickSpriteEvent": {
-                    const target = Container.vmWrapper.getTargetOfSprite(event.args.target);
+                    const target = Container.vmWrapper.getTargetBySpriteName(event.args.target);
                     const steps = event.args.steps;
                     eventList.add([new ClickSpriteEvent(target, steps), [target, steps]]);
                     break
@@ -69,7 +69,7 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
                     eventList.add([new ClickStageEvent(), []]);
                     break;
                 case "DragSpriteEvent": {
-                    const target = Container.vmWrapper.getTargetOfSprite(event.args.target);
+                    const target = Container.vmWrapper.getTargetBySpriteName(event.args.target);
                     const x = event.args.x;
                     const y = event.args.y;
                     eventList.add([new DragSpriteEvent(target, x, y), [target, x, y]]);

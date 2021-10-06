@@ -1,6 +1,6 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {NetworkChromosome} from "../NetworkChromosome";
-import {StatementCoverageFitness} from "../../testcase/fitness/StatementFitnessFunction";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import {List} from "../../utils/List";
 import {Container} from "../../utils/Container";
@@ -54,7 +54,7 @@ export class StatementNetworkFitness implements NetworkFitnessFunction<NetworkCh
 
         // Step through each statement and check if we reached it.
         const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
-        const statemenCoverage: List<StatementCoverageFitness> = factory.extractFitnessFunctions(Container.vm, new List<string>());
+        const statemenCoverage: List<StatementFitnessFunction> = factory.extractFitnessFunctions(Container.vm, new List<string>());
         let statementScore = 0;
         for (const statement of statemenCoverage) {
             if (statement.isCovered(testChromosome))

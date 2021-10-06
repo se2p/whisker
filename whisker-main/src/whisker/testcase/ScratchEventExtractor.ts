@@ -44,7 +44,7 @@ export abstract class ScratchEventExtractor {
     protected availableTextSnippets = new List<string>();
     protected proceduresMap = new Map<string, List<ScratchEvent>>();
 
-    constructor(vm: VirtualMachine) {
+    protected constructor(vm: VirtualMachine) {
         this.extractAvailableTextSnippets(vm);
         this.extractProcedures(vm);
     }
@@ -166,7 +166,7 @@ export abstract class ScratchEventExtractor {
                     eventList.add(new DragSpriteEvent(target, x, y));
                 } else {
                     // Target senses another sprite
-                    let sensingRenderedTarget = Container.vmWrapper.getTargetOfSprite(value);
+                    let sensingRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
                     // If the renderedTarget is not visible. Check if we have clones that might be.
                     if (!sensingRenderedTarget.visible) {
                         for (const clone of sensingRenderedTarget.sprite.clones) {
@@ -291,7 +291,7 @@ export abstract class ScratchEventExtractor {
         return answer;
     }
 
-    private _extractWaitDurations(target, block): number {
+    private static _extractWaitDurations(target, block): number {
         const inputs = target.blocks.getInputs(block);
         if (target.blocks.getOpcode(block) == 'control_wait') {
             const op = target.blocks.getBlock(inputs.DURATION.block);

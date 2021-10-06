@@ -17,9 +17,9 @@ const path = require('path');
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
-    whiskerURL, scratchPath, testPath, errorWitnessPath, addRandomInputs, accelerationFactor, csvFile, configPath,
-    isHeadless, numberOfTabs, isConsoleForwarded, isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly,
-    isNeuroevolution
+    whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, errorWitnessPath,
+    addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
+    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, isNeuroevolution, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -34,34 +34,46 @@ if (isGenerateWitnessTestOnly) {
 async function init () {
 
     // args: ['--use-gl=desktop'] could be used next to headless, but pages tend to quit unexpectedly
-    const browser = await puppeteer.launch(
-        {
-            headless: !!isHeadless,
+    const production = process.env.NODE_ENV === "production";
+    const puppeteerDefaultArgs = [
+        '--disable-gpu',
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
+    ];
+    const puppeteerDebuggingArgs = [...puppeteerDefaultArgs, '--remote-debugging-port=9222'];
+    const args = production ? puppeteerDefaultArgs : puppeteerDebuggingArgs;
+    const browser = await puppeteer.launch({
+        headless: !!isHeadless,
 
-            // If specified, use the given version of Chromium instead of the one bundled with Puppeteer.
-            // This feature is currently used with Docker to build smaller images.
-            // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
-            // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#puppeteerlaunchoptions
-            // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#environment-variables
-            // https://github.com/puppeteer/puppeteer/issues/1793#issuecomment-358216238
-            executablePath: process.env.CHROME_BIN || null,
+        // If specified, use the given version of Chromium instead of the one bundled with Puppeteer.
+        // This feature is currently used with Docker to build smaller images.
+        // Note: Puppeteer is only guaranteed to work with the bundled Chromium, use at own risk.
+        // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#puppeteerlaunchoptions
+        // https://github.com/puppeteer/puppeteer/blob/v10.2.0/docs/api.md#environment-variables
+        // https://github.com/puppeteer/puppeteer/issues/1793#issuecomment-358216238
+        executablePath: process.env.CHROME_BIN || null,
 
-            args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
-        });
+        args: args,
+    });
 
     // Test generation
     if (generateTests) {
         // Todo use correct config
         const downloadPath = typeof generateTests === 'string' ? generateTests : __dirname;
         runGeneticSearch(browser, downloadPath)
-            .then(() => {
+            .then((csv) => {
                 browser.close();
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+                // Save results in CSV-file if specified
+                if(csvFile){
+                    console.info(`Creating CSV summary in ${csvFile}`);
+                    fs.writeFileSync(csvFile, csv);
+                }
             })
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
     }
-    // Test suite evaluated using Neuroevolution
+    // Dynamic Test suite using Neuroevolution
     else if(isNeuroevolution){
         if (fs.lstatSync(scratchPath).isDirectory()) {
             const csvs = [];
@@ -92,56 +104,70 @@ async function init () {
         }
         await browser.close();
     }
-    // Standard TestSuite executed without Neuroevolution
+    // Standard TestSuite / Model-based testing
     else {
+        if (csvFile != false && fs.existsSync(csvFile)) {
+            console.error(`CSV file already exists, aborting`);
+            await browser.close();
+            return;
+        }
+        const csvs = [];
+
         if (fs.lstatSync(scratchPath).isDirectory()) {
-            if (csvFile !== false && fs.existsSync(csvFile)) {
-                console.error("CSV file already exists, aborting");
-                await browser.close();
-                return;
-            }
-            const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
                 if (!file.endsWith("sb3")) {
-                    logger.info("Not a Scratch project: "+file);
+                    logger.info(`Not a Scratch project: ${file}`);
                     continue;
                 }
-                logger.info("Testing project "+file);
-                csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file)));
+                logger.info(`Testing project ${file}`);
+                csvs.push(...(await runTestsOnFile(browser, scratchPath + '/' + file, modelPath)));
             }
 
-            if (csvFile !== false) {
-                console.info("Creating CSV summary in "+csvFile);
-                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
-            }
+
         } else {
-            const output = await runTestsOnFile(browser, scratchPath);
+            csvs.push(...await runTestsOnFile(browser, scratchPath, modelPath));
+        }
 
-            if (csvFile !== false) {
-                console.info("Creating CSV summary in "+csvFile);
-                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(output));
-            }
+        if (csvFile != false) {
+            console.info(`Creating CSV summary in ${csvFile}`);
+            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
         }
         await browser.close();
     }
 }
 
-async function runTestsOnFile (browser, targetProject) {
-    const paths = prepareTestFiles(testPath);
+async function runTestsOnFile (browser, targetProject, modelPath) {
     const csvs = [];
-    await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject)))
-        .then(results => {
-            // browser.close();
-            const summaries = results.map(({summary}) => summary);
-            const coverages = results.map(({coverage}) => coverage);
-            csvs.push(...results.map(({csv}) => csv));
+    if (testPath) {
+        const paths = prepareTestFiles(testPath);
+        await Promise.all(paths.map((path, index) => runTests(path, browser, index, targetProject, modelPath)))
+            .then(results => {
+                // browser.close();
+                const summaries = results.map(({summary}) => summary);
+                const coverages = results.map(({coverage}) => coverage);
+                const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
+                csvs.push(...results.map(({csv}) => csv));
 
-            printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages));
-            logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
-        })
-        .catch(errors => logger.error('Error on executing tests: ', errors))
-        .finally(() => rimraf.sync(tmpDir));
+                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+                    modelCoverage[0]);
+                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+            })
+            .catch(errors => logger.error('Error on executing tests: ', errors))
+            .finally(() => rimraf.sync(tmpDir));
 
+    } else {
+        // model path given, test only by model
+        await runTests(undefined, browser, 0, targetProject, modelPath)
+            .then(result => {
+                csvs.push(result.csv);
+
+                printTestResultsFromCoverageGenerator([result.summary],
+                    CoverageGenerator.mergeCoverage([result.coverage]), result.modelCoverage);
+                logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
+            })
+            .catch(errors => logger.error('Error on executing tests: ', errors))
+            .finally(() => rimraf.sync(tmpDir));
+    }
     return csvs;
 }
 
@@ -154,12 +180,15 @@ async function runGeneticSearch (browser, downloadPath) {
 
     function optionallyEnableConsoleForward () {
         if (isConsoleForwarded) {
+            // https://github.com/puppeteer/puppeteer/issues/1512#issuecomment-349784408
             page.on('console', msg => {
-                if (msg._args.length) {
-                    logger.info(`Forwarded: `, msg._args.map(arg => arg._remoteObject.value)
-                        .join(' '));
+                // https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#class-consolemessage
+                if (msg.type() === "warning") {
+                    logger.warn(`Forwarded: ${msg.text()}`);
+                } else {
+                    logger.info(`Forwarded: ${msg.text()}`);
                 }
-            });
+            }).on('pageerror', error => logger.error(`Forwarded: ${error.message}`));
         }
     }
 
@@ -172,48 +201,27 @@ async function runGeneticSearch (browser, downloadPath) {
         }
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
     async function readTestOutput () {
-        const coverageOutput = await page.$('#output-run .output-content');
         const logOutput = await page.$('#output-log .output-content');
-
-        let coverageLog = '';
-        let log = '';
-
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (isLiveLogEnabled) {
-                const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '')
-                    .trim();
-
-                if (newInfoFromLog.length) {
-                    logger.log(newInfoFromLog);
-                }
-
-                log = currentLog;
-            }
-
-            const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
-                .trim();
-            if (newInfoFromCoverage.length && isLiveOutputCoverage) {
-                logger.log(`Coverage: `, newInfoFromCoverage);
-            } else if (newInfoFromCoverage.includes('not ok ')) {
-                logger.warn(`Coverage: `, newInfoFromCoverage);
-            }
-            coverageLog = currentCoverageLog;
-
-            if (currentCoverageLog.includes('summary')) {
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('uncovered')) {
                 break;
             }
-
             await page.waitForTimeout(1000);
         }
-
-        return coverageLog;
+        // Get CSV-Output
+        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+        const coverageLogLines = outputLog.split('\n');
+        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
+        const csvHeader = coverageLogLines[csvHeaderIndex];
+        const csvBody = coverageLogLines[csvHeaderIndex + 1]
+        return `${csvHeader}\n${csvBody}`;
     }
 
     async function executeSearch () {
@@ -277,43 +285,22 @@ async function runDynamicTestSuite (browser, scratchPath) {
      * run is over.
      */
     async function readTestOutput () {
-        const coverageOutput = await page.$('#output-run .output-content');
         const logOutput = await page.$('#output-log .output-content');
-
-        let coverageLog = '';
-        let log = '';
-
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (isLiveLogEnabled) {
-                const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '')
-                    .trim();
-
-                if (newInfoFromLog.length) {
-                    logger.log(newInfoFromLog);
-                }
-
-                log = currentLog;
-            }
-
-            const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
-                .trim();
-            if (newInfoFromCoverage.length && isLiveOutputCoverage) {
-                logger.log(`Page ${index} | Coverage: `, newInfoFromCoverage);
-            } else if (newInfoFromCoverage.includes('not ok ')) {
-                logger.warn(`Page ${index} | Coverage: `, newInfoFromCoverage);
-            }
-            coverageLog = currentCoverageLog;
-
-            if (currentCoverageLog.includes('summary')) {
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('uncovered')) {
                 break;
             }
-
             await page.waitForTimeout(1000);
         }
-        return log;
+        // Get CSV-Output
+        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+        const coverageLogLines = outputLog.split('\n');
+        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
+        const csvHeader = coverageLogLines[csvHeaderIndex];
+        const csvBody = coverageLogLines[csvHeaderIndex + 1]
+        return `${csvHeader}\n${csvBody}`;
     }
 
     async function executeSearch () {
@@ -346,9 +333,11 @@ async function showHiddenFunctionality(page) {
     await toggleTap.evaluate(t => t.click());
     const toggleLog = await page.$('#toggle-log');
     await toggleLog.evaluate(t => t.click());
+    const toggleModelEditor = await page.$('#toggle-model-editor');
+    await toggleModelEditor.evaluate(t => t.click());
 }
 
-async function runTests (path, browser, index, targetProject) {
+async function runTests (path, browser, index, targetProject, modelPath) {
     const page = await browser.newPage({context: Date.now()});
     page.on('error', error => {
         logger.error(error);
@@ -375,8 +364,19 @@ async function runTests (path, browser, index, targetProject) {
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
-        await (await page.$('#fileselect-tests')).uploadFile(path);
+        if (testPath) {
+            await (await page.$('#fileselect-tests')).uploadFile(path);
+        }
+        if (modelPath) {
+            await (await page.$('#fileselect-models')).uploadFile(modelPath);
+            await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, modelRepetition);
+            await page.evaluate(factor => document.querySelector('#model-duration').value = factor, modelDuration);
+            if (modelCaseSensitive === "true") {
+                await (await page.$('#model-case-sensitive')).click();
+            }
+        }
         await showHiddenFunctionality(page);
     }
 
@@ -451,6 +451,24 @@ async function runTests (path, browser, index, targetProject) {
     }
 
     /**
+     * Generates a model coverage object based on the coveragePerModel and missedEdges.
+     *
+     * @param {*} serializedCoverage  The model coverage object using array and objects instead of maps and sets, as it was
+     *                                serialized by puppeter
+     */
+    function convertSerializedModelCoverage (serializedCoverage) {
+        const modelCoverage = {};
+        serializedCoverage.modelCoverage.forEach(({key,values}) => {
+            const coverageObject = {};
+            values.forEach(({key, values}) => {
+                coverageObject[key] = values;
+            })
+            modelCoverage[key] =  coverageObject;
+        });
+        return modelCoverage;
+    }
+
+    /**
      * Uses the CoverageGenerator, which is attached to the window object in the whisker-web/index.js to get the coverage
      * of the test run and transfer it from the Whisker instance in the browser to this script.
      * The original Maps and Sets have to be reworked to be a collection of objects and arrays, otherwise the coverage raw
@@ -469,10 +487,11 @@ async function runTests (path, browser, index, targetProject) {
         await executeTests();
 
         const {csvRow, coverageLog} = await readTestOutput();
-        const {serializeableCoverageObject, summary} = await promise;
+        const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
         await page.close();
 
-        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializeableCoverageObject), csv: csvRow});
+        return Promise.resolve({summary, coverage: convertSerializedCoverageToCoverage(serializableCoverageObject),
+            csv: csvRow, modelCoverage: convertSerializedModelCoverage(serializableModelCoverage)});
     } catch (e) {
         return Promise.reject(e);
     }
@@ -587,14 +606,20 @@ function prepareTestFiles (whiskerTestPath) {
  *
  * @param {string} summaries The summaries from the whisker-web instance test run
  * @param {string} coverage  Combined coverage of from all pages
+ * @param {Map} modelCoverage  Coverage of the models.
  */
-function printTestResultsFromCoverageGenerator (summaries, coverage) {
+function printTestResultsFromCoverageGenerator (summaries, coverage ,modelCoverage) {
     const formattedSummary = TAP13Formatter.mergeFormattedSummaries(summaries.map(TAP13Formatter.formatSummary));
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
     const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
     const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
 
-    logger.info('\nSummary:\n', summaryString);
-    logger.info('\nCoverage:\n', coverageString);
+    const formattedModelCoverage = TAP13Formatter.formatModelCoverage(modelCoverage);
+    const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+    logger.info(`\nSummary:\n ${summaryString}`);
+    logger.info(`\nCoverage:\n ${coverageString}`);
+    logger.info(`\nModel coverage:\n ${modelCoverageString}`);
+
 }

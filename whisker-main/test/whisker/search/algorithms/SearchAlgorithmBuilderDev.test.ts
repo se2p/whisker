@@ -59,10 +59,10 @@ describe('BuillderBitstringChromosome', () => {
         const chromosomeLength = 10;
         const populationSize = 50;
         const iterations = 100;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(populationSize);
+        properties.setChromosomeLength(chromosomeLength);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties,
             new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));

@@ -47,6 +47,8 @@ describe('MIO', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
+        Container.debugLog = () => { /* suppress output */ };
+
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
 
         const chromosomeLength = 10;
@@ -60,7 +62,9 @@ describe('MIO', () => {
         const maxMutationCountStart = 0;
         const maxMutationCountFocusedPhase = 10;
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(populationSize);
+        properties.setChromosomeLength(chromosomeLength);
         properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
         properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
         properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
@@ -116,9 +120,11 @@ describe('MIO', () => {
         const start = 0.4;
         const focusedPhase = 0.1;
 
-        const properties = new SearchAlgorithmProperties(populationSize, chromosomeLength);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(populationSize);
+        properties.setChromosomeLength(chromosomeLength);
         properties.setCrossoverProbability(crossoverProbability);
-        properties.setMutationProbablity(mutationProbability);
+        properties.setMutationProbability(mutationProbability);
         properties.setStartOfFocusedPhase(startOfFocusPhase);
         properties.setSelectionProbabilities(start, focusedPhase);
         properties.setMaxArchiveSizes(start, focusedPhase);

@@ -48,7 +48,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      */
     constructor(player: string, target: string, colorObstacles: string[],
                 spriteObstacles: string[]) {
-        this.player = Container.vmWrapper.getTargetOfSprite(player);
+        this.player = Container.vmWrapper.getTargetBySpriteName(player);
         if (!this.player) {
             throw new Error("Player Sprite not found. Please check your config file.");
         }

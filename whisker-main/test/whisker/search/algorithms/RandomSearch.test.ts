@@ -41,12 +41,16 @@ describe('RandomSearch', () => {
         mock.init()
         // @ts-ignore
         Container.vmWrapper = mock;
+
+        Container.debugLog = () => { /* suppress output */ };
     });
 
     test('Trivial bitstring with OneMax', async () => {
 
         const n = 2;
-        const properties = new SearchAlgorithmProperties(1, n);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(1);
+        properties.setChromosomeLength(n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
         properties.setStoppingCondition(new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
@@ -68,7 +72,9 @@ describe('RandomSearch', () => {
 
     test('Setter', () => {
         const n = 2;
-        const properties = new SearchAlgorithmProperties(1, n);
+        const properties = new SearchAlgorithmProperties();
+        properties.setPopulationSize(1);
+        properties.setChromosomeLength(n);
         const fitnessFunction = new OneMaxFitnessFunction(n);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(

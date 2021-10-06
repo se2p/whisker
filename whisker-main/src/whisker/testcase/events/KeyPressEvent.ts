@@ -38,24 +38,13 @@ export class KeyPressEvent extends ScratchEvent {
 
     async apply(): Promise<void> {
         // Press the specified key
-        Container.testDriver.inputImmediate({
-            device: 'keyboard',
-            key: this._keyOption,
-            isDown: true,
-            steps: this._steps
-        });
+        Container.testDriver.keyPress(this._keyOption, this._steps);
         // Wait for the key to be released again.
         await new WaitEvent(this._steps).apply();
     }
 
     public toJavaScript(): string {
-        return `t.inputImmediate({
-    device: 'keyboard',
-    key: '${this._keyOption}',
-    isDown: 'true',
-    steps: ${this._steps}
-});`+ `\n`+
-new WaitEvent(this._steps).toJavaScript()
+        return `t.keyPress('${this._keyOption}', ${this._steps});`;
     }
 
     public toJSON(): Record<string, any> {

@@ -29,7 +29,6 @@ import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
 import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
-import {seedScratch} from "../util/random";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {ExecutionTrace} from "./testcase/ExecutionTrace";
@@ -42,6 +41,7 @@ import {ScratchEventExtractor} from "./testcase/ScratchEventExtractor";
 import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGenerator";
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
+import {ScratchProject} from "./scratch/ScratchProject";
 import {FixedIterationsStoppingCondition} from "./search/stoppingconditions/FixedIterationsStoppingCondition";
 
 export class Search {
@@ -52,7 +52,7 @@ export class Search {
         this.vm = vm;
     }
 
-    private async execute(project, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
+    private async execute(project: ScratchProject, config: WhiskerSearchConfiguration): Promise<WhiskerTestListWithSummary> {
         console.log("Whisker-Main: test generation");
 
         const testGenerator: TestGenerator = config.getTestGenerator();
@@ -116,7 +116,7 @@ export class Search {
         let stoppingCondition : StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
             let maxIterations: number = undefined;
-            stoppingCondition = config.getNeuroevolutionProperties().stoppingCondition;
+            stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
             if(stoppingCondition instanceof FixedIterationsStoppingCondition){
                 maxIterations = stoppingCondition.maxIterations;
             }
@@ -134,7 +134,7 @@ export class Search {
             return csvOutput;
         }
         else {
-            stoppingCondition = config.getSearchAlgorithmProperties().getStoppingCondition();
+            stoppingCondition = config.searchAlgorithmProperties.getStoppingCondition();
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.
@@ -168,29 +168,39 @@ export class Search {
      * Main entry point -- called from whisker-web
      */
     public async run(vm, project, projectName: string, configRaw: string, configName: string,
-                     accelerationFactor: number, template?:string): Promise<Array<string>> {
+                     accelerationFactor: number, seedString: string, template?:string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
+        Container.template = template;
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
 
-        Container.template = template;
         Container.config = config;
         Container.vm = vm;
         Container.vmWrapper = util.getVMWrapper();
         Container.testDriver = util.getTestDriver({});
         Container.acceleration = accelerationFactor;
+        Container.debugLog = config.getLoggingFunction();
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
 
-        console.log(this.vm);
-
         await util.prepare(accelerationFactor || 1);
         util.start();
-        const seed = config.getRandomSeed();
-        Randomness.setInitialSeed(seed);
-        seedScratch(String(seed));
+
+        // Specify seed
+        const configSeed = config.getRandomSeed();
+        if (seedString !== 'undefined' && seedString !== "") {
+            // Prioritize seed set by CLI
+            if (configSeed) {
+                console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
+seed ${configSeed} defined within the config files.`)
+            }
+            Randomness.setInitialSeeds(seedString);
+        } else if (configSeed) {
+            Randomness.setInitialSeeds(configSeed);
+        }
+
         StatisticsCollector.getInstance().reset();
         StatisticsCollector.getInstance().projectName = projectName;
         StatisticsCollector.getInstance().configName = configName;
@@ -200,12 +210,12 @@ export class Search {
         const csvOutput = this.outputCSV(config);
 
         if( Container.isNeuroevolution &&
-            (Container.config.getNeuroevolutionProperties().populationType === 'static' ||
-            Container.config.getNeuroevolutionProperties().populationType === 'dynamic')){
+            (Container.config.neuroevolutionProperties.populationType === 'static' ||
+            Container.config.neuroevolutionProperties.populationType === 'dynamic')){
             testListWithSummary.summary = csvOutput;
         }
 
         const javaScriptText = this.testsToString(tests);
-        return [javaScriptText, testListWithSummary.summary];
+        return [javaScriptText, testListWithSummary.summary, csvOutput];
     }
 }

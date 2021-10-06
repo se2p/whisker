@@ -29,12 +29,12 @@ export class Pair<T> {
     /**
      * The first element of the pair.
      */
-    private _first: T;
+    private readonly _first: T;
 
     /**
      * The second element of the pair.
      */
-    private _second: T;
+    private readonly _second: T;
 
     /**
      * Creates a new pair from the specified elements.

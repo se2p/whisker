@@ -13,9 +13,11 @@ const imprintDE = require('./locales/de/imprint.json');
 const imprintEN = require('./locales/en/imprint.json');
 const privacyDE = require('./locales/de/privacy.json');
 const privacyEN = require('./locales/en/privacy.json');
+const modelEditorDE = require('./locales/de/modelEditor.json');
+const modelEditorEN = require('./locales/en/modelEditor.json');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
 const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
@@ -26,7 +28,9 @@ const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
+const DownloadContainer = require('./components/DownloadContainer');
 const InputRecorder = require('./components/input-recorder');
+const ModelEditor = require('./components/model-editor');
 
 const {showModal, escapeHtml} = require('./utils.js');
 
@@ -39,6 +43,25 @@ const accSlider = $("#acceleration-factor").slider();
 const LANGUAGE_OPTION = "lng";
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
+
+let testsRunning = false;
+const loadModelFromString = function (models) {
+    try {
+        Whisker.modelTester.load(models);
+    } catch (err) {
+        Whisker.outputLog.println("ERROR: " + err.message);
+        console.error(err);
+        const message = `${err.name}: ${err.message}`;
+        showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
+        throw err;
+    }
+
+    if (Whisker.modelTester.userModelsLoaded()) {
+        $('#model-user-loaded').text(i18next.t("model-output-user-model"));
+    } else {
+        $('#model-user-loaded').text(i18next.t("model-output-no-user-model"));
+    }
+}
 
 const loadTestsFromString = async function (string) {
     const config = await Whisker.configFileSelect.loadAsString();
@@ -68,7 +91,16 @@ const loadTestsFromString = async function (string) {
     return tests;
 };
 
+const disableVMRelatedButtons = function (exception) {
+    $(`.vm-related:not(${exception})`).prop('disabled', true);
+}
+
+const enableVMRelatedButtons = function () {
+    $('.vm-related').prop('disabled', false);
+}
+
 const runSearch = async function () {
+    disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
@@ -84,68 +116,118 @@ const runSearch = async function () {
     const config = await Whisker.configFileSelect.loadAsString();
     const template = await Whisker.templateFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
-    const res = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project, projectName, config, configName,
-        accelerationFactor, template);
-    Whisker.outputLog.print(res[1]);
+    const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
+        projectName, config, configName, accelerationFactor, seed, template);
+    // Prints uncovered blocks summary and csv summary separated by a newline
+    Whisker.outputLog.print(`${testListWithSummary}\n`);
+    Whisker.outputLog.print(csv);
     accSlider.slider('enable');
-    return res[0];
+    enableVMRelatedButtons();
+    return tests;
 };
+
+function _showRunIcon() {
+    $('#run-tests-icon').show();
+    $('#stop-tests-icon').hide();
+}
+
+function _showStopIcon() {
+    $('#run-tests-icon').hide();
+    $('#stop-tests-icon').show();
+}
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
-    $('#green-flag').prop('disabled', true);
-    $('#reset').prop('disabled', true);
-    let running = i18next.t("running");
-    $('#run-all-tests').prop('disabled', true).text(running);
-    $('#record').prop('disabled', true);
+    if (testsRunning) {
+        testsRunning = false;
+        _showRunIcon();
+        enableVMRelatedButtons();
+        Whisker.scratch.stop();
+        Whisker.testRunner.abort();
+        Whisker.testTable.updateAfterAbort();
+    } else {
+        disableVMRelatedButtons('#run-all-tests');
+        testsRunning = true;
+        _showStopIcon();
+        $('#green-flag').prop('disabled', true);
+        $('#reset').prop('disabled', true);
+        $('#record').prop('disabled', true);
 
-    let summary;
-    let coverage;
-    accSlider.slider('disable');
-    const accelerationFactor = $('#acceleration-value').text();
+        let summary;
+        let coverage;
+        let coverageModels = {};
+        accSlider.slider('disable');
+        const accelerationFactor = $('#acceleration-value').text();
+        const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+        let duration = Number(document.querySelector('#model-duration').value);
+        if (duration) {
+            duration = duration * 1000;
+        }
+        const repetitions = Number(document.querySelector('#model-repetitions').value);
+        const caseSensitive = $('#model-case-sensitive').is(':checked');
 
-    try {
-        await Whisker.scratch.vm.loadProject(project);
-        CoverageGenerator.prepareClasses({Thread});
-        CoverageGenerator.prepareVM(vm);
+        try {
+            await Whisker.scratch.vm.loadProject(project);
+            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareVM(vm);
 
-        summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor});
-        coverage = CoverageGenerator.getCoverage();
+            summary = await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester,
+                {accelerationFactor, seed}, {duration, repetitions, caseSensitive});
+            coverage = CoverageGenerator.getCoverage();
 
-        if (typeof window.messageServantCallback === 'function') {
-            const coveredBlockIdsPerSprite =
-                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
-            const blockIdsPerSprite =
-                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+            if (Whisker.modelTester.programModelsLoaded()) {
+                coverageModels = Whisker.modelTester.getTotalCoverage();
+            }
 
-            const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-            window.messageServantCallback({serializeableCoverageObject, summary});
+            if (typeof window.messageServantCallback === 'function') {
+                const coveredBlockIdsPerSprite =
+                    [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+                const blockIdsPerSprite =
+                    [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+
+                let modelCoverage = [];
+                if (Whisker.modelTester.programModelsLoaded()) {
+                    for (const modelName in coverageModels) {
+                        let content = [];
+                        const elem = coverageModels[modelName];
+                        content.push({key: "covered", values: elem.covered});
+                        content.push({key: "total", values: elem.total});
+                        content.push({key: "missedEdges", values: elem.missedEdges});
+                        modelCoverage.push({key: modelName, values: content});
+                    }
+                }
+                const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+                const serializableModelCoverage = {modelCoverage};
+                window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
+            }
+
+            CoverageGenerator.restoreClasses({Thread});
+        } finally {
+            _showRunIcon()
+            enableVMRelatedButtons();
+            accSlider.slider('enable');
+            testsRunning = false;
         }
 
-        CoverageGenerator.restoreClasses({Thread});
-    } finally {
-        $('#green-flag').prop('disabled', false);
-        $('#reset').prop('disabled', false);
-        let runTests = i18next.t("tests")
-        $('#run-all-tests').prop('disabled', false).text(runTests);
-        $('#record').prop('disabled', false);
-        accSlider.slider('enable');
+        if (summary === null) {
+            return;
+        }
+
+        const formattedSummary = TAP13Formatter.formatSummary(summary);
+        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+
+        const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
+        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+
+        Whisker.outputRun.println([
+            summaryString,
+            coverageString,
+            modelCoverageString
+        ].join('\n'))
     }
-
-    if (summary === null) {
-        return;
-    }
-
-    const formattedSummary = TAP13Formatter.formatSummary(summary);
-    const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-
-    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
-
-    Whisker.outputRun.println([
-        summaryString,
-        coverageString
-    ].join('\n'));
-};
+}
 
 const runTests = async function (tests) {
     Whisker.scratch.stop();
@@ -156,14 +238,14 @@ const runTests = async function (tests) {
 };
 
 const runAllTests = async function () {
-    if (Whisker.tests === undefined || Whisker.tests.length === 0) {
+    $('#run-all-tests').tooltip('hide');
+    if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         return;
     } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
         showModal(i18next.t("test-execution"), i18next.t("no-project"));
         return;
     }
-
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
@@ -179,27 +261,6 @@ const runAllTests = async function () {
 
 const initScratch = function () {
     Whisker.scratch = new Scratch(document.querySelector('#scratch-stage'));
-
-    $('#green-flag')
-        .removeClass('btn-success')
-        .addClass('btn-outline-success');
-    $('#stop')
-        .prop('disabled', true);
-
-    Whisker.scratch.vm.on(Runtime.PROJECT_RUN_START, () => {
-        $('#green-flag')
-            .removeClass('btn-outline-success')
-            .addClass('btn-success');
-        $('#stop')
-            .prop('disabled', false);
-    });
-    Whisker.scratch.vm.on(Runtime.PROJECT_RUN_STOP, () => {
-        $('#green-flag')
-            .removeClass('btn-success')
-            .addClass('btn-outline-success');
-        $('#stop')
-            .prop('disabled', true);
-    });
 };
 
 const initComponents = function () {
@@ -218,6 +279,8 @@ const initComponents = function () {
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
         fileSelect => fileSelect.loadAsString()
             .then(string => loadTestsFromString(string)));
+    Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
+        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string)));
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
@@ -228,7 +291,10 @@ const initComponents = function () {
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
-    Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
+    Whisker.modelTester = new ModelTester.ModelTester();
+
+    Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
+        Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
@@ -238,26 +304,50 @@ const initComponents = function () {
     Whisker.templateFileSelect = new FileSelect($('#fileselect-template')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
+
+    Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
+
     accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
 }
 
+function showAndJumpTo(elem) {
+    $(elem).show();
+    jumpTo(elem);
+}
+
+function jumpTo(elem) {
+    location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+    location.href = elem
+    window.scrollBy(0, -100) // respect header size
+}
+
 const initEvents = function () {
     $("#acceleration-factor")
-        .on('slide', function (slideEvt) { $("#acceleration-value").text(slideEvt.value);})
-        .on('change', function (clickEvt) { $("#acceleration-value").text(clickEvt.value.newValue);});
+        .on('slide', function (slideEvt) {
+            $("#acceleration-value").text(slideEvt.value);
+        })
+        .on('change', function (clickEvt) {
+            $("#acceleration-value").text(clickEvt.value.newValue);
+        });
     $('#green-flag').on('click', () => {
         if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
             showModal(i18next.t("test-generation"), i18next.t("no-project"));
         } else {
             Whisker.scratch.greenFlag();
         }
+        if (Whisker.inputRecorder.isRecording()) {
+            Whisker.inputRecorder.greenFlag();
+        }
     });
-    $('#stop').on('click', () => {
-        Whisker.testRunner.abort();
+    $('#stop-scratch').on('click', () => {
         Whisker.scratch.stop();
+        if (Whisker.inputRecorder.isRecording()) {
+            Whisker.inputRecorder.stop();
+        }
     });
     $('#reset').on('click', () => {
+        $('#reset').tooltip('hide');
         if (Whisker.tests === undefined || Whisker.tests.length === 0) {
             showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
@@ -280,21 +370,43 @@ const initEvents = function () {
             .text(i18next.t("start-record"));
     });
     $('#record').on('click', () => {
-        if (Whisker.scratch.isInputEnabled()) {
-            if (Whisker.inputRecorder.isRecording()) {
-                Whisker.inputRecorder.stopRecording();
-            } else {
-                Whisker.inputRecorder.startRecording();
-            }
+        $('#record').tooltip('hide');
+        if (Whisker.inputRecorder.isRecording()) {
+            enableVMRelatedButtons();
+            Whisker.inputRecorder.stopRecording();
+            Whisker.scratch.disableInput();
         } else {
-            showModal(i18next.t("inputs"), i18next.t("inputs-error"));
+            disableVMRelatedButtons('.record-related');
+            Whisker.scratch.enableInput();
+            Whisker.inputRecorder.startRecording();
         }
     });
-    $('#toggle-input').on('change', event => {
+    let modelLog = (msg)  => {
+        Whisker.outputLog.println(msg);
+    };
+    let modelWarning = (msg)  => {
+        Whisker.outputLog.println("MODEL WARNING: " + msg);
+    };
+    let modelCoverage = (coverage) => {
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverageLastRun(coverage);
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
+    }
+    let modelCheckbox = $('#model-logs-checkbox');
+    modelCheckbox.prop('checked',true);
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG, modelLog);
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_MISSED_EDGES, edges =>
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML(edges)))
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
+    modelCheckbox.on('change', event => {
         if ($(event.target).is(':checked')) {
-            Whisker.scratch.enableInput();
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG, modelLog);
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
         } else {
-            Whisker.scratch.disableInput();
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_LOG, modelLog);
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
         }
     });
     $('#toggle-advanced').on('change', event => {
@@ -302,9 +414,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#scratch-controls').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#scratch-controls'
+            showAndJumpTo('#scratch-controls');
         } else {
             $(event.target)
                 .parent()
@@ -312,14 +422,40 @@ const initEvents = function () {
             $('#scratch-controls').hide();
         }
     });
+    $('#toggle-test-editor').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            showAndJumpTo('#test-editor-div');
+            Whisker.testEditor.show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#test-editor-div').hide();
+        }
+    });
+    $('#toggle-model-editor').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            showAndJumpTo('#model-editor');
+            Whisker.modelEditor.reposition();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#model-editor').hide();
+        }
+    });
     $('#toggle-tap').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#output-run').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#output-run'
+            showAndJumpTo('#output-run');
         } else {
             $(event.target)
                 .parent()
@@ -332,9 +468,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            $('#output-log').show();
-            location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-            location.href = '#output-log'
+            showAndJumpTo('#output-log');
         } else {
             $(event.target)
                 .parent()
@@ -347,6 +481,8 @@ const initEvents = function () {
             if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
                 showModal(i18next.t("test-generation"), i18next.t("no-project"));
             } else {
+                $('#run-search').hide();
+                $('#search-running').show();
                 const tests = runSearch();
                 tests.then(
                     result => {
@@ -354,12 +490,15 @@ const initEvents = function () {
                         // TODO: This text is used as a marker to tell servant
                         //       when the search is done. There must be a nicer way...
                         Whisker.outputRun.println('summary');
-                        location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-                        location.href = '#test-table'
+                        jumpTo('#test-table')
+                        $('#run-search').show();
+                        $('#search-running').hide();
                     },
                 );
             }
         });
+    $('#run-search').show();
+    $('#search-running').hide();
     _addFileListeners();
 };
 
@@ -386,6 +525,12 @@ const _addFileListeners = function () {
         const fileName = Whisker.templateFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
         const label = document.querySelector('#fileselect-template').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-models').on('change', event => {
+        const fileName = Whisker.modelFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName("label")[0];
         _showTooltipIfTooLong(label, event);
     });
 }
@@ -441,6 +586,7 @@ $(document)
         initComponents();
         initEvents();
         toggleComponents();
+
     });
 
 window.onbeforeunload = function () {
@@ -469,7 +615,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'privacy'],
+        ns: ['index', 'faq', 'contact', 'imprint', 'modelEditor', 'privacy'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false,
@@ -480,6 +626,7 @@ i18next
                 faq: faqDE,
                 contact: contactDE,
                 imprint: imprintDE,
+                modelEditor: modelEditorDE,
                 privacy: privacyDE
             },
             en: {
@@ -487,6 +634,7 @@ i18next
                 faq: faqEN,
                 contact: contactEN,
                 imprint: imprintEN,
+                modelEditor: modelEditorEN,
                 privacy: privacyEN
             }
         }
@@ -515,6 +663,9 @@ function _updateFilenameLabels() {
     }
     if (Whisker.templateFileSelect && Whisker.templateFileSelect.hasName()) {
         $('#template-label').html(Whisker.templateFileSelect.getName());
+    }
+    if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
+        $('#model-label').html(Whisker.modelFileSelect.getName());
     }
 }
 
@@ -554,6 +705,22 @@ $('.nav-link').on('click', event => {
         location.href = href + '?lng=' + lng;
         event.preventDefault();
     }
+});
+
+/* Add border to header if it sticks to the top */
+$(function () {
+    const stickyHeader = $('.sticky');
+    const stickyHeaderPosition = stickyHeader.offset().top;
+    $(window).scroll(function () {
+        const scroll = $(window).scrollTop();
+        if (scroll > stickyHeaderPosition + 1) {
+            stickyHeader.addClass('scrolled');
+            $('#small-logo').show();
+        } else {
+            stickyHeader.removeClass('scrolled');
+            $('#small-logo').hide();
+        }
+    });
 });
 
 export {i18next as i18n};

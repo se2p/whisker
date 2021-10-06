@@ -9,7 +9,7 @@ const TAP13Formatter = {
     descriptionToYAML (description) {
         return [
             '  ---',
-            yaml.safeDump(description)
+            yaml.dump(description)
                 .trim()
                 .replace(/^/mg, '  '),
             '  ...'
@@ -21,7 +21,7 @@ const TAP13Formatter = {
      * @return {string} .
      */
     extraToYAML (extra) {
-        return yaml.safeDump(extra)
+        return yaml.dump(extra)
             .trim()
             .replace(/^/mg, '# ');
     },
@@ -54,13 +54,40 @@ const TAP13Formatter = {
         const fail = summary.filter(result => result.status === Test.FAIL).length;
         const error = summary.filter(result => result.status === Test.ERROR).length;
         const skip = summary.filter(result => result.status === Test.SKIP).length;
+        let allErrors = [];
+        let allFails = [];
+        summary.forEach(result => {
+            if (result.modelResult && result.modelResult.errors.length > 0) {
+                allErrors = [...allErrors, ...result.modelResult.errors];
+            }
+            if (result.modelResult && result.modelResult.fails.length > 0) {
+                allFails = [...allFails, ...result.modelResult.fails];
+            }
+        })
+        let uniqueErrors = [...new Set(allErrors)];
+        let uniqueFails = [...new Set(allFails)];
+        let sort = (a,b) => {
+            if (a < b) {
+                return -1;
+            } else if (b < a) {
+                return 1;
+            }
+            return 0;
+        };
+
+        uniqueFails.sort(sort);
+        uniqueErrors.sort(sort);
 
         return {
             tests,
             pass,
             fail,
             error,
-            skip
+            skip,
+            errors_in_model: uniqueErrors.length,
+            errors_in_model_text: uniqueErrors,
+            fails_in_model: uniqueFails.length,
+            fails_in_model_text: uniqueFails
         };
     },
 
@@ -88,6 +115,53 @@ const TAP13Formatter = {
             individual: formattedCoverage
         };
     },
+
+    /**
+     * @param {Map|{}} coveragePerModel .
+     * @return {object} .
+     */
+    formatModelCoverage(coveragePerModel) {
+        let covered = 0;
+        let total = 0;
+
+        const formattedCoverage = {};
+        for (const modelName of Object.keys(coveragePerModel)) {
+            const coverageRecord = coveragePerModel[modelName];
+            covered += coverageRecord.covered.length;
+            total += coverageRecord.total;
+            formattedCoverage[modelName] =
+                this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
+        }
+
+        return {
+            combined: this.formatCoverageRecord({covered, total}),
+            individual: formattedCoverage
+        };
+    },
+
+    /**
+     * Format model coverage for one repetition.
+     * @param {Map|{}} coveragePerModel .
+     * @return {object} .
+     */
+    formatModelCoverageLastRun(coveragePerModel) {
+        let covered = 0;
+        let total = 0;
+
+        const formattedCoverage = {};
+        for (const modelName of Object.keys(coveragePerModel)) {
+            const coverageRecord = coveragePerModel[modelName];
+            covered += coverageRecord.covered.length;
+            total += coverageRecord.total;
+            formattedCoverage[modelName] =
+                this.formatCoverageRecord({covered: coverageRecord.covered.length, total: coverageRecord.total});
+        }
+
+        return {
+            combined: this.formatCoverageRecord({covered, total})
+        }
+    },
+
 
     /**
      * @param {object} coverageRecord .

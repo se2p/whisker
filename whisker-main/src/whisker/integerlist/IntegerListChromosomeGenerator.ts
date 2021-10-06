@@ -24,10 +24,7 @@ import {List} from '../utils/List';
 import {IntegerListChromosome} from "./IntegerListChromosome";
 import {Randomness} from "../utils/Randomness";
 import {Mutation} from "../search/Mutation";
-import {BitstringChromosome} from "../bitstring/BitstringChromosome";
 import {Crossover} from "../search/Crossover";
-import {IntegerListMutation} from "./IntegerListMutation";
-import {SinglePointCrossover} from "../search/operators/SinglePointCrossover";
 
 export class IntegerListChromosomeGenerator implements ChromosomeGenerator<IntegerListChromosome> {
 

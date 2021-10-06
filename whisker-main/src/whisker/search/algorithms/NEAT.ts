@@ -140,6 +140,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         console.log(`Iteration:  ${this._iterations}`);
         console.log(`Highest Network Fitness:  ${population.highestFitness}`);
         console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.networkFitness}`);
+        console.log(`Average Network Fitness: ${population.averageFitness}`)
         console.log(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
         for (const species of population.species) {
             console.log(`Species ${species.id} has ${species.size()} members and an average fitness of ${species.averageFitness}`);
@@ -153,7 +154,6 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         const coveredGoals = this._neuroevolutionProperties.testSuiteType === 'dynamic' ?
             this._archive.size - 1 : this._archive.size
         console.log(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
-        console.log(`Member in Archive: ${this._bestIndividuals.size()}`)
         console.log("-----------------------------------------------------")
     }
 

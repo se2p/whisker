@@ -27,54 +27,29 @@ export class ClickSpriteEvent extends ScratchEvent {
     private readonly _target: RenderedTarget;
     private readonly _steps: number;
 
-    constructor(target: RenderedTarget, steps?:number) {
+    constructor(target: RenderedTarget, steps?: number) {
         super()
         this._target = target;
-        if(steps){
+        if (steps) {
             this._steps = steps;
-        }
-        else {
+        } else {
             this._steps = Container.config.getClickDuration();
         }
     }
 
     async apply(): Promise<void> {
         if (this._target.isOriginal) {
-            // Click on sprite
-            Container.testDriver.inputImmediate({
-                device: 'mouse',
-                sprite: Container.testDriver.getSprite(this._target.sprite.name),
-                isDown: true,
-                steps: this._steps
-            });
+            Container.testDriver.clickSprite(this._target.sprite.name, this._steps);
         } else {
-            // Click on clone
-            Container.testDriver.inputImmediate({
-                device: 'mouse',
-                x: this._target.x,
-                y: this._target.y,
-                isDown: true,
-                steps: this._steps
-            });
+            Container.testDriver.clickCloneByCoords(this._target.x, this._target.y, this._steps);
         }
     }
 
     public toJavaScript(): string {
         if (this._target.isOriginal) {
-            return `t.inputImmediate({
-    device: 'mouse',
-    sprite: t.getSprite('${this._target.sprite.name}'),
-    isDown: true,
-    steps: ${Container.config.getClickDuration()}
-  });`;
+            return `t.clickSprite('${this._target.sprite.name}', ${this._steps});`;
         } else {
-            return `t.inputImmediate({
-    device: 'mouse',
-    x: ${this._target.x},
-    y: ${this._target.y},
-    isDown: true,
-    steps: ${Container.config.getClickDuration()}
-  });`;
+            return `t.clickCloneByCoords(${this._target.x}, ${this._target.y}, ${this._steps});`;
         }
     }
 

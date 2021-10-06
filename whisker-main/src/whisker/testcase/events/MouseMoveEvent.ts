@@ -38,20 +38,11 @@ export class MouseMoveEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'mouse',
-            x: Math.trunc(this._x),
-            y: Math.trunc(this._y)
-        });
-        ScratchInterface.setMousePosition(new ScratchPosition(this._x, this._y))
+        Container.testDriver.mouseMove(this._x, this._y);
     }
 
     public toJavaScript(): string {
-        return `t.inputImmediate({
-    device: 'mouse',
-    x: ${Math.trunc(this._x)},
-    y: ${Math.trunc(this._y)}
-  });`;
+        return `t.mouseMove(${Math.trunc(this._x)}, ${Math.trunc(this._y)});`;
     }
 
     public toJSON(): Record<string, any> {

@@ -56,7 +56,9 @@ class TestTable {
      * @param {Test[]} tests .
      */
     onRunStart (tests) {
-        tests.forEach(test => this.showNewRun(test));
+        if (tests) { // may be null for model test
+            tests.forEach(test => this.showNewRun(test));
+        }
     }
 
     /**
@@ -67,34 +69,41 @@ class TestTable {
         const skipSign = '\u26A0';
         const errorSign = '\u26A0'; // same as skip, is just colored differently
         const passSign = '\u2713';
-        let test = result.test;
-        let status = result.status;
-        test.isRunning = false;
-        test.testResultClass = status;
-        test.translatedTestResult = index.i18n.t(status);
-        test.error = result.error;
-        test.log = result.log;
-        switch (status) {
-            case Test.FAIL:
-                test.testResultSign = failSign;
-                break;
-            case Test.SKIP:
-                test.testResultSign = skipSign;
-                break;
-            case Test.PASS:
-                test.testResultSign = passSign;
-                break;
-            case Test.ERROR:
-                test.testResultSign = errorSign;
+        if (result.test) {
+            let test = result.test;
+            let status = result.status;
+            test.isRunning = false;
+            test.testResultClass = status;
+            test.translatedTestResult = index.i18n.t(status);
+            test.error = result.error;
+            test.log = result.log;
+            switch (status) {
+                case Test.FAIL:
+                    test.testResultSign = failSign;
+                    break;
+                case Test.SKIP:
+                    test.testResultSign = skipSign;
+                    break;
+                case Test.PASS:
+                    test.testResultSign = passSign;
+                    break;
+                case Test.ERROR:
+                    test.testResultSign = errorSign;
+            }
+            this.updateTest(test);
         }
-        this.updateTest(test);
+        if (result.modelResult) {
+           // todo adapt for model
+        }
     }
 
     /**
      * @param {Test[]} tests .
      */
     onRunCancel (tests) {
-        tests.forEach(test => this.resetRunDataAndShow(test));
+        if (tests) {
+            tests.forEach(test => this.resetRunDataAndShow(test));
+        }
     }
 
 
@@ -138,9 +147,19 @@ class TestTable {
         this.setTests(tests);
     }
 
+    updateAfterAbort() {
+        let tests = this.dataTable.data();
+        for (const index of Object.keys(tests)) {
+            if (tests[index].isRunning) {
+                tests[index].isRunning = false;
+            }
+        }
+        this.setTests(tests);
+    }
 
     /**
-     * @param {Test[]} tests    In preprocessing steps the tests might get some more fields:
+     * @param {Object} tests    Either an array or an object with indexes as keys and tests as entries.
+     *                          In preprocessing steps the tests might get some more fields:
      *                          - index: Unique ID to locate the test in the data table // TODO is this always deterministic?
      *                          - isRunning: true if the test is currently running
      *                          - testResultClass: the result status of the test run used for css styling
@@ -174,7 +193,7 @@ class TestTable {
                 },
                 {
                     data: 'name',
-                    width: '50%'
+                    width: '40%'
                 },
                 {
                     data: data => data.categories.join(', '),
@@ -182,7 +201,7 @@ class TestTable {
                 },
                 {
                     data: data => data,
-                    render: function (data, type, full, meta) {
+                    render: function (data, type, full) {
                         if (!data.isRunning && data.translatedTestResult && data.testResultSign) {
                             return '<div class="tooltip-sign">' + data.testResultSign + '<span class="tooltip-sign-text">' + data.translatedTestResult + '</span></div>';
                         } else if (data.isRunning) {
@@ -192,13 +211,13 @@ class TestTable {
                         }
                     },
                     defaultContent: '-',
-                    width: "15%"
+                    width: "30%"
                 },
                 {
                     orderable: false,
                     data: null,
                     defaultContent:
-                        '<button class="btn btn-sm btn-xs btn-outline-secondary run-test">' +
+                        '<button class="btn btn-sm btn-xs btn-outline-secondary run-test vm-related">' +
                         '<i class="fas fa-play"></i></button>',
                     width: '0.5em'
                 }
@@ -211,7 +230,7 @@ class TestTable {
             pagingType: 'simple',
 
             autoWidth: false,
-            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+            dom: '<"row"<"col-sm-12 col-md-6"l><f>>' +
                  '<"row"<"col-sm-12"tr>>' +
                  '<"row"<"col-sm-12 col-md-5"><"col-sm-12 col-md-7"p>>',
 

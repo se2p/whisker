@@ -31,17 +31,13 @@ export class TypeTextEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        Container.testDriver.inputImmediate({
-            device: 'text',
-            answer: this._text
-        });
+        Container.testDriver.typeText(this._text);
     }
 
     public toJavaScript(): string {
-        return `t.inputImmediate({
-    device: 'text',
-    answer: '${this._text}'
-  });`;
+        // https://stackoverflow.com/a/15087766
+        const escaped = this._text.replace(/'/g, "\\'");
+        return `t.typeText('${escaped}');`;
     }
 
     public toJSON(): Record<string, any> {
