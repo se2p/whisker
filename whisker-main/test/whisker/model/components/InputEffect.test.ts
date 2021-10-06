@@ -8,34 +8,34 @@ describe('InputEffect', () => {
         }).not.toThrow();
         expect(() => {
             new InputEffect(undefined, InputEffectName.InputKey, ["left"])
-        }).not.toThrow();
+        }).toThrow();
     })
 
     test("not enough arguments", () => {
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputKey, [])
+            new InputEffect("test", InputEffectName.InputKey, [])
         }).toThrow();
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputClickSprite, [])
+            new InputEffect("test", InputEffectName.InputClickSprite, [])
         }).toThrow();
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputText, [])
+            new InputEffect("test", InputEffectName.InputText, [])
         }).toThrow();
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputMouseDown, [])
+            new InputEffect("test", InputEffectName.InputMouseDown, [])
         }).toThrow();
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputClickStage, [])
+            new InputEffect("test", InputEffectName.InputClickStage, [])
         }).not.toThrow();
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputMouseMove, [])
+            new InputEffect("test", InputEffectName.InputMouseMove, [])
         }).toThrow();
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputMouseMove, [0])
+            new InputEffect("test", InputEffectName.InputMouseMove, [0])
         }).toThrow();
 
         expect(() => {
-            new InputEffect(undefined, InputEffectName.InputKey, ["left"]).simplifyForSave();
+            new InputEffect("test", InputEffectName.InputKey, ["left"]).simplifyForSave();
         }).not.toThrow();
     })
 })
