@@ -216,6 +216,6 @@ seed ${configSeed} defined within the config files.`)
         }
 
         const javaScriptText = this.testsToString(tests);
-        return [javaScriptText, testListWithSummary.summary, csvOutput];
+        return [javaScriptText, testListWithSummary.summary, csvOutput, testListWithSummary.networkPopulation];
     }
 }

@@ -237,6 +237,15 @@ async function runGeneticSearch (browser, downloadPath) {
         await page.waitForTimeout(5000);
     }
 
+    async function downloadPopulationRecord () {
+        await page._client.send('Page.setDownloadBehavior', {
+            behavior: 'allow',
+            downloadPath: downloadPath
+        });
+        await (await page.$('.output-save')).click();
+        await page.waitForTimeout(5000);
+    }
+
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
@@ -245,6 +254,7 @@ async function runGeneticSearch (browser, downloadPath) {
         const output = await readTestOutput();
         logger.debug(`Downloading tests to ${downloadPath}`);
         await downloadTests();
+        await downloadPopulationRecord()
         await page.close();
         return Promise.resolve(output);
     } catch (e) {

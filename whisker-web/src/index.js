@@ -117,11 +117,12 @@ const runSearch = async function () {
     const template = await Whisker.templateFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('scratch-project').getAttribute('data-seed');
-    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
+    const [tests, testListWithSummary, csv, networkRecord] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
         projectName, config, configName, accelerationFactor, seed, template);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
+    Whisker.outputRun.println(networkRecord);
     accSlider.slider('enable');
     enableVMRelatedButtons();
     return tests;
@@ -487,10 +488,7 @@ const initEvents = function () {
                 tests.then(
                     result => {
                         loadTestsFromString(result);
-                        // TODO: This text is used as a marker to tell servant
-                        //       when the search is done. There must be a nicer way...
-                        Whisker.outputRun.println('summary');
-                        jumpTo('#test-table')
+                        jumpTo('#test-table');
                         $('#run-search').show();
                         $('#search-running').hide();
                     },

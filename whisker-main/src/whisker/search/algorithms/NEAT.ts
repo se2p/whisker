@@ -26,6 +26,11 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     private _networkFitnessFunction: NetworkFitnessFunction<NetworkChromosome>;
 
     /**
+     * Saves all Networks mapped to the generation they occurred in.
+     */
+    private _populationRecord = new Map<number, NeuroevolutionPopulation<NetworkChromosome>>();
+
+    /**
      * Evaluates the networks by letting them play the given Scratch game.
      * @param networks the networks to evaluate -> Current population
      */
@@ -56,6 +61,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         while (!(this._stoppingCondition.isFinished(this))) {
             await this.evaluateNetworks(population.chromosomes as List<C>);
             population.updatePopulationStatistics();
+            this._populationRecord.set(this._iterations, population.clone());
             population.evolve();
             this.updateBestIndividualAndStatistics(population);
             this.reportOfCurrentIteration(population);
@@ -157,6 +163,18 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         console.log("-----------------------------------------------------")
     }
 
+    /**
+     * Transforms the collected information about each Population obtained during the search into a JSON representation.
+     * @return string in JSON format containing collected Population information of each iteration.
+     */
+    public getPopulationRecordAsJSON(): string {
+        const solution = {};
+        this.populationRecord.forEach((population, iteration) => {
+            solution[`Generation ${iteration}`] = population.toJSON();
+        })
+        return JSON.stringify(solution, undefined, 4);
+    }
+
     getStartTime(): number {
         return this._startTime;
     }
@@ -186,5 +204,9 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
         this._fitnessFunctions = fitnessFunctions;
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessFunctions.size;
+    }
+
+    get populationRecord(): Map<number, NeuroevolutionPopulation<NetworkChromosome>> {
+        return this._populationRecord;
     }
 }
