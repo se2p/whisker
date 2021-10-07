@@ -54,6 +54,10 @@
             {
                 "type": "fixedIteration",
                 "iterations": 50
+            },
+            {
+                "type": "fixedTime",
+                "duration": 828000000
             }
         ]
     },

@@ -139,7 +139,6 @@ export class WhiskerSearchConfiguration {
             populationSize = this.dict['populationSize'] as number;
         }
         else{
-            console.log(Container.template)
             populationSize = Object.keys(JSON.parse(Container.template)).length;
         }
         const properties = new NeuroevolutionProperties(populationSize);

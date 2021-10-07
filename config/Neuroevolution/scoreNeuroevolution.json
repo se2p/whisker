@@ -3,8 +3,8 @@
     "algorithm": "neat",
     "testSuiteType": "dynamic",
     "populationType": "neat",
-    "populationSize": 300,
-    "numberOfSpecies": 10,
+    "populationSize": 150,
+    "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 20,
     "ageSignificance": 1.0,
@@ -54,7 +54,11 @@
         "conditions": [
             {
                 "type": "fixedIteration",
-                "iterations": 300
+                "iterations": 50
+            },
+            {
+                "type": "fixedTime",
+                "duration": 828000000
             }
         ]
     },

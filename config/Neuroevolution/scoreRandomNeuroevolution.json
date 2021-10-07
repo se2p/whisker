@@ -1,7 +1,6 @@
 {
-    "test-generator": "neuroevolution",
+    "testGenerator": "neuroevolution",
     "algorithm": "neat",
-    "chromosome": "sparseNetwork",
     "testSuiteType": "static",
     "eventSelection": "random",
     "populationType": "neat",
@@ -12,6 +11,9 @@
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "extractor": "neuroevolution",
+    "chromosome": {
+        "type": "sparseNetwork"
+    },
     "crossover": {
         "operator": "neatCrossover",
         "crossoverWithoutMutation": 0.2,
@@ -40,28 +42,30 @@
         "excessCoefficient": 1,
         "weightCoefficient": 0.3
     },
-    "fitness-function": {
+    "fitnessFunction": {
         "type": "statement",
         "targets": []
     },
-    "network-fitness": {
+    "networkFitness": {
         "type": "score",
         "timeout": 10000
     },
-    "stopping-condition": {
-        "type": "one-of",
+    "stoppingCondition": {
+        "type": "combined",
         "conditions": [
             {
-                "type": "fixed-iteration",
+                "type": "fixedIteration",
                 "iterations": 50
             },
             {
-                "type": "fixed-time",
+                "type": "fixedTime",
                 "duration": 828000000
             }
         ]
     },
-    "waitStepUpperBound": 50,
-    "click-duration": 1,
-    "pressDurationUpperBound": 50
+    "durations": {
+        "waitStepUpperBound": 50,
+        "clickDuration": 1,
+        "pressDuration": 50
+    }
 }
