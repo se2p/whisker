@@ -4,7 +4,7 @@
     "testSuiteType": "static",
     "eventSelection": "random",
     "populationType": "neat",
-    "population-size": 150,
+    "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
