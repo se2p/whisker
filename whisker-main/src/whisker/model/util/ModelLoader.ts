@@ -142,6 +142,8 @@ export class ModelLoader {
                     this.stopAllNodeIds)
                 this.onTestEndModels.push(model);
                 break;
+            default:
+                throw Error("Model type id not known.");
         }
     }
 

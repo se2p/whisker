@@ -44,6 +44,12 @@ export class UserModel {
      */
     constructor(id: string, startNodeId: string, nodes: { [key: string]: ModelNode }, edges: { [key: string]: UserModelEdge },
                 stopNodeIds: string[], stopAllNodeIds: string[]) {
+        if (!id) {
+            throw new Error("No id given.");
+        }
+        if (!startNodeId || !nodes[startNodeId]) {
+            throw new Error("No start node (id or in node set) given.");
+        }
         this.id = id;
         this.currentState = nodes[startNodeId];
         this.nodes = nodes;

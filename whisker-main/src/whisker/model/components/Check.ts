@@ -306,15 +306,9 @@ export class Check {
         let negated2 = check2.negated;
 
         if (change1.length == 2 && change2.length == 2) {
-
-            // += & -=, -= & +=
-            if (change1 != change2) {
-                // both negated -> problem, no one negated -> problem
-                return check1.negated == check2.negated;
-            }
-
-            // += & +=, -= & -=
-            return check1.negated != check2.negated;
+            // += & +=, -= & -= are not getting until here, caught before call to checkChange
+            // += & -=, -= & += only tested here
+            return check1.negated == check2.negated;
         } else if (change1.length == 2) {
             change1 = Check.getInvertedChangeOp(change1);
             negated1 = !negated1;
@@ -347,7 +341,7 @@ export class Check {
         } else if (comp == "<=") {
             return ">";
         }
-        throw new Error("unkwown comparison");
+        throw new Error("unknown comparison");
     }
 
     private static checkComparison(comparison1: string, comparison2: string, value1: string, value2: string): boolean {
