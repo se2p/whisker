@@ -171,7 +171,7 @@ export class Species<C extends NetworkChromosome> {
         // using the parentsPerSpecies hyperparameter.
         // Ensure that the species will not go extinct -> at least one member survives.
         let numberOfParents = Math.floor((this.properties.parentsPerSpecies * this.chromosomes.size()));
-        if(numberOfParents === 0){
+        if (numberOfParents === 0) {
             numberOfParents = 1;
         }
 
@@ -382,7 +382,7 @@ export class Species<C extends NetworkChromosome> {
      * Calculates the average network fitness across all members of the species, used for reporting and refocusing
      * the search in stagnation phase.
      */
-    public calculateAverageNetworkFitness(): number{
+    public calculateAverageNetworkFitness(): number {
         const networkFitnessValues = this.chromosomes.map(a => a.networkFitness).getElements();
         this.averageNetworkFitness = networkFitnessValues.reduce((a, b) => a + b) / this.size();
         return this.averageNetworkFitness
@@ -392,7 +392,7 @@ export class Species<C extends NetworkChromosome> {
      * Deep Clone of this Species.
      * @returns Species clone of this.
      */
-    clone(): Species<C>{
+    clone(): Species<C> {
         const clone = new Species(this.id, this.isNovel, this.properties);
         clone.age = this.age;
         clone.averageFitness = this.averageFitness;
@@ -401,7 +401,7 @@ export class Species<C extends NetworkChromosome> {
         clone.expectedOffspring = this.expectedOffspring;
         clone.ageOfLastImprovement = this.ageOfLastImprovement;
         clone.champion = this.chromosomes.get(0).clone() as C
-        for(const network of this.chromosomes){
+        for (const network of this.chromosomes) {
             clone.chromosomes.add(network.clone() as C)
         }
         return clone;
@@ -414,15 +414,15 @@ export class Species<C extends NetworkChromosome> {
     public toJSON(): Record<string, (number | C)> {
         const species = {};
         species[`id`] = this.id;
-        species[`age`] = this.age;
-        species[`ageOfLastImprovement`] = this.ageOfLastImprovement;
-        species[`averageFitness`] = this.averageNetworkFitness;
-        species[`currentBestFitness`] = this.currentBestFitness;
-        species[`allTimeBestFitness`] = this.allTimeBestFitness;
-        species[`expectedOffspring`] = this.expectedOffspring;
-        species[`ChampionId`] = this.champion.id;
+        //species[`age`] = this.age;
+        //species[`ageOfLastImprovement`] = this.ageOfLastImprovement;
+        species[`aF`] = Number(this.averageNetworkFitness.toFixed(4));
+        species[`cBF`] = Number(this.currentBestFitness.toFixed(4));
+        species[`aBF`] = Number(this.allTimeBestFitness.toFixed(4));
+        species[`eO`] = Number(this.expectedOffspring.toFixed(4));
+        species[`C`] = this.champion.id;
         for (let i = 0; i < this.chromosomes.size(); i++) {
-            species[`Member ${i}`] = this.chromosomes.get(i).toJSON();
+            species[`${i}`] = this.chromosomes.get(i).toJSON();
         }
         return species;
     }

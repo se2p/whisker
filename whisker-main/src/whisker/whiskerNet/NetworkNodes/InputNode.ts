@@ -65,8 +65,8 @@ export class InputNode extends NodeGene {
     public toJSON(): Record<string, (number | string)> {
         const node = {}
         node[`id`] = this.id;
-        node[`type`] = NodeType[this.type];
-        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        node[`t`] = "I";
+        node[`aF`] = ActivationFunction[this.activationFunction];
         node[`sprite`] = this.sprite;
         node['feature'] = this.feature;
         return node;

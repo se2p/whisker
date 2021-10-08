@@ -47,4 +47,12 @@ export class HiddenNode extends NodeGene {
 , InputConnections: ${this.incomingConnections}}`;
     }
 
+    public toJSON(): Record<string, (number | string)> {
+        const node = {}
+        node[`id`] = this.id;
+        node[`t`] = "H";
+        node[`aF`] = ActivationFunction[this.activationFunction];
+        return node;
+    }
+
 }

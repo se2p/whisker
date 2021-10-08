@@ -104,13 +104,7 @@ export abstract class NodeGene {
      * Transforms this NodeGene into a JSON representation.
      * @return Record containing most important attributes keys mapped to their values.
      */
-    public toJSON(): Record<string, (number | string)> {
-        const node = {}
-        node[`id`] = this.id;
-        node[`type`] = NodeType[this.type];
-        node[`activationFunction`] = ActivationFunction[this.activationFunction];
-        return node;
-    }
+    abstract toJSON();
 
     get id(): number {
         return this._id;

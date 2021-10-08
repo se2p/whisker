@@ -43,4 +43,12 @@ export class BiasNode extends NodeGene {
 , Value: ${this.activationValue}\
 , InputConnections: ${this.incomingConnections}}`;
     }
+
+    public toJSON(): Record<string, (number | string)> {
+        const node = {}
+        node[`id`] = this.id;
+        node[`t`] = "B";
+        node[`aF`] = ActivationFunction[this.activationFunction];
+        return node;
+    }
 }

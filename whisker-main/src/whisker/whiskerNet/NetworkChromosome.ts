@@ -652,23 +652,23 @@ export class NetworkChromosome extends Chromosome {
      */
     public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
         const network = {};
-        network[`Id`] = this.id;
-        network[`NetworkFitness`] = this.networkFitness;
-        network[`FitnessShared`] = this.sharedFitness;
-        network[`ExpectedOffspring`] = this.expectedOffspring;
-        network[`DeathMark`] = this.hasDeathMark;
+        network[`id`] = this.id;
+        network[`nF`] = Number(this.networkFitness.toFixed(4));
+        network[`sF`] = Number(this.sharedFitness.toFixed(4));
+        network[`eO`] = Number(this.expectedOffspring.toFixed(4));
+        network[`k`] = this.hasDeathMark;
 
         const nodes = {}
         for (let i = 0; i < this.allNodes.size(); i++) {
-            nodes[`Node ${i}`] = this.allNodes.get(i).toJSON();
+            nodes[`${i}`] = this.allNodes.get(i).toJSON();
         }
         network[`Nodes`] = nodes;
 
         const connections = {};
         for (let i = 0; i < this.connections.size(); i++) {
-            connections[`Connection ${i}`] = this.connections.get(i).toJSON();
+            connections[`${i}`] = this.connections.get(i).toJSON();
         }
-        network[`Connections`] = connections;
+        network[`Con`] = connections;
         return network;
     }
 

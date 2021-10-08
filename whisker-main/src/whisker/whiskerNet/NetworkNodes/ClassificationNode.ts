@@ -65,8 +65,8 @@ export class ClassificationNode extends NodeGene {
     public toJSON(): Record<string, (number | string)> {
         const node = {}
         node[`id`] = this.id;
-        node[`type`] = "CLASSIFICATION";
-        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        node[`t`] = "C";
+        node[`aF`] = ActivationFunction[this.activationFunction];
         node[`event`] = this.event.stringIdentifier();
         return node;
     }

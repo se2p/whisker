@@ -23,6 +23,9 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
      */
     private readonly _scratchEvents: List<ScratchEvent>;
 
+    /**
+     * The number of networks that should be generated.
+     */
     private readonly _numberNetworks: number;
 
     /**
@@ -33,8 +36,7 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
      * @param scratchEvents all Scratch-Events found in the project.
      */
     constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
-                networkTemplate: string,
-                scratchEvents: List<ScratchEvent>) {
+                networkTemplate: string, scratchEvents: List<ScratchEvent>) {
         super(mutationConfig, crossoverConfig);
         this._networkTemplate = JSON.parse(networkTemplate);
         this._numberNetworks = Object.keys(this._networkTemplate).length;
@@ -52,24 +54,24 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
         const allNodes = new List<NodeGene>();
         for (const nodeKey in networkTemplate['Nodes']) {
             const node = networkTemplate['Nodes'][nodeKey];
-            switch (node.type) {
-                case "INPUT":
+            switch (node.t) {
+                case "I":
                     allNodes.add(new InputNode(node.id, node.sprite, node.feature));
                     break;
-                case "BIAS":
+                case "B":
                     allNodes.add(new BiasNode(node.id));
                     break;
-                case "HIDDEN":
+                case "H":
                     allNodes.add(new HiddenNode(node.id, ActivationFunction.SIGMOID));
                     break;
-                case "CLASSIFICATION": {
+                case "C": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
                     if(event) {
                         allNodes.add(new ClassificationNode(node.id, event, ActivationFunction.SIGMOID));
                     }
                     break;
                 }
-                case "REGRESSION": {
+                case "R": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
                     if(event) {
                         allNodes.add(new RegressionNode(node.id, event, node.eventParameter, ActivationFunction.NONE));
@@ -79,14 +81,14 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
             }
         }
         const allConnections = new List<ConnectionGene>();
-        for (const connectionKey in networkTemplate['Connections']) {
-            const connection = networkTemplate['Connections'][connectionKey];
-            const sourceNode = allNodes.find(node => node.id === connection.Source);
-            const targetNode = allNodes.find(node => node.id === connection.Target);
-            const recurrent = connection.Recurrent === `true`;
+        for (const connectionKey in networkTemplate['Con']) {
+            const connection = networkTemplate['Con'][connectionKey];
+            const sourceNode = allNodes.find(node => node.id === connection.s);
+            const targetNode = allNodes.find(node => node.id === connection.t);
+            const recurrent = connection.r === `true`;
             if(sourceNode && targetNode) {
-                allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.Weight, connection.Enabled,
-                    connection.Innovation, recurrent));
+                allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.w, connection.e,
+                    connection.i, recurrent));
             }
         }
         const network = new NetworkChromosome(allConnections, allNodes, this._mutationOp, this._crossoverOp);
@@ -96,6 +98,7 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
             network.mutate();
         }
         NetworkChromosome.idCounter++;
+        console.log(network)
         return network
     }
 

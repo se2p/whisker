@@ -228,11 +228,11 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
      */
     public toJSON(): Record<string, (number | Species<C>)> {
         const population = {};
-        population[`averageFitness`] = this.averageFitness;
-        population[`HighestFitness`] = this.highestFitness;
-        population[`PopulationChampionId`] = this.populationChampion.id;
+        population[`aF`] = Number(this.averageFitness.toFixed(4));
+        population[`hF`] = Number(this.highestFitness.toFixed(4));
+        population[`PC`] = this.populationChampion.id;
         for (let i = 0; i < this.species.size(); i++) {
-            population[`Species ${i}`] = this.species.get(i).toJSON();
+            population[`S ${i}`] = this.species.get(i).toJSON();
         }
         return population;
     }

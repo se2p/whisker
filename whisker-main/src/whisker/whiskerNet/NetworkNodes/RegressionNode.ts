@@ -83,10 +83,10 @@ export class RegressionNode extends NodeGene {
     public toJSON(): Record<string, (number | string)> {
         const node = {}
         node[`id`] = this.id;
-        node[`type`] = "REGRESSION";
-        node[`activationFunction`] = ActivationFunction[this.activationFunction];
+        node[`t`] = "R";
+        node[`aF`] = ActivationFunction[this.activationFunction];
         node[`event`] = this._event.stringIdentifier();
-        node['eventParameter'] = this._eventParameter;
+        node['eventP'] = this._eventParameter;
         return node;
     }
 
