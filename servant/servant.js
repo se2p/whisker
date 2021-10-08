@@ -72,11 +72,6 @@ async function init () {
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
     } else {
-        if (csvFile != false && fs.existsSync(csvFile)) {
-            console.error(`CSV file already exists, aborting`);
-            await browser.close();
-            return;
-        }
         const csvs = [];
 
         if (fs.lstatSync(scratchPath).isDirectory()) {
@@ -95,8 +90,12 @@ async function init () {
         }
 
         if (csvFile != false) {
-            console.info(`Creating CSV summary in ${csvFile}`);
-            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
+            if (fs.existsSync(csvFile)) {
+                console.warn(`CSV file ${csvFile} already exists, will be overwritten!`);
+            } else {
+                console.info(`Creating CSV summary in ${csvFile}`);
+            }
+            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs, modelPath));
         }
         await browser.close();
     }
@@ -234,6 +233,7 @@ async function showHiddenFunctionality(page) {
 
 async function runTests (path, browser, index, targetProject, modelPath) {
     const page = await browser.newPage({context: Date.now()});
+    const startProject = Date.now();
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
@@ -325,6 +325,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         }
 
         let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
+        csvRow['duration'] = `${(Date.now() - startProject) / 1000}`;
         return {csvRow, coverageLog};
     }
 
