@@ -64,6 +64,7 @@ const loadModelFromString = function (models) {
 }
 
 const loadTestsFromString = async function (string) {
+    // TODO: This is not safe if config file name gets changed
     const config = await Whisker.configFileSelect.loadAsString();
     if (config.toLowerCase().includes('neuroevolution')){
         const tests = `${string}`;
@@ -122,7 +123,10 @@ const runSearch = async function () {
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
-    Whisker.outputRun.println(networkRecord);
+    if (networkRecord) {
+        Whisker.outputRun.println(networkRecord);
+        Whisker.outputRun.setTitle(`${projectName.split('-')[0]}-PopulationRecord`);
+    }
     accSlider.slider('enable');
     enableVMRelatedButtons();
     return tests;

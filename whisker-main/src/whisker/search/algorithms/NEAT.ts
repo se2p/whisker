@@ -169,14 +169,15 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      */
     public getPopulationRecordAsJSON(): string {
         let record = `{\n\t`;
-        this.populationRecord.forEach((population, iteration) => {
-            record += `"Gen ${iteration}": ${population}`
-            if (iteration < this._iterations - 1) {
+        for (let i = 0, n = this.populationRecord.size; i < n; i++) {
+            const population = this.populationRecord.get(i);
+            record += `"Gen ${i}": ${population}`
+            if (i < n - 1) {
                 record += `,\n`;
             } else {
                 `\n`
             }
-        })
+        }
         record += `\n}`
         return record
     }
