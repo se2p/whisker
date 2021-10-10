@@ -116,11 +116,10 @@ const tapToCsvRow = async function (str) {
     return row;
 }
 
-const rowsToCsv = function (rows) {
-    let numTests = testNames.size;
-
+const rowsToCsv = function (rows, modelPath) {
     const csvHeader = [];
     csvHeader.push('projectname');
+    csvHeader.push('duration');
 
     const sortedTests = Array.from(testNames.entries())
         .sort(x => x[0]);
@@ -138,17 +137,12 @@ const rowsToCsv = function (rows) {
     csvHeader.push('error');
     csvHeader.push('skip');
     csvHeader.push('coverage');
-    csvHeader.push('modelErrors');
-    csvHeader.push('modelFails');
-    csvHeader.push('modelCoverage');
 
-    const modelCoverageIDs = [];
-    // model coverages
-    for (const rowElementKey in rows[0]) {
-        if (rowElementKey.toString().indexOf("ModelCoverage") !== -1) {
-            csvHeader.push(rowElementKey.toString());
-            modelCoverageIDs.push(rowElementKey.toString())
-        }
+    // Only include model results if there was model-based testing involved
+    if(modelPath) {
+        csvHeader.push('modelErrors');
+        csvHeader.push('modelFails');
+        csvHeader.push('modelCoverage');
     }
 
     const csvBody = [csvHeader];
@@ -156,6 +150,7 @@ const rowsToCsv = function (rows) {
         const csvLine = [];
 
         csvLine.push(row.projectname);
+        csvLine.push(row.duration);
         for (const test of sortedTests) {
             if (row.testResults.has(test[0])) {
                 csvLine.push(row.testResults.get(test[0]));
@@ -170,12 +165,26 @@ const rowsToCsv = function (rows) {
         csvLine.push(row.error);
         csvLine.push(row.skip);
         csvLine.push(row.coverage);
-        csvLine.push(row.modelErrors);
-        csvLine.push(row.modelFails);
-        csvLine.push(row.modelCoverage);
-        modelCoverageIDs.forEach(id => {
-            csvLine.push(row[id]);
-        })
+
+        // Only include model results if there was model-based testing involved
+        if(modelPath) {
+
+            const modelCoverageIDs = [];
+            // model coverages
+            for (const rowElementKey in rows[0]) {
+                if (rowElementKey.toString().indexOf("ModelCoverage") !== -1) {
+                    csvHeader.push(rowElementKey.toString());
+                    modelCoverageIDs.push(rowElementKey.toString())
+                }
+            }
+
+            csvLine.push(row.modelErrors);
+            csvLine.push(row.modelFails);
+            csvLine.push(row.modelCoverage);
+            modelCoverageIDs.forEach(id => {
+                csvLine.push(row[id]);
+            })
+        }
 
         csvBody.push(csvLine);
     }
