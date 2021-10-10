@@ -167,7 +167,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Transforms the collected information about each Population obtained during the search into a JSON representation.
      * @return string in JSON format containing collected Population information of each iteration.
      */
-    public getPopulationRecordAsJSON(): string {
+    public getPopulationRecord(): string {
         let record = `{\n\t`;
         for (let i = 0, n = this.populationRecord.size; i < n; i++) {
             const population = this.populationRecord.get(i);
