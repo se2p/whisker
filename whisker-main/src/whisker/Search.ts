@@ -60,9 +60,9 @@ export class Search {
 
     private printTests(tests: List<WhiskerTest>): void {
         let i = 0;
-        console.log("Total number of tests: "+tests.size());
+        console.log(`Total number of tests: ${tests.size()}`);
         for (const test of tests) {
-            console.log("Test "+i+": \n" + test.toString());
+            console.log(`Test ${i}:\n${test.toString()}`);
             i++;
         }
     }
@@ -97,7 +97,7 @@ export class Search {
         const dummyTest = new TestChromosome(new List<number>(), null, null);
         const events = new List<[ScratchEvent, number[]]>();
         events.add([new WaitEvent(), [0]]);
-        dummyTest.trace = new ExecutionTrace([] as unknown as [any], events);
+        dummyTest.trace = new ExecutionTrace([], events);
 
         tests.add(new WhiskerTest(dummyTest));
         const javaScriptText = this.testsToString(tests);
