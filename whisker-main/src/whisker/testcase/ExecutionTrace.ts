@@ -27,19 +27,20 @@ import {List} from "../utils/List";
  */
 export class ExecutionTrace {
 
-    private readonly _blockTraces: [Trace];
+    private readonly _blockTraces: Trace[];
+
     private readonly _events: List<[ScratchEvent, number[]]>;
 
-    constructor(traces: [Trace], events: List<[ScratchEvent, number[]]>) {
+    constructor(traces: Trace[], events: List<[ScratchEvent, number[]]>) {
         this._blockTraces = traces
         this._events = events;
     }
 
-    clone():ExecutionTrace{
+    clone(): ExecutionTrace {
         return new ExecutionTrace({...this.blockTraces}, this.events.clone());
     }
 
-    get blockTraces(): [Trace] {
+    get blockTraces(): Trace[] {
         return this._blockTraces;
     }
 
