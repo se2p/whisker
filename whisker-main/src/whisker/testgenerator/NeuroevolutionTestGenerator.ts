@@ -29,7 +29,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         const summary = this.summarizeSolution(archive);
         // TODO: It is deeply necessary to separate NE and SearchAlgorithms.
         if (searchAlgorithm instanceof NEAT) {
-            console.log("PopulationRecord: ", searchAlgorithm.getPopulationRecord());
+            console.log("PopulationRecord: \n", searchAlgorithm.getPopulationRecordAsString());
         }
         return new WhiskerTestListWithSummary(testSuite, summary);
     }

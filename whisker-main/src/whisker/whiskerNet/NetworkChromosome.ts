@@ -660,15 +660,15 @@ export class NetworkChromosome extends Chromosome {
 
         const nodes = {}
         for (let i = 0; i < this.allNodes.size(); i++) {
-            nodes[`${i}`] = this.allNodes.get(i).toJSON();
+            nodes[`Node ${i}`] = this.allNodes.get(i).toJSON();
         }
         network[`Nodes`] = nodes;
 
         const connections = {};
         for (let i = 0; i < this.connections.size(); i++) {
-            connections[`${i}`] = this.connections.get(i).toJSON();
+            connections[`Con ${i}`] = this.connections.get(i).toJSON();
         }
-        network[`Con`] = connections;
+        network[`Cons`] = connections;
         return network;
     }
 

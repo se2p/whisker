@@ -422,7 +422,7 @@ export class Species<C extends NetworkChromosome> {
         species[`eO`] = Number(this.expectedOffspring.toFixed(4));
         species[`C`] = this.champion.id;
         for (let i = 0; i < this.chromosomes.size(); i++) {
-            species[`${i}`] = this.chromosomes.get(i).toJSON();
+            species[`M ${i}`] = this.chromosomes.get(i).toJSON();
         }
         return species;
     }
