@@ -213,7 +213,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 }
                 chromosome.targetFitness = fitnessFunction;
                 let currentHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
-                while (mutationCounter < this._maxMutationCount) {
+                while (mutationCounter < this._maxMutationCount && !this._archiveCovered.has(fitnessFunctionKey)) {
                     const mutant = chromosome.mutate();
                     mutant.targetFitness = fitnessFunction;
                     await mutant.evaluate();
