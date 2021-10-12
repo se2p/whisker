@@ -85,5 +85,6 @@
     "model-output-no-user-model": "No user model for input generation found",
     "model-output-user-model": "Input generation with user model",
     "model-editor": "Model editor",
-    "seed": "Seed"
+    "seed": "Seed",
+    "t-seed": "Initial value for randomly generated values"
 }
