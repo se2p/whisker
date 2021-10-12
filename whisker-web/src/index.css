@@ -1271,7 +1271,7 @@ input:checked + .slider:before {
     margin-right: -50px;
     margin-bottom: 5px;
     text-align: center;
-    border-color: orange;
+    border-color: var(--mainColor);
     border-style: solid;
     border-radius: 5px;
 }
