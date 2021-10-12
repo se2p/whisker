@@ -435,7 +435,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 continue;
             }
             let parent = StatementFitnessFunction.getParentOfNode(node, controlFitness._cdg);
-            while (parent.id !== controlNode.id) {
+            // Traverse the block hierarchy upwards until we reach the given control node or a Hat-Block
+            while (parent !== undefined && parent.id !== controlNode.id) {
                 // We found another potential lastDescendant so the found one cannot be the last one.
                 if (nodes.contains(parent)) {
                     nodesToRemove.add(parent);
