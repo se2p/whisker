@@ -1277,7 +1277,7 @@ input:checked + .slider:before {
 }
 
 label[for=seed] {
-    margin-left: 70px;
+    margin-left: 90px;
 }
 
 #green-flag {
