@@ -108,7 +108,7 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
-    const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+    const seed = document.getElementById('seed').value;
     const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
         projectName, config, configName, accelerationFactor, seed);
     // Prints uncovered blocks summary and csv summary separated by a newline
@@ -150,7 +150,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         let coverageModels = {};
         accSlider.slider('disable');
         const accelerationFactor = $('#acceleration-value').text();
-        const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+        const seed = document.getElementById('seed').value;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
