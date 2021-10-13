@@ -86,5 +86,5 @@
     "model-output-user-model": "Input generation with user model",
     "model-editor": "Model editor",
     "seed": "Seed",
-    "t-seed": "Initial value for randomly generated values"
+    "t-seed": "Ensures consistent program behaviour when using the same seed"
 }
