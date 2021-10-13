@@ -1,13 +1,14 @@
 
 import {TestChromosome} from "./TestChromosome";
 import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
-import { ScratchEvent } from "./events/ScratchEvent";
 import { List } from "../utils/List";
+import { EventAndParameters } from "./ExecutionTrace";
+import { ScratchEvent } from "./events/ScratchEvent";
 
 /**
  * Sets the probabilities for mutating codons based on the similarity of surrounding events.
  * If there is a sequence of identical events, then they have to share the probability.
- * Given a sequence `A A A B B C`, the "usual" mutation probability would be 1/6 for each codon.
+ * Given a sequence `A A A B C C`, the "usual" mutation probability would be 1/6 for each codon.
  * With this mutation operator, the probability of mutating any of the `A`s is 1/3 * 1/3, the
  * probability of mutating the `B` is 1/3, and the probability of mutating a `C` is 1/2 * 1/3.
  * This only works if there is an event sequence cached in the test chromosome, so e.g. it cannot
@@ -31,47 +32,48 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
         this._probabilities = Array(numberOfCodons).fill(p);
     }
 
-    private _setSharedProbabilities(chromosome: TestChromosome, codons: List<[ScratchEvent, number[]]>): void {
-        const groupSizes = [];
+    private _setSharedProbabilities(chromosome: TestChromosome, events: List<EventAndParameters>): void {
+        this._probabilities = EventBiasedMutation.computeSharedProbabilities(chromosome, events);
+    }
 
-        // The codons represent events. An event is characterized by one event type codon, followed
-        // arbitrarily many parameter codons.
-        const [firstEvent, firstParams] = codons.get(0);
-        let currentGroupSize = firstParams.length + 1;
+    static computeSharedProbabilities(chromosome: TestChromosome, events: List<EventAndParameters>): number[] {
+       const indicesByEventType = new Map<string, number[]>();
 
-        for (let i = 1; i < codons.size(); ++i) {
-            const [prevEvent] = codons.get(i - 1);
-            const [eventType, eventParams] = codons.get(i);
-
-            if (eventType === undefined) {
-                groupSizes.push(currentGroupSize);
+        let codonIndex = 0;
+        for (const ep of events) {
+            const { event } = ep;
+            if (event == undefined) {
                 break;
             }
 
-            const sameEventType = prevEvent.constructor.name == eventType.constructor.name;
-            if (sameEventType) {
-                currentGroupSize += eventParams.length + 1;
-                groupSizes.push(currentGroupSize);
-            } else {
-                currentGroupSize = 0;
+            const ctorName = event.constructor.name;
+            if (!indicesByEventType.has(ctorName)) {
+                indicesByEventType.set(ctorName, []);
+            }
+
+            const indices = indicesByEventType.get(ctorName);
+            const count = ep.getCodonCount();
+            for (const upper = codonIndex + count; codonIndex < upper; codonIndex++) {
+                indices.push(codonIndex);
             }
         }
 
+        const numberDifferentEventTypes = indicesByEventType.size;
         const probabilities = [];
-        const pCollapsed = 1 / groupSizes.length;
-        for (const s of groupSizes) {
-            const p = (1 / s) * pCollapsed;
-            for (let i = 0; i < s; ++i) {
-                probabilities.push(p);
+
+        for (const indices of indicesByEventType.values()) {
+            const eventsOfSameType = indices.length;
+            const probability = (1 / eventsOfSameType) / numberDifferentEventTypes;
+            for (const i of indices) {
+                probabilities[i] = probability;
             }
         }
 
-        const numberOfCodons = chromosome.getLength();
-        while (probabilities.length < numberOfCodons) {
+        while (probabilities.length < chromosome.getLength()) {
             probabilities.push(0);
         }
 
-        this._probabilities = probabilities;
+        return probabilities;
     }
 
     private _initializeMutationProbabilities(chromosome: TestChromosome): void {

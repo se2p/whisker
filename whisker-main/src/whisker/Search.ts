@@ -31,7 +31,7 @@ import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
-import {ExecutionTrace} from "./testcase/ExecutionTrace";
+import {EventAndParameters, ExecutionTrace} from "./testcase/ExecutionTrace";
 import {ScratchEvent} from "./testcase/events/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
@@ -95,8 +95,8 @@ export class Search {
 
         const tests = new List<WhiskerTest>();
         const dummyTest = new TestChromosome(new List<number>(), null, null);
-        const events = new List<[ScratchEvent, number[]]>();
-        events.add([new WaitEvent(), [0]]);
+        const events = new List<EventAndParameters>();
+        events.add(new EventAndParameters(new WaitEvent(), [0]));
         dummyTest.trace = new ExecutionTrace([], events);
 
         tests.add(new WhiskerTest(dummyTest));

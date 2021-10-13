@@ -27,36 +27,23 @@ import {IntegerListChromosome} from './IntegerListChromosome';
 export abstract class AbstractVariableLengthMutation<T extends IntegerListChromosome> implements Mutation<T> {
 
     /**
-     * Lower bound for integer values
-     */
-    private readonly _min: number;
-
-    /**
-     * Upper bound for integer values
-     */
-    private readonly _max: number;
-
-    /**
-     * Upper bound for IntegerList size.
-     */
-    private readonly _length: number;
-
-    /**
-     * Power of gaussian noise which is added to integer value in the change mutation
-     */
-    private readonly _gaussianMutationPower: number
-
-    /**
      * Random number generator.
      */
-    private readonly _random: Randomness
+    private readonly _random: Randomness;
 
-
-    protected constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
-        this._min = min;
-        this._max = max;
-        this._length = length;
-        this._gaussianMutationPower = gaussianMutationPower;
+    /**
+     *
+     * @param _min Lower bound for integer values
+     * @param _max Upper bound for integer values
+     * @param _length Upper bound for IntegerList size.
+     * @param _gaussianMutationPower
+     */
+    protected constructor(
+        private readonly _min: number,
+        private readonly _max: number,
+        private readonly _length: number,
+        private readonly _gaussianMutationPower: number
+    ) {
         this._random = Randomness.getInstance();
     }
 
@@ -69,7 +56,6 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
     protected abstract _getMutationProbability(idx: number, numberOfCodons: number): number;
 
     abstract apply(chromosome: T): T;
-
 
     /**
      * Returns a mutated deep copy of the given chromosome.
@@ -103,7 +89,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @return The modified index after the mutation.
      */
     private _mutateAtIndex(codons: List<number>, index: number) {
-        const mutation = this._random.nextInt(0, 3)
+        const mutation = this._random.nextInt(0, 3);
         switch (mutation) {
             case 0:
                 if (codons.size() < this._length) {

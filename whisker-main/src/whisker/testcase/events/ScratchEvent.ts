@@ -18,10 +18,19 @@
  *
  */
 
-import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
-import {Container} from "../../utils/Container";
-import {ParameterType} from "./ParameterType";
+import { RenderedTarget } from 'scratch-vm/src/sprites/rendered-target';
+import { Container } from "../../utils/Container";
+import { ParameterType } from "./ParameterType";
 
+export type EventParameter =
+    | number
+    | string
+    | RenderedTarget
+
+export interface Coordinates {
+    x: number;
+    y: number;
+}
 
 export abstract class ScratchEvent {
 
@@ -50,7 +59,7 @@ export abstract class ScratchEvent {
     /**
      * Returns all parameter(s) of this event.
      */
-    abstract getParameter(): (number | string | RenderedTarget) [];
+    abstract getParameters(): EventParameter[];
 
     /**
      * Transforms the event into an executable Whisker-Test statement.
@@ -67,14 +76,14 @@ export abstract class ScratchEvent {
      * identifier and Events whose parameters are determined by the ScratchEventExtractor get different identifiers.
      * The id is used to query the right RegressionNode if search defined parameters for a specific Event are needed.
      */
-    abstract stringIdentifier():string;
+    abstract stringIdentifier(): string;
 
     /**
      * Fits the given coordinates to the Scratch-Stage.
      * @param x the x-coordinate to fit into the range [-StageWidth/2, StageWidth/2]
      * @param y the y-coordinate to fit into the range [-StageHeight/2, StageHeight]
      */
-    protected fitCoordinates(x: number, y: number): { x: number, y: number } {
+    protected fitCoordinates({x, y}: Coordinates): Coordinates {
         const width = Container.vmWrapper.getStageSize().width;
         const height = Container.vmWrapper.getStageSize().height;
         x = (x % width) - (width / 2);

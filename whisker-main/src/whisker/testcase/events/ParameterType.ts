@@ -1,7 +1,5 @@
-export enum ParameterType {
-    "RANDOM",
-
-    "CODON",
-
-    "REGRESSION"
-}
+export type ParameterType =
+    | "random"
+    | "codon"
+    | "regression"
+    ;

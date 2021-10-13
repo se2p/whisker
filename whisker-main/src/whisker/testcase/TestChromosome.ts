@@ -121,8 +121,8 @@ export class TestChromosome extends IntegerListChromosome {
     public toString = (): string => {
         assert(this._trace != null);
         let text = "";
-        for (const [scratchEvent, args] of this._trace.events) {
-            text += scratchEvent.toString() + "\n";
+        for (const {event} of this._trace.events) {
+            text += event.toString() + "\n";
         }
 
         return text;
