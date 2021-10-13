@@ -543,4 +543,11 @@ export class WhiskerSearchConfiguration {
             return undefined
         }
     }
+
+    public doPrintPopulationRecord(): boolean {
+        if ("populationRecord" in this.dict) {
+            return (this.dict['populationRecord'] as string).toLowerCase() === 'true'
+        } else
+            return false;
+    }
 }
