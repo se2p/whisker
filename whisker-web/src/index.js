@@ -479,7 +479,7 @@ const initEvents = function () {
                         // TODO: This text is used as a marker to tell servant
                         //       when the search is done. There must be a nicer way...
                         Whisker.outputRun.println('summary');
-                        jumpTo('#test-table')
+                        jumpTo('#test-table');
                         $('#run-search').show();
                         $('#search-running').hide();
                     },
