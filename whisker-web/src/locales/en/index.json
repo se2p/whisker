@@ -84,5 +84,7 @@
     "model-case-sensitive-hover": "When deactivating this option model test ignores upper/lower case differences of names.",
     "model-output-no-user-model": "No user model for input generation found",
     "model-output-user-model": "Input generation with user model",
-    "model-editor": "Model editor"
+    "model-editor": "Model editor",
+    "seed": "Seed",
+    "t-seed": "Ensures consistent program behaviour when using the same seed"
 }
