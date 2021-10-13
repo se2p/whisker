@@ -154,7 +154,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         const coveredGoals = this._neuroevolutionProperties.testSuiteType === 'dynamic' ?
             this._archive.size - 1 : this._archive.size
         console.log(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
-        if (Container.config.doPrintPopulationRecord()) {
+        if (this._neuroevolutionProperties.doPrintPopulationRecord) {
             const currentPopulationRecord = {}
             currentPopulationRecord[`Generation ${this._iterations}`] = population;
             console.log(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`)

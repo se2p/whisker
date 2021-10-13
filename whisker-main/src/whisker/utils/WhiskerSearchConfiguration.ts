@@ -135,10 +135,9 @@ export class WhiskerSearchConfiguration {
 
     public setNeuroevolutionProperties(): NeuroevolutionProperties<any> {
         let populationSize: number;
-        if(this.dict['populationSize']){
+        if (this.dict['populationSize']) {
             populationSize = this.dict['populationSize'] as number;
-        }
-        else{
+        } else {
             populationSize = Object.keys(JSON.parse(Container.template)).length;
         }
         const properties = new NeuroevolutionProperties(populationSize);
@@ -172,6 +171,7 @@ export class WhiskerSearchConfiguration {
         const weightCoefficient = this.dict['compatibility']['weightCoefficient'] as number;
 
         const timeout = this.dict['networkFitness']['timeout'];
+        const doPrintPopulationRecord = this.dict['populationRecord'] as string === 'true';
 
         properties.populationType = this.dict[`populationType`] as string;
         properties.eventSelection = this.dict[`eventSelection`] as string;
@@ -206,6 +206,7 @@ export class WhiskerSearchConfiguration {
         properties.weightCoefficient = weightCoefficient;
 
         properties.timeout = timeout;
+        properties.doPrintPopulationRecord = doPrintPopulationRecord;
 
         properties.stoppingCondition = this._getStoppingCondition(this.dict['stoppingCondition']);
         properties.networkFitness = this.getNetworkFitnessFunction(this.dict['networkFitness'])
@@ -531,23 +532,16 @@ export class WhiskerSearchConfiguration {
         if (this.dict["debugLogging"] == true) {
             return (...data: any[]) => console.log('DEBUG:', ...data);
         } else {
-            return () => { /* no-op */ };
+            return () => { /* no-op */
+            };
         }
     }
 
     public getTestSuiteType(): string {
-        if("testSuiteType" in this.dict){
-           return this.dict['testSuiteType'];
-        }
-        else{
+        if ("testSuiteType" in this.dict) {
+            return this.dict['testSuiteType'];
+        } else {
             return undefined
         }
-    }
-
-    public doPrintPopulationRecord(): boolean {
-        if ("populationRecord" in this.dict) {
-            return (this.dict['populationRecord'] as string).toLowerCase() === 'true'
-        } else
-            return false;
     }
 }

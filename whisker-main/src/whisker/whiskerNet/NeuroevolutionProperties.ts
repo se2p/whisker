@@ -181,6 +181,12 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     private _testTemplate: string;
 
     /**
+     * Defines whether after after each generation a population record containing all chromosomes should be printed in
+     * JSON format.
+     */
+    private _doPrintPopulationRecord: boolean
+
+    /**
      * Constructs an object that stores all relevant properties of a Neuroevolution Algorithm.
      * @param populationSize the size of the population
      */
@@ -444,5 +450,13 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
 
     set testTemplate(value: string) {
         this._testTemplate = value;
+    }
+
+    get doPrintPopulationRecord(): boolean {
+        return this._doPrintPopulationRecord;
+    }
+
+    set doPrintPopulationRecord(value: boolean) {
+        this._doPrintPopulationRecord = value;
     }
 }
