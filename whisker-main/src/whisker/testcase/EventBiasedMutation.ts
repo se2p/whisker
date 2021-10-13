@@ -33,10 +33,10 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
     }
 
     private _setSharedProbabilities(chromosome: TestChromosome, events: List<EventAndParameters>): void {
-        this._probabilities = EventBiasedMutation.computeSharedProbabilities(chromosome, events);
+        this._probabilities = EventBiasedMutation.computeSharedProbabilities(chromosome.getLength(), events);
     }
 
-    static computeSharedProbabilities(chromosome: TestChromosome, events: List<EventAndParameters>): number[] {
+    static computeSharedProbabilities(chromosomeLength: number, events: List<EventAndParameters>): number[] {
        const indicesByEventType = new Map<string, number[]>();
 
         let codonIndex = 0;
@@ -69,7 +69,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
             }
         }
 
-        while (probabilities.length < chromosome.getLength()) {
+        while (probabilities.length < chromosomeLength) {
             probabilities.push(0);
         }
 
