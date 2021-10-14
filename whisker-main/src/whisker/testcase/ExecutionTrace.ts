@@ -55,7 +55,7 @@ export class ExecutionTrace {
     }
 
     clone(): ExecutionTrace {
-        return new ExecutionTrace([...this.blockTraces], this.events.clone());
+        return new ExecutionTrace(this.blockTraces, this.events.clone());
     }
 
     get blockTraces(): Trace[] {
