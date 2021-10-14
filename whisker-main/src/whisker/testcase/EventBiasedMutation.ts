@@ -3,16 +3,20 @@ import {TestChromosome} from "./TestChromosome";
 import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
 import { List } from "../utils/List";
 import { EventAndParameters } from "./ExecutionTrace";
-import { ScratchEvent } from "./events/ScratchEvent";
 
 /**
  * Sets the probabilities for mutating codons based on the similarity of surrounding events.
- * If there is a sequence of identical events, then they have to share the probability.
- * Given a sequence `A A A B C C`, the "usual" mutation probability would be 1/6 for each codon.
- * With this mutation operator, the probability of mutating any of the `A`s is 1/3 * 1/3, the
- * probability of mutating the `B` is 1/3, and the probability of mutating a `C` is 1/2 * 1/3.
- * This only works if there is an event sequence cached in the test chromosome, so e.g. it cannot
- * be applied after crossover. Only makes sense for some search algorithms, e.g., MIO or a (1+1)EA.
+ * If there is a sequence of identical events, then they have to share the probability of
+ * `(1 / number of codons in the sequence) / number of sequences`. For example,
+ * given a sequence `A A A B C C`, the "usual" mutation probability would be 1/6 for each codon.
+ * With this mutation operator, we consider three distinct groups consisting only of As, Bs and Cs.
+ * Every such group as a whole has the same mutation probability (here: 1/3). Within each group,
+ * the mutation probability is the same for every codon. In the case of `A A A`, we have 3 identical
+ * events A and thus a probability of (1/3)/3 for every individual codon. Analogously, the probability
+ * for a codon in `B` is (1/1)/3, and the probability of mutation a codon in `C C` is (1/2)/3.
+ * These computations only works if there is an event sequence cached in the test chromosome, so e.g.
+ * it cannot be applied after crossover. Only makes sense for some search algorithms, e.g., MIO, (1+1)EA,
+ * or when crossover is disabled.
  */
 export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChromosome> {
 
@@ -22,7 +26,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
         super(min, max, length, gaussianMutationPower);
     }
 
-    protected _getMutationProbability(idx: number, numberOfCodons: number): number {
+    protected _getMutationProbability(idx: number): number {
         return this._probabilities[idx];
     }
 
