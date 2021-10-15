@@ -1,6 +1,6 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 500000 : 300000;
+const timeout = process.env.SLOWMO ? 1000000 : 900000;
 const ACCELERATION = 10;
 
 async function loadProject(scratchPath, modelPath) {
