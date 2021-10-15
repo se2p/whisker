@@ -37,7 +37,8 @@ export class EventAndParameters {
     }
 
     getCodonCount(): number {
-        return 1 + this._parameters.length;
+        // invariant: this._event.numSearchParameter() === this._parameters.length
+        return 1 + this._event.numSearchParameter();
     }
 }
 

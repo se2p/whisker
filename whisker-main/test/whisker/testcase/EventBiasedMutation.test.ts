@@ -1,19 +1,64 @@
 import { EventBiasedMutation } from "../../../src/whisker/testcase/EventBiasedMutation";
-import { MouseMoveToEvent } from "../../../src/whisker/testcase/events/MouseMoveToEvent";
 import { ScratchEvent } from "../../../src/whisker/testcase/events/ScratchEvent";
-import { SoundEvent } from "../../../src/whisker/testcase/events/SoundEvent";
-import { TypeTextEvent } from "../../../src/whisker/testcase/events/TypeTextEvent";
-import { WaitEvent } from "../../../src/whisker/testcase/events/WaitEvent";
 import { EventAndParameters } from "../../../src/whisker/testcase/ExecutionTrace";
 import { List } from "../../../src/whisker/utils/List";
 
+abstract class ScratchEventMock extends ScratchEvent {
+    apply(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    getSearchParameterNames(): string[] {
+        throw new Error("Method not implemented.");
+    }
+    setParameter(): void {
+        throw new Error("Method not implemented.");
+    }
+    getParameters(): unknown[] {
+        throw new Error("Method not implemented.");
+    }
+    toJavaScript(): string {
+        throw new Error("Method not implemented.");
+    }
+    toString(): string {
+        throw new Error("Method not implemented.");
+    }
+    stringIdentifier(): string {
+        throw new Error("Method not implemented.");
+    }
+}
+
+class A extends ScratchEventMock {
+    numSearchParameter(): number {
+        return 2;
+    }
+}
+
+class B extends ScratchEventMock {
+    numSearchParameter(): number {
+        return 0;
+    }
+}
+
+class C extends ScratchEventMock {
+    numSearchParameter(): number {
+        return 2;
+    }
+}
+
+class D extends ScratchEventMock {
+    numSearchParameter(): number {
+        return 1;
+    }
+}
+
 describe("EventBiasedMutation Test", () => {
     test("Compute shared probabilities", () => {
+
         type EP = [ScratchEvent, number[]];
-        const a: EP = [new WaitEvent(), [1, 2]];
-        const b: EP = [new TypeTextEvent("nix"), []];
-        const c: EP = [new MouseMoveToEvent(0, 1), [0, 1]];
-        const d: EP = [new SoundEvent(), [42]];
+        const a: EP = [new A(), [1, 2]];
+        const b: EP = [new B(), []];
+        const c: EP = [new C(), [0, 1]];
+        const d: EP = [new D(), [42]];
 
         const events = [
             a, a, a,
