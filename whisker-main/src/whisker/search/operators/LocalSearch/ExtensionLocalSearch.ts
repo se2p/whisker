@@ -213,11 +213,11 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         for (const fitnessFunction of this._algorithm.getFitnessFunctions()) {
             // Only look at fitnessValues originating from uncovered blocks AND
             // blocks not already covered by previous chromosomes modified by local search.
-            const fitness = fitnessFunction.getFitness(chromosome);
+            const fitness = chromosome.getFitness(fitnessFunction);
             if (!fitnessFunction.isOptimal(fitness) &&
                 !this._modifiedChromosomes.some(modifiedChromosome =>
-                    fitnessFunction.isOptimal(fitnessFunction.getFitness(modifiedChromosome)))) {
-                fitnessValues.push(fitnessFunction.getFitness(chromosome));
+                    fitnessFunction.isOptimal(modifiedChromosome.getFitness(fitnessFunction)))) {
+                fitnessValues.push(chromosome.getFitness(fitnessFunction));
             }
         }
         return fitnessValues;

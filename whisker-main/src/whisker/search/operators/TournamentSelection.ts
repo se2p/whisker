@@ -49,10 +49,10 @@ export class TournamentSelection<C extends Chromosome> implements Selection<C> {
         Preconditions.checkNotUndefined(fitnessFunction);
         let iteration = 0;
         let winner = Randomness.getInstance().pickRandomElementFromList(population);
-        let bestFitness = fitnessFunction.getFitness(winner);
+        let bestFitness = winner.getFitness(fitnessFunction);
         while (iteration < this._tournamentSize) {
             const candidate = Randomness.getInstance().pickRandomElementFromList(population);
-            const candidateFitness = fitnessFunction.getFitness(candidate);
+            const candidateFitness = candidate.getFitness(fitnessFunction);
 
             if (fitnessFunction.compare(candidateFitness, bestFitness) > 0 ||
                 (fitnessFunction.compare(candidateFitness, bestFitness) == 0 && candidate.getLength() < winner.getLength())) {

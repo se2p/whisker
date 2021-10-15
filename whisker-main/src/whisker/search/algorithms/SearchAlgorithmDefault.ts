@@ -167,7 +167,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
+            const candidateFitness = candidateChromosome.getFitness(fitnessFunction);
             const candidateLength = candidateChromosome.getLength();
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;

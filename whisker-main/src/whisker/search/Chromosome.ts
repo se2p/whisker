@@ -46,6 +46,11 @@ export abstract class Chromosome {
      */
     private _targetFitness: FitnessFunction<Chromosome>;
 
+    /**
+     * Caches fitnessValues to avoid calculating the same fitness multiple times.
+     */
+    protected _fitnessCache = new Map<FitnessFunction<Chromosome>, number>();
+
     get lastImprovedFitnessCodon(): number {
         return this._lastImprovedFitnessCodon;
     }
@@ -96,7 +101,13 @@ export abstract class Chromosome {
      * @returns the fitness of this chromosome
      */
     getFitness(fitnessFunction: FitnessFunction<this>): number {
-        return fitnessFunction.getFitness(this);
+        if (this._fitnessCache.has(fitnessFunction)) {
+            return this._fitnessCache.get(fitnessFunction);
+        } else {
+            const fitness = fitnessFunction.getFitness(this);
+            this._fitnessCache.set(fitnessFunction, fitness);
+            return fitness;
+        }
     }
 
     async evaluate(): Promise<void> {
