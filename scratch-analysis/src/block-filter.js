@@ -126,6 +126,12 @@ const EventFilter = {
     cloneStart: block =>
         block.opcode === 'control_start_as_clone',
 
+    backdropStart: block =>
+        block.opcode === 'event_whenbackdropswitchesto',
+
+    backdropChange: block =>
+        block.opcode === 'looks_switchbackdropto',
+
     eventSend: block =>
         EventFilter.broadcastSend(block) ||
         EventFilter.cloneCreate(block),
@@ -224,8 +230,9 @@ const Text2SpeechFilter = {
 
 const StatementFilter = {
     isStatementBlock: block => {
-        if (block.topLevel) {
-            return true;
+        if (block.topLevel && !EventFilter.eventBlock(block)) {
+            // loose blocks
+            return false;
         }
         if (block.opcode.endsWith('_menu')) {
             return false;

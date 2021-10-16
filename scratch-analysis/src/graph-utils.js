@@ -217,6 +217,28 @@ class Graph {
         return result;
     }
 
+    toCoverageDot (uncoveredKeys) {
+        const edges = [];
+        const nodes = [];
+        for (const node of this.getAllNodes()) {
+            if (uncoveredKeys.includes(node.id)) {
+                nodes.push(`\t"${node.toString()}" [color=red];`);
+            } else {
+                nodes.push(`\t"${node.toString()}" [color=yellow];`);
+            }
+            for (const succ of this.successors(node.id)) {
+                edges.push(`\t"${node.toString()}" -> "${succ.toString()}";`);
+            }
+        }
+        const renderedEdges = edges.join('\n');
+        const renderedNodes = nodes.join('\n');
+
+        const result = `digraph ScratchProgram {\n${renderedNodes}\n${renderedEdges}\n}`;
+
+        this.dot = result;
+        return result;
+    }
+
     toString () {
         if (!this.dot) {
             return this.toDot();
