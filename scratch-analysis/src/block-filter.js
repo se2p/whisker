@@ -230,7 +230,9 @@ const Text2SpeechFilter = {
 
 const StatementFilter = {
     isStatementBlock: block => {
-        if (block.topLevel && !EventFilter.eventBlock(block)) {
+        if (block.topLevel && !EventFilter.eventBlock(block) &&
+            !EventFilter.cloneStart(block) &&
+            !CustomFilter.customBlock(block)) {
             // loose blocks
             return false;
         }
