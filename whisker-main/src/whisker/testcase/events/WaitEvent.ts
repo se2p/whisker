@@ -26,31 +26,28 @@ import {Randomness} from "../../utils/Randomness";
 
 export class WaitEvent extends ScratchEvent {
 
-    private steps: number;
-
-    constructor(steps = 1) {
+    constructor(private _steps = 1) {
         super();
-        this.steps = steps;
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.wait(this.steps);
+        await Container.testDriver.wait(this._steps);
     }
 
     public toJavaScript(): string {
-        return `await t.wait(${this.steps});`;
+        return `await t.wait(${this._steps});`;
     }
 
     public toString(): string {
-        return "Wait for " + this.steps + " steps";
+        return "Wait for " + this._steps + " steps";
     }
 
     numSearchParameter(): number {
         return 1;
     }
 
-    getParameter(): number[] {
-        return [this.steps];
+    getParameters(): number[] {
+        return [this._steps];
     }
 
     getSearchParameterNames(): string[] {
@@ -59,17 +56,17 @@ export class WaitEvent extends ScratchEvent {
 
     setParameter(args: number[], testExecutor: ParameterType): void {
         switch (testExecutor) {
-            case ParameterType.RANDOM:
-                this.steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
+            case "random":
+                this._steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
                 break;
-            case ParameterType.CODON:
-                this.steps = args[0];
+            case "codon":
+                this._steps = args[0];
                 break;
-            case ParameterType.REGRESSION:
-                this.steps = Math.round(NeuroevolutionUtil.relu(args[0]));
+            case "regression":
+                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }
-        this.steps %= Container.config.getWaitStepUpperBound();
+        this._steps %= Container.config.getWaitStepUpperBound();
     }
 
     stringIdentifier(): string {
