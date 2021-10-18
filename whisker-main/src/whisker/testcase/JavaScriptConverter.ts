@@ -26,8 +26,8 @@ export class JavaScriptConverter {
 
     getText(test: TestChromosome): string {
         let text = "const test = async function (t) {\n";
-        for (const [scratchEvent, args] of test.trace.events) {
-            text += "  " + scratchEvent.toJavaScript() + "\n";
+        for (const { event } of test.trace.events) {
+            text += "  " + event.toJavaScript() + "\n";
         }
         text += "  t.end();\n";
         text += `}
@@ -50,8 +50,8 @@ export class JavaScriptConverter {
         let footer = "";
         for (const test of tests) {
             text += "const test"+i+" = async function (t) {\n";
-            for (const [scratchEvent, args] of test.chromosome.trace.events) {
-                text += "  " + scratchEvent.toJavaScript() + "\n";
+            for (const {event} of test.chromosome.trace.events) {
+                text += "  " + event.toJavaScript() + "\n";
             }
             text += "}\n";
 

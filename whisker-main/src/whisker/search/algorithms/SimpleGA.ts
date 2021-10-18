@@ -129,7 +129,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         const fitnesses = new Map();
 
         for (const c of population) {
-            const fitness = this._fitnessFunction.getFitness(c);
+            const fitness = c.getFitness(this._fitnessFunction);
             fitnesses.set(c, fitness);
         }
 
@@ -145,7 +145,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         });
 
         const bestIndividual = population.get(population.size() - 1);
-        const candidateFitness = this._fitnessFunction.getFitness(bestIndividual);
+        const candidateFitness = bestIndividual.getFitness(this._fitnessFunction);
         const candidateLength = bestIndividual.getLength();
         if (this._bestIndividuals.isEmpty() ||
             this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||

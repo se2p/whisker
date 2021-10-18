@@ -29,7 +29,7 @@ class DummyEvent extends ScratchEvent {
         return 0;
     }
 
-    getParameter(): (number | string | RenderedTarget)[] {
+    getParameters(): (number | string | RenderedTarget)[] {
         return [];
     }
 

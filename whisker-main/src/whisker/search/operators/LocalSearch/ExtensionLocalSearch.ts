@@ -23,7 +23,7 @@ import {Randomness} from '../../../utils/Randomness';
 import {TestChromosome} from "../../../testcase/TestChromosome";
 import {WaitEvent} from "../../../testcase/events/WaitEvent";
 import {Container} from "../../../utils/Container";
-import {ExecutionTrace} from "../../../testcase/ExecutionTrace";
+import {EventAndParameters, ExecutionTrace} from "../../../testcase/ExecutionTrace";
 import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
 import {LocalSearch} from "./LocalSearch";
 import Runtime from "scratch-vm/src/engine/runtime";
@@ -70,7 +70,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
         // Apply extension local search.
         const newCodons = new List<number>();
-        const events = new List<[ScratchEvent, number[]]>();
+        const events = new List<EventAndParameters>();
         newCodons.addList(chromosome.getGenes());
         Randomness.seedScratch();
         this._vmWrapper.start();
@@ -104,7 +104,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @param codons the codons to execute.
      * @param events the list of events saving the selected events including its parameters.
      */
-    private async _executeGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>): Promise<void> {
+    private async _executeGenes(codons: List<number>, events: List<EventAndParameters>): Promise<void> {
         let numCodon = 0;
         while (numCodon < codons.size()) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
@@ -124,7 +124,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @param events the list of events saving the selected events including its parameters.
      * @param chromosome the chromosome carrying the trace used to calculate fitness values of uncovered blocks
      */
-    private async _extendGenes(codons: List<number>, events: List<[ScratchEvent, number[]]>,
+    private async _extendGenes(codons: List<number>, events: List<EventAndParameters>,
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
         const upperLengthBound = Container.config.searchAlgorithmProperties.getChromosomeLength();
         let fitnessValues = this.calculateFitnessValues(chromosome);
@@ -148,13 +148,13 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 break;
             }
 
-            const typeEvents = availableEvents.filter(event => event instanceof TypeTextEvent);
-            if (!typeEvents.isEmpty()) {
-                const typeEvent = Randomness.getInstance().pickRandomElementFromList(typeEvents);
-                const typeEventCodon = availableEvents.findElement(typeEvent);
+            const typeTextEvents = availableEvents.filter(event => event instanceof TypeTextEvent);
+            if (!typeTextEvents.isEmpty()) {
+                const typeTextEvent = Randomness.getInstance().pickRandomElementFromList(typeTextEvents);
+                const typeEventCodon = availableEvents.findElement(typeTextEvent);
                 codons.add(typeEventCodon);
-                events.add([typeEvent, []]);
-                await typeEvent.apply();
+                events.add(new EventAndParameters(typeTextEvent, []));
+                await typeTextEvent.apply();
             }
             // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
             const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
@@ -166,7 +166,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
             // Send the waitEvent with the specified stepDuration to the VM
             const waitEvent = new WaitEvent(waitDurationCodon);
-            events.add([waitEvent, [waitDurationCodon]]);
+            events.add(new EventAndParameters(waitEvent, [waitDurationCodon]));
             await waitEvent.apply();
 
 
@@ -213,11 +213,11 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         for (const fitnessFunction of this._algorithm.getFitnessFunctions()) {
             // Only look at fitnessValues originating from uncovered blocks AND
             // blocks not already covered by previous chromosomes modified by local search.
-            const fitness = fitnessFunction.getFitness(chromosome);
+            const fitness = chromosome.getFitness(fitnessFunction);
             if (!fitnessFunction.isOptimal(fitness) &&
                 !this._modifiedChromosomes.some(modifiedChromosome =>
-                    fitnessFunction.isOptimal(fitnessFunction.getFitness(modifiedChromosome)))) {
-                fitnessValues.push(fitnessFunction.getFitness(chromosome));
+                    fitnessFunction.isOptimal(modifiedChromosome.getFitness(fitnessFunction)))) {
+                fitnessValues.push(chromosome.getFitness(fitnessFunction));
             }
         }
         return fitnessValues;
