@@ -222,9 +222,9 @@ class Graph {
         const nodes = [];
         for (const node of this.getAllNodes()) {
             if (uncoveredKeys.includes(node.id)) {
-                nodes.push(`\t"${node.toString()}" [color=red];`);
+                nodes.push(`\t"${node.toString()}" [style=filled,fillcolor=\"red\",fontcolor=\"white\"];`);
             } else {
-                nodes.push(`\t"${node.toString()}" [color=yellow];`);
+                nodes.push(`\t"${node.toString()}" [style=filled,fillcolor=\"darkgreen\",fontcolor=\"white\"];`);
             }
             for (const succ of this.successors(node.id)) {
                 edges.push(`\t"${node.toString()}" -> "${succ.toString()}";`);
