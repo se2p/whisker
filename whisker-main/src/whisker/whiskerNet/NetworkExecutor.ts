@@ -3,7 +3,7 @@ import {List} from "../utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {EventObserver} from "../testcase/EventObserver";
-import {ExecutionTrace} from "../testcase/ExecutionTrace";
+import {EventAndParameters, ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
@@ -81,7 +81,7 @@ export class NetworkExecutor {
      * @param network the network which should play the given game.
      */
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events = new List<[ScratchEvent, number[]]>();
+        const events = new List<EventAndParameters>();
         let workingNetwork = false;
         const codons = new List<number>()
 
@@ -142,19 +142,19 @@ export class NetworkExecutor {
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
-            let args = [];
+            const parameters = [];
             if (nextEvent.numSearchParameter() > 0) {
-                args = NetworkExecutor.getArgs(nextEvent, network);
-                nextEvent.setParameter(args, ParameterType.REGRESSION);
+                parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
+                nextEvent.setParameter(parameters, "regression");
             }
-            events.add([nextEvent, args]);
-            this.notify(nextEvent, args);
+            events.add(new EventAndParameters(nextEvent, parameters));
+            this.notify(nextEvent, parameters);
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // Add a waitEvent in the end of each round.
             const waitEvent = new WaitEvent(1);
-            events.add([waitEvent, []]);
+            events.add(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
             timer = Date.now();
         }
@@ -224,7 +224,7 @@ export class NetworkExecutor {
     /**
      * Resets the Scratch-VM to the initial state
      */
-    public resetState() {
+    public resetState(): void {
         // Delete clones
         const clones = [];
         for (const targetsKey in this._vm.runtime.targets) {

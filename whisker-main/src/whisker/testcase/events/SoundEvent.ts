@@ -41,7 +41,7 @@ export class SoundEvent extends ScratchEvent {
         return 1;
     }
 
-    getParameter(): number[] {
+    getParameters(): number[] {
         return [this._volume];
     }
 
