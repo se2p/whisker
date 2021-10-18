@@ -158,7 +158,7 @@ export abstract class TestGenerator {
                 let branchDistance = Number.MAX_VALUE;
                 let CFGDistance = Number.MAX_VALUE;
                 for (const chromosome of bestIndividuals) {
-                    const curFitness = fitnessFunction.getFitness(chromosome);
+                    const curFitness = chromosome.getFitness(fitnessFunction);
                     if (curFitness < fitness) {
                         fitness = curFitness;
                         approachLevel = fitnessFunction.getApproachLevel(chromosome);

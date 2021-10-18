@@ -468,7 +468,8 @@ open independent goals: ${this._archiveUncovered.size}`);
      * @returns The heuristic value of the chromosome for the given fitness function.
      */
     private getHeuristicValue(chromosome: C, fitnessFunctionKey: number): number {
-        const fitnessValue = this._fitnessFunctions.get(fitnessFunctionKey).getFitness(chromosome);
+        const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+        const fitnessValue = chromosome.getFitness(fitnessFunction);
         return this._heuristicFunctions.get(fitnessFunctionKey)(fitnessValue);
     }
 

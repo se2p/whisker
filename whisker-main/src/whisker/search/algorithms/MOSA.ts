@@ -48,6 +48,11 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private _localSearchOperators = new List<LocalSearch<C>>();
 
     /**
+     * Stores all keys of objectives that still have to be optimised.
+     */
+    private _nonOptimisedObjectives: number[]
+
+    /**
      * Random number Generator.
      */
     private readonly _random = Randomness.getInstance();
@@ -116,6 +121,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         StatisticsCollector.getInstance().startTime = Date.now();
         const parentPopulation = this.generateInitialPopulation();
         await this.evaluatePopulation(parentPopulation);
+        this._nonOptimisedObjectives = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));
         await this.applyLocalSearch(parentPopulation);
 
 
@@ -126,6 +132,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
+            this._nonOptimisedObjectives = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));
             const chromosomes = new List<C>();
             chromosomes.addList(parentPopulation);
             chromosomes.addList(offspringPopulation);
@@ -147,10 +154,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         }
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            if (!this._archive.has(fitnessFunctionKey)) {
-                console.log(`Not covered: ${this._fitnessFunctions.get(fitnessFunctionKey).toString()}`);
-            }
+        for (const uncoveredKey of this._nonOptimisedObjectives) {
+            console.log(`Not covered: ${this._fitnessFunctions.get(uncoveredKey).toString()}`);
         }
         return this._archive;
     }
@@ -240,25 +245,23 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         const fronts = new List<List<C>>();
         const bestFront = new List<C>();
         const chromosomesForNonDominatedSorting = chromosomes.clone();
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            if (!this._archive.has(fitnessFunctionKey)) {
-                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                let bestChromosome = chromosomes.get(0);
-                let bestFitness = fitnessFunction.getFitness(bestChromosome);
-                for (const candidateChromosome of chromosomes.subList(1, chromosomes.size())) {
-                    const candidateFitness = fitnessFunction.getFitness(candidateChromosome);
-                    const compareValue = fitnessFunction.compare(candidateFitness, bestFitness);
-                    if (compareValue > 0 || (compareValue == 0
-                        && candidateChromosome.getLength() < bestChromosome.getLength())) {
-                        bestChromosome = candidateChromosome;
-                        bestFitness = candidateFitness;
-                    }
+        for (const uncoveredKey of this._nonOptimisedObjectives) {
+            const fitnessFunction = this._fitnessFunctions.get(uncoveredKey);
+            let bestChromosome = chromosomes.get(0);
+            let bestFitness = bestChromosome.getFitness(fitnessFunction);
+            for (const candidateChromosome of chromosomes.subList(1, chromosomes.size())) {
+                const candidateFitness = candidateChromosome.getFitness(fitnessFunction);
+                const compareValue = fitnessFunction.compare(candidateFitness, bestFitness);
+                if (compareValue > 0 || (compareValue == 0
+                    && candidateChromosome.getLength() < bestChromosome.getLength())) {
+                    bestChromosome = candidateChromosome;
+                    bestFitness = candidateFitness;
                 }
-                console.log(`Best Fitness for ${fitnessFunction.toString()}: ${bestFitness}`);
-                if (!bestFront.contains(bestChromosome)) {
-                    bestFront.add(bestChromosome);
-                    chromosomesForNonDominatedSorting.remove(bestChromosome);
-                }
+            }
+            console.log(`Best Fitness for ${fitnessFunction.toString()}: ${bestFitness}`);
+            if (!bestFront.contains(bestChromosome)) {
+                bestFront.add(bestChromosome);
+                chromosomesForNonDominatedSorting.remove(bestChromosome);
             }
         }
         if (bestFront.size() > 0) {
@@ -287,6 +290,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const dominatedValuesP = new List<C>();
             let dominationCountP = 0;
             for (const q of chromosomes) {
+                if (p === q) {
+                    continue;
+                }
                 if (this.dominates(p, q)) {
                     dominatedValuesP.add(q);
                 } else if (this.dominates(q, p)) {
@@ -326,17 +332,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      */
     private dominates(chromosome1: C, chromosome2: C): boolean {
         let dominatesAtLeastOnce = false;
-        for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
-            if (!this._archive.has(fitnessFunctionKey)) {
-                const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-                const fitness1 = fitnessFunction.getFitness(chromosome1);
-                const fitness2 = fitnessFunction.getFitness(chromosome2)
-                const compareValue = fitnessFunction.compare(fitness1, fitness2);
-                if (compareValue < 0) {
-                    return false;
-                } else if (compareValue > 0) {
-                    dominatesAtLeastOnce = true;
-                }
+        for (const uncoveredKey of this._nonOptimisedObjectives) {
+            const fitnessFunction = this._fitnessFunctions.get(uncoveredKey);
+            const fitness1 = chromosome1.getFitness(fitnessFunction);
+            const fitness2 = chromosome2.getFitness(fitnessFunction);
+            const compareValue = fitnessFunction.compare(fitness1, fitness2);
+            if (compareValue < 0) {
+                return false;
+            } else if (compareValue > 0) {
+                dominatesAtLeastOnce = true;
             }
         }
         return dominatesAtLeastOnce;
@@ -376,8 +380,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private calculateSVD(chromosome1: C, chromosome2: C): number {
         let svd = 0;
         for (const fitnessFunction of this._fitnessFunctions.values()) {
-            const fitness1 = fitnessFunction.getFitness(chromosome1);
-            const fitness2 = fitnessFunction.getFitness(chromosome2);
+            const fitness1 = chromosome1.getFitness(fitnessFunction);
+            const fitness2 = chromosome2.getFitness(fitnessFunction);
             const compareValue = fitnessFunction.compare(fitness1, fitness2);
             if (compareValue < 0) { // chromosome2 is better
                 svd++;

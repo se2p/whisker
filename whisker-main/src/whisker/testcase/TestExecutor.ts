@@ -104,7 +104,7 @@ export class TestExecutor {
             if (testChromosome.targetFitness) {
                 testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
                 testChromosome.coverage = currentCoverage;
-                const currentFitness = testChromosome.targetFitness.getFitness(testChromosome);
+                const currentFitness = testChromosome.getFitness(testChromosome.targetFitness);
                 if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
                     testChromosome.lastImprovedFitnessCodon = numCodon;

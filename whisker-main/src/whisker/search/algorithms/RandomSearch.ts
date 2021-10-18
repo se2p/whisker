@@ -64,7 +64,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate();
             this.updateArchive(candidateChromosome);
-            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
 
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                 bestFitness = candidateFitness;
