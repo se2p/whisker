@@ -156,6 +156,13 @@ export abstract class ScratchEventExtractor {
                 } else {
                     // Target senses another sprite
                     let sensingRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
+
+                    // Check if the sensedTarget is contained within the Scratch Project. If not, we don't add the
+                    // Event and all statements being based on the given sensing check are unreachable.
+                    if(!sensingRenderedTarget){
+                        break;
+                    }
+
                     // If the renderedTarget is not visible. Check if we have clones that might be.
                     if (!sensingRenderedTarget.visible) {
                         for (const clone of sensingRenderedTarget.sprite.clones) {
