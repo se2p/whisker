@@ -25,6 +25,10 @@ const Extract = {
         block.fields.BROADCAST_OPTION.value,
     broadcastForStatement: (blocks, statement) =>
         Extract.broadcastForBlock(blocks[statement.inputs.BROADCAST_INPUT.block]),
+    backdropStartTarget: (blocks, statement) =>
+        statement.fields.BACKDROP.value,
+    backdropChangeTarget: (blocks, statement) =>
+        blocks[statement.inputs.BACKDROP.block].fields.BACKDROP.value,
     cloneCreateTarget: (blocks, statement) =>
         blocks[statement.inputs.CLONE_OPTION.block].fields.CLONE_OPTION.value,
     cloneSendTarget: (targets, block) =>
