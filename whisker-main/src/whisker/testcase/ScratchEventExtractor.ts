@@ -235,8 +235,8 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'motion_pointtowards': {
-                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
-                if (towards.fields.TOWARDS.value === '_mouse_')
+                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block);
+                if (towards.fields.TOWARDS && towards.fields.TOWARDS.value === '_mouse_')
                     eventList.add(new MouseMoveEvent());
                 break;
             }
