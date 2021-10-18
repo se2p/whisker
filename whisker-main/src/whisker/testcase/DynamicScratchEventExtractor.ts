@@ -44,7 +44,7 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
             let block = target.blocks.getBlock(t.topBlock);
             // For the reason of not adding hatEvents of already active scripts, skip hatEvents and defer the handling
             // of hatEvents to the following loop where we know which scripts are indeed currently already active.
-            if (EventFilter.hatEvent(block)) {
+            if (block && EventFilter.hatEvent(block)) {
                 block = target.blocks.getBlock(block.next);
             }
             // Sometimes we encounter undefined blocks here?
