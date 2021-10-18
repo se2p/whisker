@@ -211,6 +211,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (this._random.nextDouble() < this._properties.getMutationProbability()) {
                 child2 = parent2.mutate();
             }
+
+            // If no mutation/crossover was applied clone the parents
+            if(!child1){
+                child1 = parent1.clone() as C;
+            }
+            if(!child2){
+                child2 = parent2.clone() as C;
+            }
+
             offspringPopulation.add(child1);
             if (offspringPopulation.size() < parentPopulation.size()) {
                 offspringPopulation.add(child2);
