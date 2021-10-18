@@ -21,7 +21,7 @@
 
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
-import {ExecutionTrace} from "./ExecutionTrace";
+import {EventAndParameters, ExecutionTrace} from "./ExecutionTrace";
 import {List} from "../utils/List";
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
@@ -31,7 +31,6 @@ import {Randomness} from "../utils/Randomness";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
-import {ParameterType} from "./events/ParameterType";
 import VMWrapper = require("../../vm/vm-wrapper.js");
 
 
@@ -66,7 +65,7 @@ export class TestExecutor {
      * @param testChromosome the testChromosome that should be executed.
      */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
-        const events = new List<[ScratchEvent, number[]]>();
+        const events = new List<EventAndParameters>();
 
         Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
@@ -147,7 +146,7 @@ export class TestExecutor {
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();
-        const events = new List<[ScratchEvent, number[]]>();
+        const events = new List<EventAndParameters>();
 
         while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
@@ -165,15 +164,15 @@ export class TestExecutor {
             // If the selected event requires additional parameters; select them randomly as well.
             if (event.numSearchParameter() > 0) {
                 // args are set in the event itself since the event knows which range of random values makes sense.
-                event.setParameter(null, ParameterType.RANDOM);
+                event.setParameter(null, "random");
             }
-            events.add([event, event.getParameter()]);
+            events.add(new EventAndParameters(event, event.getParameters()));
             await event.apply();
             StatisticsCollector.getInstance().incrementEventsCount()
 
             // Send a WaitEvent to the VM
             const waitEvent = new WaitEvent(1);
-            events.add([waitEvent, []]);
+            events.add(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
 
         }
@@ -195,22 +194,22 @@ export class TestExecutor {
      * @returns the new position in the codon list after selecting an event and its parameters.
      */
     public async selectAndSendEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>,
-                                    events: List<[ScratchEvent, number[]]>): Promise<number> {
-        // Select the next Event and set its parameter
+                                    events: List<EventAndParameters>): Promise<number> {
+        // Select the next event and set its parameter
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
-        const args = TestExecutor.getArgs(nextEvent, codons, numCodon);
-        nextEvent.setParameter(args, ParameterType.CODON);
-        events.add([nextEvent, args]);
+        const parameters = TestExecutor.getArgs(nextEvent, codons, numCodon);
+        nextEvent.setParameter(parameters, "codon");
+        events.add(new EventAndParameters(nextEvent, parameters));
         numCodon += nextEvent.numSearchParameter();
-        this.notify(nextEvent, args);
+        this.notify(nextEvent, parameters);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();
         StatisticsCollector.getInstance().incrementEventsCount()
 
         // Send a WaitEvent to the VM
         const waitEvent = new WaitEvent(1);
-        events.add([waitEvent, []]);
+        events.add(new EventAndParameters(waitEvent, []));
         await waitEvent.apply();
         return numCodon;
     }
