@@ -6,8 +6,8 @@
     "populationSize": 10,
     "chromosome": {
         "type": "variableLengthTest",
-        "minSampleLength": 2,
-        "maxSampleLength": 20,
+        "minSampleLength": 5,
+        "maxSampleLength": 40,
         "maxLength": 40
     },
     "mutation": {
