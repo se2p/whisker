@@ -19,22 +19,34 @@
  */
 
 import {ScratchEvent} from "./ScratchEvent";
-import {NotYetImplementedException} from "../../core/exceptions/NotYetImplementedException";
+import {Container} from "../../utils/Container";
+import {Randomness} from "../../utils/Randomness";
+import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
+import {ParameterType} from "./ParameterType";
 
 export class SoundEvent extends ScratchEvent {
 
-    private _volume:number;
+    /**
+     * Constructor for SoundEvents
+     * @param _volume the initialVolume; we use 10 since Scratch registers a volume of 10 as "loud".
+     * @param _steps defines how long the volume should be sent to the Scratch-VM
+     */
+    constructor(private readonly _volume = 10, private _steps = 1) {
+        super();
+        this._volume = _volume;
+        this._steps = _steps;
+    }
 
     async apply(): Promise<void> {
-        throw new NotYetImplementedException();
+        Container.testDriver.sendSound(this._volume, this._steps);
     }
 
     public toJavaScript(): string {
-        throw new NotYetImplementedException();
+        return `t.sendSound(${this._volume}, ${this._steps});`;
     }
 
     public toString(): string {
-        throw new NotYetImplementedException();
+        return `SoundEvent ${this._volume} for ${this._steps} steps`;
     }
 
     numSearchParameter(): number {
@@ -42,18 +54,29 @@ export class SoundEvent extends ScratchEvent {
     }
 
     getParameters(): number[] {
-        return [this._volume];
+        return [this._volume, this._steps];
     }
 
     getSearchParameterNames(): string[] {
-        return ["Volume"];
+        return ["Steps"];
     }
 
-    setParameter(args:number[]): void {
-        this._volume = args[0];
+    setParameter(args: number[], testExecutor: ParameterType): void {
+        switch (testExecutor) {
+            case "random":
+                this._steps = Randomness.getInstance().nextInt(1, Container.config.getSoundDurationUpperBound() + 1);
+                break;
+            case "codon":
+                this._steps = args[0];
+                break;
+            case "regression":
+                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
+                break;
+        }
+        this._steps %= Container.config.getSoundDurationUpperBound();
     }
 
     stringIdentifier(): string {
-        return "SoundEvent";
+        return `SoundEvent-${this._volume}`;
     }
 }

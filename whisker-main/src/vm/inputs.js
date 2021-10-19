@@ -79,6 +79,7 @@ class Input {
             }
             if (this._state && executedSteps >= data.steps + this._steps - this._stepsExecutedBefore) {
                 data.isDown = !data.isDown;
+                data.volume = -1;
                 this._performSingle(data);
                 return true;
             }
@@ -103,6 +104,9 @@ class Input {
                 break;
             case 'drag':
                 this._inputs.vmWrapper.sprites.getSprite(data.sprite).getScratchTarget().setXY(data.x, data.y)
+                break;
+            case 'microphone':
+                this._inputs.vmWrapper.vm.runtime.virtualSound = data.volume;
                 break;
             default:
                 throw new Error(`Invalid device for input ${data.device}`);
@@ -517,6 +521,20 @@ class Inputs {
             device: 'text',
             answer: answer
         });
+    }
+
+    /**
+     * Sends a sound to the Scratch-VM by simulating a given volume.
+     * @param {number} volume of the simulated sound.
+     * @param {number} steps defines for how many steps the sound should be sent to the Scratch-VM.
+     */
+    sendSound(volume, steps = 1){
+        Math.max(Math.min(volume, 101), 0)
+        this.inputImmediate({
+            device: 'microphone',
+            volume: volume,
+            steps: steps
+        })
     }
 }
 

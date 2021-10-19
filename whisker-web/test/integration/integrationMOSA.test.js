@@ -189,6 +189,38 @@ describe('Basic event handling', () => {
         await (await page.$('#run-all-tests')).click();
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
+
+    test('Test SoundEvent triggered by hatBlock', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventHat.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test SoundEvent triggered by sensing Block comparing against equal', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventSensingEqual.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test SoundEvent triggered by sensing Block comparing against greater than', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventSensingGreater.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test SoundEvent triggered by hatBlock comparing against lower than', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventSensingLower.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
 });
 
 describe('Multiple event handling', () => {

@@ -316,6 +316,7 @@ class VMWrapper {
         this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
         clearInterval(this.vm.runtime._steppingInterval);
         this.accelerationFactor = accelerationFactor;
+        this.vm.runtime.virtualSound = -1;
 
         this.instrumentPrimitive('control_wait', 'DURATION');
         this.instrumentPrimitive('looks_sayforsecs', 'SECS');
@@ -395,6 +396,7 @@ class VMWrapper {
         this.vm.greenFlag();
         this.startTime = Date.now();
         this.vm.runtime.stepsExecuted = 0;
+        this.vm.runtime.virtualSound = -1;
 
         this.aborted = false;
     }

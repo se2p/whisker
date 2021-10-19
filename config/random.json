@@ -22,6 +22,7 @@
     "durations": {
         "waitStepUpperBound": 100,
         "clickDuration": 3,
-        "pressDuration": 10
+        "pressDuration": 10,
+        "soundDurationUpperBound": 10
     }
 }

@@ -262,10 +262,38 @@ export abstract class ScratchEventExtractor {
                 // Click stage
                 eventList.add(new ClickStageEvent());
                 break;
-            case 'event_whengreaterthan':
-                // Sound
-                eventList.add(new SoundEvent());
+            case 'event_whengreaterthan': {
+                // Fetch the sound value for the sound block. We add 1 since the block tests using greater than.
+                const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
+                const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
+                eventList.add(new SoundEvent(soundValue));
                 break;
+            }
+
+            case 'sensing_loudness': {
+                const operatorBlock = target.blocks.getBlock(block.parent);
+                // Find out on which side of the operator the value which is compared against the volume is placed.
+                let compareValueOperatorBlock: ScratchBlocks
+                let compareValueIsFirstOperand:boolean;
+                if (operatorBlock.inputs.OPERAND1.block !== block.id) {
+                    compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND1.block);
+                    compareValueIsFirstOperand = true;
+                } else {
+                    compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND2.block);
+                    compareValueIsFirstOperand = false;
+                }
+
+                // Now that we know where to find the value which is compared against the current volume value, we
+                // can set the volume appropriately
+                let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                if (operatorBlock.opcode === 'operator_gt'){
+                    compareValueIsFirstOperand ? volumeValue -=1 : volumeValue += 1;
+                }
+                else if (operatorBlock.opcode === 'operator_lt'){
+                    compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
+                }
+                eventList.add(new SoundEvent(volumeValue))
+            }
         }
         return eventList;
     }
