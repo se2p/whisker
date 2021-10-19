@@ -226,6 +226,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     }
                     mutationCounter++;
                     this._iterations++;
+                    StatisticsCollector.getInstance().incrementIterationCount();
                 }
                 // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
                 // too cost intensive and provides hardly any benefit.
