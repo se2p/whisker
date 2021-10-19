@@ -271,30 +271,37 @@ export abstract class ScratchEventExtractor {
             }
 
             case 'sensing_loudness': {
-                const operatorBlock = target.blocks.getBlock(block.parent);
-                // Find out on which side of the operator the value which is compared against the volume is placed.
-                let compareValueOperatorBlock: ScratchBlocks
-                let compareValueIsFirstOperand:boolean;
-                if (operatorBlock.inputs.OPERAND1.block !== block.id) {
-                    compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND1.block);
-                    compareValueIsFirstOperand = true;
-                } else {
-                    compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND2.block);
-                    compareValueIsFirstOperand = false;
-                }
+                try {
+                    const operatorBlock = target.blocks.getBlock(block.parent);
+                    // Find out on which side of the operator the value which is compared against the volume is placed.
+                    let compareValueOperatorBlock: ScratchBlocks
+                    let compareValueIsFirstOperand: boolean;
 
-                // Now that we know where to find the value which is compared against the current volume value, we
-                // can set the volume appropriately.
-                let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
-                // Greater than
-                if (operatorBlock.opcode === 'operator_gt'){
-                    compareValueIsFirstOperand ? volumeValue -=1 : volumeValue += 1;
+                    if (operatorBlock.inputs.OPERAND1.block !== block.id) {
+                        compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND1.block);
+                        compareValueIsFirstOperand = true;
+                    } else {
+                        compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND2.block);
+                        compareValueIsFirstOperand = false;
+                    }
+
+                    // Now that we know where to find the value which is compared against the current volume value, we
+                    // can set the volume appropriately.
+                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                    // Greater than
+                    if (operatorBlock.opcode === 'operator_gt') {
+                        compareValueIsFirstOperand ? volumeValue -= 1 : volumeValue += 1;
+                    }
+                    // Lower than
+                    else if (operatorBlock.opcode === 'operator_lt') {
+                        compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
+                    }
+                    eventList.add(new SoundEvent(volumeValue))
                 }
-                // Lower than
-                else if (operatorBlock.opcode === 'operator_lt'){
-                    compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
+                // If we cannot infer the correct volume, simply set the volume to the highest possible value.
+                catch (e) {
+                    eventList.add(new SoundEvent(100));
                 }
-                eventList.add(new SoundEvent(volumeValue))
             }
         }
         return eventList;
