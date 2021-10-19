@@ -20,9 +20,6 @@
 
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
-import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionUtil} from "../../whiskerNet/NeuroevolutionUtil";
-import {ParameterType} from "./ParameterType";
 
 export class SoundEvent extends ScratchEvent {
 
@@ -31,10 +28,10 @@ export class SoundEvent extends ScratchEvent {
      * @param _volume the initialVolume; we use 10 since Scratch registers a volume of 10 as "loud".
      * @param _steps defines how long the volume should be sent to the Scratch-VM
      */
-    constructor(private readonly _volume = 10, private _steps = 1) {
+    constructor(private readonly _volume = 10, private readonly _steps = 1) {
         super();
         this._volume = _volume;
-        this._steps = _steps;
+        this._steps = Container.config.getSoundDuration();
     }
 
     async apply(): Promise<void> {
@@ -50,7 +47,7 @@ export class SoundEvent extends ScratchEvent {
     }
 
     numSearchParameter(): number {
-        return 1;
+        return 0;
     }
 
     getParameters(): number[] {
@@ -58,22 +55,11 @@ export class SoundEvent extends ScratchEvent {
     }
 
     getSearchParameterNames(): string[] {
-        return ["Steps"];
+        return [];
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): void {
-        switch (testExecutor) {
-            case "random":
-                this._steps = Randomness.getInstance().nextInt(1, Container.config.getSoundDurationUpperBound() + 1);
-                break;
-            case "codon":
-                this._steps = args[0];
-                break;
-            case "regression":
-                this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
-                break;
-        }
-        this._steps %= Container.config.getSoundDurationUpperBound();
+    setParameter(): void {
+        return;
     }
 
     stringIdentifier(): string {

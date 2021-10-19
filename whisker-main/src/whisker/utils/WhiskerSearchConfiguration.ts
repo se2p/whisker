@@ -474,9 +474,9 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getSoundDurationUpperBound(): number {
-        if (this.dict['durations']['soundDurationUpperBound']) {
-            return this.dict['durations']['soundDurationUpperBound'];
+    public getSoundDuration(): number {
+        if (this.dict['durations']['soundDuration']) {
+            return this.dict['durations']['soundDuration'];
         } else {
             return 10;
         }

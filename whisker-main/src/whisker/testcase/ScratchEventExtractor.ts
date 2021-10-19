@@ -284,11 +284,13 @@ export abstract class ScratchEventExtractor {
                 }
 
                 // Now that we know where to find the value which is compared against the current volume value, we
-                // can set the volume appropriately
+                // can set the volume appropriately.
                 let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                // Greater than
                 if (operatorBlock.opcode === 'operator_gt'){
                     compareValueIsFirstOperand ? volumeValue -=1 : volumeValue += 1;
                 }
+                // Lower than
                 else if (operatorBlock.opcode === 'operator_lt'){
                     compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
                 }
