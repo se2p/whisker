@@ -198,6 +198,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // By chance apply LocalSearch to the randomly generated chromosome.
                 await this.applyLocalSearch(chromosome);
                 this._iterations++;
+                StatisticsCollector.getInstance().incrementIterationCount();
             } else {
                 // Otherwise we choose a chromosome to mutate from one of our populations, preferring uncovered ones.
                 const anyUncovered: boolean = this._archiveUncovered.size > 0;
@@ -234,7 +235,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // Reset mutationCounter
                 mutationCounter = 0;
             }
-            StatisticsCollector.getInstance().incrementIterationCount();
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
