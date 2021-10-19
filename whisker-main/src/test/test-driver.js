@@ -29,6 +29,7 @@ class TestDriver {
         this.mouseDown = vmWrapper.inputs.mouseDown.bind(vmWrapper.inputs);
         this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
         this.typeText = vmWrapper.inputs.typeText.bind(vmWrapper.inputs);
+        this.sendSound = vmWrapper.inputs.sendSound.bind(vmWrapper.inputs);
         this.wait = vmWrapper.wait.bind(vmWrapper);
 
         /* Sprite Information */

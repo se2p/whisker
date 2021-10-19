@@ -210,6 +210,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      */
     private calculateFitnessValues(chromosome: TestChromosome): number[] {
         const fitnessValues: number[] = []
+        // Flush fitnessCache to enforce a recalculation of the fitness values.
+        chromosome.flushFitnessCache();
         for (const fitnessFunction of this._algorithm.getFitnessFunctions()) {
             // Only look at fitnessValues originating from uncovered blocks AND
             // blocks not already covered by previous chromosomes modified by local search.

@@ -110,6 +110,13 @@ export abstract class Chromosome {
         }
     }
 
+    /**
+     * Flushes the fitness cache to enforce a recalculation of the fitness values.
+     */
+    public flushFitnessCache():void{
+        this._fitnessCache.clear();
+    }
+
     async evaluate(): Promise<void> {
         // No-op
     }
