@@ -20,6 +20,12 @@ build_all:
     - mkdir -p output/static
     - yarn build-main
     - yarn build-web
+  artifacts:
+    expire_in: 1 minute
+    paths:
+      - whisker-main/dist
+      - whisker-web/dist
+
 
 unit-tests:
   stage: test
