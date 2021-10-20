@@ -93,6 +93,7 @@ COPY scratch-analysis/package.json ./scratch-analysis/
 COPY servant/package.json ./servant/
 COPY whisker-web/package.json ./whisker-web/
 COPY whisker-main/package.json ./whisker-main/
+COPY yarn.lock ./
 RUN yarn install
 
 # (d) Copy source files (as governed by .dockerignore), build Whisker and drop
@@ -102,7 +103,7 @@ RUN yarn install
 COPY ./ ./
 # We run yarn upgrade as a workaround for issue #165 to ensure that our
 # dependency "scratch-vm" is always up-to-date.
-RUN yarn upgrade \
+RUN yarn --cwd whisker-main upgrade scratch-vm \
     && yarn build \
     && yarn install --production
 
