@@ -142,12 +142,13 @@ describe('Model tests on multiple events per step', () => {
         await loadProject('test/model/scratch-programs/fruitcatcher.sb3',
             'test/model/model-jsons/fruitcatcher-random-fruit.json');
         await page.evaluate(factor => document.querySelector('#model-duration').value = factor, 33);
-        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 10);
+        await page.evaluate(factor => document.querySelector('#model-repetitions').value = factor, 8);
 
         await (await page.$('#run-all-tests')).click();
         let {errorsInModel, failsInModel, modelCoverage} = await readModelErrors();
         await expect(errorsInModel).toBe("0");
         await expect(failsInModel).toBe("0");
-        await expect(modelCoverage).toBeGreaterThan(0.9);
+        // as there are not enough repetitions (for shorter pipeline) only test for coverage > 0.9.
+        await expect(Number.parseInt(modelCoverage)).toBeGreaterThan(0.9);
     })
 });
