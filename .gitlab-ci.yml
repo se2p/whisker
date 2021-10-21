@@ -21,7 +21,7 @@ build_all:
     - yarn build-main
     - yarn build-web
   artifacts:
-    expire_in: 1 minute
+    expire_in: 1 hour
     paths:
       - whisker-main/dist
       - whisker-web/dist
