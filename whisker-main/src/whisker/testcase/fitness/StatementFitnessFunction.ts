@@ -20,8 +20,8 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
-import {CustomFilter, ControlFilter, StatementFilter} from 'scratch-analysis/src/block-filter'
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode} from 'scratch-analysis'
+import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
 import {List} from "../../utils/List";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
@@ -225,6 +225,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 for (let i = 0; i < qSize; i++) {
                     node = queue.shift();
                     if (coveredBlocks.has(node.id)) {
+                        // If we stop at an execution halting block we use its relative remaining halting
+                        // duration as the CFG distance instead of simply incrementing the CFG. Since at this point
+                        // we have already incremented it by one we first have to decrement it again.
+                        if (ControlFilter.executionHaltingBlock(node.block)) {
+                            level = (level - 1) + chromosome.trace.blockTraces[node.id].haltingDurationLeft;
+                        }
                         return level;
                     }
                     visited.add(node);
@@ -245,8 +251,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         }
 
         const coveredBlocks = chromosome.coverage;
-        const level = bfs(this._cfg, this._targetNode, coveredBlocks);
-        return level
+        return bfs(this._cfg, this._targetNode, coveredBlocks);
 
     }
 

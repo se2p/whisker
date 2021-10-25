@@ -376,6 +376,7 @@ class VMWrapper {
      * Start the vm wrapper by resetting it to its original state and starting the virtual machine.
      */
     start () {
+        this.vm.runtime.stopAll();
         this.callbacks.clearCallbacks();
         this.inputs.clearInputs();
         this.constraints.clearConstraints();
