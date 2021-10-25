@@ -229,7 +229,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                         // duration as the CFG distance instead of simply incrementing the CFG. Since at this point
                         // we have already incremented it by one we first have to decrement it again.
                         if (ControlFilter.executionHaltingBlock(node.block)) {
-                            level = (level - 1) + chromosome.trace.blockTraces[node.id].haltingDurationLeft;
+                            level = (level - 1) + chromosome.trace.blockTraces[node.id].remainingScaledHaltingDuration;
                         }
                         return level;
                     }
