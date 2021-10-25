@@ -150,6 +150,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             parentPopulation.reverse(); // reverse order from descending to ascending by quality for rank selection
             await this.applyLocalSearch(parentPopulation);
             this._iterations++;
+            StatisticsCollector.getInstance().incrementIterationCount();
             this.updateStatistics();
         }
 
@@ -401,5 +402,21 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     getStartTime(): number {
         return this._startTime;
+    }
+
+    /**
+     * Updates the StatisticsCollector on the following points:
+     *  - bestTestSuiteSize
+     *  - createdTestsToReachFullCoverage
+     *  - timeToReachFullCoverage
+     */
+    protected updateStatistics(): void {
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+        if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
+            this._fullCoverageReached = true;
+            StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
+                (this._iterations + 1) * this._properties.getPopulationSize();
+            StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
+        }
     }
 }
