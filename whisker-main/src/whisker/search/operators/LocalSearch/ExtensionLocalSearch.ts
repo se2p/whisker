@@ -117,6 +117,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
     private async _extendGenes(codons: List<number>, events: List<EventAndParameters>,
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
         const upperLengthBound = Container.config.searchAlgorithmProperties.getChromosomeLength();
+        const upperCodonValueBound = Container.config.searchAlgorithmProperties.getMaxIntRange();
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
         let done = false;
@@ -131,6 +132,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const _onRunStop = this.projectStopped.bind(this);
         this._vmWrapper.vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
+        let extendWait = false;
         while (codons.size() < upperLengthBound && this._projectRunning && !done) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
             if (availableEvents.isEmpty()) {
@@ -145,20 +147,43 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 codons.add(typeEventCodon);
                 events.add(new EventAndParameters(typeTextEvent, []));
                 await typeTextEvent.apply();
+                extendWait = false;
+            } else {
+                if (extendWait) {
+                    // Fetch the old waitDuration and add the upper bound to it.
+                    let newWaitDuration = codons.get(codons.size() - 1) + Container.config.getWaitStepUpperBound();
+
+                    // Check if we have reached the maximum codon value. If so force the localSearch operator to
+                    // crate a new WaitEvent.
+                    if (newWaitDuration > upperCodonValueBound) {
+                        newWaitDuration = upperCodonValueBound;
+                        extendWait = false;
+                    }
+
+                    // Replace the old codonValue with the new duration; Construct the WaitEvent with the new
+                    // duration; Replace the old Event in the events list of the chromosome with the new one.
+                    codons.replaceAt(newWaitDuration, codons.size() - 1);
+                    const waitEvent = new WaitEvent(newWaitDuration);
+                    events.replaceAt(new EventAndParameters(waitEvent, [newWaitDuration]), events.size() - 1);
+                    await waitEvent.apply();
+
+                } else {
+                    // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
+                    const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
+                    codons.add(waitEventCodon);
+
+                    // Set the waitDuration to the specified upper bound.
+                    // Always using the same waitDuration ensures determinism within the local search.
+                    const waitDurationCodon = Container.config.getWaitStepUpperBound();
+                    codons.add(Container.config.getWaitStepUpperBound());
+
+                    // Send the waitEvent with the specified stepDuration to the VM
+                    const waitEvent = new WaitEvent(waitDurationCodon);
+                    events.add(new EventAndParameters(waitEvent, [waitDurationCodon]));
+                    await waitEvent.apply();
+                    extendWait = true;
+                }
             }
-            // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
-            const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
-            codons.add(waitEventCodon);
-            // Set the waitDuration to the specified upper bound.
-            // Always using the same waitDuration ensures determinism within the local search.
-            const waitDurationCodon = Container.config.getWaitStepUpperBound();
-            codons.add(Container.config.getWaitStepUpperBound());
-
-            // Send the waitEvent with the specified stepDuration to the VM
-            const waitEvent = new WaitEvent(waitDurationCodon);
-            events.add(new EventAndParameters(waitEvent, [waitDurationCodon]));
-            await waitEvent.apply();
-
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
