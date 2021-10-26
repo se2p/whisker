@@ -24,19 +24,12 @@ import {TestChromosome} from "../../../testcase/TestChromosome";
 import {WaitEvent} from "../../../testcase/events/WaitEvent";
 import {Container} from "../../../utils/Container";
 import {EventAndParameters, ExecutionTrace} from "../../../testcase/ExecutionTrace";
-import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
 import {LocalSearch} from "./LocalSearch";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {TypeTextEvent} from "../../../testcase/events/TypeTextEvent";
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
-
-    /**
-     * Collects the chromosomes, the extension local search has already modified. This helps us to prevent
-     * wasting time on trying to discover already discovered blocks.
-     */
-    private readonly _modifiedChromosomes: TestChromosome[] = [];
 
     /**
      * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
@@ -89,9 +82,6 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
         newChromosome.lastImprovedCoverageCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
-
-        // Save the modified chromosome to fetch its covered blocks in another round of ExtensionLocalSearch.
-        this._modifiedChromosomes.push(newChromosome);
 
         // Reset the trace and coverage of the original chromosome
         chromosome.trace = trace;
@@ -216,9 +206,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Only look at fitnessValues originating from uncovered blocks AND
             // blocks not already covered by previous chromosomes modified by local search.
             const fitness = chromosome.getFitness(fitnessFunction);
-            if (!fitnessFunction.isOptimal(fitness) &&
-                !this._modifiedChromosomes.some(modifiedChromosome =>
-                    fitnessFunction.isOptimal(modifiedChromosome.getFitness(fitnessFunction)))) {
+            if (!fitnessFunction.isOptimal(fitness)) {
                 fitnessValues.push(chromosome.getFitness(fitnessFunction));
             }
         }
