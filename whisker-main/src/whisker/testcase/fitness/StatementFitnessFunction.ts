@@ -333,16 +333,30 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     /**
      * Traverse through all fitnessFunctions and extract the independent ones. A fitnessFunction is defined to be
-     * independent if it is either the last block inside a branching statement or the last block inside a block of
-     * statements being dependent on a hatBlock. We call the blocks of independent fitnessFunctions mergeBlocks since
-     * all blocks contained in the same branch or block of hat related statements can be merged into them without
-     * loosing any information needed to achieve full coverage during search.
+     * independent if it is
+     *  - the child of a execution halting block
+     *  - the last block inside a branching statement
+     *  - the last block inside a block of statements being dependent on a hatBlock
+     *  We call the blocks of independent fitnessFunctions mergeBlocks since all blocks contained in the same branch
+     *  or block of hat related statements can be merged into them without loosing any information needed to achieve
+     *  full coverage during search.
      * @param fitnessFunctions the fitnessFunctions  which will be filtered to contain only independent functions.
      * @returns Map mapping hatBlocks or branchingBlocks to their last independent Block
      */
     public static getMergeNodeMap(fitnessFunctions: List<StatementFitnessFunction>): Map<StatementFitnessFunction, List<StatementFitnessFunction>> {
         const mergeNodeMap = new Map<GraphNode, List<GraphNode>>();
         for (const fitnessFunction of fitnessFunctions) {
+
+            // We add nodes right after execution halting blocks in order to be able to optimise for the scaled
+            // CFG-distance which incorporates the remaining duration until the respective thread is allowed to
+            // resume its execution.
+            if(ControlFilter.executionHaltingBlock(fitnessFunction._targetNode.block)){
+                const childNode = this.getChildOfNode(fitnessFunction._targetNode, fitnessFunction._cdg);
+                if(childNode !== undefined) {
+                    mergeNodeMap.set(fitnessFunction._targetNode, new List<GraphNode>([childNode]));
+                }
+            }
+
             // Handling of branching blocks
             if (ControlFilter.branch(fitnessFunction._targetNode.block)) {
                 // Get all nodes being dependent on the branching block.
@@ -421,7 +435,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @returns child of node
      */
     private static getChildOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
-        return cdg._nodes[node.block.next];
+        if(node.block.next !== undefined) {
+            return cdg._nodes[node.block.next];
+        }
     }
 
     /**
