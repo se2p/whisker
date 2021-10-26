@@ -171,7 +171,8 @@ const ControlFilter = {
         block.opcode === 'control_wait' ||
         block.opcode === 'looks_thinkforsecs' ||
         block.opcode === 'looks_sayforsecs' ||
-        block.opcode === 'motion_glidesecstoxy'
+        block.opcode === 'motion_glidesecstoxy' ||
+        block.opcode === 'sound_playuntildone'
 };
 
 const SensingFilter = {
