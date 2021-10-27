@@ -27,6 +27,7 @@ import {EventAndParameters, ExecutionTrace} from "../../../testcase/ExecutionTra
 import {LocalSearch} from "./LocalSearch";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {TypeTextEvent} from "../../../testcase/events/TypeTextEvent";
+import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
@@ -36,6 +37,11 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * wasting time by not applying the local search on the same chromosome twice.
      */
     private readonly _originalChromosomes: TestChromosome[] = [];
+
+    /**
+     * Random number generator.
+     */
+    private readonly _random = Randomness.getInstance();
 
     /**
      * Determines whether local search can be applied to this chromosome.
@@ -125,30 +131,61 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         let lastImprovedCodon = chromosome.lastImprovedCoverageCodon;
         let lastImprovedTrace: ExecutionTrace
 
-        // Uncovered blocks without branches between themselves and already covered blocks have a fitness of 0.5.
-        const cfgMarker = 0.5;
-
-        // Monitor if the Scratch-VM is still running. If it isn't stop adding Waits as they have no effect.
+        // Monitor if the Scratch-VM is still running. If it isn't, stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
         this._vmWrapper.vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         let extendWait = false;
+        let previousEvents = new List<ScratchEvent>();
         while (codons.size() < upperLengthBound && this._projectRunning && !done) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
+
+            // If we have no events available, we can only stop.
             if (availableEvents.isEmpty()) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
+            // Check the eventLandscape, especially if we found a new event or a typeTextEvent.
+            const previousEventIds = previousEvents.map(event => event.stringIdentifier());
+            const newEvents = availableEvents.filter(event => !previousEventIds.contains(event.stringIdentifier()));
             const typeTextEvents = availableEvents.filter(event => event instanceof TypeTextEvent);
+
+            // Check if we have a typeTextEvent; if yes apply it!
             if (!typeTextEvents.isEmpty()) {
-                const typeTextEvent = Randomness.getInstance().pickRandomElementFromList(typeTextEvents);
+                const typeTextEvent = this._random.pickRandomElementFromList(typeTextEvents);
                 const typeEventCodon = availableEvents.findElement(typeTextEvent);
                 codons.add(typeEventCodon);
                 events.add(new EventAndParameters(typeTextEvent, []));
                 await typeTextEvent.apply();
                 extendWait = false;
-            } else {
+            }
+
+            // Check if we found at least one new event compared to the previous iteration, if yes apply it!
+            else if (previousEvents.size() > 0 && newEvents.size() > 0) {
+                // Choose random event amongst the newly found ones and determine its codon value.
+                const chosenNewEvent = this._random.pickRandomElementFromList(newEvents);
+                const newEventCodon = availableEvents.findElement(chosenNewEvent);
+                codons.add(newEventCodon);
+
+                // Check if we have to generate parameters for the chosen event.
+                if (chosenNewEvent.numSearchParameter() > 0) {
+                    const parameter: number[] = [];
+                    for (let i = 0; i < chosenNewEvent.numSearchParameter(); i++) {
+                        parameter.push(this._random.nextInt(0, 481));
+                    }
+                    chosenNewEvent.setParameter(parameter, "codon");
+                    events.add(new EventAndParameters(chosenNewEvent, parameter));
+                    codons.addAll(parameter);
+                } else {
+                    events.add(new EventAndParameters(chosenNewEvent, []));
+                }
+                await chosenNewEvent.apply();
+                extendWait = false;
+            }
+
+            // In case we neither found a typeTextEvent nor a new event, extend an existing wait or add a new WaitEvent.
+            else {
                 if (extendWait) {
                     // Fetch the old waitDuration and add the upper bound to it.
                     let newWaitDuration = codons.get(codons.size() - 1) + Container.config.getWaitStepUpperBound();
@@ -166,7 +203,6 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     const waitEvent = new WaitEvent(newWaitDuration);
                     events.replaceAt(new EventAndParameters(waitEvent, [newWaitDuration]), events.size() - 1);
                     await waitEvent.apply();
-
                 } else {
                     // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
                     const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
@@ -185,14 +221,16 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 }
             }
 
+            // Store previous events.
+            previousEvents = availableEvents.clone();
+
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
             const newFitnessValues = this.calculateFitnessValues(chromosome);
 
             // Reset counter if we obtained smaller fitnessValues, or have blocks reachable without branches.
-            if (newFitnessValues.some(((value, index) => value < fitnessValues[index])) ||
-                newFitnessValues.includes(cfgMarker)) {
+            if (newFitnessValues.some((value, index) => value < fitnessValues[index])) {
                 fitnessValuesUnchanged = 0;
             }
             // Otherwise increase the counter.
