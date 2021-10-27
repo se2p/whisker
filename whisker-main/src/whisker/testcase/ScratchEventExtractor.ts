@@ -263,10 +263,12 @@ export abstract class ScratchEventExtractor {
                 eventList.add(new ClickStageEvent());
                 break;
             case 'event_whengreaterthan': {
-                // Fetch the sound value for the sound block. We add 1 since the block tests using greater than.
-                const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
-                const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
-                eventList.add(new SoundEvent(soundValue));
+                if(block.fields.WHENGREATERTHANMENU.value === 'LOUDNESS'){
+                    // Fetch the sound value for the sound block. We add 1 since the block tests using greater than.
+                    const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
+                    const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
+                    eventList.add(new SoundEvent(soundValue));
+                }
                 break;
             }
 
