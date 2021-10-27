@@ -170,7 +170,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 if (!this._targetNode.block.opcode.startsWith("event_when") &&
                     this._targetNode.block.opcode !== 'control_start_as_clone' &&
                     blockTrace.opcode.startsWith("control") &&
-                    !(blockTrace.opcode === "control_wait")) {
+                    !(blockTrace.opcode === "control_wait") &&
+                    (blockTrace.distances[0] !== undefined)) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -350,9 +351,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             // We add nodes right after execution halting blocks in order to be able to optimise for the scaled
             // CFG-distance which incorporates the remaining duration until the respective thread is allowed to
             // resume its execution.
-            if(ControlFilter.executionHaltingBlock(fitnessFunction._targetNode.block)){
+            if (ControlFilter.executionHaltingBlock(fitnessFunction._targetNode.block)) {
                 const childNode = this.getChildOfNode(fitnessFunction._targetNode, fitnessFunction._cdg);
-                if(childNode !== undefined) {
+                if (childNode !== undefined) {
                     mergeNodeMap.set(fitnessFunction._targetNode, new List<GraphNode>([childNode]));
                 }
             }
@@ -435,7 +436,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @returns child of node
      */
     private static getChildOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
-        if(node.block.next !== undefined) {
+        if (node.block.next !== undefined) {
             return cdg._nodes[node.block.next];
         }
     }
