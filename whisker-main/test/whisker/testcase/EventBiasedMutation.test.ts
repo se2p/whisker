@@ -25,6 +25,10 @@ abstract class ScratchEventMock extends ScratchEvent {
     stringIdentifier(): string {
         throw new Error("Method not implemented.");
     }
+
+    toJSON(): Record<string, any> {
+        throw new Error("Method not implemented.");
+    }
 }
 
 class A extends ScratchEventMock {

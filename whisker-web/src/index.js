@@ -114,7 +114,7 @@ const runSearch = async function () {
     const config = await Whisker.configFileSelect.loadAsString();
     const template = await Whisker.templateFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
-    const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+    const seed = document.getElementById('seed').value;
     const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm,
         Whisker.scratch.project, projectName, config, configName, accelerationFactor, seed, template);
     // Prints uncovered blocks summary and csv summary separated by a newline

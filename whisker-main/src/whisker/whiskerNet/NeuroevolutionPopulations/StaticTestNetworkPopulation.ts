@@ -4,10 +4,9 @@ import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
 import {List} from "../../utils/List";
-import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
-import {ExecutionTrace} from "../../testcase/ExecutionTrace";
+import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
 import {Container} from "../../utils/Container";
 import {ClickStageEvent} from "../../testcase/events/ClickStageEvent";
 import {DragSpriteEvent} from "../../testcase/events/DragSpriteEvent";
@@ -52,8 +51,8 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
      * Gathers and instantiates the events to execute from the eventTemplate.
      * @returns List<[ScratchEvent, number[]] List holding the events to execute including their arguments
      */
-    private gatherEvents(): List<[ScratchEvent, number[]]> {
-        const eventList = new List<[ScratchEvent, number[]]>();
+    private gatherEvents(): List<EventAndParameters> {
+        const eventList = new List<EventAndParameters>();
         const testCaseKey = Object.keys(this._eventTemplate)[NetworkChromosome.idCounter % this._numberTestCases];
         const testCase = this._eventTemplate[testCaseKey];
         for (const eventKey in testCase) {
@@ -62,55 +61,54 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
                 case "ClickSpriteEvent": {
                     const target = Container.vmWrapper.getTargetBySpriteName(event.args.target);
                     const steps = event.args.steps;
-                    eventList.add([new ClickSpriteEvent(target, steps), [target, steps]]);
+                    eventList.add(new EventAndParameters(new ClickSpriteEvent(target, steps), [target, steps]));
                     break
                 }
                 case "ClickStageEvent":
-                    eventList.add([new ClickStageEvent(), []]);
+                    eventList.add(new EventAndParameters(new ClickStageEvent(), []));
                     break;
                 case "DragSpriteEvent": {
                     const target = Container.vmWrapper.getTargetBySpriteName(event.args.target);
                     const x = event.args.x;
                     const y = event.args.y;
-                    eventList.add([new DragSpriteEvent(target, x, y), [target, x, y]]);
+                    eventList.add(new EventAndParameters(new DragSpriteEvent(target, x, y), [target, x, y]));
                     break
                 }
                 case "KeyPressEvent": {
                     const key = event.args.key;
                     const steps = event.args.steps;
-                    eventList.add([new KeyPressEvent(key, steps), [key, steps]]);
+                    eventList.add(new EventAndParameters(new KeyPressEvent(key, steps), [key, steps]));
                     break;
                 }
                 case "MouseDownEvent": {
                     const value = event.args.value;
-                    eventList.add([new MouseDownEvent(value), [value]]);
+                    eventList.add(new EventAndParameters(new MouseDownEvent(value), [value]));
                     break;
                 }
                 case "MouseMoveEvent": {
                     const x = event.args.x;
                     const y = event.args.y;
-                    eventList.add([new MouseMoveEvent(x, y), [x, y]]);
+                    eventList.add(new EventAndParameters(new MouseMoveEvent(x, y), [x, y]));
                     break;
                 }
                 case "MouseMoveToEvent": {
                     const x = event.args.x;
                     const y = event.args.y;
-                    eventList.add([new MouseMoveToEvent(x, y), [x, y]]);
+                    eventList.add(new EventAndParameters(new MouseMoveToEvent(x, y), [x, y]));
                     break;
                 }
                 case "SoundEvent": {
-                    const volume = event.args.volume;
-                    eventList.add([new SoundEvent(), [volume]]);
+                    eventList.add(new EventAndParameters(new SoundEvent(), []));
                     break;
                 }
                 case "TypeTextEvent": {
                     const text = event.args.text;
-                    eventList.add([new TypeTextEvent(text), [text]]);
+                    eventList.add(new EventAndParameters(new TypeTextEvent(text), [text]));
                     break;
                 }
                 case "WaitEvent": {
                     const steps = event.args.steps;
-                    eventList.add([new WaitEvent(steps), [steps]]);
+                    eventList.add(new EventAndParameters(new WaitEvent(steps), [steps]));
                     break;
                 }
             }
