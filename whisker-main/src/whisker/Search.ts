@@ -31,7 +31,7 @@ import {StatisticsCollector} from "./utils/StatisticsCollector";
 import {Randomness} from "./utils/Randomness";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
-import {ExecutionTrace} from "./testcase/ExecutionTrace";
+import {EventAndParameters, ExecutionTrace} from "./testcase/ExecutionTrace";
 import {ScratchEvent} from "./testcase/events/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
@@ -60,9 +60,9 @@ export class Search {
 
     private printTests(tests: List<WhiskerTest>): void {
         let i = 0;
-        console.log("Total number of tests: "+tests.size());
+        console.log(`Total number of tests: ${tests.size()}`);
         for (const test of tests) {
-            console.log("Test "+i+": \n" + test.toString());
+            console.log(`Test ${i}:\n${test.toString()}`);
             i++;
         }
     }
@@ -95,9 +95,9 @@ export class Search {
 
         const tests = new List<WhiskerTest>();
         const dummyTest = new TestChromosome(new List<number>(), null, null);
-        const events = new List<[ScratchEvent, number[]]>();
-        events.add([new WaitEvent(), [0]]);
-        dummyTest.trace = new ExecutionTrace([] as unknown as [any], events);
+        const events = new List<EventAndParameters>();
+        events.add(new EventAndParameters(new WaitEvent(), [0]));
+        dummyTest.trace = new ExecutionTrace([], events);
 
         tests.add(new WhiskerTest(dummyTest));
         const javaScriptText = this.testsToString(tests);
@@ -174,15 +174,15 @@ export class Search {
 
         // Specify seed
         const configSeed = config.getRandomSeed();
-        if (seedString !== 'undefined') {
+        if (seedString !== 'undefined' && seedString !== "") {
             // Prioritize seed set by CLI
             if (configSeed) {
                 console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
 seed ${configSeed} defined within the config files.`)
             }
-            Randomness.setInitialSeed(seedString);
+            Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {
-            Randomness.setInitialSeed(configSeed);
+            Randomness.setInitialSeeds(configSeed);
         }
 
         StatisticsCollector.getInstance().reset();

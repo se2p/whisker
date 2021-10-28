@@ -29,22 +29,36 @@ import seed from 'seed-random';
  */
 export class Randomness {
 
+    /**
+     * Holds the Randomness instance created by the private constructor
+     */
     private static _instance: Randomness;
 
-    private static _initialSeed: number;
+    /**
+     * Initial seed for the random number generator
+     */
+    private static _initialRNGSeed: number;
 
-    private _seed: number;
+    /**
+     * Current random number generator seed
+     */
+    private _RNGSeed: number;
+
+    /**
+     * Seed for the Scratch-VM. Initial value set to 0 to ensure that tests, generated using Whisker's TestGenerator,
+     * will produce the same results if no seed is set.
+     */
+    private static _scratchSeed = 0;
 
     /**
      * Private constructor to prevent construction with new
      */
     private constructor() {
-        if (Randomness._initialSeed) {
-            this._seed = Randomness._initialSeed;
+        if (Randomness._initialRNGSeed) {
+            this._RNGSeed = Randomness._initialRNGSeed;
         } else {
-            this._seed = Date.now();
+            this._RNGSeed = Date.now();
         }
-        console.log(`Using random seed ${this._seed}`);
     }
 
     /**
@@ -59,34 +73,79 @@ export class Randomness {
     }
 
     /**
-     * Set the initial seed.
-     * Does nothing if random number generator has already been initialized.
-     *
-     * @param seed the initial seed
+     * Sets the seed for the RNG and the Scratch-VM
+     * @param seed the seed to which the RNG and the Scratch-VM should be set to.
      */
-    public static setInitialSeed(seed: (number | string)): void {
-        if (typeof seed === "string") {
+    public static setInitialSeeds(seed: (number | string)): void {
+        Randomness.setInitialRNGSeed(seed);
+        // Only set the seed if one has been specified
+        if (seed !== "") {
+            Randomness.setScratchSeed(seed);
+        }
+    }
+
+    /**
+     * Set the initial random number generator seed.
+     * @param seed the random number generator seed
+     */
+    public static setInitialRNGSeed(seed: (number | string)): void {
+        const convertedSeed = this.convertSeed(seed);
+        console.log(`Seeding the RNG to ${convertedSeed}`)
+        Randomness._initialRNGSeed = convertedSeed;
+    }
+
+    /**
+     * Set the seed for the Scratch-VM.
+     * @param seed the Scratch-VM seed
+     */
+    public static setScratchSeed(seed: (number | string)): void {
+        const convertedSeed = this.convertSeed(seed);
+        console.log(`Seeding the Scratch-VM to ${convertedSeed}`)
+        Randomness._scratchSeed = convertedSeed;
+    }
+
+    /**
+     * Converts a string to a number. If the seed is already of type number, the number is simply returned.
+     * @param seed the seed which should be transformed into a number type.
+     * @returns number representing the seed
+     */
+    private static convertSeed(seed: (number | string)): number {
+        // No need to convert if we already have a number
+        if (typeof seed === "number") {
+            return seed;
+        } else if (seed !== "") {
             // If the string represents a number but has typeof string parse it into a number
             let parsedSeed = parseInt(seed, 10);
             // If the seed does not represent a number ( e.g "whisker") sum up the UTF-16 code units
             if (isNaN(parsedSeed)) {
                 parsedSeed = [...seed].map(char => char.charCodeAt(0)).reduce((current, previous) => previous + current)
             }
-            seed = parsedSeed;
+            return parsedSeed;
+        } else {
+            return Date.now();
         }
-        Randomness._initialSeed = seed;
     }
 
-    public static getInitialSeed(): number {
-        return Randomness._initialSeed;
+    /**
+     * Returns the initial random number generator seed.
+     * @returns number representing the random number generator seed.
+     */
+    public static getInitialRNGSeed(): number {
+        return Randomness._initialRNGSeed;
     }
 
+    /**
+     * Helper function to return a number between min and max.
+     * @param min lower bound inclusive
+     * @param max upper bound exclusive
+     * @return number between min and max
+     */
     private next(min: number, max: number): number {
         max = max || 0;
         min = min || 0;
 
-        this._seed = (this._seed * 9301 + 49297) % 233280;
-        const rnd = this._seed / 233280;
+        this._RNGSeed = (this._RNGSeed * 9301 + 49297) % 233280;
+        const rnd = this._RNGSeed / 233280;
 
         return min + rnd * (max - min);
     }
@@ -170,7 +229,7 @@ export class Randomness {
      * Sets a seed for the Scratch-VM to enable reproduction of scratch project execution.
      */
     public static seedScratch(): void {
-        seed(Randomness._initialSeed, {global: true});
+        seed(Randomness._scratchSeed, {global: true});
     }
 
 }

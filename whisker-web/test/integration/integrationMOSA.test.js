@@ -1,15 +1,13 @@
 const fileUrl = require('file-url');
 
-const timeout = process.env.SLOWMO ? 80000 : 70000;
+const timeout = process.env.SLOWMO ? 100000 : 90000;
 const ACCELERATION = 10;
-const seed = 10;
 
 async function loadProject(scratchPath) {
     await (await page.$('#fileselect-project')).uploadFile(scratchPath);
     const toggle = await page.$('#toggle-advanced');
     await toggle.evaluate(t => t.click());
     await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, ACCELERATION);
-    await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
 }
 
 async function getLogAfterSearch() {
@@ -112,6 +110,14 @@ describe('Basic event handling', () => {
         await expect(log.uncoveredBlocks.length).toBe(0);
     }, timeout);
 
+    test('Test mouse move functionality with goTo MousePointer-Block', async () => {
+        await loadProject('test/integration/mouseMoveEvent/GoTo-MousePointer.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
     test('Test stage clicking functionality', async () => {
         await loadProject('test/integration/stageClickEvent/StageClickedTest.sb3')
         await (await page.$('#run-search')).click();
@@ -178,6 +184,38 @@ describe('Basic event handling', () => {
 
     test('Test Drag Sprite to Edge', async () => {
         await loadProject('test/integration/dragSpriteEvent/DragSpriteToEdgeTest.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test SoundEvent triggered by hatBlock', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventHat.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test SoundEvent triggered by sensing Block comparing against equal', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventSensingEqual.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test SoundEvent triggered by sensing Block comparing against greater than', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventSensingGreater.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test SoundEvent triggered by hatBlock comparing against lower than', async () => {
+        await loadProject('test/integration/soundEvent/SoundEventSensingLower.sb3')
         await (await page.$('#run-search')).click();
         const log = await getLogAfterSearch();
         await (await page.$('#run-all-tests')).click();

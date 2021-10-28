@@ -55,7 +55,7 @@ export class KeyPressEvent extends ScratchEvent {
         return 1;
     }
 
-    getParameter(): (string | number)[] {
+    getParameters(): (string | number)[] {
         return [this._keyOption, this._steps];
     }
 
@@ -63,15 +63,15 @@ export class KeyPressEvent extends ScratchEvent {
         return ["Steps"];
     }
 
-    setParameter(args:number[], testExecutor:ParameterType): void {
+    setParameter(args: number[], testExecutor: ParameterType): void {
         switch (testExecutor){
-            case ParameterType.RANDOM:
+            case "random":
                 this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
                 break;
-            case ParameterType.CODON:
+            case "codon":
                 this._steps = args[0];
                 break;
-            case ParameterType.REGRESSION:
+            case "regression":
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }

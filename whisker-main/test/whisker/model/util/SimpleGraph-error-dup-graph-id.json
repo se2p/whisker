@@ -1,0 +1,88 @@
+[
+    {
+        "usage": "program",
+        "id": "g0",
+        "startNodeId": "n0",
+        "stopNodeIds": [
+            "n1"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "n0",
+            "n1"
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Key",
+                        "args": [
+                            "Space"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Output",
+                        "args": [
+                            "Cat",
+                            "Hmm"
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "g0_dup1",
+        "startNodeId": "n0",
+        "stopNodeIds": [
+            "n1"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "n0",
+            "n1"
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Key",
+                        "args": [
+                            "up arrow"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Output",
+                        "args": [
+                            "Cat",
+                            "Yes"
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    }
+]

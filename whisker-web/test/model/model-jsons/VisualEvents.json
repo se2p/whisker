@@ -1,0 +1,206 @@
+[
+  {
+    "id": "sprite",
+    "usage": "program",
+    "startNodeId": "n0",
+    "stopNodeIds": [
+      "n9"
+    ],
+    "stopAllNodeIds": [],
+    "nodeIds": [
+      "n0",
+      "n1",
+      "n2",
+      "n3",
+      "n4",
+      "n5",
+      "n6",
+      "n7",
+      "n8", "n9"
+    ],
+    "edges": [
+      {
+        "id": "saysHello",
+        "from": "n0",
+        "to": "n1",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "Output",
+            "args": [
+              "Sprite1",
+              "'Hel'+'lo'"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },
+      {
+        "id": "noOutput",
+        "from": "n1",
+        "to": "n2",
+        "forceTestAfter": 2200,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "Output",
+            "args": [
+              "Sprite1",
+              "Hello"
+            ],
+            "negated": true
+          }
+        ],
+        "effects": []
+      },
+      {
+        "id": "costumeChange",
+        "from": "n2",
+        "to": "n3",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "AttrComp",
+            "args": [
+              "Sprite1",
+              "costume",
+              "=",
+              "costume2"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },
+      {
+        "id": "size",
+        "from": "n3",
+        "to": "n4",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "AttrChange",
+            "args": [
+              "Sprite1",
+              "size",
+              "10"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },
+      {
+        "id": "hide",
+        "from": "n4",
+        "to": "n5",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "AttrComp",
+            "args": [
+              "Sprite1",
+              "visible",
+              "=",
+              "false"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },
+      {
+        "id": "visible",
+        "from": "n5",
+        "to": "n6",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "AttrComp",
+            "args": [
+              "Sprite1",
+              "visible",
+              "=",
+              "true"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },{
+        "id": "rotationStyle",
+        "from": "n6",
+        "to": "n7",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "AttrComp",
+            "args": [
+              "Sprite1",
+              "rotationStyle",
+              "=",
+              "all around"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },{
+        "id": "direction",
+        "from": "n7",
+        "to": "n8",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "AttrComp",
+            "args": [
+              "Sprite1",
+              "direction",
+              "=",
+              "-90"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      },
+      {
+        "id": "rotationStyle2",
+        "from": "n8",
+        "to": "n9",
+        "forceTestAfter": 500,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "AttrComp",
+            "args": [
+              "Sprite1",
+              "rotationStyle",
+              "=",
+              "left-right"
+            ],
+            "negated": false
+          }
+        ],
+        "effects": []
+      }
+    ]
+  }
+]

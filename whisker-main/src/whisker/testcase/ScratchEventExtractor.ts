@@ -34,9 +34,29 @@ import {TypeTextEvent} from "./events/TypeTextEvent";
 import {Randomness} from "../utils/Randomness";
 import {DragSpriteEvent} from "./events/DragSpriteEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
+import {Scratch3ControlBlocks} from 'scratch-vm/src/blocks/scratch3_control'
+import {Scratch3DataBlocks} from 'scratch-vm/src/blocks/scratch3_data'
+import {Scratch3EventBlocks} from 'scratch-vm/src/blocks/scratch3_event'
+import {Scratch3LooksBlocks} from 'scratch-vm/src/blocks/scratch3_looks'
+import {Scratch3MotionBlocks} from 'scratch-vm/src/blocks/scratch3_motion'
+import {Scratch3OperatorsBlocks} from 'scratch-vm/src/blocks/scratch3_operators'
+import {Scratch3ProcedureBlocks} from 'scratch-vm/src/blocks/scratch3_procedures'
+import {Scratch3SensingBlocks} from 'scratch-vm/src/blocks/scratch3_sensing'
+import {Scratch3SoundBlocks} from 'scratch-vm/src/blocks/scratch3_sound'
 import Cast from "scratch-vm/src/util/cast";
 
 const twgl = require('twgl.js');
+
+export type ScratchBlocks =
+    | Scratch3ControlBlocks
+    | Scratch3DataBlocks
+    | Scratch3EventBlocks
+    | Scratch3LooksBlocks
+    | Scratch3MotionBlocks
+    | Scratch3OperatorsBlocks
+    | Scratch3ProcedureBlocks
+    | Scratch3SensingBlocks
+    | Scratch3SoundBlocks
 
 
 export abstract class ScratchEventExtractor {
@@ -63,7 +83,7 @@ export abstract class ScratchEventExtractor {
      * @param block the current block which will be checked for events
      * @param foundEvents collects the encountered Events
      */
-    protected traverseBlocks(target, block, foundEvents: List<ScratchEvent>) {
+    protected traverseBlocks(target: RenderedTarget, block: ScratchBlocks, foundEvents: List<ScratchEvent>): void {
 
         while (block) {
             foundEvents.addList(this._extractEventsFromBlock(target, block))
@@ -101,7 +121,7 @@ export abstract class ScratchEventExtractor {
         }
     }
 
-    protected _extractEventsFromBlock(target, block): List<ScratchEvent> {
+    protected _extractEventsFromBlock(target: RenderedTarget, block: ScratchBlocks): List<ScratchEvent> {
         const eventList = new List<ScratchEvent>();
         if (typeof block.opcode === 'undefined') {
             return eventList;
@@ -127,10 +147,24 @@ export abstract class ScratchEventExtractor {
                 eventList.add(new MouseMoveEvent());
                 break;
             }
+
+            case 'motion_goto': {
+                // GoTo MousePointer block
+                const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
+                if (goToMenu.fields.TO.value === '_mouse_') {
+                    eventList.add(new MouseMoveEvent());
+                }
+                break;
+            }
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                const value = field.TOUCHINGOBJECTMENU.value;
+                let value: string
+                if (field.VARIABLE) {
+                    value = field.VARIABLE.value
+                } else {
+                    value = field.TOUCHINGOBJECTMENU.value;
+                }
                 // Target senses Mouse
                 if (value == "_mouse_") {
                     eventList.add(new MouseMoveToEvent(target.x, target.y));
@@ -156,6 +190,13 @@ export abstract class ScratchEventExtractor {
                 } else {
                     // Target senses another sprite
                     let sensingRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
+
+                    // Check if the sensedTarget is contained within the Scratch Project. If not, we don't add the
+                    // Event and all statements being based on the given sensing check are unreachable.
+                    if (!sensingRenderedTarget) {
+                        break;
+                    }
+
                     // If the renderedTarget is not visible. Check if we have clones that might be.
                     if (!sensingRenderedTarget.visible) {
                         for (const clone of sensingRenderedTarget.sprite.clones) {
@@ -194,8 +235,8 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'motion_pointtowards': {
-                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
-                if (towards.fields.TOWARDS.value === '_mouse_')
+                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block);
+                if (towards.fields.TOWARDS && towards.fields.TOWARDS.value === '_mouse_')
                     eventList.add(new MouseMoveEvent());
                 break;
             }
@@ -221,10 +262,47 @@ export abstract class ScratchEventExtractor {
                 // Click stage
                 eventList.add(new ClickStageEvent());
                 break;
-            case 'event_whengreaterthan':
-                // Sound
-                eventList.add(new SoundEvent());
+            case 'event_whengreaterthan': {
+                // Fetch the sound value for the sound block. We add 1 since the block tests using greater than.
+                const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
+                const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
+                eventList.add(new SoundEvent(soundValue));
                 break;
+            }
+
+            case 'sensing_loudness': {
+                try {
+                    const operatorBlock = target.blocks.getBlock(block.parent);
+                    // Find out on which side of the operator the value which is compared against the volume is placed.
+                    let compareValueOperatorBlock: ScratchBlocks
+                    let compareValueIsFirstOperand: boolean;
+
+                    if (operatorBlock.inputs.OPERAND1.block !== block.id) {
+                        compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND1.block);
+                        compareValueIsFirstOperand = true;
+                    } else {
+                        compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND2.block);
+                        compareValueIsFirstOperand = false;
+                    }
+
+                    // Now that we know where to find the value which is compared against the current volume value, we
+                    // can set the volume appropriately.
+                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                    // Greater than
+                    if (operatorBlock.opcode === 'operator_gt') {
+                        compareValueIsFirstOperand ? volumeValue -= 1 : volumeValue += 1;
+                    }
+                    // Lower than
+                    else if (operatorBlock.opcode === 'operator_lt') {
+                        compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
+                    }
+                    eventList.add(new SoundEvent(volumeValue))
+                }
+                // If we cannot infer the correct volume, simply set the volume to the highest possible value.
+                catch (e) {
+                    eventList.add(new SoundEvent(100));
+                }
+            }
         }
         return eventList;
     }
@@ -280,7 +358,7 @@ export abstract class ScratchEventExtractor {
         return answer;
     }
 
-    private static _extractWaitDurations(target, block): number {
+    private static _extractWaitDurations(target: RenderedTarget, block: ScratchBlocks): number {
         const inputs = target.blocks.getInputs(block);
         if (target.blocks.getOpcode(block) == 'control_wait') {
             const op = target.blocks.getBlock(inputs.DURATION.block);
@@ -303,7 +381,7 @@ export abstract class ScratchEventExtractor {
         return -1;
     }
 
-    private _extractAvailableTextSnippets(target, block): string {
+    private _extractAvailableTextSnippets(target: RenderedTarget, block: ScratchBlocks): string {
         let availableTextSnippet = '';
         if (target.blocks.getOpcode(block) == 'operator_equals') {
             const inputs = target.blocks.getInputs(block);
@@ -338,7 +416,7 @@ export abstract class ScratchEventExtractor {
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
-                    if (this._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
+                    if (ScratchEventExtractor._searchForMouseEvent(target, target.blocks.getBlock(blockId)))
                         return true;
                 }
             }
@@ -350,7 +428,7 @@ export abstract class ScratchEventExtractor {
      * Checks if the block has a mouseMove event handler
      */
     // TODO: Search through the fields if they have the 'mouse' value
-    private _searchForMouseEvent(target, block): boolean {
+    private static _searchForMouseEvent(target: RenderedTarget, block: ScratchBlocks): boolean {
         if (typeof block.opcode === 'undefined') {
             return false;
         }
@@ -383,7 +461,7 @@ export abstract class ScratchEventExtractor {
         return false;
     }
 
-    private static _hasEvents(target, block): boolean {
+    private static _hasEvents(target: RenderedTarget, block: ScratchBlocks): boolean {
         if (typeof block.opcode === 'undefined') {
             return false;
         }

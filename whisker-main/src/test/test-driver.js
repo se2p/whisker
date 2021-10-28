@@ -29,6 +29,7 @@ class TestDriver {
         this.mouseDown = vmWrapper.inputs.mouseDown.bind(vmWrapper.inputs);
         this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
         this.typeText = vmWrapper.inputs.typeText.bind(vmWrapper.inputs);
+        this.sendSound = vmWrapper.inputs.sendSound.bind(vmWrapper.inputs);
         this.wait = vmWrapper.wait.bind(vmWrapper);
 
         /* Sprite Information */
@@ -40,6 +41,8 @@ class TestDriver {
         this.getNewSprites = vmWrapper.sprites.getNewSprites.bind(vmWrapper.sprites);
         this.onSpriteMoved = vmWrapper.sprites.onSpriteMoved.bind(vmWrapper.sprites);
         this.onSpriteVisualChange = vmWrapper.sprites.onSpriteVisualChange.bind(vmWrapper.sprites);
+        this.onSayOrThink = vmWrapper.sprites.onSayOrThink.bind(vmWrapper.sprites);
+        this.onVariableChange = vmWrapper.sprites.onVariableChange.bind(vmWrapper.sprites);
 
         /* Other Information */
         this.getStageSize = vmWrapper.getStageSize.bind(vmWrapper);
@@ -64,7 +67,7 @@ class TestDriver {
 
         /* Further Test Tools  */
         this.seedScratch = (seed) => {
-            Randomness.setInitialSeed(seed);
+            Randomness.setInitialSeeds(seed);
             Randomness.seedScratch();
         }
         this.getTotalRealTimeElapsed = () => this.getTotalTimeElapsed() / vmWrapper.accelerationFactor;

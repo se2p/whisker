@@ -1,0 +1,78 @@
+[
+    {
+        "id": "test",
+        "usage": "program",
+        "startNodeId": "n0",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "n0",
+            "n1",
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "timeOver",
+                "from": "n1",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "5000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "moved",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "=",
+                            "-10"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "moved2",
+                "from": "n1",
+                "to": "n0",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "=",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    }
+]

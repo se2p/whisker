@@ -68,7 +68,7 @@ describe('TournamentSelection', () => {
         const selection = new TournamentSelection<BitstringChromosome>(20);
         const winner = await selection.apply(population, fitnessFunction);
 
-        expect(await fitnessFunction.getFitness(winner)).toBe(2);
+        expect(winner.getFitness(fitnessFunction)).toBe(2);
     });
 
     test('Select best for minimizing fitness function', async () => {
@@ -92,6 +92,6 @@ describe('TournamentSelection', () => {
         const selection = new TournamentSelection<BitstringChromosome>(20);
         const winner = await selection.apply(population, fitnessFunction);
 
-        expect(await fitnessFunction.getFitness(winner)).toBe(0);
+        expect(winner.getFitness(fitnessFunction)).toBe(0);
     });
 });

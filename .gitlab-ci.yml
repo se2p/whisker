@@ -5,9 +5,13 @@ stages:
   - test
   - integrationtest
 
+before_script:
+  - yarn install --cache-folder .yarn
+
 cache:
   paths:
     - node_modules/
+    - .yarn
 
 build_all:
   stage: build
@@ -17,9 +21,10 @@ build_all:
     - yarn build-main
     - yarn build-web
   artifacts:
-      paths:
-        - whisker-main/dist
-        - whisker-web/dist
+    expire_in: 1 hour
+    paths:
+      - whisker-main/dist
+      - whisker-web/dist
 
 
 unit-tests:

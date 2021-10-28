@@ -198,6 +198,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // By chance apply LocalSearch to the randomly generated chromosome.
                 await this.applyLocalSearch(chromosome);
                 this._iterations++;
+                StatisticsCollector.getInstance().incrementIterationCount();
             } else {
                 // Otherwise we choose a chromosome to mutate from one of our populations, preferring uncovered ones.
                 const anyUncovered: boolean = this._archiveUncovered.size > 0;
@@ -213,7 +214,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 }
                 chromosome.targetFitness = fitnessFunction;
                 let currentHeuristic = this.getHeuristicValue(chromosome, fitnessFunctionKey);
-                while (mutationCounter < this._maxMutationCount) {
+                while (mutationCounter < this._maxMutationCount && !this._archiveCovered.has(fitnessFunctionKey)) {
                     const mutant = chromosome.mutate();
                     mutant.targetFitness = fitnessFunction;
                     await mutant.evaluate();
@@ -226,6 +227,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     }
                     mutationCounter++;
                     this._iterations++;
+                    StatisticsCollector.getInstance().incrementIterationCount();
                 }
                 // Randomly apply LocalSearch to the final mutant. Applying LocalSearch to each mutant is
                 // too cost intensive and provides hardly any benefit.
@@ -233,7 +235,6 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 // Reset mutationCounter
                 mutationCounter = 0;
             }
-            StatisticsCollector.getInstance().incrementIterationCount();
             if (!this.isFocusedPhaseReached()) {
                 this.updateParameters();
             }
@@ -468,7 +469,8 @@ open independent goals: ${this._archiveUncovered.size}`);
      * @returns The heuristic value of the chromosome for the given fitness function.
      */
     private getHeuristicValue(chromosome: C, fitnessFunctionKey: number): number {
-        const fitnessValue = this._fitnessFunctions.get(fitnessFunctionKey).getFitness(chromosome);
+        const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+        const fitnessValue = chromosome.getFitness(fitnessFunction);
         return this._heuristicFunctions.get(fitnessFunctionKey)(fitnessValue);
     }
 

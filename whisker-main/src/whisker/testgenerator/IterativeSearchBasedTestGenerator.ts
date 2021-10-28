@@ -95,7 +95,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             this._fitnessFunctions.forEach((fitnessFunction, fitnessKey) => {
                 const bestLength = this._archive.has(fitnessKey) ?
                     this._archive.get(fitnessKey).getLength() : Number.MAX_SAFE_INTEGER;
-                const candidateFitness = fitnessFunction.getFitness(candidate);
+                const candidateFitness = candidate.getFitness(fitnessFunction);
                 if (fitnessFunction.isOptimal(candidateFitness) && candidate.getLength() < bestLength) {
                     if(!this._archive.has(fitnessKey)){
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);

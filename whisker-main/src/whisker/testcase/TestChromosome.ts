@@ -66,7 +66,13 @@ export class TestChromosome extends IntegerListChromosome {
     }
 
     getFitness(fitnessFunction: FitnessFunction<this>): number {
-        return fitnessFunction.getFitness(this);
+        if (this._fitnessCache.has(fitnessFunction)) {
+            return this._fitnessCache.get(fitnessFunction);
+        } else {
+            const fitness = fitnessFunction.getFitness(this);
+            this._fitnessCache.set(fitnessFunction, fitness);
+            return fitness;
+        }
     }
 
     get trace(): ExecutionTrace {
@@ -121,8 +127,8 @@ export class TestChromosome extends IntegerListChromosome {
     public toString = (): string => {
         assert(this._trace != null);
         let text = "";
-        for (const [scratchEvent, args] of this._trace.events) {
-            text += scratchEvent.toString() + "\n";
+        for (const {event} of this._trace.events) {
+            text += event.toString() + "\n";
         }
 
         return text;

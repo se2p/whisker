@@ -49,7 +49,7 @@ export class MouseMoveToEvent extends ScratchEvent {
         return 0;
     }
 
-    getParameter(): number[] {
+    getParameters(): number[] {
         return [this.x, this.y];
     }
 

@@ -56,7 +56,9 @@ class TestTable {
      * @param {Test[]} tests .
      */
     onRunStart (tests) {
-        tests.forEach(test => this.showNewRun(test));
+        if (tests) { // may be null for model test
+            tests.forEach(test => this.showNewRun(test));
+        }
     }
 
     /**
@@ -67,34 +69,41 @@ class TestTable {
         const skipSign = '\u26A0';
         const errorSign = '\u26A0'; // same as skip, is just colored differently
         const passSign = '\u2713';
-        let test = result.test;
-        let status = result.status;
-        test.isRunning = false;
-        test.testResultClass = status;
-        test.translatedTestResult = index.i18n.t(status);
-        test.error = result.error;
-        test.log = result.log;
-        switch (status) {
-            case Test.FAIL:
-                test.testResultSign = failSign;
-                break;
-            case Test.SKIP:
-                test.testResultSign = skipSign;
-                break;
-            case Test.PASS:
-                test.testResultSign = passSign;
-                break;
-            case Test.ERROR:
-                test.testResultSign = errorSign;
+        if (result.test) {
+            let test = result.test;
+            let status = result.status;
+            test.isRunning = false;
+            test.testResultClass = status;
+            test.translatedTestResult = index.i18n.t(status);
+            test.error = result.error;
+            test.log = result.log;
+            switch (status) {
+                case Test.FAIL:
+                    test.testResultSign = failSign;
+                    break;
+                case Test.SKIP:
+                    test.testResultSign = skipSign;
+                    break;
+                case Test.PASS:
+                    test.testResultSign = passSign;
+                    break;
+                case Test.ERROR:
+                    test.testResultSign = errorSign;
+            }
+            this.updateTest(test);
         }
-        this.updateTest(test);
+        if (result.modelResult) {
+           // todo adapt for model
+        }
     }
 
     /**
      * @param {Test[]} tests .
      */
     onRunCancel (tests) {
-        tests.forEach(test => this.resetRunDataAndShow(test));
+        if (tests) {
+            tests.forEach(test => this.resetRunDataAndShow(test));
+        }
     }
 
 
@@ -208,7 +217,7 @@ class TestTable {
                     orderable: false,
                     data: null,
                     defaultContent:
-                        '<button class="btn btn-sm btn-xs btn-outline-secondary run-test vm-related" disabled>' +
+                        '<button class="btn btn-sm btn-xs btn-outline-secondary run-test vm-related">' +
                         '<i class="fas fa-play"></i></button>',
                     width: '0.5em'
                 }

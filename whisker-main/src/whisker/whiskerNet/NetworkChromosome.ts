@@ -671,7 +671,13 @@ export class NetworkChromosome extends Chromosome {
     }
 
     getFitness(fitnessFunction: FitnessFunction<this>): number {
-        return fitnessFunction.getFitness(this);
+        if (this._fitnessCache.has(fitnessFunction)) {
+            return this._fitnessCache.get(fitnessFunction);
+        } else {
+            const fitness = fitnessFunction.getFitness(this);
+            this._fitnessCache.set(fitnessFunction, fitness);
+            return fitness;
+        }
     }
 
     get inputNodes(): Map<string, Map<string, InputNode>> {

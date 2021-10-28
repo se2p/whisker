@@ -16,6 +16,8 @@ const footerDE = require('./locales/de/footer.json');
 const footerEN = require('./locales/en/footer.json');
 const headerDE = require('./locales/de/header.json');
 const headerEN = require('./locales/en/header.json');
+const modelEditorDE = require('./locales/de/modelEditor.json');
+const modelEditorEN = require('./locales/en/modelEditor.json');
 
 /* Language parameter */
 const LANGUAGE_OPTION = "lng";
@@ -26,7 +28,7 @@ const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only vali
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter} = require('whisker-main');
+const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
 /* Components */
 const Runtime = require('scratch-vm/src/engine/runtime');
@@ -41,6 +43,8 @@ const DownloadContainer = require('./components/DownloadContainer');
 const InputRecorder = require('./components/input-recorder');
 const Footer = require('./components/footer');
 const Header = require('./components/header');
+const ModelEditor = require('./components/model-editor');
+
 const {showModal, escapeHtml} = require('./utils.js');
 const Whisker = window.Whisker = {};
 window.$ = $;
@@ -50,6 +54,23 @@ const DEFAULT_ACCELERATION_FACTOR = 1;
 const accSlider = $("#acceleration-factor").slider();
 
 let testsRunning = false;
+const loadModelFromString = function (models) {
+    try {
+        Whisker.modelTester.load(models);
+    } catch (err) {
+        Whisker.outputLog.println("ERROR: " + err.message);
+        console.error(err);
+        const message = `${err.name}: ${err.message}`;
+        showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
+        throw err;
+    }
+
+    if (Whisker.modelTester.userModelsLoaded()) {
+        $('#model-user-loaded').text(i18next.t("model-output-user-model"));
+    } else {
+        $('#model-user-loaded').text(i18next.t("model-output-no-user-model"));
+    }
+}
 
 const loadTestsFromString = function (string) {
     let tests;
@@ -87,7 +108,7 @@ const runSearch = async function () {
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
-    const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+    const seed = document.getElementById('seed').value;
     const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
         projectName, config, configName, accelerationFactor, seed);
     // Prints uncovered blocks summary and csv summary separated by a newline
@@ -116,17 +137,29 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         let summary;
         let coverage;
+        let coverageModels = {};
         accSlider.slider('disable');
         const accelerationFactor = $('#acceleration-value').text();
-        const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+        const seed = document.getElementById('seed').value;
+        let duration = Number(document.querySelector('#model-duration').value);
+        if (duration) {
+            duration = duration * 1000;
+        }
+        const repetitions = Number(document.querySelector('#model-repetitions').value);
+        const caseSensitive = $('#model-case-sensitive').is(':checked');
 
         try {
             await Whisker.scratch.vm.loadProject(project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(vm);
 
-            summary = await Whisker.testRunner.runTests(vm, project, tests, {accelerationFactor, seed});
+            summary = await Whisker.testRunner.runTests(vm, project, tests, Whisker.modelTester,
+                {accelerationFactor, seed}, {duration, repetitions, caseSensitive});
             coverage = CoverageGenerator.getCoverage();
+
+            if (Whisker.modelTester.programModelsLoaded()) {
+                coverageModels = Whisker.modelTester.getTotalCoverage();
+            }
 
             if (typeof window.messageServantCallback === 'function') {
                 const coveredBlockIdsPerSprite =
@@ -134,8 +167,20 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
                 const blockIdsPerSprite =
                     [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
 
-                const serializeableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-                window.messageServantCallback({serializeableCoverageObject, summary});
+                let modelCoverage = [];
+                if (Whisker.modelTester.programModelsLoaded()) {
+                    for (const modelName in coverageModels) {
+                        let content = [];
+                        const elem = coverageModels[modelName];
+                        content.push({key: "covered", values: elem.covered});
+                        content.push({key: "total", values: elem.total});
+                        content.push({key: "missedEdges", values: elem.missedEdges});
+                        modelCoverage.push({key: modelName, values: content});
+                    }
+                }
+                const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+                const serializableModelCoverage = {modelCoverage};
+                window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
             }
 
             CoverageGenerator.restoreClasses({Thread});
@@ -143,6 +188,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             _showRunIcon()
             _enableVMRelatedButtons();
             accSlider.slider('enable');
+            testsRunning = false;
         }
 
         if (summary === null) {
@@ -154,13 +200,16 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
         const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
         const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
+        const modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
 
         Whisker.outputRun.println([
             summaryString,
-            coverageString
-        ].join('\n'));
+            coverageString,
+            modelCoverageString
+        ].join('\n'))
     }
-};
+}
 
 const runTests = async function (tests) {
     Whisker.scratch.stop();
@@ -172,7 +221,7 @@ const runTests = async function (tests) {
 
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
-    if (Whisker.tests === undefined || Whisker.tests.length === 0) {
+    if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t("test-execution"), i18next.t("no-tests"));
         return;
     } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
@@ -212,6 +261,8 @@ const initComponents = function () {
     Whisker.testFileSelect = new FileSelect($('#fileselect-tests')[0],
         fileSelect => fileSelect.loadAsString()
             .then(string => loadTestsFromString(string)));
+    Whisker.modelFileSelect = new FileSelect($('#fileselect-models')[0],
+        fileSelect => fileSelect.loadAsString().then(string => loadModelFromString(string)));
 
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG,
@@ -222,13 +273,18 @@ const initComponents = function () {
     Whisker.testTable.setTests([]);
     Whisker.testTable.show();
 
-    Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
+    Whisker.modelTester = new ModelTester.ModelTester();
+
+    Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.modelTester,
+        Whisker.outputRun.println.bind(Whisker.outputRun));
 
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
+
+    Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
 
     accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
@@ -293,6 +349,34 @@ const initEvents = function () {
             Whisker.inputRecorder.startRecording();
         }
     });
+    let modelLog = (msg)  => {
+        Whisker.outputLog.println(msg);
+    };
+    let modelWarning = (msg)  => {
+        Whisker.outputLog.println("MODEL WARNING: " + msg);
+    };
+    let modelCoverage = (coverage) => {
+        const formattedModelCoverage = TAP13Formatter.formatModelCoverageLastRun(coverage);
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
+    }
+    let modelCheckbox = $('#model-logs-checkbox');
+    modelCheckbox.prop('checked',true);
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG, modelLog);
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_MISSED_EDGES, edges =>
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML(edges)))
+    Whisker.modelTester.on(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
+    modelCheckbox.on('change', event => {
+        if ($(event.target).is(':checked')) {
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG, modelLog);
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+            Whisker.modelTester.on(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
+        } else {
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_LOG, modelLog);
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
+            Whisker.modelTester.off(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
+        }
+    });
     $('#toggle-advanced').on('change', event => {
         if ($(event.target).is(':checked')) {
             $(event.target)
@@ -304,6 +388,34 @@ const initEvents = function () {
                 .parent()
                 .removeClass('active');
             $('#scratch-controls').hide();
+        }
+    });
+    $('#toggle-test-editor').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            _showAndJumpTo('#test-editor-div');
+            Whisker.testEditor.show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#test-editor-div').hide();
+        }
+    });
+    $('#toggle-model-editor').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            _showAndJumpTo('#model-editor');
+            Whisker.modelEditor.reposition();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
+            $('#model-editor').hide();
         }
     });
     $('#toggle-tap').on('change', event => {
@@ -452,7 +564,9 @@ window.onbeforeunload = function () {
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
-    return ""; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
+    if (location.href.includes('index')) {
+        return ''; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
+    }
 };
 
 const localize = locI18next.init(i18next, {
@@ -470,7 +584,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'privacy', 'footer', 'header'],
+        ns: ['index', 'faq', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false,
@@ -483,7 +597,8 @@ i18next
                 imprint: imprintDE,
                 privacy: privacyDE,
                 footer: footerDE,
-                header: headerDE
+                header: headerDE,
+                modelEditor: modelEditorDE
             },
             en: {
                 index: indexEN,
@@ -492,7 +607,8 @@ i18next
                 imprint: imprintEN,
                 privacy: privacyEN,
                 footer: footerEN,
-                header: headerEN
+                header: headerEN,
+                modelEditor: modelEditorEN
             }
         }
     }, function () {
@@ -545,6 +661,12 @@ const _addFileListeners = function () {
         const fileName = Whisker.testFileSelect.getName();
         $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
         const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-models').on('change', event => {
+        const fileName = Whisker.modelFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName("label")[0];
         _showTooltipIfTooLong(label, event);
     });
 }
@@ -611,6 +733,9 @@ function _updateFilenameLabels() {
     }
     if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
         $('#config-label').html(Whisker.configFileSelect.getName());
+    }
+    if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
+        $('#model-label').html(Whisker.modelFileSelect.getName());
     }
 }
 

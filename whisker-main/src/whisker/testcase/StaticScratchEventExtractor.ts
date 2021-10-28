@@ -141,7 +141,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 break;
             case 'event_whengreaterthan':
                 // Sound
-                eventList.add(new SoundEvent());
+                eventList.add(new SoundEvent(this._random.nextInt(0, 101)));
                 break;
         }
         return eventList;

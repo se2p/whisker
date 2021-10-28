@@ -105,7 +105,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      * @param traces the traces which contain the distance to the targeted sprite/color
      * @return Returns the distance to the target sprite/color
      */
-    private extractDistanceToTarget(traces: [Trace]): number {
+    private extractDistanceToTarget(traces: Trace[]): number {
         let ifBlock;
         // Search for the ifBlock which in term contains the distance to the target sprite/color.
         // If the target name starts with an '#' we are searching for a color
