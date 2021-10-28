@@ -85,6 +85,8 @@ describe("Test NeatCrossover", () => {
 
         const hiddenNode2 = hiddenNode1.clone();
         const hiddenNode3 = new HiddenNode(5, ActivationFunction.SIGMOID);
+        nodes2.add(hiddenNode2);
+        nodes2.add(hiddenNode3);
 
         // Create Connections of second parent
         parent2Connections = new List<ConnectionGene>();
@@ -120,41 +122,29 @@ describe("Test NeatCrossover", () => {
         expect(child2.connections.size()).toEqual(child1.connections.size());
     })
 
-    test("CrossoverTest with second parent being fitter than first parent and excess genes from first parent"
-        , () => {
-            const parent1 = new NetworkChromosome(parent2Connections, nodes1, mutationOp, crossoverOp);
-            parent1.networkFitness = 0;
-            const parent2 = new NetworkChromosome(parent1Connections, nodes2, mutationOp, crossoverOp);
-            parent2.networkFitness = 1;
-            const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-            const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
-            expect(child1.connections.size()).toBe(6);
-            expect(child2.connections.size()).toEqual(child1.connections.size());
-        })
-
     test("CrossoverTest with both parents being equivalently fit", () => {
         const parent1 = new NetworkChromosome(parent1Connections, nodes1, mutationOp, crossoverOp);
         parent1.networkFitness = 1;
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 1;
         const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
-        expect(child1.connections.size()).toBeGreaterThanOrEqual(4);
-        expect(child2.connections.size()).toBeGreaterThanOrEqual(4);
+        expect(child1.connections.size()).toBeGreaterThanOrEqual(5);
+        expect(child1.connections.size()).toBeLessThanOrEqual(6);
     })
 
     test("CrossoverTest with deactivated connections", () => {
         const inNode = new InputNode(0, "Sprite1", "X-Position");
         const outNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
+        const nodes = new List<NodeGene>([inNode, outNode]);
 
         parent1Connections.clear();
         parent1Connections.add(new ConnectionGene(inNode, outNode, 1, false, 0, false));
-        const parent1 = new NetworkChromosome(parent1Connections, nodes1, mutationOp, crossoverOp);
+        const parent1 = new NetworkChromosome(parent1Connections, nodes, mutationOp, crossoverOp);
         parent1.networkFitness = 1;
 
         parent2Connections.clear();
         parent2Connections.add(new ConnectionGene(inNode, outNode, 2, false, 0, false));
-        const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
+        const parent2 = new NetworkChromosome(parent2Connections, nodes, mutationOp, crossoverOp);
         parent2.networkFitness = 0.1;
 
         const child1 = crossoverOp.apply(parent1, parent2).getFirst();

@@ -187,7 +187,7 @@ export class Randomness {
      *
      * @param collection from which to pick an item
      */
-    public pick(collection: any[]): any {
+    public pick<E>(collection: E[]): E {
         return collection[this.nextInt(0, collection.length)];
     }
 
@@ -196,7 +196,7 @@ export class Randomness {
      *
      * @param list from which to pick an item
      */
-    public pickRandomElementFromList<C>(list: List<C>): C {
+    public pickRandomElementFromList<E>(list: List<E>): E {
         return list.get(this.nextInt(0, list.size()));
     }
 

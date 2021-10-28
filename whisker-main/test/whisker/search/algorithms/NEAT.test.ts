@@ -1,5 +1,4 @@
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
-import {Container} from "../../../../src/whisker/utils/Container";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/NetworkChromosome";
@@ -17,46 +16,41 @@ import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {WhiskerSearchConfiguration} from "../../../../src/whisker/utils/WhiskerSearchConfiguration";
-
 
 describe('Test NEAT', () => {
 
     let searchAlgorithm: SearchAlgorithm<Chromosome>;
     let generator: NetworkChromosomeGeneratorSparse;
-    let properties : NeuroevolutionProperties<NetworkChromosome>;
+    let properties: NeuroevolutionProperties<NetworkChromosome>;
+
+    const crossoverConfig = {
+        "operator": "neatCrossover",
+        "crossoverWithoutMutation": 0.2,
+        "interspeciesRate": 0.001,
+        "weightAverageRate": 0.4
+    };
+
+    const mutationConfig = {
+        "operator": "neatMutation",
+        "mutationWithoutCrossover": 0.25,
+        "mutationAddConnection": 0.2,
+        "recurrentConnection": 0.1,
+        "addConnectionTries": 20,
+        "populationChampionNumberOffspring": 10,
+        "populationChampionNumberClones": 5,
+        "populationChampionConnectionMutation": 0.3,
+        "mutationAddNode": 0.1,
+        "mutateWeights": 0.6,
+        "perturbationPower": 2.5,
+        "mutateToggleEnableConnection": 0.1,
+        "toggleEnableConnectionTimes": 3,
+        "mutateEnableConnection": 0.03
+    };
 
     beforeEach(() => {
         const mock = new VMWrapperMock();
         mock.init()
-        // @ts-ignore
-        Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */ };
-
-        const crossoverConfig = {
-            "operator": "neatCrossover",
-            "crossoverWithoutMutation": 0.2,
-            "interspeciesRate": 0.001,
-            "weightAverageRate": 0.4
-        };
-
-        const mutationConfig = {
-            "operator": "neatMutation",
-            "mutationWithoutCrossover": 0.25,
-            "mutationAddConnection": 0.2,
-            "recurrentConnection": 0.1,
-            "addConnectionTries": 20,
-            "populationChampionNumberOffspring": 10,
-            "populationChampionNumberClones": 5,
-            "populationChampionConnectionMutation": 0.3,
-            "mutationAddNode": 0.1,
-            "mutateWeights": 0.6,
-            "perturbationPower": 2.5,
-            "mutateToggleEnableConnection": 0.1,
-            "toggleEnableConnectionTimes": 3,
-            "mutateEnableConnection": 0.03
-        };
         const genInputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
         sprite1.set("X-Position", 1);
@@ -78,7 +72,7 @@ describe('Test NEAT', () => {
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
         const iterations = 20;
-        const populationSize = 100;
+        const populationSize = 150;
         const random = Randomness.getInstance();
         properties = new NeuroevolutionProperties(populationSize);
 
@@ -107,17 +101,29 @@ describe('Test NEAT', () => {
         }
         properties.stoppingCondition = new FixedIterationsStoppingCondition(iterations);
         properties.timeout = 25000;
-        properties.ageSignificance = 1.0;
-        properties.parentsPerSpecies = 0.2;
-        properties.mutationWithoutCrossover = 0.3;
-        properties.interspeciesMating = 0.1;
-        properties.distanceThreshold = 3;
-        properties.excessCoefficient = 1;
-        properties.disjointCoefficient = 1;
-        properties.weightCoefficient = 1;
+        properties.numberOfSpecies = 5;
+        properties.parentsPerSpecies = 0.20;
         properties.penalizingAge = 20;
-        properties.populationType = 'neat';
-        properties.testSuiteType = 'dynamic';
+        properties.ageSignificance = 1.0;
+        properties.inputRate = 0.3;
+        properties.crossoverWithoutMutation = 0.2;
+        properties.mutationWithoutCrossover = 0.25;
+        properties.mutationAddConnection = 0.05;
+        properties.recurrentConnection = 0.1;
+        properties.addConnectionTries = 50;
+        properties.populationChampionNumberOffspring = 3;
+        properties.populationChampionNumberClones = 1;
+        properties.populationChampionConnectionMutation = 0.3;
+        properties.mutationAddNode = 0.03;
+        properties.mutateWeights = 0.6;
+        properties.perturbationPower = 2.5;
+        properties.mutateToggleEnableConnection = 0.1;
+        properties.toggleEnableConnectionTimes = 3;
+        properties.mutateEnableConnection = 0.0;
+        properties.distanceThreshold = 3.0;
+        properties.disjointCoefficient = 1;
+        properties.excessCoefficient = 1;
+        properties.weightCoefficient = 0.3;
         searchAlgorithm = builder.addProperties(properties as unknown as SearchAlgorithmProperties<Chromosome>)
             .addChromosomeGenerator(generator).initializeFitnessFunction(FitnessFunctionType.STATEMENT, null, null)
             .buildSearchAlgorithm();
@@ -128,54 +134,4 @@ describe('Test NEAT', () => {
             expect(searchAlgorithm.getNumberOfIterations()).toBe(20);
         });
     })
-
-    /*
-    Sanity Check if NEAT works correctly. Commented out since it can lead to a high increase in testing time.
-    However, should be used for validating any changes made to the NEAT algorithm or its components.
-    test("XOR Sanity Test", () => {
-        const inputs = [[0, 0], [1, 1], [0, 1], [1, 0]];
-        const inputMap = new Map<string, number[]>();
-        inputMap.set("First", [0,0])
-        generator = new NetworkChromosomeGeneratorSparse(mutationOp, crossoverOp, inputMap, 1, 0.5, false);
-        const population = new NeatPopulation(150, 5, generator, properties)
-
-        let found = false;
-        let iteration = 0;
-        while (!found) {
-            for (const chromosome of population.chromosomes) {
-                let fitness = 0;
-                const stabCounter = chromosome.stabilizedCounter(10);
-                chromosome.flushNodeValues();
-                for (let i = 0; i < inputs.length; i++) {
-                    inputMap.set("First", inputs[i])
-                    for (let j = 0; j < stabCounter; j++) {
-                        chromosome.activateNetwork(inputMap)
-                    }
-
-                    let output: number;
-                    if (chromosome.outputNodes.get(0).nodeValue > 0)
-                        output = 1;
-                    else
-                        output = 0;
-
-                    let result: number;
-                    if (i < 2)
-                        result = 0;
-                    else
-                        result = 1;
-
-                    if (output === result)
-                        fitness++;
-                }
-                chromosome.networkFitness = fitness;
-                if (fitness === 4)
-                    found = true;
-            }
-            iteration++;
-            population.evolution();
-        }
-        expect(population.populationChampion.networkFitness).toBe(4)
-    })
-
-     */
 })

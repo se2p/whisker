@@ -90,6 +90,7 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
      * @param chromosome the chromosome to mutate
      */
     apply(chromosome: NetworkChromosome): NetworkChromosome {
+        chromosome = chromosome.cloneStructure(true);
         // Special treatment for population Champions => either add a Connection or change the weights
         if (chromosome.isPopulationChampion) {
             if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {

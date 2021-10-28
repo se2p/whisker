@@ -300,14 +300,10 @@ export class Species<C extends NetworkChromosome> {
      * Special treatment for population Champions. They are either just cloned
      * or mutated by changing their weights or adding a new connection.
      */
-    private breedPopulationChampion(): C {
-        const parent = this.champion.cloneStructure() as C;
-        // We want the popChamp clone to be treated like a popChamp during mutation but not afterwards.
-        parent.isPopulationChampion = true;
-        parent.mutate();
-        parent.isPopulationChampion = false;
+    private breedPopulationChampion(): C {// We want the popChamp clone to be treated like a popChamp during mutation but not afterwards.
+        const mutant = this.champion.mutate();
         this.champion.numberOffspringPopulationChamp--;
-        return parent;
+        return mutant;
     }
 
     /**
@@ -315,7 +311,7 @@ export class Species<C extends NetworkChromosome> {
      */
     private breedMutationOnly(): C {
         // Choose random parent and apply mutation
-        const parent = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C;
+        const parent = this._randomness.pickRandomElementFromList(this.chromosomes);
         parent.mutate();
         return parent;
     }
@@ -327,13 +323,13 @@ export class Species<C extends NetworkChromosome> {
      */
     private breedCrossover(speciesList: List<Species<C>>): C {
         // Pick first parent
-        const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C;
+        const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes);
         let parent2: C
 
         // Pick second parent either from within the species or from another species (interspecies mating)
         if (this._randomness.nextDouble() > this._properties.interspeciesMating) {
             // Second parent picked from the same species (= this species)
-            parent2 = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C
+            parent2 = this._randomness.pickRandomElementFromList(this.chromosomes);
         }
         // Mate outside of the species
         else {
@@ -344,7 +340,7 @@ export class Species<C extends NetworkChromosome> {
                 randomSpecies = this._randomness.pickRandomElementFromList(speciesList) as Species<C>;
                 giveUp++;
             }
-            parent2 = randomSpecies.chromosomes.get(0).cloneStructure() as C;
+            parent2 = randomSpecies.chromosomes.get(0);
         }
 
         // Apply the Crossover Operation

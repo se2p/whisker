@@ -34,6 +34,9 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
      * @param parent2 the second parent of the crossover
      */
     apply(parent1: NetworkChromosome, parent2: NetworkChromosome): Pair<NetworkChromosome> {
+        parent1 = parent1.clone();
+        parent2 = parent2.clone();
+
         parent1.generateNetwork();
         parent2.generateNetwork();
 

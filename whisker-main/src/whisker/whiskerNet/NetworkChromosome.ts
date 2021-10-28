@@ -153,9 +153,11 @@ export class NetworkChromosome extends Chromosome {
      * @param allNodes all the nodes of a Chromosome
      * @param crossoverOp the crossover Operator
      * @param mutationOp the mutation Operator
+     * @param incrementId determined whether the id counter should be incremented after constructing this chromosome.
      */
     constructor(connections: List<ConnectionGene>, allNodes: List<NodeGene>,
-                mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>) {
+                mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
+                incrementId = true) {
         super();
         this._id = NetworkChromosome.idCounter;
         this._allNodes = allNodes;
@@ -182,25 +184,28 @@ export class NetworkChromosome extends Chromosome {
         this._random = Randomness.getInstance();
         this.generateNetwork();
         this._stabilizeCount = this.updateStabilizeCount(100);
+        if (incrementId) {
+            NetworkChromosome.idCounter++;
+        }
     }
 
     /**
      * Deep clone of a NetworkChromosome's structure. Attributes which are not related to the Network's structure
      * are initialised by the constructor.
-     * @param doIncrementIdCounter determines whether the ID counter should be incremented during cloning.
+     * @param incrementId determines whether the ID counter should be incremented during cloning.
      * @returns NetworkChromosome the cloned Network.
      */
-    cloneStructure(doIncrementIdCounter = true): NetworkChromosome {
-        return this.cloneWith(this.connections, doIncrementIdCounter)
+    cloneStructure(incrementId = true): NetworkChromosome {
+        return this.cloneWith(this.connections, incrementId)
     }
 
     /**
      * Deep clone of a NetworkChromosome using a defined list of genes.
      * @param newGenes the ConnectionGenes the network should be initialised with.
-     * @param doIncrementIdCounter determines whether the ID counter should be incremented during cloning.
+     * @param incrementId determines whether the ID counter should be incremented during cloning.
      * @returns NetworkChromosome the cloned network.
      */
-    cloneWith(newGenes: List<ConnectionGene>, doIncrementIdCounter = true): NetworkChromosome {
+    cloneWith(newGenes: List<ConnectionGene>, incrementId = true): NetworkChromosome {
         const connectionsClone = new List<ConnectionGene>();
         const nodesClone = new List<NodeGene>();
 
@@ -217,10 +222,8 @@ export class NetworkChromosome extends Chromosome {
             const connectionClone = connection.cloneWithNodes(fromNode, toNode);
             connectionsClone.add(connectionClone);
         }
-        if (doIncrementIdCounter) {
-            NetworkChromosome.idCounter++;
-        }
-        return new NetworkChromosome(connectionsClone, nodesClone, this.getMutationOperator(), this.getCrossoverOperator());
+        return new NetworkChromosome(connectionsClone, nodesClone, this.getMutationOperator(),
+            this.getCrossoverOperator(), incrementId);
     }
 
     /**

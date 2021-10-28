@@ -11,11 +11,9 @@ import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFit
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 import {StaticTestNetworkPopulation} from "../../whiskerNet/NeuroevolutionPopulations/StaticTestNetworkPopulation";
-import {Container} from "../../utils/Container";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
-    // TODO: Really necessary to separate SearchAlgorithms and NE-Algorithms!!!!
     /**
      * The search parameters
      */

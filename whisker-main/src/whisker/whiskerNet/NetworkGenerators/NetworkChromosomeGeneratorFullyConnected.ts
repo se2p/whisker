@@ -80,7 +80,6 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
         const outputNodes = allNodes.filter(node => node instanceof ClassificationNode || node instanceof RegressionNode);
         const connections = this.createConnections(inputList, outputNodes);
         const chromosome = new NetworkChromosome(connections, allNodes, this._mutationOp, this._crossoverOp);
-        NetworkChromosome.idCounter++;
 
         // Perturb the weights
         const mutationOp = chromosome.getMutationOperator() as NeatMutation;
