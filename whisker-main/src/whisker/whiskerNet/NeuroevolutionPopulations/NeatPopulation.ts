@@ -60,6 +60,10 @@ export class NeatPopulation<C extends NetworkChromosome> extends NeuroevolutionP
             this.populationChampion.species.expectedOffspring += lostChildren;
         }
 
+        if(totalOffspringExpected > 100){
+            console.log()
+        }
+
         // Check for fitness stagnation
         if (this.populationChampion.networkFitness > this.highestFitness) {
             this.highestFitness = this.populationChampion.networkFitness;

@@ -57,41 +57,40 @@ describe("Test NeatMutation", () => {
         sprite1.set("DistanceToSprite2-X", 4);
         sprite1.set("DistanceToSprite2-y", 5);
         genInputs.set("Sprite1", sprite1);
+        const sprite2 = new Map<string, number>();
+        sprite2.set("X-Position", 6);
+        sprite2.set("Y-Position", 7);
+        sprite2.set("Costume", 8);
+        sprite2.set("DistanceToSprite2-X", 9);
+        sprite2.set("DistanceToSprite2-y", 10);
+        genInputs.set("Sprite2", sprite2);
         const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
-        const networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
+        const networkChromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0);
         networkChromosome = networkChromosomeGenerator.get();
     })
 
     test("Test apply mutation operator on a populationChampion", () => {
         networkChromosome.isPopulationChampion = true;
-        const oldSize = networkChromosome.connections.size();
-        const oldWeight = networkChromosome.connections.get(0).weight
+        let mutant = networkChromosome.mutate();
         for (let i = 0; i < 50; i++) {
-            networkChromosome.mutate();
+            mutant = mutant.mutate();
         }
-        expect(networkChromosome.connections.size()).not.toBe(oldSize);
-        expect(networkChromosome.connections.get(0).weight).not.toBe(oldWeight);
+        expect(mutant.connections.size()).not.toBe(networkChromosome.connections.size());
+        expect(mutant.connections.get(0).weight).not.toBe(networkChromosome.connections.get(0).weight);
     })
 
     test("Test apply mutation operator on a non-populationChampion", () => {
-        const oldSize = networkChromosome.connections.size();
-        const oldWeight = networkChromosome.connections.get(0).weight;
-
-        const oldEnableStates = [];
-        for (const connection of networkChromosome.connections)
-            oldEnableStates.push(connection.isEnabled);
-
+        let mutant = networkChromosome.mutate();
         for (let i = 0; i < 50; i++) {
-            networkChromosome.mutate();
+            mutant = mutant.mutate();
         }
         const mutatedEnableStates = [];
         for (const connection of networkChromosome.connections)
             mutatedEnableStates.push(connection.isEnabled);
 
-        expect(networkChromosome.connections.size()).not.toBe(oldSize);
-        expect(networkChromosome.connections.get(0).weight).not.toBe(oldWeight);
-        expect(mutatedEnableStates).not.toContainEqual(oldEnableStates);
+        expect(networkChromosome.connections.size()).not.toBe(mutant.connections.size());
+        expect(networkChromosome.connections.get(0).weight).not.toBe(mutant.connections.get(0).weight);
     })
 
     test("Test MutateWeights", () => {

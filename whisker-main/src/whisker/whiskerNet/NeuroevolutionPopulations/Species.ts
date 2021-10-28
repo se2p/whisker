@@ -312,8 +312,7 @@ export class Species<C extends NetworkChromosome> {
     private breedMutationOnly(): C {
         // Choose random parent and apply mutation
         const parent = this._randomness.pickRandomElementFromList(this.chromosomes);
-        parent.mutate();
-        return parent;
+        return parent.mutate();
     }
 
     /**
@@ -344,14 +343,14 @@ export class Species<C extends NetworkChromosome> {
         }
 
         // Apply the Crossover Operation
-        const child = parent1.crossover(parent2).getFirst();
+        let child = parent1.crossover(parent2).getFirst();
 
         // Decide if we additionally apply mutation -> done randomly or
         // if both parents have a compatibility distance of 0 which means they have the same structure and weights
         const distance = NeuroevolutionUtil.compatibilityDistance(parent1, parent2, this._properties.excessCoefficient, this._properties.disjointCoefficient,
             this._properties.weightCoefficient)
         if (this._randomness.nextDouble() > this._properties.crossoverWithoutMutation || distance === 0) {
-            child.mutate();
+            child = child.mutate();
         }
         return child;
     }

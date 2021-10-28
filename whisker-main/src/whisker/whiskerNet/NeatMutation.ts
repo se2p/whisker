@@ -87,16 +87,16 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
 
     /**
      * Apply the mutation operator
-     * @param chromosome the chromosome to mutate
+     * @param parent the chromosome to mutate
      */
-    apply(chromosome: NetworkChromosome): NetworkChromosome {
-        chromosome = chromosome.cloneStructure(true);
+    apply(parent: NetworkChromosome): NetworkChromosome {
+        const mutant = parent.cloneStructure(true);
         // Special treatment for population Champions => either add a Connection or change the weights
-        if (chromosome.isPopulationChampion) {
+        if (parent.isPopulationChampion) {
             if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
-                this.mutateAddConnection(chromosome, this._addConnectionTries);
+                this.mutateAddConnection(mutant, this._addConnectionTries);
             } else {
-                this.mutateWeight(chromosome, this._perturbationPower, 1);
+                this.mutateWeight(mutant, this._perturbationPower, 1);
             }
         }
 
@@ -104,22 +104,22 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         else {
             // Structural mutation
             if (this._random.nextDouble() < this._mutationAddNode) {
-                this.mutateAddNode(chromosome);
+                this.mutateAddNode(mutant);
             } else if (this._random.nextDouble() < this._mutationAddConnection) {
-                this.mutateAddConnection(chromosome, this._addConnectionTries);
+                this.mutateAddConnection(mutant, this._addConnectionTries);
             }
 
             // Non structural mutation
             else {
                 if (this._random.nextDouble() < this._mutateWeights)
-                    this.mutateWeight(chromosome, this._perturbationPower, 1);
+                    this.mutateWeight(mutant, this._perturbationPower, 1);
                 if (this._random.nextDouble() < this._mutateToggleEnableConnection)
-                    this.mutateToggleEnableConnection(chromosome, this._toggleEnableConnectionTimes);
+                    this.mutateToggleEnableConnection(mutant, this._toggleEnableConnectionTimes);
                 if (this._random.nextDouble() < this._mutateEnableConnection)
-                    this.mutateConnectionReenable(chromosome);
+                    this.mutateConnectionReenable(mutant);
             }
         }
-        return chromosome;
+        return mutant;
     }
 
     /**
