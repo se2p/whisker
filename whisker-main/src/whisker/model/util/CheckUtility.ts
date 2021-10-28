@@ -260,9 +260,9 @@ export class CheckUtility extends EventEmitter {
             if (!doNotCheck[i]) {
                 let model = this.effectChecks[i].model;
                 let effect = this.effectChecks[i].effect;
-                let stepsSinceLastTransition = model.stepNbrOfLastTransition - model.stepNbrOfScndLastTransition + 1;
+                let stepsSinceLastTransition = model.lastTransitionStep - model.secondLastTransitionStep + 1;
                 try {
-                    if (!effect.check(stepsSinceLastTransition, model.stepNbrOfProgramEnd)) {
+                    if (!effect.check(stepsSinceLastTransition, model.programEndStep)) {
                         newEffects.push(this.effectChecks[i]);
                     }
                 } catch (e) {
@@ -364,10 +364,10 @@ export class CheckUtility extends EventEmitter {
         let newFailedList = [];
         for (let i = 0; i < checks.length; i++) {
             let effect = checks[i].effect;
-            let stepsSinceLastTransition = checks[i].model.stepNbrOfLastTransition
-                - checks[i].model.stepNbrOfScndLastTransition + 1;
+            let stepsSinceLastTransition = checks[i].model.lastTransitionStep
+                - checks[i].model.secondLastTransitionStep + 1;
             try {
-                if (!effect.check(stepsSinceLastTransition, checks[i].model.stepNbrOfProgramEnd)) {
+                if (!effect.check(stepsSinceLastTransition, checks[i].model.programEndStep)) {
                     newFailedList.push(checks[i]);
                 }
             } catch (e) {

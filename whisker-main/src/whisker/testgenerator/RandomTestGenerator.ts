@@ -116,7 +116,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(chromosome);
+            const candidateFitness = chromosome.getFitness(fitnessFunction);
             const candidateLength = chromosome.getLength();
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;

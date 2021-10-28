@@ -14,7 +14,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Whisker. ßIf not, see http://www.gnu.org/licenses/.
+ * along with Whisker. If not, see http://www.gnu.org/licenses/.
  *
  */
 
@@ -64,7 +64,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate();
             this.updateArchive(candidateChromosome);
-            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
 
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                 bestFitness = candidateFitness;

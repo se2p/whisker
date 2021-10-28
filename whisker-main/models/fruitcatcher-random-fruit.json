@@ -1,0 +1,2944 @@
+[
+    {
+        "usage": "program",
+        "id": "bowl",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "nodeIds": [
+            "init",
+            "start",
+            "text",
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "sayText",
+                "from": "start",
+                "to": "text",
+                "forceTestAfter": -1,
+                "forceTestAt": 31000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Output",
+                        "args": [
+                            "Bowl",
+                            "End"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect0",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "30000"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "right",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Key",
+                        "args": [
+                            "right arrow"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Key",
+                        "args": [
+                            "left arrow"
+                        ],
+                        "negated": true
+                    },
+                    {
+                        "id": "condition3",
+                        "name": "TouchingVerticalEdge",
+                        "args": [
+                            "Bowl"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Bowl",
+                            "x",
+                            "+"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "left",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Key",
+                        "args": [
+                            "left arrow"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Key",
+                        "args": [
+                            "right arrow"
+                        ],
+                        "negated": true
+                    },
+                    {
+                        "id": "condition3",
+                        "name": "TouchingVerticalEdge",
+                        "args": [
+                            "Bowl"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Bowl",
+                            "x",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "noMotion",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Key",
+                        "args": [
+                            "left arrow"
+                        ],
+                        "negated": true
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "Key",
+                        "args": [
+                            "right arrow"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Bowl",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "stop",
+                "from": "text",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeBetween",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Output",
+                        "args": [
+                            "Bowl",
+                            "End"
+                        ],
+                        "negated": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "apple",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "red"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start",
+            "bowl",
+            "points",
+            "red"
+        ],
+        "edges": [
+            {
+                "id": "red",
+                "from": "start",
+                "to": "red",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteColor",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "bowl",
+                "from": "start",
+                "to": "bowl",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "points",
+                "from": "bowl",
+                "to": "points",
+                "forceTestAfter": 1500,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "+5"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "top",
+                "from": "points",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "appleStop",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "nodeIds": [
+            "start",
+            "wait",
+            "bowl",
+            "red",
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "red",
+                "from": "wait",
+                "to": "red",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteColor",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Output",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "over"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "stop",
+                "from": "red",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeBetween",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Output",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "over"
+                        ],
+                        "negated": true
+                    }
+                ]
+            },
+            {
+                "id": "bowl",
+                "from": "wait",
+                "to": "bowl",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "top",
+                "from": "bowl",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "moves",
+                "from": "start",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "bananasR",
+        "startNodeId": "init",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "start",
+            "red",
+            "points",
+            "bowl"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "negated": false,
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "red",
+                "from": "start",
+                "to": "red",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteColor",
+                        "args": [
+                            "Banan",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "pointsRed",
+                "from": "red",
+                "to": "points",
+                "forceTestAfter": 1500,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "effect1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "-8"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "notRed",
+                "from": "points",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "touchBowl",
+                "from": "start",
+                "to": "bowl",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "Banan",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "top",
+                "from": "bowl",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "bananasB",
+        "startNodeId": "init",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "start",
+            "red",
+            "points",
+            "bowl"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "negated": false,
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "red",
+                "from": "start",
+                "to": "red",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteColor",
+                        "args": [
+                            "Banan",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "notRed",
+                "from": "red",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "bowl",
+                "from": "start",
+                "to": "bowl",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "Banan",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "points",
+                "from": "bowl",
+                "to": "points",
+                "forceTestAfter": 1500,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "+8"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "top",
+                "from": "points",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "init",
+        "startNodeId": "n0",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "n0",
+            "n1"
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect2",
+                        "name": "VarComp",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "=",
+                            "0"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect3",
+                        "name": "AttrComp",
+                        "args": [
+                            "Bowl",
+                            "x",
+                            "=",
+                            "0"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect4",
+                        "name": "AttrComp",
+                        "args": [
+                            "Bowl",
+                            "y",
+                            "=",
+                            "-145"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Apple",
+                            "size",
+                            "=",
+                            "50"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect5",
+                        "name": "AttrComp",
+                        "args": [
+                            "Bananas",
+                            "size",
+                            "=",
+                            "50"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "e1",
+                "from": "n1",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Bowl",
+                            "y",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect2",
+                        "name": "NbrOfVisibleClones",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "<=",
+                            "1"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect3",
+                        "name": "NbrOfVisibleClones",
+                        "args": [
+                            "Banan",
+                            "<=",
+                            "1"
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "timer",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "stop"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start",
+            "stop"
+        ],
+        "edges": [
+            {
+                "id": "dec",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": 1000,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Zeit|Time)",
+                            "-1"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "TimeBetween",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "stop",
+                "from": "start",
+                "to": "stop",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarComp",
+                        "args": [
+                            "Stage",
+                            "(Zeit|Time)",
+                            "=",
+                            "0"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "2000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "timer2",
+        "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start",
+            "wait",
+            "test"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "start",
+                "to": "wait",
+                "forceTestAfter": 1000,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarComp",
+                        "args": [
+                            "Stage",
+                            "(Zeit|Time)",
+                            "=",
+                            "30"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "change",
+                "from": "wait",
+                "to": "test",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarComp",
+                        "args": [
+                            "Stage",
+                            "(Zeit|Time)",
+                            "=",
+                            "30"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "noIncrease",
+                "from": "test",
+                "to": "test",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "effect1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Zeit|Time)",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Zeit|Time)",
+                            "+"
+                        ],
+                        "negated": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "points",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "appleRed"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "start",
+            "appleRed",
+            "appleBowl",
+            "applePoints",
+            "testBothVisible",
+            "bananasDown",
+            "bananPoints"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "appleRed",
+                "from": "start",
+                "to": "appleRed",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition4",
+                        "name": "SpriteColor",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "appleBowl",
+                "from": "start",
+                "to": "appleBowl",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "applePoints",
+                "from": "appleBowl",
+                "to": "applePoints",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "+"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "appleTop",
+                "from": "applePoints",
+                "to": "testBothVisible",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "bananBowl",
+                "from": "start",
+                "to": "bananasDown",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition2",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "Banan",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "bananPoints",
+                "from": "bananasDown",
+                "to": "bananPoints",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ]
+            },
+            {
+                "id": "bananRed",
+                "from": "start",
+                "to": "bananasDown",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition3",
+                        "name": "SpriteColor",
+                        "args": [
+                            "Banan",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "bananasTop",
+                "from": "bananPoints",
+                "to": "testBothVisible",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "bothVisible",
+                "from": "testBothVisible",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "nothing",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "="
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "spawnApple",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "bowl"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start",
+            "onTop",
+            "falls",
+            "bowl"
+        ],
+        "edges": [
+            {
+                "id": "onTop",
+                "from": "start",
+                "to": "onTop",
+                "forceTestAfter": -1,
+                "forceTestAt": 5000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "falls",
+                "from": "onTop",
+                "to": "falls",
+                "forceTestAfter": -1,
+                "forceTestAt": 5000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "bowl",
+                "from": "falls",
+                "to": "bowl",
+                "forceTestAfter": -1,
+                "forceTestAt": 10000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "spawnBanan",
+        "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start"
+        ],
+        "edges": [
+            {
+                "id": "onMove",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "=",
+                            "170"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect2",
+                        "name": "RandomValue",
+                        "args": [
+                            "Banan",
+                            "x"
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "bananFalling",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "falls"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start",
+            "onTop",
+            "falls"
+        ],
+        "edges": [
+            {
+                "id": "onTop",
+                "from": "start",
+                "to": "onTop",
+                "forceTestAfter": -1,
+                "forceTestAt": 5000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "fall",
+                "from": "onTop",
+                "to": "falls",
+                "forceTestAfter": -1,
+                "forceTestAt": 6000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "threeApples",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "three"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "one",
+            "two",
+            "three",
+            "twoFalls"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "one",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "250"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "2",
+                "from": "one",
+                "to": "two",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "2falls",
+                "from": "two",
+                "to": "twoFalls",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "3",
+                "from": "twoFalls",
+                "to": "three",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "threeBananas",
+        "startNodeId": "init",
+        "stopNodeIds": [
+            "three"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "one",
+            "two",
+            "twoFalls",
+            "three"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "one",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "250"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "2",
+                "from": "one",
+                "to": "two",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "2falls",
+                "from": "two",
+                "to": "twoFalls",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "3",
+                "from": "twoFalls",
+                "to": "three",
+                "forceTestAfter": -1,
+                "forceTestAt": 30000,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "appleState",
+        "startNodeId": "start",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start"
+        ],
+        "edges": [
+            {
+                "id": "onMove",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrComp",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "=",
+                            "170"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect2",
+                        "name": "RandomValue",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "x"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "fallAttr",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "TouchingHorizEdge",
+                        "args": [
+                            "(Apfel|Apple)"
+                        ],
+                        "negated": true
+                    },
+                    {
+                        "id": "5779e743d5c85",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "<",
+                            "170"
+                        ],
+                        "negated": false,
+                        "name": "AttrComp"
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "y",
+                            "-5"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect2",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "bananState",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "falls"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start",
+            "notVisible",
+            "visible",
+            "falls"
+        ],
+        "edges": [
+            {
+                "id": "hide",
+                "from": "start",
+                "to": "notVisible",
+                "forceTestAfter": 1000,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "false"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "show",
+                "from": "notVisible",
+                "to": "visible",
+                "forceTestAfter": 1000,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "TimeElapsed",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "fall-after-1s",
+                "from": "visible",
+                "to": "falls",
+                "forceTestAfter": 1000,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "bananas2",
+        "startNodeId": "init",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "start",
+            "output",
+            "noOutput",
+            "bowl"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "negated": false,
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "bowl",
+                "from": "start",
+                "to": "bowl",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "Banan",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "notBowl",
+                "from": "bowl",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "output",
+                "from": "start",
+                "to": "output",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteColor",
+                        "args": [
+                            "Banan",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Output",
+                        "args": [
+                            "Banan",
+                            "-8"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "noOutput",
+                "from": "output",
+                "to": "noOutput",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeBetween",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Output",
+                        "args": [
+                            "Banan",
+                            "-8"
+                        ],
+                        "negated": true
+                    }
+                ]
+            },
+            {
+                "id": "backToTop",
+                "from": "noOutput",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "speed",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition3",
+                        "name": "TouchingHorizEdge",
+                        "args": [
+                            "Banan"
+                        ],
+                        "negated": true
+                    },
+                    {
+                        "id": "e3266bb5bdb61",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "<",
+                            "170"
+                        ],
+                        "negated": false,
+                        "name": "AttrComp"
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "-7"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect2",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "bananOnRed",
+        "startNodeId": "init",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "start",
+            "red",
+            "hide",
+            "show",
+            "bowl"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "negated": false,
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ]
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "notRed",
+                "from": "start",
+                "to": "bowl",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteTouching",
+                        "args": [
+                            "Banan",
+                            "Bowl"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "notRedBack",
+                "from": "bowl",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "touched",
+                "from": "start",
+                "to": "red",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "SpriteColor",
+                        "args": [
+                            "Banan",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "hide",
+                "from": "red",
+                "to": "hide",
+                "forceTestAfter": 1200,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "false"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "TimeBetween",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "show",
+                "from": "hide",
+                "to": "show",
+                "forceTestAfter": 1000,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "visible",
+                            "=",
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "TimeBetween",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "fall",
+                "from": "show",
+                "to": "start",
+                "forceTestAfter": 1000,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrComp",
+                        "args": [
+                            "Banan",
+                            "y",
+                            ">",
+                            "100"
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "y",
+                            "-"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "usage": "program",
+        "id": "bowlMove",
+        "startNodeId": "init",
+        "stopNodeIds": [],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "init",
+            "start"
+        ],
+        "edges": [
+            {
+                "id": "init",
+                "from": "init",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ]
+            },
+            {
+                "id": "10",
+                "from": "start",
+                "to": "start",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "AttrChange",
+                        "args": [
+                            "Bowl",
+                            "x",
+                            "="
+                        ],
+                        "negated": true
+                    },
+                    {
+                        "id": "condition2",
+                        "name": "TouchingVerticalEdge",
+                        "args": [
+                            "Bowl"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($(Bowl.old.x)-$(Bowl.x))==10"
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "end",
+        "id": "end",
+        "startNodeId": "wait",
+        "stopNodeIds": [
+            "end"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "wait",
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "stop",
+                "from": "wait",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "TimeAfterEnd",
+                        "args": [
+                            "2000"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "wait",
+                "from": "wait",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "condition1",
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": [
+                    {
+                        "id": "effect1",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Punkt|Point|Score)",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect2",
+                        "name": "VarChange",
+                        "args": [
+                            "Stage",
+                            "(Zeit|Time)",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect3",
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    },
+                    {
+                        "id": "effect4",
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "x",
+                            "="
+                        ],
+                        "negated": false
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "usage": "user",
+        "id": "random_fruit",
+        "startNodeId": "start",
+        "stopNodeIds": [
+            "dont-move"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "start",
+            "wait",
+            "dont-move",
+            "fruits",
+            "apple",
+            "bananas",
+            "onlyApple"
+        ],
+        "edges": [
+            {
+                "id": "dont-move",
+                "from": "start",
+                "to": "dont-move",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Probability",
+                        "args": [
+                            "0.05"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "waitProb",
+                "from": "start",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Probability",
+                        "args": [
+                            "0.1"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "onlyApple",
+                "from": "start",
+                "to": "onlyApple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Probability",
+                        "args": [
+                            "0.2"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "not-wait",
+                "from": "start",
+                "to": "fruits",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Function",
+                        "args": [
+                            "true"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "wait",
+                "from": "wait",
+                "to": "dont-move",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "SpriteColor",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "255",
+                            "0",
+                            "0"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    },
+                    {
+                        "name": "TimeElapsed",
+                        "args": [
+                            "1000"
+                        ],
+                        "negated": false,
+                        "id": "condition2"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "away-left",
+                "from": "wait",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Apple.x)>=0"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "away-right",
+                "from": "wait",
+                "to": "wait",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Apple.x)<0"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Right"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "appleProb",
+                "from": "fruits",
+                "to": "apple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Probability",
+                        "args": [
+                            "0.5"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "caughtApple",
+                "from": "apple",
+                "to": "fruits",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "args": [
+                            "(Apfel|Apple)",
+                            "x",
+                            "="
+                        ],
+                        "negated": true,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "a-left",
+                "from": "apple",
+                "to": "apple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Bowl.x)>$(Apple.x)"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    },
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                        ],
+                        "negated": false,
+                        "id": "condition2"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "a-right",
+                "from": "apple",
+                "to": "apple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Bowl.x)<$(Apple.x)"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    },
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                        ],
+                        "negated": false,
+                        "id": "condition2"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Right"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "follow-left",
+                "from": "onlyApple",
+                "to": "onlyApple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Bowl.x)>$(Apple.x)"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    },
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                        ],
+                        "negated": false,
+                        "id": "condition2"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "follow-right",
+                "from": "onlyApple",
+                "to": "onlyApple",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Bowl.x)<$(Apple.x)"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    },
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($(Bowl.x)-$(Apple.x))>10"
+                        ],
+                        "negated": false,
+                        "id": "condition2"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Right"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "BananasProb",
+                "from": "fruits",
+                "to": "bananas",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Probability",
+                        "args": [
+                            "1"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "caughtBananas",
+                "from": "bananas",
+                "to": "fruits",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrChange",
+                        "args": [
+                            "Banan",
+                            "x",
+                            "="
+                        ],
+                        "negated": true,
+                        "id": "condition1"
+                    }
+                ],
+                "inputEffects": []
+            },
+            {
+                "id": "b-left",
+                "from": "bananas",
+                "to": "bananas",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Bowl.x)>$(Bananas.x)"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    },
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($(Bowl.x)-$(Bananas.x))>10"
+                        ],
+                        "negated": false,
+                        "id": "condition2"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Left"
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "b-right",
+                "from": "bananas",
+                "to": "bananas",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "$(Bowl.x)<$(Bananas.x)"
+                        ],
+                        "negated": false,
+                        "id": "condition1"
+                    },
+                    {
+                        "name": "Expr",
+                        "args": [
+                            "Math.abs($(Bowl.x)-$(Bananas.x))>10"
+                        ],
+                        "negated": false,
+                        "id": "condition2"
+                    }
+                ],
+                "inputEffects": [
+                    {
+                        "name": "InputKey",
+                        "id": "inputEffect1",
+                        "args": [
+                            "Right"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

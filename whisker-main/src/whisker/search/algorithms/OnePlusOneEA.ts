@@ -67,7 +67,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         await bestIndividual.evaluate();
         this.updateArchive(bestIndividual);
         this._bestIndividual = bestIndividual;
-        let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
+        let bestFitness = bestIndividual.getFitness(this._fitnessFunction);
 
         if (this._stoppingCondition.isFinished(this)) {
             this.updateStatisticsAtEnd();
@@ -77,7 +77,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             const candidateChromosome = bestIndividual.mutate();
             await candidateChromosome.evaluate();
             this.updateArchive(candidateChromosome);
-            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
             console.log(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
 ${bestIndividual.toString()}`);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {

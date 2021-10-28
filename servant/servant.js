@@ -14,6 +14,7 @@ const CSVConverter = require('./converter.js');
 const {attachRandomInputsToTest, attachErrorWitnessReplayToTest} = require('./witness-util.js');
 const path = require('path');
 
+const production = process.env.NODE_ENV === "production";
 const tmpDir = './.tmpWorkingDir';
 const start = Date.now();
 const {
@@ -34,14 +35,11 @@ if (isGenerateWitnessTestOnly) {
 async function init () {
 
     // args: ['--use-gl=desktop'] could be used next to headless, but pages tend to quit unexpectedly
-    const production = process.env.NODE_ENV === "production";
-    const puppeteerDefaultArgs = [
+    const args = [
         '--disable-gpu',
         '--no-sandbox',
         '--disable-setuid-sandbox'
     ];
-    const puppeteerDebuggingArgs = [...puppeteerDefaultArgs, '--remote-debugging-port=9222'];
-    const args = production ? puppeteerDefaultArgs : puppeteerDebuggingArgs;
     const browser = await puppeteer.launch({
         headless: !!isHeadless,
 
@@ -54,6 +52,8 @@ async function init () {
         executablePath: process.env.CHROME_BIN || null,
 
         args: args,
+
+        devtools: !production
     });
 
     // Test generation
@@ -201,7 +201,7 @@ async function runGeneticSearch (browser, downloadPath) {
         }
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
-        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
+        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         console.log('Whisker-Web: Web Instance Configuration Complete');
     }
 
@@ -240,6 +240,11 @@ async function runGeneticSearch (browser, downloadPath) {
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
+
+        if (!production) {
+            await page.evaluate(() => { debugger; });
+        }
+
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
@@ -339,6 +344,7 @@ async function showHiddenFunctionality(page) {
 
 async function runTests (path, browser, index, targetProject, modelPath) {
     const page = await browser.newPage({context: Date.now()});
+    const startProject = Date.now();
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
@@ -364,7 +370,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
-        await page.evaluate(s => document.querySelector('#scratch-project').setAttribute('data-seed', s), seed);
+        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await (await page.$('#fileselect-project')).uploadFile(targetProject);
         if (testPath) {
             await (await page.$('#fileselect-tests')).uploadFile(path);
@@ -430,6 +436,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         }
 
         let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
+        csvRow['duration'] = `${(Date.now() - startProject) / 1000}`;
         return {csvRow, coverageLog};
     }
 

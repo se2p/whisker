@@ -156,7 +156,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         let coverageModels = {};
         accSlider.slider('disable');
         const accelerationFactor = $('#acceleration-value').text();
-        const seed = document.getElementById('scratch-project').getAttribute('data-seed');
+        const seed = document.getElementById('seed').value;
         let duration = Number(document.querySelector('#model-duration').value);
         if (duration) {
             duration = duration * 1000;
@@ -605,7 +605,9 @@ window.onbeforeunload = function () {
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }
-    return ''; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
+    if (location.href.includes('index')) {
+        return ''; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
+    }
 };
 
 const localize = locI18next.init(i18next, {

@@ -20,8 +20,15 @@ export class ModelNode {
      * @param label Label of the node
      */
     constructor(id: string, label: string) {
+        if (!id) {
+            throw new Error("No id given.");
+        }
         this.id = id;
-        this.label = label;
+        if (label == undefined) {
+            this.label = id;
+        } else {
+            this.label = label;
+        }
     }
 
     /**
@@ -29,6 +36,9 @@ export class ModelNode {
      * @param edge Edge to add.
      */
     addOutgoingEdge(edge: ModelEdge): void {
+        if (edge.from != this.id) {
+            throw new Error("Edge start node id not from this node.");
+        }
         this.edges.push(edge);
     }
 

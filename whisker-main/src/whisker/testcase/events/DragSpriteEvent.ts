@@ -59,13 +59,13 @@ export class DragSpriteEvent extends ScratchEvent {
         return `DragSprite ${this._target.sprite.name} to  ${Math.trunc(this._x)}/${Math.trunc(this._y)}`;
     }
 
-    getParameter(): (number | string)[] {
+    getParameters(): (number | string)[] {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
 
     setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
-            case ParameterType.RANDOM: {
+            case "random": {
                 const random = Randomness.getInstance();
                 const stageBounds = Container.vmWrapper.getStageSize();
                 const signedWidth = stageBounds.width / 2;
@@ -78,7 +78,7 @@ export class DragSpriteEvent extends ScratchEvent {
             // be dragged to since the position could have some with unintended side effects. Hence, we disturb the
             // given position with a power equal to the target's size. The direction of the disturbance is determined
             // through a codon. If we have a codon value above 360, the position is not disturbed at all.
-            case ParameterType.CODON:
+            case "codon":
                 this.angle = args[0];
                 // We only disturb the target point if we have an angle smaller than 360 degrees.
                 if (this.angle < 360) {

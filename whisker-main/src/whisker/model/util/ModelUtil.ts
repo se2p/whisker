@@ -140,7 +140,7 @@ export abstract class ModelUtil {
         oldValue = this.testNumber(oldValue);
         newValue = this.testNumber(newValue);
 
-        if (change != "" && change.startsWith("+") && change.length > 1) {
+        if (change != "" && change != "+=" && change.startsWith("+") && change.length > 1) {
             change = change.substring(1, change.length);
         }
 

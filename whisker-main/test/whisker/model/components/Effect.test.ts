@@ -1,5 +1,7 @@
 import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
+import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
+import {Check} from "../../../../src/whisker/model/components/Check"
 
 describe('Effect', () => {
     test("no arguments", () => {
@@ -580,6 +582,43 @@ describe('Effect', () => {
         varChange2 = new Effect("id", "edgeID", CheckName.AttrChange, false, ['sprite', 'var', '+7']);
         expect(varChange2.contradicts(varChange)).toBeTruthy();
         expect(varChange.contradicts(varChange2)).toBeTruthy();
+    });
+
+    test("varChange += -=", () => {
+        let varChange2 = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '+=']);
+        let varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '+=']);
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
+        expect(varChange.contradicts(varChange2)).toBeFalsy();
+        varChange2 = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '+=']);
+        varChange = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '+=']);
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
+        expect(varChange.contradicts(varChange2)).toBeFalsy();
+        varChange2 = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '+=']);
+        varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '+=']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
+
+        varChange2 = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '-=']);
+        varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '-=']);
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
+        expect(varChange.contradicts(varChange2)).toBeFalsy();
+        varChange2 = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '-=']);
+        varChange = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '-=']);
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
+        expect(varChange.contradicts(varChange2)).toBeFalsy();
+        varChange2 = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '-=']);
+        varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '-=']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
+
+        varChange2 = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '+=']);
+        varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '-=']);
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
+        expect(varChange.contradicts(varChange2)).toBeFalsy();
+        varChange2 = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '+=']);
+        varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '-=']);
+        expect(varChange2.contradicts(varChange)).toBeTruthy();
+        expect(varChange.contradicts(varChange2)).toBeTruthy();
     })
 
     test("contradictions: variable comparison", () => {
@@ -610,6 +649,13 @@ describe('Effect', () => {
         expect(varComp.contradicts(varComp2)).toBeFalsy();
         expect(varComp2.contradicts(varComp)).toBeFalsy();
 
+
+        varComp = new Effect("id", "edgeID", CheckName.VarComp, false, ["sprite", "var", "=", "0"]);
+        varComp2 = new Effect("id", "edgeID", CheckName.VarComp, false, ["sprite", "var", "=", "1"]);
+        expect(varComp.contradicts(varComp2)).toBeTruthy();
+        varComp2 = new Effect("id", "edgeID", CheckName.VarComp, true, ["sprite", "var", "=", "0"]);
+        expect(varComp.contradicts(varComp2)).toBeTruthy();
+        expect(varComp2.contradicts(varComp)).toBeTruthy();
 
         varComp = new Effect("id", "edgeID", CheckName.VarComp, true, ["sprite", "var", "=", "0"]);
         varComp2 = new Effect("id", "edgeID", CheckName.VarComp, true, ["sprite", "var", "=", "1"]);
@@ -1022,5 +1068,9 @@ describe('Effect', () => {
         attrComp2 = new Effect("id", "edgeID", CheckName.AttrComp, false, ["sprite", "var", "<=", "2"]);
         expect(attrComp.contradicts(attrComp2)).toBeFalsy();
         expect(attrComp2.contradicts(attrComp)).toBeFalsy();
+        expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString(CheckName.AttrComp, true,
+            "sprite", "var", "<=", "2")])).toBeTruthy();
+        expect(Check.testForContradictingWithEvents(attrComp, [CheckUtility.getEventString(CheckName.AttrComp, false,
+            "sprite", "var", "<=", "2")])).toBeFalsy();
     });
 });

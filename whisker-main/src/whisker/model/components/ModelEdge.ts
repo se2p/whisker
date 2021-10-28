@@ -30,17 +30,24 @@ export abstract class ModelEdge {
 
     protected constructor(id: string, label: string, graphID: string, from: string, to: string, forceTestAfter: number,
                           forceTestAt: number) {
+        if (!id) {
+            throw new Error("No id given.");
+        }
         this.id = id;
         this.label = label;
         this.graphID = graphID;
         this.from = from;
         this.to = to;
         this.forceTestAfter = forceTestAfter;
-        if (this.forceTestAfter != -1) {
+        if (this.forceTestAfter < -1) {
+            this.forceTestAfter = -1;
+        } else if (this.forceTestAfter != -1) {
             this.forceTestAfter = forceTestAfter;
         }
         this.forceTestAt = forceTestAt;
-        if (this.forceTestAt != -1) {
+        if (this.forceTestAt < -1) {
+            this.forceTestAt = -1;
+        } else if (this.forceTestAt != -1) {
             this.forceTestAt = forceTestAt;
         }
         this.failedForcedTest = false;

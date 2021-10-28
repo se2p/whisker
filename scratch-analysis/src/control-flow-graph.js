@@ -416,6 +416,14 @@ export const generateCFG = vm => {
             const cloneTarget = Extract.cloneSendTarget(targets, node.block);
             eventReceive.put(`clone:${cloneTarget}`, node);
         }
+        if (EventFilter.backdropStart(node.block)) {
+            const backdropTarget = Extract.backdropStartTarget(targets, node.block);
+            eventReceive.put(`backdrop:${backdropTarget}`, node);
+        }
+        if (EventFilter.backdropChange(node.block)) {
+            const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
+            eventSend.put(`backdrop:${backdropTarget}`, node);
+        }
     }
 
     // Afterwards, we add a global entry and exit node for the entire Scratch program.

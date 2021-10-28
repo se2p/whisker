@@ -31,6 +31,9 @@ export class InputEffect {
      * @param args Arguments for this input effect.
      */
     constructor(id: string, name: InputEffectName, args: any[]) {
+        if (!id) {
+            throw new Error("No id given.");
+        }
         this.name = name;
         this.id = id;
         this.args = args;
@@ -50,8 +53,6 @@ export class InputEffect {
         let isOK = true;
         switch (name) {
             case InputEffectName.InputKey:
-                isOK = _testArgs(1);
-                break;
             case InputEffectName.InputClickSprite:
             case InputEffectName.InputText:
             case InputEffectName.InputMouseDown:

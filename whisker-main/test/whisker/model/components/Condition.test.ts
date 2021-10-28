@@ -12,6 +12,28 @@ describe('Condition', () => {
         }
     })
 
+    test("constructor, getters", () => {
+        expect(() => {
+            new Condition(undefined, undefined, CheckName.BackgroundChange, true, ["test"])
+        }).toThrow();
+        expect(() => {
+            new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"])
+        }).not.toThrow();
+        let c = new Condition("test", undefined, CheckName.BackgroundChange, true, ["test"]);
+        expect(c.id == "test");
+        expect(c.negated == true);
+        expect(c.name == CheckName.BackgroundChange);
+        expect(c.args[0] == "test")
+
+        expect(() => {
+            c.simplifyForSave();
+        }).not.toThrow();
+
+        expect(() => {
+            c.condition
+        }).not.toThrow();
+    })
+
     test("not enough arguments: sprite color", () => {
         expect(() => {
             new Condition("id", "edgeID", CheckName.SpriteColor, true, ["test"])

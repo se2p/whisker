@@ -51,7 +51,7 @@ export class ClickStageEvent extends ScratchEvent {
         return;
     }
 
-    getParameter(): [] {
+    getParameters(): [] {
         return [];
     }
 

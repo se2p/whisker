@@ -26,11 +26,8 @@ import {Randomness} from "../../utils/Randomness";
 
 export class WaitEvent extends ScratchEvent {
 
-    private _steps: number;
-
-    constructor(steps = 1) {
+    constructor(private _steps = 1) {
         super();
-        this._steps = steps;
     }
 
     async apply(): Promise<void> {
@@ -41,13 +38,6 @@ export class WaitEvent extends ScratchEvent {
         return `await t.wait(${this._steps});`;
     }
 
-    public toJSON(): Record<string, any> {
-        const event = {}
-        event[`type`] = `WaitEvent`;
-        event[`args`] = {"steps": this._steps}
-        return event;
-    }
-
     public toString(): string {
         return "Wait for " + this._steps + " steps";
     }
@@ -56,7 +46,7 @@ export class WaitEvent extends ScratchEvent {
         return 1;
     }
 
-    getParameter(): number[] {
+    getParameters(): number[] {
         return [this._steps];
     }
 
@@ -66,21 +56,17 @@ export class WaitEvent extends ScratchEvent {
 
     setParameter(args: number[], testExecutor: ParameterType): void {
         switch (testExecutor) {
-            case ParameterType.RANDOM:
+            case "random":
                 this._steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
                 break;
-            case ParameterType.CODON:
+            case "codon":
                 this._steps = args[0];
                 break;
-            case ParameterType.REGRESSION:
+            case "regression":
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }
         this._steps %= Container.config.getWaitStepUpperBound();
-        // If the event has been selected execute it for at least one step.
-        if (this._steps < 1) {
-            this._steps = 1;
-        }
     }
 
     stringIdentifier(): string {

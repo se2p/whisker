@@ -1265,6 +1265,25 @@ input:checked + .slider:before {
     width: 100%;
 }
 
+#seed {
+    max-width: 90px;
+    margin-left: 250px;
+    margin-right: -50px;
+    margin-bottom: 5px;
+    text-align: center;
+    border-color: var(--mainColor);
+    border-style: solid;
+    border-radius: 5px;
+}
+
+label[for=seed] {
+    margin-left: 90px;
+}
+
+#green-flag {
+    margin-left: 100px;
+}
+
 #main-functionality {
     position: fixed;
     z-index: 9998;

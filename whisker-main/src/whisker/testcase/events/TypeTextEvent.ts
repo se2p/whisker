@@ -55,7 +55,7 @@ export class TypeTextEvent extends ScratchEvent {
         return 0; // Text
     }
 
-    getParameter(): string[] {
+    getParameters(): string[] {
         return [this._text];
     }
 

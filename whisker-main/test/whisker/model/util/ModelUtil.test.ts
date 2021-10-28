@@ -1,7 +1,7 @@
 import {ModelUtil} from "../../../../src/whisker/model/util/ModelUtil";
 
 describe('ModelUtil tests', function () {
-    test('test change: error no number', () => {
+    test('ModelUtil test change', () => {
         expect(function () {
             ModelUtil.testChange("0", "string", "-")
         }).toThrow();
@@ -17,27 +17,22 @@ describe('ModelUtil tests', function () {
         expect(function () {
             ModelUtil.testChange("0", "string", "+")
         }).toThrow();
-    });
 
-    test("test change: decrease number", () => {
         expect(ModelUtil.testChange("0", "-1", "-")).toBeTruthy();
         expect(ModelUtil.testChange("-1", "0", "-")).toBeFalsy();
         expect(ModelUtil.testChange("1", "1", "-")).toBeFalsy();
-    })
 
-    test("test change: increase number", () => {
-        expect(ModelUtil.testChange("0", "-1", "+")).toBeFalsy();
+        expect(ModelUtil.testChange("0", "-1", "+5")).toBeFalsy();
         expect(ModelUtil.testChange("-1", "0", "+")).toBeTruthy();
         expect(ModelUtil.testChange("1", "1", "+")).toBeFalsy();
-    })
 
-    test("test change: equality", () => {
         expect(ModelUtil.testChange("0", "-1", "=")).toBeFalsy();
         expect(ModelUtil.testChange("-1", "0", "=")).toBeFalsy();
         expect(ModelUtil.testChange("1", "1", "=")).toBeTruthy();
-    })
 
-    test("test change: error", () => {
+        expect(ModelUtil.testChange("0", "-1", "+=")).toBeFalsy();
+        expect(ModelUtil.testChange("0", "-1", "-=")).toBeTruthy();
+
         expect(() => {
             ModelUtil.testChange("0", "1", "anything")
         }).toThrow();
@@ -52,7 +47,16 @@ describe('ModelUtil tests', function () {
         }).toThrow();
     })
 
-    test('errors', () => {
+    test('ModelUtil errors', () => {
+        expect(function () {
+            ModelUtil.compare(undefined, "string", ">")
+        }).toThrow();
+        expect(function () {
+            ModelUtil.compare("0", undefined, ">")
+        }).toThrow();
+        expect(function () {
+            ModelUtil.compare("0", "string", "increase")
+        }).toThrow();
         expect(function () {
             ModelUtil.compare("0", "string", ">")
         }).toThrow();
@@ -86,7 +90,7 @@ describe('ModelUtil tests', function () {
         }).toThrow();
     });
 
-    test("test compare: decrease number", () => {
+    test("ModelUtil test compare", () => {
         expect(ModelUtil.compare("0", "-1", "<")).toBeFalsy();
         expect(ModelUtil.compare("-1", "0", "<")).toBeTruthy();
         expect(ModelUtil.compare("1", "1", "<")).toBeFalsy();
@@ -94,9 +98,7 @@ describe('ModelUtil tests', function () {
         expect(ModelUtil.compare("0", "-1", "<=")).toBeFalsy();
         expect(ModelUtil.compare("-1", "0", "<=")).toBeTruthy();
         expect(ModelUtil.compare("1", "1", "<=")).toBeTruthy();
-    })
 
-    test("test compare: increase number", () => {
         expect(ModelUtil.compare("0", "-1", ">")).toBeTruthy();
         expect(ModelUtil.compare("-1", "0", ">")).toBeFalsy();
         expect(ModelUtil.compare("1", "1", ">")).toBeFalsy();
@@ -104,24 +106,20 @@ describe('ModelUtil tests', function () {
         expect(ModelUtil.compare("0", "-1", ">=")).toBeTruthy();
         expect(ModelUtil.compare("-1", "0", ">=")).toBeFalsy();
         expect(ModelUtil.compare("1", "1", ">=")).toBeTruthy();
-    })
 
-    test("test compare: equal", () => {
         expect(ModelUtil.compare("0", "-1", "=")).toBeFalsy();
         expect(ModelUtil.compare("-1", "0", "=")).toBeFalsy();
         expect(ModelUtil.compare("1", "1", "=")).toBeTruthy();
         expect(ModelUtil.compare("hallo", "hallo", "=")).toBeTruthy();
         expect(ModelUtil.compare("1", "hallo", "=")).toBeFalsy();
-    })
 
-    test("test compare: booleans", () => {
         expect(ModelUtil.compare("true", "true", "=")).toBeTruthy();
         expect(ModelUtil.compare("false", "false", "=")).toBeTruthy();
         expect(ModelUtil.compare("true", "false", "=")).toBeFalsy();
         expect(ModelUtil.compare("false", "true", "=")).toBeFalsy();
     })
 
-    test("test number", () => {
+    test("ModelUtil test number", () => {
         expect(() => ModelUtil.testNumber("string")).toThrow();
         expect(() => ModelUtil.testNumber("")).toThrow();
         expect(() => ModelUtil.testNumber(null)).toThrow();
@@ -130,7 +128,7 @@ describe('ModelUtil tests', function () {
         expect(() => ModelUtil.testNumber("1")).not.toThrow();
     })
 
-    test("getDependencies attribute", () => {
+    test("ModelUtil getDependencies attribute", () => {
         let func = "(t) => {" +
             "return t.getSprite('Apple').x == 0;}";
 
@@ -163,7 +161,7 @@ describe('ModelUtil tests', function () {
         })
     });
 
-    test("getDependencies variable", () => {
+    test("ModelUtil getDependencies variable", () => {
         let func = "(t) => {" +
             "return t.getSprite('Apple').getVariable('test') == '2'}";
 
@@ -189,7 +187,7 @@ describe('ModelUtil tests', function () {
         });
     });
 
-    test("getDependencies variable 2", () => {
+    test("ModelUtil getDependencies variable 2", () => {
         let func = "(t) => {" +
             "let sprite = t.getSprite('apple');" +
             "let variable = sprite.getVariable('test');" +
@@ -201,7 +199,7 @@ describe('ModelUtil tests', function () {
         });
     });
 
-    test("getDependencies two sprites", () => {
+    test("ModelUtil getDependencies two sprites", () => {
         let func = "(t) => {" +
             "let sprite = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');" +
@@ -212,7 +210,7 @@ describe('ModelUtil tests', function () {
         });
     });
 
-    test("getDependencies both attribute and variable", () => {
+    test("ModelUtil getDependencies both attribute and variable", () => {
         let func = "(t) => {" +
             "let x = t.getSprite('apple').x;" +
             "sprite = t.getSprite('bananas');" +
@@ -223,7 +221,7 @@ describe('ModelUtil tests', function () {
         });
     });
 
-    test("getDependencies nothing", () => {
+    test("ModelUtil getDependencies nothing", () => {
         let func = "(t) => {" +
             "let x = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');}"
@@ -233,7 +231,7 @@ describe('ModelUtil tests', function () {
         });
     });
 
-    test("getDependencies with \" ", () => {
+    test("ModelUtil getDependencies with \" ", () => {
         let func = "(t) => {" +
             "let x = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');" +
@@ -253,7 +251,7 @@ describe('ModelUtil tests', function () {
         });
     });
 
-    test("getDependencies crossed use", () => {
+    test("ModelUtil getDependencies crossed use", () => {
         let func = "(t) => {" +
             "let apple = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');" +
@@ -265,7 +263,7 @@ describe('ModelUtil tests', function () {
         });
     })
 
-    test("getDependencies crossed use 2", () => {
+    test("ModelUtil getDependencies crossed use 2", () => {
         let func = "(t) => {" +
             "let apple = t.getSprite('apple');" +
             "sprite = t.getSprite('bananas');" +
@@ -278,7 +276,7 @@ describe('ModelUtil tests', function () {
         });
     })
 
-    test("getDependencies wrong ones", () => {
+    test("ModelUtil getDependencies wrong ones", () => {
         // Error ones
         let func = "(t) => {" +
             "let x = t.getSprite(apple).x;" +
@@ -305,5 +303,5 @@ describe('ModelUtil tests', function () {
             varDependencies: [],
             attrDependencies: [{spriteName: "apple", attrName: "x"}]
         });
-    })
+    });
 });

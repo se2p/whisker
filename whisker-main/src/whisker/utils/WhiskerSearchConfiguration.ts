@@ -62,6 +62,7 @@ import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/
 import {NetworkChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorTemplateNetwork";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {WaitEvent} from "../testcase/events/WaitEvent";
+import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
 
 class ConfigException implements Error {
     message: string;
@@ -256,6 +257,9 @@ export class WhiskerSearchConfiguration {
                     this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
             case 'biasedVariableLengthConstrained':
                 return new BiasedVariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
+                    this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
+            case 'eventBiased':
+                return new EventBiasedMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
                     this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(this.dict['mutation'])
@@ -507,6 +511,14 @@ export class WhiskerSearchConfiguration {
     public getPressDurationUpperBound(): number {
         if (this.dict['durations']['pressDurationUpperBound']) {
             return this.dict['durations']['pressDurationUpperBound'];
+        } else {
+            return 10;
+        }
+    }
+
+    public getSoundDuration(): number {
+        if (this.dict['durations']['soundDuration']) {
+            return this.dict['durations']['soundDuration'];
         } else {
             return 10;
         }
