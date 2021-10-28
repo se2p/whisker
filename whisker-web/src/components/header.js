@@ -49,7 +49,7 @@ const header = `<div id="scroll-background">
                          <span class="slider round"></span>
                      </label>
                 </span>
-                <span data-i18n="test-editor" class="toggleDescription"></span>
+                <span data-i18n="header:test-editor" class="toggleDescription"></span>
                 <!-- Model editor toggle -->
                 <span class="toggleWrapper">
                      <label class="switch">
@@ -57,7 +57,7 @@ const header = `<div id="scroll-background">
                          <span class="slider round"></span>
                      </label>
                 </span>
-                <span data-i18n="model-editor" class="toggleDescription"></span>
+                <span data-i18n="model-editor:title" class="toggleDescription"></span>
             </div>
             <!-- Language selector -->
             <div class="links">

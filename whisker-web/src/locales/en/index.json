@@ -51,7 +51,6 @@
     "skip" : "Test skipped",
     "pass" : "Test passed",
     "error" : "Test threw an error",
-    "test-editor" : "Test editor",
     "project" : "Your project",
     "error-name": "Error",
     "error-message" : "Error message",
@@ -68,7 +67,6 @@
     "model-case-sensitive-hover": "When deactivating this option model test ignores upper/lower case differences of names.",
     "model-output-no-user-model": "No user model for input generation found",
     "model-output-user-model": "Input generation with user model",
-    "model-editor": "Model editor",
     "seed": "Seed",
     "t-seed": "Ensures consistent program behaviour when using the same seed"
 }

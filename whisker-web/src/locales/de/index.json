@@ -51,7 +51,6 @@
     "skip" : "Test übersprungen",
     "pass" : "Test erfolgreich",
     "error" : "Fehler während Test",
-    "test-editor" : "Test Editor",
     "project" : "Dein Projekt",
     "error-name": "Fehler",
     "error-message" : "Fehlermeldung",
@@ -68,7 +67,6 @@
     "model-case-sensitive-hover": "Wenn diese Option deaktiviert ist, wird Groß-/Kleinschreibung bei Namen ignoriert.",
     "model-output-no-user-model": "Kein User Modell für Input Generierung gefunden",
     "model-output-user-model": "Input Generierung mit User Modell",
-    "model-editor": "Modell Editor",
     "seed": "Seed",
     "t-seed": "Gleiche Seeds führen zu konsistentem Programmverhalten"
 }

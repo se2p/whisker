@@ -4,5 +4,6 @@
     "t-log" : "Zeige Daten der Logdatei",
     "log" : "Log",
     "show-advanced" : "Zeige Funktionen Testgenerierung und Eingaben aufzeichnen",
-    "advanced" : "Testautomatisierung"
+    "advanced" : "Testautomatisierung",
+    "test-editor" : "Test Editor"
 }

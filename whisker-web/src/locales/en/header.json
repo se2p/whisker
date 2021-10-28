@@ -4,5 +4,6 @@
     "t-log" : "Show log file",
     "log" : "Log",
     "show-advanced" : "Show test generation and record input features",
-    "advanced" : "Test automation"
+    "advanced" : "Test automation",
+    "test-editor" : "Test editor"
 }
