@@ -2,7 +2,7 @@
     "testGenerator": "random",
     "minEventSize": 2,
     "maxEventSize": 40,
-    "extractor": "naive",
+    "extractor": "dynamic",
     "fitnessFunction": {
         "type": "statement",
         "targets": []
