@@ -315,7 +315,6 @@ export class NetworkExecutor {
             const args = events.get(eventIndex).parameters;
             eventIndex++;
             this.notify(nextEvent, args);
-            console.log(`Apply ${nextEvent} with args: ${args}`)
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
             timer = Date.now();
@@ -392,8 +391,6 @@ export class NetworkExecutor {
                 }
                 // Select the nextEvent, set its parameters and send it to the Scratch-VM
                 nextEvent = this._random.pickRandomElementFromList(this.availableEvents)
-                console.log(this.availableEvents)
-                console.log("NextEvent: ", nextEvent)
                 for (let i = 0; i < nextEvent.numSearchParameter(); i++) {
                     nextEvent.setParameter(args, 'random');
                     args.push(nextEvent.getParameters());

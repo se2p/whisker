@@ -46,7 +46,7 @@
     },
     "networkFitness": {
         "type": "survive",
-        "timeout": 100000
+        "timeout": 10000
     },
     "stoppingCondition": {
         "type": "combined",
