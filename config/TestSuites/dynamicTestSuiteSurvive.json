@@ -1,5 +1,5 @@
 {
-    "test-generator": "neuroevolution",
+    "testGenerator": "neuroevolution",
     "algorithm": "neat",
     "populationType": "dynamic",
     "extractor": "neuroevolution",
