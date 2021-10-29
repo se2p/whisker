@@ -1,5 +1,5 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {NetworkExecutor} from "../NetworkExecutor";

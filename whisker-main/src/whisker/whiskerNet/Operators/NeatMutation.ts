@@ -1,13 +1,13 @@
-import {Mutation} from "../search/Mutation";
-import {NetworkChromosome} from "./NetworkChromosome";
-import {List} from "../utils/List";
-import {NodeGene} from "./NetworkNodes/NodeGene";
-import {ConnectionGene} from "./ConnectionGene";
-import {NodeType} from "./NetworkNodes/NodeType";
-import {Randomness} from "../utils/Randomness";
-import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
-import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
-import {HiddenNode} from "./NetworkNodes/HiddenNode";
+import {Mutation} from "../../search/Mutation";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
+import {List} from "../../utils/List";
+import {NodeGene} from "../NetworkComponents/NodeGene";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
+import {NodeType} from "../NetworkComponents/NodeType";
+import {Randomness} from "../../utils/Randomness";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {HiddenNode} from "../NetworkComponents/HiddenNode";
 
 
 export class NeatMutation implements Mutation<NetworkChromosome> {

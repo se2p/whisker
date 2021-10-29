@@ -1,11 +1,11 @@
-import {Crossover} from "../search/Crossover";
-import {NetworkChromosome} from "./NetworkChromosome";
-import {Pair} from "../utils/Pair";
-import {ConnectionGene} from "./ConnectionGene";
-import {List} from "../utils/List";
-import {NodeGene} from "./NetworkNodes/NodeGene";
-import {NodeType} from "./NetworkNodes/NodeType";
-import {Randomness} from "../utils/Randomness";
+import {Crossover} from "../../search/Crossover";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
+import {Pair} from "../../utils/Pair";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
+import {List} from "../../utils/List";
+import {NodeGene} from "../NetworkComponents/NodeGene";
+import {NodeType} from "../NetworkComponents/NodeType";
+import {Randomness} from "../../utils/Randomness";
 
 
 export class NeatCrossover implements Crossover<NetworkChromosome> {

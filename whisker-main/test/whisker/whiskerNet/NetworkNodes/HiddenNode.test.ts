@@ -1,10 +1,10 @@
-import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
-import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
-import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
+import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
 import {List} from "../../../../src/whisker/utils/List";
-import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
-import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
-import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 
 

@@ -1,5 +1,5 @@
 import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 
 export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends NeuroevolutionPopulation<NetworkChromosome> {
 

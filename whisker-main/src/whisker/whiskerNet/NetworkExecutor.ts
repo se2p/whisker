@@ -7,7 +7,7 @@ import {EventAndParameters, ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
-import {NetworkChromosome} from "./NetworkChromosome";
+import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
@@ -311,10 +311,11 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && eventIndex < events.size() && timer < this._timeout) {
             // Select the nextEvent.
-            const nextEvent = events.get(eventIndex)[0];
-            const args = events.get(eventIndex)[1];
+            const nextEvent = events.get(eventIndex).event;
+            const args = events.get(eventIndex).parameters;
             eventIndex++;
             this.notify(nextEvent, args);
+            console.log(`Apply ${nextEvent} with args: ${args}`)
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
             timer = Date.now();

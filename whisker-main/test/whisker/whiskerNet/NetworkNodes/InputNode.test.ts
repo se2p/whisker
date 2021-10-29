@@ -1,9 +1,9 @@
-import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
-import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
-import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
 import {List} from "../../../../src/whisker/utils/List";
-import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
-import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {ConnectionGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 
 
 describe("InputNode Tests", () => {

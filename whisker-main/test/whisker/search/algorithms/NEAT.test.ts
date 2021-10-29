@@ -1,7 +1,7 @@
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
-import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/NetworkChromosome";
+import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {NeuroevolutionProperties} from "../../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
@@ -16,8 +16,8 @@ import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {NetworkChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
+//import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+//import {NetworkChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
 
 
 describe('Test NEAT', () => {
@@ -138,99 +138,99 @@ describe('Test NEAT', () => {
         });
     })
 })
-    /*
-    Commented out since it greatly increases the CI-Pipeline duration. However, very useful for sanity checking.
-    test("XOR Sanity Test", () => {
-        const inputMap = new Map<string, Map<string, number>>();
-        inputMap.set("Test", new Map<string, number>());
+/*
+Commented out since it greatly increases the CI-Pipeline duration. However, very useful for sanity checking.
+test("XOR Sanity Test", () => {
+    const inputMap = new Map<string, Map<string, number>>();
+    inputMap.set("Test", new Map<string, number>());
 
-        inputMap.get("Test").set("Gate1", 0);
-        inputMap.get("Test").set("Gate2", 0);
+    inputMap.get("Test").set("Gate1", 0);
+    inputMap.get("Test").set("Gate2", 0);
 
-        const events = new List<ScratchEvent>([new XOR()]);
+    const events = new List<ScratchEvent>([new XOR()]);
 
-        const generator = new NetworkChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, inputMap, events);
-        const population = new NeatPopulation(generator, properties);
-        population.generatePopulation();
+    const generator = new NetworkChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, inputMap, events);
+    const population = new NeatPopulation(generator, properties);
+    population.generatePopulation();
 
-        let found = false;
-        while (!found) {
-            for (const chromosome of population.chromosomes) {
-                let fitness = 0;
-                const stabCounter = chromosome.updateStabilizeCount(10);
-                chromosome.flushNodeValues();
-                for (let i = 0; i < 2; i++) {
-                    inputMap.get("Test").set("Gate1", i);
-                    for (let k = 0; k < 2; k++) {
-                        inputMap.get("Test").set("Gate1", k);
-                        for (let j = 0; j < stabCounter; j++) {
-                            chromosome.activateNetwork(inputMap)
-                        }
-
-                        let output: number;
-                        if (chromosome.regressionNodes.get('XOR').get(0).nodeValue > 1)
-                            output = 1;
-                        else
-                            output = 0;
-
-                        let result: number;
-                        if (i === k)
-                            result = 0;
-                        else
-                            result = 1;
-
-                        if (output === result)
-                            fitness++;
+    let found = false;
+    while (!found) {
+        for (const chromosome of population.chromosomes) {
+            let fitness = 0;
+            const stabCounter = chromosome.updateStabilizeCount(10);
+            chromosome.flushNodeValues();
+            for (let i = 0; i < 2; i++) {
+                inputMap.get("Test").set("Gate1", i);
+                for (let k = 0; k < 2; k++) {
+                    inputMap.get("Test").set("Gate1", k);
+                    for (let j = 0; j < stabCounter; j++) {
+                        chromosome.activateNetwork(inputMap)
                     }
+
+                    let output: number;
+                    if (chromosome.regressionNodes.get('XOR').get(0).nodeValue > 1)
+                        output = 1;
+                    else
+                        output = 0;
+
+                    let result: number;
+                    if (i === k)
+                        result = 0;
+                    else
+                        result = 1;
+
+                    if (output === result)
+                        fitness++;
                 }
-                chromosome.networkFitness = fitness;
-                if (fitness === 4)
-                    found = true;
             }
-            population.updatePopulationStatistics();
-            population.evolve();
+            chromosome.networkFitness = fitness;
+            if (fitness === 4)
+                found = true;
         }
-        expect(population.populationChampion.networkFitness).toBe(4)
-    })
+        population.updatePopulationStatistics();
+        population.evolve();
+    }
+    expect(population.populationChampion.networkFitness).toBe(4)
+})
 })
 
 class XOR extends ScratchEvent {
 
-    apply(): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
+apply(): Promise<void> {
+    throw new Error("Method not implemented.");
+}
 
-    getSearchParameterNames(): string[] {
-        return ['GateInput'];
-    }
+getSearchParameterNames(): string[] {
+    return ['GateInput'];
+}
 
-    setParameter(): void {
-        throw new Error("Method not implemented.");
-    }
+setParameter(): void {
+    throw new Error("Method not implemented.");
+}
 
-    getParameters(): unknown[] {
-        throw new Error("Method not implemented.");
-    }
+getParameters(): unknown[] {
+    throw new Error("Method not implemented.");
+}
 
-    toJavaScript(): string {
-        throw new Error("Method not implemented.");
-    }
+toJavaScript(): string {
+    throw new Error("Method not implemented.");
+}
 
-    toString(): string {
-        throw new Error("Method not implemented.");
-    }
+toString(): string {
+    throw new Error("Method not implemented.");
+}
 
-    stringIdentifier(): string {
-        return "XOR";
-    }
+stringIdentifier(): string {
+    return "XOR";
+}
 
-    toJSON(): Record<string, any> {
-        throw new Error("Method not implemented.");
-    }
+toJSON(): Record<string, any> {
+    throw new Error("Method not implemented.");
+}
 
-    numSearchParameter(): number {
-        return 1;
-    }
+numSearchParameter(): number {
+    return 1;
+}
 
 }
 */

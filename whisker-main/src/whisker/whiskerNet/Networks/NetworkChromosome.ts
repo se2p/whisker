@@ -1,23 +1,23 @@
-import {Chromosome} from "../search/Chromosome";
-import {List} from "../utils/List";
-import {NodeGene} from "./NetworkNodes/NodeGene";
-import {ConnectionGene} from "./ConnectionGene";
-import {Crossover} from "../search/Crossover";
-import {Mutation} from "../search/Mutation";
-import {NodeType} from "./NetworkNodes/NodeType";
-import {FitnessFunction} from "../search/FitnessFunction";
-import {ExecutionTrace} from "../testcase/ExecutionTrace";
-import {Species} from "./NeuroevolutionPopulations/Species";
+import {Chromosome} from "../../search/Chromosome";
+import {List} from "../../utils/List";
+import {NodeGene} from "../NetworkComponents/NodeGene";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
+import {Crossover} from "../../search/Crossover";
+import {Mutation} from "../../search/Mutation";
+import {NodeType} from "../NetworkComponents/NodeType";
+import {FitnessFunction} from "../../search/FitnessFunction";
+import {ExecutionTrace} from "../../testcase/ExecutionTrace";
+import {Species} from "../NeuroevolutionPopulations/Species";
 import assert from "assert";
-import {InputNode} from "./NetworkNodes/InputNode";
-import {Randomness} from "../utils/Randomness";
-import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
-import {RegressionNode} from "./NetworkNodes/RegressionNode";
-import {ClassificationNode} from "./NetworkNodes/ClassificationNode";
-import {ScratchEvent} from "../testcase/events/ScratchEvent";
-import {ActivationFunction} from "./NetworkNodes/ActivationFunction";
-import {Container} from "../utils/Container";
-import {NetworkChromosomeGeneratorFullyConnected} from "./NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
+import {InputNode} from "../NetworkComponents/InputNode";
+import {Randomness} from "../../utils/Randomness";
+import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import {RegressionNode} from "../NetworkComponents/RegressionNode";
+import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
+import {ScratchEvent} from "../../testcase/events/ScratchEvent";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {Container} from "../../utils/Container";
+import {NetworkChromosomeGeneratorFullyConnected} from "../NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
 
 export class NetworkChromosome extends Chromosome {
 
@@ -29,7 +29,7 @@ export class NetworkChromosome extends Chromosome {
     /**
      * Unique identifier
      */
-    private _id: number;
+    private _uID: number;
     /**
      * Holds all nodes of a Network
      */
@@ -159,7 +159,7 @@ export class NetworkChromosome extends Chromosome {
                 mutationOp: Mutation<NetworkChromosome>, crossoverOp: Crossover<NetworkChromosome>,
                 incrementId = true) {
         super();
-        this._id = NetworkChromosome.idCounter;
+        this._uID = NetworkChromosome.idCounter;
         this._allNodes = allNodes;
         this._inputNodes = new Map<string, Map<string, InputNode>>();
         this._outputNodes = new List<NodeGene>();
@@ -231,7 +231,7 @@ export class NetworkChromosome extends Chromosome {
      */
     clone(): NetworkChromosome {
         const clone = this.cloneStructure(false);
-        clone.id = this.id;
+        clone.uID = this.uID;
         clone.trace = this.trace;
         clone.coverage = this.coverage;
         clone.networkFitness = this.networkFitness;
@@ -655,7 +655,7 @@ export class NetworkChromosome extends Chromosome {
      */
     public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
         const network = {};
-        network[`id`] = this.id;
+        network[`id`] = this.uID;
         network[`nF`] = Number(this.networkFitness.toFixed(4));
         network[`sF`] = Number(this.sharedFitness.toFixed(4));
         network[`eO`] = Number(this.expectedOffspring.toFixed(4));
@@ -675,12 +675,12 @@ export class NetworkChromosome extends Chromosome {
         return network;
     }
 
-    get id(): number {
-        return this._id;
+    get uID(): number {
+        return this._uID;
     }
 
-    set id(value: number) {
-        this._id = value;
+    set uID(value: number) {
+        this._uID = value;
     }
 
     getLength(): number {

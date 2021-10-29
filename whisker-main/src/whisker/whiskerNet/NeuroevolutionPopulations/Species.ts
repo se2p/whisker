@@ -1,5 +1,5 @@
 import {List} from "../../utils/List";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
@@ -415,7 +415,7 @@ export class Species<C extends NetworkChromosome> {
         species[`cBF`] = Number(this.currentBestFitness.toFixed(4));
         species[`aBF`] = Number(this.allTimeBestFitness.toFixed(4));
         species[`eO`] = Number(this.expectedOffspring.toFixed(4));
-        species[`C`] = this.champion.id;
+        species[`C`] = this.champion.uID;
         for (let i = 0; i < this.chromosomes.size(); i++) {
             species[`M ${i}`] = this.chromosomes.get(i).toJSON();
         }

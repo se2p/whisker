@@ -1,4 +1,4 @@
-import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/NetworkChromosome";
+import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {NetworkChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
 import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {List} from "../../../../src/whisker/utils/List";

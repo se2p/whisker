@@ -1,8 +1,8 @@
-import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
-import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
-import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
-import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
+import {ConnectionGene} from "../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 
 describe("ConnectionGene Test", () => {

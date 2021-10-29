@@ -1,16 +1,16 @@
 import {List} from "../../utils/List";
-import {NodeGene} from "../NetworkNodes/NodeGene";
-import {ConnectionGene} from "../ConnectionGene";
+import {NodeGene} from "../NetworkComponents/NodeGene";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {NetworkChromosomeGenerator} from "./NetworkChromosomeGenerator";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
-import {InputNode} from "../NetworkNodes/InputNode";
-import {BiasNode} from "../NetworkNodes/BiasNode";
-import {ClassificationNode} from "../NetworkNodes/ClassificationNode";
-import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
-import {RegressionNode} from "../NetworkNodes/RegressionNode";
-import {NeatMutation} from "../NeatMutation";
+import {InputNode} from "../NetworkComponents/InputNode";
+import {BiasNode} from "../NetworkComponents/BiasNode";
+import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {RegressionNode} from "../NetworkComponents/RegressionNode";
+import {NeatMutation} from "../Operators/NeatMutation";
 
 export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeGenerator {
 

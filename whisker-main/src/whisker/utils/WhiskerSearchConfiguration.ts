@@ -31,14 +31,14 @@ import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentExcept
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
 import {NetworkChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NetworkChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorFullyConnected";
-import {NeatMutation} from "../whiskerNet/NeatMutation";
-import {NeatCrossover} from "../whiskerNet/NeatCrossover";
+import {NeatMutation} from "../whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../whiskerNet/Operators/NeatCrossover";
 import {Container} from "./Container";
 import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
 import {NeuroevolutionProperties} from "../whiskerNet/NeuroevolutionProperties";
 import {StatementNetworkFitness} from "../whiskerNet/NetworkFitness/StatementNetworkFitness";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
-import {NetworkChromosome} from "../whiskerNet/NetworkChromosome";
+import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
 import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";

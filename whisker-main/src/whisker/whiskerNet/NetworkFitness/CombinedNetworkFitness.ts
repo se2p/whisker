@@ -1,5 +1,5 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {List} from "../../utils/List";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {Container} from "../../utils/Container";

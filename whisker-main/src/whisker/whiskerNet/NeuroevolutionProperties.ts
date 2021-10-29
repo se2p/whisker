@@ -1,4 +1,4 @@
-import {NetworkChromosome} from "./NetworkChromosome";
+import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {StoppingCondition} from "../search/StoppingCondition";
 import {NetworkFitnessFunction} from "./NetworkFitness/NetworkFitnessFunction";
 

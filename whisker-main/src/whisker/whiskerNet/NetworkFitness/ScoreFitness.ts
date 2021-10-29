@@ -1,7 +1,7 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
 
 

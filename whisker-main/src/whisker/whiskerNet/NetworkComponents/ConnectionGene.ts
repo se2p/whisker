@@ -1,4 +1,4 @@
-import {NodeGene} from "./NetworkNodes/NodeGene";
+import {NodeGene} from "./NodeGene";
 
 export class ConnectionGene {
     /**

@@ -1,5 +1,5 @@
 import {Species} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
-import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
+import {NetworkChromosome} from "../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {List} from "../../../src/whisker/utils/List";
 import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {Randomness} from "../../../src/whisker/utils/Randomness";

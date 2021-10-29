@@ -1,15 +1,15 @@
-import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromosome";
-import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
-import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
+import {NetworkChromosome} from "../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
+import {NeatMutation} from "../../../src/whisker/whiskerNet/Operators/NeatMutation";
+import {NeatCrossover} from "../../../src/whisker/whiskerNet/Operators/NeatCrossover";
 import {List} from "../../../src/whisker/utils/List";
-import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
-import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
+import {ConnectionGene} from "../../../src/whisker/whiskerNet/NetworkComponents/ConnectionGene";
+import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
 import {Pair} from "../../../src/whisker/utils/Pair";
-import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
-import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
-import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
-import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
-import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";
+import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
+import {BiasNode} from "../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 
 describe("Test NeatCrossover", () => {

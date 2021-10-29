@@ -1,4 +1,4 @@
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {NoveltyFitness} from "./NoveltyFitness";

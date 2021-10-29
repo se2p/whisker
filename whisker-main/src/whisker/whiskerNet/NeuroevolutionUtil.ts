@@ -1,10 +1,10 @@
 import {Species} from "./NeuroevolutionPopulations/Species";
 import {NeatPopulation} from "./NeuroevolutionPopulations/NeatPopulation";
-import {NetworkChromosome} from "./NetworkChromosome";
+import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {List} from "../utils/List";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
-import {ConnectionGene} from "./ConnectionGene";
-import {NeatMutation} from "./NeatMutation";
+import {ConnectionGene} from "./NetworkComponents/ConnectionGene";
+import {NeatMutation} from "./Operators/NeatMutation";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {NeuroevolutionPopulation} from "./NeuroevolutionPopulations/NeuroevolutionPopulation";
 

@@ -1,4 +1,4 @@
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 
 /**
  * A NetworkFitness function maps a given network onto a numeric value that represents how good the network is in playing

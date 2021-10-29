@@ -1,5 +1,5 @@
 import {List} from "../../utils/List";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Species} from "./Species";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
@@ -230,7 +230,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         const population = {};
         population[`aF`] = Number(this.averageFitness.toFixed(4));
         population[`hF`] = Number(this.highestFitness.toFixed(4));
-        population[`PC`] = this.populationChampion.id;
+        population[`PC`] = this.populationChampion.uID;
         for (let i = 0; i < this.species.size(); i++) {
             population[`S ${i}`] = this.species.get(i).toJSON();
         }

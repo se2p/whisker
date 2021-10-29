@@ -1,15 +1,15 @@
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Mutation} from "../../search/Mutation";
 import {Crossover} from "../../search/Crossover";
 import {List} from "../../utils/List";
-import {NodeGene} from "../NetworkNodes/NodeGene";
-import {ConnectionGene} from "../ConnectionGene";
-import {NeatMutation} from "../NeatMutation";
-import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
-import {RegressionNode} from "../NetworkNodes/RegressionNode";
+import {NodeGene} from "../NetworkComponents/NodeGene";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
+import {NeatMutation} from "../Operators/NeatMutation";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
-import {NeatCrossover} from "../NeatCrossover";
+import {NeatCrossover} from "../Operators/NeatCrossover";
 
 export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
 

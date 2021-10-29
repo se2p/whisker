@@ -20,8 +20,6 @@
 
 import {Randomness} from "./Randomness";
 import isEqual from 'lodash.isequal';
-import {NodeGene} from "../whiskerNet/NetworkNodes/NodeGene";
-import {ConnectionGene} from "../whiskerNet/ConnectionGene";
 
 /**
  * A class to store a list of elements of the same type.

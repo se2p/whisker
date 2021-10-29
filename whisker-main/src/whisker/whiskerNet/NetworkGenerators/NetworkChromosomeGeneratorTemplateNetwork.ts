@@ -1,15 +1,15 @@
 import {List} from "../../utils/List";
-import {NodeGene} from "../NetworkNodes/NodeGene";
-import {ConnectionGene} from "../ConnectionGene";
+import {NodeGene} from "../NetworkComponents/NodeGene";
+import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NetworkChromosomeGenerator} from "./NetworkChromosomeGenerator";
-import {NetworkChromosome} from "../NetworkChromosome";
-import {InputNode} from "../NetworkNodes/InputNode";
-import {ClassificationNode} from "../NetworkNodes/ClassificationNode";
-import {RegressionNode} from "../NetworkNodes/RegressionNode";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
+import {InputNode} from "../NetworkComponents/InputNode";
+import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
+import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
-import {HiddenNode} from "../NetworkNodes/HiddenNode";
-import {BiasNode} from "../NetworkNodes/BiasNode";
-import {ActivationFunction} from "../NetworkNodes/ActivationFunction";
+import {HiddenNode} from "../NetworkComponents/HiddenNode";
+import {BiasNode} from "../NetworkComponents/BiasNode";
+import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 
 export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosomeGenerator {
 
@@ -66,14 +66,14 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
                     break;
                 case "C": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
-                    if(event) {
+                    if (event) {
                         allNodes.add(new ClassificationNode(node.id, event, ActivationFunction.SIGMOID));
                     }
                     break;
                 }
                 case "R": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
-                    if(event) {
+                    if (event) {
                         allNodes.add(new RegressionNode(node.id, event, node.eventParameter, ActivationFunction.NONE));
                     }
                     break;
@@ -81,12 +81,12 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
             }
         }
         const allConnections = new List<ConnectionGene>();
-        for (const connectionKey in networkTemplate['Con']) {
-            const connection = networkTemplate['Con'][connectionKey];
+        for (const connectionKey in networkTemplate['Cons']) {
+            const connection = networkTemplate['Cons'][connectionKey];
             const sourceNode = allNodes.find(node => node.id === connection.s);
             const targetNode = allNodes.find(node => node.id === connection.t);
             const recurrent = connection.r === `true`;
-            if(sourceNode && targetNode) {
+            if (sourceNode && targetNode) {
                 allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.w, connection.e,
                     connection.i, recurrent));
             }
@@ -94,11 +94,9 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
         const network = new NetworkChromosome(allConnections, allNodes, this._mutationOp, this._crossoverOp);
 
         // Only copy the first network. No need to have multiple copies of the same chromosome.
-        if(network.id > this._numberNetworks){
+        if (network.uID > this._numberNetworks) {
             network.mutate();
         }
-        NetworkChromosome.idCounter++;
-        console.log(network)
         return network
     }
 

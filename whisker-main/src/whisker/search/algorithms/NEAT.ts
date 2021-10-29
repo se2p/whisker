@@ -1,6 +1,6 @@
 import {List} from '../../utils/List';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
-import {NetworkChromosome} from "../../whiskerNet/NetworkChromosome";
+import {NetworkChromosome} from "../../whiskerNet/Networks/NetworkChromosome";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {FitnessFunction} from "../FitnessFunction";

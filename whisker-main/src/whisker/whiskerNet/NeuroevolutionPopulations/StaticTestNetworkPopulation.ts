@@ -1,5 +1,5 @@
 import {NeatPopulation} from "./NeatPopulation";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
@@ -43,6 +43,7 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
             const chromosome = this.generator.get();
             chromosome.trace = new ExecutionTrace(undefined, this.gatherEvents());
             this.chromosomes.add(chromosome);
+            console.log(chromosome)
             NeuroevolutionUtil.speciate(chromosome, this, this.properties);
         }
     }
