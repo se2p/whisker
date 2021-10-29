@@ -28,6 +28,9 @@ import {LocalSearch} from "./LocalSearch";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {TypeTextEvent} from "../../../testcase/events/TypeTextEvent";
 import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
+import {ScratchEventExtractor} from "../../../testcase/ScratchEventExtractor";
+import {EventSelector} from "../../../testcase/EventSelector";
+import VMWrapper = require("../../../../vm/vm-wrapper.js")
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
@@ -42,6 +45,25 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * Random number generator.
      */
     private readonly _random = Randomness.getInstance();
+
+    /**
+     * Probability of selecting a new Event, if one is encountered, during the ExtensionLocalSearch operation.
+     */
+    private readonly _newEventProbability: number
+
+    /**
+     * Constructs a new LocalSearch object.
+     * @param vmWrapper the vmWrapper containing the Scratch-VM.
+     * @param eventExtractor obtains the currently available set of events.
+     * @param eventSelector determines which event selector is used.
+     * @param probability defines the probability of applying the concrete LocalSearch operator.
+     * @param newEventProbability determines the probability of selecting a new event during the local search algorithm.
+     */
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector,
+                probability: number, newEventProbability: number) {
+        super(vmWrapper, eventExtractor, eventSelector, probability);
+        this._newEventProbability = newEventProbability;
+    }
 
     /**
      * Determines whether local search can be applied to this chromosome.
@@ -162,7 +184,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             }
 
             // Check if we found at least one new event compared to the previous iteration, if yes apply it!
-            else if (previousEvents.size() > 0 && newEvents.size() > 0) {
+            else if (previousEvents.size() > 0 && newEvents.size() > 0
+                && this._random.nextDouble() < this._newEventProbability) {
                 // Choose random event amongst the newly found ones and determine its codon value.
                 const chosenNewEvent = this._random.pickRandomElementFromList(newEvents);
                 const newEventCodon = availableEvents.findElement(chosenNewEvent);

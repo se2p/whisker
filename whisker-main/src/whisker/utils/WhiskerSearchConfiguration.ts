@@ -300,7 +300,7 @@ export class WhiskerSearchConfiguration {
             switch (operator['type']) {
                 case "Extension":
                     type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        this.getEventSelector(), operator['probability']);
+                        this.getEventSelector(), operator['probability'], operator['newEventProbability']);
                     break;
                 case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
