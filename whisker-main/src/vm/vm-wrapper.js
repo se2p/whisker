@@ -313,6 +313,7 @@ class VMWrapper {
         delete Runtime.THREAD_STEP_INTERVAL;
         Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / accelerationFactor;
         this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
+        this.vm.runtime.acceleration = accelerationFactor;
         this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
         clearInterval(this.vm.runtime._steppingInterval);
         this.accelerationFactor = accelerationFactor;

@@ -172,7 +172,8 @@ const ControlFilter = {
         block.opcode === 'looks_thinkforsecs' ||
         block.opcode === 'looks_sayforsecs' ||
         block.opcode === 'motion_glidesecstoxy' ||
-        block.opcode === 'sound_playuntildone'
+        block.opcode === 'sound_playuntildone' ||
+        block.opcode === 'text2speech_speakAndWait'
 };
 
 const SensingFilter = {
