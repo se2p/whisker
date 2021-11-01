@@ -57,7 +57,7 @@ const header = `<div id="scroll-background">
                          <span class="slider round"></span>
                      </label>
                 </span>
-                <span data-i18n="model-editor:title" class="toggleDescription"></span>
+                <span data-i18n="modelEditor:title" class="toggleDescription"></span>
             </div>
             <!-- Language selector -->
             <div class="links">
