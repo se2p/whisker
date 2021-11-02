@@ -1,4 +1,4 @@
-image: satantime/puppeteer-node:lts-buster-slim
+image: satantime/puppeteer-node:lts-buster
 
 stages:
   - build
