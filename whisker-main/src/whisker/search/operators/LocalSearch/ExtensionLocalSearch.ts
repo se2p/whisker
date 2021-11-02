@@ -252,8 +252,9 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
             const newFitnessValues = this.calculateFitnessValues(chromosome);
 
-            // Reset counter if we obtained smaller fitnessValues, or have blocks reachable without branches.
-            if (newFitnessValues.some((value, index) => value < fitnessValues[index])) {
+            // Reset counter if we obtained smaller fitnessValues, or keep covering more and more blocks
+            if (newFitnessValues.length < fitnessValues.length ||
+                newFitnessValues.some((value, index) => value < fitnessValues[index])) {
                 fitnessValuesUnchanged = 0;
             }
             // Otherwise increase the counter.
