@@ -15,7 +15,6 @@ import {CheckName} from "../components/Check";
 // todo functions for counting check "wiederhole 10 mal"
 // todo check plays a sound...
 // todo check when getting message
-// todo check volume > some value
 // todo key check for 'any key' test
 
 /**
@@ -126,9 +125,8 @@ export abstract class CheckGenerator {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const spriteOriginal = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
-        const spriteName = spriteOriginal.name;
-        ModelUtil.checkAttributeExistence(t, spriteOriginal, attrName);
+        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
@@ -437,9 +435,8 @@ export abstract class CheckGenerator {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
-        const spriteName = sprite.name;
-        ModelUtil.checkAttributeExistence(t, sprite, attrName);
+        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         if (attrName == "x" || attrName == "y") {
             CheckGenerator.registerOnMoveAttrChange(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
