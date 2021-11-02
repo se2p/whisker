@@ -31,6 +31,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     private readonly _cfg: ControlFlowGraph;
     private readonly _approachLevels: Record<string, number>
     private readonly _eventMapping: Record<string, string>
+    private _forceCFG = false;
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
@@ -38,6 +39,13 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         this._cfg = cfg;
         this._eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
+
+        // If we have an execution halting block as parent enforce the calculation of the CFG distance to keep track
+        // of the remaining halting duration until the given block is reached.
+        const parent = StatementFitnessFunction.getParentOfNode(targetNode, this._cdg);
+        if (parent !== undefined && ControlFilter.executionHaltingBlock(parent.block)) {
+            this.forceCFG = true;
+        }
     }
 
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
@@ -98,7 +106,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const branchDistance = this.getBranchDistance(chromosome);
 
         let cfgDistanceNormalized;
-        if (approachLevel === 0 && branchDistance === 0) {
+        if ((approachLevel === 0 && branchDistance === 0) || this._forceCFG) {
             cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome));
         } else {
             cfgDistanceNormalized = 1;
@@ -426,7 +434,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @returns parent of node
      */
     private static getParentOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
-        return cdg._nodes[node.block.parent];
+        if (node.block.parent) {
+            return cdg._nodes[node.block.parent];
+        } else {
+            return undefined;
+        }
     }
 
     /**
@@ -436,8 +448,10 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @returns child of node
      */
     private static getChildOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
-        if (node.block.next !== undefined) {
+        if (node.block.next) {
             return cdg._nodes[node.block.next];
+        } else {
+            return undefined;
         }
     }
 
@@ -473,4 +487,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
     }
 
+    set forceCFG(value: boolean) {
+        this._forceCFG = value;
+    }
 }
