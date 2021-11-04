@@ -72,32 +72,32 @@ describe("Species Test", () => {
         species = new Species(0, false, properties);
         while (population.size() < populationSize)
             population.add(generator.get())
-        species.chromosomes.addList(population);
+        species.networks.addList(population);
         random = Randomness.getInstance();
-        for (let i = 0; i < species.chromosomes.size(); i++) {
-            species.chromosomes.get(i).networkFitness = (i % 5) + 1;
+        for (let i = 0; i < species.networks.size(); i++) {
+            species.networks.get(i).networkFitness = (i % 5) + 1;
         }
-        champion = random.pickRandomElementFromList(species.chromosomes)
+        champion = random.pickRandomElementFromList(species.networks)
         champion.networkFitness = 10;
     })
 
     test("Test Constructor", () => {
         const species = new Species(1, true, properties);
-        expect(species.id).toBe(1)
+        expect(species.uID).toBe(1)
         expect(species.age).toBe(1)
-        expect(species.averageFitness).toBe(0)
+        expect(species.averageSharedFitness).toBe(0)
         expect(species.expectedOffspring).toBe(0)
         expect(species.isNovel).toBeTruthy()
         expect(species.ageOfLastImprovement).toBe(0)
         expect(species.currentBestFitness).toBe(0)
         expect(species.allTimeBestFitness).toBe(0)
-        expect(species.properties).toBe(properties)
-        expect(species.chromosomes.size()).toBe(0)
+        expect(species.hyperParameter).toBe(properties)
+        expect(species.networks.size()).toBe(0)
     })
 
     test("Test Getter and Setter", () => {
         species.age = 10;
-        species.averageFitness = 3;
+        species.averageSharedFitness = 3;
         species.expectedOffspring = 4;
         species.isNovel = true
         species.ageOfLastImprovement = 7;
@@ -105,27 +105,27 @@ describe("Species Test", () => {
         species.allTimeBestFitness = 6;
 
         expect(species.age).toBe(10)
-        expect(species.averageFitness).toBe(3)
+        expect(species.averageSharedFitness).toBe(3)
         expect(species.expectedOffspring).toBe(4)
         expect(species.isNovel).toBeTruthy()
         expect(species.ageOfLastImprovement).toBe(7)
         expect(species.currentBestFitness).toBe(5)
         expect(species.allTimeBestFitness).toBe(6)
-        expect(species.properties).toBeInstanceOf(NeuroevolutionProperties)
-        expect(species.chromosomes.get(0)).toBeInstanceOf(NetworkChromosome)
+        expect(species.hyperParameter).toBeInstanceOf(NeuroevolutionProperties)
+        expect(species.networks.get(0)).toBeInstanceOf(NetworkChromosome)
     })
 
     test("Test assignAdjustFitness()", () => {
-        species.assignAdjustFitness();
+        species.assignSharedFitness();
 
         expect(champion.networkFitness).toBe(10)
         expect(champion.sharedFitness).toBe(
-            champion.networkFitness * properties.ageSignificance / species.chromosomes.size())
+            champion.networkFitness * properties.ageSignificance / species.networks.size())
     })
 
     test("Test assignAdjustFitness() with negative fitness values", () => {
         champion.networkFitness = -1;
-        species.assignAdjustFitness();
+        species.assignSharedFitness();
 
         expect(champion.sharedFitness).toBeGreaterThan(0)
         expect(champion.sharedFitness).toBeLessThan(1)
@@ -134,35 +134,35 @@ describe("Species Test", () => {
     test("Test assignAdjustFitness() with stagnant species", () => {
         species.age = 10;
         species.ageOfLastImprovement = 6;
-        species.properties.penalizingAge = 5;
-        species.assignAdjustFitness();
+        species.hyperParameter.penalizingAge = 5;
+        species.assignSharedFitness();
 
         expect(champion.networkFitness).toBe(10)
         expect(champion.sharedFitness).toBe(
-            champion.networkFitness * 0.01 * properties.ageSignificance / species.chromosomes.size())
+            champion.networkFitness * 0.01 * properties.ageSignificance / species.networks.size())
     })
 
     test("Test markKillCandidates()", () => {
-        species.markKillCandidates();
+        species.markParents();
 
         const eliminateList = new List<NetworkChromosome>();
-        for (const c of species.chromosomes)
+        for (const c of species.networks)
             if (c.hasDeathMark)
                 eliminateList.add(c);
 
-        expect(species.chromosomes.get(0).networkFitness).toBe(10);
-        expect(species.chromosomes.get(0).isSpeciesChampion).toBe(true);
-        expect(species.chromosomes.get(0).hasDeathMark).toBe(false);
+        expect(species.networks.get(0).networkFitness).toBe(10);
+        expect(species.networks.get(0).isSpeciesChampion).toBe(true);
+        expect(species.networks.get(0).hasDeathMark).toBe(false);
         expect(species.allTimeBestFitness).toBe(10);
         expect(species.ageOfLastImprovement).toBe(species.age);
     })
 
     test("Calculate the number of Offspring with leftOver of 0 using NEAT", () => {
-        species.assignAdjustFitness();
+        species.assignSharedFitness();
 
         let totalOffsprings = 0;
-        const avgFitness = species.calculateAverageSpeciesFitness();
-        for (const c of species.chromosomes) {
+        const avgFitness = species.calculateAverageSharedFitness();
+        for (const c of species.networks) {
             c.expectedOffspring = c.networkFitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
         }
@@ -172,11 +172,11 @@ describe("Species Test", () => {
     })
 
     test("Calculate the number of Offspring with leftOver of 0.99 using NEAT", () => {
-        species.assignAdjustFitness();
+        species.assignSharedFitness();
 
         let totalOffsprings = 0;
-        const avgFitness = species.calculateAverageSpeciesFitness();
-        for (const c of species.chromosomes) {
+        const avgFitness = species.calculateAverageSharedFitness();
+        for (const c of species.networks) {
             c.expectedOffspring = c.networkFitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
         }
@@ -186,14 +186,14 @@ describe("Species Test", () => {
     })
 
     test("Calculate the number of Offspring with leftOver of 0 using avgSpeciesFitness", () => {
-        species.assignAdjustFitness();
+        species.assignSharedFitness();
         const leftOver = species.getNumberOffspringsAvg(0, 30, populationSize);
         expect(Math.floor(species.expectedOffspring)).toBeLessThan(50)
         expect(leftOver).toBeLessThan(1)
     })
 
     test("Calculate the number of Offspring with leftOver of 0.99 using avgSpeciesFitness", () => {
-        species.assignAdjustFitness();
+        species.assignSharedFitness();
         const leftOver = species.getNumberOffspringsAvg(0.99, 30, populationSize);
         expect(Math.floor(species.expectedOffspring)).toBeLessThan(50)
         expect(leftOver).toBeGreaterThan(0.98)
@@ -204,7 +204,7 @@ describe("Species Test", () => {
         const testChromosome = generator.get();
         species.addChromosome(testChromosome)
         const speciesSizeAdded = species.size();
-        species.removeChromosome(testChromosome);
+        species.removeNetwork(testChromosome);
         const speciesSizeRemoved = species.size();
 
         expect(speciesSizeAdded).toBe(speciesSizeBefore + 1);
@@ -267,8 +267,8 @@ describe("Species Test", () => {
     })
 
     test(" Test averageSpeciesFitness", () => {
-        species.assignAdjustFitness();
-        const avgFitness = species.calculateAverageSpeciesFitness();
+        species.assignSharedFitness();
+        const avgFitness = species.calculateAverageSharedFitness();
         expect(avgFitness).toBeLessThan(10)
         expect(avgFitness).toBeGreaterThan(0)
     })

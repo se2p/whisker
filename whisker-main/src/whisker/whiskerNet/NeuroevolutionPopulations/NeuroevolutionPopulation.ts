@@ -1,5 +1,4 @@
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {Species} from "./Species";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
 
@@ -81,7 +80,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
      * Transform this NeuroevolutionPopulation into a JSON representation.
      * @return Record containing this NeuroevolutionPopulation's attributes mapped to the corresponding values.
      */
-    public abstract toJSON(): Record<string, (number | Species<C>)>;
+    public abstract toJSON(): Record<string, unknown>;
 
     get networks(): C[] {
         return this._networks;

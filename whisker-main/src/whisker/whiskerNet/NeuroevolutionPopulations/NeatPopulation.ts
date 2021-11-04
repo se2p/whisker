@@ -60,7 +60,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         for (const chromosome of this.networks) {
             if (!chromosome.isParent) {
                 const specie = chromosome.species;
-                specie.removeChromosome(chromosome);
+                specie.removeNetwork(chromosome);
                 this.removeNetwork(chromosome);
             }
         }
@@ -68,7 +68,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // Now, let the reproduction start.
         const offspring: NeatChromosome[] = []
         for (const specie of this.species) {
-            offspring.push(...specie.breed(this, this.species));
+            offspring.push(...specie.evolve(this, this.species));
         }
 
         // Speciate the produced offspring
@@ -79,7 +79,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // Remove the parents from the population and the species. The new ones still exist within their species
         for (const chromosome of this.networks) {
             const specie = chromosome.species;
-            specie.removeChromosome(chromosome);
+            specie.removeNetwork(chromosome);
         }
         this.networks.splice(0);
 
@@ -87,7 +87,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // Furthermore, add the members of the surviving species to the population List
         const doomedSpecies: Species<NeatChromosome>[] = [];
         for (const specie of this._species) {
-            if (specie.chromosomes.size() === 0) {
+            if (specie.networks.size() === 0) {
                 doomedSpecies.push(specie);
             } else {
                 // Give the new species an age bonus!
@@ -95,7 +95,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                     specie.isNovel = false;
                 else
                     specie.age++;
-                for (const network of specie.chromosomes) {
+                for (const network of specie.networks) {
                     this.networks.push(network);
                 }
             }
@@ -143,7 +143,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
         // Calculate the shared fitness value for each chromosome in each Specie and mark parent candidates.
         for (const specie of this.species) {
-            specie.assignAdjustFitness();
+            specie.assignSharedFitness();
             specie.calculateAverageNetworkFitness();
         }
 
@@ -211,7 +211,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
             // Otherwise, allow only the first two most promising species to reproduce and mark the others dead.
             else {
-                this.species.sort((a, b) => b.averageNetworkFitness - a.averageNetworkFitness);
+                this.species.sort((a, b) => b.averageFitness - a.averageFitness);
                 for (let i = 0; i < this.species.size(); i++) {
                     const specie = this.species.get(i);
                     if (i <= 1) {
@@ -260,7 +260,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             let foundSpecies = false;
             for (const specie of this.species) {
                 // Get a representative of the specie and calculate the compatibility distance
-                const representative = specie.chromosomes.get(0);
+                const representative = specie.networks.get(0);
                 const compatDistance = this.compatibilityDistance(chromosome, representative);
 
                 // If they are compatible enough add the chromosome to the species
@@ -288,8 +288,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * @param chromosome1 the first NetworkChromosome
      * @param chromosome2 the second NetworkChromosome
      */
-    protected compatibilityDistance(chromosome1: NetworkChromosome, chromosome2: NetworkChromosome): number {
-
+    public compatibilityDistance(chromosome1: NetworkChromosome, chromosome2: NetworkChromosome): number {
         // This should never happen!
         if (chromosome1 === undefined || chromosome2 === undefined) {
             console.error("Undefined Chromosome in compatDistance Calculation")
