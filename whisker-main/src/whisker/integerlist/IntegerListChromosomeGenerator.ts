@@ -41,9 +41,9 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
     constructor(properties: SearchAlgorithmProperties<IntegerListChromosome>,
                 mutationOp: Mutation<IntegerListChromosome>,
                 crossoverOp: Crossover<IntegerListChromosome>) {
-        this._min = properties.getMinIntRange();
-        this._max = properties.getMaxIntRange();
-        this._length = properties.getChromosomeLength();
+        this._min = properties.integerRange.min;
+        this._max = properties.integerRange.max;
+        this._length = properties.chromosomeLength;
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
     }

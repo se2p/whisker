@@ -47,43 +47,46 @@ describe('RandomSearch', () => {
 
     test('Trivial bitstring with OneMax', async () => {
 
-        const n = 2;
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(1);
-        properties.setChromosomeLength(n);
-        const fitnessFunction = new OneMaxFitnessFunction(n);
-        properties.setStoppingCondition(new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition()));
+        const properties: SearchAlgorithmProperties<any> = {
+            populationSize: 1,
+            chromosomeLength: 2,
+            stoppingCondition: new OneOfStoppingCondition(
+                new FixedIterationsStoppingCondition(1000),
+                new OptimalSolutionStoppingCondition()),
+        };
+
+        const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM)
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(),
                 new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, new List());
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, properties.chromosomeLength, new List());
 
         const randomSearch = builder.buildSearchAlgorithm();
         const solutions = await randomSearch.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(await firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(await firstSolution.getFitness(fitnessFunction)).toBe(properties.chromosomeLength);
     });
 
     test('Setter', () => {
-        const n = 2;
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(1);
-        properties.setChromosomeLength(n);
-        const fitnessFunction = new OneMaxFitnessFunction(n);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000),
             new OptimalSolutionStoppingCondition()
         );
+        const properties = {
+            populationSize: 1,
+            chromosomeLength: 2,
+            stoppingCondition
+        };
+
+        const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
+
         const randomSearch = new RandomSearch();
 
-        properties.setStoppingCondition(stoppingCondition);
         randomSearch.setProperties(properties);
         expect(randomSearch["_properties"]).toBe(properties);
         expect(randomSearch["_stoppingCondition"]).toBe(stoppingCondition);

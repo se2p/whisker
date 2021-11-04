@@ -67,17 +67,16 @@ class ConfigException implements Error {
     constructor(message: string) {
         this.name = "ConfigException";
         this.message = message;
-
     }
 }
 
 export class WhiskerSearchConfiguration {
 
-    private readonly dict: Record<string, any>;
+    private readonly _config: Record<string, any>;
     private readonly _searchAlgorithmProperties: (SearchAlgorithmProperties<any> | NeuroevolutionProperties<any>)
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
-        this.dict = Preconditions.checkNotUndefined(dict);
+        this._config = Preconditions.checkNotUndefined(dict);
         if (this.getAlgorithm() === SearchAlgorithmType.NEAT) {
             this._searchAlgorithmProperties = this.setNeuroevolutionProperties();
         } else {
@@ -86,85 +85,98 @@ export class WhiskerSearchConfiguration {
     }
 
     private setSearchAlgorithmProperties(): SearchAlgorithmProperties<any> {
-        const properties = new SearchAlgorithmProperties();
+        // Properties all search algorithms have in common.
+        const commonProps = {
+            testGenerator: this._config["testGenerator"],
+            stoppingCondition: this._getStoppingCondition(this._config["stoppingCondition"]),
+        };
 
-        // Properties all search algorithms have in common
-        properties.setTestGenerator(this.dict['testGenerator'] as string);
-        properties.setStoppingCondition(this._getStoppingCondition(this.dict['stoppingCondition']));
-
-        // Random does not need additional properties
-        if (properties.getTestGenerator() === 'random') {
-            return properties;
+        // Random does not need additional properties.
+        if (commonProps.testGenerator === "random") {
+            return commonProps;
         }
 
-        switch (this.getAlgorithm()) {
-            case SearchAlgorithmType.MIO:
-                properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
-                properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
-                properties.setMaxMutationCounter(this.dict['mutation']['maxMutationCountStart'] as number,
-                    this.dict['mutation']['maxMutationCountFocusedPhase'] as number);
-                properties.setSelectionProbabilities(this.dict['selection']['randomSelectionProbabilityStart'] as number,
-                    this.dict['selection']['randomSelectionProbabilityFocusedPhase'] as number);
-                properties.setStartOfFocusedPhase(this.dict['startOfFocusedPhase'] as number);
-                properties.setMaxArchiveSizes(this.dict['archive']['maxArchiveSizeStart'] as number,
-                    this.dict['archive']['maxArchiveSizeFocusedPhase'] as number);
-                break;
-            case SearchAlgorithmType.ONE_PLUS_ONE:
-                properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
-                properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
-                properties.setMutationProbability(this.dict['mutation']['probability'] as number);
-                break;
-            case SearchAlgorithmType.SIMPLEGA:
-            case SearchAlgorithmType.MOSA:
-            default:
-                properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
-                properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
-                properties.setPopulationSize(this.dict['populationSize'] as number);
-                properties.setCrossoverProbability(this.dict['crossover']['probability'] as number);
-                properties.setMutationProbability(this.dict['mutation']['probability'] as number);
-        }
-        return properties;
+        // Properties all other algorithms have in common.
+        const additionalProps = {
+            chromosomeLength: this._config["chromosome"]["maxLength"],
+            minRange: this._config["integerRange"]["min"],
+            maxRange: this._config["integerRange"]["max"],
+        };
+
+        // Properties specific to every algorithm.
+        const specificProps = (() => {
+            switch (this.getAlgorithm()) {
+                case SearchAlgorithmType.MIO:
+                    return {
+                        maxMutationCountStart: this._config["mutation"]["maxMutationCountStart"],
+                        maxMutationCountFocusedPhase: this._config["mutation"]["maxMutationCountFocusedPhase"],
+                        selectionProbabilityStart: this._config["selection"]["randomSelectionProbabilityStart"],
+                        selectionProbabilityFocusedPhase: this._config["selection"]["randomSelectionProbabilityFocusedPhase"],
+                        startOfFocusedPhase: this._config["startOfFocusedPhase"],
+                        maxArchiveSizeStart: this._config["archive"]["maxArchiveSizeStart"],
+                        maxArchiveSizeFocusedPhase: this._config["archive"]["maxArchiveSizeFocusedPhase"],
+                    };
+                case SearchAlgorithmType.ONE_PLUS_ONE:
+                    return {
+                        mutationProbability: this._config["mutation"]["probability"],
+                    };
+                case SearchAlgorithmType.SIMPLEGA:
+                case SearchAlgorithmType.MOSA:
+                default:
+                    return {
+                        populationSize: this._config["populationSize"],
+                        crossoverProbability: this._config["crossover"]["probability"],
+                        mutationProbability: this._config["mutation"]["probability"],
+                    };
+            }
+        })();
+
+        return {
+            ...commonProps,
+            ...additionalProps,
+            ...specificProps,
+        };
     }
 
     get searchAlgorithmProperties(): SearchAlgorithmProperties<any> {
-        return this._searchAlgorithmProperties as SearchAlgorithmProperties<any>;
+        return this._searchAlgorithmProperties;
     }
 
     public setNeuroevolutionProperties(): NeuroevolutionProperties<any> {
-        const populationSize = this.dict['populationSize'] as number;
+        const populationSize = this._config['populationSize'] as number;
         const properties = new NeuroevolutionProperties(populationSize);
 
-        const parentsPerSpecies = this.dict['parentsPerSpecies'] as number;
-        const numberOfSpecies = this.dict['numberOfSpecies'] as number;
-        const penalizingAge = this.dict['penalizingAge'] as number;
-        const ageSignificance = this.dict['ageSignificance'] as number;
-        const inputRate = this.dict['inputRate'] as number
+        const parentsPerSpecies = this._config['parentsPerSpecies'] as number;
+        const numberOfSpecies = this._config['numberOfSpecies'] as number;
+        const penalizingAge = this._config['penalizingAge'] as number;
+        const ageSignificance = this._config['ageSignificance'] as number;
+        const inputRate = this._config['inputRate'] as number
 
-        const crossoverWithoutMutation = this.dict['crossover']['crossoverWithoutMutation'] as number
-        const interspeciesMating = this.dict['crossover']['interspeciesRate'] as number
+        const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number
+        const interspeciesMating = this._config['crossover']['interspeciesRate'] as number
 
-        const mutationWithoutCrossover = this.dict['mutation']['mutationWithoutCrossover'] as number
-        const mutationAddConnection = this.dict['mutation']['mutationAddConnection'] as number
-        const recurrentConnection = this.dict['mutation']['recurrentConnection'] as number
-        const addConnectionTries = this.dict['mutation']['addConnectionTries'] as number
-        const populationChampionNumberOffspring = this.dict['mutation']['populationChampionNumberOffspring'] as number;
-        const populationChampionNumberClones = this.dict['mutation']['populationChampionNumberClones'] as number;
-        const populationChampionConnectionMutation = this.dict['mutation']['populationChampionConnectionMutation'] as number;
-        const mutationAddNode = this.dict['mutation']['mutationAddNode'] as number;
-        const mutateWeights = this.dict['mutation']['mutateWeights'] as number;
-        const perturbationPower = this.dict['mutation']['perturbationPower'] as number;
-        const mutateToggleEnableConnection = this.dict['mutation']['mutateToggleEnableConnection'] as number;
-        const toggleEnableConnectionTimes = this.dict['mutation']['toggleEnableConnectionTimes'] as number;
-        const mutateEnableConnection = this.dict['mutation']['mutateEnableConnection'] as number;
+        const mutationWithoutCrossover = this._config['mutation']['mutationWithoutCrossover'] as number
+        const mutationAddConnection = this._config['mutation']['mutationAddConnection'] as number
+        const recurrentConnection = this._config['mutation']['recurrentConnection'] as number
+        const addConnectionTries = this._config['mutation']['addConnectionTries'] as number
+        const populationChampionNumberOffspring = this._config['mutation']['populationChampionNumberOffspring'] as number;
+        const populationChampionNumberClones = this._config['mutation']['populationChampionNumberClones'] as number;
+        const populationChampionConnectionMutation = this._config['mutation']['populationChampionConnectionMutation'] as number;
+        const mutationAddNode = this._config['mutation']['mutationAddNode'] as number;
+        const mutateWeights = this._config['mutation']['mutateWeights'] as number;
+        const perturbationPower = this._config['mutation']['perturbationPower'] as number;
+        const mutateToggleEnableConnection = this._config['mutation']['mutateToggleEnableConnection'] as number;
+        const toggleEnableConnectionTimes = this._config['mutation']['toggleEnableConnectionTimes'] as number;
+        const mutateEnableConnection = this._config['mutation']['mutateEnableConnection'] as number;
 
-        const distanceThreshold = this.dict['compatibility']['distanceThreshold'] as number
-        const disjointCoefficient = this.dict['compatibility']['disjointCoefficient'] as number
-        const excessCoefficient = this.dict['compatibility']['excessCoefficient'] as number;
-        const weightCoefficient = this.dict['compatibility']['weightCoefficient'] as number;
+        const distanceThreshold = this._config['compatibility']['distanceThreshold'] as number
+        const disjointCoefficient = this._config['compatibility']['disjointCoefficient'] as number
+        const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
+        const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
-        const timeout = this.dict['networkFitness']['timeout']
+        const timeout = this._config['networkFitness']['timeout']
 
-        properties.populationType = this.dict[`populationType`] as string;
+        properties.populationType = this._config[`populationType`] as string;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
         properties.penalizingAge = penalizingAge;
@@ -195,8 +207,8 @@ export class WhiskerSearchConfiguration {
 
         properties.timeout = timeout;
 
-        properties.stoppingCondition = this._getStoppingCondition(this.dict['stoppingCondition']);
-        properties.networkFitness = this.getNetworkFitnessFunction(this.dict['networkFitness'])
+        properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
+        properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness'])
         return properties;
     }
 
@@ -217,54 +229,50 @@ export class WhiskerSearchConfiguration {
         } else if (stoppingCond == 'evaluations') {
             return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
         } else if (stoppingCond == "combined") {
-            const conditions = stoppingCondition["conditions"];
-            const l: StoppingCondition<any>[] = [];
-            for (const c of conditions) {
-                l.push(this._getStoppingCondition(c));
-            }
-            return new OneOfStoppingCondition(...l)
+            const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
+            return new OneOfStoppingCondition(...conditions)
         }
 
         throw new ConfigException("No stopping condition given");
     }
 
     private _getMutationOperator(): Mutation<any> {
-        switch (this.dict['mutation']['operator']) {
+        switch (this._config['mutation']['operator']) {
             case 'bitFlip':
                 return new BitflipMutation();
             case 'variableLength':
-                return new VariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
+                return new VariableLengthMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
             case 'variableLengthConstrained':
-                return new VariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
+                return new VariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLength':
-                return new BiasedVariableLengthMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
+                return new BiasedVariableLengthMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLengthConstrained':
-                return new BiasedVariableLengthConstrainedChromosomeMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
+                return new BiasedVariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
             case 'eventBiased':
-                return new EventBiasedMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max'],
-                    this.dict['chromosome']['maxLength'], this.dict['mutation']['gaussianMutationPower']);
+                return new EventBiasedMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
-                return new NeatMutation(this.dict['mutation'])
+                return new NeatMutation(this._config['mutation'])
             case 'integerList':
             default:
-                return new IntegerListMutation(this.dict['integerRange']['min'], this.dict['integerRange']['max']);
+                return new IntegerListMutation(this._config['integerRange']['min'], this._config['integerRange']['max']);
         }
     }
 
     private _getCrossoverOperator(): Crossover<any> {
         // Some algorithms don't use crossover operators
-        if (!this.dict['crossover']) {
+        if (!this._config['crossover']) {
             return undefined;
         }
-        switch (this.dict['crossover']['operator']) {
+        switch (this._config['crossover']['operator']) {
             case 'singlePointRelative':
                 return new SinglePointRelativeCrossover();
             case 'neatCrossover':
-                return new NeatCrossover(this.dict['crossover']);
+                return new NeatCrossover(this._config['crossover']);
             case 'singlePoint':
             default:
                 return new SinglePointCrossover();
@@ -273,12 +281,12 @@ export class WhiskerSearchConfiguration {
 
     public getSelectionOperator(): Selection<any> {
         // Some algorithms don't use a selection operator
-        if (!this.dict['selection']) {
+        if (!this._config['selection']) {
             return undefined;
         }
-        switch (this.dict['selection']['operator']) {
+        switch (this._config['selection']['operator']) {
             case 'tournament':
-                return new TournamentSelection(this.dict['selection']['tournamentSize']) as unknown as Selection<any>;
+                return new TournamentSelection(this._config['selection']['tournamentSize']) as unknown as Selection<any>;
             case 'rank':
             default:
                 return new RankSelection();
@@ -287,7 +295,7 @@ export class WhiskerSearchConfiguration {
 
     public getLocalSearchOperators(): List<LocalSearch<any>> {
         const operators = new List<LocalSearch<any>>();
-        const localSearchOperators = this.dict['localSearch'];
+        const localSearchOperators = this._config['localSearch'];
 
         // If there are no local search operators defined return an empty list.
         if (!localSearchOperators) {
@@ -313,7 +321,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getEventExtractor(): ScratchEventExtractor {
-        switch (this.dict['extractor']) {
+        switch (this._config['extractor']) {
             case 'naive':
                 return new NaiveScratchEventExtractor(Container.vm);
             case 'wait':
@@ -329,9 +337,9 @@ export class WhiskerSearchConfiguration {
     }
 
     public getEventSelector(): EventSelector {
-        switch (this.dict['eventSelector']) {
+        switch (this._config['eventSelector']) {
             case 'clustering': {
-                const {integerRange} = this.dict;
+                const { integerRange } = this._config;
                 return new ClusteringEventSelector(integerRange);
             }
             case 'interleaving':
@@ -341,7 +349,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getChromosomeGenerator(): ChromosomeGenerator<any> {
-        switch (this.dict['chromosome']['type']) {
+        switch (this._config['chromosome']['type']) {
             case 'bitString':
                 return new BitstringChromosomeGenerator(this.searchAlgorithmProperties,
                     this._getMutationOperator(),
@@ -354,17 +362,17 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthTestChromosomeGenerator(this.searchAlgorithmProperties,
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
-                    this.dict['chromosome']['minSampleLength'],
-                    this.dict['chromosome']['maxSampleLength']);
+                    this._config['chromosome']['minSampleLength'],
+                    this._config['chromosome']['maxSampleLength']);
             case 'sparseNetwork': {
                 const eventExtractor = this.getEventExtractor();
-                return new NetworkChromosomeGeneratorSparse(this.dict['mutation'], this.dict['crossover'],
+                return new NetworkChromosomeGeneratorSparse(this._config['mutation'], this._config['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm),
-                    this.dict['inputRate']);
+                    this._config['inputRate']);
             }
             case 'fullyConnectedNetwork': {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
-                return new NetworkChromosomeGeneratorFullyConnected(this.dict['mutation'], this.dict['crossover'],
+                return new NetworkChromosomeGeneratorFullyConnected(this._config['mutation'], this._config['crossover'],
                     InputExtraction.extractSpriteInfo(Container.vm), eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
@@ -376,7 +384,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getFitnessFunctionType(): FitnessFunctionType {
-        const fitnessFunctionDef = this.dict['fitnessFunction'];
+        const fitnessFunctionDef = this._config['fitnessFunction'];
         switch (fitnessFunctionDef["type"]) {
             case 'statement':
                 return FitnessFunctionType.STATEMENT;
@@ -401,10 +409,7 @@ export class WhiskerSearchConfiguration {
                 fitnessFunction['travelWeight']);
         else if (networkFitnessDef === 'combined') {
             const fitnessFunctions = fitnessFunction["functions"];
-            const comb: NetworkFitnessFunction<NetworkChromosome>[] = [];
-            for (const functions of fitnessFunctions) {
-                comb.push(this.getNetworkFitnessFunction(functions));
-            }
+            const comb = fitnessFunctions.map((ff) => this.getNetworkFitnessFunction(ff));
             return new CombinedNetworkFitness(...comb)
         }
         throw new ConfigException("No Network Fitness specified in the config file!")
@@ -412,7 +417,7 @@ export class WhiskerSearchConfiguration {
 
 
     public getFitnessFunctionTargets(): List<string> {
-        const fitnessFunctionDef = this.dict['fitnessFunction'];
+        const fitnessFunctionDef = this._config['fitnessFunction'];
         if (fitnessFunctionDef['targets']) {
             const targets = new List<string>();
             for (const target of fitnessFunctionDef['targets']) {
@@ -425,10 +430,10 @@ export class WhiskerSearchConfiguration {
     }
 
     public getAlgorithm(): SearchAlgorithmType {
-        if (this.dict['testGenerator'] === 'random') {
+        if (this._config['testGenerator'] === 'random') {
             return SearchAlgorithmType.RANDOM;
         }
-        switch (this.dict['algorithm']) {
+        switch (this._config['algorithm']) {
             case 'onePlusOne':
                 return SearchAlgorithmType.ONE_PLUS_ONE;
             case 'simpleGA':
@@ -440,67 +445,67 @@ export class WhiskerSearchConfiguration {
             case'neat':
                 return SearchAlgorithmType.NEAT;
             default:
-                throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this.dict['algorithm']);
+                throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this._config['algorithm']);
         }
     }
 
     public getTestGenerator(): TestGenerator {
-        if (this.dict["testGenerator"] == "random") {
-            return new RandomTestGenerator(this, this.dict['minEventSize'], this.dict['maxEventSize']);
-        } else if (this.dict['testGenerator'] == 'iterative') {
+        if (this._config["testGenerator"] == "random") {
+            return new RandomTestGenerator(this, this._config['minEventSize'], this._config['maxEventSize']);
+        } else if (this._config['testGenerator'] == 'iterative') {
             return new IterativeSearchBasedTestGenerator(this);
-        } else if (this.dict['testGenerator'] == 'manyObjective') {
+        } else if (this._config['testGenerator'] == 'manyObjective') {
             return new ManyObjectiveTestGenerator(this);
-        } else if (this.dict['testGenerator'] == 'neuroevolution') {
+        } else if (this._config['testGenerator'] == 'neuroevolution') {
             return new NeuroevolutionTestGenerator(this);
         }
 
-        throw new ConfigException("Unknown Algorithm " + this.dict["testGenerator"]);
+        throw new ConfigException("Unknown Algorithm " + this._config["testGenerator"]);
     }
 
     public getWaitStepUpperBound(): number {
-        if (this.dict['durations']['waitStepUpperBound']) {
-            return this.dict['durations']['waitStepUpperBound'];
+        if (this._config['durations']['waitStepUpperBound']) {
+            return this._config['durations']['waitStepUpperBound'];
         } else {
             return 100;
         }
     }
 
     public getPressDurationUpperBound(): number {
-        if (this.dict['durations']['pressDurationUpperBound']) {
-            return this.dict['durations']['pressDurationUpperBound'];
+        if (this._config['durations']['pressDurationUpperBound']) {
+            return this._config['durations']['pressDurationUpperBound'];
         } else {
             return 10;
         }
     }
 
     public getSoundDuration(): number {
-        if (this.dict['durations']['soundDuration']) {
-            return this.dict['durations']['soundDuration'];
+        if (this._config['durations']['soundDuration']) {
+            return this._config['durations']['soundDuration'];
         } else {
             return 10;
         }
     }
 
     public getClickDuration(): number {
-        if (this.dict['durations']['clickDuration']) {
-            return this.dict['durations']['clickDuration'];
+        if (this._config['durations']['clickDuration']) {
+            return this._config['durations']['clickDuration'];
         } else {
             return 10;
         }
     }
 
     public getRandomSeed(): number {
-        if ("seed" in this.dict) {
-            return this.dict["seed"];
+        if ("seed" in this._config) {
+            return this._config["seed"];
         } else {
             return undefined;
         }
     }
 
     public getLoggingFunction(): typeof console.log {
-        if (this.dict["debugLogging"] == true) {
-            return (...data: any[]) => console.log('DEBUG:', ...data);
+        if (this._config["debugLogging"] == true) {
+            return (...data) => console.log('DEBUG:', ...data);
         } else {
             return () => { /* no-op */ };
         }

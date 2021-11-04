@@ -37,7 +37,7 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
     constructor(properties: SearchAlgorithmProperties<BitstringChromosome>,
                 mutationOp: Mutation<BitstringChromosome>,
                 crossoverOp: Crossover<BitstringChromosome>) {
-        this._length = properties.getChromosomeLength();
+        this._length = properties.chromosomeLength;
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
     }

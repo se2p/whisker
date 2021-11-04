@@ -64,12 +64,12 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     private generateInitialPopulation(): List<C> {
         const population = new List<C>();
-        for (let i = 0; i < this._properties.getPopulationSize(); i++) {
+        for (let i = 0; i < this._properties.populationSize; i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
             }
@@ -153,7 +153,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(this._bestFitness)) {
                 StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                    (this._iterations + 1) * this._properties.getPopulationSize();
+                    (this._iterations + 1) * this._properties.populationSize;
                 StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
             }
             this._bestLength = candidateLength;
@@ -186,15 +186,15 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
             let child1 = parent1;
             let child2 = parent2;
-            if (Randomness.getInstance().nextDouble() < this._properties.getCrossoverProbability()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.crossoverProbability) {
                 const crossover = parent1.crossover(parent2);
                 child1 = crossover.getFirst();
                 child2 = crossover.getSecond();
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbability()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.mutationProbability) {
                 child1 = child1.mutate();
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbability()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.mutationProbability) {
                 child2 = child2.mutate();
             }
             offspringPopulation.add(child1);

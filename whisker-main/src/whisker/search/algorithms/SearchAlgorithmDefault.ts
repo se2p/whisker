@@ -193,7 +193,7 @@ export abstract class SearchAlgorithmDefault<C extends Chromosome> implements Se
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                (this._iterations + 1) * this._properties.getPopulationSize();
+                (this._iterations + 1) * this._properties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }

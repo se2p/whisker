@@ -70,7 +70,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _fitnessFunction: FitnessFunction<C>;
 
     /**
-     * The map for the heuristic function of chromsomes.
+     * The map for the heuristic function of chromosomes.
      */
     private _heuristicFunctions: Map<number, (number) => number>;
 
@@ -109,37 +109,33 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @private
      */
     private _setParameterForTesting(): void {
-        const chromosomeLength = 10;
-        const iterations = 1000;
-        const populationSize = 50;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
-        const startOfFocusedPhase = 0.5;
-        const randomSelectionProbabilityStart = 0.5;
-        const randomSelectionProbabilityFocusedPhase = 0;
-        const maxArchiveSizeStart = 10;
-        const maxArchiveSizeFocusedPhase = 1;
-        const maxMutationCountStart = 0;
-        const maxMutationCountFocusedPhase = 10;
-        const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
-
-        this._properties = new SearchAlgorithmProperties();
-        this._properties.setPopulationSize(populationSize);
-        this._properties.setChromosomeLength(chromosomeLength);
-        this._properties.setCrossoverProbability(crossoverProbability);
-        this._properties.setMutationProbability(mutationProbability);
-        this._properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
-        this._properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
-        this._properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
-        this._properties.setStartOfFocusedPhase(startOfFocusedPhase);
-        this._properties.setStoppingCondition(stoppingCondition);
+        this._properties = {
+            populationSize: 50,
+            chromosomeLength: 10,
+            crossoverProbability: 1,
+            mutationProbability: 1,
+            selectionProbability: {
+                start: 0.5,
+                focusedPhase: 0,
+            },
+            maxArchiveSize: {
+                start: 10,
+                focusedPhase: 1,
+            },
+            maxMutationCount: {
+                start: 0,
+                focusedPhase: 10,
+            },
+            startOfFocusedPhase: 0.5,
+            stoppingCondition: new FixedIterationsStoppingCondition(1000),
+        };
 
         this._chromosomeGenerator = new BitstringChromosomeGenerator(
             this._properties as unknown as SearchAlgorithmProperties<BitstringChromosome>,
             new BitflipMutation(),
             new SinglePointCrossover()) as unknown as ChromosomeGenerator<C>;
 
-        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
+        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, this._properties.chromosomeLength, new List());
 
         this._selectionOperator = new RankSelection();
     }

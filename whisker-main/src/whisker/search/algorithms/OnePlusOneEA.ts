@@ -48,7 +48,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     /**
@@ -101,7 +101,7 @@ ${bestIndividual.toString()}`);
      * @returns boolean defining whether OnePlusOneEA has been called by the IterativeSearchBasedTestGenerator
      */
     private isIterativeSearch(): boolean {
-        return this._properties.getTestGenerator() === 'iterative';
+        return this._properties.testGenerator === 'iterative';
     }
 
     /**

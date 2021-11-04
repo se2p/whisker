@@ -19,7 +19,6 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {MOSA} from "../../../../src/whisker/search/algorithms/MOSA";
@@ -58,13 +57,16 @@ describe('MOSA', () => {
         Container.debugLog = () => { /* suppress output */ };
 
         const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
+        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations),
+                new OptimalSolutionStoppingCondition());
 
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(populationSize);
-        properties.setChromosomeLength(chromosomeLength);
-        properties.setMutationProbability(mutationProbability);
-        properties.setCrossoverProbability(crossoverProbability);
-        properties.setStoppingCondition(new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition()));
+        const properties = {
+            populationSize,
+            chromosomeLength,
+            mutationProbability,
+            crossoverProbability,
+            stoppingCondition,
+        };
 
         builder
             .addProperties(properties)
@@ -110,13 +112,14 @@ describe('MOSA', () => {
 
     test('Setter', () => {
 
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(populationSize);
-        properties.setChromosomeLength(chromosomeLength);
-        properties.setCrossoverProbability(crossoverProbability);
-        properties.setMutationProbability(mutationProbability);
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations), new OptimalSolutionStoppingCondition());
-        properties.setStoppingCondition(stoppingCondition);
+        const properties = {
+            populationSize,
+            chromosomeLength,
+            crossoverProbability,
+            mutationProbability,
+            stoppingCondition,
+        };
 
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         for (let i = 0; i < chromosomeLength; i++) {

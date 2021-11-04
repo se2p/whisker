@@ -63,7 +63,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
@@ -96,7 +96,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private generateInitialPopulation(): List<C> {
         const population = new List<C>();
-        for (let i = 0; i < this._properties.getPopulationSize(); i++) {
+        for (let i = 0; i < this._properties.populationSize; i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
             }
@@ -140,10 +140,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             parentPopulation.clear();
             for (const front of fronts) {
                 this.subVectorDominanceSorting(front);
-                if (parentPopulation.size() + front.size() <= this._properties.getPopulationSize()) {
+                if (parentPopulation.size() + front.size() <= this._properties.populationSize) {
                     parentPopulation.addList(front);
                 } else {
-                    parentPopulation.addList(front.subList(0, (this._properties.getPopulationSize() - parentPopulation.size())));
+                    parentPopulation.addList(front.subList(0, (this._properties.populationSize - parentPopulation.size())));
                     break;
                 }
             }
@@ -201,15 +201,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
             let child1: C;
             let child2: C;
-            if (this._random.nextDouble() < this._properties.getCrossoverProbability()) {
+            if (this._random.nextDouble() < this._properties.crossoverProbability) {
                 const crossover = parent1.crossover(parent2);
                 child1 = crossover.getFirst();
                 child2 = crossover.getSecond();
             }
-            if (this._random.nextDouble() < this._properties.getMutationProbability()) {
+            if (this._random.nextDouble() < this._properties.mutationProbability) {
                 child1 = parent1.mutate();
             }
-            if (this._random.nextDouble() < this._properties.getMutationProbability()) {
+            if (this._random.nextDouble() < this._properties.mutationProbability) {
                 child2 = parent2.mutate();
             }
 
@@ -277,7 +277,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         if (bestFront.size() > 0) {
             fronts.add(bestFront);
         }
-        if (bestFront.size() > this._properties.getPopulationSize()) {
+        if (bestFront.size() > this._properties.populationSize) {
             fronts.add(chromosomesForNonDominatedSorting);
         } else {
             fronts.addList(this.fastNonDominatedSorting(chromosomesForNonDominatedSorting));
@@ -415,7 +415,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                (this._iterations + 1) * this._properties.getPopulationSize();
+                (this._iterations + 1) * this._properties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }

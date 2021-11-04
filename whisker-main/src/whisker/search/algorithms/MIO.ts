@@ -51,7 +51,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Maps uncovered Statements to the chromosomes closest to covering them with respect to the given fitnessFunction.
      */
-    private _archiveUncovered: Map<number, List<ChromosomeHeuristicTuple<C>>>;
+    private _archiveUncovered: Map<number, List<Heuristic<C>>>;
 
     /**
      * Contains all independent FitnessFunctions. These include the last statements inside branches and the last
@@ -124,7 +124,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
         this.extractRandomSelectionProbabilities();
         this.extractArchiveSizes();
         this.extractMutationCounter();
@@ -134,24 +134,24 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * Extracts the probability for sampling a random chromosome out of the set properties.
      */
     private extractRandomSelectionProbabilities(): void {
-        this._randomSelectionProbabilityStart = this._properties.getSelectionProbabilityStart();
-        this._randomSelectionProbabilityFocusedPhase = this._properties.getSelectionProbabilityFocusedPhase();
+        this._randomSelectionProbabilityStart = this._properties.selectionProbability.start;
+        this._randomSelectionProbabilityFocusedPhase = this._properties.selectionProbability.focusedPhase;
     }
 
     /**
      * Extracts the maximum number of chromosomes stored for a fitness function out of the set properties.
      */
     private extractArchiveSizes(): void {
-        this._maxArchiveSizeStart = this._properties.getMaxArchiveSizeStart();
-        this._maxArchiveSizeFocusedPhase = this._properties.getMaxArchiveSizeFocusedPhase();
+        this._maxArchiveSizeStart = this._properties.maxArchiveSize.start;
+        this._maxArchiveSizeFocusedPhase = this._properties.maxArchiveSize.focusedPhase;
     }
 
     /**
      * Extracts the number of mutations on the same chromosome out of the set properties.
      */
     private extractMutationCounter(): void {
-        this._maxMutationCountStart = this._properties.getMaxMutationCountStart();
-        this._maxMutationCountFocusedPhase = this._properties.getMaxMutationCountFocusedPhase();
+        this._maxMutationCountStart = this._properties.maxMutationCount.start;
+        this._maxMutationCountFocusedPhase = this._properties.maxMutationCount.focusedPhase;
     }
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
@@ -185,14 +185,13 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      */
     async findSolution(): Promise<Map<number, C>> {
         this.setStartValues();
-        let chromosome: C;
         let mutationCounter = 0;
         while (!(this._stoppingCondition.isFinished(this))) {
             // If we have no chromosomes saved in our archives so far or if randomness tells us to do so
             // we sample a new chromosome randomly.
             if ((this._archiveUncovered.size === 0 && this._archiveCovered.size === 0) || this._maxMutationCount === 0
                 || this._random.nextDouble() < this._randomSelectionProbability) {
-                chromosome = this._chromosomeGenerator.get();
+                const chromosome = this._chromosomeGenerator.get();
                 await chromosome.evaluate();
                 this.updateArchive(chromosome);
                 // By chance apply LocalSearch to the randomly generated chromosome.
@@ -205,10 +204,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
-                let archiveTuples: List<ChromosomeHeuristicTuple<C>>
+                let chromosome: C;
                 if (anyUncovered) {
-                    archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
-                    chromosome = this._random.pickRandomElementFromList(archiveTuples).getChromosome();
+                    const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
+                    chromosome = this._random.pickRandomElementFromList(archiveTuples).chromosome;
                 } else {
                     chromosome = this._archiveCovered.get(fitnessFunctionKey);
                 }
@@ -265,7 +264,7 @@ open independent goals: ${this._archiveUncovered.size}`);
         this._startTime = Date.now();
         this._bestIndividuals = new List<C>();
         this._archiveCovered = new Map<number, C>();
-        this._archiveUncovered = new Map<number, List<ChromosomeHeuristicTuple<C>>>();
+        this._archiveUncovered = new Map<number, List<Heuristic<C>>>();
         this._samplingCounter = new Map<number, number>();
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             this._samplingCounter.set(fitnessFunctionKey, 0);
@@ -285,7 +284,7 @@ open independent goals: ${this._archiveUncovered.size}`);
     private getIndependentStatements(): Map<number, FitnessFunction<C>> {
         const fitnessFunctions = new List<StatementFitnessFunction>([...this._fitnessFunctions.values()]);
         // We can only extract independent block statements if we indeed deal with scratch blocks.
-        if(fitnessFunctions.get(0) instanceof StatementFitnessFunction) {
+        if (fitnessFunctions.get(0) instanceof StatementFitnessFunction) {
             const mergeNodeStatements = StatementFitnessFunction.getMergeNodeMap(fitnessFunctions);
             let independentFitnessFunctions = new List<StatementFitnessFunction>();
             [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.addList(statementList));
@@ -297,8 +296,7 @@ open independent goals: ${this._archiveUncovered.size}`);
                 }
             })
             return independentFitnessFunctionMap;
-        }
-        else
+        } else
             return this._fitnessFunctions;
     }
 
@@ -352,14 +350,14 @@ open independent goals: ${this._archiveUncovered.size}`);
         for (const fitnessFunctionKey of this._independentFitnessFunctions.keys()) {
             const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
             if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
-                let archiveTuples: List<ChromosomeHeuristicTuple<C>>;
+                let archiveTuples: List<Heuristic<C>>;
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {
                     archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
                 } else {
-                    archiveTuples = new List<ChromosomeHeuristicTuple<C>>();
+                    archiveTuples = new List<Heuristic<C>>();
                 }
-                const newTuple = new ChromosomeHeuristicTuple<C>(chromosome, heuristicValue);
-                newTuple.getChromosome().targetFitness = this._fitnessFunctions.get(fitnessFunctionKey);
+                const newTuple = { chromosome, heuristicValue };
+                newTuple.chromosome.targetFitness = this._fitnessFunctions.get(fitnessFunctionKey);
                 // Do not add duplicates in any population!
                 if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
                     continue;
@@ -368,8 +366,8 @@ open independent goals: ${this._archiveUncovered.size}`);
                     archiveTuples.add(newTuple);
                 } else {
                     const worstArchiveTuple = this.getWorstChromosomeHeuristicTuple(archiveTuples);
-                    const worstHeuristicValue = worstArchiveTuple.getHeuristicValue();
-                    const worstChromosome = worstArchiveTuple.getChromosome();
+                    const worstHeuristicValue = worstArchiveTuple.heuristicValue;
+                    const worstChromosome = worstArchiveTuple.chromosome;
                     if (worstHeuristicValue < heuristicValue || (worstHeuristicValue == heuristicValue
                         && this.compareChromosomesWithEqualHeuristic(chromosome, worstChromosome) >= 0)) {
                         archiveTuples.remove(worstArchiveTuple);
@@ -389,12 +387,12 @@ open independent goals: ${this._archiveUncovered.size}`);
      * @param tupleToAdd the tuple we want to add to the tupleList
      * @return boolean determining if the tupleList already contains the tupleToAdd
      */
-    private tuplesContainChromosome(tupleList: List<ChromosomeHeuristicTuple<C>>,
-                                    tupleToAdd: ChromosomeHeuristicTuple<C>): boolean {
-        const chromosomeToAdd = tupleToAdd.getChromosome() as unknown as TestChromosome;
+    private tuplesContainChromosome(tupleList: List<Heuristic<C>>,
+                                    tupleToAdd: Heuristic<C>): boolean {
+        const chromosomeToAdd = tupleToAdd.chromosome as unknown as TestChromosome;
         const genesToAdd = JSON.stringify(chromosomeToAdd.getGenes());
         for (const tuple of tupleList) {
-            const chromosome = tuple.getChromosome() as unknown as TestChromosome;
+            const chromosome = tuple.chromosome as unknown as TestChromosome;
             if (genesToAdd === JSON.stringify(chromosome.getGenes())) {
                 return true;
             }
@@ -426,16 +424,15 @@ open independent goals: ${this._archiveUncovered.size}`);
      * @param chromosomeHeuristicTuples The list of tuples to compare.
      * @returns The worst tuple of the list.
      */
-    private getWorstChromosomeHeuristicTuple(chromosomeHeuristicTuples: List<ChromosomeHeuristicTuple<C>>): ChromosomeHeuristicTuple<C> {
-        let worstTuple: ChromosomeHeuristicTuple<C>;
+    private getWorstChromosomeHeuristicTuple(chromosomeHeuristicTuples: List<Heuristic<C>>): Heuristic<C> {
+        let worstTuple: Heuristic<C>;
         let worstHeuristicValue = 1;
         for (const tuple of chromosomeHeuristicTuples) {
-            const heuristicValue = tuple.getHeuristicValue();
-            const chromosome = tuple.getChromosome();
+            const {chromosome, heuristicValue} = tuple;
             if (worstTuple == undefined ||
                 heuristicValue < worstHeuristicValue ||
                 (heuristicValue === worstHeuristicValue &&
-                    this.compareChromosomesWithEqualHeuristic(worstTuple.getChromosome(), chromosome) > 0)) {
+                    this.compareChromosomesWithEqualHeuristic(worstTuple.chromosome, chromosome) > 0)) {
                 worstHeuristicValue = heuristicValue;
                 worstTuple = tuple;
             }
@@ -492,7 +489,7 @@ open independent goals: ${this._archiveUncovered.size}`);
      */
     private updateParameters(): void {
         const overallProgress = this._stoppingCondition.getProgress(this);
-        const progressUntilFocusedPhaseReached = overallProgress / this._properties.getStartOfFocusedPhase();
+        const progressUntilFocusedPhaseReached = overallProgress / this._properties.startOfFocusedPhase;
         const previousMaxArchiveSize = this._maxArchiveSize;
         if (progressUntilFocusedPhaseReached >= 1) {
             this._randomSelectionProbability = this._randomSelectionProbabilityFocusedPhase;
@@ -547,39 +544,9 @@ open independent goals: ${this._archiveUncovered.size}`);
 }
 
 /**
- * A tuple storing a chromosome and a corresponding heuristic value of the chromosome.
+ * Stores a chromosome and a corresponding heuristic value of the chromosome.
  */
-class ChromosomeHeuristicTuple<C> {
-
-    private readonly _chromosome: C;
-    private readonly _heuristicValue: number;
-
-    /**
-     * Creates a new tuple of a chromosome and a corresponding heuristic value.
-     *
-     * @param chromosome The chromosome.
-     * @param heuristicValue The corresponding heuristic value.
-     */
-    constructor(chromosome: C, heuristicValue: number) {
-        this._chromosome = chromosome;
-        this._heuristicValue = heuristicValue;
-    }
-
-    /**
-     * Gets the chromosome of the tuple.
-     *
-     * @returns The chromosome of the tuple.
-     */
-    getChromosome(): C {
-        return this._chromosome;
-    }
-
-    /**
-     * Gets the heuristic value of the tuple.
-     *
-     * @returns The heuristic value of the tuple.
-     */
-    getHeuristicValue(): number {
-        return this._heuristicValue;
-    }
+interface Heuristic<C extends Chromosome> {
+    chromosome: C;
+    heuristicValue: number;
 }

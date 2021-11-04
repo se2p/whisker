@@ -91,7 +91,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
-        const stoppingCondition = this._config.searchAlgorithmProperties.getStoppingCondition();
+        const stoppingCondition = this._config.searchAlgorithmProperties.stoppingCondition;
 
         const eventExtractor = this._config.getEventExtractor();
         const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
