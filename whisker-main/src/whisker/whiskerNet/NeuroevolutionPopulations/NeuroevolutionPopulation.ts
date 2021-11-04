@@ -1,47 +1,29 @@
-import {List} from "../../utils/List";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Species} from "./Species";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 
 export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
 
     /**
      * The defined search parameters.
      */
-    private readonly _properties: NeuroevolutionProperties<C>;
+    private readonly _hyperParameter: NeuroevolutionProperties<C>;
 
     /**
-     * The NetworkGenerator used for creating an initial population.
+     * The NetworkGenerator used for generating a starting population.
      */
     private readonly _generator: ChromosomeGenerator<C>
 
     /**
-     * The starting size of the population. Should be maintained through all generations!
+     * The desired population size.
      */
-    private readonly _startSize: number;
+    private readonly _populationSize: number;
 
     /**
      * Saves all networks of the current population.
      */
-    private readonly _chromosomes = new List<C>();
-
-    /**
-     * Saves all species which are currently existent.
-     */
-    private readonly _species = new List<Species<C>>();
-
-    /**
-     * Number of species we want to maintain through the generations.
-     * To ensure this, the distanceThreshold is adjusted appropriately in each generation.
-     */
-    private readonly _numberOfSpeciesTargeted: number;
-
-    /**
-     * The number of encountered species through all generations.
-     */
-    private _speciesCount = 0;
+    private readonly _networks: C[] = [];
 
     /**
      * The average fitness of the current generation. Used for reporting purposes.
@@ -59,7 +41,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     private _highestFitnessLastChanged = 0;
 
     /**
-     * Saves the number of the current generation.
+     * Number of evolution processes conducted.
      */
     private _generation = 0;
 
@@ -69,27 +51,15 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     private _populationChampion: C;
 
     /**
-     * Constructs a new NEATPopulation
-     * @param generator the chromosomeGenerator used for creating the initial population.
-     * @param properties the defined search parameters
+     * Constructs a new NeuroevolutionPopulation.
+     * @param generator the ChromosomeGenerator used for creating the initial population.
+     * @param hyperParameter the defined search parameters
      */
-    public constructor(generator: ChromosomeGenerator<C>, properties: NeuroevolutionProperties<C>) {
-        this._startSize = properties.populationSize;
-        this._numberOfSpeciesTargeted = properties.numberOfSpecies;
+    protected constructor(generator: ChromosomeGenerator<C>, hyperParameter: NeuroevolutionProperties<C>) {
+        this._hyperParameter = hyperParameter;
+        this._populationSize = hyperParameter.populationSize;
         this._generator = generator;
-        this._properties = properties;
     }
-
-    /**
-     * Calculates the SharedFitness of each Chromosome in its Species and determines which Chromosomes are allowed
-     * to reproduce.
-     */
-    protected abstract calculateFitnessDistribution(): void;
-
-    /**
-     * Assigns the number of Offspring each Chromosome/Species is allowed to produce.
-     */
-    protected abstract assignNumberOfOffspring(): void;
 
     /**
      * Deep Clone of a concrete NeuroevolutionPopulation.
@@ -100,157 +70,21 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     /**
      * Generates an initial population of networks.
      */
-    public generatePopulation(): void {
-        while (this.populationSize() < this.startSize) {
-            const chromosome = this.generator.get();
-            this.chromosomes.add(chromosome)
-            NeuroevolutionUtil.speciate(chromosome, this, this.properties);
-        }
-    }
+    public abstract generatePopulation(): void
 
     /**
-     * Calculates the shared fitness of each species member and infers the number of children each species is allowed
-     * to produce in the next evolution step.
+     * Generates a new generation of networks by evolving the current population.
      */
-    public updatePopulationStatistics(): void {
-        this.updateCompatibilityThreshold();
-        this.calculateFitnessDistribution();
-        this.assignNumberOfOffspring();
-        this.calculateAverageNetworkFitness();
-    }
+    public abstract evolve(): void
 
     /**
-     * Applies evolution to the current population -> generate the next generation from the current one.
+     * Transform this NeuroevolutionPopulation into a JSON representation.
+     * @return Record containing this NeuroevolutionPopulation's attributes mapped to the corresponding values.
      */
-    public evolve(): void {
-        // Remove the Chromosomes with a death mark on them.
-        for (const chromosome of this.chromosomes) {
-            if (chromosome.hasDeathMark) {
-                const specie = chromosome.species;
-                specie.removeChromosome(chromosome);
-                this.chromosomes.remove(chromosome);
-            }
-        }
+    public abstract toJSON(): Record<string, (number | Species<C>)>;
 
-        // Now let the reproduction start
-        const offspring = new List<C>()
-        for (const specie of this.species) {
-            offspring.addList(specie.breed(this, this.species));
-        }
-
-        // Speciate the produced offspring
-        for (const child of offspring) {
-            NeuroevolutionUtil.speciate(child, this, this.properties)
-        }
-
-        // Remove the parents from the population and the species. The new ones still exist within their species
-        for (const chromosome of this.chromosomes) {
-            const specie = chromosome.species;
-            specie.removeChromosome(chromosome);
-        }
-        this.chromosomes.clear();
-
-        // Remove empty species and age the ones that survive.
-        // Furthermore, add the members of the surviving species to the population List
-        const doomedSpecies = new List<Species<C>>();
-        for (const specie of this._species) {
-            if (specie.chromosomes.size() === 0) {
-                doomedSpecies.add(specie);
-            } else {
-                // Give the new species an age bonus!
-                if (specie.isNovel)
-                    specie.isNovel = false;
-                else
-                    specie.age++;
-                for (const chromosome of specie.chromosomes) {
-                    this.chromosomes.add(chromosome);
-                }
-            }
-        }
-        for (const specie of doomedSpecies) {
-            this.species.remove(specie);
-        }
-        this.generation++;
-    }
-
-    /**
-     * Updates the CompatibilityThreshold with the goal of obtaining the desired amount of species.
-     */
-    private updateCompatibilityThreshold(): void {
-        const compatibilityModifier = 0.3;
-        if (this.generation > 1) {
-            if (this.species.size() < this.numberOfSpeciesTargeted)
-                this.properties.distanceThreshold -= compatibilityModifier;
-            else if (this.species.size() > this.numberOfSpeciesTargeted)
-                this.properties.distanceThreshold += compatibilityModifier;
-
-            if (this.properties.distanceThreshold < 1) {
-                this.properties.distanceThreshold = 1;
-            }
-        }
-    }
-
-    /**
-     * Returns the size of the population
-     * @return population Size
-     */
-    public populationSize(): number {
-        return this.chromosomes.size();
-    }
-
-    /**
-     * Sorts the population according to the networkFitness in decreasing order.
-     */
-    protected sortPopulation(): void {
-        this.chromosomes.sort((a, b) => b.networkFitness - a.networkFitness)
-    }
-
-    /**
-     * Sorts the species List according to their champion's networkFitness in decreasing order.
-     */
-    protected sortSpecies(): void {
-        this.species.sort((a, b) => b.expectedOffspring - a.expectedOffspring)
-    }
-
-    /**
-     * Calculates the average fitness of the whole population. Used for reporting.
-     */
-    private calculateAverageNetworkFitness(): void {
-        let sum = 0;
-        for (const chromosome of this.chromosomes)
-            sum += chromosome.networkFitness;
-        this.averageFitness = sum / this.populationSize();
-    }
-
-    /**
-     * Transform this NeatPopulation into a JSON representation.
-     * @return Record containing this NeatPopulation's attributes mapped to the corresponding values.
-     */
-    public toJSON(): Record<string, (number | Species<C>)> {
-        const population = {};
-        population[`aF`] = Number(this.averageFitness.toFixed(4));
-        population[`hF`] = Number(this.highestFitness.toFixed(4));
-        population[`PC`] = this.populationChampion.uID;
-        for (let i = 0; i < this.species.size(); i++) {
-            population[`S ${i}`] = this.species.get(i).toJSON();
-        }
-        return population;
-    }
-
-    get chromosomes(): List<C> {
-        return this._chromosomes;
-    }
-
-    get species(): List<Species<C>> {
-        return this._species;
-    }
-
-    get speciesCount(): number {
-        return this._speciesCount;
-    }
-
-    set speciesCount(value: number) {
-        this._speciesCount = value;
+    get networks(): C[] {
+        return this._networks;
     }
 
     get highestFitness(): number {
@@ -285,8 +119,8 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         this._populationChampion = value;
     }
 
-    get startSize(): number {
-        return this._startSize;
+    get populationSize(): number {
+        return this._populationSize;
     }
 
     get averageFitness(): number {
@@ -297,12 +131,8 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         this._averageFitness = value;
     }
 
-    get properties(): NeuroevolutionProperties<C> {
-        return this._properties;
-    }
-
-    get numberOfSpeciesTargeted(): number {
-        return this._numberOfSpeciesTargeted;
+    get hyperParameter(): NeuroevolutionProperties<C> {
+        return this._hyperParameter;
     }
 
     get generator(): ChromosomeGenerator<C> {

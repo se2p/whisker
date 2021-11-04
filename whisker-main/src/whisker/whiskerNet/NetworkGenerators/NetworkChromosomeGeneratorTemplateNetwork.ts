@@ -49,7 +49,7 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
      * @return: generated NetworkChromosome
      */
     get(): NetworkChromosome {
-        const networkKey = Object.keys(this._networkTemplate)[NetworkChromosome.idCounter % this._numberNetworks];
+        const networkKey = Object.keys(this._networkTemplate)[NetworkChromosome._uIDCounter % this._numberNetworks];
         const networkTemplate = this._networkTemplate[networkKey];
         const allNodes = new List<NodeGene>();
         for (const nodeKey in networkTemplate['Nodes']) {

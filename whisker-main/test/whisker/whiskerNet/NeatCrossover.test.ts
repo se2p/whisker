@@ -152,8 +152,8 @@ describe("Test NeatCrossover", () => {
 
         // Execute 10 times. Due to randomness the connection may get activated during crossover
         for (let i = 0; i < 10; i++) {
-            expect(child1.updateStabilizeCount(20)).not.toBe(-1);
-            expect(child2.updateStabilizeCount(20)).not.toBe(-1);
+            expect(child1.updateStabiliseCount(20)).not.toBe(-1);
+            expect(child2.updateStabiliseCount(20)).not.toBe(-1);
         }
     })
 })

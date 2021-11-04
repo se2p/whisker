@@ -15,7 +15,7 @@ import {StaticTestNetworkPopulation} from "../../whiskerNet/NeuroevolutionPopula
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
     /**
-     * The search parameters
+     * The search parameters.
      */
     private _neuroevolutionProperties: NeuroevolutionProperties<C>;
 
@@ -52,7 +52,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         this._startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            await this.evaluateNetworks(population.chromosomes as List<C>);
+            await this.evaluateNetworks(population.networks as List<C>);
             population.updatePopulationStatistics();
             this.reportOfCurrentIteration(population);
             this.updateBestIndividualAndStatistics(population);

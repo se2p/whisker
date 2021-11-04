@@ -108,7 +108,7 @@ export class NetworkExecutor {
 
         // Activate the network <stabilizeCounter> times to stabilise it for classification
         network.flushNodeValues();
-        for (let i = 0; i < network.stabilizeCount; i++) {
+        for (let i = 0; i < network.stabiliseCount; i++) {
             workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vmWrapper));
         }
 
@@ -158,7 +158,7 @@ export class NetworkExecutor {
             // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
             else {
                 network.flushNodeValues();
-                for (let i = 0; i < network.stabilizeCount; i++) {
+                for (let i = 0; i < network.stabiliseCount; i++) {
                     workingNetwork = network.activateNetwork(spriteFeatures);
                 }
             }

@@ -68,7 +68,7 @@ describe("Test NeatPopulation", () => {
         population = new NeatPopulation(chromosomeGenerator, properties);
         population.generatePopulation();
         random = Randomness.getInstance();
-        for (const c of population.chromosomes)
+        for (const c of population.networks)
             c.networkFitness = random.nextInt(1, 50);
     })
 
@@ -78,11 +78,11 @@ describe("Test NeatPopulation", () => {
         expect(population.highestFitnessLastChanged).toBe(0);
         expect(population.numberOfSpeciesTargeted).toBe(numberOfSpecies);
         expect(population.generator).toBeInstanceOf(NetworkChromosomeGeneratorSparse);
-        expect(population.startSize).toBe(size);
+        expect(population.populationSize).toBe(size);
         expect(population.generation).toBe(0);
         expect(population.species.size()).toBeGreaterThan(0);
-        expect(population.chromosomes.size()).toBe(size);
-        expect(population.properties).toBeInstanceOf(NeuroevolutionProperties);
+        expect(population.networks.size()).toBe(size);
+        expect(population.hyperParameter).toBeInstanceOf(NeuroevolutionProperties);
         expect(population.averageFitness).toBe(0);
     })
 
@@ -94,7 +94,7 @@ describe("Test NeatPopulation", () => {
         population.generation = 3;
         population.averageFitness = 3;
 
-        const champ = population.chromosomes.get(0);
+        const champ = population.networks.get(0);
         population.populationChampion = champ;
 
         expect(population.speciesCount).toBe(3);
@@ -106,20 +106,20 @@ describe("Test NeatPopulation", () => {
     })
 
     test("Test evolution", () => {
-        const oldGeneration = population.chromosomes;
+        const oldGeneration = population.networks;
         for (let i = 0; i < 50; i++) {
-            for (const c of population.chromosomes)
+            for (const c of population.networks)
                 c.networkFitness = random.nextInt(1, 50);
             population.updatePopulationStatistics();
             population.evolve();
         }
-        const newGeneration = population.chromosomes;
+        const newGeneration = population.networks;
 
         expect(oldGeneration).not.toContainEqual(newGeneration);
         expect(population.speciesCount).toBeGreaterThan(0);
         expect(population.generation).toBe(50);
         expect(population.species.size()).toBeGreaterThan(0);
-        expect(population.chromosomes.size()).toBe(size);
+        expect(population.networks.size()).toBe(size);
     })
 
     test("Test evolution stagnant population with only one species", () => {
@@ -136,10 +136,10 @@ describe("Test NeatPopulation", () => {
 
     test("Test evolve with distance Threshold below 1", () => {
         population.generation = 3;
-        population.properties.distanceThreshold = 0.1;
+        population.hyperParameter.distanceThreshold = 0.1;
         population.updatePopulationStatistics();
         population.evolve();
-        expect(population.properties.distanceThreshold).toBe(1);
+        expect(population.hyperParameter.distanceThreshold).toBe(1);
     })
 
 })

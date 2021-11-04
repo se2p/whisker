@@ -31,7 +31,7 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
 
     constructor(generator: ChromosomeGenerator<NetworkChromosome>, properties: NeuroevolutionProperties<NetworkChromosome>) {
         super(generator, properties);
-        this._eventTemplate = JSON.parse(this.properties.testTemplate);
+        this._eventTemplate = JSON.parse(this.hyperParameter.testTemplate);
         this._numberTestCases = Object.keys(this._eventTemplate).length;
     }
 
@@ -39,12 +39,12 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
      * During network generation, we add the events that should be executed to the chromosomes.
      */
     generatePopulation(): void {
-        while (this.populationSize() < this.startSize) {
+        while (this.populationSize() < this.populationSize) {
             const chromosome = this.generator.get();
             chromosome.trace = new ExecutionTrace(undefined, this.gatherEvents());
-            this.chromosomes.add(chromosome);
+            this.networks.add(chromosome);
             console.log(chromosome)
-            NeuroevolutionUtil.speciate(chromosome, this, this.properties);
+            NeuroevolutionUtil.speciate(chromosome, this, this.hyperParameter);
         }
     }
 
@@ -54,7 +54,7 @@ export class StaticTestNetworkPopulation extends NeatPopulation<NetworkChromosom
      */
     private gatherEvents(): List<EventAndParameters> {
         const eventList = new List<EventAndParameters>();
-        const testCaseKey = Object.keys(this._eventTemplate)[NetworkChromosome.idCounter % this._numberTestCases];
+        const testCaseKey = Object.keys(this._eventTemplate)[NetworkChromosome._uIDCounter % this._numberTestCases];
         const testCase = this._eventTemplate[testCaseKey];
         for (const eventKey in testCase) {
             const event = testCase[eventKey];

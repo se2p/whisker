@@ -60,12 +60,12 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(19); // +1 for Bias
-        expect(neatChromosome.connections.size() % 9).toBe(0);
-        expect(neatChromosome.connections.size()).toBeGreaterThan(0);
+        expect(neatChromosome.allNodes.length).toBe(19); // +1 for Bias
+        expect(neatChromosome.connections.length % 9).toBe(0);
+        expect(neatChromosome.connections.length).toBeGreaterThan(0);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
-        expect(neatChromosome.outputNodes.size()).toEqual(9);
+        expect(neatChromosome.outputNodes.length).toEqual(9);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
     })
@@ -76,7 +76,7 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         for (let i = 0; i < 100; i++) {
             const chromosome = generator.get();
             chromosomes.push(chromosome);
-            stabCount = chromosome.updateStabilizeCount(30);
+            stabCount = chromosome.updateStabiliseCount(30);
         }
         for(const chromosome of chromosomes){
             chromosome.generateNetwork();

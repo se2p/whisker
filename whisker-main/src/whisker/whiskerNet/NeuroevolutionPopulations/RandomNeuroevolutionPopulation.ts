@@ -18,7 +18,7 @@ export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends
      * In the RandomPopulation each Network is allowed to generate exactly one child using mutation.
      */
     protected assignNumberOfOffspring(): void {
-        for (const chromosome of this.chromosomes) {
+        for (const chromosome of this.networks) {
             chromosome.expectedOffspring = 1;
             chromosome.hasDeathMark = false;
         }
@@ -31,7 +31,7 @@ export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends
         // Find the population champion and reward him with additional children
         this.sortPopulation();
         this.sortSpecies();
-        this.populationChampion = this.chromosomes.get(0);
+        this.populationChampion = this.networks.get(0);
         this.populationChampion.isPopulationChampion = true;
 
         // Update highestFitness
@@ -48,15 +48,15 @@ export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends
      * @returns clone of this RandomPopulation.
      */
     clone(): RandomNeuroevolutionPopulation<C> {
-        const clone = new RandomNeuroevolutionPopulation(this.generator, this.properties);
+        const clone = new RandomNeuroevolutionPopulation(this.generator, this.hyperParameter);
         clone.speciesCount = this.speciesCount;
         clone.highestFitness = this.highestFitness;
         clone.highestFitnessLastChanged = this.highestFitnessLastChanged;
         clone.averageFitness = this.averageFitness;
         clone.generation = this.generation;
         clone.populationChampion = this.populationChampion.clone() as C;
-        for (const network of this.chromosomes) {
-            clone.chromosomes.add(network.clone() as C);
+        for (const network of this.networks) {
+            clone.networks.add(network.clone() as C);
         }
         for (const species of this.species) {
             clone.species.add(species.clone());

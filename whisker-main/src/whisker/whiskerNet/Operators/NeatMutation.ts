@@ -15,7 +15,7 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
     /**
      * Saves all encountered innovations.
      */
-    public static _innovations = new List<ConnectionGene>();
+    public static _innovations: ConnectionGene[] = [];
 
     /**
      * Random generator.
