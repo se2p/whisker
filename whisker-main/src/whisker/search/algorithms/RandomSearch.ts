@@ -64,16 +64,20 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate();
             this.updateArchive(candidateChromosome);
-            const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
 
-            if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
-                bestFitness = candidateFitness;
-                bestIndividual = candidateChromosome;
-                this._bestIndividuals.clear();
-                this._bestIndividuals.add(bestIndividual);
+            // Update the best performing chromosome if we have a single targeted fitness function.
+            if (this._fitnessFunction !== undefined) {
+                const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
+                if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
+                    bestFitness = candidateFitness;
+                    bestIndividual = candidateChromosome;
+                    this._bestIndividuals.clear();
+                    this._bestIndividuals.add(bestIndividual);
+                }
             }
             this.updateStatistics();
             this._iterations++;
+            console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
         }
         return this._archive;
     }
@@ -87,10 +91,9 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        if(this._fitnessFunctions) {
+        if (this._fitnessFunctions) {
             return this._fitnessFunctions.values();
-        }
-        else
+        } else
             return [this._fitnessFunction];
     }
 

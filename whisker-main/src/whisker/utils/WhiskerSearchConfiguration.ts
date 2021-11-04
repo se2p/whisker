@@ -98,6 +98,9 @@ export class WhiskerSearchConfiguration {
         }
 
         switch (this.getAlgorithm()) {
+            case SearchAlgorithmType.RANDOM:
+                properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
+                break;
             case SearchAlgorithmType.MIO:
                 properties.setChromosomeLength(this.dict['chromosome']['maxLength'] as number);
                 properties.setIntRange(this.dict['integerRange']['min'] as number, this.dict['integerRange']['max'] as number);
@@ -229,6 +232,10 @@ export class WhiskerSearchConfiguration {
     }
 
     private _getMutationOperator(): Mutation<any> {
+        // Not all algorithms use mutation.
+        if(!this.dict['mutation']){
+            return undefined;
+        }
         switch (this.dict['mutation']['operator']) {
             case 'bitFlip':
                 return new BitflipMutation();
@@ -425,10 +432,9 @@ export class WhiskerSearchConfiguration {
     }
 
     public getAlgorithm(): SearchAlgorithmType {
-        if (this.dict['testGenerator'] === 'random') {
-            return SearchAlgorithmType.RANDOM;
-        }
         switch (this.dict['algorithm']) {
+            case 'random':
+                return SearchAlgorithmType.RANDOM;
             case 'onePlusOne':
                 return SearchAlgorithmType.ONE_PLUS_ONE;
             case 'simpleGA':
