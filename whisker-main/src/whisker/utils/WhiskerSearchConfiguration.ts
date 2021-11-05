@@ -99,8 +99,7 @@ export class WhiskerSearchConfiguration {
         // Properties all other algorithms have in common.
         const additionalProps = {
             chromosomeLength: this._config["chromosome"]["maxLength"],
-            minRange: this._config["integerRange"]["min"],
-            maxRange: this._config["integerRange"]["max"],
+            integerRange: this._config["integerRange"],
         };
 
         // Properties specific to every algorithm.
@@ -108,13 +107,19 @@ export class WhiskerSearchConfiguration {
             switch (this.getAlgorithm()) {
                 case SearchAlgorithmType.MIO:
                     return {
-                        maxMutationCountStart: this._config["mutation"]["maxMutationCountStart"],
-                        maxMutationCountFocusedPhase: this._config["mutation"]["maxMutationCountFocusedPhase"],
-                        selectionProbabilityStart: this._config["selection"]["randomSelectionProbabilityStart"],
-                        selectionProbabilityFocusedPhase: this._config["selection"]["randomSelectionProbabilityFocusedPhase"],
+                        maxMutationCount: {
+                            start: this._config["mutation"]["maxMutationCountStart"],
+                            focusedPhase: this._config["mutation"]["maxMutationCountFocusedPhase"],
+                        },
+                        selectionProbability: {
+                            start: this._config["selection"]["randomSelectionProbabilityStart"],
+                            focusedPhase: this._config["selection"]["randomSelectionProbabilityFocusedPhase"],
+                        },
                         startOfFocusedPhase: this._config["startOfFocusedPhase"],
-                        maxArchiveSizeStart: this._config["archive"]["maxArchiveSizeStart"],
-                        maxArchiveSizeFocusedPhase: this._config["archive"]["maxArchiveSizeFocusedPhase"],
+                        maxArchiveSize: {
+                            start: this._config["archive"]["maxArchiveSizeStart"],
+                            focusedPhase: this._config["archive"]["maxArchiveSizeFocusedPhase"],
+                        },
                     };
                 case SearchAlgorithmType.ONE_PLUS_ONE:
                     return {

@@ -56,7 +56,7 @@ export interface SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * The stopping condition for the corresponding search algorithm.
      */
-     stoppingCondition: StoppingCondition<C>;
+    stoppingCondition: StoppingCondition<C>;
 
     /**
      * The probability for sampling a random chromosome at different phases of the search
@@ -71,7 +71,7 @@ export interface SearchAlgorithmProperties<C extends Chromosome> {
     /**
      * The percentage of iterations.
      */
-     startOfFocusedPhase?: number;
+    startOfFocusedPhase?: number;
 
     /**
      * The allowed integer range.
