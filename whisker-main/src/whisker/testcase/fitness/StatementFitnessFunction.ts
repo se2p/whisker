@@ -315,7 +315,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             case 'control_if_else': {
                 requiredCondition = false;
-                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                let ifBlock: string;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                } else if (controlNode.block.inputs.CONDITION !== undefined) {
+                    ifBlock = controlNode.block.inputs.CONDITION.block;
+                }
                 if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
                     break;
