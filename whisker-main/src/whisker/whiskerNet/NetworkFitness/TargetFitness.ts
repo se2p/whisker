@@ -9,7 +9,7 @@ import {ScratchPosition} from "../../scratch/ScratchPosition";
 export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * The player who has to reach the goal sprite.
+     * The player that has to reach a specified goal.
      */
     private readonly player: RenderedTarget;
 
@@ -20,7 +20,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
 
     /**
      * The target which has to be reached by the player sprite.
-     * The target can be a color in hex representation or a name of a Sprite.
+     * The target may be a color in hex representation or a name of a Sprite.
      */
     private readonly target: string;
 
@@ -35,16 +35,16 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     private readonly spriteObstacles: string[];
 
     /**
-     * A valid path from the starting point to the target point.
+     * A valid path from the starting point to the target point calculated via the A-Star algorithm.
      */
     private _pathToTarget: ScratchPosition[];
 
     /**
      * Constructs a new TargetFitness object.
-     * @param player the player who has to reach the goal sprite.
-     * @param target the name of the target which has to be reached by the player sprite.
-     * @param colorObstacles colors which are not allowed to be touched during the playthrough.
-     * @param spriteObstacles sprites which are not allowed to be touched during the playthrough.
+     * @param player the player that has to reach a specified goal.
+     * @param target which has to be reached by the player sprite.
+     * @param colorObstacles colors that are not allowed to be touched during the playthrough.
+     * @param spriteObstacles sprites that are not allowed to be touched during the playthrough.
      */
     constructor(player: string, target: string, colorObstacles: string[],
                 spriteObstacles: string[]) {
@@ -59,12 +59,14 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
     }
 
     /**
-     * Calculates the distance to the target Sprite.
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     * @param eventSelection defines how a network selects events
+     * Calculates the novelty score.
+     * @param network the network that should be evaluated.
+     * @param timeout the timeout defining how long a network is allowed to play the game.
+     * @param eventSelection defines how the network should be executed (network (default) | random | static
+     * events | eventsExtended).
+     * @returns Promise<number> the sparseness of the network's behaviour, which is a metric of novelty.
      */
-    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?:string): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
 
@@ -77,31 +79,16 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         }
         const fitness = this.getTargetDistanceFitness(network);
         executor.resetState();
-        network.networkFitness = fitness;
+        network.fitness = fitness;
         return fitness;
     }
 
     /**
-     * Used for CombinedNetworkFitness.
-     * Value is calculated within CombinedNetworkFitness, hence returns 0.0
-     */
-    getFitnessWithoutPlaying(network: NetworkChromosome): number {
-        return this.getTargetDistanceFitness(network);
-    }
-
-    /**
-     * Compares two fitness values -> Higher values are better.
-     * @param value1 first fitness value
-     * @param value2 second fitness value
-     */
-    compare(value1: number, value2: number): number {
-        return value2 - value1;
-    }
-
-    /**
-     * Calculates the distance from the player to the target including the player's travel distance.
-     * @param network the network used for gathering the final position of the player
-     * @return Returns the targetFitness value
+     * A network's target fitness is defined to be the number of waypoints along a valid path that are required to
+     * reach the target based on the network's final position nearest waypoint. The valid path is calculated using
+     * the A-Star algorithm.
+     * @param network the network whose playthrough should be evaluated.
+     * @return number representing the network's TargetFitness.
      */
     private getTargetDistanceFitness(network: NetworkChromosome): number {
         const playerEnd = {
@@ -112,10 +99,6 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         }
         const playerEndPosition = new ScratchPosition(playerEnd.x, playerEnd.y)
 
-        // TODO: Remove when we found root cause of defect networks (happens like once in 1000 times)
-        if (playerEndPosition.x === 0 && playerEndPosition.y === 0) {
-            return 0.1;
-        }
         // If we've found a valid path from start to the target. The fitness is determined by the index of the
         // closest waypoint with the target representing the last waypoint.
         if (this._pathToTarget) {

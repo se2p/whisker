@@ -7,43 +7,56 @@ import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 export class RegressionNode extends NodeGene {
 
     /**
-     * The event this regression node serves.
+     * The ScratchEvent for which this regression node is determining a value for a specified parameter.
      */
     private readonly _event: ScratchEvent
 
     /**
-     * The event parameter this regression node produces values for
+     * The ScratchEvent parameter this regression node produces values for.
      */
     private readonly _eventParameter: string
 
     /**
-     * Constructs a new regression Node
-     * @param id the identification number of the node within the network
-     * @param event the event to which this regression node produces values for
-     * @param eventParameter specifies the parameter of the given event, this node produces values for
-     * @param activationFunction the activation function of the regression node
+     * Constructs a new regression Node.
+     * @param event the event for which this regression node produces values for.
+     * @param eventParameter specifies the parameter of the event this regression node produces values for.
+     * @param activationFunction the activation function of the regression node.
+     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
+     * new regression node.
+
      */
-    constructor(id: number, event: ScratchEvent, eventParameter: string, activationFunction: ActivationFunction) {
-        super(id, activationFunction, NodeType.OUTPUT);
-        this.nodeValue = 0;
-        this.lastActivationValue = 0;
-        this.activationValue = 0;
+    constructor(event: ScratchEvent, eventParameter: string, activationFunction: ActivationFunction,
+                incrementIDCounter = true) {
+        super(activationFunction, NodeType.OUTPUT, incrementIDCounter);
         this._event = event;
         this._eventParameter = eventParameter;
     }
 
     equals(other: unknown): boolean {
         if (!(other instanceof RegressionNode)) return false;
-        return this.id === other.id
-            && this.eventParameter === other.eventParameter
+        return this.uID === other.uID
             && this.event.stringIdentifier() === other.event.stringIdentifier()
+            && this.eventParameter === other.eventParameter
             && this.activationFunction === other.activationFunction;
     }
 
     clone(): RegressionNode {
-        return new RegressionNode(this.id, this.event, this.eventParameter, this.activationFunction)
+        const clone = new RegressionNode(this.event, this.eventParameter,
+            this.activationFunction, false);
+        clone.uID = this.uID;
+        clone.nodeValue = this.nodeValue;
+        clone.activationValue = this.activationValue;
+        clone.lastActivationValue = this.lastActivationValue;
+        clone.activationCount = this.activationCount;
+        clone.activatedFlag = this.activatedFlag;
+        clone.traversed = this.traversed;
+        return clone
     }
 
+    /**
+     * Calculates the activation value of the regression node based on the node value and the activation function.
+     * @returns number activation value of the regression node.
+     */
     getActivationValue(): number {
         if (this.activationCount > 0) {
             switch (this.activationFunction) {
@@ -68,7 +81,7 @@ export class RegressionNode extends NodeGene {
     }
 
     toString(): string {
-        return `RegressionNode{ID: ${this.id}\
+        return `RegressionNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\
 , ActivationFunction: ${this.activationFunction}\
 , InputConnections: ${this.incomingConnections}\
@@ -82,7 +95,7 @@ export class RegressionNode extends NodeGene {
      */
     public toJSON(): Record<string, (number | string)> {
         const node = {}
-        node[`id`] = this.id;
+        node[`id`] = this.uID;
         node[`t`] = "R";
         node[`aF`] = ActivationFunction[this.activationFunction];
         node[`event`] = this._event.stringIdentifier();

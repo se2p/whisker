@@ -83,8 +83,8 @@ export class NetworkChromosomeGeneratorTemplateNetwork extends NetworkChromosome
         const allConnections = new List<ConnectionGene>();
         for (const connectionKey in networkTemplate['Cons']) {
             const connection = networkTemplate['Cons'][connectionKey];
-            const sourceNode = allNodes.find(node => node.id === connection.s);
-            const targetNode = allNodes.find(node => node.id === connection.t);
+            const sourceNode = allNodes.find(node => node.uID === connection.s);
+            const targetNode = allNodes.find(node => node.uID === connection.t);
             const recurrent = connection.r === `true`;
             if (sourceNode && targetNode) {
                 allConnections.add(new ConnectionGene(sourceNode, targetNode, connection.w, connection.e,

@@ -7,40 +7,50 @@ import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 export class ClassificationNode extends NodeGene {
 
     /**
-     * The Scratch-Event this classification node handles.
+     * The ScratchEvent this classification node is representing.
      */
     private readonly _event: ScratchEvent
 
     /**
-     * Constructs a new classification Node
-     * @param id the identification number of the node within the network
-     * @param event the Scratch-Event this node handles
-     * @param activationFunction the activation function of the classification node
+     * Constructs a new classification Node.
+     * @param activationFunction the activation function of the classification node.
+     * @param event the ScratchEvent this Classification node is representing.
+     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
+     * new classification node.
      */
-    constructor(id: number, event: ScratchEvent, activationFunction: ActivationFunction) {
-        super(id, activationFunction, NodeType.OUTPUT);
+    constructor(event: ScratchEvent, activationFunction: ActivationFunction, incrementIDCounter = true) {
+        super(activationFunction, NodeType.OUTPUT, incrementIDCounter);
         this._event = event;
-        this.nodeValue = 0;
-        this.lastActivationValue = 0;
-        this.activationValue = 0;
     }
 
     equals(other: unknown): boolean {
         if (!(other instanceof ClassificationNode)) return false;
-        return this.id === other.id &&
+        return this.uID === other.uID &&
             this.event.stringIdentifier() === other.event.stringIdentifier() &&
             this.activationFunction === other.activationFunction;
     }
 
     clone(): ClassificationNode {
-        return new ClassificationNode(this.id, this.event, this.activationFunction)
-
+        const clone = new ClassificationNode(this.event, this.activationFunction, false);
+        clone.uID = this.uID;
+        clone.nodeValue = this.nodeValue;
+        clone.activationValue = this.activationValue;
+        clone.lastActivationValue = this.lastActivationValue;
+        clone.activationCount = this.activationCount;
+        clone.activatedFlag = this.activatedFlag;
+        clone.traversed = this.traversed;
+        return clone
     }
 
+    /**
+     * Calculates the activation value of the classification node based on the node value and the activation function.
+     * @returns number activation value of the classification node.
+     */
     getActivationValue(): number {
         if (this.activationCount > 0) {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:
+                    // The specified gain value of -4.9 is based on the original NEAT publication.
                     this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);
                     break;
                 default:
@@ -53,7 +63,7 @@ export class ClassificationNode extends NodeGene {
     }
 
     toString(): string {
-        return `ClassificationNode{ID: ${this.id}\
+        return `ClassificationNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\
 , InputConnections: ${this.incomingConnections}}`;
     }
@@ -64,7 +74,7 @@ export class ClassificationNode extends NodeGene {
      */
     public toJSON(): Record<string, (number | string)> {
         const node = {}
-        node[`id`] = this.id;
+        node[`id`] = this.uID;
         node[`t`] = "C";
         node[`aF`] = ActivationFunction[this.activationFunction];
         node[`event`] = this.event.stringIdentifier();

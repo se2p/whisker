@@ -23,7 +23,7 @@ export abstract class NetworkChromosome extends Chromosome {
     /**
      * Unique-ID counter.
      */
-    private static _uIDCounter = 0;
+    public static _uIDCounter = 0;
 
     /**
      * Unique identifier.
@@ -69,6 +69,11 @@ export abstract class NetworkChromosome extends Chromosome {
      * True if this network implements at least one recurrent connection
      */
     private _isRecurrent = false;
+
+    /**
+     * The fitness value of the network.
+     */
+    private _fitness = 0;
 
     /**
      * Saves the execution trace during the playthrough.
@@ -520,7 +525,7 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Sorts the connections of this network according to their innovation numbers.
+     * Sorts the connections of this network according to their innovation numbers in increasing order.
      */
     private sortConnections(): void {
         this.connections.sort((a, b) => a.innovation - b.innovation);
@@ -605,6 +610,14 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set stabiliseCount(value: number) {
         this._stabiliseCount = value;
+    }
+
+    get fitness(): number {
+        return this._fitness;
+    }
+
+    set fitness(value: number) {
+        this._fitness = value;
     }
 
     get trace(): ExecutionTrace {

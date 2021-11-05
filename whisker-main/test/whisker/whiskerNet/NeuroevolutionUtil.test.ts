@@ -270,8 +270,8 @@ describe("NeuroevolutionUtil Tests", () => {
         const existingConnection = chromosome.connections.get(0);
         const existingInode= existingConnection.source as InputNode;
         const existingOnode= existingConnection.target as ClassificationNode;
-        const inNode = new InputNode(existingInode.id, existingInode.sprite, existingInode.feature);
-        const outNode = new ClassificationNode(existingOnode.id, existingOnode.event, existingOnode.activationFunction);
+        const inNode = new InputNode(existingInode.uID, existingInode.sprite, existingInode.feature);
+        const outNode = new ClassificationNode(existingOnode.uID, existingOnode.event, existingOnode.activationFunction);
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
         NeuroevolutionUtil.assignInnovationNumber(newConnection);
         expect(newConnection.innovation).toBe(existingConnection.innovation);

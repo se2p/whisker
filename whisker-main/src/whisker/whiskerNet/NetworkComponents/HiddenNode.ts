@@ -6,26 +6,36 @@ import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 export class HiddenNode extends NodeGene {
 
     /**
-     * Constructs a new HiddenNode
-     * @param id the identification number of the node within the network
-     * @param activationFunction the activation function of the hidden node
+     * Constructs a new HiddenNode.
+     * @param activationFunction the activation function used within this node gene.
+     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
+     * new hidden node.
      */
-    constructor(id: number, activationFunction: ActivationFunction) {
-        super(id, activationFunction, NodeType.HIDDEN);
-        this.nodeValue = 0;
-        this.lastActivationValue = 0;
-        this.activationValue = 0;
+    constructor(activationFunction: ActivationFunction, incrementIDCounter = true) {
+        super(activationFunction, NodeType.HIDDEN, incrementIDCounter);
     }
 
     equals(other: unknown): boolean {
         if (!(other instanceof HiddenNode)) return false;
-        return this.id === other.id && this.activationFunction === other.activationFunction;
+        return this.uID === other.uID && this.activationFunction === other.activationFunction;
     }
 
     clone(): HiddenNode {
-        return new HiddenNode(this.id, this.activationFunction)
+        const clone = new HiddenNode(this.activationFunction, false);
+        clone.uID = this.uID;
+        clone.nodeValue = this.nodeValue;
+        clone.activationValue = this.activationValue;
+        clone.lastActivationValue = this.lastActivationValue;
+        clone.activationCount = this.activationCount;
+        clone.activatedFlag = this.activatedFlag;
+        clone.traversed = this.traversed;
+        return clone
     }
 
+    /**
+     * Calculates the activation value of the hidden node based on the node value and the activation function.
+     * @returns number activation value of the hidden node.
+     */
     getActivationValue(): number {
         if (this.activationCount > 0) {
             switch (this.activationFunction) {
@@ -42,14 +52,14 @@ export class HiddenNode extends NodeGene {
     }
 
     toString(): string {
-        return `HiddenNode{ID: ${this.id}\
+        return `HiddenNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\
 , InputConnections: ${this.incomingConnections}}`;
     }
 
     public toJSON(): Record<string, (number | string)> {
         const node = {}
-        node[`id`] = this.id;
+        node[`id`] = this.uID;
         node[`t`] = "H";
         node[`aF`] = ActivationFunction[this.activationFunction];
         return node;

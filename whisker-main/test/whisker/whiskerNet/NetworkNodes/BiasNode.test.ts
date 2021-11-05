@@ -18,7 +18,7 @@ describe("BiasNode Tests", () => {
 
         const biasNode = new BiasNode(10);
 
-        expect(biasNode.id).toEqual(10);
+        expect(biasNode.uID).toEqual(10);
         expect(biasNode.activationFunction).toEqual(ActivationFunction.NONE);
         expect(biasNode.type).toEqual(NodeType.BIAS);
         expect(biasNode.nodeValue).toEqual(1);
@@ -54,7 +54,7 @@ describe("BiasNode Tests", () => {
 
     test("Clone Test", () => {
         const clone = biasNode.clone();
-        expect(clone.id).toEqual(biasNode.id);
+        expect(clone.uID).toEqual(biasNode.uID);
         expect(clone.equals(biasNode)).toBeTruthy();
         expect(clone === biasNode).toBeFalsy();
     })

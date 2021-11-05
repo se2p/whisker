@@ -160,10 +160,11 @@ export class Species<C extends NeatChromosome> {
 
     /**
      * Computes the number of offsprings for this generation including leftOvers from previous generations.
-     * Those leftOvers are carried on from calculation to calculation across all species until they add up to one.
+     * Those leftOvers are carried on from calculation to calculation across all species and are awarded to the
+     * population champion's species.
      * The given implementation follows the approach described within the NEAT publication.
      * @param leftOver makes sure to not loose childs due to rounding errors.
-     * @returns number leftOver carried over to next species.
+     * @returns number leftOver collects rounding errors to ensure a constant populationSize.
      */
     public getNumberOfOffspringsNEAT(leftOver: number): number {
         this.expectedOffspring = 0;
@@ -191,11 +192,13 @@ export class Species<C extends NeatChromosome> {
     }
 
     /**
-     * Calculates the number of offspring based on the average fitness across all members of the species.
+     * Calculates the number of offspring based on the average fitness across all members of the species. Saves
+     * leftOvers occurring due to rounding errors and carries them on from calculation to calculation across all
+     * species to assign them to the population champion's species in the end.
      * @param leftOver leftOver makes sure to not loose childs due to rounding errors.
      * @param totalAvgSpeciesFitness the average fitness of all species combined.
      * @param populationSize the size of the whole population.
-     * @returns number leftOver carried over to next species.
+     * @returns number leftOver collects rounding errors to ensure a constant populationSize.
      */
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
         const expectedOffspring = (this.calculateAverageSharedFitness() / totalAvgSpeciesFitness) * populationSize;

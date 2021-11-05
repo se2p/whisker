@@ -22,7 +22,7 @@ describe("regressionNode Tests", () => {
     test("Constructor Test", () => {
 
         const regressionNode = new RegressionNode(10, new WaitEvent(), "Duration", ActivationFunction.NONE);
-        expect(regressionNode.id).toBe(10);
+        expect(regressionNode.uID).toBe(10);
         expect(regressionNode.activationFunction).toBe(ActivationFunction.NONE);
         expect(regressionNode.type).toBe(NodeType.OUTPUT);
         expect(regressionNode.nodeValue).toBe(0);
@@ -73,7 +73,7 @@ describe("regressionNode Tests", () => {
 
     test("Clone Test", () => {
         const clone = regressionNodeNone.clone();
-        expect(clone.id).toEqual(regressionNodeNone.id);
+        expect(clone.uID).toEqual(regressionNodeNone.uID);
         expect(clone.eventParameter).toEqual(regressionNodeNone.eventParameter)
         expect(clone.activationFunction).toEqual(regressionNodeNone.activationFunction)
         expect(clone.equals(regressionNodeNone)).toBeTruthy();

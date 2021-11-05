@@ -19,7 +19,7 @@ describe("hiddenNode Tests", () => {
 
         const hiddenNode = new HiddenNode(10, ActivationFunction.SIGMOID);
 
-        expect(hiddenNode.id).toBe(10);
+        expect(hiddenNode.uID).toBe(10);
         expect(hiddenNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(hiddenNode.type).toBe(NodeType.HIDDEN);
         expect(hiddenNode.nodeValue).toBe(0);
@@ -64,7 +64,7 @@ describe("hiddenNode Tests", () => {
 
     test("Clone Test", () => {
         const clone = hiddenNode.clone();
-        expect(clone.id).toBe(hiddenNode.id);
+        expect(clone.uID).toBe(hiddenNode.uID);
         expect(clone.equals(hiddenNode)).toBe(true);
         expect(clone === hiddenNode).toBe(false);
     })

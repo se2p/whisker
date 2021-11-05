@@ -8,10 +8,11 @@ import {NetworkExecutor} from "../NetworkExecutor";
 export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * Calculates the reached score
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     * @param eventSelection defines how a network selects events.
+     * Calculates the score the network has achieved while playing the game.
+     * @param network the network that should be evaluated
+     * @param timeout the timeout defining how long a network is allowed to play the game.
+     * @param eventSelection defines how the network should be executed (network (default) | random | static
+     * events | eventsExtended).
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
@@ -20,31 +21,16 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
         if (score < 0) {
             score = 0.01;
         }
-        network.networkFitness = score;
+        network.fitness = score;
         executor.resetState();
-        return network.networkFitness;
+        return network.fitness;
     }
 
     /**
-     * Calculates the reached score without starting a new playthrough.
-     * Used for CombinedNetworkFitness.
-     */
-    getFitnessWithoutPlaying(): number {
-        return ScoreFitness.gatherPoints(Container.vm);
-    }
-
-    /**
-     * Compares two fitness values -> Higher values are better.
-     * @param value1 first fitness value
-     * @param value2 second fitness value
-     */
-    compare(value1: number, value2: number): number {
-        return value2 - value1;
-    }
-
-    /**
-     * Calculates the reached score by crawling through various variables of the stage and sprites.
+     * Calculates the reached score by matching various variable names against variables contained within the given
+     * Scratch project. All found variables are summed up to get a final score.
      * @param vm the Scratch-VM after the playthrough.
+     * @returns number representing the achieved score of the network.
      */
     private static gatherPoints(vm: VirtualMachine): number {
         let points = 0;

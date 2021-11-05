@@ -7,17 +7,17 @@ import {ScratchPosition} from "../../scratch/ScratchPosition";
 export class NoveltyTargetNetworkFitness extends NoveltyFitness {
 
     /**
-     * The player who has to reach the goal sprite.
+     * The sprite which is navigated by a player.
      */
     private readonly _player: RenderedTarget;
 
     /**
      * Contains all behaviours seen so far.
      */
-    protected _behaviourArchive = new Array<ScratchPosition>();
+    protected _behaviourArchive: ScratchPosition[] = [];
 
     /**
-     * Constructs a new NoveltyTargetNetworkFitness object, whose behaviour is determined through the final position
+     * Constructs a new NoveltyTargetNetworkFitness object, whose behaviour is determined by the final position
      * of a target sprite on the canvas.
      * @param player the player who has to reach the goal sprite.
      * @param neighbourCount determines the number of k nearest neighbours.
@@ -38,8 +38,8 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
     /**
      * Calculates the distance to each ScratchCoordinate saved in the archive and the player's final position
      * on the canvas after the playthrough.
-     * @param player the player's final ScratchCoordinate after the playthrough.
-     * @returns List<number> containing the k-nearest distances to the player.
+     * @param player the player's final Scratch coordinate on the canvas after the playthrough.
+     * @returns Array<number> containing the k-nearest distances to the player.
      */
     private kNearestNeighbours(player: ScratchPosition): number[] {
         const distances = this._behaviourArchive.map(archivePoint => archivePoint.distanceTo(player));
@@ -51,7 +51,7 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
      * Calculates the sparseness of a Network's behaviour by calculating the average distance to the k-nearest
      * neighbours.
      * @param network the network whose solution should be evaluated in terms of novelty.
-     * @returns sparseness of the given network's solution, determining how novel the solution is.
+     * @returns number representing the sparseness of the given network's behaviour.
      */
     protected sparseNess(network: NetworkChromosome): number {
         const playerPosition = this.getFinalPosition(network);
@@ -61,7 +61,7 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
     }
 
     /**
-     * This function adds the behaviour of the given network to the archive of encountered behaviours if it appears
+     * Adds the behaviour of the given network to the archive of encountered behaviours if it appears
      * to be novel enough.
      * @param network the network whose solution might be added to the behaviour archive.
      * @param sparseNess the metric defining the novelty of a given solution.
@@ -76,9 +76,9 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
     }
 
     /**
-     * Gathers the final position of the given player sprite.
+     * Gathers the final position of the player sprite.
      * @param network the network from whose inputNodes the last position of the player sprite will be extracted.
-     * @returns ScratchPosition containing the player sprite's final coordinates.
+     * @returns ScratchPosition containing the player sprite's final coordinates on the Scratch canvas.
      */
     private getFinalPosition(network: NetworkChromosome): ScratchPosition {
         const playerEnd = {
@@ -91,7 +91,7 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
     }
 
     /**
-     * Determines whether the point is already contained inside the behaviourArchive.
+     * Determines whether a given point is already contained within the behaviourArchive.
      * @param point the point which might be added to the behaviour archive.
      * @returns boolean determining if the point is present in the behaviour archive.
      */

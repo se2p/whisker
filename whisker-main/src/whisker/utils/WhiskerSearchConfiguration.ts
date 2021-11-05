@@ -41,7 +41,6 @@ import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnes
 import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
 import {SurviveFitness} from "../whiskerNet/NetworkFitness/SurviveFitness";
-import {CombinedNetworkFitness} from "../whiskerNet/NetworkFitness/CombinedNetworkFitness";
 import {InputExtraction} from "../whiskerNet/InputExtraction";
 import {ExecutedEventsStoppingCondition} from "../search/stoppingconditions/ExecutedEventsStoppingCondition";
 import {FitnessEvaluationStoppingCondition} from "../search/stoppingconditions/FitnessEvaluationStoppingCondition";
@@ -210,7 +209,7 @@ export class WhiskerSearchConfiguration {
         properties.doPrintPopulationRecord = doPrintPopulationRecord;
 
         properties.stoppingCondition = this._getStoppingCondition(this.dict['stoppingCondition']);
-        properties.networkFitness = this.getNetworkFitnessFunction(this.dict['networkFitness'])
+        properties.networkFitness = this.getNetworkFitnessFunction(this.dict['networkFitness']);
         return properties;
     }
 
@@ -441,13 +440,6 @@ export class WhiskerSearchConfiguration {
         else if (networkFitnessDef === 'novelty') {
             return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
                 fitnessFunction['archiveThreshold']);
-        } else if (networkFitnessDef === 'combined') {
-            const fitnessFunctions = fitnessFunction["functions"];
-            const comb: NetworkFitnessFunction<NetworkChromosome>[] = [];
-            for (const functions of fitnessFunctions) {
-                comb.push(this.getNetworkFitnessFunction(functions));
-            }
-            return new CombinedNetworkFitness(...comb)
         }
         throw new ConfigException("No Network Fitness specified in the config file!")
     }

@@ -19,11 +19,6 @@ export class NeatChromosome extends NetworkChromosome {
     private readonly _mutationOp: Mutation<NetworkChromosome>
 
     /**
-     * The pure non-shared fitness value of the chromosome.
-     */
-    private _fitness = 0;
-
-    /**
      * Fitness value of the chromosome shared within its species.
      */
     private _sharedFitness = 0;

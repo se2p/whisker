@@ -61,12 +61,6 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     }
 
     /**
-     * Deep Clone of a concrete NeuroevolutionPopulation.
-     * @returns clone of concrete NeuroevolutionPopulation.
-     */
-    public abstract clone(): NeuroevolutionPopulation<C>;
-
-    /**
      * Generates an initial population of networks.
      */
     public abstract generatePopulation(): void
@@ -75,6 +69,12 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
      * Generates a new generation of networks by evolving the current population.
      */
     public abstract evolve(): void
+
+    /**
+     * Deep Clone of a concrete NeuroevolutionPopulation.
+     * @returns clone of concrete NeuroevolutionPopulation.
+     */
+    public abstract clone(): NeuroevolutionPopulation<C>;
 
     /**
      * Transform this NeuroevolutionPopulation into a JSON representation.

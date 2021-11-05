@@ -14,7 +14,7 @@ describe("InputNode Tests", () => {
     })
 
     test("Constructor Test", () => {
-        expect(inputNode.id).toEqual(1);
+        expect(inputNode.uID).toEqual(1);
         expect(inputNode.activationFunction).toEqual(ActivationFunction.NONE);
         expect(inputNode.type).toEqual(NodeType.INPUT);
         expect(inputNode.nodeValue).toEqual(0);
@@ -47,7 +47,7 @@ describe("InputNode Tests", () => {
 
     test("Clone Test", () => {
         const clone = inputNode.clone();
-        expect(clone.id).toEqual(inputNode.id);
+        expect(clone.uID).toEqual(inputNode.uID);
         expect(clone.equals(inputNode)).toBeTruthy();
         expect(clone === inputNode).toBeFalsy();
     })

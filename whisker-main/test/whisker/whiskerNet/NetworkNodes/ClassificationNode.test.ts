@@ -21,7 +21,7 @@ describe("classificationNode Tests", () => {
 
         const classificationNode = new ClassificationNode(10, new WaitEvent(), ActivationFunction.SIGMOID);
 
-        expect(classificationNode.id).toBe(10);
+        expect(classificationNode.uID).toBe(10);
         expect(classificationNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(classificationNode.type).toBe(NodeType.OUTPUT);
         expect(classificationNode.nodeValue).toBe(0);
@@ -70,7 +70,7 @@ describe("classificationNode Tests", () => {
 
     test("Clone Test", () => {
         const clone = classificationNode.clone();
-        expect(clone.id).toBe(classificationNode.id);
+        expect(clone.uID).toBe(classificationNode.uID);
         expect(clone.equals(classificationNode)).toBe(true);
         expect(clone === classificationNode).toBe(false);
     })

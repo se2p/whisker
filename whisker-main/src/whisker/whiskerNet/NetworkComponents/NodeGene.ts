@@ -1,85 +1,88 @@
 import {ConnectionGene} from "./ConnectionGene";
-import {List} from "../../utils/List";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
 
 export abstract class NodeGene {
 
     /**
-     * The id of a Node within a network
+     * Counter used for assigning the unique identifier.
      */
-    private readonly _id: number
+    private static _uIDCounter = 0;
 
     /**
-     * The value of a Node: sum of all incoming nodes * weights
+     * The unique identifier of a node.
      */
-    private _nodeValue: number
+    private _uID: number
 
     /**
-     * The activation function of this node
+     * The value of a node, which is defined to be the sum of all incoming connections.
+     */
+    private _nodeValue = 0;
+
+    /**
+     * The activation function of this node.
      */
     private readonly _activationFunction: number
 
     /**
-     * The activation Value of a node: activationFunction(nodeValue)
+     * The activation value of a node, which is defined to be the activation function applied to the node value.
      */
     private _activationValue: number
 
     /**
-     * Counts how often this node has been activated (used for network activation)
+     * Counts how often this node has been activated.
      */
-    private _activationCount: number
+    private _activationCount = 0;
 
     /**
-     * True if the node has been activated at least once within one network activation
+     * True if the node has been activated at least once within one network activation.
      */
-    private _activatedFlag: boolean
+    private _activatedFlag = false;
 
     /**
-     * List of all incoming connections of this node.
+     * Holds all incoming connections.
      */
-    private _incomingConnections: List<ConnectionGene>
+    private _incomingConnections: ConnectionGene[] = []
 
     /**
-     * Activation value of a previous time step
+     * Activation value of a previous time step.
      */
-    private _lastActivationValue: number
+    private _lastActivationValue = 0;
 
     /**
-     * True if this node has been traversed. Used for checking if a network is a recurrent network
+     * True if this node has been traversed.
      */
-    private _traversed: boolean
+    private _traversed = false;
 
     /**
-     * The type of the node (Input | Hidden | Output)
+     * The type of the node (Input | Bias | Hidden | Output).
      */
     private readonly _type: NodeType
 
     /**
-     * Creates a new Node
-     * @param id the identification number of the node within the network
+     * Creates a new node.
      * @param activationFunction the activation function of the node
      * @param type the type of the node (Input | Hidden | Output)
+     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
+     * new node gene.
      */
-    protected constructor(id: number, activationFunction: ActivationFunction, type: NodeType) {
-        this._id = id
+    protected constructor(activationFunction: ActivationFunction, type: NodeType, incrementIDCounter = true) {
+        this._uID = NodeGene._uIDCounter;
         this._activationFunction = activationFunction;
         this._type = type;
-        this._activatedFlag = false;
-        this._activationCount = 0;
-        this._traversed = false;
-        this._activationFunction = activationFunction;
-        this._incomingConnections = new List<ConnectionGene>();
+        if(incrementIDCounter){
+            NodeGene._uIDCounter++;
+        }
     }
 
-
     /**
-     * Calculates the activation value corresponding to the defined activation function
+     * Calculates the activation value of the node based on the node value and the activation function.
+     * @returns number activation value of the given node.
      */
     public abstract getActivationValue(): number
 
     /**
-     * Resets the node
+     * Resets the node.
      */
     public reset(): void {
         this.activationCount = 0;
@@ -90,24 +93,20 @@ export abstract class NodeGene {
         this.traversed = false;
     }
 
-    /**
-     * Equal check: Two nodes are equal if they have the same id
-     * @param other the node this is compared to
-     */
     public abstract equals(other: unknown): boolean
 
     public abstract clone(): NodeGene
 
     abstract toString(): string
 
-    /**
-     * Transforms this NodeGene into a JSON representation.
-     * @return Record containing most important attributes keys mapped to their values.
-     */
-    abstract toJSON();
+    abstract toJSON(): Record<string, (number | string)>;
 
-    get id(): number {
-        return this._id;
+    get uID(): number {
+        return this._uID;
+    }
+
+    set uID(value: number) {
+        this._uID = value;
     }
 
     get nodeValue(): number {
@@ -142,11 +141,11 @@ export abstract class NodeGene {
         this._activatedFlag = value;
     }
 
-    get incomingConnections(): List<ConnectionGene> {
+    get incomingConnections(): ConnectionGene[] {
         return this._incomingConnections;
     }
 
-    set incomingConnections(value: List<ConnectionGene>) {
+    set incomingConnections(value: ConnectionGene[]) {
         this._incomingConnections = value;
     }
 
