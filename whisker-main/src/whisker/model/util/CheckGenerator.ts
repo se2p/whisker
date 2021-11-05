@@ -437,7 +437,8 @@ export abstract class CheckGenerator {
 
     /**
      * Get a method checking whether an attribute of a sprite changed.
-     * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText;
+     * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText
+     * (only = allowed);
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
@@ -460,7 +461,11 @@ export abstract class CheckGenerator {
         const spriteName = sprite.name;
         ModelUtil.checkAttributeExistence(t, sprite, attrName);
 
-        // Note sayText cannot be changed, this predicate works then only with change operand =
+        // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
+        // is not a numerical value and e.g. an increase (+) on a string is not desired to be representable. An
+        // AttributeChange predicate with sayText fails in the execution with e.g.
+        // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
+        // Therefore no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
             CheckGenerator.registerOnMoveAttrChange(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
                 attrName, change);
