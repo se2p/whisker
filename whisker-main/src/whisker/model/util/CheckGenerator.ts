@@ -143,6 +143,9 @@ export abstract class CheckGenerator {
             || attrName == "currentCostumeName" || attrName == "rotationStyle") {
             CheckGenerator.attributeCompOnVisual(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex, attrName,
                 comparison, attrValue);
+        } else if (attrName == "sayText") {
+            CheckGenerator.attributeCompOnOutput(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
+                attrName, comparison, attrValue);
         }
 
         // without movement
@@ -188,6 +191,20 @@ export abstract class CheckGenerator {
         const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
             comparison, attrValue);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
+            try {
+                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+            } catch (e) {
+                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+            }
+        });
+    }
+
+    private static attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                         spriteName: string, spriteNameRegex: string, attrName: string,
+                                         comparison: string, attrValue: string) {
+        const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
+            comparison, attrValue);
+        cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
@@ -250,6 +267,8 @@ export abstract class CheckGenerator {
                 } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
                     || attrName == "currentCostumeName" || attrName == "rotationStyle") {
                     cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, predicate)
+                } else if (attrName == "sayText") {
+                    cu.registerOutput(spriteName, eventString, edgeLabel, graphID, predicate);
                 }
             })
         }
@@ -441,6 +460,7 @@ export abstract class CheckGenerator {
         const spriteName = sprite.name;
         ModelUtil.checkAttributeExistence(t, sprite, attrName);
 
+        // Note sayText cannot be changed, this predicate works then only with change operand =
         if (attrName == "x" || attrName == "y") {
             CheckGenerator.registerOnMoveAttrChange(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
                 attrName, change);
