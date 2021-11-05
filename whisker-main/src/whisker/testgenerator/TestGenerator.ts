@@ -54,7 +54,7 @@ export abstract class TestGenerator {
             .addProperties(this._config.searchAlgorithmProperties);
         if (initializeFitnessFunction) {
             builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.searchAlgorithmProperties.chromosomeLength,
+                this._config.searchAlgorithmProperties['chromosomeLength'], // FIXME: unsafe access
                 this._config.getFitnessFunctionTargets());
             this._fitnessFunctions = builder.fitnessFunctions;
         }
@@ -65,7 +65,7 @@ export abstract class TestGenerator {
     protected extractCoverageGoals(): Map<number, FitnessFunction<any>> {
         return new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.searchAlgorithmProperties.chromosomeLength,
+                this._config.searchAlgorithmProperties['chromosomeLength'], // FIXME: unsafe access
                 this._config.getFitnessFunctionTargets()).fitnessFunctions;
     }
 

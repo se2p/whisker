@@ -66,6 +66,8 @@ describe('MOSA', () => {
             mutationProbability,
             crossoverProbability,
             stoppingCondition,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         builder
@@ -119,6 +121,8 @@ describe('MOSA', () => {
             crossoverProbability,
             mutationProbability,
             stoppingCondition,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();

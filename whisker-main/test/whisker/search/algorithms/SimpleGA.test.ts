@@ -54,7 +54,9 @@ describe('SimpleGA', () => {
                 new FixedIterationsStoppingCondition(1000),
                 new OptimalSolutionStoppingCondition()),
             mutationProbability: 0.2,
-            crossoverProbability: 0.8
+            crossoverProbability: 0.8,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
@@ -83,6 +85,10 @@ describe('SimpleGA', () => {
                 new FixedIterationsStoppingCondition(1000), // Plenty time...
                 new OptimalSolutionStoppingCondition()
             ),
+            testGenerator: undefined,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            integerRange: undefined
         };
         const fitnessFunction = new OneMaxFitnessFunction(properties.populationSize);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());

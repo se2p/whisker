@@ -20,7 +20,7 @@
 
 import {Chromosome} from '../Chromosome';
 import {List} from '../../utils/List';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
+import {MIOProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
@@ -37,6 +37,11 @@ import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessF
  * @author Adina Deiner
  */
 export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
+
+    /**
+     * Defines SearchParameters set within the config file.
+     */
+    protected _properties: MIOProperties<C>;
 
     /**
      * Function determining how good a chromosome performs with respect to a target statement.
@@ -122,7 +127,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._chromosomeGenerator = generator;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>): void {
+    setProperties(properties: MIOProperties<C>): void {
         this._properties = properties;
         this._stoppingCondition = this._properties.stoppingCondition;
         this.extractRandomSelectionProbabilities();

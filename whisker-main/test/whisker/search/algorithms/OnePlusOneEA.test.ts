@@ -52,6 +52,10 @@ describe('OnePlusOneEa', () => {
             stoppingCondition: new OneOfStoppingCondition(
                 new FixedIterationsStoppingCondition(1000),
                 new OptimalSolutionStoppingCondition()),
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
         };
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
@@ -79,6 +83,10 @@ describe('OnePlusOneEa', () => {
             populationSize: 1,
             chromosomeLength: 10,
             stoppingCondition,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);

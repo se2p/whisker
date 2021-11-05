@@ -20,7 +20,6 @@
 
 import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
@@ -47,12 +46,16 @@ describe('RandomSearch', () => {
 
     test('Trivial bitstring with OneMax', async () => {
 
-        const properties: SearchAlgorithmProperties<any> = {
+        const properties = {
             populationSize: 1,
             chromosomeLength: 2,
             stoppingCondition: new OneOfStoppingCondition(
                 new FixedIterationsStoppingCondition(1000),
                 new OptimalSolutionStoppingCondition()),
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
@@ -79,7 +82,11 @@ describe('RandomSearch', () => {
         const properties = {
             populationSize: 1,
             chromosomeLength: 2,
-            stoppingCondition
+            stoppingCondition,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);

@@ -19,7 +19,7 @@
  */
 
 import {FitnessFunction} from "./FitnessFunction";
-import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
+import {GeneticAlgorithmProperties, SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
 import {SingleBitFitnessFunction} from "../bitstring/SingleBitFitnessFunction";
 import {Selection} from "./Selection";
 import {SearchAlgorithm} from "./SearchAlgorithm";
@@ -35,7 +35,6 @@ import {Chromosome} from "./Chromosome";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {BitstringChromosomeGenerator} from "../bitstring/BitstringChromosomeGenerator";
-import {BitstringChromosome} from "../bitstring/BitstringChromosome";
 import {BitflipMutation} from "../bitstring/BitflipMutation";
 import {SinglePointCrossover} from "./operators/SinglePointCrossover";
 import {FitnessFunctionType} from "./FitnessFunctionType";
@@ -128,14 +127,17 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
             },
             startOfFocusedPhase: 0.5,
             stoppingCondition: new FixedIterationsStoppingCondition(1000),
+            integerRange: undefined,
+            testGenerator: undefined
         };
 
         this._chromosomeGenerator = new BitstringChromosomeGenerator(
-            this._properties as unknown as SearchAlgorithmProperties<BitstringChromosome>,
+            this._properties as GeneticAlgorithmProperties<any>,
             new BitflipMutation(),
             new SinglePointCrossover()) as unknown as ChromosomeGenerator<C>;
 
-        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, this._properties.chromosomeLength, new List());
+        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT,
+            this._properties['chromosomeLength'], new List());
 
         this._selectionOperator = new RankSelection();
     }

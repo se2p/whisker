@@ -19,7 +19,7 @@
  */
 
 import {ChromosomeGenerator} from '../search/ChromosomeGenerator';
-import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
+import {GeneticAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {List} from '../utils/List';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Randomness} from "../utils/Randomness";
@@ -34,7 +34,7 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
 
     private _crossoverOp: Crossover<BitstringChromosome>;
 
-    constructor(properties: SearchAlgorithmProperties<BitstringChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<BitstringChromosome>,
                 mutationOp: Mutation<BitstringChromosome>,
                 crossoverOp: Crossover<BitstringChromosome>) {
         this._length = properties.chromosomeLength;

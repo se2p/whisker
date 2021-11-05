@@ -22,66 +22,119 @@ import {StoppingCondition} from "./StoppingCondition";
 import {Chromosome} from "./Chromosome";
 
 /**
- * Stores all relevant properties from a search algorithm.
+ * Stores all relevant properties of a search algorithm.
  *
  * @author Sophia Geserer
  */
-export interface SearchAlgorithmProperties<C extends Chromosome> {
+export type SearchAlgorithmProperties<C extends Chromosome> =
+    | RandomSearchProperties<C>
+    | MIOProperties<C>
+    | OnePlusOneProperties<C>
+    | GeneticAlgorithmProperties<C>
+    ;
+
+type TestGenerator =
+    | "testGenerator"
+    | "random"
+    | "iterative"
+    | "manyObjective"
+    | "neuroevolution"
+    ;
+
+/**
+ * Properties common to all search algorithms.
+ */
+interface CommonProperties<C extends Chromosome> {
 
     /**
-     * The size of the population that will be initially generated.
+     * Defines the used TestGenerator approach
      */
-     populationSize?: number;
-
-    /**
-     * The length of a chromosome.
-     */
-     chromosomeLength?: number;
-
-    /**
-     * The probability for applying crossover to chromosomes.
-     */
-     crossoverProbability?: number;
-
-    /**
-     * The probability to apply mutation to a chromosome.
-     */
-     mutationProbability?: number;
-
-    /**
-     * The number of mutations on the same chromosome at different phases of the search.
-     */
-    maxMutationCount?: MaxMutationCount;
+    testGenerator: TestGenerator
 
     /**
      * The stopping condition for the corresponding search algorithm.
      */
     stoppingCondition: StoppingCondition<C>;
+}
+
+/**
+ * Properties that all algorithms expect Random Search have in common.
+ */
+interface AdditionalProperties<C extends Chromosome> extends CommonProperties<C> {
 
     /**
-     * The probability for sampling a random chromosome at different phases of the search
+     * The length of a chromosome.
      */
-    selectionProbability?: SelectionProbability;
-
-    /**
-     * The maximum number of chromosomes stored for a fitness function at different phases of the search.
-     */
-    maxArchiveSize?: MaxArchiveSize;
-
-    /**
-     * The percentage of iterations.
-     */
-    startOfFocusedPhase?: number;
+    chromosomeLength: number;
 
     /**
      * The allowed integer range.
      */
-    integerRange?: IntegerRange;
+    integerRange: IntegerRange;
+}
+
+/**
+ * Properties for Random Search.
+ */
+export type RandomSearchProperties<C extends Chromosome> = CommonProperties<C>;
+
+/**
+ * Properties for MIO.
+ */
+export interface MIOProperties<C extends Chromosome> extends AdditionalProperties<C> {
 
     /**
-     * Defines the used TestGenerator approach
+     * The number of mutations on the same chromosome at different phases of the search.
      */
-    testGenerator?: string
+    maxMutationCount: MaxMutationCount;
+
+    /**
+     * The probability for sampling a random chromosome at different phases of the search
+     */
+    selectionProbability: SelectionProbability;
+
+    /**
+     * Defines the percentage of depleted search resources after which MIO's focus phase starts.
+     */
+    startOfFocusedPhase: number;
+
+    /**
+     * The maximum number of chromosomes stored for a fitness function at different phases of the search.
+     */
+    maxArchiveSize: MaxArchiveSize;
+}
+
+/**
+ * Properties for (1+1)EA.
+ */
+export interface OnePlusOneProperties<C extends Chromosome> extends AdditionalProperties<C> {
+
+    /**
+     * The probability to apply mutation to a chromosome.
+     */
+    mutationProbability: number;
+}
+
+/**
+ * Properties for most genetic search algorithms. Note that some search algorithms define the own, specific properties,
+ * such as MIO, Random Search and (1+1)EA.
+ */
+export interface GeneticAlgorithmProperties<C extends Chromosome> extends AdditionalProperties<C> {
+
+    /**
+     * The size of the population that will be initially generated.
+     */
+    populationSize: number;
+
+    /**
+     * The probability to apply mutation to a chromosome.
+     */
+    mutationProbability: number;
+
+    /**
+     * The probability for applying crossover to chromosomes.
+     */
+    crossoverProbability: number;
 }
 
 export interface SelectionProbability {
@@ -98,6 +151,7 @@ export interface SelectionProbability {
 }
 
 export interface IntegerRange {
+
     /**
      * The minimum of the range.
      */
@@ -110,6 +164,7 @@ export interface IntegerRange {
 }
 
 export interface MaxArchiveSize {
+
     /**
      * The maximum number of chromosomes stored for a fitness function at start.
      */
@@ -122,6 +177,7 @@ export interface MaxArchiveSize {
 }
 
 export interface MaxMutationCount {
+
     /**
      * The number of mutations on the same chromosome at start.
      */

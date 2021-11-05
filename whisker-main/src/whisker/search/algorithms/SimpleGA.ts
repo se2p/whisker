@@ -20,7 +20,7 @@
 
 import {Chromosome} from '../Chromosome';
 import {List} from '../../utils/List';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
+import {GeneticAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Selection} from "../Selection";
@@ -29,6 +29,11 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
+
+    /**
+     * Defines SearchParameters set within the config file.
+     */
+    protected _properties: GeneticAlgorithmProperties<C>;
 
     /**
      * Defines the selection operator used by this SimpleGA instance.
@@ -62,7 +67,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._selectionOperator = selectionOperator;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>): void {
+    setProperties(properties: GeneticAlgorithmProperties<C>): void {
         this._properties = properties;
         this._stoppingCondition = this._properties.stoppingCondition;
     }

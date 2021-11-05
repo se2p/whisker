@@ -19,7 +19,6 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
@@ -60,6 +59,10 @@ describe('MIO', () => {
             stoppingCondition : new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations),
                 new OptimalSolutionStoppingCondition()),
             startOfFocusedPhase: 0.5,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         searchAlgorithm = builder
@@ -117,6 +120,8 @@ describe('MIO', () => {
             maxArchiveSize: { start, focusedPhase },
             maxMutationCount: { start, focusedPhase },
             stoppingCondition,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());

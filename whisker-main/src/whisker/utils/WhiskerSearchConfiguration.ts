@@ -1,5 +1,5 @@
 import {Preconditions} from "./Preconditions";
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {GeneticAlgorithmProperties, SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {TestGenerator} from "../testgenerator/TestGenerator";
 import {RandomTestGenerator} from "../testgenerator/RandomTestGenerator";
 import {FixedIterationsStoppingCondition} from "../search/stoppingconditions/FixedIterationsStoppingCondition";
@@ -144,7 +144,7 @@ export class WhiskerSearchConfiguration {
     }
 
     get searchAlgorithmProperties(): SearchAlgorithmProperties<any> {
-        return this._searchAlgorithmProperties;
+        return this._searchAlgorithmProperties as SearchAlgorithmProperties<any>;
     }
 
     public setNeuroevolutionProperties(): NeuroevolutionProperties<any> {
@@ -344,7 +344,7 @@ export class WhiskerSearchConfiguration {
     public getEventSelector(): EventSelector {
         switch (this._config['eventSelector']) {
             case 'clustering': {
-                const { integerRange } = this._config;
+                const {integerRange} = this._config;
                 return new ClusteringEventSelector(integerRange);
             }
             case 'interleaving':
@@ -356,15 +356,15 @@ export class WhiskerSearchConfiguration {
     public getChromosomeGenerator(): ChromosomeGenerator<any> {
         switch (this._config['chromosome']['type']) {
             case 'bitString':
-                return new BitstringChromosomeGenerator(this.searchAlgorithmProperties,
+                return new BitstringChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
                     this._getMutationOperator(),
                     this._getCrossoverOperator());
             case 'integerList':
-                return new IntegerListChromosomeGenerator(this.searchAlgorithmProperties,
+                return new IntegerListChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
                     this._getMutationOperator(),
                     this._getCrossoverOperator());
             case 'variableLengthTest':
-                return new VariableLengthTestChromosomeGenerator(this.searchAlgorithmProperties,
+                return new VariableLengthTestChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
                     this._getMutationOperator(),
                     this._getCrossoverOperator(),
                     this._config['chromosome']['minSampleLength'],
@@ -382,7 +382,7 @@ export class WhiskerSearchConfiguration {
             }
             case 'test':
             default:
-                return new TestChromosomeGenerator(this.searchAlgorithmProperties,
+                return new TestChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
                     this._getMutationOperator(),
                     this._getCrossoverOperator());
         }
@@ -512,7 +512,8 @@ export class WhiskerSearchConfiguration {
         if (this._config["debugLogging"] == true) {
             return (...data) => console.log('DEBUG:', ...data);
         } else {
-            return () => { /* no-op */ };
+            return () => { /* no-op */
+            };
         }
     }
 }

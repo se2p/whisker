@@ -19,7 +19,7 @@
  */
 
 import {ChromosomeGenerator} from '../search/ChromosomeGenerator';
-import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
+import {GeneticAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {List} from '../utils/List';
 import {IntegerListChromosome} from "./IntegerListChromosome";
 import {Randomness} from "../utils/Randomness";
@@ -38,7 +38,7 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
 
     private _crossoverOp: Crossover<IntegerListChromosome>;
 
-    constructor(properties: SearchAlgorithmProperties<IntegerListChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<IntegerListChromosome>,
                 mutationOp: Mutation<IntegerListChromosome>,
                 crossoverOp: Crossover<IntegerListChromosome>) {
         this._min = properties.integerRange.min;

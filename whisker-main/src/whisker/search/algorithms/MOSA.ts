@@ -20,7 +20,7 @@
 
 import {Chromosome} from '../Chromosome';
 import {List} from '../../utils/List';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
+import {GeneticAlgorithmProperties, SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
@@ -36,6 +36,11 @@ import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
  * @author Adina Deiner
  */
 export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
+
+    /**
+     * Defines SearchParameters set within the config file.
+     */
+    protected _properties: GeneticAlgorithmProperties<C>;
 
     /**
      * Defines the selection operator used by this MOSA instance.
@@ -61,7 +66,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._chromosomeGenerator = generator;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>): void {
+    setProperties(properties: GeneticAlgorithmProperties<C>): void {
         this._properties = properties;
         this._stoppingCondition = this._properties.stoppingCondition;
     }

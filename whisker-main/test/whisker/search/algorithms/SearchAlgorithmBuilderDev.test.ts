@@ -19,7 +19,6 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
@@ -64,7 +63,11 @@ describe('BuillderBitstringChromosome', () => {
         const properties = {
             populationSize,
             chromosomeLength,
-            stoppingCondition
+            stoppingCondition,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
         };
 
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties,
