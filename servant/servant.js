@@ -141,6 +141,9 @@ async function runGeneticSearch (browser, downloadPath) {
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
+    }).on('pageerror', async () => {
+        await browser.close();
+        process.exit(1);
     });
 
     function optionallyEnableConsoleForward () {
