@@ -97,7 +97,7 @@ describe('MIO', () => {
     });
 
     test('Get current solution', async () => {
-        expect(searchAlgorithm.getCurrentSolution().size()).toBe(0)
+        expect(searchAlgorithm.getCurrentSolution().length).toBe(0)
         const archive = await searchAlgorithm.findSolution();
         const solutions = Arrays.distinct(archive.values());
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
