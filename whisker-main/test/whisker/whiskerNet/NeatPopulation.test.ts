@@ -3,7 +3,6 @@ import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromoso
 import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";

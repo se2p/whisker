@@ -136,7 +136,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         // Now let the reproduction start
         const offspring = [];
         for (const specie of this.species) {
-            offspring.push(specie.breed(this, this.species));
+            offspring.push(...specie.breed(this, this.species));
         }
 
         // Speciate the produced offspring
