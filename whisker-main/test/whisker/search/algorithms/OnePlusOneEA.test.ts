@@ -30,7 +30,6 @@ import {SinglePointCrossover} from "../../../../src/whisker/search/operators/Sin
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
-import {List} from "../../../../src/whisker/utils/List";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 
@@ -59,7 +58,7 @@ describe('OnePlusOneEa', () => {
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, new List());
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, []);
 
 
         const search = builder.buildSearchAlgorithm();

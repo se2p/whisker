@@ -1,4 +1,3 @@
-import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkNodes/NodeGene";
 import {ConnectionGene} from "../ConnectionGene";
 import {Randomness} from "../../utils/Randomness";
@@ -27,7 +26,7 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
      * @param inputRate the probability multiple input features are connected to the network
      */
     constructor(mutationConfig: Record<string, (string | number)>, crossoverConfig: Record<string, (string | number)>,
-                inputs: Map<string, Map<string, number>>, scratchEvents: List<ScratchEvent>,
+                inputs: Map<string, Map<string, number>>, scratchEvents: ScratchEvent[],
                 inputRate: number) {
         super(mutationConfig, crossoverConfig, inputs, scratchEvents);
         this._inputRate = inputRate;
@@ -39,12 +38,12 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
      * @param outputNodes all outputNodes of the network
      * @return the connectionGene List
      */
-    createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene> {
-        const connections = new List<ConnectionGene>();
+    createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
+        const connections = [];
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
             // Choose a random Sprite to add its input to the network;
-            const sprite = this._random.pickRandomElementFromList(inputNodes);
+            const sprite = this._random.pick(inputNodes);
 
             // For each input of the Sprite create a connection to each Output-Node
             for (const inputNode of sprite) {
@@ -53,8 +52,8 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
                     // Check if the connection does not exist yet.
                     if (NeuroevolutionUtil.findConnection(connections, newConnection) === null) {
                         NeuroevolutionUtil.assignInnovationNumber(newConnection);
-                        connections.add(newConnection)
-                        outputNode.incomingConnections.add(newConnection);
+                        connections.push(newConnection)
+                        outputNode.incomingConnections.push(newConnection);
                     }
                 }
             }

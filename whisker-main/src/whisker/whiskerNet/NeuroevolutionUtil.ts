@@ -1,7 +1,5 @@
 import {Species} from "./NeuroevolutionPopulations/Species";
-import {NeatPopulation} from "./NeuroevolutionPopulations/NeatPopulation";
 import {NetworkChromosome} from "./NetworkChromosome";
-import {List} from "../utils/List";
 import {NeuroevolutionProperties} from "./NeuroevolutionProperties";
 import {ConnectionGene} from "./ConnectionGene";
 import {NeatMutation} from "./NeatMutation";
@@ -20,10 +18,10 @@ export class NeuroevolutionUtil {
                            properties: NeuroevolutionProperties<NetworkChromosome>): void {
 
         // If we have no species at all so far create the first one
-        if (population.species.isEmpty()) {
+        if (population.species.length === 0) {
             const newSpecies = new Species(population.speciesCount, true, properties);
             population.speciesCount++;
-            population.species.add(newSpecies);
+            population.species.push(newSpecies);
             newSpecies.addChromosome(chromosome);
             chromosome.species = newSpecies;
 
@@ -33,7 +31,7 @@ export class NeuroevolutionUtil {
             let foundSpecies = false;
             for (const specie of population.species) {
                 // Get a representative of the specie and calculate the compatibility distance
-                const representative = specie.chromosomes.get(0);
+                const representative = specie.chromosomes[0];
                 const compatDistance = NeuroevolutionUtil.compatibilityDistance(chromosome, representative, properties.excessCoefficient,
                     properties.disjointCoefficient, properties.weightCoefficient);
 
@@ -50,7 +48,7 @@ export class NeuroevolutionUtil {
             if (!foundSpecies) {
                 const newSpecies = new Species(population.speciesCount, true, properties);
                 population.speciesCount++;
-                population.species.add(newSpecies)
+                population.species.push(newSpecies)
                 newSpecies.addChromosome(chromosome);
                 chromosome.species = newSpecies;
             }
@@ -84,8 +82,8 @@ export class NeuroevolutionUtil {
         let weight_diff = 0;
 
         // size of both connections and the biggest size in terms of connections
-        const size1 = chromosome1.connections.size();
-        const size2 = chromosome2.connections.size();
+        const size1 = chromosome1.connections.length;
+        const size2 = chromosome2.connections.length;
         const maxSize = Math.max(size1, size2);
 
         // Iterators through the connections of each chromosome
@@ -104,8 +102,8 @@ export class NeuroevolutionUtil {
             } else {
 
                 // Get the connection at the position
-                const connection1 = chromosome1.connections.get(i1);
-                const connection2 = chromosome2.connections.get(i2);
+                const connection1 = chromosome1.connections[i1];
+                const connection2 = chromosome2.connections[i2];
 
                 // Extract the innovation numbers
                 const innovation1 = connection1.innovation;
@@ -141,7 +139,7 @@ export class NeuroevolutionUtil {
      * @param connection the connection which should be searched in the list of all connections
      * @return the found connection of the connection list
      */
-    public static findConnection(connections: List<ConnectionGene>, connection: ConnectionGene): ConnectionGene {
+    public static findConnection(connections: ConnectionGene[], connection: ConnectionGene): ConnectionGene {
         for (const con of connections) {
             if (con.equalsByNodes(connection)) return con;
         }
@@ -160,7 +158,7 @@ export class NeuroevolutionUtil {
         // If Not assign a new one
         else {
             newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
-            NeatMutation._innovations.add(newInnovation);
+            NeatMutation._innovations.push(newInnovation);
         }
     }
 
@@ -178,7 +176,7 @@ export class NeuroevolutionUtil {
      * @param network the network over which the softmax function should be calculated
      * @param events the list of available events for which the softmax function should be calculated
      */
-    public static softmaxEvents(network: NetworkChromosome, events: List<ScratchEvent>): number[] {
+    public static softmaxEvents(network: NetworkChromosome, events: ScratchEvent[]): number[] {
         const result = []
         let denominator = 0;
         for (const event of events) {

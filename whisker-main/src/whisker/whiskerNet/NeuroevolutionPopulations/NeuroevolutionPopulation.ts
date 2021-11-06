@@ -1,9 +1,9 @@
-import {List} from "../../utils/List";
 import {NetworkChromosome} from "../NetworkChromosome";
 import {Species} from "./Species";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import Arrays from "../../utils/Arrays";
 
 export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
 
@@ -25,12 +25,12 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     /**
      * Saves all networks of the current population.
      */
-    private readonly _chromosomes = new List<C>();
+    private readonly _chromosomes: C[] = [];
 
     /**
      * Saves all species which are currently existent.
      */
-    private readonly _species = new List<Species<C>>();
+    private readonly _species: Species<C>[] = [];
 
     /**
      * Number of species we want to maintain through the generations.
@@ -103,7 +103,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     public generatePopulation(): void {
         while (this.populationSize() < this.startSize) {
             const chromosome = this.generator.get();
-            this.chromosomes.add(chromosome)
+            this.chromosomes.push(chromosome)
             NeuroevolutionUtil.speciate(chromosome, this, this.properties);
         }
         console.log("Starting Species: ", this.species);
@@ -129,14 +129,14 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
             if (chromosome.hasDeathMark) {
                 const specie = chromosome.species;
                 specie.removeChromosome(chromosome);
-                this.chromosomes.remove(chromosome);
+                Arrays.remove(this.chromosomes, chromosome);
             }
         }
 
         // Now let the reproduction start
-        const offspring = new List<C>()
+        const offspring = [];
         for (const specie of this.species) {
-            offspring.addList(specie.breed(this, this.species));
+            offspring.push(specie.breed(this, this.species));
         }
 
         // Speciate the produced offspring
@@ -149,14 +149,14 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
             const specie = chromosome.species;
             specie.removeChromosome(chromosome);
         }
-        this.chromosomes.clear();
+        Arrays.clear(this.chromosomes);
 
         // Remove empty species and age the ones that survive.
         // Furthermore, add the members of the surviving species to the population List
-        const doomedSpecies = new List<Species<C>>();
+        const doomedSpecies = [];
         for (const specie of this._species) {
-            if (specie.chromosomes.size() === 0) {
-                doomedSpecies.add(specie);
+            if (specie.chromosomes.length === 0) {
+                doomedSpecies.push(specie);
             } else {
                 // Give the new species an age bonus!
                 if (specie.isNovel)
@@ -164,12 +164,12 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
                 else
                     specie.age++;
                 for (const chromosome of specie.chromosomes) {
-                    this.chromosomes.add(chromosome);
+                    this.chromosomes.push(chromosome);
                 }
             }
         }
         for (const specie of doomedSpecies) {
-            this.species.remove(specie);
+            Arrays.remove(this.species, specie);
         }
         this.generation++;
     }
@@ -180,9 +180,9 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     private updateCompatibilityThreshold(): void {
         const compatibilityModifier = 0.3;
         if (this.generation > 1) {
-            if (this.species.size() < this.numberOfSpeciesTargeted)
+            if (this.species.length < this.numberOfSpeciesTargeted)
                 this.properties.distanceThreshold -= compatibilityModifier;
-            else if (this.species.size() > this.numberOfSpeciesTargeted)
+            else if (this.species.length > this.numberOfSpeciesTargeted)
                 this.properties.distanceThreshold += compatibilityModifier;
 
             if (this.properties.distanceThreshold < 0.3)
@@ -195,7 +195,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
      * @return population Size
      */
     public populationSize(): number {
-        return this.chromosomes.size();
+        return this.chromosomes.length;
     }
 
     /**
@@ -231,17 +231,17 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         population[`averageFitness`] = this.averageFitness;
         population[`HighestFitness`] = this.highestFitness;
         population[`PopulationChampionId`] = this.populationChampion.id;
-        for (let i = 0; i < this.species.size(); i++) {
-            population[`Species ${i}`] = this.species.get(i).toJSON();
+        for (let i = 0; i < this.species.length; i++) {
+            population[`Species ${i}`] = this.species[i].toJSON();
         }
         return population;
     }
 
-    get chromosomes(): List<C> {
+    get chromosomes(): C[] {
         return this._chromosomes;
     }
 
-    get species(): List<Species<C>> {
+    get species(): Species<C>[] {
         return this._species;
     }
 

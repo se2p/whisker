@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from "../../../../src/whisker/utils/List";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
@@ -48,21 +47,15 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
 describe('TournamentSelection', () => {
 
     test('Select best for maximizing fitness function', async () => {
-        const goodBits = new List<boolean>();
-        goodBits.add(true);
-        goodBits.add(true);
+        const goodBits = [true, true];
         const betterChromosome = new BitstringChromosome(goodBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const worseBits = new List<boolean>();
-        worseBits.add(false);
-        worseBits.add(false);
+        const worseBits = [false, false];
         const worseChromosome = new BitstringChromosome(worseBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const population = new List<BitstringChromosome>();
-        population.add(betterChromosome);
-        population.add(worseChromosome);
+        const population = [betterChromosome, worseChromosome];
 
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const selection = new TournamentSelection<BitstringChromosome>(20);
@@ -72,21 +65,15 @@ describe('TournamentSelection', () => {
     });
 
     test('Select best for minimizing fitness function', async () => {
-        const goodBits = new List<boolean>();
-        goodBits.add(true);
-        goodBits.add(true);
+        const goodBits = [true, true];
         const betterChromosome = new BitstringChromosome(goodBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const worseBits = new List<boolean>();
-        worseBits.add(false);
-        worseBits.add(false);
+        const worseBits = [false, false];
         const worseChromosome = new BitstringChromosome(goodBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const population = new List<BitstringChromosome>();
-        population.add(betterChromosome);
-        population.add(worseChromosome);
+        const population = [betterChromosome, worseChromosome];
 
         const fitnessFunction = new InverseOneMaxFitnessFunction(2);
         const selection = new TournamentSelection<BitstringChromosome>(20);

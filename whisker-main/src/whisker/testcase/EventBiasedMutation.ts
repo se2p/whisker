@@ -1,7 +1,6 @@
 
 import {TestChromosome} from "./TestChromosome";
 import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
-import { List } from "../utils/List";
 import { EventAndParameters } from "./ExecutionTrace";
 
 /**
@@ -36,11 +35,11 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
         this._probabilities = Array(numberOfCodons).fill(p);
     }
 
-    private _setSharedProbabilities(chromosome: TestChromosome, events: List<EventAndParameters>): void {
+    private _setSharedProbabilities(chromosome: TestChromosome, events: EventAndParameters[]): void {
         this._probabilities = EventBiasedMutation.computeSharedProbabilities(chromosome.getLength(), events);
     }
 
-    static computeSharedProbabilities(chromosomeLength: number, events: List<EventAndParameters>): number[] {
+    static computeSharedProbabilities(chromosomeLength: number, events: EventAndParameters[]): number[] {
        const indicesByEventType = new Map<string, number[]>();
 
         let codonIndex = 0;

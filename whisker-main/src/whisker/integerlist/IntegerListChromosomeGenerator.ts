@@ -20,7 +20,6 @@
 
 import {ChromosomeGenerator} from '../search/ChromosomeGenerator';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {List} from '../utils/List';
 import {IntegerListChromosome} from "./IntegerListChromosome";
 import {Randomness} from "../utils/Randomness";
 import {Mutation} from "../search/Mutation";
@@ -53,9 +52,9 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
      * @returns a random chromosome
      */
     get(): IntegerListChromosome {
-        const codons = new List<number>();
+        const codons = [];
         for (let i = 0; i < this._length; i++) {
-            codons.add(Randomness.getInstance().nextInt(this._min, this._max));
+            codons.push(Randomness.getInstance().nextInt(this._min, this._max));
         }
         return new IntegerListChromosome(codons, this._mutationOp, this._crossoverOp);
     }

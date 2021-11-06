@@ -20,7 +20,6 @@
 
 import {BitstringChromosome} from './BitstringChromosome';
 import {Mutation} from '../search/Mutation';
-import {List} from '../utils/List';
 import {Randomness} from '../utils/Randomness';
 
 
@@ -28,14 +27,14 @@ export class BitflipMutation implements Mutation<BitstringChromosome> {
 
     apply (chromosome: BitstringChromosome): BitstringChromosome {
         const oldBits = chromosome.getGenes(); // TODO: Immutable list?
-        const newBits = new List<boolean>();
-        const mutationProbability = 1.0 / oldBits.size();
+        const newBits = [];
+        const mutationProbability = 1.0 / oldBits.length;
 
         for (const bit of oldBits) {
             if (Randomness.getInstance().nextDouble() < mutationProbability) {
-                newBits.add(!bit);
+                newBits.push(!bit);
             } else {
-                newBits.add(bit);
+                newBits.push(bit);
             }
         }
 

@@ -19,22 +19,17 @@
  */
 
 import {BitstringChromosome} from '../../../src/whisker/bitstring/BitstringChromosome';
-import {List} from '../../../src/whisker/utils/List';
 import {SinglePointCrossover} from "../../../src/whisker/search/operators/SinglePointCrossover";
 import {BitflipMutation} from "../../../src/whisker/bitstring/BitflipMutation";
 
 describe('BitstringSinglePointCrossover', () => {
 
     test('False to true', () => {
-        const parent1Bits = new List<boolean>();
-        parent1Bits.add(false);
-        parent1Bits.add(false);
+        const parent1Bits = [false, false];
         const parent1 = new BitstringChromosome(parent1Bits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
-        const parent2Bits = new List<boolean>();
-        parent2Bits.add(true);
-        parent2Bits.add(true);
+        const parent2Bits = [true, true];
         const parent2 = new BitstringChromosome(parent2Bits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
@@ -43,10 +38,10 @@ describe('BitstringSinglePointCrossover', () => {
         const child1Bits = offspring.getFirst().getGenes();
         const child2Bits = offspring.getSecond().getGenes();
 
-        expect(child1Bits.size()).toBe(parent1Bits.size());
-        expect(child2Bits.size()).toBe(parent1Bits.size());
-        expect(child1Bits.get(0)).toBe(!child1Bits.get(1));
-        expect(child2Bits.get(0)).toBe(!child2Bits.get(1));
+        expect(child1Bits.length).toBe(parent1Bits.length);
+        expect(child2Bits.length).toBe(parent1Bits.length);
+        expect(child1Bits[0]).toBe(!child1Bits[1]);
+        expect(child2Bits[0]).toBe(!child2Bits[1]);
     });
 
 });

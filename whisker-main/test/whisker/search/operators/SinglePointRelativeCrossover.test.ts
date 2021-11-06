@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from "../../../../src/whisker/utils/List";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointRelativeCrossover} from "../../../../src/whisker/search/operators/SinglePointRelativeCrossover";
@@ -26,17 +25,11 @@ import {SinglePointRelativeCrossover} from "../../../../src/whisker/search/opera
 describe('SinglePointRelativeCrossover', () => {
 
     test('Select best for maximizing fitness function', () => {
-        const bits1 = new List<boolean>();
-        bits1.add(true);
-        bits1.add(true);
+        const bits1 = [true, true];
         const parent1 = new BitstringChromosome(bits1,
             new BitflipMutation(), new SinglePointRelativeCrossover<BitstringChromosome>());
 
-        const bits2 = new List<boolean>();
-        bits2.add(false);
-        bits2.add(false);
-        bits2.add(false);
-        bits2.add(false);
+        const bits2 = [false, false, false, false];
         const parent2 = new BitstringChromosome(bits2,
             new BitflipMutation(), new SinglePointRelativeCrossover<BitstringChromosome>());
 
@@ -50,7 +43,7 @@ describe('SinglePointRelativeCrossover', () => {
         let numFalse = 0;
 
         for (const bit of offspring1.getGenes()) {
-            if(bit === true ) {
+            if (bit === true) {
                 numTrue++;
             } else {
                 numFalse++;
@@ -62,7 +55,7 @@ describe('SinglePointRelativeCrossover', () => {
         expect(numFalse).toBeGreaterThan(0);
 
         for (const bit of offspring2.getGenes()) {
-            if(bit === true ) {
+            if (bit === true) {
                 numTrue++;
             } else {
                 numFalse++;

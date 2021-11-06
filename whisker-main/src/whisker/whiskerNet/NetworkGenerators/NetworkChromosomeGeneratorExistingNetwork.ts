@@ -1,4 +1,3 @@
-import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkNodes/NodeGene";
 import {ConnectionGene} from "../ConnectionGene";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
@@ -36,16 +35,16 @@ export class NetworkChromosomeGeneratorExistingNetwork extends NetworkChromosome
      * @param outputNodes all outputNodes of the network
      * @return the connectionGene List
      */
-    createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene> {
-        const connections = new List<ConnectionGene>();
+    createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
+        const connections = [];
         // For each inputNode create a connection to each outputNode.
-        for (const inputNodeVector of inputNodes.getElements()) {
+        for (const inputNodeVector of inputNodes) {
             for (const inputNode of inputNodeVector) {
                 for (const outputNode of outputNodes) {
                     const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
                     NeuroevolutionUtil.assignInnovationNumber(newConnection);
-                    connections.add(newConnection)
-                    outputNode.incomingConnections.add(newConnection);
+                    connections.push(newConnection)
+                    outputNode.incomingConnections.push(newConnection);
                 }
             }
         }

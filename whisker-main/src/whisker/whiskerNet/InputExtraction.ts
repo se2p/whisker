@@ -1,9 +1,10 @@
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
-import {List} from "../utils/List";
 
 import * as twgl from 'twgl.js';
+import Arrays from "../utils/Arrays";
+
 //const twgl = require('twgl.js');
 
 
@@ -26,7 +27,7 @@ export class InputExtraction {
                     spriteMap.set(target.sprite.name, spriteFeatures);
                 } else {
                     const distanceID = this.distanceFromOrigin(target);
-                    const cloneID = cloneMap.get(target.sprite.name).findElement(distanceID);
+                    const cloneID = Arrays.findElement(cloneMap.get(target.sprite.name), distanceID);
                     spriteMap.set(target.sprite.name + "Clone" + cloneID, spriteFeatures);
                 }
             }
@@ -40,16 +41,16 @@ export class InputExtraction {
      * @param vm the VM of the given Scratch-Project
      * @return A map mapping each original sprite having clones to a list of its clone distances.
      */
-    private static assignCloneIds(vm: VirtualMachine): Map<string, List<number>> {
-        const cloneMap = new Map<string, List<number>>();
+    private static assignCloneIds(vm: VirtualMachine): Map<string, number[]> {
+        const cloneMap = new Map<string, number[]>();
         for (const target of vm.runtime.targets) {
             // Get the original and traverse through the clones
             if (target.isOriginal) {
-                const cloneDistances = new List<number>();
+                const cloneDistances =[];
                 for (const clone of target.sprite.clones) {
                     // Check again for clones since the original itself is also saved in the clones list
                     if (!clone.isOriginal) {
-                        cloneDistances.add(this.distanceFromOrigin(clone));
+                        cloneDistances.push(this.distanceFromOrigin(clone));
                     }
                 }
                 // Sort the found cloneDistances and save them in the cloneMap.
@@ -67,7 +68,7 @@ export class InputExtraction {
      * @param cloneMap The position of a clone in the cloneMap determines its unique identifier.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, List<number>>,
+    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, number[]>,
                                           vm: VirtualMachine): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // stageWidth and stageHeight used for normalisation
@@ -104,7 +105,7 @@ export class InputExtraction {
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-Y", distances.dy);
                             } else {
                                 const distanceId = this.distanceFromOrigin(sensingTarget);
-                                const cloneId = cloneMap.get(sensingTarget.sprite.name).findElement(distanceId);
+                                const cloneId = Arrays.findElement(cloneMap.get(sensingTarget.sprite.name), distanceId);
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-X", distances.dx);
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-Y", distances.dy);
                             }

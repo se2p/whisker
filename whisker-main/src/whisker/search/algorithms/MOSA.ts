@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
@@ -28,6 +27,7 @@ import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
+import Arrays from "../../utils/Arrays";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -45,7 +45,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * List containing all LocalSearchOperators defined via the config file.
      */
-    private _localSearchOperators = new List<LocalSearch<C>>();
+    private _localSearchOperators: LocalSearch<C>[] = []
 
     /**
      * Stores all keys of objectives that still have to be optimised.
@@ -75,7 +75,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._selectionOperator = selectionOperator;
     }
 
-    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
+    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
         this._localSearchOperators = localSearchOperators;
         for (const localSearchOperator of localSearchOperators) {
             localSearchOperator.setAlgorithm(this);
@@ -86,7 +86,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
+    getCurrentSolution(): C[] {
         return this._bestIndividuals;
     }
 
@@ -94,13 +94,13 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._fitnessFunctions.values();
     }
 
-    private generateInitialPopulation(): List<C> {
-        const population = new List<C>();
+    private generateInitialPopulation(): C[] {
+        const population = [];
         for (let i = 0; i < this._properties.getPopulationSize(); i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
             }
-            population.add(this._chromosomeGenerator.get());
+            population.push(this._chromosomeGenerator.get());
         }
         return population;
     }
@@ -112,7 +112,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<Map<number, C>> {
-        this._bestIndividuals.clear();
+        Arrays.clear(this._bestIndividuals);
         this._archive.clear();
         this._iterations = 0;
         this._startTime = Date.now();
@@ -133,17 +133,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
             this._nonOptimisedObjectives = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));
-            const chromosomes = new List<C>();
-            chromosomes.addList(parentPopulation);
-            chromosomes.addList(offspringPopulation);
+            const chromosomes = [...parentPopulation, ...offspringPopulation];
             const fronts = this.preferenceSorting(chromosomes);
-            parentPopulation.clear();
+            Arrays.clear(parentPopulation);
             for (const front of fronts) {
                 this.subVectorDominanceSorting(front);
-                if (parentPopulation.size() + front.size() <= this._properties.getPopulationSize()) {
-                    parentPopulation.addList(front);
+                if (parentPopulation.length + front.length <= this._properties.getPopulationSize()) {
+                    parentPopulation.push(...front);
                 } else {
-                    parentPopulation.addList(front.subList(0, (this._properties.getPopulationSize() - parentPopulation.size())));
+                    parentPopulation.push(...front.slice(0, (this._properties.getPopulationSize() - parentPopulation.length)));
                     break;
                 }
             }
@@ -165,7 +163,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * Applies the specified LocalSearch operators to the given population.
      * @param population The population to which LocalSearch should be applied to.
      */
-    private async applyLocalSearch(population: List<C>) {
+    private async applyLocalSearch(population: C[]) {
         // Go through the best performing chromosomes of the population.
         for (const chromosome of population) {
             // Go through each localSearch operator
@@ -176,7 +174,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     const modifiedChromosome = await localSearch.apply(chromosome);
                     // If local search improved the original chromosome, replace it.
                     if (localSearch.hasImproved(chromosome, modifiedChromosome)) {
-                        population.replace(chromosome, modifiedChromosome);
+                        Arrays.replace(population, chromosome, modifiedChromosome);
                         this.updateArchive(modifiedChromosome);
                         this.updateStatistics();
                     }
@@ -193,9 +191,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param useRankSelection Whether to use rank selection for selecting the parents.
      * @returns The offspring population.
      */
-    private generateOffspringPopulation(parentPopulation: List<C>, useRankSelection: boolean): List<C> {
-        const offspringPopulation = new List<C>();
-        while (offspringPopulation.size() < parentPopulation.size()) {
+    private generateOffspringPopulation(parentPopulation: C[], useRankSelection: boolean): C[] {
+        const offspringPopulation = [];
+        while (offspringPopulation.length < parentPopulation.length) {
             const parent1 = this.selectChromosome(parentPopulation, useRankSelection);
             // TODO: Does it affect the search that we may pick the same parent twice?
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
@@ -221,9 +219,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 child2 = parent2.clone() as C;
             }
 
-            offspringPopulation.add(child1);
-            if (offspringPopulation.size() < parentPopulation.size()) {
-                offspringPopulation.add(child2);
+            offspringPopulation.push(child1);
+            if (offspringPopulation.length < parentPopulation.length) {
+                offspringPopulation.push(child2);
             }
         }
         return offspringPopulation;
@@ -236,12 +234,12 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param useRankSelection Whether to use rank selection.
      * @returns The selected chromosome.
      */
-    private selectChromosome(population: List<C>, useRankSelection: boolean): C {
+    private selectChromosome(population: C[], useRankSelection: boolean): C {
         if (useRankSelection) {
             return this._selectionOperator.apply(population);
         } else {
-            const randomIndex = this._random.nextInt(0, population.size());
-            return population.get(randomIndex);
+            const randomIndex = this._random.nextInt(0, population.length);
+            return population[randomIndex];
         }
     }
 
@@ -251,15 +249,15 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param chromosomes The chromosomes to sort.
      * @returns The resulting fronts.
      */
-    private preferenceSorting(chromosomes: List<C>): List<List<C>> {
-        const fronts = new List<List<C>>();
-        const bestFront = new List<C>();
-        const chromosomesForNonDominatedSorting = chromosomes.clone();
+    private preferenceSorting(chromosomes: C[]): C[][] {
+        const fronts = [];
+        const bestFront = [];
+        const chromosomesForNonDominatedSorting = [...chromosomes];
         for (const uncoveredKey of this._nonOptimisedObjectives) {
             const fitnessFunction = this._fitnessFunctions.get(uncoveredKey);
-            let bestChromosome = chromosomes.get(0);
+            let bestChromosome = chromosomes[0];
             let bestFitness = bestChromosome.getFitness(fitnessFunction);
-            for (const candidateChromosome of chromosomes.subList(1, chromosomes.size())) {
+            for (const candidateChromosome of chromosomes.slice(1)) {
                 const candidateFitness = candidateChromosome.getFitness(fitnessFunction);
                 const compareValue = fitnessFunction.compare(candidateFitness, bestFitness);
                 if (compareValue > 0 || (compareValue == 0
@@ -269,18 +267,18 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 }
             }
             console.log(`Best Fitness for ${fitnessFunction.toString()}: ${bestFitness}`);
-            if (!bestFront.contains(bestChromosome)) {
-                bestFront.add(bestChromosome);
-                chromosomesForNonDominatedSorting.remove(bestChromosome);
+            if (!bestFront.includes(bestChromosome)) {
+                bestFront.push(bestChromosome);
+                Arrays.remove(chromosomesForNonDominatedSorting, bestChromosome);
             }
         }
-        if (bestFront.size() > 0) {
-            fronts.add(bestFront);
+        if (bestFront.length > 0) {
+            fronts.push(bestFront);
         }
-        if (bestFront.size() > this._properties.getPopulationSize()) {
-            fronts.add(chromosomesForNonDominatedSorting);
+        if (bestFront.length > this._properties.getPopulationSize()) {
+            fronts.push(chromosomesForNonDominatedSorting);
         } else {
-            fronts.addList(this.fastNonDominatedSorting(chromosomesForNonDominatedSorting));
+            fronts.push(...this.fastNonDominatedSorting(chromosomesForNonDominatedSorting));
         }
         return fronts;
     }
@@ -291,40 +289,40 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param chromosomes The chromosomes to sort.
      * @returns The resulting fronts.
      */
-    private fastNonDominatedSorting(chromosomes: List<C>): List<List<C>> {
-        const fronts = new List<List<C>>();
-        const dominatedValues = new Map<C, List<C>>();
+    private fastNonDominatedSorting(chromosomes: C[]): C[][] {
+        const fronts = [];
+        const dominatedValues = new Map<C, C[]>();
         const dominationCount = new Map<C, number>();
-        const firstFront = new List<C>();
+        const firstFront = [];
         for (const p of chromosomes) {
-            const dominatedValuesP = new List<C>();
+            const dominatedValuesP = [];
             let dominationCountP = 0;
             for (const q of chromosomes) {
                 if (p === q) {
                     continue;
                 }
                 if (this.dominates(p, q)) {
-                    dominatedValuesP.add(q);
+                    dominatedValuesP.push(q);
                 } else if (this.dominates(q, p)) {
                     dominationCountP++;
                 }
             }
             if (dominationCountP == 0) {
-                firstFront.add(p);
+                firstFront.push(p);
             }
             dominatedValues.set(p, dominatedValuesP);
             dominationCount.set(p, dominationCountP);
         }
         let currentFront = firstFront;
-        while (currentFront.size() > 0) {
-            fronts.add(currentFront);
-            const nextFront = new List<C>();
+        while (currentFront.length > 0) {
+            fronts.push(currentFront);
+            const nextFront = [];
             for (const p of currentFront) {
                 for (const q of dominatedValues.get(p)) {
                     const dominationCountQ = dominationCount.get(q) - 1;
                     dominationCount.set(q, dominationCountQ);
                     if (dominationCountQ == 0) {
-                        nextFront.add(q);
+                        nextFront.push(q);
                     }
                 }
             }
@@ -361,7 +359,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @param front The front to sort.
      */
-    private subVectorDominanceSorting(front: List<C>): void {
+    private subVectorDominanceSorting(front: C[]): void {
         const distances = new Map<C, number>();
         for (const chromosome1 of front) {
             distances.set(chromosome1, 0);
@@ -374,7 +372,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 }
             }
         }
-        front.shuffle();
+        // front.shuffle(); // FIXME: why shuffle before sorting?
         // sort in ascending order by distance, small distances are better -> the first is the best
         front.sort((c1: C, c2: C) => distances.get(c1) - distances.get(c2));
     }
@@ -411,7 +409,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *  - timeToReachFullCoverage
      */
     protected updateStatistics(): void {
-        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =

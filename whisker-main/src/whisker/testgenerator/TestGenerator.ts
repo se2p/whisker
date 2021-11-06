@@ -20,7 +20,6 @@
 
 import {WhiskerTest} from './WhiskerTest';
 import {ScratchProject} from '../scratch/ScratchProject';
-import {List} from '../utils/List';
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {FitnessFunction} from "../search/FitnessFunction";
@@ -28,6 +27,7 @@ import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {TestChromosome} from "../testcase/TestChromosome";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
+import Arrays from "../utils/Arrays";
 
 export abstract class TestGenerator {
 
@@ -69,29 +69,29 @@ export abstract class TestGenerator {
                 this._config.getFitnessFunctionTargets()).fitnessFunctions;
     }
 
-    protected collectStatistics(testSuite: List<WhiskerTest>): void {
+    protected collectStatistics(testSuite: WhiskerTest[]): void {
         const statistics = StatisticsCollector.getInstance();
 
         StatisticsCollector.getInstance().bestCoverage =
             statistics.coveredFitnessFunctionsCount / statistics.fitnessFunctionCount;
 
-        statistics.bestTestSuiteSize = testSuite.size();
+        statistics.bestTestSuiteSize = testSuite.length;
 
         for (const test of testSuite) {
             statistics.testEventCount += test.getEventsCount();
         }
     }
 
-    protected getTestSuite(tests: List<TestChromosome>): List<WhiskerTest> {
-        const testSuite = new List<WhiskerTest>();
+    protected getTestSuite(tests: TestChromosome[]): WhiskerTest[] {
+        const testSuite = [];
         const coveringTestsPerObjective = this.getCoveringTestsPerObjective(tests);
         const coveredObjectives = new Set<number>();
 
         // For each uncovered objective with a single covering test: Add the test
         for (const objective of coveringTestsPerObjective.keys()) {
-            if (!coveredObjectives.has(objective) && coveringTestsPerObjective.get(objective).size() == 1) {
-                const test = coveringTestsPerObjective.get(objective).get(0);
-                testSuite.add(new WhiskerTest(test));
+            if (!coveredObjectives.has(objective) && coveringTestsPerObjective.get(objective).length === 1) {
+                const [test] = coveringTestsPerObjective.get(objective);
+                testSuite.push(new WhiskerTest(test));
                 this.updateCoveredObjectives(coveredObjectives, test);
             }
         }
@@ -105,7 +105,7 @@ export abstract class TestGenerator {
                         shortestTest = test;
                     }
                 }
-                testSuite.add(new WhiskerTest(shortestTest));
+                testSuite.push(new WhiskerTest(shortestTest));
                 this.updateCoveredObjectives(coveredObjectives, shortestTest);
             }
         }
@@ -113,17 +113,17 @@ export abstract class TestGenerator {
         return testSuite;
     }
 
-    private getCoveringTestsPerObjective(tests: List<TestChromosome>): Map<number, List<TestChromosome>> {
-        const coveringTestsPerObjective = new Map<number, List<TestChromosome>>();
+    private getCoveringTestsPerObjective(tests: TestChromosome[]): Map<number, TestChromosome[]> {
+        const coveringTestsPerObjective = new Map<number, TestChromosome[]>();
         for (const objective of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(objective);
-            const coveringTests = new List<TestChromosome>();
+            const coveringTests = [];
             for (const test of tests) {
                 if (fitnessFunction.isCovered(test)) {
-                    coveringTests.add(test)
+                    coveringTests.push(test)
                 }
             }
-            if (coveringTests.size() > 0) {
+            if (coveringTests.length > 0) {
                 coveringTestsPerObjective.set(objective, coveringTests);
             }
         }
@@ -147,7 +147,7 @@ export abstract class TestGenerator {
      */
     public summarizeSolution(archive: Map<number, TestChromosome>): string {
         const summary = [];
-        const bestIndividuals = new List<TestChromosome>(Array.from(archive.values())).distinct();
+        const bestIndividuals = Arrays.distinct(archive.values());
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const curSummary = {};
             if (!archive.has(fitnessFunctionKey)) {

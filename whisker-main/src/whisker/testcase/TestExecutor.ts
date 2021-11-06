@@ -22,7 +22,6 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {EventAndParameters, ExecutionTrace} from "./ExecutionTrace";
-import {List} from "../utils/List";
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
@@ -52,7 +51,7 @@ export class TestExecutor {
         this.recordInitialState();
     }
 
-    async executeTests(tests: List<TestChromosome>): Promise<void> {
+    async executeTests(tests: TestChromosome[]): Promise<void> {
         for (const testChromosome of tests) {
             if (testChromosome.trace == null) {
                 await this.execute(testChromosome);
@@ -65,7 +64,7 @@ export class TestExecutor {
      * @param testChromosome the testChromosome that should be executed.
      */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
-        const events = new List<EventAndParameters>();
+        const events = [];
 
         Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
@@ -81,9 +80,9 @@ export class TestExecutor {
         let lastImprovedTrace: ExecutionTrace;
         let targetFitness = Number.MAX_SAFE_INTEGER;
 
-        while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+        while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
-            if (availableEvents.isEmpty()) {
+            if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
@@ -96,13 +95,13 @@ export class TestExecutor {
             if (currentCoverage.size > totalCoverageSize) {
                 codonLastImproved = numCodon;
                 totalCoverageSize = currentCoverage.size;
-                lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
+                lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, [...events]);
             }
 
             // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
             // focused Algorithm like MIO.
             if (testChromosome.targetFitness) {
-                testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
+                testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, [...events]);
                 testChromosome.coverage = currentCoverage;
                 const currentFitness = testChromosome.getFitness(testChromosome.targetFitness);
                 if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
@@ -114,9 +113,9 @@ export class TestExecutor {
 
         // Check if the last event had to use a codon from the start of the codon list.
         // Extend the codon list by the required amount of codons by duplicating the first few codons.
-        if (numCodon > codons.size()) {
-            const codonsToDuplicate = numCodon - codons.size();
-            codons.addList(codons.subList(0, codonsToDuplicate));
+        if (numCodon > codons.length) {
+            const codonsToDuplicate = numCodon - codons.length;
+            codons.push(...codons.slice(0, codonsToDuplicate));
         }
 
         // Set attributes of the testChromosome after executing its genes.
@@ -146,19 +145,19 @@ export class TestExecutor {
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();
-        const events = new List<EventAndParameters>();
+        const events = [];
 
         while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
-            if (availableEvents.isEmpty()) {
+            if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
             // Randomly select an event and increase the event count.
-            const eventIndex = random.nextInt(0, availableEvents.size());
-            randomEventChromosome.getGenes().add(eventIndex);
-            const event = availableEvents.get(eventIndex);
+            const eventIndex = random.nextInt(0, availableEvents.length);
+            randomEventChromosome.getGenes().push(eventIndex);
+            const event = availableEvents[eventIndex];
             eventCount++;
 
             // If the selected event requires additional parameters; select them randomly as well.
@@ -166,13 +165,13 @@ export class TestExecutor {
                 // args are set in the event itself since the event knows which range of random values makes sense.
                 event.setParameter(null, "random");
             }
-            events.add(new EventAndParameters(event, event.getParameters()));
+            events.push(new EventAndParameters(event, event.getParameters()));
             await event.apply();
             StatisticsCollector.getInstance().incrementEventsCount()
 
             // Send a WaitEvent to the VM
             const waitEvent = new WaitEvent(1);
-            events.add(new EventAndParameters(waitEvent, []));
+            events.push(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
 
         }
@@ -193,14 +192,14 @@ export class TestExecutor {
      * @param events collects the chosen events including its parameters
      * @returns the new position in the codon list after selecting an event and its parameters.
      */
-    public async selectAndSendEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>,
-                                    events: List<EventAndParameters>): Promise<number> {
+    public async selectAndSendEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[],
+                                    events: EventAndParameters[]): Promise<number> {
         // Select the next event and set its parameter
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const parameters = TestExecutor.getArgs(nextEvent, codons, numCodon);
         nextEvent.setParameter(parameters, "codon");
-        events.add(new EventAndParameters(nextEvent, parameters));
+        events.push(new EventAndParameters(nextEvent, parameters));
         numCodon += nextEvent.numSearchParameter();
         this.notify(nextEvent, parameters);
         // Send the chosen Event including its parameters to the VM
@@ -209,7 +208,7 @@ export class TestExecutor {
 
         // Send a WaitEvent to the VM
         const waitEvent = new WaitEvent(1);
-        events.add(new EventAndParameters(waitEvent, []));
+        events.push(new EventAndParameters(waitEvent, []));
         await waitEvent.apply();
         return numCodon;
     }
@@ -220,10 +219,10 @@ export class TestExecutor {
      * @param codons the list of codons
      * @param codonPosition the starting position from which on codons should be collected as parameters
      */
-    private static getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
+    private static getArgs(event: ScratchEvent, codons: number[], codonPosition: number): number[] {
         const args = [];
         for (let i = 0; i < event.numSearchParameter(); i++) {
-            args.push(codons.get(codonPosition++ % codons.size()));
+            args.push(codons[codonPosition++ % codons.length]);
         }
         return args;
     }
@@ -259,8 +258,8 @@ export class TestExecutor {
      * Checks if the given event list contains actionEvents, i.e events other than WaitEvents.
      * @param events the event list to check.
      */
-    private hasActionEvents(events: List<ScratchEvent>) {
-        return events.filter(event => !(event instanceof WaitEvent)).size() > 0;
+    private hasActionEvents(events: ScratchEvent[]) {
+        return events.filter(event => !(event instanceof WaitEvent)).length > 0;
     }
 
     public resetState(): void {

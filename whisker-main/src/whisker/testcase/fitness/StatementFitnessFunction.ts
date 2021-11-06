@@ -20,9 +20,8 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
-import {CustomFilter, ControlFilter, StatementFilter} from 'scratch-analysis/src/block-filter'
-import {List} from "../../utils/List";
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode} from 'scratch-analysis'
+import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -43,7 +42,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         const approachLevels: Record<string, number> = {};
         const workList = [];
-        const visited: List<GraphNode> = new List();
+        const visited = [];
 
         workList.push([targetNode, -1]); // the target node starts with approach level -1
         while (workList.length > 0) {
@@ -51,11 +50,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             const node = elem[0];
             const level = elem[1];
 
-            if (visited.contains(node)) {
+            if (visited.includes(node)) {
                 continue;
             }
 
-            visited.add(node);
+            visited.push(node);
             const pred: [GraphNode] = cdg.predecessors(node.id);
             const currentLevel = level + 1;
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
@@ -335,13 +334,13 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param fitnessFunctions the fitnessFunctions  which will be filtered to contain only independent functions.
      * @returns Map mapping hatBlocks or branchingBlocks to their last independent Block
      */
-    public static getMergeNodeMap(fitnessFunctions: List<StatementFitnessFunction>): Map<StatementFitnessFunction, List<StatementFitnessFunction>> {
-        const mergeNodeMap = new Map<GraphNode, List<GraphNode>>();
+    public static getMergeNodeMap(fitnessFunctions: StatementFitnessFunction[]): Map<StatementFitnessFunction, StatementFitnessFunction[]> {
+        const mergeNodeMap = new Map<GraphNode, GraphNode[]>();
         for (const fitnessFunction of fitnessFunctions) {
             // Handling of branching blocks
             if (ControlFilter.branch(fitnessFunction._targetNode.block)) {
                 // Get all nodes being dependent on the branching block.
-                let mergeNodes = new List<GraphNode>([...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()]);
+                let mergeNodes = [...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()];
 
                 // Find the last Block which either
                 // has no child and is not another branch block -> end of branch
@@ -353,8 +352,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
 
                 // Add the branching block if it isn't present
-                if (!mergeNodes.contains(fitnessFunction._targetNode)) {
-                    mergeNodes.add(fitnessFunction._targetNode);
+                if (!mergeNodes.includes(fitnessFunction._targetNode)) {
+                    mergeNodes.push(fitnessFunction._targetNode);
                 }
 
                 // In case of nested branches we have blocks which can be merged, namely the block in front of the nested
@@ -362,8 +361,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 // nested branch since it is already covered by the true last block.
                 // SingleControlDependenceBlocks should only contain two nodes: themselves and their last block
                 // DoubleControlDependenceBlocks should only contain three nodes: themselves, last if block and last else block
-                if ((ControlFilter.singleBranch(fitnessFunction._targetNode.block) && mergeNodes.size() > 2)
-                    || (ControlFilter.doubleBranch(fitnessFunction._targetNode.block) && mergeNodes.size() > 3)) {
+                if ((ControlFilter.singleBranch(fitnessFunction._targetNode.block) && mergeNodes.length > 2)
+                    || (ControlFilter.doubleBranch(fitnessFunction._targetNode.block) && mergeNodes.length > 3)) {
                     mergeNodes = this.findLastDescendants(mergeNodes, fitnessFunction);
                 }
 
@@ -373,15 +372,15 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             // and the last statement of the given block of statements depending on the given hatBlock.
             else if (ControlFilter.hatBlock(fitnessFunction._targetNode.block) ||
                 CustomFilter.defineBlock(fitnessFunction._targetNode.block)) {
-                const mergeNodes = new List<GraphNode>();
+                const mergeNodes = [];
                 const hatNode = fitnessFunction._targetNode;
                 // Add hatBlock.
-                mergeNodes.add(hatNode);
+                mergeNodes.push(hatNode);
                 // Find and add the last statement in the block of statements being dependent on the hatBlock.
                 let childNode = StatementFitnessFunction.getChildOfNode(hatNode, fitnessFunction._cdg);
                 while (childNode) {
                     if (!childNode.block.next) {
-                        mergeNodes.add(childNode);
+                        mergeNodes.push(childNode);
                         break;
                     }
                     childNode = StatementFitnessFunction.getChildOfNode(childNode, fitnessFunction._cdg);
@@ -390,10 +389,10 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
         }
         // Map the independent Nodes to the corresponding StatementCoverageFitness-Functions.
-        const statementMap = new Map<StatementFitnessFunction, List<StatementFitnessFunction>>();
+        const statementMap = new Map<StatementFitnessFunction, StatementFitnessFunction[]>();
         mergeNodeMap.forEach(((value, key) => {
-            const keyStatement = fitnessFunctions.get(fitnessFunctions.findIndex(fitnessFunction => fitnessFunction._targetNode === key));
-            const valueStatements = fitnessFunctions.filter(fitnessFunction => value.contains(fitnessFunction._targetNode));
+            const keyStatement = fitnessFunctions[fitnessFunctions.findIndex(fitnessFunction => fitnessFunction._targetNode === key)];
+            const valueStatements = fitnessFunctions.filter(fitnessFunction => value.includes(fitnessFunction._targetNode));
             statementMap.set(keyStatement, valueStatements);
         }))
         return statementMap;
@@ -427,9 +426,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param controlFitness the branching fitnessFunction all potential mergeNodes depend on.
      * @returns List of true mergeNodes.
      */
-    private static findLastDescendants(nodes: List<GraphNode>, controlFitness: StatementFitnessFunction): List<GraphNode> {
+    private static findLastDescendants(nodes: GraphNode[], controlFitness: StatementFitnessFunction): GraphNode[] {
         const controlNode = controlFitness._targetNode;
-        const nodesToRemove = new List<GraphNode>();
+        const nodesToRemove = [];
         for (const node of nodes) {
             if (node === controlNode) {
                 continue;
@@ -438,13 +437,13 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             // Traverse the block hierarchy upwards until we reach the given control node or a Hat-Block
             while (parent !== undefined && parent.id !== controlNode.id) {
                 // We found another potential lastDescendant so the found one cannot be the last one.
-                if (nodes.contains(parent)) {
-                    nodesToRemove.add(parent);
+                if (nodes.includes(parent)) {
+                    nodesToRemove.push(parent);
                 }
                 parent = StatementFitnessFunction.getParentOfNode(parent, controlFitness._cdg);
             }
         }
-        return nodes.filter(node => !nodesToRemove.contains(node));
+        return nodes.filter(node => !nodesToRemove.includes(node));
     }
 
     public toString = (): string => {

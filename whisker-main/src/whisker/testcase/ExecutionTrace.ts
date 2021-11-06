@@ -20,7 +20,6 @@
 
 import { Trace } from "scratch-vm/src/engine/tracing.js";
 import { ScratchEvent } from "./events/ScratchEvent";
-import { List } from "../utils/List";
 
 export class EventAndParameters {
     constructor(
@@ -48,22 +47,22 @@ export class EventAndParameters {
 export class ExecutionTrace {
     private readonly _blockTraces: Trace[];
 
-    private readonly _events: List<EventAndParameters>;
+    private readonly _events: EventAndParameters[];
 
-    constructor(traces: Trace[], events: List<EventAndParameters>) {
+    constructor(traces: Trace[], events: EventAndParameters[]) {
         this._blockTraces = traces;
         this._events = events;
     }
 
     clone(): ExecutionTrace {
-        return new ExecutionTrace(this.blockTraces, this.events.clone());
+        return new ExecutionTrace(this.blockTraces, [...this.events]);
     }
 
     get blockTraces(): Trace[] {
         return this._blockTraces;
     }
 
-    get events(): List<EventAndParameters> {
+    get events(): EventAndParameters[] {
         return this._events;
     }
 }

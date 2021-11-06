@@ -23,7 +23,6 @@
 import {TestGenerator} from "./testgenerator/TestGenerator";
 import WhiskerUtil from "../test/whisker-util.js";
 import {WhiskerTest} from "./testgenerator/WhiskerTest";
-import {List} from "./utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
@@ -32,7 +31,6 @@ import {Randomness} from "./utils/Randomness";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {EventAndParameters, ExecutionTrace} from "./testcase/ExecutionTrace";
-import {ScratchEvent} from "./testcase/events/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
 import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
@@ -58,16 +56,16 @@ export class Search {
         return await testGenerator.generateTests(project);
     }
 
-    private printTests(tests: List<WhiskerTest>): void {
+    private printTests(tests: WhiskerTest[]): void {
         let i = 0;
-        console.log(`Total number of tests: ${tests.size()}`);
+        console.log(`Total number of tests: ${tests.length}`);
         for (const test of tests) {
             console.log(`Test ${i}:\n${test.toString()}`);
             i++;
         }
     }
 
-    private testsToString(tests: List<WhiskerTest>): string {
+    private testsToString(tests: WhiskerTest[]): string {
         const converter = new JavaScriptConverter();
         return converter.getSuiteText(tests);
     }
@@ -93,13 +91,13 @@ export class Search {
         const csvString: string = stats.asCsv();
         console.log(csvString);
 
-        const tests = new List<WhiskerTest>();
-        const dummyTest = new TestChromosome(new List<number>(), null, null);
-        const events = new List<EventAndParameters>();
-        events.add(new EventAndParameters(new WaitEvent(), [0]));
+        const tests = [];
+        const dummyTest = new TestChromosome([], null, null);
+        const events = [];
+        events.push(new EventAndParameters(new WaitEvent(), [0]));
         dummyTest.trace = new ExecutionTrace([], events);
 
-        tests.add(new WhiskerTest(dummyTest));
+        tests.push(new WhiskerTest(dummyTest));
         const javaScriptText = this.testsToString(tests);
         return [javaScriptText, 'empty project'];
     }

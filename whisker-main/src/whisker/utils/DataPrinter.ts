@@ -18,7 +18,6 @@
  *
  */
 
-import { List } from "./List";
 import { Chromosome } from "../search/Chromosome";
 import { NotYetImplementedException } from "../core/exceptions/NotYetImplementedException";
 
@@ -35,7 +34,7 @@ export class DataPrinter<C extends Chromosome> {
      * @param population the population that coverage is needed
      * @returns the achieved coverage of the population
      */
-    achievedCoverage(population: List<C>): number {
+    achievedCoverage(population: C[]): number {
         throw new NotYetImplementedException();
     }
 
@@ -44,7 +43,7 @@ export class DataPrinter<C extends Chromosome> {
      * @param population the population that size one is interested in
      * @returns the number of results
      */
-    resultSize(population: List<C>): number {
+    resultSize(population: C[]): number {
         throw new NotYetImplementedException();
     }
 

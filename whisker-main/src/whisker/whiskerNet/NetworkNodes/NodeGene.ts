@@ -1,5 +1,4 @@
 import {ConnectionGene} from "../ConnectionGene";
-import {List} from "../../utils/List";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
 
@@ -38,7 +37,7 @@ export abstract class NodeGene {
     /**
      * List of all incoming connections of this node.
      */
-    private _incomingConnections: List<ConnectionGene>
+    private _incomingConnections: ConnectionGene[]
 
     /**
      * Activation value of a previous time step
@@ -69,7 +68,7 @@ export abstract class NodeGene {
         this._activationCount = 0;
         this._traversed = false;
         this._activationFunction = activationFunction;
-        this._incomingConnections = new List<ConnectionGene>();
+        this._incomingConnections = [];
     }
 
 
@@ -148,11 +147,11 @@ export abstract class NodeGene {
         this._activatedFlag = value;
     }
 
-    get incomingConnections(): List<ConnectionGene> {
+    get incomingConnections(): ConnectionGene[] {
         return this._incomingConnections;
     }
 
-    set incomingConnections(value: List<ConnectionGene>) {
+    set incomingConnections(value: ConnectionGene[]) {
         this._incomingConnections = value;
     }
 

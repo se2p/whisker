@@ -30,7 +30,7 @@ export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends
         // Find the population champion and reward him with additional children
         this.sortPopulation();
         this.sortSpecies();
-        this.populationChampion = this.chromosomes.get(0);
+        this.populationChampion = this.chromosomes[0];
         this.populationChampion.isPopulationChampion = true;
 
         // Update highestFitness
@@ -55,10 +55,10 @@ export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends
         clone.generation = this.generation;
         clone.populationChampion = this.populationChampion.clone() as C;
         for (const network of this.chromosomes) {
-            clone.chromosomes.add(network.clone() as C);
+            clone.chromosomes.push(network.clone() as C);
         }
         for (const species of this.species) {
-            clone.species.add(species.clone());
+            clone.species.push(species.clone());
         }
         return clone;
     }

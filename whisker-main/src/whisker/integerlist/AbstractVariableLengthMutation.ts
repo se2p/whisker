@@ -19,9 +19,9 @@
  */
 
 import {Mutation} from '../search/Mutation';
-import {List} from '../utils/List';
 import {Randomness} from '../utils/Randomness';
 import {IntegerListChromosome} from './IntegerListChromosome';
+import Arrays from "../utils/Arrays";
 
 
 export abstract class AbstractVariableLengthMutation<T extends IntegerListChromosome> implements Mutation<T> {
@@ -68,8 +68,8 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @return A mutated deep copy of the given chromosome.
      */
     applyUpTo(chromosome: T, maxPosition: number): T {
-        const newCodons = new List<number>();
-        newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
+        const newCodons = [];
+        newCodons.push(...chromosome.getGenes()); // TODO: Immutable list would be nicer
         let index = 0;
         while (index < maxPosition) {
             if (this._random.nextDouble() < this._getMutationProbability(index, maxPosition)) {
@@ -88,21 +88,21 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @param index  The index where to mutate inside the list.
      * @return The modified index after the mutation.
      */
-    private _mutateAtIndex(codons: List<number>, index: number) {
+    private _mutateAtIndex(codons: number[], index: number) {
         const mutation = this._random.nextInt(0, 3);
         switch (mutation) {
             case 0:
-                if (codons.size() < this._length) {
-                    codons.insert(this._random.nextInt(this._min, this._max), index);
+                if (codons.length < this._length) {
+                    Arrays.insert(codons, this._random.nextInt(this._min, this._max), index);
                     index++;
                 }
                 break;
             case 1:
-                codons.replaceAt(this._getRandomCodonGaussian(codons.get(index)), index);
+                codons[index] = this._getRandomCodonGaussian(codons[index]);
                 break;
             case 2:
-                if (codons.size() > 1) {
-                    codons.removeAt(index);
+                if (codons.length > 1) {
+                    Arrays.removeAt(codons, index);
                     index--;
                 }
                 break;

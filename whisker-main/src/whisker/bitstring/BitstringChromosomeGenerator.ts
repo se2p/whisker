@@ -20,7 +20,6 @@
 
 import {ChromosomeGenerator} from '../search/ChromosomeGenerator';
 import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {List} from '../utils/List';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Randomness} from "../utils/Randomness";
 import {Crossover} from "../search/Crossover";
@@ -43,9 +42,9 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
     }
 
     get(): BitstringChromosome {
-        const bits = new List<boolean>();
+        const bits = [];
         for(let i = 0; i < this._length; i++) {
-            bits.add(Randomness.getInstance().nextDouble() > 0.5);
+            bits.push(Randomness.getInstance().nextDouble() > 0.5);
         }
         return new BitstringChromosome(bits, this._mutationOp, this._crossoverOp);
     }
