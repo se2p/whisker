@@ -84,8 +84,8 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.outputNodes.length).toEqual(9);
         expect(chromosome.classificationNodes.size).toEqual(4);
         expect(chromosome.regressionNodes.size).toEqual(4);
-        expect(chromosome.inputNodes["Sprite1"].size).toEqual(5);
-        expect(chromosome.inputNodes["Sprite2"].size).toEqual(4);
+        expect(chromosome.inputNodes.get("Sprite1").size).toEqual(5);
+        expect(chromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(chromosome.connections.length).toBeGreaterThanOrEqual(36);
         expect(chromosome.getCrossoverOperator() instanceof NeatCrossover).toBeTruthy();
         expect(chromosome.getMutationOperator() instanceof NeatMutation).toBeTruthy();
@@ -176,7 +176,7 @@ describe('Test NetworkChromosome', () => {
     })
 
     test('Test generateNetwork with hidden Layer', () => {
-        const inputNode = chromosome.inputNodes["Sprite1"]["X-Position"];
+        const inputNode = chromosome.inputNodes.get("Sprite1").get("X-Position");
         const outputNode = chromosome.outputNodes[0];
         const hiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
         const deepHiddenNode = new HiddenNode(8, ActivationFunction.SIGMOID);
@@ -191,8 +191,8 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.allNodes.length).toEqual(9 + 1 + 2 + 4 + 5);
         expect(hiddenNode.incomingConnections.length).toEqual(1);
         expect(deepHiddenNode.incomingConnections.length).toEqual(1);
-        expect(chromosome.regressionNodes[new WaitEvent().constructor.name].length).toEqual(1);
-        expect(chromosome.regressionNodes[new MouseMoveEvent().constructor.name].length).toEqual(2);
+        expect(chromosome.regressionNodes.get(new WaitEvent().constructor.name).length).toEqual(1);
+        expect(chromosome.regressionNodes.get(new MouseMoveEvent().constructor.name).length).toEqual(2);
     })
 
     test('Test stabilizedCounter without hidden Layer', () => {
@@ -488,8 +488,8 @@ describe('Test NetworkChromosome', () => {
             [new WaitEvent(), new MouseMoveEvent()], 0.5);
         chromosome = generator.get();
         const regressionNodes = chromosome.regressionNodes;
-        expect(regressionNodes["WaitEvent"].length).toEqual(1);
-        expect(regressionNodes["MouseMoveEvent"].length).toEqual(2);
+        expect(regressionNodes.get("WaitEvent").length).toEqual(1);
+        expect(regressionNodes.get("MouseMoveEvent").length).toEqual(2);
     })
 
     test("Test updateOutputNodes", () => {
