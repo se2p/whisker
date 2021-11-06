@@ -4,6 +4,15 @@ import {Randomness} from "./Randomness";
 export default class Arrays {
 
     /**
+     * Appends the specified element to the end of this list.
+     * @param dst
+     * @param src element to be added to the list
+     */
+    static addAll<T>(dst: T[], src: T[]): void {
+        dst.push(...src)
+    }
+
+    /**
      * Returns a list consisting of the distinct elements of this list.
      *
      * @returns a list consisting of the distinct elements.

@@ -32,6 +32,11 @@ describe("Arrays", () => {
         array = [1, 2, 3];
     })
 
+    test("Add array to list", () => {
+        Arrays.addAll(array, [4, 5]);
+        expect(array.length).toBe(5);
+    });
+
     test("Is array empty", () => {
         const empty = [];
         expect(Arrays.isEmpty(array)).toBeFalsy();
