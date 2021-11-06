@@ -36,7 +36,7 @@ class InverseOneMaxFitnessFunction extends OneMaxFitnessFunction {
 
     compare (value1: number, value2: number): number {
         // Smaller fitness values are better
-        return value1 - value2;
+        return value2 - value1;
     }
 
     isOptimal(fitnessValue: number): boolean {
@@ -70,7 +70,7 @@ describe('TournamentSelection', () => {
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const worseBits = [false, false];
-        const worseChromosome = new BitstringChromosome(goodBits,
+        const worseChromosome = new BitstringChromosome(worseBits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const population = [betterChromosome, worseChromosome];
