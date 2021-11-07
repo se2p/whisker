@@ -1,19 +1,35 @@
 import isEqual from 'lodash.isequal';
 import {Randomness} from "./Randomness";
 
+/**
+ * Provides various utility methods for manipulating arrays.
+ *
+ * @author Sophia Geserer, Patric Feldmeier, Sebastian Schweikl
+ */
 export default class Arrays {
 
     /**
-     * Appends the specified element to the end of this list.
-     * @param dst
-     * @param src element to be added to the list
+     * Adds all the elements of the second array to the first array. Modifies the first array in-place. Returns the
+     * new length of the first array.
+     *
+     * @param dst the destination array to which the elements are added
+     * @param src the source array from which the elements are taken
+     * @return the new length of the destination array
      */
-    static addAll<T>(dst: T[], src: T[]): void {
-        dst.push(...src)
+    static addAll<T>(dst: T[], src: Readonly<T[]>): number {
+        return dst.push(...src)
     }
 
     /**
-     * Returns a list consisting of the distinct elements of this list.
+     * Returns a new array consisting only of the distinct elements of the given array. Equality semantics are those
+     * of strict equality comparison (`===`). In particular, two objects `o` and `p` are equal if and only if `o` and
+     * `p` are aliases, and not if they are structurally equivalent. Example:
+     * ```
+     * const o = { a: 1 };
+     * const p = o;
+     * const q = { a: 1 };
+     * distinct([o, p, q]); // returns [o, q]
+     * ```
      *
      * @returns a list consisting of the distinct elements.
      */
@@ -23,7 +39,15 @@ export default class Arrays {
     }
 
     /**
-     * Returns a list consisting of the distinct elements of this list using object comparison
+     * Returns a new array consisting only of the distinct elements of the given array. Equality semantics are those
+     * of strict equality comparison (`===`) for primitive types, and structural equality for object types. In
+     * particular, two objects `o` and `p` are equal if and only if both have the same key-value pairs. Example:
+     * ```
+     * const o = { a: 1 };
+     * const p = o;
+     * const q = { a: 1 };
+     * distinct([o, p, q]); // returns [o]
+     * ```
      *
      * @returns a list consisting of the distinct elements.
      */
@@ -33,10 +57,11 @@ export default class Arrays {
     }
 
     /**
-     * Removes the specified element from the list.
+     * Removes the first occurrence of the specified element from the given array, using the equality semantics of
+     * `===`. The array is modified in-place.
      *
-     * @param array
-     * @param element The element to be removed from the list.
+     * @param array from which to remove an element
+     * @param element the element to be removed
      */
     static remove<T>(array: T[], element: T): void {
         const index = array.indexOf(element, 0);
@@ -46,24 +71,29 @@ export default class Arrays {
     }
 
     /**
-     * Remove all elements in the list
+     * Removes all elements in the given array.
+     *
+     * @param array the array to clear
      */
     static clear<T>(array: T[]): void {
         array.length = 0;
     }
 
     /**
-     * Create a (shallow) copy
+     * Creates a shallow copy of the given array.
+     *
+     * @param array to copy
+     * @return copy of the array
      */
     static clone<T>(array: Readonly<T[]>): T[] {
         return [...array];
     }
 
     /**
-     * Returns the index of the first element int the list which is equal (===) to the given targetElement.
+     * Returns the index of the first element in the array which is equal (`===`) to the given target element.
      *
-     * @param array
-     * @param targetElement the element which should be found in the list
+     * @param array to search
+     * @param targetElement the element which should be found in the array
      * @return number representing the index of the found element, or -1 if the searched element wasn't found.
      */
     static findElement<T>(array: T[], targetElement: T): number {
@@ -72,7 +102,8 @@ export default class Arrays {
 
     /**
      * Replaces the oldElement with the newElement.
-     * @param array
+     *
+     * @param array in which to replace
      * @param oldElement the element to replace.
      * @param newElement the element, oldElement gets replaced with.
      * @return Returns true if the operation was successful and false otherwise.
@@ -87,6 +118,7 @@ export default class Arrays {
 
     /**
      * Replaces the element at the given position with the specified element.
+     *
      * @param array
      * @param newElement the new element to replaceAt the old element with.
      * @param position the position at which the old element should be replaced with the new element.
