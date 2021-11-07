@@ -180,4 +180,8 @@ export default class Arrays {
     static sort(array: number[]): void {
         array.sort((a, b) => a - b);
     }
+
+    static range(until: number): number[] {
+        return [...Array(until).keys()]
+    }
 }
