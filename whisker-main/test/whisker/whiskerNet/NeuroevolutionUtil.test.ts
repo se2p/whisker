@@ -10,6 +10,8 @@ import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/Neuroevo
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 
 describe("NeuroevolutionUtil Tests", () => {
 
@@ -18,7 +20,7 @@ describe("NeuroevolutionUtil Tests", () => {
     let crossoverOp: NeatCrossover;
     let mutation: NeatMutation;
     let genInputs: Map<string, Map<string, number>>;
-    let events: [];
+    let events: ScratchEvent[];
     let generator: NetworkChromosomeGeneratorSparse;
     let properties: NeuroevolutionProperties<NetworkChromosome>;
 
@@ -69,7 +71,7 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
-        events = [];
+        events = [new MouseMoveEvent()];
         generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events,0.4);
     })
 
