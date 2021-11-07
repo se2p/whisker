@@ -31,7 +31,6 @@ import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
 import {TypeTextEvent} from "./events/TypeTextEvent";
-import RenderedTarget from "../../../../scratch-vm/@types/scratch-vm/sprites/rendered-target";
 import Arrays from "../utils/Arrays";
 
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
@@ -77,7 +76,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
      * @param block the given block from which events might get extracted.
      * @returns List<ScratchEvent> containing all extracted events.
      */
-    protected _extractEventsFromBlock(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
+    protected _extractEventsFromBlock(target, block: ScratchBlocks): ScratchEvent[] {
         const eventList = [];
         if (typeof block.opcode === 'undefined') {
             return eventList;
