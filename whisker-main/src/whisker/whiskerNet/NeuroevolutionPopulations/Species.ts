@@ -343,7 +343,7 @@ export class Species<C extends NetworkChromosome> {
         }
 
         // Apply the Crossover Operation
-        const child = parent1.crossover(parent2).getFirst();
+        const [child] = parent1.crossover(parent2);
 
         // Decide if we additionally apply mutation -> done randomly or
         // if both parents have a compatibility distance of 0 which means they have the same structure and weights

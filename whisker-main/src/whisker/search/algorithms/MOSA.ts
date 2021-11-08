@@ -202,9 +202,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             let child1: C;
             let child2: C;
             if (this._random.nextDouble() < this._properties.getCrossoverProbability()) {
-                const crossover = parent1.crossover(parent2);
-                child1 = crossover.getFirst();
-                child2 = crossover.getSecond();
+                [child1, child2] = parent1.crossover(parent2);
             }
             if (this._random.nextDouble() < this._properties.getMutationProbability()) {
                 child1 = parent1.mutate();
