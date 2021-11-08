@@ -39,9 +39,7 @@ describe('BitstringSinglePointCrossover', () => {
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
 
         const crossover = new SinglePointCrossover<BitstringChromosome>();
-        const offspring = crossover.applyAtPosition(parent1, parent2, 1);
-        const child1Bits = offspring.getFirst().getGenes();
-        const child2Bits = offspring.getSecond().getGenes();
+        const [child1Bits, child2Bits] = crossover.applyAtPosition(parent1, parent2, 1).map((p) => p.getGenes());
 
         expect(child1Bits.size()).toBe(parent1Bits.size());
         expect(child2Bits.size()).toBe(parent1Bits.size());

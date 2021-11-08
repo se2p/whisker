@@ -18,13 +18,13 @@
  *
  */
 
-import { Crossover } from "../Crossover";
-import { Pair } from "../../utils/Pair";
+import {Crossover} from "../Crossover";
+import {Pair} from "../../utils/Pair";
 import {ListChromosome} from "../ListChromosome";
 import {Preconditions} from "../../utils/Preconditions";
 import {Randomness} from "../../utils/Randomness";
 
-export class SinglePointCrossover<C extends ListChromosome<any>> implements Crossover<C> {
+export class SinglePointCrossover<C extends ListChromosome<any>> extends Crossover<C> {
 
     applyAtPosition (parent1: C, parent2: C, xoverPosition: number): Pair<C> {
         Preconditions.checkArgument(parent1.getLength() === parent2.getLength());
@@ -47,7 +47,7 @@ export class SinglePointCrossover<C extends ListChromosome<any>> implements Cros
             offspring2Genes.add(parent1Genes.get(i));
         }
 
-        return Pair.of(parent1.cloneWith(offspring1Genes), parent2.cloneWith(offspring2Genes));
+        return [parent1.cloneWith(offspring1Genes), parent2.cloneWith(offspring2Genes)];
     }
 
     apply (parent1: C, parent2: C): Pair<C> {
@@ -55,9 +55,4 @@ export class SinglePointCrossover<C extends ListChromosome<any>> implements Cros
         const xoverPosition = Randomness.getInstance().nextInt(0, parent1.getLength());
         return this.applyAtPosition(parent1, parent2, xoverPosition);
     }
-
-    applyFromPair(parents: Pair<C>): Pair<C> {
-        return this.apply(parents.getFirst(), parents.getSecond());
-    }
-
 }

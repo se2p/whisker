@@ -103,8 +103,8 @@ describe("Test NeatCrossover", () => {
         parent1.networkFitness = 1;
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 0;
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
         expect(child1.connections.size()).toBe(6);
         expect(child1.connections.size()).toEqual(child2.connections.size());
     })
@@ -114,8 +114,8 @@ describe("Test NeatCrossover", () => {
         parent1.networkFitness = 0;
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 1;
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
         expect(child1.connections.size()).toBe(7);
         expect(child2.connections.size()).toEqual(child1.connections.size());
     })
@@ -126,8 +126,8 @@ describe("Test NeatCrossover", () => {
             parent1.networkFitness = 0;
             const parent2 = new NetworkChromosome(parent1Connections, nodes2, mutationOp, crossoverOp);
             parent2.networkFitness = 1;
-            const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-            const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+            const [child1] = crossoverOp.apply(parent1, parent2);
+            const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
             expect(child1.connections.size()).toBe(6);
             expect(child2.connections.size()).toEqual(child1.connections.size());
         })
@@ -137,8 +137,8 @@ describe("Test NeatCrossover", () => {
         parent1.networkFitness = 1;
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 1;
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
         expect(child1.connections.size()).toBeGreaterThanOrEqual(4);
         expect(child2.connections.size()).toBeGreaterThanOrEqual(4);
     })
@@ -157,8 +157,8 @@ describe("Test NeatCrossover", () => {
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 0.1;
 
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
 
         // Execute 10 times. Due to randomness the connection may get activated during crossover
         for (let i = 0; i < 10; i++) {
