@@ -14,7 +14,7 @@
         "yaml": "^1.10.2"
     },
     "scripts": {
-        "build": "webpack --progress --colors --bail"
+        "build": "rm -rf dist && webpack --progress --colors --bail"
     },
     "author": "",
     "license": "ISC"

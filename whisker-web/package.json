@@ -11,7 +11,7 @@
     },
     "browser": "./dist/index.html",
     "scripts": {
-        "build": "webpack --progress --colors --bail",
+        "build": "rm -rf dist && webpack --progress --colors --bail",
         "build:prod": "NODE_ENV=production webpack --progress --colors --bail",
         "test": "jest --forceExit --verbose --runInBand",
         "lint": "eslint . && format-message lint src/**/*.js",
