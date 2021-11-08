@@ -433,7 +433,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             const keyStatement = fitnessFunctions.get(fitnessFunctions.findIndex(fitnessFunction => fitnessFunction._targetNode === key));
             const valueStatements = fitnessFunctions.filter(fitnessFunction => value.contains(fitnessFunction._targetNode));
             statementMap.set(keyStatement, valueStatements);
-        }))
+        }));
         return statementMap;
     }
 
