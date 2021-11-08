@@ -68,7 +68,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @return A mutated deep copy of the given chromosome.
      */
     applyUpTo(chromosome: T, maxPosition: number): T {
-        const newCodons = [];
+        const newCodons: number[] = [];
         newCodons.push(...chromosome.getGenes()); // TODO: Immutable list would be nicer
         let index = 0;
         while (index < maxPosition) {

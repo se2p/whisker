@@ -64,7 +64,7 @@ export class TestExecutor {
      * @param testChromosome the testChromosome that should be executed.
      */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
-        const events = [];
+        const events: EventAndParameters[] = [];
 
         Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
@@ -145,7 +145,7 @@ export class TestExecutor {
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();
-        const events = [];
+        const events: EventAndParameters[] = [];
 
         while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);

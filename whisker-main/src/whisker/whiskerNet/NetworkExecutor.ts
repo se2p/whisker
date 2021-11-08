@@ -79,9 +79,9 @@ export class NetworkExecutor {
      * @param network the network which should play the given game.
      */
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events = [];
+        const events: EventAndParameters[] = [];
         let workingNetwork = false;
-        const codons = [];
+        const codons: number[] = [];
 
         // Check how many activations a network needs to stabilise
         const stabilizeCounter = network.stabilizedCounter(100);

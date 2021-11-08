@@ -27,7 +27,7 @@ export class BitflipMutation implements Mutation<BitstringChromosome> {
 
     apply (chromosome: BitstringChromosome): BitstringChromosome {
         const oldBits = chromosome.getGenes(); // TODO: Immutable list?
-        const newBits = [];
+        const newBits: boolean[] = [];
         const mutationProbability = 1.0 / oldBits.length;
 
         for (const bit of oldBits) {

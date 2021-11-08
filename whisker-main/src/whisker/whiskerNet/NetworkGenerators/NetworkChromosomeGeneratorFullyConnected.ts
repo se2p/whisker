@@ -43,13 +43,13 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
      */
     get(): NetworkChromosome {
         let nodeId = 0;
-        const allNodes = [];
+        const allNodes: NodeGene[] = [];
 
         // Create the Input Nodes and add them to the nodes list;
         // Sprites can have a different amount of infos i.e different amount of feature vector sizes.
-        const inputList = [];
+        const inputList: NodeGene[][] = [];
         this._inputs.forEach((value, spriteKey) => {
-            const spriteList = [];
+            const spriteList: NodeGene[] = [];
             value.forEach((value, featureKey) => {
                 const iNode = new InputNode(nodeId++, spriteKey, featureKey);
                 spriteList.push(iNode)
@@ -94,7 +94,7 @@ export class NetworkChromosomeGeneratorFullyConnected extends NetworkChromosomeG
      * @return the connectionGene List
      */
     createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
-        const connections = [];
+        const connections: ConnectionGene[] = [];
         // For each inputNode create a connection to each outputNode.
         for (const inputNodeVector of inputNodes) {
             for (const inputNode of inputNodeVector) {

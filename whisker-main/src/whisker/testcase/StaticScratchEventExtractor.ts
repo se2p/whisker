@@ -52,7 +52,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
     }
 
     public extractEvents(vm: VirtualMachine): ScratchEvent[] {
-        const eventList = [];
+        const eventList: ScratchEvent[] = [];
 
         // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
         // of the procedure definition script.
@@ -77,7 +77,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
      * @returns List<ScratchEvent> containing all extracted events.
      */
     protected _extractEventsFromBlock(target, block: ScratchBlocks): ScratchEvent[] {
-        const eventList = [];
+        const eventList: ScratchEvent[] = [];
         if (typeof block.opcode === 'undefined') {
             return eventList;
         }

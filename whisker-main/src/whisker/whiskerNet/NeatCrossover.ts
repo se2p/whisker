@@ -77,14 +77,14 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
         }
 
         // Create Lists for the new Connections and Nodes
-        const newConnections = [];
-        const newNodes = [];
-        const inputNodes = [];
-        const outputNodes = [];
+        const newConnections: ConnectionGene[] = [];
+        const newNodes: NodeGene[] = [];
+        const inputNodes: NodeGene[] = [];
+        const outputNodes: NodeGene[] = [];
 
         // Create another List for saving disabled connections to check if we accidentally destroyed the
         // network by disabling some connections.
-        const disabledConnections = [];
+        const disabledConnections: ConnectionGene[] = [];
 
         // Search through all input/output nodes and add them to the newNodes List
         // This is necessary since we would otherwise loose nodes without a connection

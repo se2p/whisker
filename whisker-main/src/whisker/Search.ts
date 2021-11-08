@@ -91,9 +91,9 @@ export class Search {
         const csvString: string = stats.asCsv();
         console.log(csvString);
 
-        const tests = [];
+        const tests: WhiskerTest[] = [];
         const dummyTest = new TestChromosome([], null, null);
-        const events = [];
+        const events: EventAndParameters[] = [];
         events.push(new EventAndParameters(new WaitEvent(), [0]));
         dummyTest.trace = new ExecutionTrace([], events);
 

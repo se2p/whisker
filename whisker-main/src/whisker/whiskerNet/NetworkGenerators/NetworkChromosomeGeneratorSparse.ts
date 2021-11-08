@@ -39,7 +39,7 @@ export class NetworkChromosomeGeneratorSparse extends NetworkChromosomeGenerator
      * @return the connectionGene List
      */
     createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
-        const connections = [];
+        const connections: ConnectionGene[] = [];
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
             // Choose a random Sprite to add its input to the network;

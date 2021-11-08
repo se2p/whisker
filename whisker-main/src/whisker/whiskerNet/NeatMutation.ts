@@ -131,8 +131,8 @@ export class NeatMutation implements Mutation<NetworkChromosome> {
         let node2: NodeGene;
 
         // Collect all nodes to which a new connection can point -> all nodes except the input and bias nodes
-        const targetNodes = [];
-        const loopRecurrentNodes = [];
+        const targetNodes: NodeGene[] = [];
+        const loopRecurrentNodes: HiddenNode[] = [];
         for (const node of chromosome.allNodes) {
             if ((node.type !== NodeType.INPUT) && (node.type !== NodeType.BIAS)) {
                 targetNodes.push(node);

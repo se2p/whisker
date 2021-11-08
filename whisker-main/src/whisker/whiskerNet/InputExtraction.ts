@@ -46,7 +46,7 @@ export class InputExtraction {
         for (const target of vm.runtime.targets) {
             // Get the original and traverse through the clones
             if (target.isOriginal) {
-                const cloneDistances =[];
+                const cloneDistances: number[] =[];
                 for (const clone of target.sprite.clones) {
                     // Check again for clones since the original itself is also saved in the clones list
                     if (!clone.isOriginal) {

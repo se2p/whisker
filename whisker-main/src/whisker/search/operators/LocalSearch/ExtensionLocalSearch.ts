@@ -69,8 +69,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const coverage = new Set<string>(chromosome.coverage);
 
         // Apply extension local search.
-        const newCodons = [];
-        const events = [];
+        const newCodons: number[] = [];
+        const events: EventAndParameters[] = [];
         newCodons.push(...chromosome.getGenes());
         Randomness.seedScratch();
         this._vmWrapper.start();

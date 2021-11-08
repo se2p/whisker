@@ -372,7 +372,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             // and the last statement of the given block of statements depending on the given hatBlock.
             else if (ControlFilter.hatBlock(fitnessFunction._targetNode.block) ||
                 CustomFilter.defineBlock(fitnessFunction._targetNode.block)) {
-                const mergeNodes = [];
+                const mergeNodes: GraphNode[] = [];
                 const hatNode = fitnessFunction._targetNode;
                 // Add hatBlock.
                 mergeNodes.push(hatNode);
@@ -428,7 +428,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      */
     private static findLastDescendants(nodes: GraphNode[], controlFitness: StatementFitnessFunction): GraphNode[] {
         const controlNode = controlFitness._targetNode;
-        const nodesToRemove = [];
+        const nodesToRemove: GraphNode[] = [];
         for (const node of nodes) {
             if (node === controlNode) {
                 continue;

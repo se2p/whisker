@@ -68,7 +68,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     }
 
     private generateInitialPopulation(): C[] {
-        const population = [];
+        const population: C[] = [];
         for (let i = 0; i < this._properties.getPopulationSize(); i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
@@ -174,7 +174,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      */
     private generateOffspringPopulation(parentPopulation: C[]): C[] {
         // TODO: This is largely a clone taken from MOSA.ts. Could abstract this.
-        const offspringPopulation = [];
+        const offspringPopulation: C[] = [];
 
         // Very basic elitism
         // TODO: This should be configurable

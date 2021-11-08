@@ -52,7 +52,7 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
      * @returns a random chromosome
      */
     get(): IntegerListChromosome {
-        const codons = [];
+        const codons: number[] = [];
         for (let i = 0; i < this._length; i++) {
             codons.push(Randomness.getInstance().nextInt(this._min, this._max));
         }

@@ -95,7 +95,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     }
 
     private generateInitialPopulation(): C[] {
-        const population = [];
+        const population: C[] = [];
         for (let i = 0; i < this._properties.getPopulationSize(); i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
@@ -250,8 +250,8 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @returns The resulting fronts.
      */
     private preferenceSorting(chromosomes: C[]): C[][] {
-        const fronts = [];
-        const bestFront = [];
+        const fronts: C[][] = [];
+        const bestFront: C[] = [];
         const chromosomesForNonDominatedSorting = [...chromosomes];
         for (const uncoveredKey of this._nonOptimisedObjectives) {
             const fitnessFunction = this._fitnessFunctions.get(uncoveredKey);
@@ -295,7 +295,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         const dominationCount = new Map<C, number>();
         const firstFront = [];
         for (const p of chromosomes) {
-            const dominatedValuesP = [];
+            const dominatedValuesP: C[] = [];
             let dominationCountP = 0;
             for (const q of chromosomes) {
                 if (p === q) {
@@ -316,7 +316,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         let currentFront = firstFront;
         while (currentFront.length > 0) {
             fronts.push(currentFront);
-            const nextFront = [];
+            const nextFront: C[] = [];
             for (const p of currentFront) {
                 for (const q of dominatedValues.get(p)) {
                     const dominationCountQ = dominationCount.get(q) - 1;

@@ -83,7 +83,7 @@ export abstract class TestGenerator {
     }
 
     protected getTestSuite(tests: TestChromosome[]): WhiskerTest[] {
-        const testSuite = [];
+        const testSuite: WhiskerTest[] = [];
         const coveringTestsPerObjective = this.getCoveringTestsPerObjective(tests);
         const coveredObjectives = new Set<number>();
 
@@ -117,7 +117,7 @@ export abstract class TestGenerator {
         const coveringTestsPerObjective = new Map<number, TestChromosome[]>();
         for (const objective of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(objective);
-            const coveringTests = [];
+            const coveringTests: TestChromosome[] = [];
             for (const test of tests) {
                 if (fitnessFunction.isCovered(test)) {
                     coveringTests.push(test)

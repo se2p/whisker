@@ -205,7 +205,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 const fitnessFunctionKey = this.getOptimalFitnessFunctionKey(anyUncovered);
                 const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
                 this._samplingCounter.set(fitnessFunctionKey, this._samplingCounter.get(fitnessFunctionKey) + 1);
-                let archiveTuples = [];
+                let archiveTuples: ChromosomeHeuristicTuple<C>[] = [];
                 if (anyUncovered) {
                     archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
                     chromosome = this._random.pick(archiveTuples).getChromosome();
@@ -287,7 +287,7 @@ open independent goals: ${this._archiveUncovered.size}`);
         // We can only extract independent block statements if we indeed deal with scratch blocks.
         if (fitnessFunctions[0] instanceof StatementFitnessFunction) {
             const mergeNodeStatements = StatementFitnessFunction.getMergeNodeMap(fitnessFunctions);
-            let independentFitnessFunctions = [];
+            let independentFitnessFunctions: StatementFitnessFunction[] = [];
             [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.push(...statementList));
             independentFitnessFunctions = Arrays.distinct(independentFitnessFunctions)
             const independentFitnessFunctionMap = new Map<number, FitnessFunction<C>>();
@@ -352,7 +352,7 @@ open independent goals: ${this._archiveUncovered.size}`);
         for (const fitnessFunctionKey of this._independentFitnessFunctions.keys()) {
             const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
             if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
-                let archiveTuples = [];
+                let archiveTuples: ChromosomeHeuristicTuple<C>[] = [];
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {
                     archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
                 } else {

@@ -134,7 +134,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         }
 
         // Now let the reproduction start
-        const offspring = [];
+        const offspring: C[] = [];
         for (const specie of this.species) {
             offspring.push(...specie.breed(this, this.species));
         }
@@ -153,7 +153,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
 
         // Remove empty species and age the ones that survive.
         // Furthermore, add the members of the surviving species to the population List
-        const doomedSpecies = [];
+        const doomedSpecies: Species<C>[] = [];
         for (const specie of this._species) {
             if (specie.chromosomes.length === 0) {
                 doomedSpecies.push(specie);

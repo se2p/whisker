@@ -36,7 +36,7 @@ export class IntegerListMutation implements Mutation<IntegerListChromosome> {
 
     apply (chromosome: IntegerListChromosome): IntegerListChromosome {
         const oldCodons = chromosome.getGenes(); // TODO: Immutable list?
-        const newCodons = [];
+        const newCodons: number[] = [];
         const mutationProbability = 1.0 / oldCodons.length;
 
         for (const codon of oldCodons) {

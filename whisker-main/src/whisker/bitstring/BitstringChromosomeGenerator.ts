@@ -42,7 +42,7 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
     }
 
     get(): BitstringChromosome {
-        const bits = [];
+        const bits: boolean[] = [];
         for(let i = 0; i < this._length; i++) {
             bits.push(Randomness.getInstance().nextDouble() > 0.5);
         }

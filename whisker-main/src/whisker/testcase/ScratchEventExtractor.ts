@@ -120,7 +120,7 @@ export abstract class ScratchEventExtractor {
     }
 
     protected _extractEventsFromBlock(target: RenderedTarget, block: ScratchBlocks): ScratchEvent[] {
-        const eventList = [];
+        const eventList: ScratchEvent[] = [];
         if (typeof block.opcode === 'undefined') {
             return eventList;
         }
@@ -337,7 +337,7 @@ export abstract class ScratchEventExtractor {
                 if (target.blocks.getOpcode(hatBlock) === 'procedures_definition') {
                     const proccode = target.blocks.getBlock(hatBlock.inputs.custom_block.block).mutation.proccode;
                     if (!this.proceduresMap.has(proccode)) {
-                        const procedureEvents = [];
+                        const procedureEvents: ScratchEvent[] = [];
                         this.traverseBlocks(target, hatBlock, procedureEvents);
                         this.proceduresMap.set(proccode, procedureEvents)
                     }
@@ -396,7 +396,7 @@ export abstract class ScratchEventExtractor {
     }
 
     protected _getTypeTextEvents(): TypeTextEvent[] {
-        const typeTextEventList = [];
+        const typeTextEventList: TypeTextEvent[] = [];
         const length = this.availableTextSnippets.length;
         for (let i = 0; i < length; i++) {
             typeTextEventList.push(new TypeTextEvent(this.availableTextSnippets[i]))

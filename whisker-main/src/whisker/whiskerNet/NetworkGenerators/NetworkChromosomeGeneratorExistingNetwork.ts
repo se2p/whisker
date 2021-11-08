@@ -36,7 +36,7 @@ export class NetworkChromosomeGeneratorExistingNetwork extends NetworkChromosome
      * @return the connectionGene List
      */
     createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
-        const connections = [];
+        const connections: ConnectionGene[] = [];
         // For each inputNode create a connection to each outputNode.
         for (const inputNodeVector of inputNodes) {
             for (const inputNode of inputNodeVector) {

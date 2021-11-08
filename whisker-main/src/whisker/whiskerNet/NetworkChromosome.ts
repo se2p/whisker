@@ -191,8 +191,8 @@ export class NetworkChromosome extends Chromosome {
      * @returns NetworkChromosome the cloned network.
      */
     cloneWith(newGenes: ConnectionGene[], doIncrementIdCounter = true): NetworkChromosome {
-        const connectionsClone = [];
-        const nodesClone = [];
+        const connectionsClone: ConnectionGene[] = [];
+        const nodesClone: NodeGene[] = [];
 
         // duplicate Nodes
         for (const node of this.allNodes) {

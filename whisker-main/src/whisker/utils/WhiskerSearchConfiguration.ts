@@ -285,7 +285,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getLocalSearchOperators(): LocalSearch<any>[] {
-        const operators = [];
+        const operators: LocalSearch<any>[] = [];
         const localSearchOperators = this.dict['localSearch'];
 
         // If there are no local search operators defined return an empty list.
@@ -413,7 +413,7 @@ export class WhiskerSearchConfiguration {
     public getFitnessFunctionTargets(): string[] {
         const fitnessFunctionDef = this.dict['fitnessFunction'];
         if (fitnessFunctionDef['targets']) {
-            const targets = [];
+            const targets: string[] = [];
             for (const target of fitnessFunctionDef['targets']) {
                 targets.push(target)
             }

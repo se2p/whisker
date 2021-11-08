@@ -34,8 +34,8 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
     }
 
     public extractEvents(vm: VirtualMachine): ScratchEvent[] {
-        let eventList = [];
-        const executingScripts = [];
+        let eventList: ScratchEvent[] = [];
+        const executingScripts: string[] = [];
 
         // Check all blocks within scripts currently executing
         for (const t of vm.runtime.threads) {
