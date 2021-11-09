@@ -24,7 +24,7 @@ import {ListChromosome} from "../ListChromosome";
 import {Randomness} from "../../utils/Randomness";
 import Arrays from "../../utils/Arrays";
 
-export class SinglePointRelativeCrossover<C extends ListChromosome<any>> implements Crossover<C> {
+export class SinglePointRelativeCrossover<C extends ListChromosome<any>> extends Crossover<C> {
 
     private applyAtPosition (parent1: C, parent2: C, parent1Position: number, parent2Position: number): C {
 
@@ -49,7 +49,7 @@ export class SinglePointRelativeCrossover<C extends ListChromosome<any>> impleme
 
         // Can only cross over if length is at least 2
         if (parent1.getLength() < 2 || parent2.getLength() < 2) {
-            return Pair.of(parent1, parent2);
+            return [parent1, parent2];
         }
 
         // Relative position of crossover
@@ -61,11 +61,6 @@ export class SinglePointRelativeCrossover<C extends ListChromosome<any>> impleme
         const offspring1 = this.applyAtPosition(parent1, parent2, pos1, pos2);
         const offspring2 = this.applyAtPosition(parent2, parent1, pos2, pos1);
 
-        return Pair.of(offspring1, offspring2);
+        return [offspring1, offspring2];
     }
-
-    applyFromPair(parents: Pair<C>): Pair<C> {
-        return this.apply(parents.getFirst(), parents.getSecond());
-    }
-
 }

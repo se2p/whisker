@@ -3,7 +3,6 @@ import {NeatMutation} from "../../../src/whisker/whiskerNet/NeatMutation";
 import {NeatCrossover} from "../../../src/whisker/whiskerNet/NeatCrossover";
 import {ConnectionGene} from "../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
-import {Pair} from "../../../src/whisker/utils/Pair";
 import {ActivationFunction} from "../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {HiddenNode} from "../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
@@ -103,8 +102,8 @@ describe("Test NeatCrossover", () => {
         parent1.networkFitness = 1;
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 0;
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
         expect(child1.connections.length).toBe(6);
         expect(child1.connections.length).toEqual(child2.connections.length);
     })
@@ -114,8 +113,8 @@ describe("Test NeatCrossover", () => {
         parent1.networkFitness = 0;
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 1;
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
         expect(child1.connections.length).toBe(7);
         expect(child2.connections.length).toEqual(child1.connections.length);
     })
@@ -126,8 +125,8 @@ describe("Test NeatCrossover", () => {
             parent1.networkFitness = 0;
             const parent2 = new NetworkChromosome(parent1Connections, nodes2, mutationOp, crossoverOp);
             parent2.networkFitness = 1;
-            const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-            const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+            const [child1] = crossoverOp.apply(parent1, parent2);
+            const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
             expect(child1.connections.length).toBe(6);
             expect(child2.connections.length).toEqual(child1.connections.length);
         })
@@ -137,8 +136,8 @@ describe("Test NeatCrossover", () => {
         parent1.networkFitness = 1;
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 1;
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
         expect(child1.connections.length).toBeGreaterThanOrEqual(4);
         expect(child2.connections.length).toBeGreaterThanOrEqual(4);
     })
@@ -157,8 +156,8 @@ describe("Test NeatCrossover", () => {
         const parent2 = new NetworkChromosome(parent2Connections, nodes2, mutationOp, crossoverOp);
         parent2.networkFitness = 0.1;
 
-        const child1 = crossoverOp.apply(parent1, parent2).getFirst();
-        const child2 = crossoverOp.applyFromPair(new Pair<NetworkChromosome>(parent1, parent2)).getFirst();
+        const [child1] = crossoverOp.apply(parent1, parent2);
+        const [child2] = crossoverOp.applyFromPair([parent1, parent2]);
 
         // Execute 10 times. Due to randomness the connection may get activated during crossover
         for (let i = 0; i < 10; i++) {

@@ -35,8 +35,7 @@ describe('IntegerListSinglePointCrossover', () => {
 
         const crossover = new SinglePointCrossover<IntegerListChromosome>();
         const offspring = crossover.applyAtPosition(parent1, parent2, 1);
-        const child1Ints = offspring.getFirst().getGenes();
-        const child2Ints = offspring.getSecond().getGenes();
+        const [child1Ints, child2Ints] = offspring.map((p) => p.getGenes());
 
         expect(child1Ints.length).toBe(parent1Ints.length);
         expect(child2Ints.length).toBe(parent1Ints.length);

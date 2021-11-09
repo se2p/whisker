@@ -7,7 +7,7 @@ import {NodeType} from "./NetworkNodes/NodeType";
 import {Randomness} from "../utils/Randomness";
 
 
-export class NeatCrossover implements Crossover<NetworkChromosome> {
+export class NeatCrossover extends Crossover<NetworkChromosome> {
 
     /**
      * Random generator
@@ -24,6 +24,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
      * @param crossoverConfig the configuration parameter for the NEAT-Crossover
      */
     constructor(crossoverConfig: Record<string, (string | number)>) {
+        super();
         this.crossoverAverageWeights = crossoverConfig.weightAverageRate as number;
     }
 
@@ -40,15 +41,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
         // the average of both parents when we have a matching connection
         const avgWeights = this.random.nextDouble() < this.crossoverAverageWeights;
         const child = this.multipointCrossover(parent1, parent2, avgWeights);
-        return new Pair<NetworkChromosome>(child, undefined);
-    }
-
-    /**
-     * Applies the crossover operator
-     * @param parents the parents to mate with each other
-     */
-    applyFromPair(parents: Pair<NetworkChromosome>): Pair<NetworkChromosome> {
-        return this.apply(parents.getFirst(), parents.getSecond());
+        return [child, undefined];
     }
 
     /**

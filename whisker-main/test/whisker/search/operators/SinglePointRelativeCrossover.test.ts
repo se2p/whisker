@@ -35,9 +35,7 @@ describe('SinglePointRelativeCrossover', () => {
 
 
         const xover = new SinglePointRelativeCrossover();
-        const offspring = xover.apply(parent1, parent2);
-        const offspring1 = offspring.getFirst();
-        const offspring2 = offspring.getSecond();
+        const [offspring1, offspring2] = xover.apply(parent1, parent2);
 
         let numTrue = 0;
         let numFalse = 0;
