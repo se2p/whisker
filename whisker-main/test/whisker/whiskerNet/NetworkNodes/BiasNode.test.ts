@@ -1,8 +1,6 @@
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
-import {List} from "../../../../src/whisker/utils/List";
-import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 
@@ -27,7 +25,7 @@ describe("BiasNode Tests", () => {
         expect(biasNode.activatedFlag).toBeTruthy()
         expect(biasNode.activationCount).toEqual(1);
         expect(biasNode.traversed).toBeFalsy()
-        expect(biasNode.incomingConnections.size()).toEqual(0);
+        expect(biasNode.incomingConnections.length).toEqual(0);
     })
 
     test("Reset Node", () =>{
@@ -71,6 +69,6 @@ describe("BiasNode Tests", () => {
         const out = biasNode.toString();
         expect(out).toContain(`BiasNode{ID: 1\
 , Value: 1\
-, InputConnections: ${new List<ConnectionGene>()}}`)
+, InputConnections: ${[]}`)
     })
 })

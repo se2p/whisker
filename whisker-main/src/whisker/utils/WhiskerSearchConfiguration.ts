@@ -19,7 +19,6 @@ import {IterativeSearchBasedTestGenerator} from "../testgenerator/IterativeSearc
 import {ManyObjectiveTestGenerator} from "../testgenerator/ManyObjectiveTestGenerator";
 import {FitnessFunctionType} from "../search/FitnessFunctionType";
 import {TournamentSelection} from "../search/operators/TournamentSelection";
-import {List} from "./List";
 import {VariableLengthMutation} from "../integerlist/VariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../search/operators/SinglePointRelativeCrossover";
 import {VariableLengthTestChromosomeGenerator} from "../testcase/VariableLengthTestChromosomeGenerator";
@@ -285,13 +284,13 @@ export class WhiskerSearchConfiguration {
         }
     }
 
-    public getLocalSearchOperators(): List<LocalSearch<any>> {
-        const operators = new List<LocalSearch<any>>();
+    public getLocalSearchOperators(): LocalSearch<any>[] {
+        const operators: LocalSearch<any>[] = [];
         const localSearchOperators = this.dict['localSearch'];
 
         // If there are no local search operators defined return an empty list.
         if (!localSearchOperators) {
-            return new List<LocalSearch<any>>();
+            return operators;
         }
 
         // Otherwise add the defined local search operators
@@ -307,7 +306,7 @@ export class WhiskerSearchConfiguration {
                         this.getEventSelector(), operator['probability']);
             }
 
-            operators.add(type);
+            operators.push(type);
         }
         return operators;
     }
@@ -411,16 +410,16 @@ export class WhiskerSearchConfiguration {
     }
 
 
-    public getFitnessFunctionTargets(): List<string> {
+    public getFitnessFunctionTargets(): string[] {
         const fitnessFunctionDef = this.dict['fitnessFunction'];
         if (fitnessFunctionDef['targets']) {
-            const targets = new List<string>();
+            const targets: string[] = [];
             for (const target of fitnessFunctionDef['targets']) {
-                targets.add(target)
+                targets.push(target)
             }
             return targets;
         } else {
-            return new List();
+            return [];
         }
     }
 

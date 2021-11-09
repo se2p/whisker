@@ -3,9 +3,8 @@ import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
-import {List} from "../utils/List";
-import {TestChromosome} from "../testcase/TestChromosome";
 import {NEAT} from "../search/algorithms/NEAT";
+import Arrays from "../utils/Arrays";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -15,7 +14,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
     async generateTests(): Promise<WhiskerTestListWithSummary> {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
-        const testChromosomes = new List<TestChromosome>(Array.from(archive.values())).distinct();
+        const testChromosomes = Arrays.distinct(archive.values());
         const testSuite = await this.getTestSuite(testChromosomes);
         await this.collectStatistics(testSuite);
         const summary = this.summarizeSolution(archive);

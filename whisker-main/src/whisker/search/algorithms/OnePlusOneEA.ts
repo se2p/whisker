@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
@@ -126,8 +125,8 @@ ${bestIndividual.toString()}`);
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
-        return new List<C>([this._bestIndividual]);
+    getCurrentSolution(): C[] {
+        return [this._bestIndividual];
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {

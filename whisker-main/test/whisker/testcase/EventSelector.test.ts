@@ -1,7 +1,7 @@
 import {ClusteringEventSelector, InterleavingEventSelector} from "../../../src/whisker/testcase/EventSelector";
-import {List} from "../../../src/whisker/utils/List";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
+import Arrays from "../../../src/whisker/utils/Arrays";
 
 class DummyEvent extends ScratchEvent {
 
@@ -49,16 +49,15 @@ class DummyEvent extends ScratchEvent {
 describe("ClusteringEventSelector Test", () => {
 
     const selector = new ClusteringEventSelector({min: 0, max: 14});
-    const range = (until) => [...Array(until).keys()];
 
     test("Test select one available event", () => {
-        const codons = new List<number>(range(15));
+        const codons = Arrays.range(15);
         const event0 = new DummyEvent('event0');
-        const events = new List<ScratchEvent>([event0]);
+        const events = [event0];
         const expected = Array(15).fill(event0);
         const actual = []
 
-        for (const i of range(15)) {
+        for (const i of Arrays.range(15)) {
             actual.push(selector.selectEvent(codons, i, events));
         }
 
@@ -67,8 +66,8 @@ describe("ClusteringEventSelector Test", () => {
 
     test("Test select multiple available events", () => {
         // The number of codons is a multiple of the number of clusters (events).
-        const codons = new List<number>(range(15));
-        const events = new List<ScratchEvent>(range(3).map((x) => new DummyEvent(`event${x}`)));
+        const codons = Arrays.range(15);
+        const events = Arrays.range(3).map((x) => new DummyEvent(`event${x}`));
         const [event0, event1, event2] = events;
         const expected = [
             event0, event0, event0, event0, event0,
@@ -77,7 +76,7 @@ describe("ClusteringEventSelector Test", () => {
         ];
         const actual = [];
 
-        for (const i of range(15)) {
+        for (const i of Arrays.range(15)) {
             actual.push(selector.selectEvent(codons, i, events));
         }
 
@@ -87,8 +86,8 @@ describe("ClusteringEventSelector Test", () => {
     test("Test select multiple available events (with inhomogeneous cluster size)", () => {
         // The number of codons is a NOT multiple of the number of clusters (events). The last cluster is smaller
         // than all other clusters.
-        const codons = new List<number>(range(15));
-        const events = new List<ScratchEvent>(range(4).map((x) => new DummyEvent(`event${x}`)));
+        const codons = Arrays.range(15);
+        const events = Arrays.range(4).map((x) => new DummyEvent(`event${x}`));
         const [event0, event1, event2, event3] = events;
         const expected = [
             event0, event0, event0, event0, // first cluster
@@ -98,7 +97,7 @@ describe("ClusteringEventSelector Test", () => {
         ];
         const actual = [];
 
-        for (const i of range(15)) {
+        for (const i of Arrays.range(15)) {
             actual.push(selector.selectEvent(codons, i, events));
         }
 
@@ -106,12 +105,12 @@ describe("ClusteringEventSelector Test", () => {
     });
 
     test("Test select all available events", () => {
-        const codons = new List<number>(range(15));
-        const expected = range(15).map((x) => new DummyEvent(`event${x}`));
-        const events = new List<ScratchEvent>(expected);
+        const codons = Arrays.range(15);
+        const expected = Arrays.range(15).map((x) => new DummyEvent(`event${x}`));
+        const events = expected;
         const actual = []
 
-        for (const i of range(15)) {
+        for (const i of Arrays.range(15)) {
             actual.push(selector.selectEvent(codons, i, events));
         }
 
@@ -122,11 +121,10 @@ describe("ClusteringEventSelector Test", () => {
 describe("InterleavingEventSelector Test", () => {
 
     const selector = new InterleavingEventSelector();
-    const range = (until) => [...Array(until).keys()];
 
     test("Test select event", () => {
-        const codons = new List<number>(range(15));
-        const events = new List<ScratchEvent>(range(3).map((x) => new DummyEvent(`event${x}`)));
+        const codons = Arrays.range(15);
+        const events = Arrays.range(3).map((x) => new DummyEvent(`event${x}`));
         const [event0, event1, event2] = events;
         const expected = [
             event0, event1, event2,
@@ -137,7 +135,7 @@ describe("InterleavingEventSelector Test", () => {
         ];
         const actual = []
 
-        for (const i of range(15)) {
+        for (const i of Arrays.range(15)) {
             actual.push(selector.selectEvent(codons, i, events));
         }
 

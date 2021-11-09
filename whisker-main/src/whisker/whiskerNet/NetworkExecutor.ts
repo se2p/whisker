@@ -1,5 +1,4 @@
 import VMWrapper = require("../../vm/vm-wrapper.js");
-import {List} from "../utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {EventObserver} from "../testcase/EventObserver";
@@ -11,7 +10,6 @@ import {NetworkChromosome} from "./NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import {ParameterType} from "../testcase/events/ParameterType";
 import Runtime from "scratch-vm/src/engine/runtime"
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
@@ -30,7 +28,7 @@ export class NetworkExecutor {
     /**
      * Collects the available events at the current state of the Scratch-VM
      */
-    private availableEvents: List<ScratchEvent>;
+    private availableEvents: ScratchEvent[];
 
     /**
      * Monitors the execution of the Scratch-VM
@@ -81,12 +79,12 @@ export class NetworkExecutor {
      * @param network the network which should play the given game.
      */
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events = new List<EventAndParameters>();
+        const events: EventAndParameters[] = [];
         let workingNetwork = false;
-        const codons = new List<number>()
+        const codons: number[] = [];
 
         // Check how many activations a network needs to stabilise
-        const stabilizeCounter = network.stabilizedCounter(100)
+        const stabilizeCounter = network.stabilizedCounter(100);
         Randomness.seedScratch();
         // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
         network.flushNodeValues();
@@ -108,7 +106,7 @@ export class NetworkExecutor {
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
             this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
-            if (this.availableEvents.isEmpty()) {
+            if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
@@ -138,23 +136,23 @@ export class NetworkExecutor {
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce(
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-            codons.add(indexOfMaxValue);
+            codons.push(indexOfMaxValue);
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
-            const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
+            const nextEvent: ScratchEvent = this.availableEvents[indexOfMaxValue];
             const parameters = [];
             if (nextEvent.numSearchParameter() > 0) {
                 parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
                 nextEvent.setParameter(parameters, "regression");
             }
-            events.add(new EventAndParameters(nextEvent, parameters));
+            events.push(new EventAndParameters(nextEvent, parameters));
             this.notify(nextEvent, parameters);
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // Add a waitEvent in the end of each round.
             const waitEvent = new WaitEvent(1);
-            events.add(new EventAndParameters(waitEvent, []));
+            events.push(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
             timer = Date.now();
         }

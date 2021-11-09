@@ -1,8 +1,6 @@
 import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
-import {List} from "../../../../src/whisker/utils/List";
-import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/NeuroevolutionUtil";
@@ -28,7 +26,7 @@ describe("hiddenNode Tests", () => {
         expect(hiddenNode.activatedFlag).toBe(false)
         expect(hiddenNode.activationCount).toBe(0);
         expect(hiddenNode.traversed).toBe(false)
-        expect(hiddenNode.incomingConnections.size()).toBe(0);
+        expect(hiddenNode.incomingConnections.length).toBe(0);
     })
 
     test("Reset Node", () =>{
@@ -93,6 +91,6 @@ describe("hiddenNode Tests", () => {
         const out = hiddenNode.toString();
         expect(out).toContain(`HiddenNode{ID: 1\
 , Value: 0\
-, InputConnections: ${new List<ConnectionGene>()}}`)
+, InputConnections: ${[]}}`)
     })
 })

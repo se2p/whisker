@@ -2,7 +2,6 @@ import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NetworkChromosome} from "../NetworkChromosome";
 import {Mutation} from "../../search/Mutation";
 import {Crossover} from "../../search/Crossover";
-import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkNodes/NodeGene";
 import {ConnectionGene} from "../ConnectionGene";
 import {NeatMutation} from "../NeatMutation";
@@ -49,7 +48,7 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
      * @param outputNodes all outputNodes of the network
      * @return the connectionGene List
      */
-    abstract createConnections(inputNodes: List<List<NodeGene>>, outputNodes: List<NodeGene>): List<ConnectionGene>;
+    abstract createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[];
 
     /**
      * Adds regression nodes to the network
@@ -57,12 +56,12 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
      * @param parameterizedEvents contains all parameterized Events of the given Scratch-Project
      * @param nodeId counter to assign id's to the new regression nodes
      */
-    protected addRegressionNodes(allNodes: List<NodeGene>, parameterizedEvents: List<ScratchEvent>, nodeId: number): void {
+    protected addRegressionNodes(allNodes: NodeGene[], parameterizedEvents: ScratchEvent[], nodeId: number): void {
         for (const event of parameterizedEvents) {
             for (const parameter of event.getSearchParameterNames()) {
                 // Create the regression Node and add it to the NodeList
                 const regressionNode = new RegressionNode(nodeId++, event, parameter, ActivationFunction.NONE)
-                allNodes.add(regressionNode)
+                allNodes.push(regressionNode)
             }
         }
     }

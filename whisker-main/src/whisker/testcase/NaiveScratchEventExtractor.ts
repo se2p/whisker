@@ -18,8 +18,6 @@
  *
  */
 
-import {List} from '../utils/List';
-
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
@@ -32,6 +30,7 @@ import {DragSpriteEvent} from "./events/DragSpriteEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {Randomness} from "../utils/Randomness";
+import Arrays from "../utils/Arrays";
 
 export class NaiveScratchEventExtractor extends ScratchEventExtractor {
 
@@ -50,30 +49,30 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
         this._random = Randomness.getInstance();
     }
 
-    public extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        const eventList = new List<ScratchEvent>();
+    public extractEvents(vm: VirtualMachine): ScratchEvent[] {
+        const eventList = [];
 
-        eventList.add(new ClickStageEvent());
-        eventList.add(new WaitEvent());
-        eventList.add(new TypeTextEvent(this._randomText(3)));
-        eventList.add(new MouseDownEvent(true));
-        eventList.add(new MouseDownEvent(false));
-        eventList.add(new MouseMoveEvent());
+        eventList.push(new ClickStageEvent());
+        eventList.push(new WaitEvent());
+        eventList.push(new TypeTextEvent(this._randomText(3)));
+        eventList.push(new MouseDownEvent(true));
+        eventList.push(new MouseDownEvent(false));
+        eventList.push(new MouseMoveEvent());
 
         // eventList.add(new SoundEvent()) not implemented yet
 
         // Add specified keys.
         for (const key of this.KEYS) {
-            eventList.add(new KeyPressEvent(key));
+            eventList.push(new KeyPressEvent(key));
         }
 
         // Add events requiring a targets as parameters.
         for (const target of vm.runtime.targets) {
             if(!target.isStage) {
-                eventList.add(new DragSpriteEvent(target));
-                eventList.add(new ClickSpriteEvent(target));
+                eventList.push(new DragSpriteEvent(target));
+                eventList.push(new ClickSpriteEvent(target));
             }
         }
-        return eventList.distinctObjects();
+        return Arrays.distinctObjects(eventList);
     }
 }

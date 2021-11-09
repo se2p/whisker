@@ -23,6 +23,7 @@ import {Pair} from "../../utils/Pair";
 import {ListChromosome} from "../ListChromosome";
 import {Preconditions} from "../../utils/Preconditions";
 import {Randomness} from "../../utils/Randomness";
+import Arrays from "../../utils/Arrays";
 
 export class SinglePointCrossover<C extends ListChromosome<any>> extends Crossover<C> {
 
@@ -33,18 +34,18 @@ export class SinglePointCrossover<C extends ListChromosome<any>> extends Crossov
         const parent2Genes = parent2.getGenes();
 
         // TODO: Yuck. How to do this properly?
-        const offspring1Genes = parent1Genes.clone()
-        const offspring2Genes = parent2Genes.clone()
-        offspring1Genes.clear();
-        offspring2Genes.clear();
+        const offspring1Genes = Arrays.clone(parent1Genes);
+        const offspring2Genes = Arrays.clone(parent2Genes);
+        Arrays.clear(offspring1Genes);
+        Arrays.clear(offspring2Genes);
 
         for (let i = 0; i < xoverPosition; i++) {
-            offspring1Genes.add(parent1Genes.get(i));
-            offspring2Genes.add(parent2Genes.get(i));
+            offspring1Genes.push(parent1Genes[i]);
+            offspring2Genes.push(parent2Genes[i]);
         }
-        for (let i = xoverPosition; i < parent1Genes.size(); i++) {
-            offspring1Genes.add(parent2Genes.get(i));
-            offspring2Genes.add(parent1Genes.get(i));
+        for (let i = xoverPosition; i < parent1Genes.length; i++) {
+            offspring1Genes.push(parent2Genes[i]);
+            offspring2Genes.push(parent1Genes[i]);
         }
 
         return [parent1.cloneWith(offspring1Genes), parent2.cloneWith(offspring2Genes)];

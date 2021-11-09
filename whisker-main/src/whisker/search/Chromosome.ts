@@ -22,7 +22,6 @@ import {FitnessFunction} from "./FitnessFunction"
 import {Pair} from "../utils/Pair"
 import {Mutation} from "./Mutation"
 import {Crossover} from "./Crossover"
-import {List} from "../utils/List";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -130,7 +129,7 @@ export abstract class Chromosome {
      * Creates a clone of the current chromosome with new genes.
      * @param newGenes
      */
-    abstract cloneWith(newGenes: List<any>): Chromosome;
+    abstract cloneWith(newGenes: any[]): Chromosome;
 
     /**
      * Creates a clone of the current chromosome.

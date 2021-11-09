@@ -1,6 +1,5 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {NetworkChromosome} from "../NetworkChromosome";
-import {List} from "../../utils/List";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {Container} from "../../utils/Container";
 import {NotSupportedFunctionException} from "../../core/exceptions/NotSupportedFunctionException";
@@ -11,14 +10,14 @@ export class CombinedNetworkFitness implements NetworkFitnessFunction<NetworkChr
     /**
      * The networkFitnessFunctions we want to combine
      */
-    private readonly _fitnessFunctions = new List<NetworkFitnessFunction<NetworkChromosome>>();
+    private readonly _fitnessFunctions: NetworkFitnessFunction<NetworkChromosome>[] = [];
 
     /**
      * Constructs a new CombinedNetworkFitness object
      * @param fitnessFunctions the networkFitnessFunctions we want to combine
      */
     constructor(...fitnessFunctions: NetworkFitnessFunction<NetworkChromosome>[]) {
-        this._fitnessFunctions.addAll(fitnessFunctions);
+        this._fitnessFunctions.push(...fitnessFunctions);
     }
 
     /**

@@ -1,4 +1,3 @@
-import {List} from '../../utils/List';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {NetworkChromosome} from "../../whiskerNet/NetworkChromosome";
 import {SearchAlgorithmProperties} from "../SearchAlgorithmProperties";
@@ -10,6 +9,7 @@ import {NeuroevolutionProperties} from "../../whiskerNet/NeuroevolutionPropertie
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeuroevolutionPopulation";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
+import Arrays from "../../utils/Arrays";
 
 export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<NetworkChromosome> {
 
@@ -33,7 +33,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Evaluates the networks by letting them play the given Scratch game.
      * @param networks the networks to evaluate -> Current population
      */
-    private async evaluateNetworks(networks: List<C>): Promise<void> {
+    private async evaluateNetworks(networks: C[]): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout);
@@ -58,7 +58,7 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         this._startTime = Date.now();
 
         while (!(this._stoppingCondition.isFinished(this))) {
-            await this.evaluateNetworks(population.chromosomes as List<C>);
+            await this.evaluateNetworks(population.chromosomes as C[]);
             population.updatePopulationStatistics();
             this._populationRecord.set(this._iterations, population.clone());
             population.evolve();
@@ -89,8 +89,8 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
      * Updates the List of the best networks found so far and the statistics used for reporting.
      */
     private updateBestIndividualAndStatistics(): void {
-        this._bestIndividuals = new List<C>(Array.from(this._archive.values())).distinct();
-        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+        this._bestIndividuals = Arrays.distinct(this._archive.values());
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
@@ -158,8 +158,8 @@ export class NEAT<C extends NetworkChromosome> extends SearchAlgorithmDefault<Ne
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
-        return this._bestIndividuals as List<C>;
+    getCurrentSolution(): C[] {
+        return this._bestIndividuals as C[];
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {

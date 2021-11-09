@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
@@ -27,6 +26,7 @@ import {Selection} from "../Selection";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import Arrays from "../../utils/Arrays";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -67,13 +67,13 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._stoppingCondition = this._properties.getStoppingCondition();
     }
 
-    private generateInitialPopulation(): List<C> {
-        const population = new List<C>();
+    private generateInitialPopulation(): C[] {
+        const population: C[] = [];
         for (let i = 0; i < this._properties.getPopulationSize(); i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
             }
-            population.add(this._chromosomeGenerator.get());
+            population.push(this._chromosomeGenerator.get());
         }
         return population;
     }
@@ -125,7 +125,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      *
      * @param population The population to evaluate
      */
-    private evaluateAndSortPopulation(population: List<C>): void {
+    private evaluateAndSortPopulation(population: C[]): void {
         const fitnesses = new Map();
 
         for (const c of population) {
@@ -144,10 +144,10 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
         });
 
-        const bestIndividual = population.get(population.size() - 1);
+        const bestIndividual = population[population.length - 1];
         const candidateFitness = bestIndividual.getFitness(this._fitnessFunction);
         const candidateLength = bestIndividual.getLength();
-        if (this._bestIndividuals.isEmpty() ||
+        if (this._bestIndividuals.length === 0 ||
             this._fitnessFunction.compare(candidateFitness, this._bestFitness) > 0 ||
             (this._fitnessFunction.compare(candidateFitness, this._bestFitness) == 0 && candidateLength < this._bestLength)) {
             if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(this._bestFitness)) {
@@ -158,8 +158,8 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             }
             this._bestLength = candidateLength;
             this._bestFitness = candidateFitness;
-            this._bestIndividuals.clear();
-            this._bestIndividuals.add(bestIndividual);
+            Arrays.clear(this._bestIndividuals);
+            this._bestIndividuals.push(bestIndividual);
             console.log(`Found new best solution with fitness: ${this._bestFitness}`);
         }
     }
@@ -172,15 +172,15 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      * @param parentPopulation The population to use for the evolution.
      * @returns The offspring population.
      */
-    private generateOffspringPopulation(parentPopulation: List<C>): List<C> {
+    private generateOffspringPopulation(parentPopulation: C[]): C[] {
         // TODO: This is largely a clone taken from MOSA.ts. Could abstract this.
-        const offspringPopulation = new List<C>();
+        const offspringPopulation: C[] = [];
 
         // Very basic elitism
         // TODO: This should be configurable
-        offspringPopulation.add(parentPopulation.get(parentPopulation.size() - 1));
+        offspringPopulation.push(parentPopulation[parentPopulation.length - 1]);
 
-        while (offspringPopulation.size() < parentPopulation.size()) {
+        while (offspringPopulation.length < parentPopulation.length) {
             const parent1 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
             const parent2 = this._selectionOperator.apply(parentPopulation, this._fitnessFunction);
 
@@ -195,9 +195,9 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbability()) {
                 child2 = child2.mutate();
             }
-            offspringPopulation.add(child1);
-            if (offspringPopulation.size() < parentPopulation.size()) {
-                offspringPopulation.add(child2);
+            offspringPopulation.push(child1);
+            if (offspringPopulation.length < parentPopulation.length) {
+                offspringPopulation.push(child2);
             }
         }
         return offspringPopulation;
@@ -207,7 +207,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
+    getCurrentSolution(): C[] {
         return this._bestIndividuals;
     }
 

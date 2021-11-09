@@ -20,7 +20,6 @@
 
 import {FitnessFunction} from "../search/FitnessFunction";
 import {IntegerListChromosome} from "../integerlist/IntegerListChromosome";
-import {List} from "../utils/List";
 import {Mutation} from "../search/Mutation";
 import {Crossover} from "../search/Crossover";
 import {ExecutionTrace} from "./ExecutionTrace";
@@ -53,7 +52,7 @@ export class TestChromosome extends IntegerListChromosome {
      */
     private _lastImprovedCoverageCodon: number;
 
-    constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
+    constructor(codons: number[], mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
         this._trace = null;
     }
@@ -115,13 +114,13 @@ export class TestChromosome extends IntegerListChromosome {
         return clone;
     }
 
-    cloneWith(newGenes: List<number>): TestChromosome {
+    cloneWith(newGenes: number[]): TestChromosome {
         return new TestChromosome(newGenes, this.getMutationOperator(), this.getCrossoverOperator());
     }
 
     public getNumEvents(): number {
         assert(this._trace != null);
-        return this._trace.events.size();
+        return this._trace.events.length;
     }
 
     public toString = (): string => {
