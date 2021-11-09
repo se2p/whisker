@@ -22,7 +22,6 @@ import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/Bi
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
-import {List} from "../../../../src/whisker/utils/List";
 import {MIO} from "../../../../src/whisker/search/algorithms/MIO";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
@@ -34,6 +33,7 @@ import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import Arrays from "../../../../src/whisker/utils/Arrays";
 
 describe('MIO', () => {
 
@@ -69,13 +69,13 @@ describe('MIO', () => {
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, properties.chromosomeLength, new List())
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, properties.chromosomeLength, [])
             .buildSearchAlgorithm();
     });
 
     test('Find optimal solution', async () => {
         const archive = await searchAlgorithm.findSolution();
-        const solutions = new List<BitstringChromosome>(Array.from(archive.values())).distinct();
+        const solutions = Arrays.distinct(archive.values());
 
         const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
         for (const fitnessFunction of fitnessFunctions.values()) {
@@ -91,9 +91,9 @@ describe('MIO', () => {
     });
 
     test('Get current solution', async () => {
-        expect(searchAlgorithm.getCurrentSolution().size()).toBe(0)
+        expect(searchAlgorithm.getCurrentSolution().length).toBe(0)
         const archive = await searchAlgorithm.findSolution();
-        const solutions = new List<BitstringChromosome>(Array.from(archive.values())).distinct();
+        const solutions = Arrays.distinct(archive.values());
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
     });
 

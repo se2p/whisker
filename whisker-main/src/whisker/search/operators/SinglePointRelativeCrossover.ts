@@ -18,10 +18,11 @@
  *
  */
 
-import { Crossover } from "../Crossover";
-import { Pair } from "../../utils/Pair";
+import {Crossover} from "../Crossover";
+import {Pair} from "../../utils/Pair";
 import {ListChromosome} from "../ListChromosome";
 import {Randomness} from "../../utils/Randomness";
+import Arrays from "../../utils/Arrays";
 
 export class SinglePointRelativeCrossover<C extends ListChromosome<any>> extends Crossover<C> {
 
@@ -31,14 +32,14 @@ export class SinglePointRelativeCrossover<C extends ListChromosome<any>> extends
         const parent1Genes = parent1.getGenes();
         const parent2Genes = parent2.getGenes();
 
-        const offspringGenes = parent1Genes.clone()
-        offspringGenes.clear();
+        const offspringGenes = Arrays.clone(parent1Genes);
+        Arrays.clear(offspringGenes);
 
         for (let i = 0; i < parent1Position; i++) {
-            offspringGenes.add(parent1Genes.get(i));
+            offspringGenes.push(parent1Genes[i]);
         }
-        for (let i = parent2Position; i < parent2Genes.size(); i++) {
-            offspringGenes.add(parent2Genes.get(i));
+        for (let i = parent2Position; i < parent2Genes.length; i++) {
+            offspringGenes.push(parent2Genes[i]);
         }
 
         return parent1.cloneWith(offspringGenes);

@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {List} from '../../utils/List';
 import {MIOProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
@@ -29,6 +28,7 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import {TestChromosome} from "../../testcase/TestChromosome";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import Arrays from "../../utils/Arrays";
 
 /**
  * The Many Independent Objective (MIO) Algorithm.
@@ -56,7 +56,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     /**
      * Maps uncovered Statements to the chromosomes closest to covering them with respect to the given fitnessFunction.
      */
-    private _archiveUncovered: Map<number, List<Heuristic<C>>>;
+    private _archiveUncovered: Map<number, Heuristic<C>[]>;
 
     /**
      * Contains all independent FitnessFunctions. These include the last statements inside branches and the last
@@ -119,7 +119,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
      */
     private _samplingCounter: Map<number, number>;
 
-    private _localSearchOperators = new List<LocalSearch<C>>();
+    private _localSearchOperators: LocalSearch<C>[] = [];
 
     private readonly _random = Randomness.getInstance();
 
@@ -168,7 +168,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._heuristicFunctions = heuristicFunctions;
     }
 
-    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void {
+    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void {
         this._localSearchOperators = localSearchOperators;
         for (const localSearchOperator of localSearchOperators) {
             localSearchOperator.setAlgorithm(this);
@@ -179,7 +179,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
+    getCurrentSolution(): C[] {
         return this._bestIndividuals;
     }
 
@@ -212,7 +212,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 let chromosome: C;
                 if (anyUncovered) {
                     const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
-                    chromosome = this._random.pickRandomElementFromList(archiveTuples).chromosome;
+                    chromosome = this._random.pick(archiveTuples).chromosome;
                 } else {
                     chromosome = this._archiveCovered.get(fitnessFunctionKey);
                 }
@@ -267,9 +267,9 @@ open independent goals: ${this._archiveUncovered.size}`);
     private setStartValues(): void {
         this._iterations = 0;
         this._startTime = Date.now();
-        this._bestIndividuals = new List<C>();
+        this._bestIndividuals = [];
         this._archiveCovered = new Map<number, C>();
-        this._archiveUncovered = new Map<number, List<Heuristic<C>>>();
+        this._archiveUncovered = new Map<number, Heuristic<C>[]>();
         this._samplingCounter = new Map<number, number>();
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             this._samplingCounter.set(fitnessFunctionKey, 0);
@@ -287,16 +287,16 @@ open independent goals: ${this._archiveUncovered.size}`);
      * statement.
      */
     private getIndependentStatements(): Map<number, FitnessFunction<C>> {
-        const fitnessFunctions = new List<StatementFitnessFunction>([...this._fitnessFunctions.values()]);
+        const fitnessFunctions = [...this._fitnessFunctions.values()] as unknown as StatementFitnessFunction[];
         // We can only extract independent block statements if we indeed deal with scratch blocks.
-        if (fitnessFunctions.get(0) instanceof StatementFitnessFunction) {
+        if (fitnessFunctions[0] instanceof StatementFitnessFunction) {
             const mergeNodeStatements = StatementFitnessFunction.getMergeNodeMap(fitnessFunctions);
-            let independentFitnessFunctions = new List<StatementFitnessFunction>();
-            [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.addList(statementList));
-            independentFitnessFunctions = independentFitnessFunctions.distinct();
+            let independentFitnessFunctions: StatementFitnessFunction[] = [];
+            [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.push(...statementList));
+            independentFitnessFunctions = Arrays.distinct(independentFitnessFunctions)
             const independentFitnessFunctionMap = new Map<number, FitnessFunction<C>>();
             this._fitnessFunctions.forEach((value, key) => {
-                if (independentFitnessFunctions.contains(value as unknown as StatementFitnessFunction)) {
+                if (independentFitnessFunctions.includes(value as unknown as StatementFitnessFunction)) {
                     independentFitnessFunctionMap.set(key, value);
                 }
             })
@@ -355,11 +355,11 @@ open independent goals: ${this._archiveUncovered.size}`);
         for (const fitnessFunctionKey of this._independentFitnessFunctions.keys()) {
             const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
             if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
-                let archiveTuples: List<Heuristic<C>>;
+                let archiveTuples: Heuristic<C>[] = [];
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {
                     archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
                 } else {
-                    archiveTuples = new List<Heuristic<C>>();
+                    archiveTuples = [];
                 }
                 const newTuple = { chromosome, heuristicValue };
                 newTuple.chromosome.targetFitness = this._fitnessFunctions.get(fitnessFunctionKey);
@@ -367,16 +367,16 @@ open independent goals: ${this._archiveUncovered.size}`);
                 if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
                     continue;
                 }
-                if (archiveTuples.size() < this._maxArchiveSize) {
-                    archiveTuples.add(newTuple);
+                if (archiveTuples.length < this._maxArchiveSize) {
+                    archiveTuples.push(newTuple);
                 } else {
                     const worstArchiveTuple = this.getWorstChromosomeHeuristicTuple(archiveTuples);
                     const worstHeuristicValue = worstArchiveTuple.heuristicValue;
                     const worstChromosome = worstArchiveTuple.chromosome;
                     if (worstHeuristicValue < heuristicValue || (worstHeuristicValue == heuristicValue
                         && this.compareChromosomesWithEqualHeuristic(chromosome, worstChromosome) >= 0)) {
-                        archiveTuples.remove(worstArchiveTuple);
-                        archiveTuples.add(newTuple);
+                        Arrays.remove(archiveTuples, worstArchiveTuple);
+                        archiveTuples.push(newTuple);
                         this._samplingCounter.set(fitnessFunctionKey, 0);
                     }
                 }
@@ -392,7 +392,7 @@ open independent goals: ${this._archiveUncovered.size}`);
      * @param tupleToAdd the tuple we want to add to the tupleList
      * @return boolean determining if the tupleList already contains the tupleToAdd
      */
-    private tuplesContainChromosome(tupleList: List<Heuristic<C>>,
+    private tuplesContainChromosome(tupleList: Heuristic<C>[],
                                     tupleToAdd: Heuristic<C>): boolean {
         const chromosomeToAdd = tupleToAdd.chromosome as unknown as TestChromosome;
         const genesToAdd = JSON.stringify(chromosomeToAdd.getGenes());
@@ -417,8 +417,8 @@ open independent goals: ${this._archiveUncovered.size}`);
      */
     private setBestCoveringChromosome(chromosome, fitnessFunctionKey): void {
         this._archiveCovered.set(fitnessFunctionKey, chromosome);
-        this._bestIndividuals = new List<C>(Array.from(this._archiveCovered.values())).distinct();
-        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.size();
+        this._bestIndividuals = Arrays.distinct(this._archiveCovered.values());
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         this._samplingCounter.set(fitnessFunctionKey, 0);
     }
 
@@ -429,7 +429,7 @@ open independent goals: ${this._archiveUncovered.size}`);
      * @param chromosomeHeuristicTuples The list of tuples to compare.
      * @returns The worst tuple of the list.
      */
-    private getWorstChromosomeHeuristicTuple(chromosomeHeuristicTuples: List<Heuristic<C>>): Heuristic<C> {
+    private getWorstChromosomeHeuristicTuple(chromosomeHeuristicTuples: Heuristic<C>[]): Heuristic<C> {
         let worstTuple: Heuristic<C>;
         let worstHeuristicValue = 1;
         for (const tuple of chromosomeHeuristicTuples) {
@@ -514,8 +514,8 @@ open independent goals: ${this._archiveUncovered.size}`);
         if (previousMaxArchiveSize > this._maxArchiveSize) {
             for (const fitnessFunctionKey of this._archiveUncovered.keys()) {
                 const archiveTuples = this._archiveUncovered.get(fitnessFunctionKey);
-                while (archiveTuples.size() > this._maxArchiveSize) {
-                    archiveTuples.remove(this.getWorstChromosomeHeuristicTuple(archiveTuples));
+                while (archiveTuples.length > this._maxArchiveSize) {
+                    Arrays.remove(archiveTuples, this.getWorstChromosomeHeuristicTuple(archiveTuples));
                 }
                 this._archiveUncovered.set(fitnessFunctionKey, archiveTuples);
             }

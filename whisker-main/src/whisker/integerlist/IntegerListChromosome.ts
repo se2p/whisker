@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from '../utils/List';
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 import {ListChromosome} from "../search/ListChromosome";
@@ -35,7 +34,7 @@ export class IntegerListChromosome extends ListChromosome<number> {
      */
     private readonly _mutationOp: Mutation<IntegerListChromosome>;
 
-    constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
+    constructor(codons: number[], mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons);
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
@@ -49,7 +48,7 @@ export class IntegerListChromosome extends ListChromosome<number> {
         return this._mutationOp as Mutation<this>;
     }
 
-    cloneWith(newGenes: List<number>) {
+    cloneWith(newGenes: number[]) {
         return new IntegerListChromosome(newGenes, this._mutationOp, this._crossoverOp);
     }
 

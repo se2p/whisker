@@ -25,7 +25,6 @@ import {MOSA} from "../../../../src/whisker/search/algorithms/MOSA";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {SingleBitFitnessFunction} from "../../../../src/whisker/bitstring/SingleBitFitnessFunction";
-import {List} from "../../../../src/whisker/utils/List";
 import {RankSelection} from "../../../../src/whisker/search/operators/RankSelection";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
@@ -35,6 +34,7 @@ import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctio
 import {Container} from "../../../../src/whisker/utils/Container";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import Arrays from "../../../../src/whisker/utils/Arrays";
 
 describe('MOSA', () => {
 
@@ -75,14 +75,14 @@ describe('MOSA', () => {
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
             .addSelectionOperator(new RankSelection())
-            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
+            .initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, []);
 
         searchAlgorithm = builder.buildSearchAlgorithm() as MOSA<BitstringChromosome>;
     });
 
     test('BitstringChromosome with SingleBitFitnessFunction', async () => {
         const archive = await searchAlgorithm.findSolution();
-        const solutions = new List<BitstringChromosome>(Array.from(archive.values())).distinct();
+        const solutions = Arrays.distinct(archive.values());
         expect(solutions).toEqual(searchAlgorithm.getCurrentSolution());
 
         const fitnessFunctions = searchAlgorithm["_fitnessFunctions"];
@@ -99,9 +99,9 @@ describe('MOSA', () => {
     });
 
     test('Get current solution', async () => {
-        expect(searchAlgorithm.getCurrentSolution()).toEqual(new List<BitstringChromosome>());
+        expect(searchAlgorithm.getCurrentSolution()).toEqual([]);
         const archive = await searchAlgorithm.findSolution();
-        const solutions = new List<BitstringChromosome>([...archive.values()]).distinct();
+        const solutions = Arrays.distinct(archive.values());
         expect(searchAlgorithm.getCurrentSolution()).toEqual(solutions);
     });
 

@@ -20,7 +20,6 @@
 
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
 import {GeneticAlgorithmProperties} from "../search/SearchAlgorithmProperties";
-import {List} from "../utils/List";
 import {Randomness} from "../utils/Randomness";
 import {TestChromosome} from "./TestChromosome";
 import {Mutation} from "../search/Mutation";
@@ -55,10 +54,10 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
      * @returns a random chromosome
      */
     get(): TestChromosome {
-        const codons = new List<number>();
+        const codons: number[] = [];
         const length = this.getLength();
         for(let i = 0; i < length; i++) {
-            codons.add(Randomness.getInstance().nextInt(this._min, this._max));
+            codons.push(Randomness.getInstance().nextInt(this._min, this._max));
         }
         return new TestChromosome(codons, this._mutationOp, this._crossoverOp);
     }

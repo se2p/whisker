@@ -44,25 +44,25 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
         const bits = chromosome.getGenes();
         Preconditions.checkListSize(bits, this._size);
         let fitness = 0;
-        for (let i = 0; i < bits.size(); i++) {
-            if ((i === this._bitPosition && bits.get(i))
-                || (i !== this._bitPosition && !bits.get(i))) {
+        for (let i = 0; i < bits.length; i++) {
+            if ((i === this._bitPosition && bits[i])
+                || (i !== this._bitPosition && !bits[i])) {
                 fitness++;
             }
         }
         return fitness;
     }
 
-    getApproachLevel (chromosome: BitstringChromosome): number {
+    getApproachLevel(chromosome: BitstringChromosome): number {
         return -1;
     }
 
-    getBranchDistance (chromosome: BitstringChromosome): number {
+    getBranchDistance(chromosome: BitstringChromosome): number {
         return -1;
     }
 
 
-    getCFGDistance (chromosome: BitstringChromosome): number {
+    getCFGDistance(chromosome: BitstringChromosome): number {
         return -1;
     }
 

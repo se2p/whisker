@@ -1,9 +1,7 @@
 import {NetworkChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/NetworkChromosome";
-import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
-import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 
 describe('Test NetworkChromosomeGeneratorSparse', () => {
@@ -52,20 +50,20 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         sprite2.set("DistanceToWhite-Y", 9);
         genInputs.set("Sprite2", sprite2);
 
-        const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
-            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
+        const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]
         generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.5);
     })
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
-        expect(neatChromosome.allNodes.size()).toBe(19); // +1 for Bias
-        expect(neatChromosome.connections.size() % 9).toBe(0);
-        expect(neatChromosome.connections.size()).toBeGreaterThan(0);
+        expect(neatChromosome.allNodes.length).toBe(19); // +1 for Bias
+        expect(neatChromosome.connections.length % 9).toBe(0);
+        expect(neatChromosome.connections.length).toBeGreaterThan(0);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
-        expect(neatChromosome.outputNodes.size()).toEqual(9);
+        expect(neatChromosome.outputNodes.length).toEqual(9);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
     })
