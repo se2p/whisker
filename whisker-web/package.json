@@ -20,6 +20,7 @@
     "dependencies": {
         "@egjs/hammerjs": "^2.0.0",
         "@fortawesome/fontawesome-free": "^5.15.4",
+        "@popperjs/core": "2.10.1",
         "bootstrap": "^4.6.0",
         "bootstrap-slider": "^11.0.2",
         "codemirror": "^5.62.3",
@@ -30,7 +31,6 @@
         "i18next": "^20.6.1",
         "jquery": "^3.6.0",
         "keycharm": "^0.2.0 || ^0.3.0 || ^0.4.0",
-        "@popperjs/core": "2.10.1",
         "loc-i18next": "^0.1.4",
         "lodash.clonedeep": "^4.5.0",
         "popper.js": "^1.16.1",
