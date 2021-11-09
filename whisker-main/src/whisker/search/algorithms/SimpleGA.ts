@@ -19,7 +19,7 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
+import {GeneticAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Selection} from "../Selection";
@@ -29,6 +29,11 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import Arrays from "../../utils/Arrays";
 
 export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
+
+    /**
+     * Defines SearchParameters set within the config file.
+     */
+    protected _properties: GeneticAlgorithmProperties<C>;
 
     /**
      * Defines the selection operator used by this SimpleGA instance.
@@ -62,14 +67,14 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._selectionOperator = selectionOperator;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>): void {
+    setProperties(properties: GeneticAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     private generateInitialPopulation(): C[] {
         const population: C[] = [];
-        for (let i = 0; i < this._properties.getPopulationSize(); i++) {
+        for (let i = 0; i < this._properties.populationSize; i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
             }
@@ -153,7 +158,7 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             if (this._fitnessFunction.isOptimal(candidateFitness) && !this._fitnessFunction.isOptimal(this._bestFitness)) {
                 StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 1;
                 StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                    (this._iterations + 1) * this._properties.getPopulationSize();
+                    (this._iterations + 1) * this._properties.populationSize;
                 StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
             }
             this._bestLength = candidateLength;
@@ -186,13 +191,13 @@ export class SimpleGA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
             let child1 = parent1;
             let child2 = parent2;
-            if (Randomness.getInstance().nextDouble() < this._properties.getCrossoverProbability()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.crossoverProbability) {
                 [child1, child2] = parent1.crossover(parent2);
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbability()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.mutationProbability) {
                 child1 = child1.mutate();
             }
-            if (Randomness.getInstance().nextDouble() < this._properties.getMutationProbability()) {
+            if (Randomness.getInstance().nextDouble() < this._properties.mutationProbability) {
                 child2 = child2.mutate();
             }
             offspringPopulation.push(child1);

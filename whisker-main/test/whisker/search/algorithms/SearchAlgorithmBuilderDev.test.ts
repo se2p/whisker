@@ -19,7 +19,6 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
 import {FitnessFunction} from "../../../../src/whisker/search/FitnessFunction";
@@ -58,14 +57,20 @@ describe('BuillderBitstringChromosome', () => {
         const chromosomeLength = 10;
         const populationSize = 50;
         const iterations = 100;
+        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
 
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(populationSize);
-        properties.setChromosomeLength(chromosomeLength);
+        const properties = {
+            populationSize,
+            chromosomeLength,
+            stoppingCondition,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
+        };
+
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties,
             new BitflipMutation(), new SinglePointCrossover());
-        const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations));
-        properties.setStoppingCondition(stoppingCondition);
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();
         for (let i = 0; i < chromosomeLength; i++) {
             fitnessFunctions.set(i, new SingleBitFitnessFunction(chromosomeLength, i));

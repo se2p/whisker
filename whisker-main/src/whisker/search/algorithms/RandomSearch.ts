@@ -44,7 +44,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     /**

@@ -19,7 +19,7 @@
  */
 
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {GeneticAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {Randomness} from "../utils/Randomness";
 import {TestChromosome} from "./TestChromosome";
 import {Mutation} from "../search/Mutation";
@@ -39,12 +39,12 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
 
     private _crossoverOp: Crossover<TestChromosome>;
 
-    constructor(properties: SearchAlgorithmProperties<TestChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<TestChromosome>,
                 mutationOp: Mutation<TestChromosome>,
                 crossoverOp: Crossover<TestChromosome>) {
-        this._length = properties.getChromosomeLength();
-        this._min = properties.getMinIntRange();
-        this._max = properties.getMaxIntRange();
+        this._length = properties.chromosomeLength;
+        this._min = properties.integerRange.min;
+        this._max = properties.integerRange.max;
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
     }

@@ -19,7 +19,7 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
+import {GeneticAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {Randomness} from "../../utils/Randomness";
@@ -36,6 +36,11 @@ import Arrays from "../../utils/Arrays";
  * @author Adina Deiner
  */
 export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
+
+    /**
+     * Defines SearchParameters set within the config file.
+     */
+    protected _properties: GeneticAlgorithmProperties<C>;
 
     /**
      * Defines the selection operator used by this MOSA instance.
@@ -61,9 +66,9 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         this._chromosomeGenerator = generator;
     }
 
-    setProperties(properties: SearchAlgorithmProperties<C>): void {
+    setProperties(properties: GeneticAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     setFitnessFunctions(fitnessFunctions: Map<number, FitnessFunction<C>>): void {
@@ -96,7 +101,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
     private generateInitialPopulation(): C[] {
         const population: C[] = [];
-        for (let i = 0; i < this._properties.getPopulationSize(); i++) {
+        for (let i = 0; i < this._properties.populationSize; i++) {
             if (this._stoppingCondition.isFinished(this)) {
                 break;
             }
@@ -138,10 +143,10 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             Arrays.clear(parentPopulation);
             for (const front of fronts) {
                 this.subVectorDominanceSorting(front);
-                if (parentPopulation.length + front.length <= this._properties.getPopulationSize()) {
+                if (parentPopulation.length + front.length <= this._properties.populationSize) {
                     parentPopulation.push(...front);
                 } else {
-                    parentPopulation.push(...front.slice(0, (this._properties.getPopulationSize() - parentPopulation.length)));
+                    parentPopulation.push(...front.slice(0, (this._properties.populationSize - parentPopulation.length)));
                     break;
                 }
             }
@@ -199,13 +204,13 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             const parent2 = this.selectChromosome(parentPopulation, useRankSelection);
             let child1: C;
             let child2: C;
-            if (this._random.nextDouble() < this._properties.getCrossoverProbability()) {
+            if (this._random.nextDouble() < this._properties.crossoverProbability) {
                 [child1, child2] = parent1.crossover(parent2);
             }
-            if (this._random.nextDouble() < this._properties.getMutationProbability()) {
+            if (this._random.nextDouble() < this._properties.mutationProbability) {
                 child1 = parent1.mutate();
             }
-            if (this._random.nextDouble() < this._properties.getMutationProbability()) {
+            if (this._random.nextDouble() < this._properties.mutationProbability) {
                 child2 = parent2.mutate();
             }
 
@@ -273,7 +278,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         if (bestFront.length > 0) {
             fronts.push(bestFront);
         }
-        if (bestFront.length > this._properties.getPopulationSize()) {
+        if (bestFront.length > this._properties.populationSize) {
             fronts.push(chromosomesForNonDominatedSorting);
         } else {
             fronts.push(...this.fastNonDominatedSorting(chromosomesForNonDominatedSorting));
@@ -370,7 +375,6 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 }
             }
         }
-        // front.shuffle(); // FIXME: why shuffle before sorting?
         // sort in ascending order by distance, small distances are better -> the first is the best
         front.sort((c1: C, c2: C) => distances.get(c1) - distances.get(c2));
     }
@@ -411,7 +415,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =
-                (this._iterations + 1) * this._properties.getPopulationSize();
+                (this._iterations + 1) * this._properties.populationSize;
             StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
         }
     }

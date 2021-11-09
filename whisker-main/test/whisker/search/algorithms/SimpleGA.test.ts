@@ -19,7 +19,6 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
@@ -47,52 +46,57 @@ describe('SimpleGA', () => {
     });
 
     test('Trivial bitstring with SimpleGA', async () => {
+        const properties = {
+            populationSize: 50,
+            chromosomeLength: 10,
+            stoppingCondition: new OneOfStoppingCondition(
+                new FixedIterationsStoppingCondition(1000),
+                new OptimalSolutionStoppingCondition()),
+            mutationProbability: 0.2,
+            crossoverProbability: 0.8,
+            testGenerator: undefined,
+            integerRange: undefined
+        };
 
-        const n = 10;
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(50);
-        properties.setChromosomeLength(n);
-        const fitnessFunction = new OneMaxFitnessFunction(n);
-        properties.setStoppingCondition(new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition()));
-        properties.setMutationProbability(0.2);
-        properties.setCrossoverProbability(0.8);
+        const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.SIMPLEGA)
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
             .addSelectionOperator(new RankSelection())
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, []);
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, properties.chromosomeLength, []);
 
 
         const search = builder.buildSearchAlgorithm();
         const solutions = await search.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(await firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(await firstSolution.getFitness(fitnessFunction)).toBe(properties.chromosomeLength);
     });
 
 
     test('Setter', () => {
-        const n = 10;
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(1);
-        properties.setChromosomeLength(n);
-        const fitnessFunction = new OneMaxFitnessFunction(n);
+        const properties = {
+            populationSize: 1,
+            chromosomeLength: 10,
+            stoppingCondition: new OneOfStoppingCondition(
+                new FixedIterationsStoppingCondition(1000), // Plenty time...
+                new OptimalSolutionStoppingCondition()
+            ),
+            testGenerator: undefined,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            integerRange: undefined
+        };
+        const fitnessFunction = new OneMaxFitnessFunction(properties.populationSize);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
-        const stoppingCondition = new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000), // Plenty time...
-            new OptimalSolutionStoppingCondition()
-        );
         const selectionFunction = new TournamentSelection(5);
-        properties.setStoppingCondition(stoppingCondition);
         const search = new SimpleGA();
 
         search.setProperties(properties);
         expect(search["_properties"]).toBe(properties);
-        expect(search["_stoppingCondition"]).toBe(stoppingCondition);
+        expect(search["_stoppingCondition"]).toBe(properties.stoppingCondition);
 
         search.setChromosomeGenerator(chromosomeGenerator);
         expect(search["_chromosomeGenerator"]).toBe(chromosomeGenerator);
