@@ -145,8 +145,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
     private async _extendGenes(codons: number[], events: EventAndParameters[],
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
         const upperLengthBound = Container.config.searchAlgorithmProperties['chromosomeLength']; // FIXME: unsafe access
-        const lowerCodonValueBound = Container.config.searchAlgorithmProperties.getMinIntRange();
-        const upperCodonValueBound = Container.config.searchAlgorithmProperties.getMaxIntRange();
+        const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
+        const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
         let done = false;
@@ -175,8 +175,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             const typeTextEvents = availableEvents.filter(event => event instanceof TypeTextEvent);
 
             // Check if we have a typeTextEvent; if yes apply it!
-            if (!typeTextEvents.isEmpty()) {
-                const typeTextEvent = this._random.pickRandomElementFromList(typeTextEvents);
+            if (typeTextEvents.length !== 0) {
+                const typeTextEvent = this._random.pick(typeTextEvents);
                 const typeEventCodon = Arrays.findElement(availableEvents, typeTextEvent);
                 codons.push(typeEventCodon);
                 events.push(new EventAndParameters(typeTextEvent, []));
@@ -185,11 +185,11 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             }
 
             // Check if we found at least one new event compared to the previous iteration, if yes apply it!
-            else if (previousEvents.length > 0 && newEvents.size() > 0
+            else if (previousEvents.length > 0 && newEvents.length > 0
                 && this._random.nextDouble() < this._newEventProbability) {
                 // Choose random event amongst the newly found ones and determine its codon value.
-                const chosenNewEvent = this._random.pickRandomElementFromList(newEvents);
-                const newEventCodon = availableEvents.findElement(chosenNewEvent);
+                const chosenNewEvent = this._random.pick(newEvents);
+                const newEventCodon = Arrays.findElement(availableEvents, chosenNewEvent);
                 codons.push(newEventCodon);
 
                 // Check if we have to generate parameters for the chosen event.
@@ -246,7 +246,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             }
 
             // Store previous events.
-            previousEvents = availableEvents.clone();
+            previousEvents = Arrays.clone(availableEvents);
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);

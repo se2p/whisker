@@ -1,5 +1,5 @@
 import {Preconditions} from "./Preconditions";
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {GeneticAlgorithmProperties, SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {TestGenerator} from "../testgenerator/TestGenerator";
 import {RandomTestGenerator} from "../testgenerator/RandomTestGenerator";
 import {FixedIterationsStoppingCondition} from "../search/stoppingconditions/FixedIterationsStoppingCondition";
@@ -87,9 +87,7 @@ export class WhiskerSearchConfiguration {
         // Properties all search algorithms have in common.
         const commonProps = {
             testGenerator: this._config["testGenerator"],
-            stoppingCondition: this._getStoppingCondition(this._config["stoppingCondition"]),
-            chromosomeLength: this._config["chromosome"]["maxLength"],
-            integerRange: this._config["integerRange"],
+            stoppingCondition: this._getStoppingCondition(this._config["stoppingCondition"])
         };
 
         // Properties all other algorithms have in common.
@@ -101,8 +99,6 @@ export class WhiskerSearchConfiguration {
         // Properties specific to every algorithm.
         const specificProps = (() => {
             switch (this.getAlgorithm()) {
-                case SearchAlgorithmType.RANDOM:
-                    return {};
                 case SearchAlgorithmType.MIO:
                     return {
                         maxMutationCount: {
@@ -125,12 +121,14 @@ export class WhiskerSearchConfiguration {
                     };
                 case SearchAlgorithmType.SIMPLEGA:
                 case SearchAlgorithmType.MOSA:
-                default:
                     return {
                         populationSize: this._config["populationSize"],
                         crossoverProbability: this._config["crossover"]["probability"],
                         mutationProbability: this._config["mutation"]["probability"],
                     };
+                case SearchAlgorithmType.RANDOM:
+                default:
+                    return {};
             }
         })();
 
@@ -240,6 +238,10 @@ export class WhiskerSearchConfiguration {
     }
 
     private _getMutationOperator(): Mutation<any> {
+        // Not all algorithms use mutation.
+        if(!this._config['mutation']){
+            return undefined;
+        }
         switch (this._config['mutation']['operator']) {
             case 'bitFlip':
                 return new BitflipMutation();

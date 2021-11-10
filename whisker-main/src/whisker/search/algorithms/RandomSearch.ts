@@ -71,8 +71,8 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
                 if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
                     bestFitness = candidateFitness;
                     bestIndividual = candidateChromosome;
-                    this._bestIndividuals.clear();
-                    this._bestIndividuals.add(bestIndividual);
+                    this._bestIndividuals = [];
+                    this._bestIndividuals.push(bestIndividual);
                 }
             }
             this.updateStatistics();
