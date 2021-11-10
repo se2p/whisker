@@ -287,8 +287,9 @@ export class TestExecutor {
             this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
             this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
             this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
-            this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
-            this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
+            const x = this._initialState[targetsKey]["x"];
+            const y = this._initialState[targetsKey]["y"];
+            this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
         }
     }
 

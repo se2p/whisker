@@ -87,13 +87,8 @@ export class WhiskerSearchConfiguration {
         // Properties all search algorithms have in common.
         const commonProps = {
             testGenerator: this._config["testGenerator"],
-            stoppingCondition: this._getStoppingCondition(this._config["stoppingCondition"]),
+            stoppingCondition: this._getStoppingCondition(this._config["stoppingCondition"])
         };
-
-        // Random does not need additional properties.
-        if (commonProps.testGenerator === "random") {
-            return commonProps;
-        }
 
         // Properties all other algorithms have in common.
         const additionalProps = {
@@ -126,12 +121,14 @@ export class WhiskerSearchConfiguration {
                     };
                 case SearchAlgorithmType.SIMPLEGA:
                 case SearchAlgorithmType.MOSA:
-                default:
                     return {
                         populationSize: this._config["populationSize"],
                         crossoverProbability: this._config["crossover"]["probability"],
                         mutationProbability: this._config["mutation"]["probability"],
                     };
+                case SearchAlgorithmType.RANDOM:
+                default:
+                    return {};
             }
         })();
 
@@ -241,6 +238,10 @@ export class WhiskerSearchConfiguration {
     }
 
     private _getMutationOperator(): Mutation<any> {
+        // Not all algorithms use mutation.
+        if(!this._config['mutation']){
+            return undefined;
+        }
         switch (this._config['mutation']['operator']) {
             case 'bitFlip':
                 return new BitflipMutation();
@@ -312,7 +313,7 @@ export class WhiskerSearchConfiguration {
             switch (operator['type']) {
                 case "Extension":
                     type = new ExtensionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
-                        this.getEventSelector(), operator['probability']);
+                        this.getEventSelector(), operator['probability'], operator['newEventProbability']);
                     break;
                 case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
@@ -434,10 +435,9 @@ export class WhiskerSearchConfiguration {
     }
 
     public getAlgorithm(): SearchAlgorithmType {
-        if (this._config['testGenerator'] === 'random') {
-            return SearchAlgorithmType.RANDOM;
-        }
         switch (this._config['algorithm']) {
+            case 'random':
+                return SearchAlgorithmType.RANDOM;
             case 'onePlusOne':
                 return SearchAlgorithmType.ONE_PLUS_ONE;
             case 'simpleGA':
