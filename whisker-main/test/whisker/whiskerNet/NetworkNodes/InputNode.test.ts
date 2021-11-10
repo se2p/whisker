@@ -1,7 +1,6 @@
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
-import {List} from "../../../../src/whisker/utils/List";
 import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 
@@ -23,7 +22,7 @@ describe("InputNode Tests", () => {
         expect(inputNode.activatedFlag).toBeFalsy();
         expect(inputNode.activationCount).toEqual(0);
         expect(inputNode.traversed).toBeFalsy();
-        expect(inputNode.incomingConnections.size()).toEqual(0);
+        expect(inputNode.incomingConnections.length).toEqual(0);
         expect(inputNode.sprite).toEqual("Sprite1");
         expect(inputNode.feature).toEqual("X-Position");
     })
@@ -81,7 +80,7 @@ describe("InputNode Tests", () => {
         const out = inputNode.toString();
         expect(out).toContain(`InputNode{ID: 1\
 , Value: 0\
-, InputConnections: ${new List<ConnectionGene>()}\
+, InputConnections: ${[]}\
 , Sprite: Sprite1\
 , Feature: X-Position}`)
     })

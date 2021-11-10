@@ -18,14 +18,13 @@
  *
  */
 
-import {List} from '../utils/List';
-
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import {EventFilter} from "scratch-analysis/src/block-filter";
 import {TypeTextEvent} from "./events/TypeTextEvent";
+import Arrays from "../utils/Arrays";
 
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
@@ -34,9 +33,9 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         super(vm);
     }
 
-    public extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        let eventList = new List<ScratchEvent>();
-        const executingScripts = new List<string>();
+    public extractEvents(vm: VirtualMachine): ScratchEvent[] {
+        let eventList: ScratchEvent[] = [];
+        const executingScripts: string[] = [];
 
         // Check all blocks within scripts currently executing
         for (const t of vm.runtime.threads) {
@@ -49,7 +48,7 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
             }
             // Sometimes we encounter undefined blocks here?
             if (block) {
-                executingScripts.add(target.blocks.getTopLevelScript(t.topBlock));
+                executingScripts.push(target.blocks.getTopLevelScript(t.topBlock));
                 this.traverseBlocks(target, block, eventList);
             }
         }
@@ -58,18 +57,18 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         // of the procedure definition script.
         for (const target of vm.runtime.targets) {
             for (const scriptId of target.sprite.blocks.getScripts()) {
-                if (!executingScripts.contains(scriptId)) {
-                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
+                if (!executingScripts.includes(scriptId)) {
+                    eventList.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
                 }
             }
         }
 
-        if(eventList.getElements().some(event => event instanceof TypeTextEvent)){
+        if(eventList.some(event => event instanceof TypeTextEvent)){
             eventList = eventList.filter(event => event instanceof TypeTextEvent);
         }
 
         // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values of -1
-        eventList.add(new WaitEvent())
-        return eventList.distinctObjects();
+        eventList.push(new WaitEvent())
+        return Arrays.distinctObjects(eventList);
     }
 }

@@ -21,19 +21,18 @@
 import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
-import {List} from "../../utils/List";
 import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingCondition";
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _conditions = new List<StoppingCondition<T>>();
+    private readonly _conditions: StoppingCondition<T>[] = [];
 
     constructor(...stoppingCondition: StoppingCondition<T>[]) {
-        this._conditions.addAll(stoppingCondition);
+        this._conditions.push(...stoppingCondition);
     }
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        return this.conditions.filter(condition => condition.isFinished(algorithm)).size() > 0;
+        return this.conditions.some(condition => condition.isFinished(algorithm));
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
@@ -41,10 +40,10 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
         const resourceConditions = this.conditions.filter(condition => !(condition instanceof OptimalSolutionStoppingCondition));
         const progressCollection = resourceConditions.map(condition => condition.getProgress(algorithm));
         progressCollection.sort((a, b) => b - a);       // Sorted in increasing order.
-        return progressCollection.get(0);
+        return progressCollection[0];
     }
 
-    get conditions(): List<StoppingCondition<T>> {
+    get conditions(): StoppingCondition<T>[] {
         return this._conditions;
     }
 }

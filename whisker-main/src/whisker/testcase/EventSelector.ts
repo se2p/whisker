@@ -1,4 +1,3 @@
-import {List} from "../utils/List";
 import {ScratchEvent} from "./events/ScratchEvent";
 
 export interface EventSelector {
@@ -10,12 +9,12 @@ export interface EventSelector {
      * @param numCodon the index of the current codon in the codon list
      * @param availableEvents the list of available events
      */
-    selectEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>): ScratchEvent
+    selectEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[]): ScratchEvent
 }
 
 export class InterleavingEventSelector implements EventSelector {
-    selectEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>): ScratchEvent {
-        return availableEvents.get(codons.get(numCodon) % availableEvents.size());
+    selectEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[]): ScratchEvent {
+        return availableEvents[codons[numCodon] % availableEvents.length];
     }
 }
 
@@ -33,9 +32,9 @@ export class ClusteringEventSelector implements EventSelector {
         this._valueRange = max - min + 1;
     }
 
-    selectEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>): ScratchEvent {
-        const codon = codons.get(numCodon);
-        const clusterSize = Math.ceil(this._valueRange / availableEvents.size());
+    selectEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[]): ScratchEvent {
+        const codon = codons[numCodon];
+        const clusterSize = Math.ceil(this._valueRange / availableEvents.length);
 
         let current = clusterSize;
         let cluster = 0;
@@ -44,6 +43,6 @@ export class ClusteringEventSelector implements EventSelector {
             current += clusterSize;
         }
 
-        return availableEvents.get(cluster);
+        return availableEvents[cluster];
     }
 }

@@ -1,7 +1,6 @@
-import { EventBiasedMutation } from "../../../src/whisker/testcase/EventBiasedMutation";
-import { ScratchEvent } from "../../../src/whisker/testcase/events/ScratchEvent";
-import { EventAndParameters } from "../../../src/whisker/testcase/ExecutionTrace";
-import { List } from "../../../src/whisker/utils/List";
+import {EventBiasedMutation} from "../../../src/whisker/testcase/EventBiasedMutation";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {EventAndParameters} from "../../../src/whisker/testcase/ExecutionTrace";
 
 abstract class ScratchEventMock extends ScratchEvent {
     apply(): Promise<void> {
@@ -69,9 +68,10 @@ describe("EventBiasedMutation Test", () => {
             d, d, d,
         ].map(([ev, params]) => new EventAndParameters(ev, params));
 
-        const actual = EventBiasedMutation.computeSharedProbabilities(42, new List(events));
+        const actual = EventBiasedMutation.computeSharedProbabilities(42, events);
 
         const pA = (1 / 4) / (6 * 3);
+        // noinspection PointlessArithmeticExpressionJS
         const pB = (1 / 4) / (2 * 1);
         const pC = (1 / 4) / (4 * 3);
         const pD = (1 / 4) / (3 * 2);

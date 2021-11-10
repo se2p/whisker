@@ -19,7 +19,7 @@
  */
 
 import {FitnessFunction} from "./FitnessFunction";
-import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
+import {GeneticAlgorithmProperties, SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
 import {SingleBitFitnessFunction} from "../bitstring/SingleBitFitnessFunction";
 import {Selection} from "./Selection";
 import {SearchAlgorithm} from "./SearchAlgorithm";
@@ -32,16 +32,13 @@ import {SearchAlgorithmType} from "./algorithms/SearchAlgorithmType";
 import {OnePlusOneEA} from "./algorithms/OnePlusOneEA";
 import {RandomSearch} from "./algorithms/RandomSearch";
 import {Chromosome} from "./Chromosome";
-import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 import {ChromosomeGenerator} from "./ChromosomeGenerator";
 import {BitstringChromosomeGenerator} from "../bitstring/BitstringChromosomeGenerator";
-import {BitstringChromosome} from "../bitstring/BitstringChromosome";
 import {BitflipMutation} from "../bitstring/BitflipMutation";
 import {SinglePointCrossover} from "./operators/SinglePointCrossover";
 import {FitnessFunctionType} from "./FitnessFunctionType";
 import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../utils/Container";
-import {List} from "../utils/List";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
@@ -70,7 +67,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     private _fitnessFunction: FitnessFunction<C>;
 
     /**
-     * The map for the heuristic function of chromsomes.
+     * The map for the heuristic function of chromosomes.
      */
     private _heuristicFunctions: Map<number, (number) => number>;
 
@@ -87,7 +84,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * The LocalSearch operators which can be used by the algorithm under certain circumstances.
      */
-    private _localSearchOperators = new List<LocalSearch<C>>();
+    private _localSearchOperators: LocalSearch<C>[] = [];
 
     /**
      * The type of the algorithm that will be build.
@@ -109,37 +106,36 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @private
      */
     private _setParameterForTesting(): void {
-        const chromosomeLength = 10;
-        const iterations = 1000;
-        const populationSize = 50;
-        const crossoverProbability = 1;
-        const mutationProbability = 1;
-        const startOfFocusedPhase = 0.5;
-        const randomSelectionProbabilityStart = 0.5;
-        const randomSelectionProbabilityFocusedPhase = 0;
-        const maxArchiveSizeStart = 10;
-        const maxArchiveSizeFocusedPhase = 1;
-        const maxMutationCountStart = 0;
-        const maxMutationCountFocusedPhase = 10;
-        const stoppingCondition = new FixedIterationsStoppingCondition(iterations);
-
-        this._properties = new SearchAlgorithmProperties();
-        this._properties.setPopulationSize(populationSize);
-        this._properties.setChromosomeLength(chromosomeLength);
-        this._properties.setCrossoverProbability(crossoverProbability);
-        this._properties.setMutationProbability(mutationProbability);
-        this._properties.setSelectionProbabilities(randomSelectionProbabilityStart, randomSelectionProbabilityFocusedPhase);
-        this._properties.setMaxArchiveSizes(maxArchiveSizeStart, maxArchiveSizeFocusedPhase);
-        this._properties.setMaxMutationCounter(maxMutationCountStart, maxMutationCountFocusedPhase);
-        this._properties.setStartOfFocusedPhase(startOfFocusedPhase);
-        this._properties.setStoppingCondition(stoppingCondition);
+        this._properties = {
+            populationSize: 50,
+            chromosomeLength: 10,
+            crossoverProbability: 1,
+            mutationProbability: 1,
+            selectionProbability: {
+                start: 0.5,
+                focusedPhase: 0,
+            },
+            maxArchiveSize: {
+                start: 10,
+                focusedPhase: 1,
+            },
+            maxMutationCount: {
+                start: 0,
+                focusedPhase: 10,
+            },
+            startOfFocusedPhase: 0.5,
+            stoppingCondition: new FixedIterationsStoppingCondition(1000),
+            integerRange: undefined,
+            testGenerator: undefined
+        };
 
         this._chromosomeGenerator = new BitstringChromosomeGenerator(
-            this._properties as unknown as SearchAlgorithmProperties<BitstringChromosome>,
+            this._properties as GeneticAlgorithmProperties<any>,
             new BitflipMutation(),
             new SinglePointCrossover()) as unknown as ChromosomeGenerator<C>;
 
-        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT, chromosomeLength, new List());
+        this.initializeFitnessFunction(FitnessFunctionType.SINGLE_BIT,
+            this._properties['chromosomeLength'], []);
 
         this._selectionOperator = new RankSelection();
     }
@@ -160,7 +156,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * @param length the length of the chromosome
      * @param targets specific lines that should be covered
      */
-    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: List<string>): SearchAlgorithmBuilder<C> {
+    initializeFitnessFunction(fitnessFunctionType: FitnessFunctionType, length: number, targets: string[]): SearchAlgorithmBuilder<C> {
         this._fitnessFunctions = new Map<number, FitnessFunction<C>>();
         this._heuristicFunctions = new Map<number, (number) => number>();
 
@@ -204,7 +200,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
      * Adds the LocalSearch operators callable by the given search algorithm
      * @param localSearchOperators the LocalSearch operators to be used by the algorithm
      */
-    addLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): SearchAlgorithmBuilder<C> {
+    addLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): SearchAlgorithmBuilder<C> {
         this._localSearchOperators = localSearchOperators;
         return this;
     }
@@ -330,17 +326,17 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     /**
      * A helper method that initializes the 'Statement' fitness function(s).
      */
-    private _initializeStatementFitness(chromosomeLength: number, targets: List<string>) {
+    private _initializeStatementFitness(chromosomeLength: number, targets: string[]) {
         // TODO: Check if this is done correctly
         const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
-        const fitnesses: List<StatementFitnessFunction> = factory.extractFitnessFunctions(Container.vm, targets);
+        const fitnesses = factory.extractFitnessFunctions(Container.vm, targets);
 
-        if (fitnesses.size() == 1) {
-            this._fitnessFunction = fitnesses.get(0) as unknown as FitnessFunction<C>;
+        if (fitnesses.length == 1) {
+            this._fitnessFunction = fitnesses[0] as unknown as FitnessFunction<C>;
         }
 
-        for (let i = 0; i < fitnesses.size(); i++) {
-            const fitness = fitnesses.get(i);
+        for (let i = 0; i < fitnesses.length; i++) {
+            const fitness = fitnesses[i];
             this._fitnessFunctions.set(i, fitness as unknown as FitnessFunction<C>);
             this._heuristicFunctions.set(i, v => 1 / (1 + v));
         }

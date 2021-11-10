@@ -22,8 +22,7 @@ import {TestGenerator} from './TestGenerator';
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 import {Container} from "../utils/Container";
-import {List} from "../utils/List";
-import {TestChromosome} from "../testcase/TestChromosome";
+import Arrays from "../utils/Arrays";
 
 /**
  * A many-objective search algorithm can generate tests
@@ -38,7 +37,7 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
 
         // TODO: Assuming there is at least one solution?
         const archive = await searchAlgorithm.findSolution();
-        const testChromosomes = new List<TestChromosome>([...archive.values()]).distinct();
+        const testChromosomes = Arrays.distinct(archive.values());
 
         // Check if we can remove unnecessary events in our final testSuite by applying ReductionLocalSearch.
         const reductionOperator = new ReductionLocalSearch(Container.vmWrapper, Container.config.getEventExtractor(),
@@ -47,7 +46,7 @@ export class ManyObjectiveTestGenerator extends TestGenerator {
             if (reductionOperator.isApplicable(chromosome)) {
                 const reducedChromosome = await reductionOperator.apply(chromosome);
                 if (reductionOperator.hasImproved(chromosome, reducedChromosome)) {
-                    testChromosomes.replace(chromosome, reducedChromosome);
+                    Arrays.replace(testChromosomes, chromosome, reducedChromosome);
                 }
             }
         }

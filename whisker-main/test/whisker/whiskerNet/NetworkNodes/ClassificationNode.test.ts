@@ -1,8 +1,6 @@
 import {ClassificationNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/ClassificationNode";
 import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
-import {List} from "../../../../src/whisker/utils/List";
-import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
 import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/NeuroevolutionUtil";
@@ -30,7 +28,7 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.activatedFlag).toBeFalsy();
         expect(classificationNode.activationCount).toBe(0);
         expect(classificationNode.traversed).toBeFalsy();
-        expect(classificationNode.incomingConnections.size()).toBe(0);
+        expect(classificationNode.incomingConnections.length).toBe(0);
         expect(classificationNode.event instanceof WaitEvent).toBeTruthy();
     })
 
@@ -100,6 +98,6 @@ describe("classificationNode Tests", () => {
         expect(out).toContain(
 `ClassificationNode{ID: 1\
 , Value: 0\
-, InputConnections: ${new List<ConnectionGene>()}}`)
+, InputConnections: ${[]}`)
     })
 })

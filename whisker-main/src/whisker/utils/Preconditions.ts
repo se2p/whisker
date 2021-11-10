@@ -18,8 +18,7 @@
  *
  */
 
-import { IllegalArgumentException } from "../core/exceptions/IllegalArgumentException";
-import {List} from "./List";
+import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 
 /**
  * TODO
@@ -53,8 +52,8 @@ export class Preconditions {
         return obj;
     }
 
-    public static checkListSize<T>(list: List<T>, size: number, message?: string) {
-        if (list.size() != size) {
+    public static checkListSize<T>(list: T[], size: number, message?: string): void {
+        if (list.length != size) {
             if (message) {
                 throw new IllegalArgumentException(message);
             } else {

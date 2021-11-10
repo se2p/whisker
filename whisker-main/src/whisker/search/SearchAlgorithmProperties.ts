@@ -22,301 +22,168 @@ import {StoppingCondition} from "./StoppingCondition";
 import {Chromosome} from "./Chromosome";
 
 /**
- * This class stores all relevant properties from a search algorithm.
+ * Stores all relevant properties of a search algorithm.
  *
  * @author Sophia Geserer
  */
-export class SearchAlgorithmProperties<C extends Chromosome> {
+export type SearchAlgorithmProperties<C extends Chromosome> =
+    | RandomSearchProperties<C>
+    | MIOProperties<C>
+    | OnePlusOneProperties<C>
+    | GeneticAlgorithmProperties<C>
+    ;
 
-    /**
-     * The size of the population that will be initially generated.
-     */
-    private _populationSize: number;
+type TestGenerator =
+    | "random"
+    | "iterative"
+    | "manyObjective"
+    | "neuroevolution"
+    ;
 
-    /**
-     * The length of a chromosome.
-     */
-    private _chromosomeLength: number;
-
-    /**
-     * The probability for applying crossover to chromosomes.
-     */
-    private _crossoverProbability: number;
-
-    /**
-     * The probability to apply mutation to a chromosome.
-     */
-    private _mutationProbability: number;
-
-    /**
-     * The number of mutations on the same chromosome at start.
-     */
-    private _maxMutationCountStart: number;
-
-    /**
-     * The number of mutations on the same chromosome in the focused phase.
-     */
-    private _maxMutationCountFocusedPhase: number;
-
-    /**
-     * The stopping condition for the corresponding search algorithm.
-     */
-    private _stoppingCondition: StoppingCondition<C>;
-
-    /**
-     * The probability for sampling a random chromosome at start.
-     */
-    private _selectionProbabilityStart: number;
-
-    /**
-     * The probability for sampling a random chromosome in the focused phase.
-     */
-    private _selectionProbabilityFocusedPhase: number;
-
-    /**
-     * The maximum number of chromosomes stored for a fitness function at start.
-     */
-    private _maxArchiveSizeStart: number;
-
-    /**
-     * The maximum number of chromosomes stored for a fitness function in the focused phase.
-     */
-    private _maxArchiveSizeFocusedPhase: number;
-
-    /**
-     * The percentage of iterations.
-     */
-    private _startOfFocusedPhase: number;
-
-    /**
-     * The minimum of the range.
-     */
-    private _minRange: number;
-
-    /**
-     * The maximum of the range.
-     */
-    private _maxRange: number;
+/**
+ * Properties common to all search algorithms.
+ */
+interface CommonProperties<C extends Chromosome> {
 
     /**
      * Defines the used TestGenerator approach
      */
-    private _testGenerator: string
+    testGenerator: TestGenerator
 
     /**
-     * Returns the population size.
-     * @returns population size
+     * The stopping condition for the corresponding search algorithm.
      */
-    getPopulationSize(): number {
-        return this._populationSize;
-    }
+    stoppingCondition: StoppingCondition<C>;
+}
+
+/**
+ * Properties that all algorithms expect Random Search have in common.
+ */
+interface AdditionalProperties<C extends Chromosome> extends CommonProperties<C> {
 
     /**
-     * Returns the size of a chromosome.
-     * @returns the length of a chromosome
+     * The length of a chromosome.
      */
-    getChromosomeLength(): number {
-        return this._chromosomeLength;
-    }
+    chromosomeLength: number;
 
     /**
-     * Returns the crossover probability.
-     * @returns probability to apply crossover
+     * The allowed integer range.
      */
-    getCrossoverProbability(): number {
-        return this._crossoverProbability;
-    }
+    integerRange: IntegerRange;
+}
+
+/**
+ * Properties for Random Search.
+ */
+export type RandomSearchProperties<C extends Chromosome> = CommonProperties<C>;
+
+/**
+ * Properties for MIO.
+ */
+export interface MIOProperties<C extends Chromosome> extends AdditionalProperties<C> {
 
     /**
-     * Returns the mutation probability.
-     * @returns probability to apply mutation
+     * The number of mutations on the same chromosome at different phases of the search.
      */
-    getMutationProbability(): number {
-        return this._mutationProbability;
-    }
+    maxMutationCount: MaxMutationCount;
 
     /**
-     * Returns the number of mutations on the same chromosome at start.
-     * @returns the number of mutations (start)
+     * The probability for sampling a random chromosome at different phases of the search
      */
-    getMaxMutationCountStart(): number {
-        return this._maxMutationCountStart;
-    }
+    selectionProbability: SelectionProbability;
 
     /**
-     * Returns the number of mutations on the same chromosome in the focused phase.
-     * @returns the number of mutations (focused phase)
+     * Defines the percentage of depleted search resources after which MIO's focus phase starts.
      */
-    getMaxMutationCountFocusedPhase(): number {
-        return this._maxMutationCountFocusedPhase;
-    }
+    startOfFocusedPhase: number;
 
     /**
-     * Returns the stopping condition that is specified for the search algorithm.
-     * @returns the specified stopping condition
+     * The maximum number of chromosomes stored for a fitness function at different phases of the search.
      */
-    getStoppingCondition(): StoppingCondition<C> {
-        return this._stoppingCondition;
-    }
+    maxArchiveSize: MaxArchiveSize;
+}
+
+/**
+ * Properties for (1+1)EA.
+ */
+export interface OnePlusOneProperties<C extends Chromosome> extends AdditionalProperties<C> {
 
     /**
-     * Returns the probability for sampling a random chromosome at start.
-     * @returns the probability for sampling a random chromosome (start)
+     * The probability to apply mutation to a chromosome.
      */
-    getSelectionProbabilityStart(): number {
-        return this._selectionProbabilityStart;
-    }
+    mutationProbability: number;
+}
+
+/**
+ * Properties for most genetic search algorithms. Note that some search algorithms define the own, specific properties,
+ * such as MIO, Random Search and (1+1)EA.
+ */
+export interface GeneticAlgorithmProperties<C extends Chromosome> extends AdditionalProperties<C> {
 
     /**
-     * Returns the probability for sampling a random chromosome in the focused phase.
-     * @returns the probability for sampling a random chromosome (focused phase)
+     * The size of the population that will be initially generated.
      */
-    getSelectionProbabilityFocusedPhase(): number {
-        return this._selectionProbabilityFocusedPhase;
-    }
+    populationSize: number;
 
     /**
-     * Returns the maximum number of chromosomes stored for a fitness function at start.
-     * @returns the maximum number of chromosomes for a fitness function (start)
+     * The probability to apply mutation to a chromosome.
      */
-    getMaxArchiveSizeStart(): number {
-        return this._maxArchiveSizeStart;
-    }
+    mutationProbability: number;
 
     /**
-     * Returns the maximum number of chromosomes stored for a fitness function in the focused phase.
-     * @returns the maximum number of chromosomes for a fitness function (focused phase)
+     * The probability for applying crossover to chromosomes.
      */
-    getMaxArchiveSizeFocusedPhase(): number {
-        return this._maxArchiveSizeFocusedPhase;
-    }
+    crossoverProbability: number;
+}
+
+export interface SelectionProbability {
 
     /**
-     * Returns the percentage of iterations.
-     * @returns the percentage of iterations
+     * The probability for sampling a random chromosome at start.
      */
-    getStartOfFocusedPhase(): number {
-        return this._startOfFocusedPhase;
-    }
+    start: number;
 
     /**
-     * Returns the minimum of range.
-     * @returns the minimum of the range
+     * The probability for sampling a random chromosome in the focused phase.
      */
-    getMinIntRange(): number {
-        return this._minRange;
-    }
+    focusedPhase: number;
+}
+
+export interface IntegerRange {
 
     /**
-     * Returns the maximum of range.
-     * @returns the maximum of the range
+     * The minimum of the range.
      */
-    getMaxIntRange(): number {
-        return this._maxRange;
-    }
+    min: number;
 
     /**
-     * Returns the used TestGenerator
-     * @returns the used TestGenerator as string
+     * The maximum of the range.
      */
-    getTestGenerator(): string {
-        return this._testGenerator;
-    }
+    max: number;
+}
+
+export interface MaxArchiveSize {
 
     /**
-     * Sets the size of the population to the specified number.
-     * @param populationSize the new population size
+     * The maximum number of chromosomes stored for a fitness function at start.
      */
-    setPopulationSize(populationSize: number): void {
-        this._populationSize = populationSize;
-    }
+    start: number;
 
     /**
-     * Sets the length of the chromosomes to the specified size.
-     * @param chromosomeLength the length of the chromosomes
+     * The maximum number of chromosomes stored for a fitness function in the focused phase.
      */
-    setChromosomeLength(chromosomeLength: number): void {
-        this._chromosomeLength = chromosomeLength;
-    }
+    focusedPhase: number;
+}
+
+export interface MaxMutationCount {
 
     /**
-     * Sets the probability for crossover to the specified number.
-     * @param crossoverProbability the new crossover probability
+     * The number of mutations on the same chromosome at start.
      */
-    setCrossoverProbability(crossoverProbability: number): void {
-        this._crossoverProbability = crossoverProbability;
-    }
+    start: number;
 
     /**
-     * Sets the probability for mutation to the specified number.
-     * @param mutationProbability the new mutation probability
+     * The number of mutations on the same chromosome in the focused phase.
      */
-    setMutationProbability(mutationProbability: number): void {
-        this._mutationProbability = mutationProbability;
-    }
-
-    /**
-     * Sets the number of mutations on the same chromosome.
-     * @param maxMutationCountStart the number of mutations (start)
-     * @param maxMutationCountFocusedPhase the number of mutations (focused phase)
-     */
-    setMaxMutationCounter(maxMutationCountStart: number, maxMutationCountFocusedPhase: number): void {
-        this._maxMutationCountStart = maxMutationCountStart;
-        this._maxMutationCountFocusedPhase = maxMutationCountFocusedPhase;
-    }
-
-    /**
-     * Sets the stopping condition to the given condition.
-     * @param stoppingCondition the stopping condition
-     */
-    setStoppingCondition(stoppingCondition: StoppingCondition<C>): void {
-        this._stoppingCondition = stoppingCondition;
-    }
-
-    /**
-     * Sets the probability for sampling a random chromosome.
-     * @param selectionProbabilityStart the probability for sampling (start)
-     * @param selectionProbabilityFocusedPhase the probability for sampling (focused phase)
-     */
-    setSelectionProbabilities(selectionProbabilityStart: number, selectionProbabilityFocusedPhase: number): void {
-        this._selectionProbabilityStart = selectionProbabilityStart;
-        this._selectionProbabilityFocusedPhase = selectionProbabilityFocusedPhase;
-    }
-
-    /**
-     * Sets the maximum number of chromosomes stored for a fitness function at start.
-     * @param maxArchiveSizeStart the max. number of chromosomes for a fitness function (start)
-     * @param maxArchiveSizeFocusedPhase the max. number of chromosomes for a fitness function (focused phase)
-     */
-    setMaxArchiveSizes(maxArchiveSizeStart: number, maxArchiveSizeFocusedPhase: number): void {
-        this._maxArchiveSizeStart = maxArchiveSizeStart;
-        this._maxArchiveSizeFocusedPhase = maxArchiveSizeFocusedPhase;
-    }
-
-    /**
-     * Sets the percentage of iterations.
-     * @param startOfFocusedPhase The percentage of iterations as decimal value after which the
-     *          focused search starts.
-     */
-    setStartOfFocusedPhase(startOfFocusedPhase: number): void {
-        this._startOfFocusedPhase = startOfFocusedPhase;
-    }
-
-    /**
-     * Sets the minimum and maximum number of the integer range.
-     * @param min the minimum of the range
-     * @param max the maximum of the range
-     */
-    setIntRange(min: number, max: number): void {
-        this._minRange = min;
-        this._maxRange = max;
-    }
-
-    /**
-     * Sets the used TestGenerator
-     * @param generator the used TestGenerator as string
-     */
-    setTestGenerator(generator: string): void {
-        this._testGenerator = generator;
-    }
+    focusedPhase: number;
 }
