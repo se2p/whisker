@@ -23,6 +23,7 @@ import {TestChromosome} from '../TestChromosome';
 import {ControlDependenceGraph, ControlFlowGraph, GraphNode} from 'scratch-analysis'
 import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
 import {List} from "../../utils/List";
+import {Trace} from "scratch-vm/src/engine/tracing.js";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -175,11 +176,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
 
             if (traceMin <= minBranchApproachLevel) {
-                if (!this._targetNode.block.opcode.startsWith("event_when") &&
-                    this._targetNode.block.opcode !== 'control_start_as_clone' &&
-                    blockTrace.opcode.startsWith("control") &&
-                    !(blockTrace.opcode === "control_wait") &&
-                    (blockTrace.distances[0] !== undefined)) {
+                if (this._canComputeControlDistance(blockTrace)) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -267,6 +264,20 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     private static _normalize(x: number): number {
         return x / (x + 1.0);
+    }
+
+    /**
+     * Checks if our target node represents a control node that contains a blockTrace which we can evaluate for
+     * determining the branch distance.
+     * @param blockTrace the blockTrace from which we can determine the branch distance.
+     * @returns boolean determining if we extract the branchDistance from the given blockTrace.
+     */
+    private _canComputeControlDistance(blockTrace: Trace):boolean{
+        return !this._targetNode.block.opcode.startsWith("event_when") &&
+            this._targetNode.block.opcode !== 'control_start_as_clone' &&
+            blockTrace.opcode.startsWith("control") &&
+            !(blockTrace.opcode === "control_wait") &&
+            (blockTrace.distances[0] !== undefined);
     }
 
     private _checkControlBlock(statement: GraphNode, controlNode: GraphNode): boolean {

@@ -59,7 +59,9 @@ export class DragSpriteEvent extends ScratchEvent {
     setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
             case "random": {
-                this.angle = Randomness.getInstance().nextInt(0, 480);
+                const lowerCodonValueBound = Container.config.searchAlgorithmProperties.getMinIntRange();
+                const upperCodonValueBound = Container.config.searchAlgorithmProperties.getMaxIntRange();
+                this.angle = Randomness.getInstance().nextInt(lowerCodonValueBound, upperCodonValueBound + 1);
                 break;
             }
             case "codon": {

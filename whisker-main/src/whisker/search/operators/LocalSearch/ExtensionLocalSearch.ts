@@ -145,6 +145,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
     private async _extendGenes(codons: List<number>, events: List<EventAndParameters>,
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
         const upperLengthBound = Container.config.searchAlgorithmProperties.getChromosomeLength();
+        const lowerCodonValueBound = Container.config.searchAlgorithmProperties.getMinIntRange();
         const upperCodonValueBound = Container.config.searchAlgorithmProperties.getMaxIntRange();
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
@@ -195,7 +196,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 if (chosenNewEvent.numSearchParameter() > 0) {
                     const parameter: number[] = [];
                     for (let i = 0; i < chosenNewEvent.numSearchParameter(); i++) {
-                        parameter.push(this._random.nextInt(0, 481));
+                        parameter.push(this._random.nextInt(lowerCodonValueBound, upperCodonValueBound + 1));
                     }
                     chosenNewEvent.setParameter(parameter, "codon");
                     events.add(new EventAndParameters(chosenNewEvent, parameter));
