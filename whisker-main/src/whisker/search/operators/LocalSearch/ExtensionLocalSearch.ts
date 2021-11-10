@@ -26,23 +26,44 @@ import {EventAndParameters, ExecutionTrace} from "../../../testcase/ExecutionTra
 import {LocalSearch} from "./LocalSearch";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {TypeTextEvent} from "../../../testcase/events/TypeTextEvent";
-import Arrays from "../../../utils/Arrays";
 import {ScratchEvent} from "../../../testcase/events/ScratchEvent";
+import {ScratchEventExtractor} from "../../../testcase/ScratchEventExtractor";
+import Arrays from "../../../utils/Arrays";
+import {EventSelector} from "../../../testcase/EventSelector";
+import VMWrapper = require("../../../../vm/vm-wrapper.js");
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
-
-    /**
-     * Collects the chromosomes, the extension local search has already modified. This helps us to prevent
-     * wasting time on trying to discover already discovered blocks.
-     */
-    private readonly _modifiedChromosomes: TestChromosome[] = [];
 
     /**
      * Collects the chromosomes, the extension local search has already been applied upon. This helps us to prevent
      * wasting time by not applying the local search on the same chromosome twice.
      */
     private readonly _originalChromosomes: TestChromosome[] = [];
+
+    /**
+     * Random number generator.
+     */
+    private readonly _random = Randomness.getInstance();
+
+    /**
+     * Probability of selecting a new Event, if one is encountered, during the ExtensionLocalSearch operation.
+     */
+    private readonly _newEventProbability: number
+
+    /**
+     * Constructs a new LocalSearch object.
+     * @param vmWrapper the vmWrapper containing the Scratch-VM.
+     * @param eventExtractor obtains the currently available set of events.
+     * @param eventSelector determines which event selector is used.
+     * @param probability defines the probability of applying the concrete LocalSearch operator.
+     * @param newEventProbability determines the probability of selecting a new event during the local search algorithm.
+     */
+    constructor(vmWrapper: VMWrapper, eventExtractor: ScratchEventExtractor, eventSelector: EventSelector,
+                probability: number, newEventProbability: number) {
+        super(vmWrapper, eventExtractor, eventSelector, probability);
+        this._newEventProbability = newEventProbability;
+    }
 
     /**
      * Determines whether local search can be applied to this chromosome.
@@ -90,9 +111,6 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         newChromosome.lastImprovedCoverageCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
 
-        // Save the modified chromosome to fetch its covered blocks in another round of ExtensionLocalSearch.
-        this._modifiedChromosomes.push(newChromosome);
-
         // Reset the trace and coverage of the original chromosome
         chromosome.trace = trace;
         chromosome.coverage = coverage;
@@ -127,6 +145,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
     private async _extendGenes(codons: number[], events: EventAndParameters[],
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
         const upperLengthBound = Container.config.searchAlgorithmProperties['chromosomeLength']; // FIXME: unsafe access
+        const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
+        const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
         let fitnessValues = this.calculateFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
         let done = false;
@@ -134,51 +154,108 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         let lastImprovedCodon = chromosome.lastImprovedCoverageCodon;
         let lastImprovedTrace: ExecutionTrace
 
-        // Uncovered blocks without branches between themselves and already covered blocks have a fitness of 0.5.
-        const cfgMarker = 0.5;
-
-        // Monitor if the Scratch-VM is still running. If it isn't stop adding Waits as they have no effect.
+        // Monitor if the Scratch-VM is still running. If it isn't, stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
         this._vmWrapper.vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
+        let extendWait = false;
+        let previousEvents:ScratchEvent[] = [];
         while (codons.length < upperLengthBound && this._projectRunning && !done) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
+
+            // If we have no events available, we can only stop.
             if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
-            const isTypeTextEvent = (event: ScratchEvent): event is TypeTextEvent => event instanceof ScratchEvent;
-            const typeTextEvents: TypeTextEvent[] = availableEvents.filter(isTypeTextEvent);
+            // Check the eventLandscape, especially if we found a new event or a typeTextEvent.
+            const previousEventIds = previousEvents.map(event => event.stringIdentifier());
+            const newEvents = availableEvents.filter(event => !previousEventIds.includes(event.stringIdentifier()));
+            const typeTextEvents = availableEvents.filter(event => event instanceof TypeTextEvent);
+
+            // Check if we have a typeTextEvent; if yes apply it!
             if (typeTextEvents.length !== 0) {
-                const typeTextEvent = Randomness.getInstance().pick(typeTextEvents);
+                const typeTextEvent = this._random.pick(typeTextEvents);
                 const typeEventCodon = Arrays.findElement(availableEvents, typeTextEvent);
                 codons.push(typeEventCodon);
                 events.push(new EventAndParameters(typeTextEvent, []));
                 await typeTextEvent.apply();
+                extendWait = false;
             }
-            // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
-            const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
-            codons.push(waitEventCodon);
-            // Set the waitDuration to the specified upper bound.
-            // Always using the same waitDuration ensures determinism within the local search.
-            const waitDurationCodon = Container.config.getWaitStepUpperBound();
-            codons.push(Container.config.getWaitStepUpperBound());
 
-            // Send the waitEvent with the specified stepDuration to the VM
-            const waitEvent = new WaitEvent(waitDurationCodon);
-            events.push(new EventAndParameters(waitEvent, [waitDurationCodon]));
-            await waitEvent.apply();
+            // Check if we found at least one new event compared to the previous iteration, if yes apply it!
+            else if (previousEvents.length > 0 && newEvents.length > 0
+                && this._random.nextDouble() < this._newEventProbability) {
+                // Choose random event amongst the newly found ones and determine its codon value.
+                const chosenNewEvent = this._random.pick(newEvents);
+                const newEventCodon = Arrays.findElement(availableEvents, chosenNewEvent);
+                codons.push(newEventCodon);
 
+                // Check if we have to generate parameters for the chosen event.
+                if (chosenNewEvent.numSearchParameter() > 0) {
+                    const parameter: number[] = [];
+                    for (let i = 0; i < chosenNewEvent.numSearchParameter(); i++) {
+                        parameter.push(this._random.nextInt(lowerCodonValueBound, upperCodonValueBound + 1));
+                    }
+                    chosenNewEvent.setParameter(parameter, "codon");
+                    events.push(new EventAndParameters(chosenNewEvent, parameter));
+                    codons.push(...parameter);
+                } else {
+                    events.push(new EventAndParameters(chosenNewEvent, []));
+                }
+                await chosenNewEvent.apply();
+                extendWait = false;
+            }
+
+            // In case we neither found a typeTextEvent nor a new event, extend an existing wait or add a new WaitEvent.
+            else {
+                if (extendWait) {
+                    // Fetch the old waitDuration and add the upper bound to it.
+                    let newWaitDuration = codons[(codons.length - 1)] + Container.config.getWaitStepUpperBound();
+
+                    // Check if we have reached the maximum codon value. If so force the localSearch operator to
+                    // crate a new WaitEvent.
+                    if (newWaitDuration > upperCodonValueBound) {
+                        newWaitDuration = upperCodonValueBound;
+                        extendWait = false;
+                    }
+
+                    // Replace the old codonValue with the new duration; Construct the WaitEvent with the new
+                    // duration; Replace the old Event in the events list of the chromosome with the new one.
+                    codons[codons.length - 1] = newWaitDuration;
+                    const waitEvent = new WaitEvent(newWaitDuration);
+                    events[events.length -1] = new EventAndParameters(waitEvent, [newWaitDuration]);
+                    await waitEvent.apply();
+                } else {
+                    // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
+                    const waitEventCodon = availableEvents.findIndex(event => event instanceof WaitEvent);
+                    codons.push(waitEventCodon);
+
+                    // Set the waitDuration to the specified upper bound.
+                    // Always using the same waitDuration ensures determinism within the local search.
+                    const waitDurationCodon = Container.config.getWaitStepUpperBound();
+                    codons.push(Container.config.getWaitStepUpperBound());
+
+                    // Send the waitEvent with the specified stepDuration to the VM
+                    const waitEvent = new WaitEvent(waitDurationCodon);
+                    events.push(new EventAndParameters(waitEvent, [waitDurationCodon]));
+                    await waitEvent.apply();
+                    extendWait = true;
+                }
+            }
+
+            // Store previous events.
+            previousEvents = Arrays.clone(availableEvents);
 
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
             const newFitnessValues = this.calculateFitnessValues(chromosome);
 
-            // Reset counter if we obtained smaller fitnessValues, or have blocks reachable without branches.
-            if (newFitnessValues.some(((value, index) => value < fitnessValues[index])) ||
-                newFitnessValues.includes(cfgMarker)) {
+            // Reset counter if we obtained smaller fitnessValues, or keep covering more and more blocks
+            if (newFitnessValues.length < fitnessValues.length ||
+                newFitnessValues.some((value, index) => value < fitnessValues[index])) {
                 fitnessValuesUnchanged = 0;
             }
             // Otherwise increase the counter.
@@ -217,9 +294,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Only look at fitnessValues originating from uncovered blocks AND
             // blocks not already covered by previous chromosomes modified by local search.
             const fitness = chromosome.getFitness(fitnessFunction);
-            if (!fitnessFunction.isOptimal(fitness) &&
-                !this._modifiedChromosomes.some(modifiedChromosome =>
-                    fitnessFunction.isOptimal(modifiedChromosome.getFitness(fitnessFunction)))) {
+            if (!fitnessFunction.isOptimal(fitness)) {
                 fitnessValues.push(chromosome.getFitness(fitnessFunction));
             }
         }

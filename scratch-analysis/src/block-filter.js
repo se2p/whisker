@@ -165,7 +165,15 @@ const ControlFilter = {
         ControlFilter.singleBranch(block) || ControlFilter.doubleBranch(block),
 
     hatBlock: block =>
-        EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone'
+        EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone',
+
+    executionHaltingBlock: block =>
+        block.opcode === 'control_wait' ||
+        block.opcode === 'looks_thinkforsecs' ||
+        block.opcode === 'looks_sayforsecs' ||
+        block.opcode === 'motion_glidesecstoxy' ||
+        block.opcode === 'sound_playuntildone' ||
+        block.opcode === 'text2speech_speakAndWait'
 };
 
 const SensingFilter = {

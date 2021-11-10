@@ -19,7 +19,8 @@
     "localSearch": [
         {
             "type": "Extension",
-            "probability": 0.1
+            "probability": 0.1,
+            "newEventProbability": 0.2
         },
         {
             "type": "Reduction",

@@ -1,8 +1,13 @@
 {
-    "testGenerator": "random",
-    "minEventSize": 2,
-    "maxEventSize": 40,
-    "extractor": "naive",
+    "testGenerator": "manyObjective",
+    "algorithm": "random",
+    "extractor": "dynamic",
+    "eventSelector": "interleaving",
+    "chromosome": {
+        "type": "variableLengthTest",
+        "minSampleLength": 2,
+        "maxSampleLength": 40
+    },
     "fitnessFunction": {
         "type": "statement",
         "targets": []
@@ -18,6 +23,10 @@
                 "type": "optimal"
             }
         ]
+    },
+    "integerRange": {
+        "min": 0,
+        "max": 480
     },
     "durations": {
         "waitStepUpperBound": 100,

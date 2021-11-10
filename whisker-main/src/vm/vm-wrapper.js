@@ -313,6 +313,7 @@ class VMWrapper {
         delete Runtime.THREAD_STEP_INTERVAL;
         Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / accelerationFactor;
         this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
+        this.vm.runtime.accelerationFactor = accelerationFactor;
         this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
         clearInterval(this.vm.runtime._steppingInterval);
         this.accelerationFactor = accelerationFactor;
@@ -376,6 +377,7 @@ class VMWrapper {
      * Start the vm wrapper by resetting it to its original state and starting the virtual machine.
      */
     start () {
+        this.vm.runtime.stopAll();
         this.callbacks.clearCallbacks();
         this.inputs.clearInputs();
         this.constraints.clearConstraints();
