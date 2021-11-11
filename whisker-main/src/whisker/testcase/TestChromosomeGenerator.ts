@@ -45,7 +45,7 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
                 mutationOp: Mutation<TestChromosome>,
                 crossoverOp: Crossover<TestChromosome>) {
         this._properties = properties;
-        this._length = properties.chromosomeLength * properties.virtualSpace;
+        this._length = properties.chromosomeLength;
         this._min = properties.integerRange.min;
         this._max = properties.integerRange.max;
         this._mutationOp = mutationOp;

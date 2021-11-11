@@ -151,9 +151,9 @@ export class WhiskerSearchConfiguration {
         const eventExtractor = new StaticScratchEventExtractor(vm);
         const programEvents = eventExtractor.extractEvents(vm);
         const numSearchParams = programEvents.map(event => event.numSearchParameter());
-        const virtualSpace = Math.max(...numSearchParams) + 1; // Add 1 for the event-codon itself.
-        console.log("VirtualSpace: ", virtualSpace)
-        this.searchAlgorithmProperties['virtualSpace'] = virtualSpace;
+         // Add 1 for the event-codon itself.
+        this.searchAlgorithmProperties['virtualSpace'] = Math.max(...numSearchParams) + 1;
+        this.searchAlgorithmProperties['chromosomeLength'] *= this.searchAlgorithmProperties['virtualSpace'];
     }
 
 
