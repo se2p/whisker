@@ -9,7 +9,7 @@ describe("BiasedVariableLengthMutation Test", () => {
     const min = 0;
     const max = 420;
     const crossover = new SinglePointRelativeCrossover<IntegerListChromosome>();
-    const mutation = new BiasedVariableLengthMutation(min, max, 20, 5);
+    const mutation = new BiasedVariableLengthMutation(min, max, 20, 2, 5);
 
     test("Test apply mutation", () => {
         const codons = Array.from({length: 10}, () => Math.floor(random.nextInt(min, max)));
@@ -21,8 +21,8 @@ describe("BiasedVariableLengthMutation Test", () => {
         expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
     });
 
-    test("Test apply mutation with minimal chromosome size of 1", () => {
-        const codons = Array.from({length: 1}, () => Math.floor(random.nextInt(min, max)));
+    test("Test apply mutation with minimal chromosome size of 2 (specified virtual space)", () => {
+        const codons = Array.from({length: 2}, () => Math.floor(random.nextInt(min, max)));
         const chromosome = new IntegerListChromosome(codons, mutation, crossover)
         let mutant = mutation.apply(chromosome)
         for (let i = 0; i < 30; i++) {

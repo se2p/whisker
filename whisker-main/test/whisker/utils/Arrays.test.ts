@@ -19,10 +19,8 @@
  */
 
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
-import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import Arrays from "../../../src/whisker/utils/Arrays";
+import {expect} from "@jest/globals";
 
 describe("Arrays", () => {
 
@@ -122,6 +120,15 @@ describe("Arrays", () => {
         expect(changed.includes(false)).toBeFalsy();
     });
 
+    test("Chunk array", () =>{
+        const array = [1,2,3,4,5,6,7];
+        const chunkArray = Arrays.chunk(array, 3);
+        expect(chunkArray.length).toBe(3);
+        expect(chunkArray[0]).toStrictEqual([1,2,3]);
+        expect(chunkArray[1]).toStrictEqual([4,5,6]);
+        expect(chunkArray[2]).toStrictEqual([7]);
+    })
+
     test("Sort array", () => {
         const array = [4, 3, 2, 1];
         Arrays.sort(array);
@@ -136,4 +143,14 @@ describe("Arrays", () => {
         const distinct = Arrays.distinctObjects(array);
         expect(distinct.length).toBe(1);
     });
+
+    test("Create random Array in range", () =>{
+        const minValue = 10;
+        const maxValue = 30;
+        const length = 100
+        const array = Arrays.getRandomArray(minValue, maxValue, length);
+        expect(Math.min(...array)).toBeGreaterThanOrEqual(minValue);
+        expect(Math.max(...array)).toBeLessThanOrEqual(maxValue);
+        expect(array.length).toBe(length);
+    })
 });

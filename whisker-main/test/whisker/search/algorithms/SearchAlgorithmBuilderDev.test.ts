@@ -66,7 +66,8 @@ describe('BuillderBitstringChromosome', () => {
             mutationProbability: undefined,
             crossoverProbability: undefined,
             testGenerator: undefined,
-            integerRange: undefined
+            integerRange: undefined,
+            virtualSpace: undefined
         };
 
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties,

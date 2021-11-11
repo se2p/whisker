@@ -29,6 +29,8 @@ import {Crossover} from "../search/Crossover";
 
 export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromosome> {
 
+    protected readonly _properties: GeneticAlgorithmProperties<TestChromosome>;
+
     protected readonly _length: number;
 
     private readonly _min: number;
@@ -42,7 +44,8 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
     constructor(properties: GeneticAlgorithmProperties<TestChromosome>,
                 mutationOp: Mutation<TestChromosome>,
                 crossoverOp: Crossover<TestChromosome>) {
-        this._length = properties.chromosomeLength;
+        this._properties = properties;
+        this._length = properties.chromosomeLength * properties.virtualSpace;
         this._min = properties.integerRange.min;
         this._max = properties.integerRange.max;
         this._mutationOp = mutationOp;

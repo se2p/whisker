@@ -31,7 +31,7 @@ export default class Arrays {
      * distinct([o, p, q]); // returns [o, q]
      * ```
      *
-     * @returns a list consisting of the distinct elements.
+     * @returns T[] consisting of the distinct elements.
      */
     static distinct<T>(elements: Readonly<Iterable<T>>): T[] {
         const array = Array.isArray(elements) ? elements : [...elements];
@@ -49,7 +49,7 @@ export default class Arrays {
      * distinct([o, p, q]); // returns [o]
      * ```
      *
-     * @returns a list consisting of the distinct elements.
+     * @returns T[] consisting of the distinct elements.
      */
     static distinctObjects<T>(elements: Readonly<Iterable<T>>): T[] {
         const array = Array.isArray(elements) ? elements : [...elements];
@@ -110,7 +110,7 @@ export default class Arrays {
      */
     static replace<T>(array: T[], oldElement: T, newElement: T): boolean {
         const index = array.findIndex(element => element === oldElement);
-        if(index === -1)
+        if (index === -1)
             return false;
         this.replaceAt(array, newElement, index);
         return true;
@@ -125,7 +125,7 @@ export default class Arrays {
      * @return Returns true if the operation was successful and false otherwise.
      */
     static replaceAt<T>(array: T[], newElement: T, position: number): boolean {
-        if(position < 0 || position > array.length - 1){
+        if (position < 0 || position > array.length - 1) {
             return false;
         }
         array[position] = newElement;
@@ -133,9 +133,9 @@ export default class Arrays {
     }
 
     /**
-     * Removes the element at the given position from the list.
+     * Removes the element at the given position from the given array.
      *
-     * @param array
+     * @param array from which an element should be removed.
      * @param position the position of the element to remove
      */
     static removeAt<T>(array: T[], position: number): void {
@@ -145,8 +145,8 @@ export default class Arrays {
     /**
      * Inserts the specified element at the specified position.
      *
-     * @param array
-     * @param element element to be added to the list
+     * @param array to which an element should be added.
+     * @param element element to be added to the given array.
      * @param position position where to insert the element
      */
     static insert<T>(array: T[], element: T, position: number): void {
@@ -154,15 +154,15 @@ export default class Arrays {
     }
 
     /**
-     * Returns {@code true} if this list contains no elements.
-     * @returns {@code true} if this list contains no elements
+     * Returns {@code true} if the given array contains no elements.
+     * @returns {@code true} if the given array contains no elements
      */
     static isEmpty<T>(array: T[]): boolean {
         return array.length === 0;
     }
 
     /**
-     * Randomly permutes this list using a default source of randomness.
+     * Randomly permutes the given array using a default source of randomness.
      */
     static shuffle<T>(array: T[]): void {
         let currentIndex = array.length;
@@ -177,11 +177,42 @@ export default class Arrays {
         }
     }
 
+    /**
+     * Splits an existing array into equal sized sub-arrays. The size of the last chunk may be smaller than the
+     * specified chunkSize iff array.length % chunkSize !== 0. In case chunkSize <= 0, we simply wrap an array
+     * around the given array.
+     * @param array the array that should be split into chunks.
+     * @param chunkSize the size of the sub-arrays.
+     * @returns T[][] a 2-dimensional array containing sub-arrays of size chunkSize created from the given array.
+     */
+    static chunk<T>(array: T[], chunkSize: number): T[][] {
+        if (chunkSize <= 0) {
+            return [array];
+        }
+        const chunkArray: T[][] = [];
+        for (let i = 0; i < array.length; i += chunkSize) {
+            chunkArray.push(array.slice(i, i + chunkSize));
+        }
+        return chunkArray;
+    }
+
     static sort(array: number[]): void {
         array.sort((a, b) => a - b);
     }
 
     static range(until: number): number[] {
         return [...Array(until).keys()]
+    }
+
+    /**
+     * Create a random array of numbers in the range [minValue, maxValue] with a specified length.
+     * @param minValue lower bound inclusive.
+     * @param maxValue upper bound exclusive.
+     * @param length size of created array.
+     * @returns Array<number> with the specified value range and length.
+     */
+    static getRandomArray(minValue: number, maxValue: number, length: number): number[] {
+        return Array.from({length: length},
+            () => Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue);
     }
 }

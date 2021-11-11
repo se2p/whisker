@@ -54,7 +54,8 @@ describe('OnePlusOneEa', () => {
             mutationProbability: undefined,
             crossoverProbability: undefined,
             testGenerator: undefined,
-            integerRange: undefined
+            integerRange: undefined,
+            virtualSpace: undefined
         };
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
@@ -85,7 +86,8 @@ describe('OnePlusOneEa', () => {
             mutationProbability: undefined,
             crossoverProbability: undefined,
             testGenerator: undefined,
-            integerRange: undefined
+            integerRange: undefined,
+            virtualSpace: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);

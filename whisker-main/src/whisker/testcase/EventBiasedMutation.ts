@@ -1,7 +1,6 @@
-
 import {TestChromosome} from "./TestChromosome";
 import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
-import { EventAndParameters } from "./ExecutionTrace";
+import {EventAndParameters} from "./ExecutionTrace";
 
 /**
  * Sets the probabilities for mutating codons based on the similarity of surrounding events.
@@ -21,8 +20,8 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
 
     private _probabilities: number[] = [];
 
-    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
-        super(min, max, length, gaussianMutationPower);
+    constructor(min: number, max: number, length: number, virtualSpace:number , gaussianMutationPower: number) {
+        super(min, max, length, virtualSpace, gaussianMutationPower);
     }
 
     protected _getMutationProbability(idx: number): number {
@@ -36,15 +35,15 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
     }
 
     private _setSharedProbabilities(chromosome: TestChromosome, events: EventAndParameters[]): void {
-        this._probabilities = EventBiasedMutation.computeSharedProbabilities(chromosome.getLength(), events);
+        this._probabilities = this.computeSharedProbabilities(chromosome.getLength(), events);
     }
 
-    static computeSharedProbabilities(chromosomeLength: number, events: EventAndParameters[]): number[] {
-       const indicesByEventType = new Map<string, number[]>();
+    public computeSharedProbabilities(chromosomeLength: number, events: EventAndParameters[]): number[] {
+        const indicesByEventType = new Map<string, number[]>();
 
         let codonIndex = 0;
         for (const ep of events) {
-            const { event } = ep;
+            const {event} = ep;
             if (event == undefined) {
                 break;
             }
@@ -55,8 +54,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
             }
 
             const indices = indicesByEventType.get(ctorName);
-            const count = ep.getCodonCount();
-            for (const upper = codonIndex + count; codonIndex < upper; codonIndex++) {
+            for (const upper = codonIndex + this._virtualSpace; codonIndex < upper; codonIndex++) {
                 indices.push(codonIndex);
             }
         }
@@ -80,7 +78,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
     }
 
     private _initializeMutationProbabilities(chromosome: TestChromosome): void {
-        const { events } = chromosome.trace;
+        const {events} = chromosome.trace;
 
         if (events) {
             this._setSharedProbabilities(chromosome, events);

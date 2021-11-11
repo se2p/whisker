@@ -36,13 +36,16 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @param _min Lower bound for integer values
      * @param _max Upper bound for integer values
      * @param _length Upper bound for IntegerList size.
-     * @param _gaussianMutationPower
+     * @param _virtualSpace overestimation of the number of codons that are required for each Scratch-Event within a
+     * given project (event-codon + param-codons).
+     * @param _gaussianMutationPower mean of gaussian distribution from which we sample the mutation power.
      */
     protected constructor(
         private readonly _min: number,
         private readonly _max: number,
         private readonly _length: number,
-        private readonly _gaussianMutationPower: number
+        protected readonly _virtualSpace: number,
+        private readonly _gaussianMutationPower: number,
     ) {
         this._random = Randomness.getInstance();
     }
@@ -68,41 +71,52 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @return A mutated deep copy of the given chromosome.
      */
     applyUpTo(chromosome: T, maxPosition: number): T {
-        const newCodons: number[] = [];
-        newCodons.push(...chromosome.getGenes()); // TODO: Immutable list would be nicer
+        const parentGenes = chromosome.getGenes();
+        const eventGroups = Arrays.chunk(parentGenes, this._virtualSpace);
+        const maxGroupLength = Math.min(eventGroups.length, Math.floor(maxPosition / this._virtualSpace));
         let index = 0;
-        while (index < maxPosition) {
-            if (this._random.nextDouble() < this._getMutationProbability(index, maxPosition)) {
-                index = this._mutateAtIndex(newCodons, index);
+        while (index < maxGroupLength) {
+            if (this._random.nextDouble() < this._getMutationProbability(index, maxGroupLength)) {
+                index = this._mutateEventAndParameter(eventGroups, index);
             }
             index++;
         }
-        return chromosome.cloneWith(newCodons) as T;
+        return chromosome.cloneWith(eventGroups.flat()) as T;
     }
 
     /**
      * Execute one of the allowed mutations, with equally distributed probability.
      * Since this modifies the size of the list, the adjusted index, after a mutation is returned.
      *
-     * @param codons The list of codons that is being mutated.
+     * @param eventGroups The list of codons that is being mutated split into event-codons and their parameters.
      * @param index  The index where to mutate inside the list.
      * @return The modified index after the mutation.
      */
-    private _mutateAtIndex(codons: number[], index: number) {
+    private _mutateEventAndParameter(eventGroups: number[][], index: number) {
         const mutation = this._random.nextInt(0, 3);
         switch (mutation) {
             case 0:
-                if (codons.length < this._length) {
-                    Arrays.insert(codons, this._random.nextInt(this._min, this._max), index);
+                if (eventGroups.length * this._virtualSpace < this._length) {
+                    const newEventGroup = Arrays.getRandomArray(this._min, this._max, this._virtualSpace);
+                    Arrays.insert(eventGroups, newEventGroup, index);
                     index++;
                 }
                 break;
-            case 1:
-                codons[index] = this._getRandomCodonGaussian(codons[index]);
+            case 1: {
+                // If we have a deletion operation at the last position and right after that a change mutation,
+                // we would try to access the already deleted eventGroup.
+                if(index >= eventGroups.length){
+                    index = eventGroups.length - 1;
+                }
+                const mutantGroup = eventGroups[index];
+                for (let i = 0; i < mutantGroup.length; i++) {
+                    mutantGroup[i] = this._getRandomCodonGaussian(mutantGroup[i]);
+                }
                 break;
+            }
             case 2:
-                if (codons.length > 1) {
-                    Arrays.removeAt(codons, index);
+                if (eventGroups.length > 1) {
+                    Arrays.removeAt(eventGroups, index);
                     index--;
                 }
                 break;

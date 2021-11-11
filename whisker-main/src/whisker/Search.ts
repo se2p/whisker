@@ -165,7 +165,8 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
-        console.log(this.vm)
+        config._setVirtualEventSpace(vm);
+        console.log(this.vm);
 
         await util.prepare(accelerationFactor || 1);
         util.start();
@@ -176,7 +177,7 @@ export class Search {
             // Prioritize seed set by CLI
             if (configSeed) {
                 console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
-seed ${configSeed} defined within the config files.`)
+seed ${configSeed} defined within the config files.`);
             }
             Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {

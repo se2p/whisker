@@ -24,8 +24,8 @@ import {VariableLengthConstrainedChromosomeMutation} from "./VariableLengthConst
 
 export class BiasedVariableLengthConstrainedChromosomeMutation extends VariableLengthConstrainedChromosomeMutation {
 
-    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
-        super(min, max, length, gaussianMutationPower);
+    constructor(min: number, max: number, length: number, virtualSpace:number , gaussianMutationPower: number) {
+        super(min, max, length, virtualSpace, gaussianMutationPower);
     }
 
     protected _getMutationProbability(idx: number, numberOfCodons: number): number {

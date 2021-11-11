@@ -24,8 +24,8 @@ import {TestChromosome} from "../testcase/TestChromosome";
 
 export class VariableLengthConstrainedChromosomeMutation extends AbstractVariableLengthMutation<TestChromosome> {
 
-    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
-        super(min, max, length, gaussianMutationPower);
+    constructor(min: number, max: number, length: number, virtualSpace:number , gaussianMutationPower: number) {
+        super(min, max, length, virtualSpace, gaussianMutationPower);
     }
 
     protected _getMutationProbability(idx: number, numberOfCodons: number): number {
@@ -46,12 +46,12 @@ export class VariableLengthConstrainedChromosomeMutation extends AbstractVariabl
         // If we have some information about lastImprovedFitnessCodon use this codon as a stopping point for mutation.
         // Value of 2 equals clicking Flag, hence no improvement.
         if(chromosome.lastImprovedFitnessCodon > 2){
-            return super.applyUpTo(chromosome, chromosome.lastImprovedFitnessCodon + 1);
+            return super.applyUpTo(chromosome, chromosome.lastImprovedFitnessCodon + this._virtualSpace);
         }
         // Else if we have some information about lastImprovedCoverageCodon use this codon as a stopping point for mutation.
         // Value of 2 equals clicking Flag, hence no improvement.
         else if(chromosome.lastImprovedCoverageCodon > 2){
-            return super.applyUpTo(chromosome, chromosome.lastImprovedCoverageCodon + 1);
+            return super.applyUpTo(chromosome, chromosome.lastImprovedCoverageCodon + this._virtualSpace);
         }
         // Otherwise, mutate the whole chromosome.
         else{
