@@ -165,7 +165,11 @@ export abstract class ScratchEventExtractor {
                 }
                 // Target senses Mouse
                 if (value == "_mouse_") {
-                    eventList.push(new MouseMoveToEvent(target.x, target.y));
+                    const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
+                    // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
+                    if(currentMousePosition.x !== target.x || currentMousePosition.y !== target.y) {
+                        eventList.push(new MouseMoveToEvent(target.x, target.y));
+                    }
                     eventList.push(new MouseMoveEvent());
                 }
                 // Target senses edge
