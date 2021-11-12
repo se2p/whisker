@@ -92,6 +92,9 @@ describe("EventBiasedMutation Test", () => {
             pD, pD, pD, pD, pD, pD, pD, pD, pD
         ];
 
+        const probabilitySum = expected.reduce((a, b) => a + b, 0);
         expect(actual).toStrictEqual(expected);
+        expect(probabilitySum).toBeGreaterThan(0.99);
+        expect(probabilitySum).toBeLessThan(1.01);
     });
 });
