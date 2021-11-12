@@ -74,27 +74,25 @@ describe("EventBiasedMutation Test", () => {
             d, d, d,
         ].map(([ev, params]) => new EventAndParameters(ev, params));
 
-        const virtualSpace = 3;
-        const eventBiasedMutation = new EventBiasedMutation(0, 480, 42, virtualSpace, 5);
-        const actual = eventBiasedMutation.computeSharedProbabilities(42, events);
+        const actual = EventBiasedMutation.computeSharedProbabilities(20, events);
 
-        const pA = (1 / 4) / (6 * virtualSpace);
+        const pA = (1 / 4) / 6;
         // noinspection PointlessArithmeticExpressionJS
-        const pB = (1 / 4) / (2 * virtualSpace);
-        const pC = (1 / 4) / (4 * virtualSpace);
-        const pD = (1 / 4) / (3 * virtualSpace);
+        const pB = (1 / 4) / 2;
+        const pC = (1 / 4) / 4;
+        const pD = (1 / 4) / 3;
         const expected = [
-            pA, pA, pA, pA, pA, pA, pA, pA, pA,
-            pB, pB, pB, pB, pB, pB,
             pA, pA, pA,
-            pC, pC, pC, pC, pC, pC, pC, pC, pC, pC, pC, pC,
-            pA, pA, pA, pA, pA, pA,
-            pD, pD, pD, pD, pD, pD, pD, pD, pD
+            pB, pB,
+            pA,
+            pC, pC, pC, pC,
+            pA, pA,
+            pD, pD, pD,
+            0,0,0,0,0
         ];
 
-        const probabilitySum = expected.reduce((a, b) => a + b, 0);
+        const probabilitySum = actual.reduce((a, b) => a + b, 0);
         expect(actual).toStrictEqual(expected);
-        expect(probabilitySum).toBeGreaterThan(0.99);
-        expect(probabilitySum).toBeLessThan(1.01);
+        expect(probabilitySum).toBe(1);
     });
 });
