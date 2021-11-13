@@ -1,109 +1,101 @@
-import {Crossover} from "../../search/Crossover";
-import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Pair} from "../../utils/Pair";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
-import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {NodeType} from "../NetworkComponents/NodeType";
 import {Randomness} from "../../utils/Randomness";
+import {NetworkCrossover} from "./NetworkCrossover";
+import {NeatChromosome} from "../Networks/NeatChromosome";
 
 
-export class NeatCrossover implements Crossover<NetworkChromosome> {
+export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
 
     /**
-     * Random generator
+     * Random number generator.
      */
     private readonly random = Randomness.getInstance();
 
     /**
-     * Probability of applying weight averaging during crossover
+     * Probability of averaging the weight of two matching genes during crossover.
      */
     private readonly crossoverAverageWeights: number;
 
     /**
-     * Constructs a new NeatCrossover object
-     * @param crossoverConfig the configuration parameter for the NEAT-Crossover
+     * Constructs a new NeatCrossover object.
+     * @param crossoverConfig the configuration parameter for the NEAT-Crossover.
      */
     constructor(crossoverConfig: Record<string, (string | number)>) {
+        super();
         this.crossoverAverageWeights = crossoverConfig.weightAverageRate as number;
     }
 
     /**
-     * Applies the crossover operator
-     * @param parent1 the first parent of the crossover
-     * @param parent2 the second parent of the crossover
+     * Applies the crossover operator.
+     * @param parent1 the first crossover parent.
+     * @param parent2 the second crossover parent.
      */
-    apply(parent1: NetworkChromosome, parent2: NetworkChromosome): Pair<NetworkChromosome> {
-        parent1 = parent1.clone();
-        parent2 = parent2.clone();
+    apply(parent1: NeatChromosome, parent2: NeatChromosome): Pair<NeatChromosome> {
+        const parent1Clone = parent1.clone() as NeatChromosome;
+        const parent2Clone = parent2.clone() as NeatChromosome;
 
-        parent1.generateNetwork();
-        parent2.generateNetwork();
+        parent1Clone.generateNetwork();
+        parent2Clone.generateNetwork();
 
         // Decide if we want to inherit the weight of one parent or
         // the average of both parents when we have a matching connection
         const avgWeights = this.random.nextDouble() < this.crossoverAverageWeights;
-        const child = this.multipointCrossover(parent1, parent2, avgWeights);
-        return new Pair<NetworkChromosome>(child, undefined);
+        const child = this.multipointCrossover(parent1Clone, parent2Clone, avgWeights);
+        return [child, undefined];
     }
 
     /**
-     * Applies the crossover operator
-     * @param parents the parents to mate with each other
+     * Applies the crossover operator.
+     * @param parents the parents that should be mated with each other.
      */
-    applyFromPair(parents: Pair<NetworkChromosome>): Pair<NetworkChromosome> {
-        return this.apply(parents.getFirst(), parents.getSecond());
+    applyFromPair(parents: Pair<NeatChromosome>): Pair<NeatChromosome> {
+        return this.apply(parents[0], parents[1]);
     }
 
     /**
-     * Applies crossover by aligning the connection gene lists of both parents;
-     * Matching genes are inherited randomly or by averaging the weight of both parents
-     * Disjoint and Excess genes are inherited from the more fit parent
-     * @param parent1 the first parent of the crossover
-     * @param parent2 the second parent of the crossover
-     * @param avgWeights decided if we inherit matching genes randomly or by averaging the weight of both parent connections
+     * Applies crossover by aligning the connection gene lists of both parents.
+     * Matching genes are inherited randomly or by averaging the weight of both parents.
+     * Disjoint and Excess genes are inherited from the more fit parent.
+     * @param parent1 the first crossover parent.
+     * @param parent2 the second crossover parent.
+     * @param avgWeights determines whether we inherit matching genes randomly or by averaging the weight of both parent
+     * connections.
      */
-    private multipointCrossover(parent1: NetworkChromosome, parent2: NetworkChromosome, avgWeights) {
+    private multipointCrossover(parent1: NeatChromosome, parent2: NeatChromosome, avgWeights) {
 
         // Check which parent has the higher non-adjusted fitness value
         // The worse parent should not add additional connections
         // If they have the same fitness value, take the smaller ones excess and disjoint connections only
         let p1Better = false;
-        const parent1Size = parent1.connections.size();
-        const parent2Size = parent2.connections.size();
+        const parent1Size = parent1.connections.length;
+        const parent2Size = parent2.connections.length;
 
-        if (parent1.networkFitness > parent2.networkFitness)
+        if (parent1.fitness > parent2.fitness)
             p1Better = true;
-        else if (parent1.networkFitness === parent2.networkFitness) {
+        else if (parent1.fitness === parent2.fitness) {
             if (parent1Size < parent2Size) {
                 p1Better = true;
             }
         }
 
         // Create Lists for the new Connections and Nodes
-        const newConnections = new List<ConnectionGene>();
-        const newNodes = new List<NodeGene>();
-        const inputNodes = new List<NodeGene>();
-        const outputNodes = new List<NodeGene>();
+        const newConnections: ConnectionGene[] = [];
+        const newNodes: NodeGene[] = [];
 
         // Create another List for saving disabled connections to check if we accidentally destroyed the
         // network by disabling some connections.
-        const disabledConnections = new List<ConnectionGene>();
+        const disabledConnections: ConnectionGene[] = [];
 
         // Search through all input/output nodes and add them to the newNodes List
         // This is necessary since we would otherwise loose nodes without a connection
         for (const node of parent1.allNodes) {
             const currentNode = node.clone();
             if (node.type === NodeType.INPUT || node.type === NodeType.BIAS || node.type === NodeType.OUTPUT) {
-                newNodes.add(currentNode);
+                newNodes.push(currentNode);
             }
-            if (node.type === NodeType.INPUT || node.type === NodeType.BIAS) {
-                inputNodes.add(currentNode);
-            }
-            if (node.type === NodeType.OUTPUT) {
-                outputNodes.add(currentNode);
-            }
-
         }
 
         // Iterators for the connections of both parents
@@ -128,7 +120,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
 
             // Excess Genes coming from parent2
             if (i1 >= parent1Size) {
-                currentConnection = parent2.connections.get(i2);
+                currentConnection = parent2.connections[i2];
                 i2++;
                 // Skip excess genes from the worse parent
                 if (p1Better)
@@ -136,7 +128,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
             }
             // Excess genes coming from parent 1
             else if (i2 >= parent2Size) {
-                currentConnection = parent1.connections.get(i1);
+                currentConnection = parent1.connections[i1];
                 i1++;
                 // Skip excess genes from the worse parent
                 if (!p1Better)
@@ -145,8 +137,8 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
 
             // Matching genes or Disjoint Genes
             else {
-                const parent1Connection = parent1.connections.get(i1);
-                const parent2Connection = parent2.connections.get(i2);
+                const parent1Connection = parent1.connections[i1];
+                const parent2Connection = parent2.connections[i2];
                 const parent1Innovation = parent1Connection.innovation;
                 const parent2Innovation = parent2Connection.innovation;
 
@@ -203,7 +195,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
 
                 if (!found) {
                     newFromNode = fromNode.clone();
-                    newNodes.add(newFromNode);
+                    newNodes.push(newFromNode);
                 }
 
                 // Search for the outNode
@@ -217,7 +209,7 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
 
                 if (!found) {
                     newOutNode = toNode.clone();
-                    newNodes.add(newOutNode);
+                    newNodes.push(newOutNode);
                 }
 
                 // Now add the new Connection
@@ -231,25 +223,25 @@ export class NeatCrossover implements Crossover<NetworkChromosome> {
                 // Collect the disabled Connections -> if we produce a defect network we sequentially enable the
                 // connections stored here until we found a path from input to output, i.e repaired the network
                 if (disable)
-                    disabledConnections.add(newConnection);
+                    disabledConnections.push(newConnection);
 
                 // Average the weight if we set the flag
                 if (avgWeights)
                     newConnection.weight = avgWeight;
 
                 disable = false;
-                newConnections.add(newConnection);
+                newConnections.push(newConnection);
             }
         }
 
         // Finally create the child with the selected Connections and Nodes
-        const child = new NetworkChromosome(newConnections, newNodes, parent1.getMutationOperator(), parent1.getCrossoverOperator())
+        const child = new NeatChromosome(newNodes, newConnections, parent1.getMutationOperator(), parent1.getCrossoverOperator())
         child.generateNetwork();
 
         // Check if everything went fine and enable some connections to fix a defect network if necessary
         let i = 0;
-        while (child.updateStabiliseCount(10) < 0 && i < disabledConnections.size()) {
-            disabledConnections.get(i).isEnabled = true;
+        while (child.updateStabiliseCount(10) < 0 && i < disabledConnections.length) {
+            disabledConnections[i].isEnabled = true;
             child.generateNetwork();
             i++;
         }

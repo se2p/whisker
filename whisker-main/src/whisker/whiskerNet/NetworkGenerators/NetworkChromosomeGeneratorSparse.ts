@@ -1,4 +1,3 @@
-import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {Randomness} from "../../utils/Randomness";

@@ -1,8 +1,4 @@
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {Mutation} from "../../search/Mutation";
-import {Crossover} from "../../search/Crossover";
-import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NeatMutation} from "../Operators/NeatMutation";
@@ -10,19 +6,19 @@ import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatCrossover} from "../Operators/NeatCrossover";
+import {NeatChromosome} from "../Networks/NeatChromosome";
 
-export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<NetworkChromosome> {
-
-    /**
-     * The mutation operator of the NetworkChromosomes
-     */
-    protected _mutationOp: Mutation<NetworkChromosome>;
+export abstract class NeatChromosomeGenerator implements ChromosomeGenerator<NeatChromosome> {
 
     /**
-     * The crossover operator of th NetworkChromosomes
-     * @private
+     * The mutation operator
      */
-    protected _crossoverOp: Crossover<NetworkChromosome>;
+    protected _mutationOp: NeatMutation;
+
+    /**
+     * The crossover operator.
+     */
+    protected _crossoverOp: NeatCrossover;
 
     /**
      * Constructs a new NetworkGenerator
@@ -34,14 +30,13 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
         const crossOverOperator = new NeatCrossover(crossoverConfig);
         this._mutationOp = mutationOperator;
         this._crossoverOp = crossOverOperator;
-
     }
 
     /**
      * Method to obtain a single network from a specific NetworkGenerator.
      * @return Returns a working NetworkChromosome
      */
-    abstract get(): NetworkChromosome;
+    abstract get(): NeatChromosome;
 
     /**
      * Creates connections between input and output nodes according to the inputRate
@@ -49,7 +44,7 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
      * @param outputNodes all outputNodes of the network
      * @return the connectionGene List
      */
-    abstract createConnections(inputNodes?: List<List<NodeGene>>, outputNodes?: List<NodeGene>): List<ConnectionGene>;
+    abstract createConnections(inputNodes?: NodeGene[][], outputNodes?: NodeGene[]): ConnectionGene[];
 
     /**
      * Adds regression nodes to the network
@@ -67,11 +62,11 @@ export abstract class NetworkChromosomeGenerator implements ChromosomeGenerator<
         }
     }
 
-    setCrossoverOperator(crossoverOp: Crossover<NetworkChromosome>): void {
+    setCrossoverOperator(crossoverOp: NeatCrossover): void {
         this._crossoverOp = crossoverOp;
     }
 
-    setMutationOperator(mutationOp: Mutation<NetworkChromosome>): void {
+    setMutationOperator(mutationOp: NeatMutation): void {
         this._mutationOp = mutationOp;
     }
 }

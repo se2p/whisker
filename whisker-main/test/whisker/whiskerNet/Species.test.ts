@@ -1,23 +1,22 @@
 import {Species} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/Species";
 import {NetworkChromosome} from "../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
-import {List} from "../../../src/whisker/utils/List";
 import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
-import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
+import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 
 describe("Species Test", () => {
 
     let generator: NetworkChromosomeGeneratorSparse
-    let species: Species<NetworkChromosome>;
+    let species: Species<NeatChromosome>;
     let populationSize: number;
     let random: Randomness;
-    let champion: NetworkChromosome;
-    let properties: NeuroevolutionProperties<NetworkChromosome>
+    let champion: NeatChromosome;
+    let properties: NeuroevolutionProperties<NeatChromosome>
 
     beforeEach(() => {
         const crossoverConfig = {
@@ -57,10 +56,10 @@ describe("Species Test", () => {
         sprite2.set("DistanceToWhite-X", 8);
         sprite2.set("DistanceToWhite-Y", 9);
         genInputs.set("Sprite2", sprite2);
-        const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
-            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
-        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events,0.4)
-        const population = new List<NetworkChromosome>();
+        const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
+        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4)
+        const population: NeatChromosome[] = [];
         populationSize = 50;
         properties = new NeuroevolutionProperties(populationSize);
         properties.ageSignificance = 1.0
@@ -70,15 +69,15 @@ describe("Species Test", () => {
         properties.populationChampionNumberOffspring = 5;
         properties.populationChampionNumberClones = 3;
         species = new Species(0, false, properties);
-        while (population.size() < populationSize)
-            population.add(generator.get())
-        species.networks.addList(population);
+        while (population.length < populationSize)
+            population.push(generator.get() as NeatChromosome)
+        species.networks.push(...population);
         random = Randomness.getInstance();
-        for (let i = 0; i < species.networks.size(); i++) {
-            species.networks.get(i).networkFitness = (i % 5) + 1;
+        for (let i = 0; i < species.networks.length; i++) {
+            species.networks[i].fitness = (i % 5) + 1;
         }
-        champion = random.pickRandomElementFromList(species.networks)
-        champion.networkFitness = 10;
+        champion = random.pick(species.networks)
+        champion.fitness = 10;
     })
 
     test("Test Constructor", () => {
@@ -92,7 +91,7 @@ describe("Species Test", () => {
         expect(species.currentBestFitness).toBe(0)
         expect(species.allTimeBestFitness).toBe(0)
         expect(species.hyperParameter).toBe(properties)
-        expect(species.networks.size()).toBe(0)
+        expect(species.networks.length).toBe(0)
     })
 
     test("Test Getter and Setter", () => {
@@ -112,19 +111,19 @@ describe("Species Test", () => {
         expect(species.currentBestFitness).toBe(5)
         expect(species.allTimeBestFitness).toBe(6)
         expect(species.hyperParameter).toBeInstanceOf(NeuroevolutionProperties)
-        expect(species.networks.get(0)).toBeInstanceOf(NetworkChromosome)
+        expect(species.networks[0]).toBeInstanceOf(NetworkChromosome)
     })
 
     test("Test assignAdjustFitness()", () => {
         species.assignSharedFitness();
 
-        expect(champion.networkFitness).toBe(10)
+        expect(champion.fitness).toBe(10)
         expect(champion.sharedFitness).toBe(
-            champion.networkFitness * properties.ageSignificance / species.networks.size())
+            champion.fitness * properties.ageSignificance / species.networks.length)
     })
 
     test("Test assignAdjustFitness() with negative fitness values", () => {
-        champion.networkFitness = -1;
+        champion.fitness = -1;
         species.assignSharedFitness();
 
         expect(champion.sharedFitness).toBeGreaterThan(0)
@@ -137,22 +136,16 @@ describe("Species Test", () => {
         species.hyperParameter.penalizingAge = 5;
         species.assignSharedFitness();
 
-        expect(champion.networkFitness).toBe(10)
+        expect(champion.fitness).toBe(10)
         expect(champion.sharedFitness).toBe(
-            champion.networkFitness * 0.01 * properties.ageSignificance / species.networks.size())
+            champion.fitness * 0.01 * properties.ageSignificance / species.networks.length)
     })
 
     test("Test markKillCandidates()", () => {
         species.markParents();
-
-        const eliminateList = new List<NetworkChromosome>();
-        for (const c of species.networks)
-            if (c.hasDeathMark)
-                eliminateList.add(c);
-
-        expect(species.networks.get(0).networkFitness).toBe(10);
-        expect(species.networks.get(0).isSpeciesChampion).toBe(true);
-        expect(species.networks.get(0).hasDeathMark).toBe(false);
+        expect(species.networks[0].fitness).toBe(10);
+        expect(species.networks[0].isSpeciesChampion).toBe(true);
+        expect(species.networks[0].isParent).toBe(true);
         expect(species.allTimeBestFitness).toBe(10);
         expect(species.ageOfLastImprovement).toBe(species.age);
     })
@@ -163,7 +156,7 @@ describe("Species Test", () => {
         let totalOffsprings = 0;
         const avgFitness = species.calculateAverageSharedFitness();
         for (const c of species.networks) {
-            c.expectedOffspring = c.networkFitness / avgFitness;
+            c.expectedOffspring = c.fitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
         }
         const leftOver = species.getNumberOfOffspringsNEAT(0);
@@ -177,7 +170,7 @@ describe("Species Test", () => {
         let totalOffsprings = 0;
         const avgFitness = species.calculateAverageSharedFitness();
         for (const c of species.networks) {
-            c.expectedOffspring = c.networkFitness / avgFitness;
+            c.expectedOffspring = c.fitness / avgFitness;
             totalOffsprings += c.expectedOffspring;
         }
         const leftOver = species.getNumberOfOffspringsNEAT(0.99);
@@ -200,12 +193,12 @@ describe("Species Test", () => {
     })
 
     test("Test remove and add Chromosome", () => {
-        const speciesSizeBefore = species.size();
-        const testChromosome = generator.get();
-        species.addChromosome(testChromosome)
-        const speciesSizeAdded = species.size();
+        const speciesSizeBefore = species.networks.length;
+        const testChromosome = generator.get() as NeatChromosome;
+        species.networks.push(testChromosome)
+        const speciesSizeAdded = species.networks.length;
         species.removeNetwork(testChromosome);
-        const speciesSizeRemoved = species.size();
+        const speciesSizeRemoved = species.networks.length;
 
         expect(speciesSizeAdded).toBe(speciesSizeBefore + 1);
         expect(speciesSizeRemoved).toBe(speciesSizeBefore)
@@ -219,13 +212,13 @@ describe("Species Test", () => {
         const population = new NeatPopulation(generator, properties);
         population.generatePopulation();
         const speciesList = new List<Species<NetworkChromosome>>();
-        const popSpecie = population.species.get(0);
+        const popSpecie = population.species[0];
 
-        for (let i = 0; i < popSpecie.chromosomes.size(); i++) {
-            popSpecie.chromosomes.get(i).networkFitness = (i % 5) + 1;
+        for (let i = 0; i < popSpecie.chromosomes.length; i++) {
+            popSpecie.chromosomes.get(i).fitness = (i % 5) + 1;
         }
         const popChampion = random.pickRandomElementFromList(popSpecie.chromosomes)
-        popChampion.networkFitness = 10;
+        popChampion.fitness = 10;
         popChampion.isPopulationChampion = true;
         popChampion.numberOffspringPopulationChamp = 5;
 
@@ -238,14 +231,14 @@ describe("Species Test", () => {
 
         popSpecie.calculateAverageSpeciesFitness();
         popSpecie.expectedOffspring = 50;
-        const sizeBeforeBreed = popSpecie.size();
+        const sizeBeforeBreed = popSpecie.length;
 
         for (let i = 0; i < 100; i++) {
             popSpecie.breed(population, speciesList)
         }
 
         // We did not eliminate the marked Chromosomes here therefore 2 times the size of the old population
-        expect(popSpecie.size()).toBeLessThanOrEqual(2 * sizeBeforeBreed)
+        expect(popSpecie.length).toBeLessThanOrEqual(2 * sizeBeforeBreed)
     })
 
     test("Test breed new networks with an empty species", () => {
@@ -256,14 +249,14 @@ describe("Species Test", () => {
         const population = new NeatPopulation(generator, properties);
         population.generatePopulation();
         const speciesList = new List<Species<NetworkChromosome>>();
-        const popSpecie = population.species.get(0);
+        const popSpecie = population.species[ß;
         popSpecie.chromosomes.clear();
         popSpecie.expectedOffspring = 10;
 
         popSpecie.breed(population, speciesList)
 
         // We did not eliminate the marked Chromosomes here therefore 2 times the size of the old population
-        expect(popSpecie.size()).toBe(0)
+        expect(popSpecie.length).toBe(0)
     })
 
     test(" Test averageSpeciesFitness", () => {

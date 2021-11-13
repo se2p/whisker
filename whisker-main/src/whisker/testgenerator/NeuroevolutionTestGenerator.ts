@@ -16,12 +16,12 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
     async generateTests(): Promise<WhiskerTestListWithSummary> {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
-        const testChromosomes = Array.from(archive.values())).distinct();
-        let testSuite: WhiskerTeest[];
+        const testChromosomes = Arrays.distinct(archive.values());
+        let testSuite: WhiskerTest[];
         if (Container.config.getTestSuiteType() === 'dynamic') {
             testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
         } else {
-            testSuite = await this.getTestSuite(testChromosomes);
+            testSuite = this.getTestSuite(testChromosomes);
         }
 
         await this.collectStatistics(testSuite);
