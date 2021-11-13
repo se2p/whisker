@@ -15,7 +15,6 @@ import {CheckName} from "../components/Check";
 // todo functions for counting check "wiederhole 10 mal"
 // todo check plays a sound...
 // todo check when getting message
-// todo check volume > some value
 // todo key check for 'any key' test
 
 /**
@@ -126,9 +125,8 @@ export abstract class CheckGenerator {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const spriteOriginal = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
-        const spriteName = spriteOriginal.name;
-        ModelUtil.checkAttributeExistence(t, spriteOriginal, attrName);
+        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">=" && comparison != "<"
             && comparison != "<=") {
@@ -143,6 +141,9 @@ export abstract class CheckGenerator {
             || attrName == "currentCostumeName" || attrName == "rotationStyle") {
             CheckGenerator.attributeCompOnVisual(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex, attrName,
                 comparison, attrValue);
+        } else if (attrName == "sayText") {
+            CheckGenerator.attributeCompOnOutput(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
+                attrName, comparison, attrValue);
         }
 
         // without movement
@@ -188,6 +189,20 @@ export abstract class CheckGenerator {
         const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
             comparison, attrValue);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
+            try {
+                return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
+            } catch (e) {
+                throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
+            }
+        });
+    }
+
+    private static attributeCompOnOutput(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
+                                         spriteName: string, spriteNameRegex: string, attrName: string,
+                                         comparison: string, attrValue: string) {
+        const eventString = CheckUtility.getEventString(CheckName.AttrComp, negated, spriteNameRegex, attrName,
+            comparison, attrValue);
+        cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             try {
                 return !negated == ModelUtil.compare(sprite[attrName], attrValue, comparison);
             } catch (e) {
@@ -250,6 +265,8 @@ export abstract class CheckGenerator {
                 } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
                     || attrName == "currentCostumeName" || attrName == "rotationStyle") {
                     cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, predicate)
+                } else if (attrName == "sayText") {
+                    cu.registerOutput(spriteName, eventString, edgeLabel, graphID, predicate);
                 }
             })
         }
@@ -418,7 +435,8 @@ export abstract class CheckGenerator {
 
     /**
      * Get a method checking whether an attribute of a sprite changed.
-     * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText;
+     * Attributes: checks, x, y, pos , direction, visible, size, currentCostume, this.volume, layerOrder, sayText
+     * (only = allowed);
      * @param t Instance of the test driver.
      * @param cu Listener for the checks.
      * @param edgeLabel Label of the parent edge of the check.
@@ -437,10 +455,14 @@ export abstract class CheckGenerator {
         if (attrName == "costume" || attrName == "currentCostume") {
             attrName = "currentCostumeName";
         }
-        const sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex);
-        const spriteName = sprite.name;
-        ModelUtil.checkAttributeExistence(t, sprite, attrName);
+        const spriteName = ModelUtil.checkSpriteExistence(t, caseSensitive, spriteNameRegex).name;
+        ModelUtil.checkAttributeExistence(t, spriteName, attrName);
 
+        // The attribute sayText cannot be used as an AttributeChange predicate with any other operand than =, as it
+        // is not a numerical value and e.g. an increase (+) on a string is not desired to be representable. An
+        // AttributeChange predicate with sayText fails in the execution with e.g.
+        // -> Error: Sprite1.sayText: Is not a numerical value to compare: Hello!
+        // Therefore no instrumentation is done here for the sayText attribute.
         if (attrName == "x" || attrName == "y") {
             CheckGenerator.registerOnMoveAttrChange(cu, edgeLabel, graphID, negated, spriteName, spriteNameRegex,
                 attrName, change);

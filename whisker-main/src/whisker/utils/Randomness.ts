@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from "./List";
 import seed from 'seed-random';
 
 
@@ -183,21 +182,12 @@ export class Randomness {
     }
 
     /**
-     * Pick a random item from a collection
+     * Pick a random item from an array
      *
-     * @param collection from which to pick an item
+     * @param array from which to pick an item
      */
-    public pick<E>(collection: E[]): E {
-        return collection[this.nextInt(0, collection.length)];
-    }
-
-    /**
-     * Pick a random item from a List
-     *
-     * @param list from which to pick an item
-     */
-    public pickRandomElementFromList<E>(list: List<E>): E {
-        return list.get(this.nextInt(0, list.size()));
+    public pick<T>(array: T[]): T {
+        return array[this.nextInt(0, array.length)];
     }
 
     /**

@@ -19,7 +19,6 @@
  */
 
 import {BitstringChromosomeGenerator} from "../../../../src/whisker/bitstring/BitstringChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
 import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/FixedIterationsStoppingCondition";
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OneOfStoppingCondition";
@@ -30,7 +29,6 @@ import {SinglePointCrossover} from "../../../../src/whisker/search/operators/Sin
 import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
-import {List} from "../../../../src/whisker/utils/List";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
 
@@ -47,40 +45,51 @@ describe('OnePlusOneEa', () => {
 
     test('Trivial bitstring with OneMax', async () => {
 
-        const n = 10;
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(1);
-        properties.setChromosomeLength(n);        const fitnessFunction = new OneMaxFitnessFunction(n);
-        properties.setStoppingCondition(new OneOfStoppingCondition(
-            new FixedIterationsStoppingCondition(1000),
-            new OptimalSolutionStoppingCondition()));
+        const properties = {
+            populationSize: 1,
+            chromosomeLength: 10,
+            stoppingCondition: new OneOfStoppingCondition(
+                new FixedIterationsStoppingCondition(1000),
+                new OptimalSolutionStoppingCondition()),
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
+        };
+        const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.ONE_PLUS_ONE)
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
-            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, n, new List());
+            .initializeFitnessFunction(FitnessFunctionType.ONE_MAX, properties.chromosomeLength, []);
 
 
         const search = builder.buildSearchAlgorithm();
         const solutions = await search.findSolution();
         const firstSolution = solutions.get(0);
 
-        expect(await firstSolution.getFitness(fitnessFunction)).toBe(n);
+        expect(await firstSolution.getFitness(fitnessFunction)).toBe(properties.chromosomeLength);
     });
 
     test('Setter', () => {
-        const n = 10;
-        const properties = new SearchAlgorithmProperties();
-        properties.setPopulationSize(1);
-        properties.setChromosomeLength(n);
-        const fitnessFunction = new OneMaxFitnessFunction(n);
-        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const stoppingCondition = new OneOfStoppingCondition(
             new FixedIterationsStoppingCondition(1000), // Plenty time...
             new OptimalSolutionStoppingCondition()
         );
-        properties.setStoppingCondition(stoppingCondition);
+
+        const properties = {
+            populationSize: 1,
+            chromosomeLength: 10,
+            stoppingCondition,
+            mutationProbability: undefined,
+            crossoverProbability: undefined,
+            testGenerator: undefined,
+            integerRange: undefined
+        };
+
+        const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
+        const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());
         const search = new OnePlusOneEA();
 
         search.setProperties(properties);

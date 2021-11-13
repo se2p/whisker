@@ -3,11 +3,10 @@ import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
-import {List} from "../utils/List";
-import {TestChromosome} from "../testcase/TestChromosome";
 import {NEAT} from "../search/algorithms/NEAT";
 import {WhiskerTest} from "./WhiskerTest";
 import {Container} from "../utils/Container";
+import Arrays from "../utils/Arrays";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -17,8 +16,8 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
     async generateTests(): Promise<WhiskerTestListWithSummary> {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
-        const testChromosomes = new List<TestChromosome>(Array.from(archive.values())).distinct();
-        let testSuite: List<WhiskerTest>;
+        const testChromosomes = Array.from(archive.values())).distinct();
+        let testSuite: WhiskerTeest[];
         if (Container.config.getTestSuiteType() === 'dynamic') {
             testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
         } else {

@@ -19,8 +19,7 @@
  */
 
 import {ChromosomeGenerator} from '../search/ChromosomeGenerator';
-import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {List} from '../utils/List';
+import {GeneticAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {BitstringChromosome} from './BitstringChromosome';
 import {Randomness} from "../utils/Randomness";
 import {Crossover} from "../search/Crossover";
@@ -34,18 +33,18 @@ export class BitstringChromosomeGenerator implements ChromosomeGenerator<Bitstri
 
     private _crossoverOp: Crossover<BitstringChromosome>;
 
-    constructor(properties: SearchAlgorithmProperties<BitstringChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<BitstringChromosome>,
                 mutationOp: Mutation<BitstringChromosome>,
                 crossoverOp: Crossover<BitstringChromosome>) {
-        this._length = properties.getChromosomeLength();
+        this._length = properties.chromosomeLength;
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
     }
 
     get(): BitstringChromosome {
-        const bits = new List<boolean>();
+        const bits: boolean[] = [];
         for(let i = 0; i < this._length; i++) {
-            bits.add(Randomness.getInstance().nextDouble() > 0.5);
+            bits.push(Randomness.getInstance().nextDouble() > 0.5);
         }
         return new BitstringChromosome(bits, this._mutationOp, this._crossoverOp);
     }

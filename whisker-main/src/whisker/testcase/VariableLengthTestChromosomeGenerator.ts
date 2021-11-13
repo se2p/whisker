@@ -18,7 +18,7 @@
  *
  */
 
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {GeneticAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {Randomness} from "../utils/Randomness";
 import {TestChromosome} from "./TestChromosome";
 import {Mutation} from "../search/Mutation";
@@ -30,7 +30,7 @@ export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerat
     private readonly _minInitialLength: number;
     private readonly _maxInitialLength: number;
 
-    constructor(properties: SearchAlgorithmProperties<TestChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<TestChromosome>,
                 mutationOp: Mutation<TestChromosome>,
                 crossoverOp: Crossover<TestChromosome>,
                 minInitialLength: number,

@@ -18,8 +18,6 @@
  *
  */
 
-import {List} from '../utils/List';
-
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
@@ -31,9 +29,7 @@ export class JustWaitScratchEventExtractor extends ScratchEventExtractor {
         super(vm);
     }
 
-    public extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        const eventList = new List<ScratchEvent>();
-        eventList.add(new WaitEvent());
-        return eventList;
+    public extractEvents(vm: VirtualMachine): ScratchEvent[] {
+        return [new WaitEvent()];
     }
 }

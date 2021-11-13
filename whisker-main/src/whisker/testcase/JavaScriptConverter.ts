@@ -19,9 +19,7 @@
  */
 
 import {TestChromosome} from "./TestChromosome";
-import {List} from "../utils/List";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
-import {Container} from "../utils/Container";
 
 export class JavaScriptConverter {
 
@@ -44,56 +42,36 @@ export class JavaScriptConverter {
         return text;
     }
 
-    getSuiteText(tests: List<WhiskerTest>): string {
+    getSuiteText(tests: WhiskerTest[]): string {
 
-        // If we want a dynamic test suite print out the networks instead of static test cases.
-        if (Container.config.getTestSuiteType() === 'dynamic') {
-            const networkTestSuite = {};
-            for (let i = 0; i < tests.size(); i++) {
-                networkTestSuite[`Network ${i}`] = tests.get(i).chromosome;
+        let text = "";
+        let i = 0;
+        let footer = "";
+        for (const test of tests) {
+            text += "const test"+i+" = async function (t) {\n";
+            for (const {event} of test.chromosome.trace.events) {
+                text += "  " + event.toJavaScript() + "\n";
             }
-            return JSON.stringify(networkTestSuite, undefined, 4);
-        } else if (Container.config.getTestSuiteType() === 'static') {
-            const eventTestSuite = {};
-            for (let i = 0; i < tests.size(); i++) {
-                const chromosome = tests.get(i).chromosome;
-                const events = {};
-                for (let j = 0; j < chromosome.trace.events.size(); j++) {
-                    events[`Event ${j}`] = chromosome.trace.events.get(j)[0].toJSON();
-                }
-                eventTestSuite[`TestCase ${i}`] = events;
-            }
-            return JSON.stringify(eventTestSuite, undefined, 4);
-        } else {
-            let text = "";
-            let i = 0;
-            let footer = "";
-            for (const test of tests) {
-                text += "const test" + i + " = async function (t) {\n";
-                for (const {event} of test.chromosome.trace.events) {
-                    text += "  " + event.toJavaScript() + "\n";
-                }
-                text += "}\n";
+            text += "}\n";
 
-                footer += "  {\n";
-                footer += "      test: test" + i + ",\n";
-                footer += "      name: 'Generated Test',\n";
-                footer += "      description: '',\n";
-                footer += "      categories: []\n";
-                if (i < tests.size() - 1) {
-                    footer += "  },\n";
-                } else {
-                    footer += "  }\n";
-                }
-
-                i++;
+            footer += "  {\n";
+            footer += "      test: test"+i+",\n";
+            footer += "      name: 'Generated Test',\n";
+            footer += "      description: '',\n";
+            footer += "      categories: []\n";
+            if (i < tests.length - 1) {
+                footer += "  },\n";
+            } else {
+                footer += "  }\n";
             }
 
-            text += "\nmodule.exports = [\n";
-            text += footer;
-            text += "]\n";
-
-            return text;
+            i++;
         }
+
+        text += "\nmodule.exports = [\n";
+        text += footer;
+        text += "]\n";
+
+        return text;
     }
 }

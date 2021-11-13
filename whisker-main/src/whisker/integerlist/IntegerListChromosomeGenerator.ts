@@ -19,8 +19,7 @@
  */
 
 import {ChromosomeGenerator} from '../search/ChromosomeGenerator';
-import {SearchAlgorithmProperties} from '../search/SearchAlgorithmProperties';
-import {List} from '../utils/List';
+import {GeneticAlgorithmProperties} from '../search/SearchAlgorithmProperties';
 import {IntegerListChromosome} from "./IntegerListChromosome";
 import {Randomness} from "../utils/Randomness";
 import {Mutation} from "../search/Mutation";
@@ -38,12 +37,12 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
 
     private _crossoverOp: Crossover<IntegerListChromosome>;
 
-    constructor(properties: SearchAlgorithmProperties<IntegerListChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<IntegerListChromosome>,
                 mutationOp: Mutation<IntegerListChromosome>,
                 crossoverOp: Crossover<IntegerListChromosome>) {
-        this._min = properties.getMinIntRange();
-        this._max = properties.getMaxIntRange();
-        this._length = properties.getChromosomeLength();
+        this._min = properties.integerRange.min;
+        this._max = properties.integerRange.max;
+        this._length = properties.chromosomeLength;
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
     }
@@ -53,9 +52,9 @@ export class IntegerListChromosomeGenerator implements ChromosomeGenerator<Integ
      * @returns a random chromosome
      */
     get(): IntegerListChromosome {
-        const codons = new List<number>();
+        const codons: number[] = [];
         for (let i = 0; i < this._length; i++) {
-            codons.add(Randomness.getInstance().nextInt(this._min, this._max));
+            codons.push(Randomness.getInstance().nextInt(this._min, this._max));
         }
         return new IntegerListChromosome(codons, this._mutationOp, this._crossoverOp);
     }
