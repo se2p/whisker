@@ -58,7 +58,7 @@ describe("InputNode Tests", () => {
 
         const inputNode3 = new InputNode("Sprite1", "X-Position");
         inputNode3.uID = 2;
-        expect(inputNode3.equals(inputNode)).toBeFalsy();
+        expect(inputNode3.equals(inputNode)).toBeTruthy();
 
         const inputNode4 = new InputNode("Sprite2", "X-Position");
         inputNode4.uID = 2;

@@ -45,7 +45,7 @@ describe("Randomness", () => {
     test("Set initial seed as empty string", () =>{
         const seed = "";
         Randomness.setInitialSeeds(seed);
-        expect(Date.now() - Randomness.getInitialRNGSeed()).toBeLessThan(10);
+        expect(Date.now() - Randomness.getInitialRNGSeed()).toBeLessThan(1000);
         expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
     })
 

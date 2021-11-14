@@ -58,7 +58,7 @@ describe("classificationNode Tests", () => {
 
         const classificationNode3 = new ClassificationNode(new WaitEvent, ActivationFunction.SIGMOID);
         classificationNode2.uID = 2;
-        expect(classificationNode3.equals(classificationNode)).toBeFalsy();
+        expect(classificationNode3.equals(classificationNode)).toBeTruthy();
 
         const classificationNode4 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
         classificationNode4.uID = 1;

@@ -61,7 +61,7 @@ describe("ConnectionGene Test", () => {
         outNode.uID = 2;
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1, false);
-        expect(connection.equalsByNodes(otherConnection)).toBe(false);
+        expect(connection.equalsByNodes(otherConnection)).toBe(true);
     })
 
     test("Test equalsByNodes with differing nodes", () => {

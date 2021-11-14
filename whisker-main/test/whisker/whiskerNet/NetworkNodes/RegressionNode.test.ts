@@ -59,7 +59,7 @@ describe("regressionNode Tests", () => {
 
         const regressionNode3 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
         regressionNode3.uID = 2;
-        expect(regressionNode3.equals(regressionNodeNone)).toBeFalsy();
+        expect(regressionNode3.equals(regressionNodeNone)).toBeTruthy();
 
         const regressionNode4 = new RegressionNode(new MouseMoveEvent(0, 0), "Duration", ActivationFunction.NONE);
         regressionNode4.uID = 2;
