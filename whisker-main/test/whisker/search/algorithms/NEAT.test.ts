@@ -131,7 +131,8 @@ describe('Test NEAT', () => {
             expect(searchAlgorithm.getNumberOfIterations()).toBe(20);
         });
     })
-
+})
+/*
 //Commented out since it greatly increases the CI-Pipeline duration. However, very useful for sanity checking.
     test("XOR Sanity Test", () => {
         const inputMap = new Map<string, Map<string, number>>();
@@ -226,3 +227,5 @@ describe('Test NEAT', () => {
         }
     }
 })
+
+ */
