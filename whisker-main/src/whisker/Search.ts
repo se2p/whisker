@@ -130,7 +130,7 @@ export class Search {
             console.log(csvOutput);
             return csvOutput;
         } else {
-            stoppingCondition = config.searchAlgorithmProperties.getStoppingCondition();
+            stoppingCondition = config.searchAlgorithmProperties.stoppingCondition;
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.
@@ -156,7 +156,6 @@ export class Search {
         } else {
             csvString = StatisticsCollector.getInstance().asCsv();
         }
-        console.log(csvString);
         return csvString;
     }
 

@@ -1,13 +1,13 @@
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
+import {NeatProperties} from "../NeatProperties";
 
 export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
 
     /**
      * The defined search parameters.
      */
-    private readonly _hyperParameter: NeuroevolutionProperties<C>;
+    private readonly _hyperParameter: NeatProperties;
 
     /**
      * The NetworkGenerator used for generating a starting population.
@@ -54,7 +54,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
      * @param generator the ChromosomeGenerator used for creating the initial population.
      * @param hyperParameter the defined search parameters
      */
-    protected constructor(generator: ChromosomeGenerator<C>, hyperParameter: NeuroevolutionProperties<C>) {
+    protected constructor(generator: ChromosomeGenerator<C>, hyperParameter: NeatProperties) {
         this._hyperParameter = hyperParameter;
         this._populationSize = hyperParameter.populationSize;
         this._generator = generator;
@@ -130,7 +130,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         this._averageFitness = value;
     }
 
-    get hyperParameter(): NeuroevolutionProperties<C> {
+    get hyperParameter(): NeatProperties {
         return this._hyperParameter;
     }
 

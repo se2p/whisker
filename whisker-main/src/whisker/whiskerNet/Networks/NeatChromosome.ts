@@ -1,22 +1,24 @@
-import {List} from "../../utils/List";
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
-import {Crossover} from "../../search/Crossover";
-import {Mutation} from "../../search/Mutation";
 import {Species} from "../NeuroevolutionPopulations/Species";
 import {NetworkChromosome} from "./NetworkChromosome";
+import {NeatCrossover} from "../Operators/NeatCrossover";
+import {NeatMutation} from "../Operators/NeatMutation";
+import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import {InputNode} from "../NetworkComponents/InputNode";
+import {Container} from "../../utils/Container";
+import {NeatChromosomeGeneratorFullyConnected} from "../NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 
 export class NeatChromosome extends NetworkChromosome {
-
     /**
      * Defines the crossover operator of the chromosome.
      */
-    private readonly _crossoverOp: Crossover<NetworkChromosome>
+    private readonly _crossoverOp: NeatCrossover;
 
     /**
      * Defines the mutation operator of the chromosome.
      */
-    private readonly _mutationOp: Mutation<NetworkChromosome>
+    private readonly _mutationOp: NeatMutation;
 
     /**
      * Fitness value of the chromosome shared within its species.
@@ -61,15 +63,15 @@ export class NeatChromosome extends NetworkChromosome {
      * @param crossoverOp the crossover operator.
      * @param incrementID determines whether the id counter should be incremented after constructing this chromosome.
      */
-    constructor(allNodes: NodeGene[], connections: ConnectionGene[], mutationOp: Mutation<NetworkChromosome>,
-                crossoverOp: Crossover<NetworkChromosome>, incrementID = true) {
+    constructor(allNodes: NodeGene[], connections: ConnectionGene[], mutationOp: NeatMutation,
+                crossoverOp: NeatCrossover, incrementID = true) {
         super(allNodes, connections, incrementID);
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
     }
 
     /**
-     * Deep clone of a NetworkChromosome's structure. Attributes that are not related to the network's structure
+     * Deep clone of a NeatChromosome's structure. Attributes that are not related to the network's structure
      * are initialised with default values.
      * @param incrementID determines whether the ID counter should be incremented during the cloning process.
      * @returns NeatChromosome the cloned Network with default attribute values.
@@ -79,12 +81,12 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
-     * Deep clone of a NetworkChromosome using a defined list of genes.
+     * Deep clone of a NeatChromosome using a defined list of genes.
      * @param newGenes the ConnectionGenes the network should be initialised with.
      * @param incrementID determines whether the ID-Counter should be incremented during cloning.
      * @returns NeatChromosome the cloned network chromosome.
      */
-    cloneWith(newGenes: List<ConnectionGene>, incrementID = true): NeatChromosome {
+    cloneWith(newGenes: ConnectionGene[], incrementID = true): NeatChromosome {
         const connectionsClone: ConnectionGene[] = [];
         const nodesClone: NodeGene[] = [];
 
@@ -105,10 +107,92 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
+     * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
+     * @param sprites a map which maps each sprite to its input feature vector.
+     */
+    protected updateInputNodes(sprites: Map<string, Map<string, number>>): void {
+        let updated = false;
+        sprites.forEach((spriteFeatures, spriteKey) => {
+
+            // Check if we have encountered a new Sprite.
+            if (!this.inputNodes.has(spriteKey)) {
+                updated = true;
+                const spriteNodes = new Map<string, InputNode>();
+                spriteFeatures.forEach((featureValue, featureKey) => {
+                    const iNode = new InputNode(spriteKey, featureKey);
+                    spriteNodes.set(featureKey, iNode);
+                    this.allNodes.push(iNode);
+                    // By Chance we connect the new Node to the network.
+                    if (this._random.nextDouble() < 0.5 ||
+                        Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
+                        this.connectInputNode(iNode);
+                    }
+                })
+                this.inputNodes.set(spriteKey, spriteNodes);
+            }
+
+                // We haven't encountered a new Sprite but we still have to check if we encountered new features of a
+            // Sprite.
+            else {
+                spriteFeatures.forEach((featureValue, featureKey) => {
+                    const savedSpriteMap = this.inputNodes.get(spriteKey);
+                    if (!savedSpriteMap.has(featureKey)) {
+                        updated = true;
+                        const iNode = new InputNode(spriteKey, featureKey);
+                        savedSpriteMap.set(featureKey, iNode);
+                        this.allNodes.push(iNode);
+                        // By chance or if we use fully connected networks, we connect the new Node to the network.
+                        if (this._random.nextDouble() < 0.5 ||
+                            Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
+                            this.connectInputNode(iNode);
+                        }
+                    }
+                })
+            }
+        })
+
+        // If the network's structure has changed generate the new network and update the stabilize count.
+        if (updated) {
+            this.generateNetwork();
+            this.updateStabiliseCount(100);
+        }
+    }
+
+    /**
+     * Connects an input node to the network by creating a connection between the input node and all output nodes.
+     * @param iNode the input node to connect.
+     */
+    protected connectInputNode(iNode: NodeGene): void {
+        for (const oNode of this.outputNodes) {
+            const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
+                true, 0, false);
+            NeatPopulation.assignInnovationNumber(newConnection);
+            this.connections.push(newConnection);
+            oNode.incomingConnections.push(newConnection);
+        }
+    }
+
+    /**
+     * Connects an output node to the network by creating a connection between the output node and all input nodes.
+     * @param oNode the output node to connect.
+     */
+    protected connectOutputNode(oNode: NodeGene): void {
+        for (const iNodes of this.inputNodes.values()) {
+            for (const iNode of iNodes.values()) {
+                const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
+                    true, 0, false)
+                NeatPopulation.assignInnovationNumber(newConnection);
+                this.connections.push(newConnection);
+                oNode.incomingConnections.push(newConnection);
+            }
+        }
+    }
+
+    /**
      * Deep clone of a network including its structure and attributes. Does not increment the ID-Counter.
      * @returns NeatChromosome the cloned chromosome.
      */
-    clone(): NetworkChromosome {
+    clone(): NeatChromosome {
         const clone = this.cloneStructure(false);
         clone.uID = this.uID;
         clone.trace = this.trace;
@@ -137,27 +221,27 @@ export class NeatChromosome extends NetworkChromosome {
         network[`k`] = this.isParent;
 
         const nodes = {}
-        for (let i = 0; i < this.allNodes.size(); i++) {
-            nodes[`Node ${i}`] = this.allNodes.get(i).toJSON();
+        for (let i = 0; i < this.allNodes.length; i++) {
+            nodes[`Node ${i}`] = this.allNodes[i].toJSON();
         }
         network[`Nodes`] = nodes;
 
         const connections = {};
-        for (let i = 0; i < this.connections.size(); i++) {
-            connections[`Con ${i}`] = this.connections.get(i).toJSON();
+        for (let i = 0; i < this.connections.length; i++) {
+            connections[`Con ${i}`] = this.connections[i].toJSON();
         }
         network[`Cons`] = connections;
         return network;
     }
 
-
-    get fitness(): number {
-        return this._fitness;
+    getCrossoverOperator(): any {
+        return this._crossoverOp;
     }
 
-    set fitness(value: number) {
-        this._fitness = value;
+    getMutationOperator(): any {
+        return this._mutationOp;
     }
+
 
     get sharedFitness(): number {
         return this._sharedFitness;

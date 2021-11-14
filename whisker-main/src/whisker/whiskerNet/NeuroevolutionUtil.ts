@@ -1,5 +1,4 @@
 import {NetworkChromosome} from "./Networks/NetworkChromosome";
-import {List} from "../utils/List";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 
 export class NeuroevolutionUtil {
@@ -18,7 +17,7 @@ export class NeuroevolutionUtil {
      * @param network the network over which the softmax function should be calculated
      * @param events the list of available events for which the softmax function should be calculated
      */
-    public static softmaxEvents(network: NetworkChromosome, events: List<ScratchEvent>): number[] {
+    public static softmaxEvents(network: NetworkChromosome, events: ScratchEvent[]): number[] {
         const result = []
         let denominator = 0;
         for (const event of events) {

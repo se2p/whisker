@@ -1,14 +1,15 @@
 import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
+import {NeatProperties} from "../NeatProperties";
+import Arrays from "../../utils/Arrays";
 
 export class Species<C extends NeatChromosome> {
 
     /**
      * The hyperParameters defined by the user.
      */
-    private readonly _hyperParameter: NeuroevolutionProperties<C>;
+    private readonly _hyperParameter: NeatProperties;
 
     /**
      * Unique identifier for the species.
@@ -77,7 +78,7 @@ export class Species<C extends NeatChromosome> {
      * @param novel true if its a new species
      * @param hyperParameter the search parameters
      */
-    constructor(uID: number, novel: boolean, hyperParameter: NeuroevolutionProperties<C>) {
+    constructor(uID: number, novel: boolean, hyperParameter: NeatProperties) {
         this._uID = uID;
         this._isNovel = novel;
         this._hyperParameter = hyperParameter;
@@ -88,7 +89,7 @@ export class Species<C extends NeatChromosome> {
      * @param network the network that should be removed.
      */
     public removeNetwork(network: C): void {
-        this.networks.splice(this.networks.indexOf(network), 1);
+        Arrays.remove(this.networks, network);
     }
 
     /**
@@ -302,12 +303,12 @@ export class Species<C extends NeatChromosome> {
         let parent2: C
 
         // Pick second parent either from within the species or from another species.
-        if (this._randomness.nextDouble() < this._hyperParameter.interspeciesMating) {
+        if (this._randomness.nextDouble() < this._hyperParameter.interspeciesMating || populationSpecies.length < 2) {
             parent2 = this._randomness.pick(this.networks);
         }
 
         // Select second parent from a different species.
-        else if (populationSpecies.length > 1) {
+        else  {
             const candidateSpecies = populationSpecies.filter(species => species.uID !== this.uID && species.networks.length > 0);
             // Check if we have at least one other species that contains at least 1 network.
             if (candidateSpecies.length > 0) {
@@ -372,7 +373,7 @@ export class Species<C extends NeatChromosome> {
         for (const network of this.networks) {
             clone.networks.push(network.clone() as C)
         }
-        return clone;
+        return clone as Species<C>;
     }
 
     /**
@@ -475,7 +476,7 @@ export class Species<C extends NeatChromosome> {
         this._champion = value;
     }
 
-    get hyperParameter(): NeuroevolutionProperties<C> {
+    get hyperParameter(): NeatProperties {
         return this._hyperParameter;
     }
 }

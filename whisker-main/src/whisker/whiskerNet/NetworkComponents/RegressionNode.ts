@@ -34,8 +34,7 @@ export class RegressionNode extends NodeGene {
 
     equals(other: unknown): boolean {
         if (!(other instanceof RegressionNode)) return false;
-        return this.uID === other.uID
-            && this.event.stringIdentifier() === other.event.stringIdentifier()
+        return this.event.stringIdentifier() === other.event.stringIdentifier()
             && this.eventParameter === other.eventParameter
             && this.activationFunction === other.activationFunction;
     }

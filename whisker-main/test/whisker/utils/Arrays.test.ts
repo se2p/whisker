@@ -19,9 +19,6 @@
  */
 
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
-import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
-import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import Arrays from "../../../src/whisker/utils/Arrays";
 
 describe("Arrays", () => {
@@ -136,4 +133,15 @@ describe("Arrays", () => {
         const distinct = Arrays.distinctObjects(array);
         expect(distinct.length).toBe(1);
     });
+
+    test("Range function stepSize of 1", () =>{
+        const rangeArray = Arrays.range(0, 10, 1);
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(45)
+    })
+
+    test("Range function stepSize of 100", () =>{
+        const rangeArray = Arrays.range(0, 850, 100);
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(3600)
+    })
+
 });

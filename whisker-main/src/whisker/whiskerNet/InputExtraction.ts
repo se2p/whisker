@@ -1,13 +1,12 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
-import {List} from "../utils/List";
 import {ScratchInterface} from "../scratch/ScratchInterface";
 import VMWrapper from "../../vm/vm-wrapper"
 import {Container} from "../utils/Container";
 import {Pair} from "../utils/Pair";
 
 import * as twgl from 'twgl.js';
-//const twgl = require('twgl.js');
+import Arrays from "../utils/Arrays";
 
 
 export class InputExtraction {
@@ -31,7 +30,7 @@ export class InputExtraction {
                     spriteMap.set(target.sprite.name, spriteFeatures);
                 } else {
                     const distanceID = this.distanceFromOrigin(target);
-                    const cloneID = cloneMap.get(target.sprite.name).findElement(distanceID);
+                    const cloneID = Arrays.findElement(cloneMap.get(target.sprite.name), distanceID);
                     spriteMap.set(target.sprite.name + "Clone" + cloneID, spriteFeatures);
                 }
             }
@@ -45,16 +44,16 @@ export class InputExtraction {
      * @param vmWrapper the VM-Wrapper of the given Scratch-Project
      * @return A map mapping each original sprite having clones to a list of its clone distances.
      */
-    private static assignCloneIds(vmWrapper: VMWrapper): Map<string, List<number>> {
-        const cloneMap = new Map<string, List<number>>();
+    private static assignCloneIds(vmWrapper: VMWrapper): Map<string, number[]> {
+        const cloneMap = new Map<string, number[]>();
         for (const target of vmWrapper.vm.runtime.targets) {
             // Get the original and traverse through the clones
             if (target.isOriginal) {
-                const cloneDistances = new List<number>();
+                const cloneDistances: number[] = [];
                 for (const clone of target.sprite.clones) {
                     // Check again for clones since the original itself is also saved in the clones list
                     if (!clone.isOriginal) {
-                        cloneDistances.add(this.distanceFromOrigin(clone));
+                        cloneDistances.push(this.distanceFromOrigin(clone));
                     }
                 }
                 // Sort the found cloneDistances and save them in the cloneMap.
@@ -73,7 +72,7 @@ export class InputExtraction {
      * generator we add features which might not be informative yet. This helps us to avoid over-speciation.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
-    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, List<number>>, vmWrapper: VMWrapper): Map<string, number> {
+    private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, number[]>, vmWrapper: VMWrapper): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         const stageBounds = vmWrapper.getStageSize();
 
@@ -94,8 +93,8 @@ export class InputExtraction {
             const distanceToWaypoint = this.getDistanceToNextWaypoint(5, 75, target);
             // Only add as input if we are close enough to a waypoint and actually have a path to follow.
             if (distanceToWaypoint) {
-                spriteFeatures.set("DistanceToNextWaypoint-X", distanceToWaypoint.getFirst());
-                spriteFeatures.set("DistanceToNextWaypoint-Y", distanceToWaypoint.getSecond());
+                spriteFeatures.set("DistanceToNextWaypoint-X", distanceToWaypoint[0]);
+                spriteFeatures.set("DistanceToNextWaypoint-Y", distanceToWaypoint[1]);
             }
         }
 
@@ -115,7 +114,7 @@ export class InputExtraction {
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-Y", distances.dy);
                             } else {
                                 const distanceId = this.distanceFromOrigin(sensingTarget);
-                                const cloneId = cloneMap.get(sensingTarget.sprite.name).findElement(distanceId);
+                                const cloneId = Arrays.findElement(cloneMap.get(sensingTarget.sprite.name),distanceId);
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-X", distances.dx);
                                 spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-Y", distances.dy);
                             }
@@ -360,7 +359,7 @@ export class InputExtraction {
         const ySigned = playerPosition.y < wayPointToReach.y ? absoluteY : -absoluteY;
         const wayPointDistanceX = this.mapValueIntoRange(xSigned, -distanceThreshold, distanceThreshold);
         const wayPointDistanceY = this.mapValueIntoRange(ySigned, -distanceThreshold, distanceThreshold);
-        return new Pair<number>(wayPointDistanceX, wayPointDistanceY);
+        return [wayPointDistanceX, wayPointDistanceY];
     }
 }
 

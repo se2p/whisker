@@ -2,7 +2,7 @@ import {Container} from "../utils/Container";
 import {ScratchPosition} from "./ScratchPosition";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
-import {List} from "../utils/List";
+import Arrays from "../utils/Arrays";
 
 const twgl = require('twgl.js');
 
@@ -82,7 +82,7 @@ export class ScratchInterface {
                                         startingPoint = new ScratchPosition(0, 0)): ScratchPosition {
         const targetColor = this.getColorFromHex(color);
         let radius = 1;
-        const searchAngles = List.range(0, 360, 10);
+        const searchAngles = Arrays.range(0, 360, 10);
         while (radius < maxRadius) {
             for (const angle of searchAngles) {
                 const scratchPoint = startingPoint.goInDirection(angle, radius);

@@ -7,6 +7,7 @@ import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {NetworkMutation} from "./NetworkMutation";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import {Pair} from "../../utils/Pair";
 
 
 export class NeatMutation implements NetworkMutation<NeatChromosome> {
@@ -70,6 +71,11 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * Probability for applying the mutateConnectionReenable mutation.
      */
     private readonly _mutateEnableConnection: number;
+
+    /**
+     * Saves the source and target node for each generated hidden node.
+     */
+    private readonly _hiddenNodes = new Map<HiddenNode, Pair<NodeGene>>();
 
     constructor(mutationConfig: Record<string, (string | number)>) {
         this._mutationAddConnection = mutationConfig.mutationAddConnection as number;
@@ -265,7 +271,21 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         // Create the new hiddenNode and the connections leading in and out of the new node
         const newNode = new HiddenNode(ActivationFunction.SIGMOID);
 
-        const newConnection1 = new ConnectionGene(fromNode, newNode, 1, true, 0, splitConnection.isRecurrent)
+        let foundNode = false;
+        for (const hiddenNode of this._hiddenNodes.keys()) {
+            const nodePair = this._hiddenNodes.get(hiddenNode);
+            if(nodePair[0].equals(fromNode) && nodePair[1].equals(toNode)){
+                newNode.uID = hiddenNode.uID;
+                foundNode = true;
+                break;
+            }
+        }
+
+        if(!foundNode){
+            this._hiddenNodes.set(newNode, [fromNode, toNode]);
+        }
+
+        const newConnection1 = new ConnectionGene(fromNode, newNode, 1, true, 0, splitConnection.isRecurrent);
         NeatPopulation.assignInnovationNumber(newConnection1);
         newNode.incomingConnections.push(newConnection1);
 

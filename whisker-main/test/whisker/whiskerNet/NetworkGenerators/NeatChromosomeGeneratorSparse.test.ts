@@ -1,14 +1,12 @@
-import {NetworkChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
-import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
-import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
+import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 
 describe('Test NetworkChromosomeGeneratorSparse', () => {
 
-    let generator: NetworkChromosomeGeneratorSparse;
+    let generator: NeatChromosomeGeneratorSparse;
     let genInputs: Map<string, Map<string, number>>;
 
     beforeEach(() => {
@@ -52,9 +50,9 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         sprite2.set("DistanceToWhite-Y", 9);
         genInputs.set("Sprite2", sprite2);
 
-        const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
-            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()])
-        generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.5);
+        const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.5);
     })
 
     test('Create initial random Chromosome', () => {

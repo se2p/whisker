@@ -7,7 +7,7 @@ export abstract class NodeGene {
     /**
      * Counter used for assigning the unique identifier.
      */
-    private static _uIDCounter = 0;
+    public static _uIDCounter = 0;
 
     /**
      * The unique identifier of a node.
@@ -42,7 +42,7 @@ export abstract class NodeGene {
     /**
      * Holds all incoming connections.
      */
-    private _incomingConnections: ConnectionGene[] = []
+    private _incomingConnections: ConnectionGene[] = [];
 
     /**
      * Activation value of a previous time step.

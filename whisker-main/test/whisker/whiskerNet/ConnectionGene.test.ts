@@ -11,10 +11,11 @@ describe("ConnectionGene Test", () => {
     let sourceNode: NodeGene;
     let targetNode: NodeGene;
 
-
     beforeEach(() => {
-        sourceNode = new InputNode(0, "Sprite1", "X-Position");
-        targetNode = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
+        sourceNode = new InputNode("Sprite1", "X-Position");
+        sourceNode.uID = 0;
+        targetNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
+        targetNode.uID = 1;
         connection = new ConnectionGene(sourceNode, targetNode, 0.2, true, ConnectionGene.getNextInnovationNumber(), false);
     })
 
@@ -39,8 +40,10 @@ describe("ConnectionGene Test", () => {
     })
 
     test("Test cloneWithNodes", () => {
-        const inNode = new InputNode(2, "Sprite1", "Y-Position");
-        const outNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
+        const inNode = new InputNode("Sprite1", "Y-Position");
+        inNode.uID = 2;
+        const outNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
+        outNode.uID = 3;
         const cloneConnection = connection.cloneWithNodes(inNode, outNode);
 
         expect(connection.source).not.toBe(cloneConnection.source);
@@ -52,16 +55,20 @@ describe("ConnectionGene Test", () => {
     })
 
     test("Test equalsByNodes with equal nodes", () => {
-        const inNode = new InputNode(1, "Sprite1", "X-Position");
-        const outNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
+        const inNode = new InputNode("Sprite1", "X-Position");
+        inNode.uID = 1;
+        const outNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
+        outNode.uID = 2;
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1, false);
         expect(connection.equalsByNodes(otherConnection)).toBe(false);
     })
 
     test("Test equalsByNodes with differing nodes", () => {
-        const inNode = new InputNode(2, "Sprite2", "X-Position");
-        const outNode = new ClassificationNode(3, new WaitEvent(), ActivationFunction.SIGMOID);
+        const inNode = new InputNode("Sprite2", "X-Position");
+        inNode.uID = 2;
+        const outNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
+        outNode.uID = 3;
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1, false);
         expect(connection.equalsByNodes(otherConnection)).toBe(false);

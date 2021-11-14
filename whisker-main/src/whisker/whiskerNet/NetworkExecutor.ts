@@ -1,5 +1,4 @@
 import VMWrapper = require("../../vm/vm-wrapper.js");
-import {List} from "../utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
 import {EventObserver} from "../testcase/EventObserver";
@@ -11,7 +10,6 @@ import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import {ParameterType} from "../testcase/events/ParameterType";
 import Runtime from "scratch-vm/src/engine/runtime"
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
@@ -25,12 +23,12 @@ export class NetworkExecutor {
     /**
      * The wrapper of the Scratch-VM
      */
-    private _vmWrapper: VMWrapper
+    private readonly _vmWrapper: VMWrapper
 
     /**
      * Collects the available events at the current state of the Scratch-VM
      */
-    private availableEvents: List<ScratchEvent>;
+    private availableEvents: ScratchEvent[] = [];
 
     /**
      * Monitors the execution of the Scratch-VM
@@ -55,28 +53,29 @@ export class NetworkExecutor {
     /**
      * Random generator
      */
-    private _random: Randomness;
+    private _random = Randomness.getInstance();
 
     /**
      * Extractor to determine possible events
      */
     private _eventExtractor: ScratchEventExtractor;
 
+    /**
+     * Defines how a network will select events during its playthrough
+     */
     private readonly _eventSelection: string
 
     /**
      * Constructs a new NetworkExecutor object.
      * @param vmWrapper the wrapper of the Scratch-VM.
      * @param timeout timeout after which each playthrough is halted.
-     * @param eventSelection defined how a network will select events during its playthrough.
+     * @param eventSelection defines how a network will select events during its playthrough.
      */
     constructor(vmWrapper: VMWrapper, timeout: number, eventSelection?: string) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
-        this._random = Randomness.getInstance();
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
-        this.availableEvents = new List<ScratchEvent>();
         this._eventSelection = eventSelection;
         this.recordInitialState();
     }
@@ -100,9 +99,9 @@ export class NetworkExecutor {
      * @param network the network which should play the given game.
      */
     private async executeNetwork(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events = new List<EventAndParameters>();
+        const events: EventAndParameters[] = [];
         let workingNetwork = false;
-        const codons = new List<number>()
+        const codons: number[] = [];
 
         Randomness.seedScratch();
 
@@ -132,13 +131,13 @@ export class NetworkExecutor {
             } catch (e) {
                 // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
                 // one WaitEvent...
-                if (this.availableEvents.isEmpty()) {
+                if (this.availableEvents.length === 0) {
                     console.log("Added Wait to emptyEvent")
-                    this.availableEvents.add(new WaitEvent())
+                    this.availableEvents.push(new WaitEvent())
                 }
                 console.log("Recovered from bad event extraction")
             }
-            if (this.availableEvents.isEmpty()) {
+            if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
@@ -168,23 +167,23 @@ export class NetworkExecutor {
             // Choose the event with the highest probability according to the softmax values
             const indexOfMaxValue = output.reduce(
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-            codons.add(indexOfMaxValue);
+            codons.push(indexOfMaxValue);
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
-            const nextEvent: ScratchEvent = this.availableEvents.get(indexOfMaxValue);
+            const nextEvent: ScratchEvent = this.availableEvents[indexOfMaxValue];
             const parameters = [];
             if (nextEvent.numSearchParameter() > 0) {
                 parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
                 nextEvent.setParameter(parameters, "regression");
             }
-            events.add(new EventAndParameters(nextEvent, parameters));
+            events.push(new EventAndParameters(nextEvent, parameters));
             this.notify(nextEvent, parameters);
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // Add a waitEvent in the end of each round.
             const waitEvent = new WaitEvent(1);
-            events.add(new EventAndParameters(waitEvent, []));
+            events.push(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
             timer = Date.now();
         }
@@ -199,10 +198,9 @@ export class NetworkExecutor {
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
-        // If we found a defect network let it go extinct!
+        // Should not happen!
         if (!workingNetwork) {
-            console.error("Found defect Network", network)
-            network.hasDeathMark = true;
+            console.error("Found defect Network", network);
         }
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
@@ -214,8 +212,8 @@ export class NetworkExecutor {
      * @param network the network which should play the given game.
      */
     private async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events = new List<EventAndParameters>();
-        const codons = new List<number>()
+        const events: EventAndParameters[] = [];
+        const codons: number[] = [];
 
         Randomness.seedScratch();
 
@@ -239,35 +237,35 @@ export class NetworkExecutor {
             } catch (e) {
                 // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
                 // one WaitEvent...
-                if (this.availableEvents.isEmpty()) {
+                if (this.availableEvents.length === 0) {
                     console.log("Added Wait to emptyEvent")
-                    this.availableEvents.add(new WaitEvent())
+                    this.availableEvents.push(new WaitEvent())
                 }
                 console.log("Recovered from bad event extraction")
             }
 
-            if (this.availableEvents.isEmpty()) {
+            if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
-            const randomEventIndex = this._random.nextInt(0, this.availableEvents.size());
-            const nextEvent: ScratchEvent = this.availableEvents.get(randomEventIndex);
+            const randomEventIndex = this._random.nextInt(0, this.availableEvents.length);
+            const nextEvent: ScratchEvent = this.availableEvents[randomEventIndex];
             const parameters = [];
             if (nextEvent.numSearchParameter() > 0) {
                 parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
                 nextEvent.setParameter(parameters, "regression");
             }
-            codons.add(randomEventIndex);
-            events.add(new EventAndParameters(nextEvent, parameters));
+            codons.push(randomEventIndex);
+            events.push(new EventAndParameters(nextEvent, parameters));
             this.notify(nextEvent, parameters);
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
 
             // Add a waitEvent in the end of each round.
             const waitEvent = new WaitEvent(1);
-            events.add(new EventAndParameters(waitEvent, []));
+            events.push(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
             timer = Date.now();
         }
@@ -309,10 +307,10 @@ export class NetworkExecutor {
         this._timeout += Date.now();
 
         // Play the game until we reach a GameOver state or the timeout
-        while (this._projectRunning && eventIndex < events.size() && timer < this._timeout) {
+        while (this._projectRunning && eventIndex < events.length && timer < this._timeout) {
             // Select the nextEvent.
-            const nextEvent = events.get(eventIndex).event;
-            const args = events.get(eventIndex).parameters;
+            const nextEvent = events[eventIndex].event;
+            const args = events[eventIndex].parameters;
             eventIndex++;
             this.notify(nextEvent, args);
             await nextEvent.apply();
@@ -331,7 +329,7 @@ export class NetworkExecutor {
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
         // Codons not needed here
-        network.codons = new List<number>();
+        network.codons = [];
         return network.trace;
     }
 
@@ -363,9 +361,9 @@ export class NetworkExecutor {
             // Select the nextEvent by fetching the nextEvent from the staticTestSuite if there are events left
             let nextEvent: ScratchEvent
             let args = []
-            if (eventIndex < events.size()) {
-                nextEvent = events.get(eventIndex)[0];
-                args = events.get(eventIndex)[1];
+            if (eventIndex < events.length) {
+                nextEvent = events[eventIndex][0];
+                args = events[eventIndex][1];
                 eventIndex++;
             }
             // If there are no events left, fall back to random event selection
@@ -378,19 +376,19 @@ export class NetworkExecutor {
                 } catch (e) {
                     // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
                     // one WaitEvent...
-                    if (this.availableEvents.isEmpty()) {
+                    if (this.availableEvents.length === 0) {
                         console.log("Added Wait to emptyEvent")
-                        this.availableEvents.add(new WaitEvent())
+                        this.availableEvents.push(new WaitEvent())
                     }
                     console.log("Recovered from bad event extraction")
                 }
 
-                if (this.availableEvents.isEmpty()) {
+                if (this.availableEvents.length === 0) {
                     console.log("Whisker-Main: No events available for project.");
                     break;
                 }
                 // Select the nextEvent, set its parameters and send it to the Scratch-VM
-                nextEvent = this._random.pickRandomElementFromList(this.availableEvents)
+                nextEvent = this._random.pick(this.availableEvents)
                 for (let i = 0; i < nextEvent.numSearchParameter(); i++) {
                     nextEvent.setParameter(args, 'random');
                     args.push(nextEvent.getParameters());
@@ -413,7 +411,7 @@ export class NetworkExecutor {
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
         // Codons not needed here
-        network.codons = new List<number>();
+        network.codons = [];
         return network.trace;
     }
 

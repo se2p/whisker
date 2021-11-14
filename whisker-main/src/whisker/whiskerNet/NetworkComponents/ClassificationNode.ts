@@ -25,8 +25,7 @@ export class ClassificationNode extends NodeGene {
 
     equals(other: unknown): boolean {
         if (!(other instanceof ClassificationNode)) return false;
-        return this.uID === other.uID &&
-            this.event.stringIdentifier() === other.event.stringIdentifier() &&
+        return this.event.stringIdentifier() === other.event.stringIdentifier() &&
             this.activationFunction === other.activationFunction;
     }
 

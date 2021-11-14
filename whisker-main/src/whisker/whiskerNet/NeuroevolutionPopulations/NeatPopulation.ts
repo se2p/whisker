@@ -1,10 +1,12 @@
 import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
-import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
 import {Species} from "./Species";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
+import {NeatProperties} from "../NeatProperties";
+import Arrays from "../../utils/Arrays";
+import {NodeGene} from "../NetworkComponents/NodeGene";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -35,7 +37,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * @param generator the ChromosomeGenerator used for creating the initial population.
      * @param hyperParameter the defined search parameters
      */
-    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeuroevolutionProperties<NeatChromosome>) {
+    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties) {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
     }
@@ -63,7 +65,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 this.removeNetwork(chromosome);
             }
         }
-
         // Now, let the reproduction start.
         const offspring: NeatChromosome[] = []
         for (const specie of this.species) {
@@ -99,9 +100,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                 }
             }
         }
-        this._species = this.species.filter(specie => !doomedSpecies.includes(specie));
-        for (const specie of doomedSpecies) {
-            this.species.splice(this.species.indexOf(specie), 1);
+        for (const doomedSpecie of doomedSpecies) {
+            Arrays.remove(this.species, doomedSpecie);
         }
         this.generation++;
     }
@@ -247,7 +247,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Assigns a network to the first compatible species.
      * @param network the network that should be assigned to a species.
      */
-    protected speciate(network: NeatChromosome): void {
+    public speciate(network: NeatChromosome): void {
 
         // If we have no existent species in our population create the first one.
         if (this.species.length === 0) {
@@ -350,12 +350,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
                     weight_diff += Math.abs(connection1.weight - connection2.weight);
                     i1++;
                     i2++;
-                }
-
-                    // Otherwise we have a disjoint gene and have to increase the iterator of the smaller innovation, as
-                    // we might still find a matching innovation within our connections which are sorted by their
-                // innovation numbers.
-                else if (innovation1 < innovation2) {
+                } else if (innovation1 < innovation2) {
                     i1++;
                     disjoint++;
                 } else if (innovation2 < innovation1) {
@@ -384,7 +379,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public static assignInnovationNumber(newInnovation: ConnectionGene): void {
         // Check if the exact same innovation already happened in the past, if so assign the same innovation number.
         const oldInnovation = NeatMutation._innovations.find(innovation => innovation.equalsByNodes(newInnovation));
-        if (oldInnovation !== null) {
+        if (oldInnovation !== undefined) {
             newInnovation.innovation = oldInnovation.innovation;
         }
         // If we have a novel innovation, assign the next innovation number.

@@ -30,8 +30,7 @@ export class InputNode extends NodeGene {
 
     equals(other: unknown): boolean {
         if (!(other instanceof InputNode)) return false;
-        return this.uID === other.uID &&
-            this.activationFunction === other.activationFunction &&
+        return this.activationFunction === other.activationFunction &&
             this.sprite === other.sprite &&
             this.feature === other.feature;
     }

@@ -1,15 +1,15 @@
-import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {OptimalSolutionStoppingCondition} from "../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
+import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
 
 describe("Test NeuroevolutionProperties", () => {
 
     test("Test Constructor", () => {
-        const properties = new NeuroevolutionProperties(10);
+        const properties = new NeatProperties(10);
         expect(properties.populationSize).toBe(10);
     })
 
     test("Test Getter and Setter", () => {
-        const properties = new NeuroevolutionProperties(10);
+        const properties = new NeatProperties(10);
         properties.populationSize = 50;
         properties.parentsPerSpecies = 0.3;
         properties.penalizingAge = 30;

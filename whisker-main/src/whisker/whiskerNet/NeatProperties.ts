@@ -1,11 +1,11 @@
-import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {StoppingCondition} from "../search/StoppingCondition";
 import {NetworkFitnessFunction} from "./NetworkFitness/NetworkFitnessFunction";
+import {NeatChromosome} from "./Networks/NeatChromosome";
 
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.
  */
-export class NeuroevolutionProperties<C extends NetworkChromosome> {
+export class NeatProperties {
 
     // ----------------- Population Management -------------------
 
@@ -152,12 +152,12 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
     /**
      * The stopping condition for the corresponding search algorithm.
      */
-    private _stoppingCondition: StoppingCondition<C>;
+    private _stoppingCondition: StoppingCondition<NeatChromosome>;
 
     /**
      * The fitness function with which the network fitness is measured
      */
-    private _networkFitness: NetworkFitnessFunction<C>;
+    private _networkFitness: NetworkFitnessFunction<NeatChromosome>;
 
     /**
      * Timout for the execution of a scratch game during the evaluation of the network
@@ -404,19 +404,19 @@ export class NeuroevolutionProperties<C extends NetworkChromosome> {
         this._weightCoefficient = value;
     }
 
-    get stoppingCondition(): StoppingCondition<C> {
+    get stoppingCondition(): StoppingCondition<NeatChromosome> {
         return this._stoppingCondition;
     }
 
-    set stoppingCondition(value: StoppingCondition<C>) {
+    set stoppingCondition(value: StoppingCondition<NeatChromosome>) {
         this._stoppingCondition = value;
     }
 
-    get networkFitness(): NetworkFitnessFunction<C> {
+    get networkFitness(): NetworkFitnessFunction<NeatChromosome> {
         return this._networkFitness;
     }
 
-    set networkFitness(value: NetworkFitnessFunction<C>) {
+    set networkFitness(value: NetworkFitnessFunction<NeatChromosome>) {
         this._networkFitness = value;
     }
 

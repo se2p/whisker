@@ -181,7 +181,15 @@ export default class Arrays {
         array.sort((a, b) => a - b);
     }
 
-    static range(until: number): number[] {
-        return [...Array(until).keys()]
+    /**
+     * Creates an Array containing elements within the given range with the specified step size.
+     * @param start starting value inclusive.
+     * @param stop stopping value exclusive.
+     * @param step stepSize.
+     * @returns Array<number> containing elements from start to stop with specified step size.
+     */
+    static range(start: number, stop: number, step = 1): number[] {
+        return Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
     }
+
 }

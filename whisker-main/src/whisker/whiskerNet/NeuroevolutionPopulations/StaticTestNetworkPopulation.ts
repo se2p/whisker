@@ -1,8 +1,5 @@
 import {NeatPopulation} from "./NeatPopulation";
-import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
-import {List} from "../../utils/List";
 import {ClickSpriteEvent} from "../../testcase/events/ClickSpriteEvent";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
@@ -16,6 +13,8 @@ import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {SoundEvent} from "../../testcase/events/SoundEvent";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {NeatProperties} from "../NeatProperties";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 
 export class StaticTestNetworkPopulation extends NeatPopulation {
 
@@ -29,7 +28,7 @@ export class StaticTestNetworkPopulation extends NeatPopulation {
      */
     private readonly _numberTestCases: number;
 
-    constructor(generator: ChromosomeGenerator<NeatChromosome>, properties: NeuroevolutionProperties<NeatChromosome>) {
+    constructor(generator: ChromosomeGenerator<NeatChromosome>, properties: NeatProperties) {
         super(generator, properties);
         this._eventTemplate = JSON.parse(this.hyperParameter.testTemplate);
         this._numberTestCases = Object.keys(this._eventTemplate).length;
@@ -52,7 +51,7 @@ export class StaticTestNetworkPopulation extends NeatPopulation {
      * Gathers and instantiates the events that should be executed from the eventTemplate.
      * @returns EventAndParameters[] Array holding the events that should be executed, including their arguments.
      */
-    private gatherEvents(): List<EventAndParameters> {
+    private gatherEvents(): EventAndParameters[] {
         const eventList: EventAndParameters[] = [];
         const testCaseKey = Object.keys(this._eventTemplate)[NetworkChromosome._uIDCounter % this._numberTestCases];
         const testCase = this._eventTemplate[testCaseKey];
@@ -114,6 +113,6 @@ export class StaticTestNetworkPopulation extends NeatPopulation {
                 }
             }
         }
-        return new List<EventAndParameters>(eventList);
+        return eventList;
     }
 }
