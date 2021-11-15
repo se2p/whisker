@@ -31,6 +31,7 @@ import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
 import VMWrapper = require("../../vm/vm-wrapper.js");
+import {Container} from "../utils/Container";
 
 
 export class TestExecutor {
@@ -194,13 +195,13 @@ export class TestExecutor {
      */
     public async selectAndSendEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[],
                                     events: EventAndParameters[]): Promise<number> {
-        // Select the next event and set its parameter
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const parameters = TestExecutor.getArgs(nextEvent, codons, numCodon);
         nextEvent.setParameter(parameters, "codon");
         events.push(new EventAndParameters(nextEvent, parameters));
-        numCodon += nextEvent.numSearchParameter();
+        // We subtract 1 since we already consumed the event-codon.
+        numCodon += (Container.config.searchAlgorithmProperties['reservedCodons'] - 1);
         this.notify(nextEvent, parameters);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();
