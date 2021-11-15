@@ -180,7 +180,7 @@ describe('Fitness tests', () => {
         const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
         await expect(approachLevel).toBe(0);
         const branchDistance = log.uncoveredBlocks[0].BranchDistance;
-        await expect(branchDistance).toBe(10);
+        await expect(branchDistance).toBe(9);
     }, timeout);
 
     test('Test CFG distance', async () => {
