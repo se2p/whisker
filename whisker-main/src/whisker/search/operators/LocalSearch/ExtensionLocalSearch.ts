@@ -144,7 +144,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      */
     private async _extendGenes(codons: number[], events: EventAndParameters[],
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
-        const virtualSpace = Container.config.searchAlgorithmProperties['virtualSpace']; // FIXME: unsafe access
+        const reservedCodons = Container.config.searchAlgorithmProperties['reservedCodons']; // FIXME: unsafe access
         const upperLengthBound = Container.config.searchAlgorithmProperties['chromosomeLength'];
         const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
         const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
@@ -180,8 +180,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 const typeTextEvent = this._random.pick(typeTextEvents);
                 const typeEventCodon = Arrays.findElement(availableEvents, typeTextEvent);
                 codons.push(typeEventCodon);
-                // Fill virtualSpace codons.
-                codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, virtualSpace-1))
+                // Fill reservedCodons codons.
+                codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, reservedCodons-1))
                 events.push(new EventAndParameters(typeTextEvent, []));
                 await typeTextEvent.apply();
                 extendWait = false;
@@ -195,9 +195,9 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 const newEventCodon = Arrays.findElement(availableEvents, chosenNewEvent);
                 codons.push(newEventCodon);
 
-                // Add missing virtualSpace codons.
+                // Add missing reservedCodons.
                 const parameter: number[] = [];
-                for (let i = 0; i < virtualSpace-1; i++) {
+                for (let i = 0; i < reservedCodons-1; i++) {
                     parameter.push(this._random.nextInt(lowerCodonValueBound, upperCodonValueBound + 1));
                 }
                 codons.push(...parameter);
@@ -216,7 +216,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             else {
                 if (extendWait) {
                     // Fetch the old waitDuration and add the upper bound to it.
-                    let newWaitDuration = codons[(codons.length - (virtualSpace - 1))] + Container.config.getWaitStepUpperBound();
+                    let newWaitDuration = codons[(codons.length - (reservedCodons - 1))] + Container.config.getWaitStepUpperBound();
 
                     // Check if we have reached the maximum codon value. If so force the localSearch operator to
                     // crate a new WaitEvent.
@@ -227,7 +227,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
                     // Replace the old codonValue with the new duration; Construct the WaitEvent with the new
                     // duration; Replace the old Event in the events list of the chromosome with the new one.
-                    codons[codons.length - (virtualSpace - 1)] = newWaitDuration;
+                    codons[codons.length - (reservedCodons - 1)] = newWaitDuration;
                     const waitEvent = new WaitEvent(newWaitDuration);
                     events[events.length -1] = new EventAndParameters(waitEvent, [newWaitDuration]);
                     await waitEvent.apply();
@@ -242,7 +242,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     codons.push(Container.config.getWaitStepUpperBound());
 
                     let addedCodons = 2;
-                    while (addedCodons < virtualSpace){
+                    while (addedCodons < reservedCodons){
                         codons.push(this._random.nextInt(lowerCodonValueBound, upperCodonValueBound+1));
                         addedCodons++;
                     }

@@ -55,7 +55,7 @@ describe('RandomSearch', () => {
             crossoverProbability: undefined,
             testGenerator: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
@@ -87,7 +87,7 @@ describe('RandomSearch', () => {
             crossoverProbability: undefined,
             testGenerator: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);

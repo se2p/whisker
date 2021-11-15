@@ -201,7 +201,7 @@ export class TestExecutor {
         nextEvent.setParameter(parameters, "codon");
         events.push(new EventAndParameters(nextEvent, parameters));
         // We subtract 1 since we already consumed the event-codon.
-        numCodon += (Container.config.searchAlgorithmProperties['virtualSpace'] - 1);
+        numCodon += (Container.config.searchAlgorithmProperties['reservedCodons'] - 1);
         this.notify(nextEvent, parameters);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();

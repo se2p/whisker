@@ -22,8 +22,8 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
 
     private _probabilities: number[] = [];
 
-    constructor(min: number, max: number, length: number, virtualSpace:number , gaussianMutationPower: number) {
-        super(min, max, length, virtualSpace, gaussianMutationPower);
+    constructor(min: number, max: number, length: number, reservedCodons:number , gaussianMutationPower: number) {
+        super(min, max, length, reservedCodons, gaussianMutationPower);
     }
 
     protected _getMutationProbability(idx: number): number {
@@ -31,14 +31,14 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
     }
 
     private _setDefaultProbabilities(chromosome: TestChromosome): void {
-        const eventGroups = Arrays.chunk(chromosome.getGenes(), this._virtualSpace);
+        const eventGroups = Arrays.chunk(chromosome.getGenes(), this._reservedCodons);
         const numberOfEventGroups = eventGroups.length;
         const p = 1 / numberOfEventGroups;
         this._probabilities = Array(numberOfEventGroups).fill(p);
     }
 
     private _setSharedProbabilities(chromosome: TestChromosome, events: EventAndParameters[]): void {
-        const eventGroups = Arrays.chunk(chromosome.getGenes(), this._virtualSpace);
+        const eventGroups = Arrays.chunk(chromosome.getGenes(), this._reservedCodons);
         this._probabilities = EventBiasedMutation.computeSharedProbabilities(eventGroups.length, events);
     }
 

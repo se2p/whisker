@@ -142,18 +142,18 @@ export class WhiskerSearchConfiguration {
     }
 
     /**
-     * Sets the virtualSpace assigned for each event (event-codon + overapproximation of required parameter-codons)
-     * by traversing all events contained within a Scratch project in the search of the maximum amount of
-     * required parameters per event.
+     * Sets the number of reservedCodons for each event (event-codon + overapproximation of required
+     * parameter-codons) by traversing all events contained within a Scratch project in the search of the maximum
+     * amount of required parameters per event.
      * @param vm the virtual machine containing the given Scratch project.
      */
-    public _setVirtualEventSpace(vm: VirtualMachine): void {
+    public _setReservedCodons(vm: VirtualMachine): void {
         const eventExtractor = new StaticScratchEventExtractor(vm);
         const programEvents = eventExtractor.extractEvents(vm);
         const numSearchParams = programEvents.map(event => event.numSearchParameter());
          // Add 1 for the event-codon itself.
-        this.searchAlgorithmProperties['virtualSpace'] = Math.max(...numSearchParams) + 1;
-        this.searchAlgorithmProperties['chromosomeLength'] *= this.searchAlgorithmProperties['virtualSpace'];
+        this.searchAlgorithmProperties['reservedCodons'] = Math.max(...numSearchParams) + 1;
+        this.searchAlgorithmProperties['chromosomeLength'] *= this.searchAlgorithmProperties['reservedCodons'];
     }
 
 
@@ -267,31 +267,31 @@ export class WhiskerSearchConfiguration {
                 return new VariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
                     this._config['chromosome']['maxLength'],
-                    this.searchAlgorithmProperties['virtualSpace'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'variableLengthConstrained':
                 return new VariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
                     this._config['chromosome']['maxLength'],
-                    this.searchAlgorithmProperties['virtualSpace'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLength':
                 return new BiasedVariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
                     this._config['chromosome']['maxLength'],
-                    this.searchAlgorithmProperties['virtualSpace'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLengthConstrained':
                 return new BiasedVariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
                     this._config['chromosome']['maxLength'],
-                    this.searchAlgorithmProperties['virtualSpace'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'eventBiased':
                 return new EventBiasedMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
                     this._config['chromosome']['maxLength'],
-                    this.searchAlgorithmProperties['virtualSpace'],
+                    this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(this._config['mutation'])

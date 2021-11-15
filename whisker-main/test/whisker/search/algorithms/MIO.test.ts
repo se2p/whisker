@@ -63,7 +63,7 @@ describe('MIO', () => {
             crossoverProbability: undefined,
             testGenerator: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
 
         searchAlgorithm = builder
@@ -123,7 +123,7 @@ describe('MIO', () => {
             stoppingCondition,
             testGenerator: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
 
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());

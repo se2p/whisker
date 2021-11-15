@@ -56,7 +56,7 @@ describe('SimpleGA', () => {
             crossoverProbability: 0.8,
             testGenerator: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
@@ -89,7 +89,7 @@ describe('SimpleGA', () => {
             mutationProbability: undefined,
             crossoverProbability: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
         const fitnessFunction = new OneMaxFitnessFunction(properties.populationSize);
         const chromosomeGenerator = new BitstringChromosomeGenerator(properties, new BitflipMutation(), new SinglePointCrossover());

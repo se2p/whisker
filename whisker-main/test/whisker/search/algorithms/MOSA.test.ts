@@ -68,7 +68,7 @@ describe('MOSA', () => {
             stoppingCondition,
             testGenerator: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
 
         builder
@@ -124,7 +124,7 @@ describe('MOSA', () => {
             stoppingCondition,
             testGenerator: undefined,
             integerRange: undefined,
-            virtualSpace: undefined
+            reservedCodons: undefined
         };
 
         const fitnessFunctions = new Map<number, FitnessFunction<BitstringChromosome>>();

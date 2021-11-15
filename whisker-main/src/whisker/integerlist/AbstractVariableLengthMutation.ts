@@ -36,7 +36,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @param _min Lower bound for integer values
      * @param _max Upper bound for integer values
      * @param _length Upper bound for IntegerList size.
-     * @param _virtualSpace overestimation of the number of codons that are required for each Scratch-Event within a
+     * @param _reservedCodons overestimation of the number of codons that are required for each Scratch-Event within a
      * given project (event-codon + param-codons).
      * @param _gaussianMutationPower mean of gaussian distribution from which we sample the mutation power.
      */
@@ -44,7 +44,7 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
         private readonly _min: number,
         private readonly _max: number,
         private readonly _length: number,
-        protected readonly _virtualSpace: number,
+        protected readonly _reservedCodons: number,
         private readonly _gaussianMutationPower: number,
     ) {
         this._random = Randomness.getInstance();
@@ -72,8 +72,8 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      */
     applyUpTo(chromosome: T, maxPosition: number): T {
         const parentGenes = chromosome.getGenes();
-        const eventGroups = Arrays.chunk(parentGenes, this._virtualSpace);
-        const maxGroupLength = Math.min(eventGroups.length, Math.floor(maxPosition / this._virtualSpace));
+        const eventGroups = Arrays.chunk(parentGenes, this._reservedCodons);
+        const maxGroupLength = Math.min(eventGroups.length, Math.floor(maxPosition / this._reservedCodons));
         let index = 0;
         while (index < maxGroupLength) {
             if (this._random.nextDouble() < this._getMutationProbability(index, maxGroupLength)) {
@@ -96,8 +96,8 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
         const mutation = this._random.nextInt(0, 3);
         switch (mutation) {
             case 0:
-                if (eventGroups.length * this._virtualSpace < this._length) {
-                    const newEventGroup = Arrays.getRandomArray(this._min, this._max, this._virtualSpace);
+                if (eventGroups.length * this._reservedCodons < this._length) {
+                    const newEventGroup = Arrays.getRandomArray(this._min, this._max, this._reservedCodons);
                     Arrays.insert(eventGroups, newEventGroup, index);
                     index++;
                 }

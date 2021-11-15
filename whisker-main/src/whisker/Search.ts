@@ -165,7 +165,7 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
-        config._setVirtualEventSpace(vm);
+        config._setReservedCodons(vm);
         console.log(this.vm);
 
         await util.prepare(accelerationFactor || 1);

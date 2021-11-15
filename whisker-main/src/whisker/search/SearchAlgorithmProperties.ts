@@ -75,7 +75,7 @@ interface AdditionalProperties<C extends Chromosome> extends CommonProperties<C>
      * The number of codons that are reserved for each event-codon (event-codon + overapproximation of required
      * parameter codons).
      */
-    virtualSpace: number;
+    reservedCodons: number;
 }
 
 /**
