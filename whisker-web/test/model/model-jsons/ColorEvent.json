@@ -1,0 +1,45 @@
+[
+  {
+    "id": "test",
+    "usage": "program",
+    "startNodeId": "n0",
+    "stopNodeIds": [
+      "n1"
+    ],
+    "stopAllNodeIds": [],
+    "nodeIds": [
+      "n0","n1"
+    ],
+    "edges": [
+      {
+        "id": "touchesRed",
+        "from": "n0",
+        "to": "n1",
+        "forceTestAfter": -1,
+        "forceTestAt": -1,
+        "conditions": [
+          {
+            "id": "0",
+            "name": "SpriteColor",
+            "args": [
+              "Sprite1","255","0","0"
+            ],
+            "negated": false
+          },
+            {
+                "id": "1",
+                "name": "AttrComp",
+                "args": [
+                    "Sprite1",
+                    "visible",
+                    "=",
+                    "true"
+                ],
+                "negated": false
+            }
+        ],
+        "effects": []
+      }
+    ]
+  }
+]

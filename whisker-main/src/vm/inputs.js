@@ -1,3 +1,5 @@
+const Util = require("./util");
+
 /**
  * Input data parameters:
  * {
@@ -34,7 +36,7 @@ class Input {
         this._data = data;
 
         if (this._data.hasOwnProperty('key')) {
-            this._data.key = Input.scratchKeyToKeyString(this._data.key);
+            this._data.key = Util.scratchKeyToKeyString(this._data.key);
         }
 
         /**
@@ -77,6 +79,7 @@ class Input {
             }
             if (this._state && executedSteps >= data.steps + this._steps - this._stepsExecutedBefore) {
                 data.isDown = !data.isDown;
+                data.volume = -1;
                 this._performSingle(data);
                 return true;
             }
@@ -101,6 +104,9 @@ class Input {
                 break;
             case 'drag':
                 this._inputs.vmWrapper.sprites.getSprite(data.sprite).getScratchTarget().setXY(data.x, data.y)
+                break;
+            case 'microphone':
+                this._inputs.vmWrapper.vm.runtime.virtualSound = data.volume;
                 break;
             default:
                 throw new Error(`Invalid device for input ${data.device}`);
@@ -192,28 +198,6 @@ class Input {
      */
     isActive () {
         return this._active;
-    }
-
-    /**
-     * Converts the scratch key string into a keyboard key event string.
-     * @param {string} scratchKey The scratch key to convert.
-     * @return {string} The converted keyboard key.
-     */
-    static scratchKeyToKeyString (scratchKey) {
-        switch (scratchKey) {
-            case 'space':
-                return ' ';
-            case 'left arrow':
-                return 'Left';
-            case 'up arrow':
-                return 'Up';
-            case 'right arrow':
-                return 'Right';
-            case 'down arrow':
-                return 'Down';
-            default:
-                return scratchKey;
-        }
     }
 }
 
@@ -390,12 +374,12 @@ class Inputs {
 
     /**
      * Evaluates if a specific key is currently pressed.
-     * @param {string} key The key to check.
+     * @param {string} keyString The key to check.
      * @returns {boolean} true if key is pressed, false otherwise.
      */
-    isKeyDown (key) {
-        const keyString = Input.scratchKeyToKeyString(key);
-        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(keyString);
+    isKeyDown (keyString) {
+        const scratchKey = Util.keyStringToScratchKey(keyString);
+        return this.vmWrapper.vm.runtime.ioDevices.keyboard.getKeyIsDown(scratchKey);
     }
 
     /**
@@ -477,7 +461,7 @@ class Inputs {
      * @param {number} steps The time in steps.
      */
     keyPress (key, steps) {
-        const keyString = Input.scratchKeyToKeyString(key);
+        const keyString = Util.scratchKeyToKeyString(key);
         this.inputImmediate({
             device: 'keyboard',
             key: keyString,
@@ -493,7 +477,7 @@ class Inputs {
      * @param {number} steps The time in steps.
      */
     keyRelease (key, steps) {
-        const keyString = Input.scratchKeyToKeyString(key);
+        const keyString = Util.scratchKeyToKeyString(key);
         this.inputImmediate({
             device: 'keyboard',
             key: keyString,
@@ -537,6 +521,20 @@ class Inputs {
             device: 'text',
             answer: answer
         });
+    }
+
+    /**
+     * Sends a sound to the Scratch-VM by simulating a given volume.
+     * @param {number} volume of the simulated sound.
+     * @param {number} steps defines for how many steps the sound should be sent to the Scratch-VM.
+     */
+    sendSound(volume, steps = 1){
+        Math.max(Math.min(volume, 100), 0)
+        this.inputImmediate({
+            device: 'microphone',
+            volume: volume,
+            steps: steps
+        })
     }
 }
 

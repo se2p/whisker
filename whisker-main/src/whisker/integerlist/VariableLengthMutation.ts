@@ -29,8 +29,8 @@ export class VariableLengthMutation extends AbstractVariableLengthMutation<Integ
         return 1 / numberOfCodons;
     }
 
-    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
-        super(min, max, length, gaussianMutationPower);
+    constructor(min: number, max: number, length: number, reservedCodons:number , gaussianMutationPower: number) {
+        super(min, max, length, reservedCodons, gaussianMutationPower);
     }
 
     /**

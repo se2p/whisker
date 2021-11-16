@@ -126,6 +126,12 @@ const EventFilter = {
     cloneStart: block =>
         block.opcode === 'control_start_as_clone',
 
+    backdropStart: block =>
+        block.opcode === 'event_whenbackdropswitchesto',
+
+    backdropChange: block =>
+        block.opcode === 'looks_switchbackdropto',
+
     eventSend: block =>
         EventFilter.broadcastSend(block) ||
         EventFilter.cloneCreate(block),
@@ -159,7 +165,15 @@ const ControlFilter = {
         ControlFilter.singleBranch(block) || ControlFilter.doubleBranch(block),
 
     hatBlock: block =>
-        EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone'
+        EventFilter.hatEvent(block) || block.opcode === 'control_start_as_clone',
+
+    executionHaltingBlock: block =>
+        block.opcode === 'control_wait' ||
+        block.opcode === 'looks_thinkforsecs' ||
+        block.opcode === 'looks_sayforsecs' ||
+        block.opcode === 'motion_glidesecstoxy' ||
+        block.opcode === 'sound_playuntildone' ||
+        block.opcode === 'text2speech_speakAndWait'
 };
 
 const SensingFilter = {
@@ -217,10 +231,18 @@ const PenFilter = {
         block.opcode.startsWith('pen_')
 }
 
+const Text2SpeechFilter = {
+    text2speechBlock: block =>
+        block.opcode.startsWith('text2speech_')
+}
+
 const StatementFilter = {
     isStatementBlock: block => {
-        if (block.topLevel) {
-            return true;
+        if (block.topLevel && !EventFilter.eventBlock(block) &&
+            !EventFilter.cloneStart(block) &&
+            !CustomFilter.customBlock(block)) {
+            // loose blocks
+            return false;
         }
         if (block.opcode.endsWith('_menu')) {
             return false;
@@ -235,7 +257,8 @@ const StatementFilter = {
             VariableFilter.variableBlock(block) ||
             MusicFilter.musicBlock(block) ||
             CustomFilter.customBlock(block) ||
-            PenFilter.penBlock(block);
+            PenFilter.penBlock(block) ||
+            Text2SpeechFilter.text2speechBlock(block);
     }
 };
 
@@ -251,5 +274,6 @@ export {
     StatementFilter,
     MusicFilter,
     CustomFilter,
-    PenFilter
+    PenFilter,
+    Text2SpeechFilter
 };

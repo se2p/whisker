@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from '../utils/List';
 import {Crossover} from "../search/Crossover";
 import {Mutation} from "../search/Mutation";
 import {ListChromosome} from "../search/ListChromosome";
@@ -35,7 +34,7 @@ export class BitstringChromosome extends ListChromosome<boolean> {
      */
     private readonly _mutationOp: Mutation<BitstringChromosome>;
 
-    constructor(bits: List<boolean>, mutationOp: Mutation<BitstringChromosome>, crossoverOp: Crossover<BitstringChromosome>) {
+    constructor(bits: boolean[], mutationOp: Mutation<BitstringChromosome>, crossoverOp: Crossover<BitstringChromosome>) {
         super(bits);
         this._crossoverOp = crossoverOp;
         this._mutationOp = mutationOp;
@@ -49,7 +48,7 @@ export class BitstringChromosome extends ListChromosome<boolean> {
         return this._mutationOp as Mutation<this>;
     }
 
-    cloneWith(newGenes: List<boolean>) {
+    cloneWith(newGenes: boolean[]) {
         return new BitstringChromosome(newGenes, this._mutationOp, this._crossoverOp);
     }
 

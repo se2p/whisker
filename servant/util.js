@@ -25,8 +25,9 @@ const validateCommandLineArguments = commander => {
         process.exit(1);
     }
 
-    if (!options.testPath && !options.generateTests) {
-        logger.error('No path to a test file was given, please use the -t option');
+    if (!options.testPath && !options.generateTests && !options.modelPath) {
+        logger.error('Missing testing mode argument. Please use the -t option for a test suite, -m option for ' +
+            'model tests, or -g option for test generation.');
         process.exit(1);
     }
 
@@ -38,13 +39,18 @@ const validateCommandLineArguments = commander => {
     }
 };
 
-// Defines the CLI interface of the runner, including checks and defaults.
+// Defines the CLI of the runner, including checks and defaults.
 const cli = {
     start: () => {
         commander
             .option('-u, --whiskerURL <URL>', 'File URL of the Whisker instance to run the tests', '../whisker-web/dist/index.html')
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
+            .option('-m, --modelPath <Path>', 'Model to test with', false)
+            // todo not clear with model repetition
+            .option('-mr, --modelRepetition <Integer>', 'Model test repetitions. Ignored if a test suite is specified.', "1")
+            .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run in seconds', "30")
+            .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
             .option('-w, --errorWitnessPath <Path>', 'A JSON error witness to replay', false)
             .option('-z, --isGenerateWitnessTestOnly', 'Generate test file with error witness replay without executing it', false)
             .option('-r, --addRandomInputs [Integer]', 'If random inputs should be added to the test and how many seconds to wait for its completion')
@@ -56,7 +62,8 @@ const cli = {
             .option('-k, --isConsoleForwarded', 'If the browser\'s console output should be forwarded', false)
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
-            .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false);
+            .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
+            .option('-se, --seed <Integer>', 'Seeds the Scratch-VM using the specified integer');
 
         commander.parse(process.argv);
 
@@ -64,6 +71,10 @@ const cli = {
             whiskerURL,
             scratchPath,
             testPath,
+            modelPath,
+            modelRepetition,
+            modelDuration,
+            modelCaseSensitive,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -75,7 +86,8 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            generateTests
+            generateTests,
+            seed
         } = commander._optionValues;
 
         validateCommandLineArguments(commander);
@@ -84,6 +96,10 @@ const cli = {
             whiskerURL: `file://${path.resolve(whiskerURL)}`,
             scratchPath,
             testPath,
+            modelPath,
+            modelRepetition,
+            modelDuration,
+            modelCaseSensitive,
             errorWitnessPath,
             isGenerateWitnessTestOnly,
             addRandomInputs,
@@ -95,7 +111,8 @@ const cli = {
             isConsoleForwarded,
             isLiveOutputCoverage,
             isLiveLogEnabled,
-            generateTests
+            generateTests,
+            seed
         };
     }
 };

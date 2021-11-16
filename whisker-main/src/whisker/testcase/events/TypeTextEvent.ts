@@ -35,7 +35,9 @@ export class TypeTextEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return `t.typeText('${this._text}');`;
+        // https://stackoverflow.com/a/15087766
+        const escaped = this._text.replace(/'/g, "\\'");
+        return `t.typeText('${escaped}');`;
     }
 
     public toString(): string {
@@ -46,7 +48,7 @@ export class TypeTextEvent extends ScratchEvent {
         return 0; // Text
     }
 
-    getParameter(): string[] {
+    getParameters(): string[] {
         return [this._text];
     }
 

@@ -9,4 +9,5 @@ export class Container {
     static vmWrapper: VMWrapper;
     static testDriver: TestDriver;
     static acceleration: number;
+    static debugLog: typeof console.log;
 }

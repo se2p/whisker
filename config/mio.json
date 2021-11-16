@@ -19,7 +19,8 @@
     "localSearch": [
         {
             "type": "Extension",
-            "probability": 0.1
+            "probability": 0.1,
+            "newEventProbability": 0.2
         },
         {
             "type": "Reduction",
@@ -57,6 +58,7 @@
     "durations": {
         "waitStepUpperBound": 100,
         "clickDuration": 3,
-        "pressDuration": 10
+        "pressDuration": 10,
+        "soundDuration": 10
     }
 }

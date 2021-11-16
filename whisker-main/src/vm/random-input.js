@@ -1,4 +1,4 @@
-const Random = require('../util/random');
+const {Randomness} = require("../whisker/utils/Randomness");
 
 /**
  * {
@@ -43,7 +43,7 @@ class RandomInput {
         const randomData = {...this.data};
 
         if (randomData.isDown === 'random') {
-            randomData.isDown = Random.randomBoolean();
+            randomData.isDown = Randomness.getInstance().randomBoolean();
         }
 
         for (const prop of ['duration', 'x', 'y', 'xOffset', 'yOffset', 'length']) {
@@ -59,7 +59,7 @@ class RandomInput {
                 '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ' : randomData.chars;
 
             for (let i = 0; i < length; i++) {
-                answer += chars.charAt(Random.randomInt(0, chars.length - 1));
+                answer += chars.charAt(Randomness.getInstance().nextInt(0, chars.length - 1));
             }
 
             randomData.answer = answer;
@@ -89,7 +89,7 @@ class RandomInput {
                 return prop[0];
             } else if (prop.length >= 2) {
                 const [min, max] = prop;
-                return Random.randomInt(min, max);
+                return Randomness.getInstance().nextInt(min, max);
             }
         }
     }
@@ -148,7 +148,7 @@ class RandomInputs {
             return;
         }
 
-        let randomWeight = Random.randomFloat(0, sumOfWeights);
+        let randomWeight = Randomness.getInstance().nextDoubleMinMax(0, sumOfWeights);
         for (const randomInput of inactiveInputs) {
             if (randomInput.weight > randomWeight) {
                 this.lastInputTime = timeElapsed;

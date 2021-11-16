@@ -19,10 +19,10 @@
  */
 
 import {TestGenerator} from './TestGenerator';
-import {List} from '../utils/List';
 import {TestChromosome} from '../testcase/TestChromosome';
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
+import Arrays from "../utils/Arrays";
 
 /**
  * To generate a test suite using single-objective search,
@@ -78,7 +78,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         // Done at the end to prevent used SearchAlgorithm to distort fitnessFunctionCount & coveredFitnessFunctionCount
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
-        const testChromosomes = new List<TestChromosome>([...this._archive.values()]).distinct();
+        const testChromosomes = Arrays.distinct(this._archive.values());
         const testSuite = await this.getTestSuite(testChromosomes);
         await this.collectStatistics(testSuite);
         const summary = this.summarizeSolution(this._archive);
@@ -90,12 +90,12 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
      * @param localArchive an archive returned from a SearchAlgorithm
      */
     private updateGlobalArchive(localArchive: Map<number, TestChromosome>): void {
-        const candidates = new List<TestChromosome>([...localArchive.values()]).distinct();
+        const candidates = Arrays.distinct(localArchive.values());
         for (const candidate of candidates) {
             this._fitnessFunctions.forEach((fitnessFunction, fitnessKey) => {
                 const bestLength = this._archive.has(fitnessKey) ?
                     this._archive.get(fitnessKey).getLength() : Number.MAX_SAFE_INTEGER;
-                const candidateFitness = fitnessFunction.getFitness(candidate);
+                const candidateFitness = candidate.getFitness(fitnessFunction);
                 if (fitnessFunction.isOptimal(candidateFitness) && candidate.getLength() < bestLength) {
                     if(!this._archive.has(fitnessKey)){
                         StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);

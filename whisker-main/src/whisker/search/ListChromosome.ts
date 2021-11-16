@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from "./Chromosome";
-import {List} from "../utils/List";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -29,25 +28,25 @@ import {List} from "../utils/List";
  */
 export abstract class ListChromosome<T> extends Chromosome {
 
-    private _genes: List<T>;
+    private _genes: T[];
 
-    protected constructor(genes: List<T>) {
+    protected constructor(genes: T[]) {
         super();
-        this._genes = genes.clone();
+        this._genes = [...genes];
     }
 
     /**
      * A chromosome consists of a sequence of genes. This method returns the number of genes.
      */
     getLength(): number {
-        return this._genes.size();
+        return this._genes.length;
     }
 
-    getGenes(): List<T> {
+    getGenes(): T[] {
         return this._genes;
     }
 
-    setGenes(genes: List<T>): void {
+    setGenes(genes: T[]): void {
         this._genes = genes;
     }
 
@@ -65,5 +64,5 @@ export abstract class ListChromosome<T> extends Chromosome {
      * TODO: This is a bit of a hack because of polymorphism. There must be a nicer way?
      * @param newGenes
      */
-    abstract cloneWith(newGenes: List<T>);
+    abstract cloneWith(newGenes: T[]);
 }

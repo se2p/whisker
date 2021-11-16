@@ -19,7 +19,6 @@
  */
 
 import {TestGenerator} from './TestGenerator';
-import {List} from '../utils/List';
 import {TestChromosome} from "../testcase/TestChromosome";
 import {SearchAlgorithm} from "../search/SearchAlgorithm";
 import {NotSupportedFunctionException} from "../core/exceptions/NotSupportedFunctionException";
@@ -30,6 +29,7 @@ import {Randomness} from "../utils/Randomness";
 import {Container} from "../utils/Container";
 import {TestExecutor} from "../testcase/TestExecutor";
 import {WhiskerSearchConfiguration} from "../utils/WhiskerSearchConfiguration";
+import Arrays from "../utils/Arrays";
 
 /**
  * A naive approach to generating tests by always selecting a random event from the set of available events
@@ -50,7 +50,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
     /**
      * Saves the best performing chromosomes seen so far.
      */
-    private _tests = new List<TestChromosome>();
+    private _tests: TestChromosome[] = [];
 
     /**
      * Maps to each FitnessFunction a Chromosome covering the given FitnessFunction.
@@ -91,7 +91,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
-        const stoppingCondition = this._config.searchAlgorithmProperties.getStoppingCondition();
+        const stoppingCondition = this._config.searchAlgorithmProperties.stoppingCondition;
 
         const eventExtractor = this._config.getEventExtractor();
         const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
@@ -99,7 +99,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         while (!(stoppingCondition.isFinished(this))) {
             console.log(`Iteration ${this._iterations}, covered goals: ${this._archive.size}/${this._fitnessFunctions.size}`);
             const numberOfEvents = Randomness.getInstance().nextInt(this.minSize, this.maxSize + 1);
-            const randomEventChromosome = new TestChromosome(new List<number>(), undefined, undefined)
+            const randomEventChromosome = new TestChromosome([], undefined, undefined)
             await randomTestExecutor.executeRandomEvents(randomEventChromosome, numberOfEvents);
             this.updateArchive(randomEventChromosome);
             this._iterations++;
@@ -116,7 +116,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             let bestLength = this._archive.has(fitnessFunctionKey)
                 ? this._archive.get(fitnessFunctionKey).getLength()
                 : Number.MAX_SAFE_INTEGER;
-            const candidateFitness = fitnessFunction.getFitness(chromosome);
+            const candidateFitness = chromosome.getFitness(fitnessFunction);
             const candidateLength = chromosome.getLength();
             if (fitnessFunction.isOptimal(candidateFitness) && candidateLength < bestLength) {
                 bestLength = candidateLength;
@@ -124,7 +124,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
                     StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 }
                 this._archive.set(fitnessFunctionKey, chromosome);
-                this._tests = new List<TestChromosome>(Array.from(this._archive.values())).distinct();
+                this._tests = Arrays.distinct(this._archive.values());
                 console.log(`Found test for goal: ${fitnessFunction}`);
             }
         }
@@ -138,7 +138,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
      *  - timeToReachFullCoverage
      */
     protected updateStatistics(): void {
-        StatisticsCollector.getInstance().bestTestSuiteSize = this._tests.size();
+        StatisticsCollector.getInstance().bestTestSuiteSize = this._tests.length;
         StatisticsCollector.getInstance().incrementIterationCount();
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
@@ -147,7 +147,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         }
     }
 
-    getCurrentSolution(): List<TestChromosome> {
+    getCurrentSolution(): TestChromosome[] {
         return this._tests;
     }
 

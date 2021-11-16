@@ -47,5 +47,6 @@ whisker-web/*
 
 # Whitelist files required to build Whisker.
 !package.json
+!yarn.lock
 !tsconfig.json
 

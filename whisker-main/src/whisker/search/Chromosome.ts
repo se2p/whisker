@@ -22,7 +22,6 @@ import {FitnessFunction} from "./FitnessFunction"
 import {Pair} from "../utils/Pair"
 import {Mutation} from "./Mutation"
 import {Crossover} from "./Crossover"
-import {List} from "../utils/List";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.
@@ -45,6 +44,11 @@ export abstract class Chromosome {
      * like MIO.
      */
     private _targetFitness: FitnessFunction<Chromosome>;
+
+    /**
+     * Caches fitnessValues to avoid calculating the same fitness multiple times.
+     */
+    protected _fitnessCache = new Map<FitnessFunction<Chromosome>, number>();
 
     get lastImprovedFitnessCodon(): number {
         return this._lastImprovedFitnessCodon;
@@ -96,7 +100,20 @@ export abstract class Chromosome {
      * @returns the fitness of this chromosome
      */
     getFitness(fitnessFunction: FitnessFunction<this>): number {
-        return fitnessFunction.getFitness(this);
+        if (this._fitnessCache.has(fitnessFunction)) {
+            return this._fitnessCache.get(fitnessFunction);
+        } else {
+            const fitness = fitnessFunction.getFitness(this);
+            this._fitnessCache.set(fitnessFunction, fitness);
+            return fitness;
+        }
+    }
+
+    /**
+     * Flushes the fitness cache to enforce a recalculation of the fitness values.
+     */
+    public flushFitnessCache():void{
+        this._fitnessCache.clear();
     }
 
     async evaluate(): Promise<void> {
@@ -112,7 +129,7 @@ export abstract class Chromosome {
      * Creates a clone of the current chromosome with new genes.
      * @param newGenes
      */
-    abstract cloneWith(newGenes: List<any>): Chromosome;
+    abstract cloneWith(newGenes: any[]): Chromosome;
 
     /**
      * Creates a clone of the current chromosome.

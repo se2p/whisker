@@ -19,44 +19,34 @@
  */
 
 import {Mutation} from '../search/Mutation';
-import {List} from '../utils/List';
 import {Randomness} from '../utils/Randomness';
 import {IntegerListChromosome} from './IntegerListChromosome';
+import Arrays from "../utils/Arrays";
 
 
 export abstract class AbstractVariableLengthMutation<T extends IntegerListChromosome> implements Mutation<T> {
 
     /**
-     * Lower bound for integer values
-     */
-    private readonly _min: number;
-
-    /**
-     * Upper bound for integer values
-     */
-    private readonly _max: number;
-
-    /**
-     * Upper bound for IntegerList size.
-     */
-    private readonly _length: number;
-
-    /**
-     * Power of gaussian noise which is added to integer value in the change mutation
-     */
-    private readonly _gaussianMutationPower: number
-
-    /**
      * Random number generator.
      */
-    private readonly _random: Randomness
+    private readonly _random: Randomness;
 
-
-    protected constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
-        this._min = min;
-        this._max = max;
-        this._length = length;
-        this._gaussianMutationPower = gaussianMutationPower;
+    /**
+     *
+     * @param _min Lower bound for integer values
+     * @param _max Upper bound for integer values
+     * @param _length Upper bound for IntegerList size.
+     * @param _reservedCodons overestimation of the number of codons that are required for each Scratch-Event within a
+     * given project (event-codon + param-codons).
+     * @param _gaussianMutationPower mean of gaussian distribution from which we sample the mutation power.
+     */
+    protected constructor(
+        private readonly _min: number,
+        private readonly _max: number,
+        private readonly _length: number,
+        protected readonly _reservedCodons: number,
+        private readonly _gaussianMutationPower: number,
+    ) {
         this._random = Randomness.getInstance();
     }
 
@@ -70,7 +60,6 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
 
     abstract apply(chromosome: T): T;
 
-
     /**
      * Returns a mutated deep copy of the given chromosome.
      * If a index inside the list mutates it executes one of the following mutations with equal probability:
@@ -82,41 +71,52 @@ export abstract class AbstractVariableLengthMutation<T extends IntegerListChromo
      * @return A mutated deep copy of the given chromosome.
      */
     applyUpTo(chromosome: T, maxPosition: number): T {
-        const newCodons = new List<number>();
-        newCodons.addList(chromosome.getGenes()); // TODO: Immutable list would be nicer
+        const parentGenes = chromosome.getGenes();
+        const eventGroups = Arrays.chunk(parentGenes, this._reservedCodons);
+        const maxGroupLength = Math.min(eventGroups.length, Math.floor(maxPosition / this._reservedCodons));
         let index = 0;
-        while (index < maxPosition) {
-            if (this._random.nextDouble() < this._getMutationProbability(index, maxPosition)) {
-                index = this._mutateAtIndex(newCodons, index);
+        while (index < maxGroupLength) {
+            if (this._random.nextDouble() < this._getMutationProbability(index, maxGroupLength)) {
+                index = this._mutateEventAndParameter(eventGroups, index);
             }
             index++;
         }
-        return chromosome.cloneWith(newCodons) as T;
+        return chromosome.cloneWith(eventGroups.flat()) as T;
     }
 
     /**
      * Execute one of the allowed mutations, with equally distributed probability.
      * Since this modifies the size of the list, the adjusted index, after a mutation is returned.
      *
-     * @param codons The list of codons that is being mutated.
+     * @param eventGroups The list of codons that is being mutated split into event-codons and their parameters.
      * @param index  The index where to mutate inside the list.
      * @return The modified index after the mutation.
      */
-    private _mutateAtIndex(codons: List<number>, index: number) {
-        const mutation = this._random.nextInt(0, 3)
+    private _mutateEventAndParameter(eventGroups: number[][], index: number) {
+        const mutation = this._random.nextInt(0, 3);
         switch (mutation) {
             case 0:
-                if (codons.size() < this._length) {
-                    codons.insert(this._random.nextInt(this._min, this._max), index);
+                if (eventGroups.length * this._reservedCodons < this._length) {
+                    const newEventGroup = Arrays.getRandomArray(this._min, this._max, this._reservedCodons);
+                    Arrays.insert(eventGroups, newEventGroup, index);
                     index++;
                 }
                 break;
-            case 1:
-                codons.replaceAt(this._getRandomCodonGaussian(codons.get(index)), index);
+            case 1: {
+                // If we have a deletion operation at the last position and right after that a change mutation,
+                // we would try to access the already deleted eventGroup.
+                if(index >= eventGroups.length){
+                    index = eventGroups.length - 1;
+                }
+                const mutantGroup = eventGroups[index];
+                for (let i = 0; i < mutantGroup.length; i++) {
+                    mutantGroup[i] = this._getRandomCodonGaussian(mutantGroup[i]);
+                }
                 break;
+            }
             case 2:
-                if (codons.size() > 1) {
-                    codons.removeAt(index);
+                if (eventGroups.length > 1) {
+                    Arrays.removeAt(eventGroups, index);
                     index--;
                 }
                 break;

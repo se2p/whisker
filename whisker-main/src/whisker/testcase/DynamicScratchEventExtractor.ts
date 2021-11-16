@@ -18,14 +18,12 @@
  *
  */
 
-import {List} from '../utils/List';
-
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {ScratchEventExtractor} from "./ScratchEventExtractor";
-import {EventFilter} from "scratch-analysis/src/block-filter";
 import {TypeTextEvent} from "./events/TypeTextEvent";
+import Arrays from "../utils/Arrays";
 
 
 export class DynamicScratchEventExtractor extends ScratchEventExtractor {
@@ -34,42 +32,33 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         super(vm);
     }
 
-    public extractEvents(vm: VirtualMachine): List<ScratchEvent> {
-        let eventList = new List<ScratchEvent>();
-        const executingScripts = new List<string>();
+    public extractEvents(vm: VirtualMachine): ScratchEvent[] {
+        let eventList: ScratchEvent[] = [];
 
-        // Check all blocks within scripts currently executing
-        for (const t of vm.runtime.threads) {
-            const target = t.target;
-            let block = target.blocks.getBlock(t.topBlock);
-            // For the reason of not adding hatEvents of already active scripts, skip hatEvents and defer the handling
-            // of hatEvents to the following loop where we know which scripts are indeed currently already active.
-            if (EventFilter.hatEvent(block)) {
-                block = target.blocks.getBlock(block.next);
-            }
-            // Sometimes we encounter undefined blocks here?
-            if (block) {
-                executingScripts.add(target.blocks.getTopLevelScript(t.topBlock));
-                this.traverseBlocks(target, block, eventList);
-            }
-        }
-
-        // Get all hat blocks and set up the procedureMap which maps the name of a procedure to the encountered events
-        // of the procedure definition script.
         for (const target of vm.runtime.targets) {
-            for (const scriptId of target.sprite.blocks.getScripts()) {
-                if (!executingScripts.contains(scriptId)) {
-                    eventList.addList(this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
+            for (const scriptId of target.blocks.getScripts()) {
+                const activeScript = vm.runtime.threads.find(script => script.topBlock === scriptId);
+                const hat = target.blocks.getBlock(scriptId);
+
+                // If the script is currently active we skip the hat-block and traverse downwards in the search for an
+                // event handler.
+                if (activeScript !== undefined) {
+                    this.traverseBlocks(target, target.blocks.getBlock(hat.next), eventList);
+                }
+                // Otherwise, we add the hat block to the set of events.
+                else {
+                    eventList.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(scriptId)));
                 }
             }
         }
 
-        if(eventList.getElements().some(event => event instanceof TypeTextEvent)){
+        if (eventList.some(event => event instanceof TypeTextEvent)) {
             eventList = eventList.filter(event => event instanceof TypeTextEvent);
         }
 
-        // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values of -1
-        eventList.add(new WaitEvent())
-        return eventList.distinctObjects();
+        // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
+        // of -1.
+        eventList.push(new WaitEvent());
+        return Arrays.distinctObjects(eventList);
     }
 }

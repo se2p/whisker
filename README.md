@@ -42,7 +42,9 @@ After building Whisker, simply open 'whisker-web/dist/index.html' in your browse
 firefox whisker-web/dist/index.html
 ```
 
-The Servant is a wrapper around the web client, allowing to run tests automatically in a headless environment (via chrome-headless / [puppeteer](https://github.com/puppeteer/puppeteer)). It is called the Servant as in "Cats don't have owners they have servants".
+The Servant is a wrapper around the web client, allowing to run tests automatically in a headless environment
+(via chrome-headless / [puppeteer](https://github.com/puppeteer/puppeteer)). It is called the Servant as in
+"Cats don't have owners they have servants".
 
 To use Whisker on the command line, you can use the Servant node frontend as follows:
 
@@ -56,32 +58,38 @@ The full list of options is provided using `node servant/servant.js -h`:
 Usage: servant [options]
 
 Options:
-  -u, --whiskerURL <URL>              File URL of the Whisker instance to run the tests (default:
-                                      "../whisker-web/dist/index.html")
-  -s, --scratchPath <Path>            Scratch application to run, or directory containing results (default:
-                                      false)
-  -t, --testPath <Path>               Tests to run (default: false)
-  -w, --errorWitnessPath <Path>       A JSON error witness to replay (default: false)
-  -z, --isGenerateWitnessTestOnly     Generate test file with error witness replay without executing it
-                                      (default: false)
-  -r, --addRandomInputs [Integer]     If random inputs should be added to the test and if so, how many seconds
-                                      to wait for its completion (default: false)
-  -a, --accelerationFactor <Integer>  Acceleration factor (default: "1")
-  -v, --csvFile <Path>                Name of CSV File to put output into (default: false)
-  -c, --configPath <Path>             Path to a configuration file (default:
-                                      "../config/default.json")
-  -d, --isHeadless                    If should run headless (d like in decapitated)
-  -p, --numberOfTabs <Integer>        The number of tabs to execute the tests in (default: 1)
-  -k, --isConsoleForwarded            If the browser's console output should be forwarded (default: false)
-  -o, --isLiveOutputCoverage          If new output of the coverage should be printed regularly (default: false)
-  -l, --isLiveLogEnabled              If the new output of the log should be printed regularly (default: false)
-  -g, --generateTests [Path]          If new tests should be generated and where to put them (default: false)
-  -h, --help                          display help for command
+  -u,   --whiskerURL <URL>                File URL of the Whisker instance to run the tests (default:
+                                            "../whisker-web/dist/index.html")
+  -s,   --scratchPath <Path>              Scratch application to run, or directory containing results (default: false)
+  -t,   --testPath <Path>                 Tests to run (default: false)
+  -m,   --modelPath <Path>                Model to test with (default: false)
+  -w,   --errorWitnessPath <Path>         A JSON error witness to replay (default: false)
+  -z,   --isGenerateWitnessTestOnly       Generate test file with error witness replay without executing it
+                                            (default: false)
+  -r,   --addRandomInputs [Integer]       If random inputs should be added to the test and if so, how many seconds
+                                            to wait for its completion (default: false)
+  -a,   --accelerationFactor <Integer>    Acceleration factor (default: "1")
+  -v,   --csvFile <Path>                  Name of CSV File to put output into (default: false)
+  -c,   --configPath <Path>               Path to a configuration file (default: "../config/default.json")
+  -d,   --isHeadless                      If should run headless (d like in decapitated)
+  -p,   --numberOfTabs <Integer>          The number of tabs to execute the tests in (default: 1)
+  -k,   --isConsoleForwarded              If the browser\'s console output should be forwarded (default: false)
+  -o,   --isLiveOutputCoverage            If new output of the coverage should be printed regularly (default: false)
+  -l,   --isLiveLogEnabled                If the new output of the log should be printed regularly (default: false)
+  -g,   --generateTests [Path]            If new tests should be generated and where to put them (default: false)
+  -se,  --seed <Integer>                  Sets the specified integer as a seed for the Scratch-VM and the random number
+                                           generator contained within Whisker.
+  -mr,  --modelRepetition <Integer>       Model test repetitions. Ignored if a test suite is specified. (default: 1)
+  -mt,  --modelDuration <Integer>         Maximal time of one model test run in seconds (default: 30)
+  -mcs, --modelCaseSensitive <Boolean>    Whether model test should test names case sensitive (default: false)
+  -h,   --help                            Display help for command
 ```
 
-To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
+To run tests in accelerated mode, provide an acceleration factor using the option `-a`. We recommend using an
+acceleration factor of at most 10, as very low execution times may lead to non-deterministic program behaviour.
 
-For example, the following command runs tests with a 10 fold speedup and two parallel executions in a headless chrome instance:
+For example, the following command runs tests with a 10 fold speedup and two parallel executions in a headless chrome
+instance:
 
 ```bash
 node servant.js -s project.sb3 -t tests.js -a 10 -d -p 2
@@ -119,7 +127,9 @@ Details on writing Whisker tests in JavaScript can be found
 
 ## Generating Tests Automatically
 
-The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate search configuration (examples can be found in the `config` directory), and click `Test Generation`. Warning: This may take a while! Once the search has completed, the generated tests are loaded into the editor window.
+The web interface provides the possibility to automatically generate tests. In the web interface, choose an appropriate
+search configuration (examples can be found in the `config` directory), and click `Test Generation`. Warning: This may
+take a while! Once the search has completed, the generated tests are loaded into the editor window.
 
 If you run test generation with Servant (command line option `-g`), at the end of the search a file called `tests.js`
 is created in the current directory which contains the tests. These can now be loaded into Whisker.
@@ -137,6 +147,7 @@ Patric Feldmeier\
 Christoph Frädrich\
 Gordon Fraser\
 Sophia Geserer\
+Katharina Götz\
 Eva Gründinger\
 Nina Körber\
 Marvin Kreis\

@@ -3,10 +3,8 @@ import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNode
 import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
 import {ConnectionGene} from "../../../../src/whisker/whiskerNet/ConnectionGene";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
-import {List} from "../../../../src/whisker/utils/List";
 import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
-import {MouseMoveToEvent} from "../../../../src/whisker/testcase/events/MouseMoveToEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 
 
@@ -31,7 +29,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNode.activatedFlag).toBe(false)
         expect(regressionNode.activationCount).toBe(0);
         expect(regressionNode.traversed).toBe(false)
-        expect(regressionNode.incomingConnections.size()).toBe(0);
+        expect(regressionNode.incomingConnections.length).toBe(0);
         expect(regressionNode.eventParameter).toEqual("Duration")
     })
 
@@ -110,9 +108,7 @@ describe("regressionNode Tests", () => {
     test("toString Test", () => {
         const inputNode = new InputNode(5, "Sprite1", "Position-X");
         const connection = new ConnectionGene(inputNode, regressionNodeNone, 2, true, 1, false);
-        const incomingList = new List<ConnectionGene>();
-        incomingList.add(connection);
-        regressionNodeNone.incomingConnections = incomingList;
+        regressionNodeNone.incomingConnections = [connection];
         const out = regressionNodeNone.toString();
         expect(out).toContain(`RegressionNode{ID: 1\
 , Value: 0\

@@ -50,7 +50,7 @@ export class MouseMoveEvent extends ScratchEvent {
         return 2; // x and y?
     }
 
-    getParameter(): number[] {
+    getParameters(): number[] {
         return [this._x, this._y];
     }
 
@@ -60,7 +60,7 @@ export class MouseMoveEvent extends ScratchEvent {
 
     setParameter(args: number[], argType: ParameterType): void {
         switch (argType) {
-            case ParameterType.RANDOM: {
+            case "random": {
                 const random = Randomness.getInstance();
                 const stageBounds = Container.vmWrapper.getStageSize();
                 const signedWidth = stageBounds.width / 2;
@@ -69,13 +69,13 @@ export class MouseMoveEvent extends ScratchEvent {
                 this._y = random.nextInt(-signedHeight, signedHeight + 1);
                 break;
             }
-            case ParameterType.CODON: {
-                const fittedCoordinates = this.fitCoordinates(args[0], args[1])
-                this._x = fittedCoordinates.x;
-                this._y = fittedCoordinates.y;
+            case "codon": {
+                const {x, y} = this.fitCoordinates({x: args[0], y: args[1]})
+                this._x = x;
+                this._y = y;
                 break;
             }
-            case ParameterType.REGRESSION: {
+            case "regression": {
                 this._x = Math.tanh(args[0]) * 240;
                 this._y = Math.tanh(args[1]) * 180;
                 break;

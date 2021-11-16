@@ -20,9 +20,9 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {GraphNode, ControlDependenceGraph, ControlFlowGraph} from 'scratch-analysis'
-import {CustomFilter, ControlFilter, StatementFilter} from 'scratch-analysis/src/block-filter'
-import {List} from "../../utils/List";
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode} from 'scratch-analysis'
+import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
+import {Trace} from "scratch-vm/src/engine/tracing.js";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -31,6 +31,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     private readonly _cfg: ControlFlowGraph;
     private readonly _approachLevels: Record<string, number>
     private readonly _eventMapping: Record<string, string>
+    private _forceCFG = false;
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
@@ -38,12 +39,19 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         this._cfg = cfg;
         this._eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
+
+        // If we have an execution halting block as parent enforce the calculation of the CFG distance to keep track
+        // of the remaining halting duration until the given block is reached.
+        const parent = StatementFitnessFunction.getParentOfNode(targetNode, this._cdg);
+        if (parent !== undefined && ControlFilter.executionHaltingBlock(parent.block)) {
+            this.forceCFG = true;
+        }
     }
 
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
         const approachLevels: Record<string, number> = {};
         const workList = [];
-        const visited: List<GraphNode> = new List();
+        const visited = [];
 
         workList.push([targetNode, -1]); // the target node starts with approach level -1
         while (workList.length > 0) {
@@ -51,11 +59,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             const node = elem[0];
             const level = elem[1];
 
-            if (visited.contains(node)) {
+            if (visited.includes(node)) {
                 continue;
             }
 
-            visited.add(node);
+            visited.push(node);
             const pred: [GraphNode] = cdg.predecessors(node.id);
             const currentLevel = level + 1;
             for (const n of Array.from(pred.values())) { //we need to convert the pred set to an array, typescript does not know sets
@@ -98,7 +106,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const branchDistance = this.getBranchDistance(chromosome);
 
         let cfgDistanceNormalized;
-        if (approachLevel === 0 && branchDistance === 0) {
+        if ((approachLevel === 0 && branchDistance === 0) || this._forceCFG) {
             cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome));
         } else {
             cfgDistanceNormalized = 1;
@@ -167,10 +175,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
 
             if (traceMin <= minBranchApproachLevel) {
-                if (!this._targetNode.block.opcode.startsWith("event_when") &&
-                    this._targetNode.block.opcode !== 'control_start_as_clone' &&
-                    blockTrace.opcode.startsWith("control") &&
-                    !(blockTrace.opcode === "control_wait")) {
+                if (this._canComputeControlDistance(blockTrace)) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -225,6 +230,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 for (let i = 0; i < qSize; i++) {
                     node = queue.shift();
                     if (coveredBlocks.has(node.id)) {
+                        // If we stop at an execution halting block we use its relative remaining halting
+                        // duration as the CFG distance instead of simply incrementing the CFG. Since at this point
+                        // we have already incremented it by one we first have to decrement it again.
+                        if (ControlFilter.executionHaltingBlock(node.block)) {
+                            level = (level - 1) + chromosome.trace.blockTraces[node.id].remainingScaledHaltingDuration;
+                        }
                         return level;
                     }
                     visited.add(node);
@@ -245,14 +256,27 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         }
 
         const coveredBlocks = chromosome.coverage;
-        const level = bfs(this._cfg, this._targetNode, coveredBlocks);
-        return level
+        return bfs(this._cfg, this._targetNode, coveredBlocks);
 
     }
 
 
     private static _normalize(x: number): number {
         return x / (x + 1.0);
+    }
+
+    /**
+     * Checks if our target node represents a control node that contains a blockTrace which we can evaluate for
+     * determining the branch distance.
+     * @param blockTrace the blockTrace from which we can determine the branch distance.
+     * @returns boolean determining if we extract the branchDistance from the given blockTrace.
+     */
+    private _canComputeControlDistance(blockTrace: Trace):boolean{
+        return !this._targetNode.block.opcode.startsWith("event_when") &&
+            this._targetNode.block.opcode !== 'control_start_as_clone' &&
+            blockTrace.opcode.startsWith("control") &&
+            !(blockTrace.opcode === "control_wait") &&
+            (blockTrace.distances[0] !== undefined);
     }
 
     private _checkControlBlock(statement: GraphNode, controlNode: GraphNode): boolean {
@@ -284,8 +308,13 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             case 'control_if': {
                 requiredCondition = false;
-                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
+                let ifBlock: string;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                } else if (controlNode.block.inputs.CONDITION !== undefined) {
+                    ifBlock = controlNode.block.inputs.CONDITION.block;
+                }
+                if (ifBlock !== undefined && this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
                 }
                 break;
@@ -296,7 +325,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             case 'control_if_else': {
                 requiredCondition = false;
-                const ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                let ifBlock: string;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    ifBlock = controlNode.block.inputs.SUBSTACK.block;
+                } else if (controlNode.block.inputs.CONDITION !== undefined) {
+                    ifBlock = controlNode.block.inputs.CONDITION.block;
+                }
                 if (this._matchesBranchStart(statement, controlNode, ifBlock)) {
                     requiredCondition = true;
                     break;
@@ -328,20 +362,34 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     /**
      * Traverse through all fitnessFunctions and extract the independent ones. A fitnessFunction is defined to be
-     * independent if it is either the last block inside a branching statement or the last block inside a block of
-     * statements being dependent on a hatBlock. We call the blocks of independent fitnessFunctions mergeBlocks since
-     * all blocks contained in the same branch or block of hat related statements can be merged into them without
-     * loosing any information needed to achieve full coverage during search.
+     * independent if it is
+     *  - the child of a execution halting block
+     *  - the last block inside a branching statement
+     *  - the last block inside a block of statements being dependent on a hatBlock
+     *  We call the blocks of independent fitnessFunctions mergeBlocks since all blocks contained in the same branch
+     *  or block of hat related statements can be merged into them without loosing any information needed to achieve
+     *  full coverage during search.
      * @param fitnessFunctions the fitnessFunctions  which will be filtered to contain only independent functions.
      * @returns Map mapping hatBlocks or branchingBlocks to their last independent Block
      */
-    public static getMergeNodeMap(fitnessFunctions: List<StatementFitnessFunction>): Map<StatementFitnessFunction, List<StatementFitnessFunction>> {
-        const mergeNodeMap = new Map<GraphNode, List<GraphNode>>();
+    public static getMergeNodeMap(fitnessFunctions: StatementFitnessFunction[]): Map<StatementFitnessFunction, StatementFitnessFunction[]> {
+        const mergeNodeMap = new Map<GraphNode, GraphNode[]>();
         for (const fitnessFunction of fitnessFunctions) {
+
+            // We add nodes right after execution halting blocks in order to be able to optimise for the scaled
+            // CFG-distance which incorporates the remaining duration until the respective thread is allowed to
+            // resume its execution.
+            if (ControlFilter.executionHaltingBlock(fitnessFunction._targetNode.block)) {
+                const childNode = this.getChildOfNode(fitnessFunction._targetNode, fitnessFunction._cdg);
+                if (childNode !== undefined) {
+                    mergeNodeMap.set(fitnessFunction._targetNode, [childNode]);
+                }
+            }
+
             // Handling of branching blocks
             if (ControlFilter.branch(fitnessFunction._targetNode.block)) {
                 // Get all nodes being dependent on the branching block.
-                let mergeNodes = new List<GraphNode>([...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()]);
+                let mergeNodes = [...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()];
 
                 // Find the last Block which either
                 // has no child and is not another branch block -> end of branch
@@ -353,8 +401,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
 
                 // Add the branching block if it isn't present
-                if (!mergeNodes.contains(fitnessFunction._targetNode)) {
-                    mergeNodes.add(fitnessFunction._targetNode);
+                if (!mergeNodes.includes(fitnessFunction._targetNode)) {
+                    mergeNodes.push(fitnessFunction._targetNode);
                 }
 
                 // In case of nested branches we have blocks which can be merged, namely the block in front of the nested
@@ -362,8 +410,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 // nested branch since it is already covered by the true last block.
                 // SingleControlDependenceBlocks should only contain two nodes: themselves and their last block
                 // DoubleControlDependenceBlocks should only contain three nodes: themselves, last if block and last else block
-                if ((ControlFilter.singleBranch(fitnessFunction._targetNode.block) && mergeNodes.size() > 2)
-                    || (ControlFilter.doubleBranch(fitnessFunction._targetNode.block) && mergeNodes.size() > 3)) {
+                if ((ControlFilter.singleBranch(fitnessFunction._targetNode.block) && mergeNodes.length > 2)
+                    || (ControlFilter.doubleBranch(fitnessFunction._targetNode.block) && mergeNodes.length > 3)) {
                     mergeNodes = this.findLastDescendants(mergeNodes, fitnessFunction);
                 }
 
@@ -373,15 +421,15 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             // and the last statement of the given block of statements depending on the given hatBlock.
             else if (ControlFilter.hatBlock(fitnessFunction._targetNode.block) ||
                 CustomFilter.defineBlock(fitnessFunction._targetNode.block)) {
-                const mergeNodes = new List<GraphNode>();
+                const mergeNodes: GraphNode[] = [];
                 const hatNode = fitnessFunction._targetNode;
                 // Add hatBlock.
-                mergeNodes.add(hatNode);
+                mergeNodes.push(hatNode);
                 // Find and add the last statement in the block of statements being dependent on the hatBlock.
                 let childNode = StatementFitnessFunction.getChildOfNode(hatNode, fitnessFunction._cdg);
                 while (childNode) {
                     if (!childNode.block.next) {
-                        mergeNodes.add(childNode);
+                        mergeNodes.push(childNode);
                         break;
                     }
                     childNode = StatementFitnessFunction.getChildOfNode(childNode, fitnessFunction._cdg);
@@ -390,12 +438,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
         }
         // Map the independent Nodes to the corresponding StatementCoverageFitness-Functions.
-        const statementMap = new Map<StatementFitnessFunction, List<StatementFitnessFunction>>();
+        const statementMap = new Map<StatementFitnessFunction, StatementFitnessFunction[]>();
         mergeNodeMap.forEach(((value, key) => {
-            const keyStatement = fitnessFunctions.get(fitnessFunctions.findIndex(fitnessFunction => fitnessFunction._targetNode === key));
-            const valueStatements = fitnessFunctions.filter(fitnessFunction => value.contains(fitnessFunction._targetNode));
+            const keyStatement = fitnessFunctions[fitnessFunctions.findIndex(fitnessFunction => fitnessFunction._targetNode === key)];
+            const valueStatements = fitnessFunctions.filter(fitnessFunction => value.includes(fitnessFunction._targetNode));
             statementMap.set(keyStatement, valueStatements);
-        }))
+        }));
         return statementMap;
     }
 
@@ -406,7 +454,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @returns parent of node
      */
     private static getParentOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
-        return cdg._nodes[node.block.parent];
+        if (node.block.parent) {
+            return cdg._nodes[node.block.parent];
+        } else {
+            return undefined;
+        }
     }
 
     /**
@@ -416,7 +468,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @returns child of node
      */
     private static getChildOfNode(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
-        return cdg._nodes[node.block.next];
+        if (node.block.next) {
+            return cdg._nodes[node.block.next];
+        } else {
+            return undefined;
+        }
     }
 
     /**
@@ -427,27 +483,31 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param controlFitness the branching fitnessFunction all potential mergeNodes depend on.
      * @returns List of true mergeNodes.
      */
-    private static findLastDescendants(nodes: List<GraphNode>, controlFitness: StatementFitnessFunction): List<GraphNode> {
+    private static findLastDescendants(nodes: GraphNode[], controlFitness: StatementFitnessFunction): GraphNode[] {
         const controlNode = controlFitness._targetNode;
-        const nodesToRemove = new List<GraphNode>();
+        const nodesToRemove: GraphNode[] = [];
         for (const node of nodes) {
             if (node === controlNode) {
                 continue;
             }
             let parent = StatementFitnessFunction.getParentOfNode(node, controlFitness._cdg);
-            while (parent.id !== controlNode.id) {
+            // Traverse the block hierarchy upwards until we reach the given control node or a Hat-Block
+            while (parent !== undefined && parent.id !== controlNode.id) {
                 // We found another potential lastDescendant so the found one cannot be the last one.
-                if (nodes.contains(parent)) {
-                    nodesToRemove.add(parent);
+                if (nodes.includes(parent)) {
+                    nodesToRemove.push(parent);
                 }
                 parent = StatementFitnessFunction.getParentOfNode(parent, controlFitness._cdg);
             }
         }
-        return nodes.filter(node => !nodesToRemove.contains(node));
+        return nodes.filter(node => !nodesToRemove.includes(node));
     }
 
     public toString = (): string => {
         return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
     }
 
+    set forceCFG(value: boolean) {
+        this._forceCFG = value;
+    }
 }

@@ -19,8 +19,7 @@
  */
 
 import {ChromosomeGenerator} from "../search/ChromosomeGenerator";
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
-import {List} from "../utils/List";
+import {GeneticAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {Randomness} from "../utils/Randomness";
 import {TestChromosome} from "./TestChromosome";
 import {Mutation} from "../search/Mutation";
@@ -29,6 +28,8 @@ import {Crossover} from "../search/Crossover";
 // TODO: This is a clone of IntegerListGenerator, maybe we should use "has a" rather than "is a" in TestChromosome?
 
 export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromosome> {
+
+    protected readonly _properties: GeneticAlgorithmProperties<TestChromosome>;
 
     protected readonly _length: number;
 
@@ -40,12 +41,13 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
 
     private _crossoverOp: Crossover<TestChromosome>;
 
-    constructor(properties: SearchAlgorithmProperties<TestChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<TestChromosome>,
                 mutationOp: Mutation<TestChromosome>,
                 crossoverOp: Crossover<TestChromosome>) {
-        this._length = properties.getChromosomeLength();
-        this._min = properties.getMinIntRange();
-        this._max = properties.getMaxIntRange();
+        this._properties = properties;
+        this._length = properties.chromosomeLength;
+        this._min = properties.integerRange.min;
+        this._max = properties.integerRange.max;
         this._mutationOp = mutationOp;
         this._crossoverOp = crossoverOp;
     }
@@ -55,10 +57,10 @@ export class TestChromosomeGenerator implements ChromosomeGenerator<TestChromoso
      * @returns a random chromosome
      */
     get(): TestChromosome {
-        const codons = new List<number>();
+        const codons: number[] = [];
         const length = this.getLength();
         for(let i = 0; i < length; i++) {
-            codons.add(Randomness.getInstance().nextInt(this._min, this._max));
+            codons.push(Randomness.getInstance().nextInt(this._min, this._max));
         }
         return new TestChromosome(codons, this._mutationOp, this._crossoverOp);
     }

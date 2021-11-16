@@ -107,6 +107,10 @@ class Graph {
         this._nodes[node.id] = node;
     }
 
+    removeNode(node){
+        delete this._nodes[node.id];
+    }
+
     addEdge (node, successor) {
         this._predecessors.put(successor.id, node);
         this._successors.put(node.id, successor);
@@ -212,6 +216,28 @@ class Graph {
         const renderedEdges = edges.join('\n');
 
         const result = `digraph ScratchProgram {\n${renderedEdges}\n}`;
+
+        this.dot = result;
+        return result;
+    }
+
+    toCoverageDot (uncoveredKeys) {
+        const edges = [];
+        const nodes = [];
+        for (const node of this.getAllNodes()) {
+            if (uncoveredKeys.includes(node.id)) {
+                nodes.push(`\t"${node.toString()}" [style=filled,fillcolor=\"red\",fontcolor=\"white\"];`);
+            } else {
+                nodes.push(`\t"${node.toString()}" [style=filled,fillcolor=\"darkgreen\",fontcolor=\"white\"];`);
+            }
+            for (const succ of this.successors(node.id)) {
+                edges.push(`\t"${node.toString()}" -> "${succ.toString()}";`);
+            }
+        }
+        const renderedEdges = edges.join('\n');
+        const renderedNodes = nodes.join('\n');
+
+        const result = `digraph ScratchProgram {\n${renderedNodes}\n${renderedEdges}\n}`;
 
         this.dot = result;
         return result;

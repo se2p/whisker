@@ -3,11 +3,10 @@ import {NetworkChromosome} from "../../../src/whisker/whiskerNet/NetworkChromoso
 import {NetworkChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NetworkChromosomeGeneratorSparse";
 import {NeuroevolutionProperties} from "../../../src/whisker/whiskerNet/NeuroevolutionProperties";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
-import {List} from "../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
+import Arrays from "../../../src/whisker/utils/Arrays";
 
 describe("Test NeatPopulation", () => {
 
@@ -51,8 +50,8 @@ describe("Test NeatPopulation", () => {
         sprite1.set("DistanceToSprite2-X", 4);
         sprite1.set("DistanceToSprite2-y", 5);
         genInputs.set("Sprite1", sprite1);
-        const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
-            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
+        const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         const chromosomeGenerator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
         const properties = new NeuroevolutionProperties<NetworkChromosome>(size);
         properties.disjointCoefficient = 1;
@@ -80,8 +79,8 @@ describe("Test NeatPopulation", () => {
         expect(population.generator).toBeInstanceOf(NetworkChromosomeGeneratorSparse);
         expect(population.startSize).toBe(size);
         expect(population.generation).toBe(0);
-        expect(population.species.size()).toBeGreaterThan(0);
-        expect(population.chromosomes.size()).toBe(size);
+        expect(population.species.length).toBeGreaterThan(0);
+        expect(population.chromosomes.length).toBe(size);
         expect(population.properties).toBeInstanceOf(NeuroevolutionProperties);
         expect(population.averageFitness).toBe(0);
     })
@@ -94,7 +93,7 @@ describe("Test NeatPopulation", () => {
         population.generation = 3;
         population.averageFitness = 3;
 
-        const champ = population.chromosomes.get(0);
+        const champ = population.chromosomes[0];
         population.populationChampion = champ;
 
         expect(population.speciesCount).toBe(3);
@@ -118,20 +117,20 @@ describe("Test NeatPopulation", () => {
         expect(oldGeneration).not.toContainEqual(newGeneration);
         expect(population.speciesCount).toBeGreaterThan(0);
         expect(population.generation).toBe(50);
-        expect(population.species.size()).toBeGreaterThan(0);
-        expect(population.chromosomes.size()).toBe(size);
+        expect(population.species.length).toBeGreaterThan(0);
+        expect(population.chromosomes.length).toBe(size);
     })
 
     test("Test evolution stagnant population with only one species", () => {
         population.highestFitness = 60;
         population.highestFitnessLastChanged = 100;
-        for (let i = 1; i < population.species.size(); i++) {
-            population.species.remove(population.species.get(i))
+        for (let i = 1; i < population.species.length; i++) {
+            Arrays.remove(population.species, population.species[i]);
         }
         population.updatePopulationStatistics()
         population.evolve();
-        expect(population.species.size()).toBe(1);
-        expect(population.species.get(0).chromosomes.size()).toBe(size);
+        expect(population.species.length).toBe(1);
+        expect(population.species[0].chromosomes.length).toBe(size);
     })
 
     test("Test evolve with distance Threshold below 0.3", () => {

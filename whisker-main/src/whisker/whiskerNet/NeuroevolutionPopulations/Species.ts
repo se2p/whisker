@@ -1,10 +1,9 @@
-import {List} from "../../utils/List";
 import {NetworkChromosome} from "../NetworkChromosome";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {Randomness} from "../../utils/Randomness";
-import {NeatPopulation} from "./NeatPopulation";
 import {NeuroevolutionProperties} from "../NeuroevolutionProperties";
 import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
+import Arrays from "../../utils/Arrays";
 
 export class Species<C extends NetworkChromosome> {
 
@@ -21,7 +20,7 @@ export class Species<C extends NetworkChromosome> {
     /**
      * Saves the member of this species
      */
-    private readonly _chromosomes: List<C>
+    private readonly _chromosomes: C[];
 
     /**
      * The age of this species
@@ -84,7 +83,7 @@ export class Species<C extends NetworkChromosome> {
         this._currentBestFitness = 0;
         this._allTimeBestFitness = 0;
         this._properties = properties;
-        this._chromosomes = new List<C>();
+        this._chromosomes = [];
         this._randomness = Randomness.getInstance();
     }
 
@@ -93,7 +92,7 @@ export class Species<C extends NetworkChromosome> {
      * @param chromosome
      */
     public addChromosome(chromosome: C): void {
-        this.chromosomes.add(chromosome);
+        this.chromosomes.push(chromosome);
     }
 
     /**
@@ -101,14 +100,14 @@ export class Species<C extends NetworkChromosome> {
      * @param chromosome the member to remove
      */
     public removeChromosome(chromosome: C): void {
-        this.chromosomes.remove(chromosome);
+        Arrays.remove(this.chromosomes, chromosome);
     }
 
     /**
      * Returns population size of this Specie.
      */
     public size(): number {
-        return this.chromosomes.size();
+        return this.chromosomes.length;
     }
 
     /**
@@ -152,7 +151,7 @@ export class Species<C extends NetworkChromosome> {
 
         // Sort the chromosomes in the species based on their fitness -> the first chromosome is the fittest
         this.sortChromosomes();
-        const champion = this.chromosomes.get(0);
+        const champion = this.chromosomes[0];
         this.champion = champion;
         this.currentBestFitness = champion.networkFitness;
 
@@ -165,12 +164,12 @@ export class Species<C extends NetworkChromosome> {
         // Determines how many members of this species are allowed to reproduce
         // using the parentsPerSpecies hyperparameter.
         // Ensure that the species will not go extinct -> at least one member survives.
-        let numberOfParents = Math.floor((this.properties.parentsPerSpecies * this.chromosomes.size()));
+        let numberOfParents = Math.floor((this.properties.parentsPerSpecies * this.chromosomes.length));
         if(numberOfParents === 0){
             numberOfParents = 1;
         }
 
-        this.chromosomes.get(0).isSpeciesChampion = true;
+        this.chromosomes[0].isSpeciesChampion = true;
 
         // Assign the death mark to the chromosomes which are not within the numberOfParents
         let position = 1;
@@ -242,15 +241,15 @@ export class Species<C extends NetworkChromosome> {
      * @param speciesList a List of all species
      * @return returns the generated children
      */
-    public breed(population: NeuroevolutionPopulation<C>, speciesList: List<Species<C>>): List<C> {
-        if (this.expectedOffspring > 0 && this.chromosomes.size() == 0) {
-            return new List<C>();
+    public breed(population: NeuroevolutionPopulation<C>, speciesList: Species<C>[]): C[] {
+        if (this.expectedOffspring > 0 && this.chromosomes.length == 0) {
+            return [];
         }
 
-        const children = new List<C>();
+        const children = [];
 
         this.sortChromosomes();
-        this.champion = this.chromosomes.get(0);
+        this.champion = this.chromosomes[0];
 
         // Create the calculated number of offspring of this species; one at a time
         let champCloned = 0;
@@ -286,7 +285,7 @@ export class Species<C extends NetworkChromosome> {
                 child = this.breedCrossover(speciesList);
             }
 
-            children.add(child);
+            children.push(child);
         }
         return children;
     }
@@ -310,7 +309,7 @@ export class Species<C extends NetworkChromosome> {
      */
     private breedMutationOnly(): C {
         // Choose random parent and apply mutation
-        const parent = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C;
+        const parent = this._randomness.pick(this.chromosomes).cloneStructure() as C;
         parent.mutate();
         return parent;
     }
@@ -320,15 +319,15 @@ export class Species<C extends NetworkChromosome> {
      * @param speciesList a List of all species in the current population
      * @private
      */
-    private breedCrossover(speciesList: List<Species<C>>): C {
+    private breedCrossover(speciesList: Species<C>[]): C {
         // Pick first parent
-        const parent1 = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C;
+        const parent1 = this._randomness.pick(this.chromosomes).cloneStructure() as C;
         let parent2: C
 
         // Pick second parent either from within the species or from another species (interspecies mating)
         if (this._randomness.nextDouble() > this._properties.interspeciesMating) {
             // Second parent picked from the same species (= this species)
-            parent2 = this._randomness.pickRandomElementFromList(this.chromosomes).cloneStructure() as C
+            parent2 = this._randomness.pick(this.chromosomes).cloneStructure() as C
         }
         // Mate outside of the species
         else {
@@ -336,14 +335,14 @@ export class Species<C extends NetworkChromosome> {
             let giveUp = 0;
             // Give Up if by chance we do not find another Species or only species which are empty
             while ((randomSpecies === this && giveUp < 5) || randomSpecies.size() === 0) {
-                randomSpecies = this._randomness.pickRandomElementFromList(speciesList) as Species<C>;
+                randomSpecies = this._randomness.pick(speciesList) as Species<C>;
                 giveUp++;
             }
-            parent2 = randomSpecies.chromosomes.get(0).cloneStructure() as C;
+            parent2 = randomSpecies.chromosomes[0].cloneStructure() as C;
         }
 
         // Apply the Crossover Operation
-        const child = parent1.crossover(parent2).getFirst();
+        const [child] = parent1.crossover(parent2);
 
         // Decide if we additionally apply mutation -> done randomly or
         // if both parents have a compatibility distance of 0 which means they have the same structure and weights
@@ -385,9 +384,9 @@ export class Species<C extends NetworkChromosome> {
         clone.allTimeBestFitness = this.allTimeBestFitness;
         clone.expectedOffspring = this.expectedOffspring;
         clone.ageOfLastImprovement = this.ageOfLastImprovement;
-        clone.champion = this.chromosomes.get(0).clone() as C
+        clone.champion = this.chromosomes[0].clone() as C
         for(const network of this.chromosomes){
-            clone.chromosomes.add(network.clone() as C)
+            clone.chromosomes.push(network.clone() as C)
         }
         return clone;
     }
@@ -406,8 +405,8 @@ export class Species<C extends NetworkChromosome> {
         species[`allTimeBestFitness`] = this.allTimeBestFitness;
         species[`expectedOffspring`] = this.expectedOffspring;
         species[`ChampionId`] = this.champion.id;
-        for (let i = 0; i < this.chromosomes.size(); i++) {
-            species[`Member ${i}`] = this.chromosomes.get(i).toJSON();
+        for (let i = 0; i < this.chromosomes.length; i++) {
+            species[`Member ${i}`] = this.chromosomes[i].toJSON();
         }
         return species;
     }
@@ -456,7 +455,7 @@ export class Species<C extends NetworkChromosome> {
         this._expectedOffspring = value;
     }
 
-    get chromosomes(): List<C> {
+    get chromosomes(): C[] {
         return this._chromosomes;
     }
 

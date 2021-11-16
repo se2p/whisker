@@ -1,0 +1,227 @@
+[
+    {
+        "id": "instrumentation",
+        "usage": "program",
+        "startNodeId": "n0",
+        "stopNodeIds": [
+            "n3"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "n0",
+            "n1",
+            "n2",
+            "n3"
+        ],
+        "edges": [
+            {
+                "id": "saysHello",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "Output",
+                        "args": [
+                            "Sprite1",
+                            "Hello"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "noOutput",
+                "from": "n1",
+                "to": "n2",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "Output",
+                        "args": [
+                            "Sprite1",
+                            "Hello"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "saysHello2",
+                "from": "n2",
+                "to": "n3",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "Output",
+                        "args": [
+                            "Sprite1",
+                            "Hello"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "id": "instrumentation2",
+        "usage": "program",
+        "startNodeId": "n0",
+        "stopNodeIds": [
+            "n3"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "n0",
+            "n1",
+            "n2",
+            "n3"
+        ],
+        "edges": [
+            {
+                "id": "saysHello",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "sayText",
+                            "=",
+                            "Hello!"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "noOutput",
+                "from": "n1",
+                "to": "n2",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "sayText",
+                            "=",
+                            "Hello!"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "saysHello2",
+                "from": "n2",
+                "to": "n3",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "sayText",
+                            "=",
+                            "Hello!"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    },
+    {
+        "id": "instrumentation3",
+        "usage": "program",
+        "startNodeId": "n0",
+        "stopNodeIds": [
+            "n3"
+        ],
+        "stopAllNodeIds": [],
+        "nodeIds": [
+            "n0",
+            "n1",
+            "n2",
+            "n3"
+        ],
+        "edges": [
+            {
+                "id": "saysHello",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "Expr",
+                        "args": [
+                            "$(Sprite1.sayText) == 'Hello!'"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "noOutput",
+                "from": "n1",
+                "to": "n2",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "Expr",
+                        "args": [
+                            "$(Sprite1.sayText) == 'Hello!'"
+                        ],
+                        "negated": true
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "saysHello2",
+                "from": "n2",
+                "to": "n3",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "id": "0",
+                        "name": "Expr",
+                        "args": [
+                            "$(Sprite1.sayText) == 'Hello!'"
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    }
+]

@@ -49,9 +49,11 @@ class Sprite {
          */
         this.onVisualChange = null;
 
-        this._target.on(RenderedTarget.EVENT_TARGET_MOVED, () => {
+        this._target.on(RenderedTarget.EVENT_TARGET_MOVED, (target, oldX, oldY) => {
+            this._old.x = oldX;
+            this._old.y = oldY;
             if (this.onMoved) {
-                this.onMoved();
+                this.onMoved(target);
             }
         });
 
@@ -166,7 +168,7 @@ class Sprite {
      * @returns {number} The size as a percentage of the costume size.
      */
     get size () {
-        return this._target.size;
+        return Math.round(this._target.size);
     }
 
     /**
@@ -175,6 +177,18 @@ class Sprite {
      */
     get currentCostume () {
         return this._target.currentCostume;
+    }
+
+    /**
+     * Get the name of the costume the wrapped {@link RenderedTarget} is currently wearing.
+     * @return {string} The currently selected costume name.
+     */
+    get currentCostumeName () {
+        if (this._target.sprite.costumes !== undefined && this._target.sprite.costumes.length !== 0) {
+            return this._target.sprite.costumes[this._target.currentCostume].name;
+        } else {
+            return undefined;
+        }
     }
 
     /**
@@ -203,6 +217,14 @@ class Sprite {
             return bubbleState.text;
         }
         return null;
+    }
+
+    /**
+     * Gives back the rotation style of the the wrapped {@link RenderedTarget}.
+     * @return {!string} Either 'all around', 'left-right' or 'don't rotate'.
+     */
+    get rotationStyle() {
+        return this._target.rotationStyle;
     }
 
     /**
@@ -270,6 +292,22 @@ class Sprite {
      */
     isTouchingEdge () {
         return this._target.isTouchingEdge();
+    }
+
+    /**
+     * Whether the wrapped {@link RenderedTarget} touches a vertical boundary of the Scratch canvas.
+     * @returns {boolean}  true if a vertical edge is touched, false otherwise.
+     */
+    isTouchingVerticalEdge () {
+        return this._target.isTouchingVerticalEdge();
+    }
+
+    /**
+     * Whether the wrapped {@link RenderedTarget} touches a horizontal boundary of the Scratch canvas.
+     * @returns {boolean}  true if a horizontal edge is touched, false otherwise.
+     */
+    isTouchingHorizEdge () {
+        return this._target.isTouchingHorizEdge();
     }
 
     /**
@@ -474,6 +512,8 @@ class Sprite {
         this._old.volume = this.volume;
         this._old.layerOrder = this.layerOrder;
         this._old.sayText = this.sayText;
+        this._old.rotationStyle = this.rotationStyle;
+        this._old.currentCostumeName = this.currentCostumeName;
     }
 
     /**
@@ -484,6 +524,14 @@ class Sprite {
         this.updateOld();
         for (const variable of Object.values(this._variables)) {
             variable.updateOld();
+        }
+    }
+
+    updateVariables(variableName, newValue, oldValue) {
+        for (const variable of Object.values(this._variables)) {
+            if (variable.name === variableName) {
+                variable.setOldValue(oldValue);
+            }
         }
     }
 

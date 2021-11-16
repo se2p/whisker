@@ -19,7 +19,6 @@
  */
 
 import {Chromosome} from '../Chromosome';
-import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
@@ -48,7 +47,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     /**
@@ -67,7 +66,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         await bestIndividual.evaluate();
         this.updateArchive(bestIndividual);
         this._bestIndividual = bestIndividual;
-        let bestFitness = this._fitnessFunction.getFitness(bestIndividual);
+        let bestFitness = bestIndividual.getFitness(this._fitnessFunction);
 
         if (this._stoppingCondition.isFinished(this)) {
             this.updateStatisticsAtEnd();
@@ -77,7 +76,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             const candidateChromosome = bestIndividual.mutate();
             await candidateChromosome.evaluate();
             this.updateArchive(candidateChromosome);
-            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
+            const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
             console.log(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
 ${bestIndividual.toString()}`);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
@@ -101,7 +100,7 @@ ${bestIndividual.toString()}`);
      * @returns boolean defining whether OnePlusOneEA has been called by the IterativeSearchBasedTestGenerator
      */
     private isIterativeSearch(): boolean {
-        return this._properties.getTestGenerator() === 'iterative';
+        return this._properties.testGenerator === 'iterative';
     }
 
     /**
@@ -126,8 +125,8 @@ ${bestIndividual.toString()}`);
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
-        return new List<C>([this._bestIndividual]);
+    getCurrentSolution(): C[] {
+        return [this._bestIndividual];
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {

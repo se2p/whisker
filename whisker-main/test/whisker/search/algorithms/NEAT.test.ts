@@ -12,12 +12,9 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {NetworkFitnessFunction} from "../../../../src/whisker/whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
-import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
-import {List} from "../../../../src/whisker/utils/List";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 
 
 describe('Test NEAT', () => {
@@ -31,6 +28,8 @@ describe('Test NEAT', () => {
         mock.init()
         // @ts-ignore
         Container.vmWrapper = mock;
+
+        Container.debugLog = () => { /* suppress output */ };
 
         const crossoverConfig = {
             "operator": "neatCrossover",
@@ -70,8 +69,8 @@ describe('Test NEAT', () => {
         sprite2.set("DistanceToWhite-X", 8);
         sprite2.set("DistanceToWhite-Y", 9);
         genInputs.set("Sprite2", sprite2);
-        const events = new List<ScratchEvent>([new WaitEvent(), new KeyPressEvent("left arrow", 1),
-            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()]);
+        const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
+            new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NetworkChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
 
         const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);

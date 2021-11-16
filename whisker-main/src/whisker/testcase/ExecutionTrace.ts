@@ -18,32 +18,51 @@
  *
  */
 
-import {Trace} from 'scratch-vm/src/engine/tracing.js'
-import {ScratchEvent} from "./events/ScratchEvent";
-import {List} from "../utils/List";
+import { Trace } from "scratch-vm/src/engine/tracing.js";
+import { ScratchEvent } from "./events/ScratchEvent";
+
+export class EventAndParameters {
+    constructor(
+        private readonly _event: ScratchEvent,
+        private readonly _parameters: number[]
+    ) { }
+
+    get event(): ScratchEvent {
+        return this._event;
+    }
+
+    get parameters(): number[] {
+        return this._parameters;
+    }
+
+    getCodonCount(): number {
+        // invariant: this._event.numSearchParameter() === this._parameters.length
+        return 1 + this._event.numSearchParameter();
+    }
+}
 
 /**
  * TODO
  */
 export class ExecutionTrace {
+    private readonly _blockTraces: Trace[];
 
-    private readonly _blockTraces: [Trace];
-    private readonly _events: List<[ScratchEvent, number[]]>;
+    private readonly _events: EventAndParameters[];
 
-    constructor(traces: [Trace], events: List<[ScratchEvent, number[]]>) {
-        this._blockTraces = traces
+    constructor(traces: Trace[], events: EventAndParameters[]) {
+        this._blockTraces = traces;
         this._events = events;
     }
 
-    clone():ExecutionTrace{
-        return new ExecutionTrace({...this.blockTraces}, this.events.clone());
+    clone(): ExecutionTrace {
+        return new ExecutionTrace(this.blockTraces, [...this.events]);
     }
 
-    get blockTraces(): [Trace] {
+    get blockTraces(): Trace[] {
         return this._blockTraces;
     }
 
-    get events(): List<[ScratchEvent, number[]]> {
+    get events(): EventAndParameters[] {
         return this._events;
     }
 }

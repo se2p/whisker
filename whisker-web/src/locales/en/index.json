@@ -55,7 +55,7 @@
     "no-file" : "No file selected.",
     "default" : "default.json",
     "browse" : "Browse...",
-    "no-tests" : "No tests loaded",
+    "no-tests" : "No tests or models loaded",
     "test-execution" : "Test execution",
     "no-project" : "No Scratch project loaded",
     "uploaded-tests": "Your tests",
@@ -73,5 +73,18 @@
     "error-message" : "Error message",
     "error-expected" : "Expected value",
     "error-operator" : "Operator",
-    "error-actual" : "Actual value"
+    "error-actual" : "Actual value",
+    "model": "Your model",
+    "no-model": "No model loaded",
+    "model-test-run": "Model test",
+    "model-duration":"Maximal duration (s)",
+    "model-repetitions": "Repetitions",
+    "model-logs-checkbox": "Model logs enabled",
+    "model-case-sensitive": "Case sensitive",
+    "model-case-sensitive-hover": "When deactivating this option model test ignores upper/lower case differences of names.",
+    "model-output-no-user-model": "No user model for input generation found",
+    "model-output-user-model": "Input generation with user model",
+    "model-editor": "Model editor",
+    "seed": "Seed",
+    "t-seed": "Ensures consistent program behaviour when using the same seed"
 }

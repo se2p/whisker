@@ -24,7 +24,7 @@ export class NeatPopulation<C extends NetworkChromosome> extends NeuroevolutionP
         for (const chromosome of this.chromosomes) {
             fitnessSum += chromosome.sharedFitness;
         }
-        const numberOrganisms = this.chromosomes.size();
+        const numberOrganisms = this.chromosomes.length;
         this._averageSharedFitness = fitnessSum / numberOrganisms;
     }
 
@@ -48,7 +48,7 @@ export class NeatPopulation<C extends NetworkChromosome> extends NeuroevolutionP
         // Find the population champion and reward him with additional children
         this.sortPopulation();
         this.sortSpecies();
-        this.populationChampion = this.chromosomes.get(0);
+        this.populationChampion = this.chromosomes[0];
         this.populationChampion.isPopulationChampion = true;
         this.populationChampion.numberOffspringPopulationChamp = this.properties.populationChampionNumberOffspring;
 
@@ -74,19 +74,19 @@ export class NeatPopulation<C extends NetworkChromosome> extends NeuroevolutionP
             const halfPopulation = this.startSize / 2;
 
             // If we only have one Specie allow only the champ to reproduce
-            if (this.species.size() == 1) {
-                const specie = this.species.get(0);
-                specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(this.startSize);
+            if (this.species.length == 1) {
+                const specie = this.species[0];
+                specie.chromosomes[0].numberOffspringPopulationChamp = Math.floor(this.startSize);
                 specie.expectedOffspring = this.startSize;
                 specie.ageOfLastImprovement = specie.age;
             }
 
             // Otherwise, allow only the first two species to reproduce and mark the others dead.
             else {
-                for (let i = 0; i < this.species.size(); i++) {
-                    const specie = this.species.get(i);
+                for (let i = 0; i < this.species.length; i++) {
+                    const specie = this.species[i];
                     if (i <= 1) {
-                        specie.chromosomes.get(0).numberOffspringPopulationChamp = Math.floor(halfPopulation);
+                        specie.chromosomes[0].numberOffspringPopulationChamp = Math.floor(halfPopulation);
                         specie.expectedOffspring = halfPopulation;
                         specie.ageOfLastImprovement = specie.age;
                     }
@@ -114,10 +114,10 @@ export class NeatPopulation<C extends NetworkChromosome> extends NeuroevolutionP
         clone.generation = this.generation;
         clone.populationChampion = this.populationChampion.clone() as C;
         for (const network of this.chromosomes) {
-            clone.chromosomes.add(network.clone() as C);
+            clone.chromosomes.push(network.clone() as C);
         }
         for (const species of this.species) {
-            clone.species.add(species.clone());
+            clone.species.push(species.clone());
         }
         return clone;
     }

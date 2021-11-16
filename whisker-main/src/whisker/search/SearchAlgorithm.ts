@@ -18,7 +18,6 @@
  *
  */
 
-import {List} from "../utils/List";
 import {Chromosome} from "./Chromosome";
 import {SearchAlgorithmProperties} from "./SearchAlgorithmProperties";
 import {ChromosomeGenerator} from "./ChromosomeGenerator";
@@ -81,7 +80,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * Sets the LocalSearch operators callable by the algorithm under certain circumstances.
      * @param localSearchOperators the LocalSearch operators callable by the algorithm.
      */
-    setLocalSearchOperators(localSearchOperators: List<LocalSearch<C>>): void
+    setLocalSearchOperators(localSearchOperators: LocalSearch<C>[]): void
 
     /**
      * Return the number of iterations currently performed
@@ -93,7 +92,7 @@ export interface SearchAlgorithm<C extends Chromosome> {
      * Returns the list of best individuals at the current time during the search
      * @returns Solution for the given problem
      */
-    getCurrentSolution(): List<C>;
+    getCurrentSolution(): C[];
 
     /**
      * Returns all fitness functions for this search algorithm

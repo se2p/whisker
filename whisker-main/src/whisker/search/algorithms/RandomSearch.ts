@@ -14,17 +14,17 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Whisker. ßIf not, see http://www.gnu.org/licenses/.
+ * along with Whisker. If not, see http://www.gnu.org/licenses/.
  *
  */
 
 import {Chromosome} from '../Chromosome';
-import {List} from '../../utils/List';
 import {SearchAlgorithmProperties} from '../SearchAlgorithmProperties';
 import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import Arrays from "../../utils/Arrays";
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -44,7 +44,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
 
     setProperties(properties: SearchAlgorithmProperties<C>): void {
         this._properties = properties;
-        this._stoppingCondition = this._properties.getStoppingCondition();
+        this._stoppingCondition = this._properties.stoppingCondition;
     }
 
     /**
@@ -64,16 +64,20 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             const candidateChromosome = this._chromosomeGenerator.get();
             await candidateChromosome.evaluate();
             this.updateArchive(candidateChromosome);
-            const candidateFitness = this._fitnessFunction.getFitness(candidateChromosome);
 
-            if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
-                bestFitness = candidateFitness;
-                bestIndividual = candidateChromosome;
-                this._bestIndividuals.clear();
-                this._bestIndividuals.add(bestIndividual);
+            // Update the best performing chromosome if we have a single targeted fitness function.
+            if (this._fitnessFunction !== undefined) {
+                const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
+                if (this._fitnessFunction.compare(candidateFitness, bestFitness) > 0) {
+                    bestFitness = candidateFitness;
+                    bestIndividual = candidateChromosome;
+                    this._bestIndividuals = [];
+                    this._bestIndividuals.push(bestIndividual);
+                }
             }
             this.updateStatistics();
             this._iterations++;
+            console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
         }
         return this._archive;
     }
@@ -82,15 +86,14 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
         return this._iterations;
     }
 
-    getCurrentSolution(): List<C> {
+    getCurrentSolution(): C[] {
         return this._bestIndividuals;
     }
 
     getFitnessFunctions(): Iterable<FitnessFunction<C>> {
-        if(this._fitnessFunctions) {
+        if (this._fitnessFunctions) {
             return this._fitnessFunctions.values();
-        }
-        else
+        } else
             return [this._fitnessFunction];
     }
 
