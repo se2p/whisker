@@ -53,9 +53,10 @@ export interface FitnessFunction<C extends Chromosome> {
     /**
      * Computes and returns the CFG Distance value for the given chromosome.
      * @param chromosome the chromosome to rate
+     * @param hasUnexecutedCdgPredecessor
      * @returns the CFG distance value of the specified chromosome
      */
-    getCFGDistance(chromosome: C): number;
+    getCFGDistance(chromosome: C, hasUnexecutedCdgPredecessor: boolean): number;
 
     /**
      * Comparator for two fitness values:

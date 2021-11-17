@@ -183,12 +183,25 @@ describe('Fitness tests', () => {
         await expect(branchDistance).toBe(9);
     }, timeout);
 
-    test('Test CFG distance', async () => {
+    test('Test CFG distance when approach level = 0', async () => {
         await loadProject('test/integration/cfgDistance/MoveWithConditions.sb3')
         await (await page.$('#run-search')).click();
         const log = await readFitnessLog();
         const cfg1 = log.uncoveredBlocks[0].CFGDistance;
         const cfg2 = log.uncoveredBlocks[1].CFGDistance;
         await expect(cfg1).toBe(Number.MAX_VALUE) && expect(cfg2).toBe(Number.MAX_VALUE);
+    }, timeout);
+
+    test('Test CFG distance when approach level != 0', async () => {
+        await loadProject('test/integration/cfgDistance/NestedConditions.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await readFitnessLog();
+        const [controlWaitBlock1, controlWaitBlock2] = log.uncoveredBlocks.filter(b => b.block.endsWith("control_wait"));
+        const controlStopBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_stop"))[0];
+        const controlIfBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_if"))[0];
+        await expect(controlWaitBlock1.CFGDistance).toBe(1);
+        await expect(controlWaitBlock2.CFGDistance).toBe(2);
+        await expect(controlStopBlock.CFGDistance).toBe(3);
+        await expect(controlIfBlock.CFGDistance).toBe(3);
     }, timeout);
 });

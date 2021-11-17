@@ -56,7 +56,7 @@ export class OneMaxFitnessFunction implements FitnessFunction<BitstringChromosom
         return -1;
     }
 
-    getCFGDistance (chromosome: BitstringChromosome): number {
+    getCFGDistance (chromosome: BitstringChromosome, hasUnexecutedCdgPredecessor: boolean): number {
         return -1;
     }
 
