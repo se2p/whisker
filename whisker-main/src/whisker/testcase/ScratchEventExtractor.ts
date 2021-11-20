@@ -587,7 +587,9 @@ export abstract class ScratchEventExtractor {
         const width = renderer._xRight - renderer._xLeft;
         const height = renderer._yTop - renderer._yBottom;
         const maxRadius = Math.hypot(width, height);
-        return this.fuzzyFindColor(sprite.x, sprite.y, sprite.size, maxRadius, touchableObjects, rgbColor, renderer);
+        const offset = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
+
+        return this.fuzzyFindColor(sprite.x, sprite.y, offset, maxRadius, touchableObjects, rgbColor, renderer);
     }
 
     /**
@@ -602,9 +604,7 @@ export abstract class ScratchEventExtractor {
         const renderer = sprite.runtime.renderer;
 
         const id = sprite.drawableID;
-        const [costumeSizeX, costumeSizeY] = renderer.getCurrentSkinSize(id);
-        const scalingFactor = sprite.size / 100;
-        const searchRadius = Math.max(costumeSizeX, costumeSizeY) * scalingFactor / 2;
+        const searchRadius = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
 
         const drawable = renderer._allDrawables[id];
         drawable.updateCPURenderAttributes();
@@ -614,6 +614,20 @@ export abstract class ScratchEventExtractor {
         const centerY = sprite.y;
 
         return this.fuzzyFindColor(centerX, centerY, 0, searchRadius, thisSprite, color, renderer);
+    }
+
+    /**
+     * Returns the radius of the minimum bounding circle for the given sprite.
+     *
+     * @param sprite the sprite for which to compute the radius of
+     * @param renderer the renderer of the sprite
+     * @return the radius
+     */
+    private static getRadiusOfMinimumBoundingCircle(sprite, renderer) {
+        const id = sprite.drawableID;
+        const [costumeSizeX, costumeSizeY] = renderer.getCurrentSkinSize(id);
+        const scalingFactor = sprite.size / 100;
+        return Math.max(costumeSizeX, costumeSizeY) * scalingFactor / 2;
     }
 
     /**
