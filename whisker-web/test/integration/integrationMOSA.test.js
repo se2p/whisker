@@ -175,7 +175,17 @@ describe('Basic event handling', () => {
     }, timeout);
 
     test('Test Drag Sprite to Color', async () => {
+        // Drag one sprite to a color. Implemented using a "touchingColor" block.
         await loadProject('test/integration/dragSpriteEvent/DragSpriteToColorTest.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await getLogAfterSearch();
+        await (await page.$('#run-all-tests')).click();
+        await expect(log.uncoveredBlocks.length).toBe(0);
+    }, timeout);
+
+    test('Test Drag Sprite to Color 2', async () => {
+        // Drag one sprite to a color. Implemented using "colorTouchingColor" block.
+        await loadProject('test/integration/dragSpriteEvent/DragSpriteToColorTest2.sb3')
         await (await page.$('#run-search')).click();
         const log = await getLogAfterSearch();
         await (await page.$('#run-all-tests')).click();
