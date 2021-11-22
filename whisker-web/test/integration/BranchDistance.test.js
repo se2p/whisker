@@ -1,4 +1,5 @@
 const fileUrl = require('file-url');
+const exp = require("constants");
 
 const timeout = process.env.SLOWMO ? 70000 : 80000;
 const ACCELERATION = 10;
@@ -41,6 +42,27 @@ describe('Fitness tests', () => {
         const longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;
         const shorterDistanceBranchDistance = log.uncoveredBlocks[1].BranchDistance;
         await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+    }, timeout);
+
+    test('Test color touching color branch distance', async () => {
+        await loadProject('test/integration/branchDistance/ColorTouchingColorDistance.sb3')
+        await (await page.$('#run-search')).click();
+        const {uncoveredBlocks} = await readFitnessLog();
+
+        // The distance between the purple and red rectangle (longer, they do not touch), and
+        // the distance between the purple and green rectangle (shorter, they do not touch).
+        const longerDistanceBranchDistance = uncoveredBlocks[0].BranchDistance;
+        const shorterDistanceBranchDistance = uncoveredBlocks[1].BranchDistance;
+        await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+
+        // The purple and yellow rectangle do touch, but the purple rectangle does not contain the color red. So this
+        // block always returns false, and the true distance is always 1.
+        const trueDistance = uncoveredBlocks[2].BranchDistance;
+        await expect(trueDistance).toBe(1);
+
+        // The purple and yellow rectangle already touch, the false distance must always be 1.
+        const falseDistance = uncoveredBlocks[3].BranchDistance;
+        await expect(falseDistance).toBe(1);
     }, timeout);
 
     test('Test edge touching branch distance', async () => {

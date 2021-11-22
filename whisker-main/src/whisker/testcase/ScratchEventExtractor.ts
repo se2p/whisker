@@ -224,12 +224,65 @@ export abstract class ScratchEventExtractor {
                 const rgbColor = Cast.toRgbColorList(sensedColor);
                 // Check if the sprite that will be dragged is not already touching the sensed color.
                 if (!target.isTouchingColor(rgbColor)) {
-                    const colorPosition = ScratchEventExtractor.findColorOnCanvas(target, sensedColor);
+                    const result = ScratchEventExtractor.findColorOnCanvas(target, rgbColor);
                     // Only push the event if we actually found the color on the canvas.
-                    if (colorPosition.x && colorPosition.y) {
-                        eventList.push(new DragSpriteEvent(target, colorPosition.x, colorPosition.y))
+                    if (result.colorFound) {
+                        const {x, y} = result.coordinates;
+                        eventList.push(new DragSpriteEvent(target, x, y))
                     }
                 }
+                break;
+            }
+            case 'sensing_coloristouchingcolor': {
+                const getColorFromBlock = (color) =>
+                    target.blocks.getBlock(block.inputs[color].block).fields.COLOUR.value;
+
+                /*
+                 * https://en.scratch-wiki.info/wiki/Color_()_is_Touching_()%3F_(block)
+                 * The block takes two colors. The first color ("own color") must be present in the current costume of
+                 * this sprite. The second color ("target color") is the color to touch.
+                 */
+                const ownColor = Cast.toRgbColorList(getColorFromBlock("COLOR"));
+                const targetColor = Cast.toRgbColorList(getColorFromBlock("COLOR2"));
+
+                // We check if the sprite still needs to be dragged towards the target color, and drag it if necessary.
+                if (!target.colorIsTouchingColor(ownColor, targetColor)) {
+
+                    // Next, we check if the costume even contains the own color. If it does, we will drag the sprite.
+                    const ownColorQuery = ScratchEventExtractor.findColorOnSprite(target, ownColor);
+                    if (ownColorQuery.colorFound) {
+
+                        // The coordinates of the pixel containing "own color".
+                        const {x: ownColorX, y: ownColorY} = ownColorQuery.coordinates;
+
+                        // We try to find a pixel located somewhere else that has the "target color" so that we can
+                        // drag the sprite there.
+                        const targetColorQuery = ScratchEventExtractor.findColorOnCanvas(target, targetColor);
+                        if (targetColorQuery.colorFound) {
+
+                            // The coordinates of the "target color"
+                            const targetX = targetColorQuery.coordinates.x;
+                            const targetY = targetColorQuery.coordinates.y;
+
+                            // The coordinates of the center of the current sprite.
+                            const centerX = target.x;
+                            const centerY = target.y;
+
+                            /*
+                             * We want to move the sprite such that the coordinates of the pixel with "own color" equal
+                             * the coordinates of the pixel with "target color". However, moving a sprite is done with
+                             * respect to its center. So we have to compute the vector from the pixel with "own color"
+                             * to the center of the sprite, and add this vector as an offset to the dragging motion.
+                             */
+                            const offsetX = centerX - ownColorX;
+                            const offsetY = centerY - ownColorY;
+                            eventList.push(new DragSpriteEvent(target, targetX + offsetX, targetY + offsetY));
+                        }
+                    } else {
+                        // TODO: We could try to select/force a different costume. It might contain the target color.
+                    }
+                }
+
                 break;
             }
             case 'sensing_distanceto': {
@@ -511,14 +564,15 @@ export abstract class ScratchEventExtractor {
     }
 
     /**
-     * Finds a color on the canvas via scanning the surrounding of the source sprite using an ever increasing radius.
-     * @param sprite the source sprite
-     * @param sensedColor the color we are searching for in hex representation
+     * Tries to find a color on the canvas via scanning the surrounding of the source sprite using an ever increasing
+     * radius. The returned object contains the coordinates of the pixel containing the desired color iff the search
+     * was successful.
+     *
+     * @param sprite the source sprite (will be excluded from the search)
+     * @param rgbColor the color we are searching for in [r,g,b] representation
+     * @return the color query result
      */
-    private static findColorOnCanvas(sprite: RenderedTarget, sensedColor: string): { x: number, y: number } {
-        // Gather the sensed color of the block and transform it in the [r,g,b] format
-        const color3b = Cast.toRgbColorList(sensedColor);
-
+    private static findColorOnCanvas(sprite: RenderedTarget, rgbColor: RgbColor): ColorQueryResult {
         // Collect all touchable objects which might carry the sensed color
         const renderer = sprite.runtime.renderer;
         const touchableObjects = [];
@@ -526,24 +580,88 @@ export abstract class ScratchEventExtractor {
             const id = renderer._visibleDrawList[index];
             if (id !== sprite.drawableID) {
                 const drawable = renderer._allDrawables[id];
-                touchableObjects.push({
-                    id,
-                    drawable
-                });
+                touchableObjects.push({id, drawable});
             }
         }
 
+        const width = renderer._xRight - renderer._xLeft;
+        const height = renderer._yTop - renderer._yBottom;
+        const maxRadius = Math.hypot(width, height);
+        const offset = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
+
+        return this.fuzzyFindColor(sprite.x, sprite.y, offset, maxRadius, touchableObjects, rgbColor, renderer);
+    }
+
+    /**
+     * Tries to locate the given color on the given sprite. The returned object contains the coordinates of the pixel
+     * containing the desired color iff the search was successful.
+     *
+     * @param sprite the sprite to look in
+     * @param color the color to look for
+     * @return the color query result
+     */
+    private static findColorOnSprite(sprite: RenderedTarget, color: RgbColor): ColorQueryResult {
+        const renderer = sprite.runtime.renderer;
+
+        const id = sprite.drawableID;
+        const searchRadius = this.getRadiusOfMinimumBoundingCircle(sprite, renderer);
+
+        const drawable = renderer._allDrawables[id];
+        drawable.updateCPURenderAttributes();
+        const thisSprite = [{id, drawable}];
+
+        const centerX = sprite.x;
+        const centerY = sprite.y;
+
+        return this.fuzzyFindColor(centerX, centerY, 0, searchRadius, thisSprite, color, renderer);
+    }
+
+    /**
+     * Returns the radius of the minimum bounding circle for the given sprite.
+     *
+     * @param sprite the sprite for which to compute the radius of
+     * @param renderer the renderer of the sprite
+     * @return the radius
+     */
+    private static getRadiusOfMinimumBoundingCircle(sprite, renderer) {
+        const id = sprite.drawableID;
+        const [costumeSizeX, costumeSizeY] = renderer.getCurrentSkinSize(id);
+        const scalingFactor = sprite.size / 100;
+        return Math.max(costumeSizeX, costumeSizeY) * scalingFactor / 2;
+    }
+
+    /**
+     * Tries to locate a given color in a given search area. This area is defined by a circle. Its center point has the
+     * coordinates centerX and centerY. The radius is given by maxRadius. In addition, one can choose to exclude a
+     * smaller inner circle with radius "offset" from the search. Only the given list of touchable objects are
+     * considered when searching for the color. The returned object contains the coordinates of the pixel containing the
+     * desired color iff the search was successful.
+     *
+     * @param centerX x-coordinate of the search circle
+     * @param centerY y-coordinate of the search circle
+     * @param offset radius of the circle to exclude from the search
+     * @param maxRadius the radius of the search circle
+     * @param touchableObjects the objects within the search area to consider
+     * @param color3b the color to search for
+     * @param renderer
+     * @return the search result
+     */
+    private static fuzzyFindColor(
+        centerX: number,
+        centerY: number,
+        offset: number,
+        maxRadius: number,
+        touchableObjects: RenderedTarget[],
+        color3b: Uint8ClampedArray,
+        renderer
+    ): ColorQueryResult {
         // Scan an ever increasing radius around the source sprite and check if we found an object carrying the
         // sensed color. We stop if the radius is greater than maxRadius.
         const point = twgl.v3.create();
         const color = new Uint8ClampedArray(4);
-        let r = sprite.size + 1;
+        let r = 1 + offset;
         let rPrev = 1;
         let rIncrease = 1;
-        const maxRadius = Math.sqrt(
-            Math.pow((renderer._xRight - renderer._xLeft), 2) +
-            Math.pow((renderer._yTop - renderer._yBottom), 2)
-        );
         while (r < maxRadius) {
             const coordinates = [];
             for (const x of [-r, r]) {
@@ -559,13 +677,16 @@ export abstract class ScratchEventExtractor {
             for (const c of coordinates) {
                 const x = c[0];
                 const y = c[1];
-                point[0] = sprite.x + x;
-                point[1] = sprite.y + y;
+                point[0] = centerX + x;
+                point[1] = centerY + y;
                 renderer.constructor.sampleColor3b(point, touchableObjects, color);
 
                 // Check if we found an object carrying the correct color.
                 if (ScratchEventExtractor.isColorMatching(color, color3b)) {
-                    return {x: point[0] as number, y: point[1] as number};
+                    return {
+                        colorFound: true,
+                        coordinates: {x: point[0], y: point[1]}
+                    };
                 }
             }
             // Increase the scan radius in a recursive fashion.
@@ -574,7 +695,9 @@ export abstract class ScratchEventExtractor {
             r += (rIncrease / 2);
         }
         // At this point we scanned the whole canvas but didn't find the color.
-        return {x: undefined, y: undefined};
+        return {
+            colorFound: false
+        };
     }
 
     /**
@@ -582,10 +705,22 @@ export abstract class ScratchEventExtractor {
      * @param color1 the first color
      * @param color2 the second color
      */
-    private static isColorMatching(color1: Uint8ClampedArray, color2: Uint8ClampedArray): boolean {
+    private static isColorMatching(color1: RgbColor, color2: RgbColor): boolean {
         return (color1[0] & 0b11111000) === (color2[0] & 0b11111000) &&
             (color1[1] & 0b11111000) === (color2[1] & 0b11111000) &&
             (color1[2] & 0b11110000) === (color2[2] & 0b11110000);
     }
-
 }
+
+type ColorQueryResult = ColorQuerySuccess | ColorQueryFailure
+
+interface ColorQuerySuccess {
+    colorFound: true,
+    coordinates: { x: number, y: number }
+}
+
+interface ColorQueryFailure {
+    colorFound: false
+}
+
+type RgbColor = Uint8ClampedArray;

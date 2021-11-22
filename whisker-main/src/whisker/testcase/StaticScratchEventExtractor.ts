@@ -101,7 +101,8 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 break;
             }
             case 'sensing_touchingobject':
-            case 'sensing_touchingcolor' : {
+            case 'sensing_touchingcolor' :
+            case 'sensing_coloristouchingcolor': {
                 eventList.push(new DragSpriteEvent(target));
                 break;
             }
