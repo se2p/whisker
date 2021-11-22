@@ -128,6 +128,10 @@ const _fixControlStatement = (cfg, successors, controlNode) => {
         if (branchStart) {
             _extendBasicBlockSuccessors(cfg, successors, [controlNode], cfg.getNode(branchStart), true);
         }
+
+        // Adding a "fake" edge from the loop head to the exit node turns repeat loops into control dependencies.
+        successors.put(controlNode.id, cfg.exit());
+
         break;
     }
     case 'control_forever': {
