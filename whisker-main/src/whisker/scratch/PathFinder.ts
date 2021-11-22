@@ -6,12 +6,13 @@ import {WaitEvent} from "../testcase/events/WaitEvent";
 export class PathFinder {
 
     /**
-     * Use the A-Star algorithm to find a path between the player and a color on the canvas.
+     * Use the A-Star algorithm to find a path between the player sprite and a colour on the canvas.
      * @param player the player which servers as the starting point of our search.
      * @param targetColor the color in hex representation serving as our goal.
      * @param resolution the resolution at which we look for adjacent nodes.
      * @param colorObstacles array of hex color values representing obstacles.
      * @param spriteObstacles array of sprites representing obstacles.
+     * @returns Promise<ScratchPosition[]> a valid path from the player to the target.
      */
     public static async aStarPlayerToColor(player: RenderedTarget, targetColor: string, resolution: number,
                                            colorObstacles: string[] = [], spriteObstacles: RenderedTarget[] = []): Promise<ScratchPosition[]> {
@@ -19,10 +20,10 @@ export class PathFinder {
         // OpenSet contains all Nodes which we still plan to visit and is kept sorted with the most promising node
         // positioned at index 0.
         const openSet: AStarNode[] = [];
-        // Visited contains all nodes which we have already visited and do not want to visit again
+        // Visited contains all nodes which we have already visited and we won't visit again.
         const visited: AStarNode[] = [];
 
-        // Convert targetColor in Uint8 representation
+        // Convert targetColor in Uint8 representation.
         const targetColorUint8 = ScratchInterface.getColorFromHex(targetColor);
 
         // Get comparable Arrays of our obstacles.
@@ -36,19 +37,19 @@ export class PathFinder {
         openSet.push(startNode);
 
         console.log(`Starting search for path from ${startingPosition} to ${targetPosition}`)
-        // Loop of A-Star PathFinder; we keep searching for as long as we have nodes worth visiting.
+        // Within the loop we keep searching for as long as we have nodes worth visiting.
         while (openSet.length > 0) {
             let current = openSet[0];
             player.setXY(current.position.x, current.position.y, true);
             await new WaitEvent().apply();
             const colorAtCurrentPosition = ScratchInterface.getColorAtPosition(current.position);
             visited.push(current);
-            // If we found our goal reproduce the path taken.
+            // If we found our goal reproduce the path.
             if (current.position.equals(targetPosition) ||
                 ScratchInterface.isColorMatching(colorAtCurrentPosition, targetColorUint8)) {
                 const path: ScratchPosition[] = [];
                 path.push(current.position);
-                // Trace back from our final node to our starting Node
+                // Trace back from our final node to our starting node.
                 while (!current.position.equals(startNode.position)) {
                     current = current.previous;
                     path.push(current.position);
@@ -58,7 +59,6 @@ export class PathFinder {
                     player.setXY(position.x, position.y, true);
                     await new WaitEvent().apply();
                 }
-                console.log(`Found path: `, path)
                 return path;
             }
             // Keep searching if we haven't found our target yet.
@@ -68,7 +68,7 @@ export class PathFinder {
                     if (!visited.some(node => node.equals(neighbour)) && !openSet.some(node => node.equals(neighbour))) {
                         openSet.push(neighbour);
                     }
-                    // If we found a faster route to the neighbourNode update it
+                    // If we found a faster route to a neighbour node update the path.
                     else if (current.hopsFromStart + 1 < neighbour.hopsFromStart) {
                         neighbour.previous = current;
                         neighbour.hopsFromStart = current.hopsFromStart + 1;
@@ -90,16 +90,24 @@ export class PathFinder {
             openSet.sort((a, b) => a.totalCost - b.totalCost);
         }
         // At this point we were not able to find a path.
-        console.log(`Could not find a path`)
         return undefined;
     }
 
+    /**
+     * Collects all valid neighbour nodes.
+     * @param current the current node from which we want to infer neighbouring nodes.
+     * @param goal the target node used for calculating an estimated distance.
+     * @param resolution defines how big our hops from node to node are.
+     * @param player the player sprite used to calculate the safety distance.
+     * @param obstacleColors checks if the safety distance intersects with an obstacle represented by a colour.
+     * @param obstacleSprites checks if the safety distance intersects with an obstacle represented by a sprite.
+     * @returns AStarNode[] holding all valid neighbour nodes.
+     */
     private static getNeighbours(current: AStarNode, goal: ScratchPosition, resolution: number, player: RenderedTarget,
-                                 obstacleColors: string[] = [],
-                                 obstacleSprites: ScratchPosition[] = []): AStarNode[] {
+                                 obstacleColors: string[] = [], obstacleSprites: ScratchPosition[] = []): AStarNode[] {
         const neighbours: AStarNode[] = [];
         // For each neighbour we check within a given safety range if we do not touch any obstacles.
-        const safetyRange = Math.ceil(ScratchInterface.getSafetyDistanceFromTarget(player,0) / 4);
+        const safetyRange = Math.ceil(ScratchInterface.getSafetyDistanceFromTarget(player, 0) / 4);
         // Moving directions.
         const directions = ["NORTH", "EAST", "SOUTH", "WEST"];
         for (const direction of directions) {
@@ -118,6 +126,7 @@ export class PathFinder {
                     neighbourPosition = new ScratchPosition(current.position.x - resolution, current.position.y);
                     break;
             }
+
             // If we have a neighbour not contained within the Canvas or hit by an obstacle within the required
             // safety distance, do not include that neighbour.
             if (!ScratchInterface.isPointWithinCanvas(neighbourPosition) ||
@@ -135,11 +144,11 @@ export class PathFinder {
     private static isTouchingObstacle(position: ScratchPosition, safetyRange: number, obstacleColors: string[] = [],
                                       obstacleSprites: ScratchPosition[] = []): boolean {
         let isTouchingObstacleColor = false;
-        for(const color of obstacleColors){
-         if(ScratchInterface.findColorWithinRadius(color, 1, safetyRange, position) !== undefined){
-             isTouchingObstacleColor = true;
-             break;
-         }
+        for (const color of obstacleColors) {
+            if (ScratchInterface.findColorWithinRadius(color, 1, safetyRange, position) !== undefined) {
+                isTouchingObstacleColor = true;
+                break;
+            }
         }
         const isTouchingObstacleSprite = obstacleSprites.some(obstaclePosition => obstaclePosition.equals(position));
         return isTouchingObstacleColor || isTouchingObstacleSprite;
@@ -148,25 +157,28 @@ export class PathFinder {
 
 class AStarNode {
     /**
-     * Position of this RootNode.
+     * Position of this node.
      */
     private readonly _position: ScratchPosition;
 
     /**
-     * Previous routeNode leading to this rootNode.
+     * Previous node that lead to this rootNode.
      */
     private _previous: AStarNode;
 
     /**
-     * Distance from starting position.
+     * Distance from starting position measured in number of nodes.
      */
     private _hopsFromStart: number;
 
     /**
-     * Distance to goal position.
+     * Distance to goal position measured in number of nodes.
      */
     private readonly _estimatedHopsToGoal: number;
 
+    /**
+     * The cost of the whole path (hopsFromStart + estimatedHopsToGoal).
+     */
     private _totalCost: number;
 
     constructor(position: ScratchPosition, previous: AStarNode, hopsFromStart: number, estimatedHopsToGoal: number) {
@@ -180,7 +192,6 @@ class AStarNode {
     public equals(other: AStarNode): boolean {
         return this.position.equals(other.position);
     }
-
 
     get position(): ScratchPosition {
         return this._position;

@@ -82,7 +82,7 @@ Options:
   -mr,  --modelRepetition <Integer>       Model test repetitions. Ignored if a test suite is specified. (default: 1)
   -mt,  --modelDuration <Integer>         Maximal time of one model test run in seconds (default: 30)
   -mcs, --modelCaseSensitive <Boolean>    Whether model test should test names case sensitive (default: false)
-  -n, --isNeuroevolution                  If Whisker should execute dynamic Test suites using Neuroevolution (default: false);
+  -n, --isNeuroevolution                  If Whisker should execute dynamic test suites using Neuroevolution (default: false);
   -h,   --help                            Display help for command
 ```
 
