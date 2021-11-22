@@ -1,4 +1,5 @@
 const fileUrl = require('file-url');
+const exp = require("constants");
 
 const timeout = process.env.SLOWMO ? 70000 : 80000;
 const ACCELERATION = 10;
@@ -41,6 +42,27 @@ describe('Fitness tests', () => {
         const longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;
         const shorterDistanceBranchDistance = log.uncoveredBlocks[1].BranchDistance;
         await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+    }, timeout);
+
+    test('Test color touching color branch distance', async () => {
+        await loadProject('test/integration/branchDistance/ColorTouchingColorDistance.sb3')
+        await (await page.$('#run-search')).click();
+        const {uncoveredBlocks} = await readFitnessLog();
+
+        // The distance between the purple and red rectangle (longer, they do not touch), and
+        // the distance between the purple and green rectangle (shorter, they do not touch).
+        const longerDistanceBranchDistance = uncoveredBlocks[0].BranchDistance;
+        const shorterDistanceBranchDistance = uncoveredBlocks[1].BranchDistance;
+        await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+
+        // The purple and yellow rectangle do touch, but the purple rectangle does not contain the color red. So this
+        // block always returns false, and the true distance is always 1.
+        const trueDistance = uncoveredBlocks[2].BranchDistance;
+        await expect(trueDistance).toBe(1);
+
+        // The purple and yellow rectangle already touch, the false distance must always be 1.
+        const falseDistance = uncoveredBlocks[3].BranchDistance;
+        await expect(falseDistance).toBe(1);
     }, timeout);
 
     test('Test edge touching branch distance', async () => {
@@ -183,12 +205,25 @@ describe('Fitness tests', () => {
         await expect(branchDistance).toBe(9);
     }, timeout);
 
-    test('Test CFG distance', async () => {
+    test('Test CFG distance when approach level = 0', async () => {
         await loadProject('test/integration/cfgDistance/MoveWithConditions.sb3')
         await (await page.$('#run-search')).click();
         const log = await readFitnessLog();
         const cfg1 = log.uncoveredBlocks[0].CFGDistance;
         const cfg2 = log.uncoveredBlocks[1].CFGDistance;
         await expect(cfg1).toBe(Number.MAX_VALUE) && expect(cfg2).toBe(Number.MAX_VALUE);
+    }, timeout);
+
+    test('Test CFG distance when approach level != 0', async () => {
+        await loadProject('test/integration/cfgDistance/NestedConditions.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await readFitnessLog();
+        const [controlWaitBlock1, controlWaitBlock2] = log.uncoveredBlocks.filter(b => b.block.endsWith("control_wait"));
+        const controlStopBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_stop"))[0];
+        const controlIfBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_if"))[0];
+        await expect(controlWaitBlock1.CFGDistance).toBe(1);
+        await expect(controlWaitBlock2.CFGDistance).toBe(2);
+        await expect(controlStopBlock.CFGDistance).toBe(3);
+        await expect(controlIfBlock.CFGDistance).toBe(3);
     }, timeout);
 });

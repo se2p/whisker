@@ -163,12 +163,13 @@ export abstract class TestGenerator {
                         fitness = curFitness;
                         approachLevel = fitnessFunction.getApproachLevel(chromosome);
                         branchDistance = fitnessFunction.getBranchDistance(chromosome);
-                        if (approachLevel === 0 && branchDistance === 0) {
-                            CFGDistance = fitnessFunction.getCFGDistance(chromosome);
-                        } else {
+                        if (branchDistance === 0) {
+                            CFGDistance = fitnessFunction.getCFGDistance(chromosome, approachLevel > 0);
+                        }
+                        else {
                             CFGDistance = Number.MAX_VALUE;
                             //this means that it was unnecessary to calculate cfg distance, since
-                            //approach level or branch distance was not 0;
+                            //branch distance was not 0;
                         }
                     }
                 }

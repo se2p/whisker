@@ -20,7 +20,7 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ControlDependenceGraph, ControlFlowGraph, GraphNode} from 'scratch-analysis'
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode, Graph} from 'scratch-analysis'
 import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
 import {Trace} from "scratch-vm/src/engine/tracing.js";
 
@@ -95,7 +95,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         if (chromosome.trace == null) {
             throw Error("Test case not executed");
         }
-
         if (chromosome.coverage.has(this._targetNode.id)) {
             // Shortcut: If the target is covered, we don't need to spend
             // any time on calculating anything
@@ -106,8 +105,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const branchDistance = this.getBranchDistance(chromosome);
 
         let cfgDistanceNormalized;
-        if ((approachLevel === 0 && branchDistance === 0) || this._forceCFG) {
-            cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome));
+        if (branchDistance === 0 || this._forceCFG) {
+            cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome, approachLevel > 0));
         } else {
             cfgDistanceNormalized = 1;
         }
@@ -212,21 +211,20 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return branchDistance;
     }
 
-    getCFGDistance(chromosome: TestChromosome): number {
-
+    getCFGDistance(chromosome: TestChromosome, hasUnexecutedCdgPredecessor: boolean): number {
         /*
             function bfs: go through blocks from the targetNode, all uncovered blocks are visited ones. However, to avoid
             situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
             we need to still record levels, and use a queue to save nodes for BFS.
         */
-        function bfs(cfg, targetNode, coveredBlocks) {
-            const queue = [targetNode];
-            const visited = new Set([targetNode]);
+        function bfs(graph:Graph, targetNodeQueue:GraphNode[], coveredBlocks:Set<string>): number {
+            const queue = targetNodeQueue;
+            const visited = new Set(targetNodeQueue);
             let node;
-            let level = -1;
+            let step = -1;
             while (queue.length > 0) {
                 const qSize = queue.length;
-                level += 1;
+                step += 1;
                 for (let i = 0; i < qSize; i++) {
                     node = queue.shift();
                     if (coveredBlocks.has(node.id)) {
@@ -234,12 +232,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                         // duration as the CFG distance instead of simply incrementing the CFG. Since at this point
                         // we have already incremented it by one we first have to decrement it again.
                         if (ControlFilter.executionHaltingBlock(node.block)) {
-                            level = (level - 1) + chromosome.trace.blockTraces[node.id].remainingScaledHaltingDuration;
+                            step = (step - 1) + chromosome.trace.blockTraces[node.id].remainingScaledHaltingDuration;
                         }
-                        return level;
+                        return step;
                     }
                     visited.add(node);
-                    for (const pred of cfg.predecessors(node.id)) {
+                    for (const pred of graph.predecessors(node.id)) {
                         if (!visited.has(pred)) {
                             queue.push(pred);
                         }
@@ -249,15 +247,57 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             /*
             the only possibility that none of the targetNode's predecessors is included in blockTrace, is that
             the targetNode is events, userEvents, or starting ones, e.g., Entry, start, keypressed:space. In those cases,
-            because approach level and branch distance is already 0, these blocks must be executed anyway, so
+            because branch distance is already 0, these blocks must be executed anyway, so
             return 0.
              */
             return 0;
         }
 
-        const coveredBlocks = chromosome.coverage;
-        return bfs(this._cfg, this._targetNode, coveredBlocks);
-
+        /* function bfsPredecessors:
+         inside the CDG, find a list of <un-executed predecessor>, that
+         1. has the shortest distance to <targetNode>
+         2. is the direct successor of an <executed predecessor>
+         <exit> <----------- <targetNode> <------------------- <un-executed predecessor><executed predecessor>
+                                           (^shortest)              (^two adjacent nodes) */
+        function bfsPredecessors (graph: Graph, targetNode: GraphNode, coveredBlocks:Set<string>): GraphNode[] {
+            const queue = [targetNode];
+            const visited = new Set([targetNode]);
+            let node;
+            const res = new Set();
+            while (queue.length > 0) {
+                const qSize = queue.length;
+                for (let i = 0; i < qSize; i++) {
+                    node = queue.shift();
+                    for (const pred of graph.predecessors(node.id)) {
+                        if (!visited.has(pred)) {
+                            if (coveredBlocks.has(pred.id) || graph.predecessors(pred.id).size === 0) {
+                                //  graph.predecessors(pred.id).size === 0 means the program looks like this:
+                                // <exit> <----------- <targetNode> <------------------- <un-executed predecessor><Entry/Events>
+                                // here, the  <un-executed predecessor> is node, <Entry/Event> is pred
+                                res.add(node);
+                            }
+                            visited.add(pred);
+                            queue.push(pred);
+                        }
+                    }
+                }
+                if (res.size > 0) {
+                    return [...res]
+                }
+            }
+            //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
+            //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
+            throw 'Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
+                    + targetNode.block.opcode;
+        }
+        let targetNodeQueue: GraphNode[];
+        if (hasUnexecutedCdgPredecessor) {
+            targetNodeQueue = bfsPredecessors(this._cdg, this._targetNode,  chromosome.coverage);
+        }
+        else {
+            targetNodeQueue = [this._targetNode]
+        }
+        return bfs(this._cfg, targetNodeQueue,  chromosome.coverage);
     }
 
 
