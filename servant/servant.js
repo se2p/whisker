@@ -200,7 +200,7 @@ async function runGeneticSearch (browser, downloadPath) {
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
         if(testPath) {
-            await (await page.$('#fileselect-template')).uploadFile(testPath);
+            await (await page.$('#fileselect-tests')).uploadFile(testPath);
         }
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
@@ -285,7 +285,7 @@ async function runDynamicTestSuite (browser, scratchPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
-        await (await page.$('#fileselect-template')).uploadFile(testPath);
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         console.log('Whisker-Web: Web Instance Configuration Complete');

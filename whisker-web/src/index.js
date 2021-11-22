@@ -61,14 +61,15 @@ const loadModelFromString = function (models) {
 };
 
 const loadTestsFromString = async function (string) {
-    // TODO: This is not safe if config file name gets changed
-    const config = await Whisker.configFileSelect.loadAsString();
-    if (config.toLowerCase().includes('neuroevolution')){
+    // Check for dynamic or static NE-TestSuite.
+    if ((`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes')) ||
+        (`${string}`.toLowerCase().includes('testcase') && `${string}`.toLowerCase().includes('event'))) {
         const tests = `${string}`;
         Whisker.tests = tests;
         Whisker.testEditor.setValue(string);
         return tests;
     }
+    // Manually generated test suite or test suite generated through search algorithms.
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
@@ -112,11 +113,11 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
-    const template = await Whisker.templateFileSelect.loadAsString();
+    const networkTemplate = await Whisker.testFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
     const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm,
-        Whisker.scratch.project, projectName, config, configName, accelerationFactor, seed, template);
+        Whisker.scratch.project, projectName, config, configName, accelerationFactor, seed, networkTemplate);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
@@ -298,8 +299,6 @@ const initComponents = function () {
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
-        fileSelect => fileSelect.loadAsArrayBuffer());
-    Whisker.templateFileSelect = new FileSelect($('#fileselect-template')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
 
@@ -522,14 +521,6 @@ const _addFileListeners = function () {
         const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
-    $('#fileselect-template').on('change', event => {
-        const fileName = Whisker.templateFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-template').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
     $('#fileselect-models').on('change', event => {
         const fileName = Whisker.modelFileSelect.getName();
         $(event.target).parent()
@@ -670,9 +661,6 @@ function _updateFilenameLabels () {
     }
     if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
         $('#config-label').html(Whisker.configFileSelect.getName());
-    }
-    if (Whisker.templateFileSelect && Whisker.templateFileSelect.hasName()) {
-        $('#template-label').html(Whisker.templateFileSelect.getName());
     }
     if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
         $('#model-label').html(Whisker.modelFileSelect.getName());
