@@ -62,7 +62,7 @@ export class SingleBitFitnessFunction implements FitnessFunction<BitstringChromo
     }
 
 
-    getCFGDistance(chromosome: BitstringChromosome): number {
+    getCFGDistance(chromosome: BitstringChromosome, hasUnexecutedCdgPredecessor: boolean): number {
         return -1;
     }
 
