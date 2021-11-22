@@ -32,7 +32,6 @@ import {NeatMutation} from "../whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/Operators/NeatCrossover";
 import {Container} from "./Container";
 import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
-import {NeuroevolutionProperties} from "../whiskerNet/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
@@ -162,7 +161,7 @@ export class WhiskerSearchConfiguration {
         return this._searchAlgorithmProperties as SearchAlgorithmProperties<any>;
     }
 
-    public setNeuroevolutionProperties(): NeuroevolutionProperties {
+    public setNeuroevolutionProperties(): NeatProperties {
         let populationSize: number;
         if (this._config['populationSize']) {
             populationSize = this._config['populationSize'] as number;
@@ -242,8 +241,8 @@ export class WhiskerSearchConfiguration {
         return properties;
     }
 
-    get neuroevolutionProperties(): NeuroevolutionProperties<any> {
-        return this._searchAlgorithmProperties as NeuroevolutionProperties<any>;
+    get neuroevolutionProperties(): NeatProperties {
+        return this._searchAlgorithmProperties as NeatProperties;
     }
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
