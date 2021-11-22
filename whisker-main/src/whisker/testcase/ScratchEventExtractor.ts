@@ -165,11 +165,15 @@ export abstract class ScratchEventExtractor {
                 }
                 // Target senses Mouse
                 if (value == "_mouse_") {
-                    eventList.push(new MouseMoveToEvent(target.x, target.y));
+                    const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
+                    // Only add a MouseMoveTo event if the mouse is currently not located at the targeted position.
+                    if (currentMousePosition.x !== target.x || currentMousePosition.y !== target.y) {
+                        eventList.push(new MouseMoveToEvent(target.x, target.y));
+                    }
                     eventList.push(new MouseMoveEvent());
                 }
                 // Target senses edge
-                else if (value === "_edge_") {
+                else if (value === "_edge_" && !target.isTouchingEdge()) {
                     const random = Randomness.getInstance();
                     let x: number;
                     let y: number;
@@ -187,39 +191,44 @@ export abstract class ScratchEventExtractor {
                     eventList.push(new DragSpriteEvent(target, x, y));
                 } else {
                     // Target senses another sprite
-                    let sensingRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
+                    let sensedRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
 
-                    // Check if the sensedTarget is contained within the Scratch Project. If not, we don't push the
-                    // Event and all statements being based on the given sensing check are unreachable.
-                    if (!sensingRenderedTarget) {
+                    // Check if the sensedTarget is present in the given project and if the sprite we are about to
+                    // drag is already touching the sensed target. If either one equals to true there is no need to
+                    // add a DragSpriteEvent.
+                    if (!sensedRenderedTarget || target.isTouchingSprite(sensedRenderedTarget.sprite.name)) {
                         break;
                     }
 
                     // If the renderedTarget is not visible. Check if we have clones that might be.
-                    if (!sensingRenderedTarget.visible) {
-                        for (const clone of sensingRenderedTarget.sprite.clones) {
+                    if (!sensedRenderedTarget.visible) {
+                        for (const clone of sensedRenderedTarget.sprite.clones) {
                             if (clone.visible) {
-                                sensingRenderedTarget = clone;
+                                sensedRenderedTarget = clone;
                                 break;
                             }
                         }
                     }
-                    // We only create a DragEvent if we found the sensed Sprite and if both sprites are visible.
+                    // We only create a DragEvent if we found the sensed sprite, if both sprites are visible and if
+                    // the sprite we are about to drag is not already touching the target sprite.
                     if (target.visible &&
-                        sensingRenderedTarget.sprite &&
-                        sensingRenderedTarget.visible &&
-                        (target.x != sensingRenderedTarget.x || target.y != sensingRenderedTarget.y)) {
-                        eventList.push(new DragSpriteEvent(target, sensingRenderedTarget.x, sensingRenderedTarget.y));
+                        sensedRenderedTarget.sprite &&
+                        sensedRenderedTarget.visible) {
+                        eventList.push(new DragSpriteEvent(target, sensedRenderedTarget.x, sensedRenderedTarget.y));
                     }
                 }
                 break;
             }
             case "sensing_touchingcolor": {
                 const sensedColor = target.blocks.getBlock(block.inputs.COLOR.block).fields.COLOUR.value;
-                const colorPosition = ScratchEventExtractor.findColorOnCanvas(target, sensedColor);
-                // Only push the event if we actually found the color on the canvas.
-                if (colorPosition.x && colorPosition.y) {
-                    eventList.push(new DragSpriteEvent(target, colorPosition.x, colorPosition.y))
+                const rgbColor = Cast.toRgbColorList(sensedColor);
+                // Check if the sprite that will be dragged is not already touching the sensed color.
+                if (!target.isTouchingColor(rgbColor)) {
+                    const colorPosition = ScratchEventExtractor.findColorOnCanvas(target, sensedColor);
+                    // Only push the event if we actually found the color on the canvas.
+                    if (colorPosition.x && colorPosition.y) {
+                        eventList.push(new DragSpriteEvent(target, colorPosition.x, colorPosition.y))
+                    }
                 }
                 break;
             }
@@ -261,7 +270,7 @@ export abstract class ScratchEventExtractor {
                 eventList.push(new ClickStageEvent());
                 break;
             case 'event_whengreaterthan': {
-                if(block.fields.WHENGREATERTHANMENU.value === 'LOUDNESS'){
+                if (block.fields.WHENGREATERTHANMENU.value === 'LOUDNESS') {
                     // Fetch the sound value for the sound block. We add 1 since the block tests using greater than.
                     const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
                     const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
@@ -298,7 +307,7 @@ export abstract class ScratchEventExtractor {
                     }
                     eventList.push(new SoundEvent(volumeValue))
                 }
-                // If we cannot infer the correct volume, simply set the volume to the highest possible value.
+                    // If we cannot infer the correct volume, simply set the volume to the highest possible value.
                 catch (e) {
                     eventList.push(new SoundEvent(100));
                 }

@@ -156,13 +156,14 @@ export class Search {
         } else {
             csvString = StatisticsCollector.getInstance().asCsv();
         }
+        console.log(csvString);
         return csvString;
     }
 
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm, project, projectName: string, configRaw: string, configName: string,
+    public async run(vm:VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
                      accelerationFactor: number, seedString: string, template?: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
         Container.template = template;
@@ -179,6 +180,8 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
+        config._setReservedCodons(vm);
+        console.log(this.vm);
 
         await util.prepare(accelerationFactor || 1);
         util.start();
@@ -189,7 +192,7 @@ export class Search {
             // Prioritize seed set by CLI
             if (configSeed) {
                 console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
-seed ${configSeed} defined within the config files.`)
+seed ${configSeed} defined within the config files.`);
             }
             Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {

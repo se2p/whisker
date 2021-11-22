@@ -32,6 +32,7 @@ import {NeatMutation} from "../whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/Operators/NeatCrossover";
 import {Container} from "./Container";
 import {DynamicScratchEventExtractor} from "../testcase/DynamicScratchEventExtractor";
+import {NeuroevolutionProperties} from "../whiskerNet/NeuroevolutionProperties";
 import {NetworkFitnessFunction} from "../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 import {ScoreFitness} from "../whiskerNet/NetworkFitness/ScoreFitness";
@@ -54,11 +55,11 @@ import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScr
 import {NoveltyTargetNetworkFitness} from "../whiskerNet/NetworkFitness/NoveltyTargetNetworkFitness";
 import {BiasedVariableLengthConstrainedChromosomeMutation} from "../integerlist/BiasedVariableLengthConstrainedChromosomeMutation";
 import {EventBiasedMutation} from "../testcase/EventBiasedMutation";
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {NeatProperties} from "../whiskerNet/NeatProperties";
 import {NeatChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorTemplateNetwork";
-import VirtualMachine from "scratch-vm/src/virtual-machine"
 
 
 class ConfigException implements Error {
@@ -142,19 +143,18 @@ export class WhiskerSearchConfiguration {
     }
 
     /**
-     * Sets the virtualSpace assigned for each event (event-codon + overapproximation of required parameter-codons)
-     * by traversing all events contained within a Scratch project in the search of the maximum amount of
-     * required parameters per event.
+     * Sets the number of reservedCodons for each event (event-codon + overapproximation of required
+     * parameter-codons) by traversing all events contained within a Scratch project in the search of the maximum
+     * amount of required parameters per event.
      * @param vm the virtual machine containing the given Scratch project.
      */
-    public _setVirtualEventSpace(vm: VirtualMachine): void {
+    public _setReservedCodons(vm: VirtualMachine): void {
         const eventExtractor = new StaticScratchEventExtractor(vm);
         const programEvents = eventExtractor.extractEvents(vm);
         const numSearchParams = programEvents.map(event => event.numSearchParameter());
-        // Add 1 for the event-codon itself.
-        this.searchAlgorithmProperties['virtualSpace'] = Math.max(...numSearchParams) + 1;
-        this.searchAlgorithmProperties['chromosomeLength'] *= this.searchAlgorithmProperties['virtualSpace'];
-        console.log(this.searchAlgorithmProperties['chromosomeLength'])
+         // Add 1 for the event-codon itself.
+        this.searchAlgorithmProperties['reservedCodons'] = Math.max(...numSearchParams) + 1;
+        this.searchAlgorithmProperties['chromosomeLength'] *= this.searchAlgorithmProperties['reservedCodons'];
     }
 
 
@@ -162,7 +162,7 @@ export class WhiskerSearchConfiguration {
         return this._searchAlgorithmProperties as SearchAlgorithmProperties<any>;
     }
 
-    public setNeuroevolutionProperties(): NeatProperties {
+    public setNeuroevolutionProperties(): NeuroevolutionProperties {
         let populationSize: number;
         if (this._config['populationSize']) {
             populationSize = this._config['populationSize'] as number;
@@ -242,8 +242,8 @@ export class WhiskerSearchConfiguration {
         return properties;
     }
 
-    get neuroevolutionProperties(): NeatProperties {
-        return this._searchAlgorithmProperties as NeatProperties;
+    get neuroevolutionProperties(): NeuroevolutionProperties<any> {
+        return this._searchAlgorithmProperties as NeuroevolutionProperties<any>;
     }
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
@@ -275,20 +275,35 @@ export class WhiskerSearchConfiguration {
             case 'bitFlip':
                 return new BitflipMutation();
             case 'variableLength':
-                return new VariableLengthMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
-                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
+                return new VariableLengthMutation(this._config['integerRange']['min'],
+                    this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['mutation']['gaussianMutationPower']);
             case 'variableLengthConstrained':
-                return new VariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
-                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
+                return new VariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
+                    this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLength':
-                return new BiasedVariableLengthMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
-                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
+                return new BiasedVariableLengthMutation(this._config['integerRange']['min'],
+                    this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLengthConstrained':
-                return new BiasedVariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
-                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
+                return new BiasedVariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
+                    this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['mutation']['gaussianMutationPower']);
             case 'eventBiased':
-                return new EventBiasedMutation(this._config['integerRange']['min'], this._config['integerRange']['max'],
-                    this._config['chromosome']['maxLength'], this._config['mutation']['gaussianMutationPower']);
+                return new EventBiasedMutation(this._config['integerRange']['min'],
+                    this._config['integerRange']['max'],
+                    this._config['chromosome']['maxLength'],
+                    this.searchAlgorithmProperties['reservedCodons'],
+                    this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(this._config['mutation'])
             case 'integerList':
@@ -542,8 +557,6 @@ export class WhiskerSearchConfiguration {
         if (this._config["debugLogging"] == true) {
             return (...data) => console.log('DEBUG:', ...data);
         } else {
-            return () => { /* no-op */
-            };
             return () => { /* no-op */
             };
         }

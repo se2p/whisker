@@ -119,6 +119,15 @@ describe("Arrays", () => {
         expect(changed.includes(false)).toBeFalsy();
     });
 
+    test("Chunk array", () =>{
+        const array = [1,2,3,4,5,6,7];
+        const chunkArray = Arrays.chunk(array, 3);
+        expect(chunkArray.length).toBe(3);
+        expect(chunkArray[0]).toStrictEqual([1,2,3]);
+        expect(chunkArray[1]).toStrictEqual([4,5,6]);
+        expect(chunkArray[2]).toStrictEqual([7]);
+    })
+
     test("Sort array", () => {
         const array = [4, 3, 2, 1];
         Arrays.sort(array);
@@ -144,4 +153,14 @@ describe("Arrays", () => {
         expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(3600)
     })
 
+
+    test("Create random Array in range", () =>{
+        const minValue = 10;
+        const maxValue = 30;
+        const length = 100
+        const array = Arrays.getRandomArray(minValue, maxValue, length);
+        expect(Math.min(...array)).toBeGreaterThanOrEqual(minValue);
+        expect(Math.max(...array)).toBeLessThanOrEqual(maxValue);
+        expect(array.length).toBe(length);
+    })
 });

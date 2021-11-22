@@ -40,8 +40,14 @@ export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerat
         this._maxInitialLength = maxInitialLength;
     }
 
+    /**
+     * Randomly select a length in the range of [minInitialLength, maxInitialLength] and round to the nearest
+     * multiple of reservedCodons value.
+     * @returns number representing the length of the codon sequence that should be generated.
+     */
     protected getLength(): number {
-        return Randomness.getInstance().nextInt(this._minInitialLength, this._maxInitialLength);
+        const length = Randomness.getInstance().nextInt(this._minInitialLength, this._maxInitialLength);
+        return this._properties.reservedCodons * Math.ceil(length / this._properties.reservedCodons);
     }
 
 }
