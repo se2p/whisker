@@ -330,6 +330,7 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
         // TODO: Check if this is done correctly
         const factory: StatementFitnessFunctionFactory = new StatementFitnessFunctionFactory();
         const fitnesses = factory.extractFitnessFunctions(Container.vm, targets);
+        Container.statementFitnessFunctions = fitnesses;
 
         if (fitnesses.length == 1) {
             this._fitnessFunction = fitnesses[0] as unknown as FitnessFunction<C>;

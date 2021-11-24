@@ -110,6 +110,15 @@ export abstract class Chromosome {
     }
 
     /**
+     * Deletes a specific entry from the cache in order to enforce its fitness calculation.
+     * @param fitnessFunction the fitnessFunction that should be erased from the map.
+     * @returns boolean set to true if the fitnessFunction was found and deleted from the map.
+     */
+    public deleteCacheEntry(fitnessFunction: FitnessFunction<this>):boolean{
+        return this._fitnessCache.delete(fitnessFunction);
+    }
+
+    /**
      * Flushes the fitness cache to enforce a recalculation of the fitness values.
      */
     public flushFitnessCache():void{
