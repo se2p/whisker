@@ -27,7 +27,7 @@ import {Trace} from "scratch-vm/src/engine/tracing.js";
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
     private static _EXECUTION_HALTING_OPCODES = ['control_wait', 'looks_thinkforsecs', 'looks_sayforsecs',
-        'motion_glideto','motion_glidesecstoxy', 'sound_playuntildone', 'text2speech_speakAndWait'];
+        'motion_glideto', 'motion_glidesecstoxy', 'sound_playuntildone', 'text2speech_speakAndWait'];
 
     private readonly _targetNode: GraphNode;
     private readonly _cdg: ControlDependenceGraph;
@@ -106,7 +106,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         } else {
             cfgDistanceNormalized = 1;
         }
-        return 2*approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
+        return 2 * approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -305,7 +305,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return !this._targetNode.block.opcode.startsWith("event_when") &&
             this._targetNode.block.opcode !== 'control_start_as_clone' &&
             (blockTrace.opcode.startsWith("control") ||
-            StatementFitnessFunction._EXECUTION_HALTING_OPCODES.includes(blockTrace.opcode));
+                StatementFitnessFunction._EXECUTION_HALTING_OPCODES.includes(blockTrace.opcode));
     }
 
     private _checkControlBlock(statement: GraphNode, controlNode: GraphNode): boolean {
@@ -315,7 +315,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 requiredCondition = true;
                 break;
             }
-            case 'control_wait_until':{
+            case 'control_wait_until': {
                 requiredCondition = true;
                 break;
             }
@@ -378,7 +378,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             case 'motion_glidesecstoxy':
             case 'motion_glideto':
             case 'sound_playuntildone':
-            case 'text2speech_speakAndWait':{
+            case 'text2speech_speakAndWait': {
                 requiredCondition = true;
                 break;
             }
