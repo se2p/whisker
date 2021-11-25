@@ -144,7 +144,7 @@ describe("Arrays", () => {
         expect(distinct.length).toBe(1);
     });
 
-    test("Create random Array in range", () =>{
+    test("Create random Array in range", () => {
         const minValue = 10;
         const maxValue = 30;
         const length = 100
@@ -152,5 +152,12 @@ describe("Arrays", () => {
         expect(Math.min(...array)).toBeGreaterThanOrEqual(minValue);
         expect(Math.max(...array)).toBeLessThanOrEqual(maxValue);
         expect(array.length).toBe(length);
-    })
+    });
+
+    test("Return last element from array", () => {
+        const array = [2, 1, 5, 3, 4, 7, 9, 0, 8, 6];
+        const actual = Arrays.last(array);
+        const expected = array[array.length - 1];
+        expect(actual).toBe(expected);
+    });
 });

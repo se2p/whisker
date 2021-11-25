@@ -215,4 +215,13 @@ export default class Arrays {
         return Array.from({length: length},
             () => Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue);
     }
+
+    /**
+     * Returns the last element from an array.
+     *
+     * @param array the last element
+     */
+    static last<T>(array: T[]): T {
+        return array[array.length - 1];
+    }
 }
