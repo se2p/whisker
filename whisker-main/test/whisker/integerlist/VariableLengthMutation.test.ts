@@ -8,7 +8,7 @@ describe("VariableLengthMutation Test", () => {
     const random = Randomness.getInstance();
     const min = 0;
     const max = 420;
-    const crossover = new SinglePointRelativeCrossover<IntegerListChromosome>();
+    const crossover = new SinglePointRelativeCrossover<IntegerListChromosome>(3);
     const mutation = new VariableLengthMutation(min, max, 20, 3, 5);
 
     test("Test apply mutation", () => {

@@ -4,21 +4,15 @@ import {TestChromosome} from "../../../testcase/TestChromosome";
 export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
 
     /**
-     * Collects the chromosomes, ReductionLocalSearch has already been applied upon. This helps us to prevent
-     * wasting time on applying ReductionLocalSearch on the same chromosome twice.
-     */
-    private readonly _originalChromosomes: TestChromosome[] = [];
-
-    /**
      * Determines whether ReductionLocalSearch can be applied to this chromosome.
-     * This is the case if the chromosome's gene size can be reduced at all
-     * and if we did not apply ReductionLocalSearch on this chromosome before.
+     * This is the case if the chromosome's gene size can be reduced at all and if it has already been executed at
+     * least once.
      * @param chromosome the chromosome ReductionLocalSearch should be applied to
      * @return boolean determining whether ReductionLocalSearch can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return chromosome.getGenes().length > 1 && chromosome.getGenes().length > chromosome.lastImprovedCoverageCodon &&
-            chromosome.lastImprovedTrace !== undefined && this._originalChromosomes.indexOf(chromosome) < 0;
+        return chromosome.getGenes().length > 1 && chromosome.getGenes().length > chromosome.lastImprovedCodon &&
+            chromosome.lastImprovedTrace !== undefined;
     }
 
     /**
@@ -27,13 +21,12 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      * @returns the modified chromosome wrapped in a Promise.
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
-        this._originalChromosomes.push(chromosome);
         // Cut off the codons of the chromosome up to the point after which no more blocks have been covered.
-        const newCodons = chromosome.getGenes().slice(0, chromosome.lastImprovedCoverageCodon);
+        const newCodons = chromosome.getGenes().slice(0, chromosome.lastImprovedCodon);
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = chromosome.lastImprovedTrace;
         newChromosome.coverage = new Set<string>(chromosome.coverage);
-        newChromosome.lastImprovedCoverageCodon = chromosome.lastImprovedCoverageCodon;
+        newChromosome.lastImprovedCodon = chromosome.lastImprovedCodon;
         return newChromosome;
     }
 
