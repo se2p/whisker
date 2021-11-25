@@ -11,7 +11,7 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      * @return boolean determining whether ReductionLocalSearch can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return chromosome.getGenes().length > 1 && chromosome.getGenes().length > chromosome.lastImprovedCoverageCodon &&
+        return chromosome.getGenes().length > 1 && chromosome.getGenes().length > chromosome.lastImprovedCodon &&
             chromosome.lastImprovedTrace !== undefined;
     }
 
@@ -22,11 +22,11 @@ export class ReductionLocalSearch extends LocalSearch<TestChromosome> {
      */
     async apply(chromosome: TestChromosome): Promise<TestChromosome> {
         // Cut off the codons of the chromosome up to the point after which no more blocks have been covered.
-        const newCodons = chromosome.getGenes().slice(0, chromosome.lastImprovedCoverageCodon);
+        const newCodons = chromosome.getGenes().slice(0, chromosome.lastImprovedCodon);
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = chromosome.lastImprovedTrace;
         newChromosome.coverage = new Set<string>(chromosome.coverage);
-        newChromosome.lastImprovedCoverageCodon = chromosome.lastImprovedCoverageCodon;
+        newChromosome.lastImprovedCodon = chromosome.lastImprovedCodon;
         return newChromosome;
     }
 

@@ -109,7 +109,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        newChromosome.lastImprovedCoverageCodon = lastImprovedResults.lastImprovedCodon;
+        newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
 
         // Reset the trace and coverage of the original chromosome
@@ -152,8 +152,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
         let fitnessValuesUnchanged = 0;
         let done = false;
-        let lastImprovedCodon = chromosome.lastImprovedCoverageCodon;
-        let lastImprovedTrace: ExecutionTrace
+        let lastImprovedCodon = chromosome.lastImprovedCodon;
+        let lastImprovedTrace: ExecutionTrace;
 
         // Monitor if the Scratch-VM is still running. If it isn't, stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
@@ -266,8 +266,10 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Check if the latest event has improved the fitness, if yes update properties and reset the stop enforcing
             // counter.
             if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
-                lastImprovedCodon = codons.length;
-                lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
+                if(TestExecutor.doRequireLastImprovedCodon(chromosome)) {
+                    lastImprovedCodon = codons.length;
+                    lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
+                }
                 fitnessValuesUnchanged = 0;
             }
             // Otherwise increase the stop enforcing counter.

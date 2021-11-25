@@ -32,6 +32,8 @@ import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
 import VMWrapper = require("../../vm/vm-wrapper.js");
 import {Container} from "../utils/Container";
+import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
+import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 
 
 export class TestExecutor {
@@ -77,8 +79,6 @@ export class TestExecutor {
         let numCodon = 0;
         const codons = testChromosome.getGenes();
         let fitnessValues: number[];
-        let codonLastImproved = 0;
-        let lastImprovedTrace: ExecutionTrace;
         let targetFitness = Number.MAX_SAFE_INTEGER;
 
         while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(availableEvents))) {
@@ -95,18 +95,6 @@ export class TestExecutor {
             testChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
             testChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
-            // If this was the first executed event we have to set up the reference fitnessValues first.
-            if(!fitnessValues){
-                fitnessValues = TestExecutor.calculateUncoveredFitnessValues(testChromosome);
-            }
-            const newFitnessValues = TestExecutor.calculateUncoveredFitnessValues(testChromosome);
-
-            // Check if the latest execution of the given event has improved overall fitness.
-            if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
-                codonLastImproved = numCodon;
-                lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, [...events]);
-            }
-
             // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
             // focused Algorithm like MIO.
             if (testChromosome.targetFitness) {
@@ -118,7 +106,23 @@ export class TestExecutor {
                     testChromosome.lastImprovedFitnessCodon = numCodon;
                 }
             }
-            fitnessValues = newFitnessValues;
+
+            // Determine the last improved codon and trace if we require it for further mutation/localSearch operations.
+            if (TestExecutor.doRequireLastImprovedCodon(testChromosome)) {
+                // If this was the first executed event we have to set up the reference fitnessValues first.
+                if (!fitnessValues) {
+                    fitnessValues = TestExecutor.calculateUncoveredFitnessValues(testChromosome);
+                }
+                const newFitnessValues = TestExecutor.calculateUncoveredFitnessValues(testChromosome);
+
+
+                // Check if the latest execution of the given event has improved overall fitness.
+                if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
+                    testChromosome.lastImprovedCodon = numCodon;
+                    testChromosome.lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, [...events]);
+                }
+                fitnessValues = newFitnessValues;
+            }
         }
 
         // Check if the last event had to use a codon from the start of the codon list.
@@ -131,8 +135,6 @@ export class TestExecutor {
         // Set attributes of the testChromosome after executing its genes.
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        testChromosome.lastImprovedCoverageCodon = codonLastImproved;
-        testChromosome.lastImprovedTrace = lastImprovedTrace;
 
 
         this._vmWrapper.end();
@@ -322,6 +324,16 @@ export class TestExecutor {
     }
 
     /**
+     * Determined whether we have to save the last improved codon.
+     * @param chromosome the chromosome holding its mutation operator.
+     * @returns boolean determining whether we have to determine the last improved codon.
+     */
+    public static doRequireLastImprovedCodon(chromosome: TestChromosome): boolean {
+        return chromosome.getMutationOperator() instanceof VariableLengthConstrainedChromosomeMutation ||
+            Container.config.getLocalSearchOperators().some(operator => operator instanceof ReductionLocalSearch);
+    }
+
+    /**
      * Gathers the fitness value for each uncovered block. This can be used to trace the execution back up to which
      * point no further improvement has been seen.
      * @param chromosome the chromosome carrying the block trace used to calculate the fitness values.
@@ -341,7 +353,13 @@ export class TestExecutor {
         return fitnessValues;
     }
 
-    public static hasFitnessOfUncoveredStatementsImproved(oldFitnessValues:number[], newFitnessValues:number[]): boolean{
+    /**
+     * Compares fitness values between oldFitnessValues and newFitnessValues and determined whether we see any
+     * improvement within the newFitnessValues.
+     * @param oldFitnessValues the old fitness values used as a reference point
+     * @param newFitnessValues new fitness values which might show some improvements.
+     */
+    public static hasFitnessOfUncoveredStatementsImproved(oldFitnessValues: number[], newFitnessValues: number[]): boolean {
         return newFitnessValues.length < oldFitnessValues.length ||
             newFitnessValues.some((value, index) => value < oldFitnessValues[index]);
     }

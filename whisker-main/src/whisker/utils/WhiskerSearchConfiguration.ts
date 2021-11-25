@@ -497,7 +497,7 @@ export class WhiskerSearchConfiguration {
             return new NeuroevolutionTestGenerator(this);
         }
 
-        throw new ConfigException("Unknown Algorithm " + this._config["testGenerator"]);
+        throw new ConfigException("Unknown TestGenerator " + this._config["testGenerator"]);
     }
 
     public getWaitStepUpperBound(): number {
