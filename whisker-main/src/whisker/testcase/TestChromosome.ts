@@ -47,10 +47,9 @@ export class TestChromosome extends IntegerListChromosome {
     private _coverage = new Set<string>();
 
     /**
-     * The position in the codons list after which no additional blocks have been covered,
-     * i.e the index of the codon coverage has not increased further.
+     * The position in the codons list after which no additional improvement in fitness could be observed.
      */
-    private _lastImprovedCoverageCodon: number;
+    private _lastImprovedCodon: number;
 
     constructor(codons: number[], mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
@@ -90,12 +89,12 @@ export class TestChromosome extends IntegerListChromosome {
         this._coverage = value;
     }
 
-    get lastImprovedCoverageCodon(): number {
-        return this._lastImprovedCoverageCodon;
+    get lastImprovedCodon(): number {
+        return this._lastImprovedCodon;
     }
 
-    set lastImprovedCoverageCodon(value: number) {
-        this._lastImprovedCoverageCodon = value;
+    set lastImprovedCodon(value: number) {
+        this._lastImprovedCodon = value;
     }
 
     get lastImprovedTrace(): ExecutionTrace {
@@ -109,7 +108,7 @@ export class TestChromosome extends IntegerListChromosome {
     clone(): TestChromosome {
         const clone = new TestChromosome(this.getGenes(), this.getMutationOperator(), this.getCrossoverOperator());
         clone.trace = this._trace;
-        clone.lastImprovedCoverageCodon = this.lastImprovedCoverageCodon;
+        clone.lastImprovedCodon = this.lastImprovedCodon;
         clone.lastImprovedTrace = this.lastImprovedTrace;
         return clone;
     }

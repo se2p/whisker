@@ -50,8 +50,8 @@ export class VariableLengthConstrainedChromosomeMutation extends AbstractVariabl
         }
         // Else if we have some information about lastImprovedCoverageCodon use this codon as a stopping point for mutation.
         // Value of 2 equals clicking Flag, hence no improvement.
-        else if(chromosome.lastImprovedCoverageCodon > 2){
-            return super.applyUpTo(chromosome, chromosome.lastImprovedCoverageCodon + this._reservedCodons);
+        else if(chromosome.lastImprovedCodon > 2){
+            return super.applyUpTo(chromosome, chromosome.lastImprovedCodon + this._reservedCodons);
         }
         // Otherwise, mutate the whole chromosome.
         else{

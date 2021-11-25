@@ -42,6 +42,7 @@ import {Container} from "../utils/Container";
 import {SimpleGA} from "./algorithms/SimpleGA";
 import {NEAT} from "./algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 
 /**
  * A builder to set necessary properties of a search algorithm and build this.
@@ -234,6 +235,17 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
 
         searchAlgorithm.setProperties(this._properties);
         searchAlgorithm.setChromosomeGenerator(this._chromosomeGenerator);
+
+        // Add the set of StatementFitnessFunctions or in case of a single optimisation goal a single
+        // StatementFitnessFunction to the Container for further use.
+        if (this.fitnessFunctions.size > 0) {
+            const fitnessFunctions = [...this.fitnessFunctions.values()];
+            if (fitnessFunctions.every(fitnessFunction => fitnessFunction instanceof StatementFitnessFunction)) {
+                Container.statementFitnessFunctions = fitnessFunctions as unknown as StatementFitnessFunction[];
+            }
+        } else if (this._fitnessFunction && this._fitnessFunction instanceof StatementFitnessFunction) {
+            Container.statementFitnessFunctions = [this._fitnessFunction as StatementFitnessFunction];
+        }
 
         return searchAlgorithm;
     }
