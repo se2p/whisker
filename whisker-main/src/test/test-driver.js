@@ -44,6 +44,9 @@ class TestDriver {
         this.onSayOrThink = vmWrapper.sprites.onSayOrThink.bind(vmWrapper.sprites);
         this.onVariableChange = vmWrapper.sprites.onVariableChange.bind(vmWrapper.sprites);
 
+        /* Change Sprite properties */
+        this.setVisibility =vmWrapper.sprites.setVisibility.bind(vmWrapper.sprites);
+
         /* Other Information */
         this.getStageSize = vmWrapper.getStageSize.bind(vmWrapper);
         this.getMousePos = vmWrapper.inputs.getMousePos.bind(vmWrapper.inputs);

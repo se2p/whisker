@@ -200,6 +200,17 @@ class Sprites {
     }
 
     /**
+     * Sets the visibility of a sprite. Can be used to govern the ability of a sprite to touch other sprites.
+     * @param {string} spriteName the name of the sprite whose visibility should be changed.
+     * @param {boolean} visibility if set to true the sprite will be visible,
+     *                             if set to false the sprite will be invisible.
+     */
+    setVisibility(spriteName, visibility){
+        const sprite = this.vmWrapper.getTargetBySpriteName(spriteName);
+        sprite.setVisible(visibility);
+    }
+
+    /**
      * When a {@link Sprite} moves, its movement is registered.
      * @param {RenderedTarget} target The moved target.
      */
