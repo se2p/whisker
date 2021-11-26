@@ -163,7 +163,7 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm:VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
+    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
                      accelerationFactor: number, seedString: string, template?: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
         Container.template = template;

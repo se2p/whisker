@@ -487,7 +487,7 @@ class VMWrapper {
     /**
      * Finds the RenderedTarget instance of a sprite using the sprite's name.
      * @param spriteName The name of the sprite we are searching the RenderedTarget instance for.
-     * @return {RenderedTarget} The found target.
+     * @return {RenderedTarget} The found target or undefined if no target with a matching name was found.
      */
     getTargetBySpriteName (spriteName) {
         for (const target of this.vm.runtime.targets) {
@@ -495,6 +495,7 @@ class VMWrapper {
                 return target;
             }
         }
+        return undefined;
     }
 
     /**

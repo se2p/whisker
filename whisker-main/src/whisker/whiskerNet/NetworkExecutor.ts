@@ -124,19 +124,7 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events.
-            // TODO: This is wrapped in a Try-Catch since this tends to throw an error iff executed on the cluster.
-            //  Find out why this is the case and handle correctly at point of failure! However, works for now...
-            try {
-                this.availableEvents = this._eventExtractor.extractEvents(this._vm)
-            } catch (e) {
-                // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
-                // one WaitEvent...
-                if (this.availableEvents.length === 0) {
-                    console.log("Added Wait to emptyEvent")
-                    this.availableEvents.push(new WaitEvent())
-                }
-                console.log("Recovered from bad event extraction")
-            }
+            this.availableEvents = this._eventExtractor.extractEvents(this._vm)
             if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
@@ -226,23 +214,13 @@ export class NetworkExecutor {
         // Initialise Timer for the timeout
         let timer = Date.now();
         this._timeout += Date.now();
+        this.availableEvents = this._eventExtractor.extractEvents(this._vm)
+
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events
-            // TODO: This is wrapped in a Try-Catch since this tends to throw an error iff executed on the cluster.
-            //  Find out why this is the case and handle correctly at point of failure! However, works for now...
-            try {
-                this.availableEvents = this._eventExtractor.extractEvents(this._vm)
-            } catch (e) {
-                // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
-                // one WaitEvent...
-                if (this.availableEvents.length === 0) {
-                    console.log("Added Wait to emptyEvent")
-                    this.availableEvents.push(new WaitEvent())
-                }
-                console.log("Recovered from bad event extraction")
-            }
+            this.availableEvents = this._eventExtractor.extractEvents(this._vm);
 
             if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
@@ -369,19 +347,7 @@ export class NetworkExecutor {
             // If there are no events left, fall back to random event selection
             else {
                 // Collect the currently available events
-                // TODO: This is wrapped in a Try-Catch since this tends to throw an error iff executed on the cluster.
-                //  Find out why this is the case and handle correctly at point of failure! However, works for now...
-                try {
-                    this.availableEvents = this._eventExtractor.extractEvents(this._vm)
-                } catch (e) {
-                    // If the Extractor fails at the beginning of the loop the list will be empty; hence add at least
-                    // one WaitEvent...
-                    if (this.availableEvents.length === 0) {
-                        console.log("Added Wait to emptyEvent")
-                        this.availableEvents.push(new WaitEvent())
-                    }
-                    console.log("Recovered from bad event extraction")
-                }
+                this.availableEvents = this._eventExtractor.extractEvents(this._vm);
 
                 if (this.availableEvents.length === 0) {
                     console.log("Whisker-Main: No events available for project.");
@@ -442,10 +408,12 @@ export class NetworkExecutor {
     private recordInitialState(): void {
         for (const targetsKey in this._vm.runtime.targets) {
             this._initialState[targetsKey] = {
+                name: this._vm.runtime.targets[targetsKey].sprite['name'],
                 direction: this._vm.runtime.targets[targetsKey]["direction"],
                 currentCostume: this._vm.runtime.targets[targetsKey]["currentCostume"],
                 draggable: this._vm.runtime.targets[targetsKey]["draggable"],
                 dragging: this._vm.runtime.targets[targetsKey]["dragging"],
+                drawableID: this._vm.runtime.targets[targetsKey]['drawableID'],
                 effects: Object.assign({}, this._vm.runtime.targets[targetsKey]["effects"]),
                 videoState: this._vm.runtime.targets[targetsKey]["videoState"],
                 videoTransparency: this._vm.runtime.targets[targetsKey]["videoTransparency"],
@@ -480,6 +448,7 @@ export class NetworkExecutor {
             this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
             this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
             this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
+            this._vm.runtime.targets[targetsKey]["drawableID"] = this._initialState[targetsKey]["drawableID"];
             this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
             this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
             this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
