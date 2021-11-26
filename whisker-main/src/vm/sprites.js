@@ -173,6 +173,18 @@ class Sprites {
     }
 
     /**
+     * Getter for the rotation style of a sprite (left-right, all around, don't rotate)
+     * @param {string} spriteName the name of the sprite from which we want to retrieve the rotation style.
+     * @returns {string} the rotation style of the given sprite (left-right, all around, don't rotate)
+     */
+    getRotationStyle(spriteName){
+        const spriteRenderedTarget = this.vmWrapper.getTargetBySpriteName(spriteName);
+        if(spriteRenderedTarget) {
+            return spriteRenderedTarget.rotationStyle;
+        }
+    }
+
+    /**
      * Updates all {@link Sprite Sprites} to have their attributes up-to-date.
      */
     update () {
@@ -207,7 +219,9 @@ class Sprites {
      */
     setVisibility(spriteName, visibility){
         const sprite = this.vmWrapper.getTargetBySpriteName(spriteName);
-        sprite.setVisible(visibility);
+        if(sprite) {
+            sprite.setVisible(visibility);
+        }
     }
 
     /**

@@ -39,6 +39,7 @@ class TestDriver {
         this.getSprite = vmWrapper.sprites.getSprite.bind(vmWrapper.sprites);
         this.getStage = vmWrapper.sprites.getStage.bind(vmWrapper.sprites);
         this.getNewSprites = vmWrapper.sprites.getNewSprites.bind(vmWrapper.sprites);
+        this.getRotationStyle = vmWrapper.sprites.getRotationStyle.bind(vmWrapper.sprites);
         this.onSpriteMoved = vmWrapper.sprites.onSpriteMoved.bind(vmWrapper.sprites);
         this.onSpriteVisualChange = vmWrapper.sprites.onSpriteVisualChange.bind(vmWrapper.sprites);
         this.onSayOrThink = vmWrapper.sprites.onSayOrThink.bind(vmWrapper.sprites);
