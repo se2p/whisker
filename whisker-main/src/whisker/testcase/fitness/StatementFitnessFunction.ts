@@ -26,12 +26,15 @@ import {Trace} from "scratch-vm/src/engine/tracing.js";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
+    private static _EXECUTION_HALTING_OPCODES = ['control_wait', 'looks_thinkforsecs', 'looks_sayforsecs',
+        'motion_glideto', 'motion_glidesecstoxy', 'sound_playuntildone', 'text2speech_speakAndWait'];
+
     private readonly _targetNode: GraphNode;
     private readonly _cdg: ControlDependenceGraph;
     private readonly _cfg: ControlFlowGraph;
     private readonly _approachLevels: Record<string, number>
     private readonly _eventMapping: Record<string, string>
-    private _forceCFG = false;
+
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
@@ -39,13 +42,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         this._cfg = cfg;
         this._eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
-
-        // If we have an execution halting block as parent enforce the calculation of the CFG distance to keep track
-        // of the remaining halting duration until the given block is reached.
-        const parent = StatementFitnessFunction.getParentOfNode(targetNode, this._cdg);
-        if (parent !== undefined && ControlFilter.executionHaltingBlock(parent.block)) {
-            this.forceCFG = true;
-        }
     }
 
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
@@ -105,12 +101,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const branchDistance = this.getBranchDistance(chromosome);
 
         let cfgDistanceNormalized;
-        if (branchDistance === 0 || this._forceCFG) {
+        if (branchDistance === 0) {
             cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome, approachLevel > 0));
         } else {
             cfgDistanceNormalized = 1;
         }
-        return approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
+        return 2 * approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -184,9 +180,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     // The first is the true distance, the second the false distance
                     let newDistance;
                     if (requiredCondition) {
-                        newDistance = blockTrace.distances[0][0]
+                        newDistance = blockTrace.distances[0][0];
                     } else {
-                        newDistance = blockTrace.distances[0][1]
+                        newDistance = blockTrace.distances[0][1];
                     }
 
                     if (traceMin < minBranchApproachLevel ||
@@ -217,7 +213,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
             we need to still record levels, and use a queue to save nodes for BFS.
         */
-        function bfs(graph:Graph, targetNodeQueue:GraphNode[], coveredBlocks:Set<string>): number {
+        function bfs(graph: Graph, targetNodeQueue: GraphNode[], coveredBlocks: Set<string>): number {
             const queue = targetNodeQueue;
             const visited = new Set(targetNodeQueue);
             let node;
@@ -228,12 +224,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 for (let i = 0; i < qSize; i++) {
                     node = queue.shift();
                     if (coveredBlocks.has(node.id)) {
-                        // If we stop at an execution halting block we use its relative remaining halting
-                        // duration as the CFG distance instead of simply incrementing the CFG. Since at this point
-                        // we have already incremented it by one we first have to decrement it again.
-                        if (ControlFilter.executionHaltingBlock(node.block)) {
-                            step = (step - 1) + chromosome.trace.blockTraces[node.id].remainingScaledHaltingDuration;
-                        }
                         return step;
                     }
                     visited.add(node);
@@ -259,7 +249,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
          2. is the direct successor of an <executed predecessor>
          <exit> <----------- <targetNode> <------------------- <un-executed predecessor><executed predecessor>
                                            (^shortest)              (^two adjacent nodes) */
-        function bfsPredecessors (graph: Graph, targetNode: GraphNode, coveredBlocks:Set<string>): GraphNode[] {
+        function bfsPredecessors(graph: Graph, targetNode: GraphNode, coveredBlocks: Set<string>): GraphNode[] {
             const queue = [targetNode];
             const visited = new Set([targetNode]);
             let node;
@@ -288,16 +278,16 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
             //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
             throw 'Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
-                    + targetNode.block.opcode;
+            + targetNode.block.opcode;
         }
+
         let targetNodeQueue: GraphNode[];
         if (hasUnexecutedCdgPredecessor) {
-            targetNodeQueue = bfsPredecessors(this._cdg, this._targetNode,  chromosome.coverage);
-        }
-        else {
+            targetNodeQueue = bfsPredecessors(this._cdg, this._targetNode, chromosome.coverage);
+        } else {
             targetNodeQueue = [this._targetNode]
         }
-        return bfs(this._cfg, targetNodeQueue,  chromosome.coverage);
+        return bfs(this._cfg, targetNodeQueue, chromosome.coverage);
     }
 
 
@@ -311,12 +301,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param blockTrace the blockTrace from which we can determine the branch distance.
      * @returns boolean determining if we extract the branchDistance from the given blockTrace.
      */
-    private _canComputeControlDistance(blockTrace: Trace):boolean{
+    private _canComputeControlDistance(blockTrace: Trace): boolean {
         return !this._targetNode.block.opcode.startsWith("event_when") &&
             this._targetNode.block.opcode !== 'control_start_as_clone' &&
-            blockTrace.opcode.startsWith("control") &&
-            !(blockTrace.opcode === "control_wait") &&
-            (blockTrace.distances[0] !== undefined);
+            (blockTrace.opcode.startsWith("control") ||
+                StatementFitnessFunction._EXECUTION_HALTING_OPCODES.includes(blockTrace.opcode));
     }
 
     private _checkControlBlock(statement: GraphNode, controlNode: GraphNode): boolean {
@@ -379,6 +368,19 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
                     requiredCondition = false;
                 }
+                break;
+            }
+
+            // Time-dependent execution halting blocks.
+            case 'control_wait':
+            case 'looks_thinkforsecs':
+            case 'looks_sayforsecs':
+            case 'motion_glidesecstoxy':
+            case 'motion_glideto':
+            case 'sound_playuntildone':
+            case 'text2speech_speakAndWait': {
+                requiredCondition = true;
+                break;
             }
         }
         return requiredCondition;
@@ -416,9 +418,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const mergeNodeMap = new Map<GraphNode, GraphNode[]>();
         for (const fitnessFunction of fitnessFunctions) {
 
-            // We add nodes right after execution halting blocks in order to be able to optimise for the scaled
-            // CFG-distance which incorporates the remaining duration until the respective thread is allowed to
-            // resume its execution.
+            // Handling of an execution halting block.
             if (ControlFilter.executionHaltingBlock(fitnessFunction._targetNode.block)) {
                 const childNode = this.getChildOfNode(fitnessFunction._targetNode, fitnessFunction._cdg);
                 if (childNode !== undefined) {
@@ -545,9 +545,5 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     public toString = (): string => {
         return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
-    }
-
-    set forceCFG(value: boolean) {
-        this._forceCFG = value;
     }
 }

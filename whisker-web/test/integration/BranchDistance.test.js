@@ -26,6 +26,22 @@ async function readFitnessLog() {
     }
 }
 
+/**
+ * Checks approachLevel, branchDistance and CFG-Distance for executionHaltingBlocks.
+ * @returns {Promise<void>}
+ */
+async function checkFitnessValuesForExecutionHaltingBlocks(){
+    await (await page.$('#run-search')).click();
+    const log = await readFitnessLog();
+    const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
+    await expect(approachLevel).toBe(0);
+    const branchDistance = log.uncoveredBlocks[0].BranchDistance;
+    await expect(branchDistance).toBeLessThanOrEqual(1);
+    await expect(branchDistance).toBeGreaterThan(0);
+    const CFGDistance = log.uncoveredBlocks[0].CFGDistance;
+    await expect(CFGDistance).toBe(Number.MAX_VALUE);
+}
+
 beforeEach(async () => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
@@ -205,25 +221,63 @@ describe('Fitness tests', () => {
         await expect(branchDistance).toBe(9);
     }, timeout);
 
-    test('Test CFG distance when approach level = 0', async () => {
-        await loadProject('test/integration/cfgDistance/MoveWithConditions.sb3')
-        await (await page.$('#run-search')).click();
-        const log = await readFitnessLog();
-        const cfg1 = log.uncoveredBlocks[0].CFGDistance;
-        const cfg2 = log.uncoveredBlocks[1].CFGDistance;
-        await expect(cfg1).toBe(Number.MAX_VALUE) && expect(cfg2).toBe(Number.MAX_VALUE);
-    }, timeout);
-
-    test('Test CFG distance when approach level != 0', async () => {
+    test('Test CFG distance when branch distance !== 0', async () => {
         await loadProject('test/integration/cfgDistance/NestedConditions.sb3')
         await (await page.$('#run-search')).click();
         const log = await readFitnessLog();
         const [controlWaitBlock1, controlWaitBlock2] = log.uncoveredBlocks.filter(b => b.block.endsWith("control_wait"));
         const controlStopBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_stop"))[0];
         const controlIfBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_if"))[0];
-        await expect(controlWaitBlock1.CFGDistance).toBe(1);
-        await expect(controlWaitBlock2.CFGDistance).toBe(2);
-        await expect(controlStopBlock.CFGDistance).toBe(3);
-        await expect(controlIfBlock.CFGDistance).toBe(3);
+        await expect(controlWaitBlock1.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlWaitBlock2.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlStopBlock.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlIfBlock.CFGDistance).toBe(Number.MAX_VALUE);
+    }, timeout);
+
+    test('Test CFG distance when branch distance == 0', async () => {
+        await loadProject('test/integration/cfgDistance/CFGDistanceWithDefineHack.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await readFitnessLog();
+        const moveStepsBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_movesteps"))[0];
+        expect(moveStepsBlock.CFGDistance).toBe(1);
+        const looksSayBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("looks_say"))[0];
+        expect(looksSayBlock.CFGDistance).toBe(2);
+        const motionTurnLeftBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_turnleft"))[0];
+        expect(motionTurnLeftBlock.CFGDistance).toBe(3);
+    }, timeout);
+
+    test('Test branchDistance for execution halting wait', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-Wait.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting say for seconds blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-SayForSeconds.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for seconds blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-ThinkForSeconds.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for glide to (x,y) blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideToXY.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for glide to blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideTo.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for play sound until done blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for text2speech blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 });
