@@ -278,7 +278,7 @@ open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
-        this._uncoveredIndependentFitnessFunctions = this.getIndependentStatements();
+        this._uncoveredIndependentFitnessFunctions = new Map<number, FitnessFunction<C>>(this.getIndependentStatements());
     }
 
     /**
