@@ -59,10 +59,10 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
     private _archiveUncovered: Map<number, Heuristic<C>[]>;
 
     /**
-     * Contains all independent FitnessFunctions. These include the last statements inside branches and the last
-     * statements of hat related statements.
+     * Contains all uncovered independent FitnessFunctions. These include the last statements inside branches and the
+     * last statements of hat related statements.
      */
-    private _independentFitnessFunctions: Map<number, FitnessFunction<C>>
+    private _uncoveredIndependentFitnessFunctions: Map<number, FitnessFunction<C>>
 
     /**
      * Defines the probability of sampling a new Chromosome instead of mutating an existing one during search.
@@ -243,7 +243,7 @@ export class MIO<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                 this.updateParameters();
             }
             console.log(`Iteration ${this._iterations}, covered goals total: ${this._archiveCovered.size}/${this._fitnessFunctions.size}, \
-open independent goals: ${this._archiveUncovered.size}`);
+open independent goals: ${this._uncoveredIndependentFitnessFunctions.size}`);
         }
         return this._archiveCovered;
     }
@@ -278,7 +278,7 @@ open independent goals: ${this._archiveUncovered.size}`);
         StatisticsCollector.getInstance().iterationCount = 0;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
         StatisticsCollector.getInstance().startTime = Date.now();
-        this._independentFitnessFunctions = this.getIndependentStatements();
+        this._uncoveredIndependentFitnessFunctions = new Map<number, FitnessFunction<C>>(this.getIndependentStatements());
     }
 
     /**
@@ -293,13 +293,13 @@ open independent goals: ${this._archiveUncovered.size}`);
             const mergeNodeStatements = StatementFitnessFunction.getMergeNodeMap(fitnessFunctions);
             let independentFitnessFunctions: StatementFitnessFunction[] = [];
             [...mergeNodeStatements.values()].forEach(statementList => independentFitnessFunctions.push(...statementList));
-            independentFitnessFunctions = Arrays.distinct(independentFitnessFunctions)
+            independentFitnessFunctions = Arrays.distinct(independentFitnessFunctions);
             const independentFitnessFunctionMap = new Map<number, FitnessFunction<C>>();
             this._fitnessFunctions.forEach((value, key) => {
                 if (independentFitnessFunctions.includes(value as unknown as StatementFitnessFunction)) {
                     independentFitnessFunctionMap.set(key, value);
                 }
-            })
+            });
             return independentFitnessFunctionMap;
         } else
             return this._fitnessFunctions;
@@ -341,6 +341,11 @@ open independent goals: ${this._archiveUncovered.size}`);
                         StatisticsCollector.getInstance().createdTestsToReachFullCoverage = this._iterations;
                         StatisticsCollector.getInstance().timeToReachFullCoverage = Date.now() - this._startTime;
                     }
+                    // If the covered statement is an independent one, delete it from the independent fitness
+                    // function map.
+                    if (this._uncoveredIndependentFitnessFunctions.has(fitnessFunctionKey)) {
+                        this._uncoveredIndependentFitnessFunctions.delete(fitnessFunctionKey);
+                    }
                 }
             }
         }
@@ -352,8 +357,10 @@ open independent goals: ${this._archiveUncovered.size}`);
      * @param chromosome The candidate chromosome for the archive
      */
     private updateUncoveredArchive(chromosome: C): void {
-        for (const fitnessFunctionKey of this._independentFitnessFunctions.keys()) {
+        for (const fitnessFunctionKey of this._uncoveredIndependentFitnessFunctions.keys()) {
             const heuristicValue = this.getHeuristicValue(chromosome, fitnessFunctionKey);
+            // Check for heuristicValue > 0 to make sure we only add chromosomes that are somewhere near of covering
+            // the given statement. Note, that a fitnessValue of Infinity leads to a heuristicValue of 0.
             if (heuristicValue > 0 && !this._archiveCovered.has(fitnessFunctionKey)) {
                 let archiveTuples: Heuristic<C>[] = [];
                 if (this._archiveUncovered.has(fitnessFunctionKey)) {
@@ -361,7 +368,7 @@ open independent goals: ${this._archiveUncovered.size}`);
                 } else {
                     archiveTuples = [];
                 }
-                const newTuple = { chromosome, heuristicValue };
+                const newTuple = {chromosome, heuristicValue};
                 newTuple.chromosome.targetFitness = this._fitnessFunctions.get(fitnessFunctionKey);
                 // Do not add duplicates in any population!
                 if (this.tuplesContainChromosome(archiveTuples, newTuple)) {
