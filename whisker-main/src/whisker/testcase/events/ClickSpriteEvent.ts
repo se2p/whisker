@@ -74,7 +74,11 @@ export class ClickSpriteEvent extends ScratchEvent {
     }
 
     stringIdentifier(): string {
-        return "ClickSpriteEvent-" + this._target.sprite.name;
+        if (this._target.isOriginal) {
+            return "ClickSpriteEvent-" + this._target.sprite.name;
+        } else {
+            return "ClickClone " + this._target.sprite.name + " at " + this._target.x + "/" + this._target.y;
+        }
     }
 }
 
