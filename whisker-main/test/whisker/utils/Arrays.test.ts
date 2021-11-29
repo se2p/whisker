@@ -21,6 +21,9 @@
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import Arrays from "../../../src/whisker/utils/Arrays";
 import {expect} from "@jest/globals";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {MouseDownEvent} from "../../../src/whisker/testcase/events/MouseDownEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 
 describe("Arrays", () => {
 
@@ -142,6 +145,14 @@ describe("Arrays", () => {
         const array = [new ClickStageEvent(), new ClickStageEvent(), new ClickStageEvent()];
         const distinct = Arrays.distinctObjects(array);
         expect(distinct.length).toBe(1);
+    });
+
+    test("Distinct objects by custom defined comparator", () => {
+        const comparator = (a:ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        const array = [new ClickStageEvent(), new MouseDownEvent(false), new MouseDownEvent(false),
+            new MouseMoveEvent(2,1), new MouseMoveEvent(2, 1), new MouseMoveEvent(10, 10)];
+        const distinct = Arrays.distinctByComparator(array, comparator);
+        expect(distinct.length).toBe(3);
     });
 
     test("Create random Array in range", () =>{
