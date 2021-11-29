@@ -13,7 +13,9 @@ export class ScratchPosition {
      * @returns number representing the distance to the given ScratchPosition.
      */
     public distanceTo(other: ScratchPosition): number {
-        return Math.sqrt(Math.pow(other._x - this._x, 2) + Math.pow(other._y - this._y, 2));
+        const delta_x = other._x - this._x;
+        const delta_y = other._y - this._y;
+        return Math.hypot(delta_x, delta_y);
     }
 
     /**

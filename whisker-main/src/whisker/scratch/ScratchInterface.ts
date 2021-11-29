@@ -28,8 +28,7 @@ export class ScratchInterface {
     }
 
     public static getSafetyDistanceFromTarget(target: RenderedTarget, safetySpace: number): number {
-        return Math.sqrt(Math.pow(this.getWidthOfTarget(target), 2) +
-            Math.pow(this.getHeightOfTarget(target), 2)) / 2 + safetySpace;
+        return Math.hypot(this.getWidthOfTarget(target), this.getHeightOfTarget(target)) / 2 + safetySpace;
     }
 
     public static getMousePosition(): ScratchPosition {
