@@ -227,6 +227,10 @@ export class NetworkExecutor {
                 break;
             }
 
+            // Check if we encountered additional events during the playthrough
+            // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
+            network.updateOutputNodes(this.availableEvents);
+
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const randomEventIndex = this._random.nextInt(0, this.availableEvents.length);
             const nextEvent: ScratchEvent = this.availableEvents[randomEventIndex];
@@ -389,7 +393,7 @@ export class NetworkExecutor {
     }
 
     private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
-        const args = []
+        const args = [];
         for (const node of network.regressionNodes.get(event.stringIdentifier())) {
             args.push(node.activationValue);
         }
