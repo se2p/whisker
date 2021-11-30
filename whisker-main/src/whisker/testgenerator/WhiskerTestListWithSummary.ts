@@ -2,7 +2,7 @@ import {WhiskerTest} from "./WhiskerTest";
 
 export class WhiskerTestListWithSummary {
     private readonly _testList: WhiskerTest[];
-    private readonly _summary: string;
+    private _summary: string;
     private _networkPopulation: string;
 
     constructor(testList: WhiskerTest[], summary: string){
@@ -18,6 +18,10 @@ export class WhiskerTestListWithSummary {
 
     get summary(): string {
         return this._summary;
+    }
+
+    set summary(value: string) {
+        this._summary = value;
     }
 
     get networkPopulation(): string {

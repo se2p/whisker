@@ -1,65 +1,32 @@
-import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NeatPopulation} from "./NeatPopulation";
 
-export class RandomNeuroevolutionPopulation<C extends NetworkChromosome> extends NeuroevolutionPopulation<NetworkChromosome> {
-
-    /**
-     * We actually have no need for calculating fitnessDistribution in the RandomPopulation. We nevertheless do it
-     * for statistic purposes.
-     */
-    protected calculateFitnessDistribution(): void {
-        // Calculate the shared fitness value for each chromosome in each Specie and mark parent candidates.
-        for (const specie of this.species) {
-            specie.assignAdjustFitness();
-        }
-    }
+export class RandomNeuroevolutionPopulation extends NeatPopulation {
 
     /**
-     * In the RandomPopulation each Network is allowed to generate exactly one child using mutation.
+     * In RandomNeuroevolutionPopulation each network is allowed to generate exactly one child.
      */
     protected assignNumberOfOffspring(): void {
-        for (const chromosome of this.chromosomes) {
+        for (const chromosome of this.networks) {
             chromosome.expectedOffspring = 1;
-            chromosome.hasDeathMark = false;
+            chromosome.isParent = true;
         }
         for (const species of this.species) {
-            species.calculateAverageSpeciesFitness();
-            species.expectedOffspring = species.size();
+            species.calculateAverageSharedFitness();
+            species.expectedOffspring = species.networks.length;
         }
 
-        // Find the population champion and reward him with additional children
+        // Find the population champion for reporting purposes.
         this.sortPopulation();
         this.sortSpecies();
-        this.populationChampion = this.chromosomes[0];
+        this.populationChampion = this.networks[0];
         this.populationChampion.isPopulationChampion = true;
 
-        // Update highestFitness
-        if (this.populationChampion.networkFitness > this.highestFitness) {
-            this.highestFitness = this.populationChampion.networkFitness;
+        // Update the highest fitness value found so far.
+        if (this.populationChampion.fitness > this.highestFitness) {
+            this.highestFitness = this.populationChampion.fitness;
             this.highestFitnessLastChanged = 0;
         } else {
             this.highestFitnessLastChanged++;
         }
-    }
-
-    /**
-     * Deep Clone of RandomPopulation.
-     * @returns clone of this RandomPopulation.
-     */
-    clone(): RandomNeuroevolutionPopulation<C> {
-        const clone = new RandomNeuroevolutionPopulation(this.generator, this.properties);
-        clone.speciesCount = this.speciesCount;
-        clone.highestFitness = this.highestFitness;
-        clone.highestFitnessLastChanged = this.highestFitnessLastChanged;
-        clone.averageFitness = this.averageFitness;
-        clone.generation = this.generation;
-        clone.populationChampion = this.populationChampion.clone() as C;
-        for (const network of this.chromosomes) {
-            clone.chromosomes.push(network.clone() as C);
-        }
-        for (const species of this.species) {
-            clone.species.push(species.clone());
-        }
-        return clone;
     }
 }

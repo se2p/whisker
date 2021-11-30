@@ -21,13 +21,11 @@ class TestEditor {
 
         $('.editor-apply')
             .on('click', () => {
-                $('.editor-apply').tooltip('hide');
                 loadTests(this.getValue());
             });
 
         $('.editor-save')
             .on('click', () => {
-                $('.editor-save').tooltip('hide');
                 this.save();
             });
     }
@@ -70,8 +68,16 @@ module.exports = [
     }
 
     save () {
-        const blob = new Blob([this.getValue()], {type: 'application/javascript;charset=utf-8'});
-        FileSaver.saveAs(blob, 'tests.js');
+        if (this.getValue().includes('Network')){
+            const blob = new Blob([this.getValue()], {type: 'application/json;charset=utf-8'});
+            FileSaver.saveAs(blob, 'networks.json');
+        } else if (this.getValue().includes('TestCase')){
+            const blob = new Blob([this.getValue()], {type: 'application/json;charset=utf-8'});
+            FileSaver.saveAs(blob, 'events.json');
+        } else {
+            const blob = new Blob([this.getValue()], {type: 'application/javascript;charset=utf-8'});
+            FileSaver.saveAs(blob, 'tests.js');
+        }
     }
 }
 

@@ -20,7 +20,6 @@
 
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import Arrays from "../../../src/whisker/utils/Arrays";
-import {expect} from "@jest/globals";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {MouseDownEvent} from "../../../src/whisker/testcase/events/MouseDownEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
@@ -154,6 +153,17 @@ describe("Arrays", () => {
         const distinct = Arrays.distinctByComparator(array, comparator);
         expect(distinct.length).toBe(3);
     });
+
+    test("Range function stepSize of 1", () =>{
+        const rangeArray = Arrays.range(0, 10, 1);
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(45)
+    })
+
+    test("Range function stepSize of 100", () =>{
+        const rangeArray = Arrays.range(0, 850, 100);
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(3600)
+    })
+
 
     test("Create random Array in range", () =>{
         const minValue = 10;

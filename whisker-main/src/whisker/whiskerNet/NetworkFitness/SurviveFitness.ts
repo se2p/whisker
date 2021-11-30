@@ -1,40 +1,25 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {NetworkExecutor} from "../NetworkExecutor";
 
 export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * Calculates the survived time.
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
+     * Calculates the survive fitness which is defined to be the time a network has survived within a game.
+     * @param network the network that should be evaluated
+     * @param timeout the timeout defining how long a network is allowed to play the game.
+     * @param eventSelection defines how the network should be executed (network (default) | random | static
+     * events | eventsExtended).
      */
-    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
         const start = Date.now();
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
-        // Round to 2 decimals
-        const surviveTime = Math.round(((Container.vm.runtime.currentMSecs - start) / 1000 + Number.EPSILON) * 100 ) / 100;
-        network.networkFitness = surviveTime;
+        // Calculate time survived, transform it into seconds and include acceleration.
+        const surviveTime = Math.trunc((Container.vm.runtime.currentMSecs - start) / 1000 * Container.acceleration);
+        network.fitness = surviveTime;
         executor.resetState();
         return surviveTime;
-    }
-
-    /**
-     * Used for CombinedNetworkFitness.
-     * Value is calculated within CombinedNetworkFitness, hence returns 0.0
-     */
-    getFitnessWithoutPlaying(): number {
-        return 0.0;
-    }
-
-    /**
-     * Compares two fitness values -> Higher values are better.
-     * @param value1 first fitness value
-     * @param value2 second fitness value
-     */
-    compare(value1: number, value2: number): number {
-        return value2 - value1;
     }
 }
