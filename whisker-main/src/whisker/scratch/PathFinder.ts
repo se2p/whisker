@@ -1,7 +1,6 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {ScratchPosition} from "./ScratchPosition";
 import {ScratchInterface} from "./ScratchInterface";
-import {WaitEvent} from "../testcase/events/WaitEvent";
 
 export class PathFinder {
 
@@ -41,7 +40,6 @@ export class PathFinder {
         while (openSet.length > 0) {
             let current = openSet[0];
             player.setXY(current.position.x, current.position.y, true);
-            await new WaitEvent().apply();
             const colorAtCurrentPosition = ScratchInterface.getColorAtPosition(current.position);
             visited.push(current);
             // If we found our goal reproduce the path.
@@ -54,11 +52,8 @@ export class PathFinder {
                     current = current.previous;
                     path.push(current.position);
                 }
-                const test = path.reverse();
-                for (const position of test) {
-                    player.setXY(position.x, position.y, true);
-                    await new WaitEvent().apply();
-                }
+                path.reverse();
+                console.log("Found valid Path!")
                 return path;
             }
             // Keep searching if we haven't found our target yet.
