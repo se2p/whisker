@@ -21,7 +21,10 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
+import {ScratchInterface} from "../../scratch/ScratchInterface";
+import {ScratchPosition} from "../../scratch/ScratchPosition";
 import {Randomness} from "../../utils/Randomness";
+
 
 export class MouseMoveEvent extends ScratchEvent {
 
@@ -40,6 +43,13 @@ export class MouseMoveEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         return `t.mouseMove(${Math.trunc(this._x)}, ${Math.trunc(this._y)});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `MouseMoveEvent`;
+        event[`args`] = {"x": this._x, "y": this._y}
+        return event;
     }
 
     public toString(): string {
