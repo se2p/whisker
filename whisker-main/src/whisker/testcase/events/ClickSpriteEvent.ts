@@ -82,9 +82,16 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     stringIdentifier(): string {
         if (this._target.isOriginal) {
-            return "ClickSpriteEvent-" + this._target.sprite.name;
+            return `ClickSpriteEvent-${this._target.sprite.name}`;
         } else {
-            return "ClickClone " + this._target.sprite.name + " at " + this._target.x + "/" + this._target.y;
+            // The stringIdentifier of ClickSpriteEvents having to click at a clone represents a special case
+            // since neither are the x and y coordinates of the Clone determined within the EventExtraction, nor are
+            // they specified during the search. In the case of having two clones located at exactly the same position,
+            // we only include one event for both clones since even if we would add two separate events, the effect
+            // of both would be the same, namely clicking at the specified location. Furthermore, as soon as both
+            // clones move away from each other, the coordinates change and we add separate events for both of
+            // them.
+            return `ClickClone-${this._target.sprite.name}-${this._target.x}-${this._target.y}`;
         }
     }
 }

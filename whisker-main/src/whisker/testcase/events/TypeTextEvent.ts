@@ -68,6 +68,6 @@ export class TypeTextEvent extends ScratchEvent {
     }
 
     stringIdentifier(): string {
-        return "TypeTextEvent-" + this._text;
+        return `TypeTextEvent-${this._text}`;
     }
 }
