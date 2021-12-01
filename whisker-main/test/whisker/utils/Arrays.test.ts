@@ -152,6 +152,9 @@ describe("Arrays", () => {
             new MouseMoveEvent(2,1), new MouseMoveEvent(2, 1), new MouseMoveEvent(10, 10)];
         const distinct = Arrays.distinctByComparator(array, comparator);
         expect(distinct.length).toBe(3);
+        expect(distinct[0].stringIdentifier()).toBe(array[0].stringIdentifier());
+        expect(distinct[1].stringIdentifier()).toBe(array[1].stringIdentifier());
+        expect(distinct[2].stringIdentifier()).toBe(array[3].stringIdentifier());
     });
 
     test("Range function stepSize of 1", () =>{
