@@ -57,6 +57,17 @@ export default class Arrays {
     }
 
     /**
+     * Returns a new array consisting only of the distinct elements of the given array based on a custom
+     * defined comparator function that determines whether two values are treated as equal or not.
+     * @param array the array from which we want to eliminate duplicates.
+     * @param comparator custom function determining when two values are treated as equal.
+     * @returns T[] consisting of the distinct elements based on the equality function.
+     */
+    static distinctByComparator<T>(array: T[], comparator: (value1: T, value2: T) => unknown): T[] {
+        return array.filter((o, i, arr) => arr.findIndex(t => comparator(t, o)) === i);
+    }
+
+    /**
      * Removes the first occurrence of the specified element from the given array, using the equality semantics of
      * `===`. The array is modified in-place.
      *

@@ -69,6 +69,6 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     stringIdentifier(): string {
-        return "MouseMoveToEvent-" + this.x + "-" + this.y;
+        return `MouseMoveToEvent-${this.x}-${this.y}`;
     }
 }

@@ -66,7 +66,8 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
         eventList.push(new WaitEvent())
 
-        return Arrays.distinctObjects(eventList);
+        const equalityFunction = (a: ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 
     /**

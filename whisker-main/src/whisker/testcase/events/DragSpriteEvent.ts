@@ -104,6 +104,6 @@ export class DragSpriteEvent extends ScratchEvent {
     }
 
     stringIdentifier(): string {
-        return `DragSpriteEvent-${this._target}-${this._x}-${this._y}`;
+        return `DragSpriteEvent-${this._target.sprite.name}-${this._x}-${this._y}`;
     }
 }
