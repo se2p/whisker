@@ -43,6 +43,9 @@ const LooksFilter = {
         block.opcode === 'looks_nextbackdrop' ||
         block.opcode === 'looks_switchbackdropto',
 
+    nextBackdrop: block =>
+        block.opcode === 'looks_nextbackdrop',
+
     backdropSet: block =>
         block.opcode === 'looks_switchbackdroptoandwait' ||
         block.opcode === 'looks_switchbackdropto',
