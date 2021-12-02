@@ -157,15 +157,15 @@ describe("Arrays", () => {
         expect(distinct[2].stringIdentifier()).toBe(array[3].stringIdentifier());
     });
 
-    test("Range function stepSize of 1", () =>{
+    test("Range function stepSize of 1", () => {
         const rangeArray = Arrays.range(0, 10, 1);
         expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(45)
-    })
+    });
 
-    test("Range function stepSize of 100", () =>{
+    test("Range function stepSize of 100", () => {
         const rangeArray = Arrays.range(0, 850, 100);
         expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(3600)
-    })
+    });
 
 
     test("Create random Array in range", () =>{
@@ -176,5 +176,18 @@ describe("Arrays", () => {
         expect(Math.min(...array)).toBeGreaterThanOrEqual(minValue);
         expect(Math.max(...array)).toBeLessThanOrEqual(maxValue);
         expect(array.length).toBe(length);
-    })
+    });
+
+    test("Arrays.last returns last element from array", () => {
+        const actual = Arrays.last(array);
+        const expected = array[array.length - 1];
+        expect(actual).toBe(expected);
+    });
+
+    test("Arrays.last does not modify source array", () => {
+        const array = [2, 1, 5, 3, 4, 7, 9, 0, 8, 6];
+        const copy = [...array];
+        Arrays.last(array);
+        expect(array).toStrictEqual(copy);
+    });
 });
