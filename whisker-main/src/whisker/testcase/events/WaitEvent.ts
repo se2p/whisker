@@ -73,7 +73,13 @@ export class WaitEvent extends ScratchEvent {
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }
-        this._steps %= Container.config.getWaitStepUpperBound();
+
+        // Only enforce the UpperBound range if the codon value is likely to not stem from ExtensionLocalSearch as
+        // otherwise the local search operator would only reach wait dependent statements once.
+        if(this._steps % Container.config.getWaitStepUpperBound() !== 0 &&
+            this._steps !== Container.config.searchAlgorithmProperties['integerRange'].max) {
+            this._steps %= Container.config.getWaitStepUpperBound();
+        }
     }
 
     stringIdentifier(): string {
