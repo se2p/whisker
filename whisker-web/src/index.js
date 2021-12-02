@@ -1,7 +1,7 @@
 const {$} = require('./web-libs');
 
 import i18next from 'i18next';
-import locI18next from "loc-i18next";
+import locI18next from 'loc-i18next';
 
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
@@ -19,16 +19,13 @@ const modelEditorEN = require('./locales/en/modelEditor.json');
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
-const Runtime = require('scratch-vm/src/engine/runtime');
 const Thread = require('scratch-vm/src/engine/thread');
 
-const Test = require('whisker-main/src/test-runner/test')
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
-const DownloadContainer = require('./components/DownloadContainer');
 const InputRecorder = require('./components/input-recorder');
 const ModelEditor = require('./components/model-editor');
 
@@ -38,9 +35,9 @@ const Whisker = window.Whisker = {};
 window.$ = $;
 
 const DEFAULT_ACCELERATION_FACTOR = 1;
-const accSlider = $("#acceleration-factor").slider();
+const accSlider = $('#acceleration-factor').slider();
 
-const LANGUAGE_OPTION = "lng";
+const LANGUAGE_OPTION = 'lng';
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
 const initialLanguage = initialParams.get(LANGUAGE_OPTION); // This is only valid for initialization and has to be retrieved again afterwards
 
@@ -49,7 +46,7 @@ const loadModelFromString = function (models) {
     try {
         Whisker.modelTester.load(models);
     } catch (err) {
-        Whisker.outputLog.println("ERROR: " + err.message);
+        Whisker.outputLog.println(`ERROR: ${err.message}`);
         console.error(err);
         const message = `${err.name}: ${err.message}`;
         showModal('Modal Loading', `<div class="mt-1"><pre>${escapeHtml(message)}</pre></div>`);
@@ -57,13 +54,22 @@ const loadModelFromString = function (models) {
     }
 
     if (Whisker.modelTester.userModelsLoaded()) {
-        $('#model-user-loaded').text(i18next.t("model-output-user-model"));
+        $('#model-user-loaded').text(i18next.t('model-output-user-model'));
     } else {
-        $('#model-user-loaded').text(i18next.t("model-output-no-user-model"));
+        $('#model-user-loaded').text(i18next.t('model-output-no-user-model'));
     }
-}
+};
 
-const loadTestsFromString = function (string) {
+const loadTestsFromString = async function (string) {
+    // Check for dynamic or static NE-TestSuite.
+    if ((`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes')) ||
+        (`${string}`.toLowerCase().includes('testcase') && `${string}`.toLowerCase().includes('event'))) {
+        const tests = `${string}`;
+        Whisker.tests = tests;
+        Whisker.testEditor.setValue(string);
+        return tests;
+    }
+    // Manually generated test suite or test suite generated through search algorithms.
     let tests;
     try {
         /* eslint-disable-next-line no-eval */
@@ -86,11 +92,11 @@ const loadTestsFromString = function (string) {
 
 const disableVMRelatedButtons = function (exception) {
     $(`.vm-related:not(${exception})`).prop('disabled', true);
-}
+};
 
 const enableVMRelatedButtons = function () {
     $('.vm-related').prop('disabled', false);
-}
+};
 
 const runSearch = async function () {
     disableVMRelatedButtons('#run-search');
@@ -107,10 +113,11 @@ const runSearch = async function () {
     Whisker.outputLog.clear();
     await Whisker.scratch.vm.loadProject(project);
     const config = await Whisker.configFileSelect.loadAsString();
+    const networkTemplate = await Whisker.testFileSelect.loadAsString();
     const accelerationFactor = $('#acceleration-value').text();
     const seed = document.getElementById('seed').value;
-    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm, Whisker.scratch.project,
-        projectName, config, configName, accelerationFactor, seed);
+    const [tests, testListWithSummary, csv] = await Whisker.search.run(Whisker.scratch.vm,
+        Whisker.scratch.project, projectName, config, configName, accelerationFactor, seed, networkTemplate);
     // Prints uncovered blocks summary and csv summary separated by a newline
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
@@ -119,12 +126,12 @@ const runSearch = async function () {
     return tests;
 };
 
-function _showRunIcon() {
+function _showRunIcon () {
     $('#run-tests-icon').show();
     $('#stop-tests-icon').hide();
 }
 
-function _showStopIcon() {
+function _showStopIcon () {
     $('#run-tests-icon').hide();
     $('#stop-tests-icon').show();
 }
@@ -177,14 +184,14 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
                 const blockIdsPerSprite =
                     [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
 
-                let modelCoverage = [];
+                const modelCoverage = [];
                 if (Whisker.modelTester.programModelsLoaded()) {
                     for (const modelName in coverageModels) {
-                        let content = [];
+                        const content = [];
                         const elem = coverageModels[modelName];
-                        content.push({key: "covered", values: elem.covered});
-                        content.push({key: "total", values: elem.total});
-                        content.push({key: "missedEdges", values: elem.missedEdges});
+                        content.push({key: 'covered', values: elem.covered});
+                        content.push({key: 'total', values: elem.total});
+                        content.push({key: 'missedEdges', values: elem.missedEdges});
                         modelCoverage.push({key: modelName, values: content});
                     }
                 }
@@ -195,7 +202,7 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
 
             CoverageGenerator.restoreClasses({Thread});
         } finally {
-            _showRunIcon()
+            _showRunIcon();
             enableVMRelatedButtons();
             accSlider.slider('enable');
             testsRunning = false;
@@ -217,9 +224,9 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
             summaryString,
             coverageString,
             modelCoverageString
-        ].join('\n'))
+        ].join('\n'));
     }
-}
+};
 
 const runTests = async function (tests) {
     Whisker.scratch.stop();
@@ -232,10 +239,10 @@ const runTests = async function (tests) {
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
     if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
-        showModal(i18next.t("test-execution"), i18next.t("no-tests"));
+        showModal(i18next.t('test-execution'), i18next.t('no-tests'));
         return;
     } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
-        showModal(i18next.t("test-execution"), i18next.t("no-project"));
+        showModal(i18next.t('test-execution'), i18next.t('no-project'));
         return;
     }
     Whisker.scratch.stop();
@@ -294,34 +301,35 @@ const initComponents = function () {
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 
+
     Whisker.modelEditor = new ModelEditor(Whisker.modelTester);
 
     accSlider.slider('setValue', DEFAULT_ACCELERATION_FACTOR);
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
-}
+};
 
-function showAndJumpTo(elem) {
+function showAndJumpTo (elem) {
     $(elem).show();
     jumpTo(elem);
 }
 
-function jumpTo(elem) {
-    location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-    location.href = elem
-    window.scrollBy(0, -100) // respect header size
+function jumpTo (elem) {
+    location.href = '#'; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+    location.href = elem;
+    window.scrollBy(0, -100); // respect header size
 }
 
 const initEvents = function () {
-    $("#acceleration-factor")
-        .on('slide', function (slideEvt) {
-            $("#acceleration-value").text(slideEvt.value);
+    $('#acceleration-factor')
+        .on('slide', slideEvt => {
+            $('#acceleration-value').text(slideEvt.value);
         })
-        .on('change', function (clickEvt) {
-            $("#acceleration-value").text(clickEvt.value.newValue);
+        .on('change', clickEvt => {
+            $('#acceleration-value').text(clickEvt.value.newValue);
         });
     $('#green-flag').on('click', () => {
         if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
-            showModal(i18next.t("test-generation"), i18next.t("no-project"));
+            showModal(i18next.t('test-generation'), i18next.t('no-project'));
         } else {
             Whisker.scratch.greenFlag();
         }
@@ -338,9 +346,9 @@ const initEvents = function () {
     $('#reset').on('click', () => {
         $('#reset').tooltip('hide');
         if (Whisker.tests === undefined || Whisker.tests.length === 0) {
-            showModal(i18next.t("test-execution"), i18next.t("no-tests"));
+            showModal(i18next.t('test-execution'), i18next.t('no-tests'));
         } else if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
-            showModal(i18next.t("test-execution"), i18next.t("no-project"));
+            showModal(i18next.t('test-execution'), i18next.t('no-project'));
         } else {
             Whisker.scratch.reset().then();
         }
@@ -350,13 +358,13 @@ const initEvents = function () {
         $('#record')
             .removeClass('btn-outline-danger')
             .addClass('btn-danger')
-            .text(i18next.t("stop-record"));
+            .text(i18next.t('stop-record'));
     });
     Whisker.inputRecorder.on('stopRecording', () => {
         $('#record')
             .removeClass('btn-danger')
             .addClass('btn-outline-danger')
-            .text(i18next.t("start-record"));
+            .text(i18next.t('start-record'));
     });
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
@@ -370,22 +378,22 @@ const initEvents = function () {
             Whisker.inputRecorder.startRecording();
         }
     });
-    let modelLog = (msg)  => {
+    const modelLog = msg => {
         Whisker.outputLog.println(msg);
     };
-    let modelWarning = (msg)  => {
-        Whisker.outputLog.println("MODEL WARNING: " + msg);
+    const modelWarning = msg => {
+        Whisker.outputLog.println(`MODEL WARNING: ${msg}`);
     };
-    let modelCoverage = (coverage) => {
+    const modelCoverage = coverage => {
         const formattedModelCoverage = TAP13Formatter.formatModelCoverageLastRun(coverage);
         Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
-    }
-    let modelCheckbox = $('#model-logs-checkbox');
-    modelCheckbox.prop('checked',true);
+    };
+    const modelCheckbox = $('#model-logs-checkbox');
+    modelCheckbox.prop('checked', true);
     Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG, modelLog);
     Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_COVERAGE, modelCoverage);
     Whisker.modelTester.on(ModelTester.ModelTester.MODEL_LOG_MISSED_EDGES, edges =>
-        Whisker.outputLog.println(TAP13Formatter.extraToYAML(edges)))
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML(edges)));
     Whisker.modelTester.on(ModelTester.ModelTester.MODEL_WARNING, modelWarning);
     modelCheckbox.on('change', event => {
         if ($(event.target).is(':checked')) {
@@ -468,7 +476,7 @@ const initEvents = function () {
     $('#run-search')
         .click('click', () => {
             if (Whisker.projectFileSelect === undefined || Whisker.projectFileSelect.length() === 0) {
-                showModal(i18next.t("test-generation"), i18next.t("no-project"));
+                showModal(i18next.t('test-generation'), i18next.t('no-project'));
             } else {
                 $('#run-search').hide();
                 $('#search-running').show();
@@ -476,13 +484,10 @@ const initEvents = function () {
                 tests.then(
                     result => {
                         loadTestsFromString(result);
-                        // TODO: This text is used as a marker to tell servant
-                        //       when the search is done. There must be a nicer way...
-                        Whisker.outputRun.println('summary');
                         jumpTo('#test-table');
                         $('#run-search').show();
                         $('#search-running').hide();
-                    },
+                    }
                 );
             }
         });
@@ -494,39 +499,50 @@ const initEvents = function () {
 const _addFileListeners = function () {
     $('#fileselect-config').on('change', event => {
         const fileName = Whisker.configFileSelect.getName();
-        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName("label")[0];
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-project').on('change', event => {
         const fileName = Whisker.projectFileSelect.getName();
-        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName("label")[0];
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-tests').on('change', event => {
         const fileName = Whisker.testFileSelect.getName();
-        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName("label")[0];
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
     $('#fileselect-models').on('change', event => {
         const fileName = Whisker.modelFileSelect.getName();
-        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
-        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName("label")[0];
+        $(event.target).parent()
+            .removeAttr('data-i18n')
+            .attr('title', fileName);
+        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName('label')[0];
         _showTooltipIfTooLong(label, event);
     });
-}
+};
 
 const _showTooltipIfTooLong = function (label, event) {
-    $(event.target).parent().tooltip('dispose');
+    $(event.target).parent()
+        .tooltip('dispose');
     if (label.scrollWidth > label.offsetWidth) {
-        $(event.target).parent().tooltip({animation: true});
+        $(event.target).parent()
+            .tooltip({animation: true});
         setTimeout(() => {
-            $(event.target).parent().tooltip('hide')
+            $(event.target).parent()
+                .tooltip('hide');
         }, 2000);
     }
-}
+};
 
 const toggleComponents = function () {
     if (window.localStorage) {
@@ -544,22 +560,22 @@ const toggleComponents = function () {
 
 const hideAdvanced = function () {
     $('#scratch-controls').hide();
-}
+};
 
 const initLangSelect = function () {
     const newLabel = document.createElement('label');
-    let html = '<select id="lang-select">', lngs = ["de", "en"], i;
+    let html = '<select id="lang-select">'; const lngs = ['de', 'en']; let i;
     for (i = 0; i < lngs.length; i++) {
-        html += "<option value='" + lngs[i] + "' ";
+        html += `<option value='${lngs[i]}' `;
         if ((initialLanguage != null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
-            html += "selected";
+            html += 'selected';
         }
-        html += " data-i18n=\"" + lngs[i] + "\">" + i18next.t(lngs[i]) + "</option>";
+        html += ` data-i18n="${lngs[i]}">${i18next.t(lngs[i])}</option>`;
     }
     html += '</select>';
     newLabel.innerHTML = html;
     document.querySelector('#form-lang').appendChild(newLabel);
-}
+};
 
 $(document)
     .ready(() => {
@@ -603,7 +619,7 @@ i18next
         ns: ['index', 'faq', 'contact', 'imprint', 'modelEditor', 'privacy'],
         defaultNS: 'index',
         interpolation: {
-            escapeValue: false,
+            escapeValue: false
         },
         resources: {
             de: {
@@ -623,11 +639,11 @@ i18next
                 privacy: privacyEN
             }
         }
-    }, function () {
+    }, () => {
         updateContent();
     }).then();
 
-function updateContent() {
+function updateContent () {
     localize('#body');
     $('[data-toggle="tooltip"]').tooltip();
     if (Whisker.testTable) {
@@ -636,7 +652,7 @@ function updateContent() {
     _updateFilenameLabels();
 }
 
-function _updateFilenameLabels() {
+function _updateFilenameLabels () {
     if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
         $('#project-label').html(Whisker.projectFileSelect.getName());
     }
@@ -651,7 +667,7 @@ function _updateFilenameLabels() {
     }
 }
 
-function _translateTestTableTooltips(oldLanguage, newLanguage) {
+function _translateTestTableTooltips (oldLanguage, newLanguage) {
     const oldLangData = i18next.getDataByLanguage(oldLanguage);
     const oldIndexData = oldLangData.index;
     const newLangData = i18next.getDataByLanguage(newLanguage);
@@ -661,12 +677,12 @@ function _translateTestTableTooltips(oldLanguage, newLanguage) {
     });
 }
 
-function _translateTooltip(tooltipElement, oldData, newData) {
+function _translateTooltip (tooltipElement, oldData, newData) {
     const key = _getKeyByValue(oldData, tooltipElement.innerHTML);
     tooltipElement.innerHTML = newData[key];
 }
 
-function _getKeyByValue(langData, value) {
+function _getKeyByValue (langData, value) {
     return Object.keys(langData).find(key => langData[key] === value);
 }
 
@@ -676,7 +692,7 @@ $('#form-lang').on('change', () => {
     _translateTestTableTooltips(i18next.language, lng); // This has to be executed before the current language is changed
     const params = new URLSearchParams(window.location.search);
     params.set(LANGUAGE_OPTION, lng);
-    window.history.pushState('', '', '?' + params.toString());
+    window.history.pushState('', '', `?${params.toString()}`);
     i18next.changeLanguage(lng).then(updateContent());
 });
 
@@ -684,16 +700,16 @@ $('.nav-link').on('click', event => {
     const lng = $('#lang-select').val();
     const href = event.target.getAttribute('href');
     if (href) {
-        location.href = href + '?lng=' + lng;
+        location.href = `${href}?lng=${lng}`;
         event.preventDefault();
     }
 });
 
 /* Add border to header if it sticks to the top */
-$(function () {
+$(() => {
     const stickyHeader = $('.sticky');
     const stickyHeaderPosition = stickyHeader.offset().top;
-    $(window).scroll(function () {
+    $(window).scroll(() => {
         const scroll = $(window).scrollTop();
         if (scroll > stickyHeaderPosition + 1) {
             stickyHeader.addClass('scrolled');
@@ -706,17 +722,3 @@ $(function () {
 });
 
 export {i18next as i18n};
-
-
-
-
-
-
-
-
-
-
-
-
-
-

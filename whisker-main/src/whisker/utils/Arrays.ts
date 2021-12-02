@@ -57,6 +57,17 @@ export default class Arrays {
     }
 
     /**
+     * Returns a new array consisting only of the distinct elements of the given array based on a custom
+     * defined comparator function that determines whether two values are treated as equal or not.
+     * @param array the array from which we want to eliminate duplicates.
+     * @param comparator custom function determining when two values are treated as equal.
+     * @returns T[] consisting of the distinct elements based on the equality function.
+     */
+    static distinctByComparator<T>(array: T[], comparator: (value1: T, value2: T) => unknown): T[] {
+        return array.filter((o, i, arr) => arr.findIndex(t => comparator(t, o)) === i);
+    }
+
+    /**
      * Removes the first occurrence of the specified element from the given array, using the equality semantics of
      * `===`. The array is modified in-place.
      *
@@ -200,8 +211,15 @@ export default class Arrays {
         array.sort((a, b) => a - b);
     }
 
-    static range(until: number): number[] {
-        return [...Array(until).keys()]
+    /**
+     * Creates an Array containing elements within the given range with the specified step size.
+     * @param start starting value inclusive.
+     * @param stop stopping value exclusive.
+     * @param step stepSize.
+     * @returns Array<number> containing elements from start to stop with specified step size.
+     */
+    static range(start: number, stop: number, step = 1): number[] {
+        return Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
     }
 
     /**

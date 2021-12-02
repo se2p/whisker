@@ -1,34 +1,17 @@
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 
 /**
- * A NetworkFitness function maps a given network onto a numeric value that represents how good the network is in playing
- * a game.
- *
- * @param <C> the type of the networks rated by this fitness function
+ * A NetworkFitness function maps a given network onto a numeric value that represents how good the network is in
+ * playing a game.
  */
-export interface NetworkFitnessFunction<C extends NetworkChromosome> {
-
+export interface NetworkFitnessFunction<T extends NetworkChromosome> {
     /**
      * Computes and returns the fitness value for the given network.
-     * @param network the network to evaluate
-     * @param timeout the timeout after which a scratch game during evaluation is terminated.
-     * @returns the fitness value of the specified network
+     * @param network the network that should be evaluated.
+     * @param timeout the timeout defining how long a network is allowed to play the game.
+     * @param eventSelection defines how the network should be executed (network (default) | random | static
+     * events | eventsExtended).
+     * @returns Promise<number> the fitness value of the specified network.
      */
-    getFitness(network: C, timeout: number): Promise<number>;
-
-    /**
-     * Computes and returns the fitness value for the given network without playing the game.
-     * @param network the network to evaluate
-     * @returns the fitness value of the specified network.
-     */
-    getFitnessWithoutPlaying(network: C): number;
-
-    /**
-     * Comparator for two fitness values:
-     * Sorted in descending order
-     *
-     * @param value1 first fitness value
-     * @param value2 second fitness value
-     */
-    compare(value1: number, value2: number): number;
+    getFitness(network: T, timeout: number, eventSelection?:string): Promise<number>;
 }

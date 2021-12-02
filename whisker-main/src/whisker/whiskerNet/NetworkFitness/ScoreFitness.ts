@@ -1,62 +1,36 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import VirtualMachine from "scratch-vm/src/virtual-machine";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
 
 
 export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * The offset which should be added to each score.
+     * Calculates the score the network has achieved while playing the game.
+     * @param network the network that should be evaluated
+     * @param timeout the timeout defining how long a network is allowed to play the game.
+     * @param eventSelection defines how the network should be executed (network (default) | random | static
+     * events | eventsExtended).
      */
-    private readonly offset: number;
-
-    /**
-     * Constructs a new ScoreFitness object.
-     * @param offset the offset which should be added to each score.
-     */
-    constructor(offset: number) {
-        this.offset = offset;
-    }
-
-    /**
-     * Calculates the reached score
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
-     */
-    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
         let score = ScoreFitness.gatherPoints(Container.vm);
-        if(score < 0){
-            score = 0.01
+        if (score < 0) {
+            score = 0.01;
         }
-        network.networkFitness = score + this.offset;
+        network.fitness = score;
         executor.resetState();
-        return network.networkFitness;
+        return network.fitness;
     }
 
     /**
-     * Calculates the reached score without starting a new playthrough.
-     * Used for CombinedNetworkFitness.
-     */
-    getFitnessWithoutPlaying(): number {
-        return ScoreFitness.gatherPoints(Container.vm) + this.offset
-    }
-
-    /**
-     * Compares two fitness values -> Higher values are better.
-     * @param value1 first fitness value
-     * @param value2 second fitness value
-     */
-    compare(value1: number, value2: number): number {
-        return value2 - value1;
-    }
-
-    /**
-     * Calculates the reached score by crawling through various variables of the stage and sprites.
+     * Calculates the reached score by matching various variable names against variables contained within the given
+     * Scratch project. All found variables are summed up to get a final score.
      * @param vm the Scratch-VM after the playthrough.
+     * @returns number representing the achieved score of the network.
      */
     private static gatherPoints(vm: VirtualMachine): number {
         let points = 0;
@@ -64,7 +38,17 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             for (const value of Object.values(target.variables)) {
                 // @ts-ignore
                 const name = value.name.toLowerCase();
-                if (name === 'punkte' || name === 'score' || name === 'high score') {
+                if (name.includes('punkte') ||
+                    name.includes('points') ||
+                    name.includes('score') ||
+                    name.includes('level') ||
+                    name.includes('hits') ||
+                    name.includes('treffer') ||
+                    name === 'distance' || // Sprint Game
+                    name === 'länge' || // Snake Game
+                    name === 'geimpfte' || // VirusBuster Game
+                    name === 'progress') // WeightLifter Game
+                {
                     // @ts-ignore
                     points += Number(value.value)
                 }

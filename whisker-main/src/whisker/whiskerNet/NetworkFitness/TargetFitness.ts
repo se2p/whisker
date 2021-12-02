@@ -1,152 +1,113 @@
 import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
-import {NetworkChromosome} from "../NetworkChromosome";
+import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {Container} from "../../utils/Container";
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {NetworkExecutor} from "../NetworkExecutor";
-import {Trace} from "scratch-vm/src/engine/tracing";
+import {PathFinder} from "../../scratch/PathFinder";
+import {ScratchPosition} from "../../scratch/ScratchPosition";
+import {ScratchInterface} from "../../scratch/ScratchInterface";
 
 export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * The player who has to reach the goal sprite.
+     * The name of the player sprite that has to reach a specified goal.
      */
-    private readonly player: RenderedTarget;
-
-    /**
-     * The starting position of the player.
-     */
-    private readonly playerStart: { x: number, y: number };
+    private readonly player: string;
 
     /**
      * The target which has to be reached by the player sprite.
-     * The target can be a color in hex representation or a name of a Sprite.
+     * The target may be a color in hex representation or a name of a Sprite.
      */
     private readonly target: string;
 
     /**
-     * A weight determining how big the influence of the traveled distance should be within the distance calculation
-     * This may help overcoming local optima.
-     * Set it to 0 to disable the travelled distance within the fitness calculation.
+     * Colors which are not allowed to be touched during the playthrough
      */
-    private readonly travelDistanceWeight: number;
+    private readonly colorObstacles: string[];
+
+    /**
+     * Sprites which are not allowed to be touched during the playthrough.
+     */
+    private readonly spriteObstacles: string[];
+
+    /**
+     * A valid path from the starting point to the target point calculated via the A-Star algorithm.
+     */
+    private _pathToTarget: ScratchPosition[];
 
     /**
      * Constructs a new TargetFitness object.
-     * @param player the player who has to reach the goal sprite.
-     * @param target the name of the target which has to be reached by the player sprite.
-     * @param travelDistanceWeight the weight of the travelDistance within the fitness calculation.
+     * @param player the player that has to reach a specified goal.
+     * @param target which has to be reached by the player sprite.
+     * @param colorObstacles colors that are not allowed to be touched during the playthrough.
+     * @param spriteObstacles sprites that are not allowed to be touched during the playthrough.
      */
-    constructor(player: string, target: string, travelDistanceWeight: number) {
-        for (const runtimeTargets of Container.vm.runtime.targets) {
-            if (runtimeTargets.sprite.name === player) {
-                this.player = runtimeTargets;
-            }
-        }
-        if (!this.player) {
-            throw new Error("Player Sprite not found. Please check your config file.");
-        }
-        this.playerStart = {x: this.player.x, y: this.player.y}
+    constructor(player: string, target: string, colorObstacles: string[],
+                spriteObstacles: string[]) {
+        this.player = player;
         this.target = target;
-        this.travelDistanceWeight = travelDistanceWeight;
+        this.colorObstacles = colorObstacles;
+        this.spriteObstacles = spriteObstacles;
     }
 
     /**
-     * Calculates the distance to the target Sprite.
-     * @param network the network to evaluate
-     * @param timeout the timeout after which the execution of the Scratch-VM is halted.
+     * Calculates the novelty score.
+     * @param network the network that should be evaluated.
+     * @param timeout the timeout defining how long a network is allowed to play the game.
+     * @param eventSelection defines how the network should be executed (network (default) | random | static
+     * events | eventsExtended).
+     * @returns Promise<number> the sparseness of the network's behaviour, which is a metric of novelty.
      */
-    async getFitness(network: NetworkChromosome, timeout: number): Promise<number> {
-        const executor = new NetworkExecutor(Container.vmWrapper, timeout);
+    async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
+        const playerRenderedTarget = Container.vmWrapper.getTargetBySpriteName(this.player);
+        if (!playerRenderedTarget) {
+            throw new Error("Player Sprite not found. Please check your config file.");
+        }
+        const initialPosition = new ScratchPosition(playerRenderedTarget.x, playerRenderedTarget.y);
+        const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
-        const fitness = this.getTargetDistanceFitness(network);
+
+
+        // If we have no valid path to the target yet, try to find one. Sometimes we need to let some time pass within
+        // a game for a valid path to become available.
+        if (!this._pathToTarget) {
+            playerRenderedTarget.setXY(initialPosition.x, initialPosition.y, true);
+            this._pathToTarget = await PathFinder.aStarPlayerToColor(playerRenderedTarget, this.target, 5,
+                this.colorObstacles, this.spriteObstacles);
+            Container.pathToGoal = this._pathToTarget;
+        }
+        const fitness = this.getTargetDistanceFitness(network, playerRenderedTarget);
         executor.resetState();
-        network.networkFitness = fitness;
+        network.fitness = fitness;
         return fitness;
     }
 
     /**
-     * Used for CombinedNetworkFitness.
-     * Value is calculated within CombinedNetworkFitness, hence returns 0.0
+     * A network's target fitness is defined to be the number of waypoints along a valid path that have been passed on
+     * the found way to the target. The valid path is calculated using the A-Star algorithm.
+     * @param network the network whose playthrough should be evaluated.
+     * @param playerRenderedTarget contains information about the player sprite.
+     * @return number representing the network's TargetFitness.
      */
-    getFitnessWithoutPlaying(network: NetworkChromosome): number {
-        return this.getTargetDistanceFitness(network);
-    }
-
-    /**
-     * Compares two fitness values -> Higher values are better.
-     * @param value1 first fitness value
-     * @param value2 second fitness value
-     */
-    compare(value1: number, value2: number): number {
-        return value2 - value1;
-    }
-
-    /**
-     * Calculates the distance from the player to the target including the player's travel distance.
-     * @param network the network used for gathering the final position of the player
-     * @return Returns the targetFitness value
-     */
-    private getTargetDistanceFitness(network: NetworkChromosome): number {
-        // We want to maximize fitness, hence subtract the distance from the maximum stage distance of 600.
-        let fitnessDistance = 600.01 - this.extractDistanceToTarget(network.trace.blockTraces);
-        // Reward the player according to the distances travelled. This might help overcoming local optima.
+    private getTargetDistanceFitness(network: NetworkChromosome, playerRenderedTarget: RenderedTarget): number {
         const playerEnd = {
-            x: network.inputNodes.get(this.player.sprite.name).get("X-Position").nodeValue *
+            x: network.inputNodes.get(playerRenderedTarget.sprite.name).get("X-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().width / 2),
-            y: network.inputNodes.get(this.player.sprite.name).get("Y-Position").nodeValue *
+            y: network.inputNodes.get(playerRenderedTarget.sprite.name).get("Y-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().height / 2)
         }
-        fitnessDistance += this.travelDistanceWeight * this.distanceTravelled(playerEnd);
-        return fitnessDistance
-    }
+        const playerEndPosition = new ScratchPosition(playerEnd.x, playerEnd.y)
 
-    /**
-     * Extracts the distance to the target.
-     * @param traces the traces which contain the distance to the targeted sprite/color
-     * @return Returns the distance to the target sprite/color
-     */
-    private extractDistanceToTarget(traces: Trace[]): number {
-        let ifBlock;
-        // Search for the ifBlock which in term contains the distance to the target sprite/color.
-        // If the target name starts with an '#' we are searching for a color
-        if (this.target.startsWith("#")) {
-            for (const blockId of Object.keys(this.player.blocks._blocks)) {
-                const block = this.player.blocks.getBlock(blockId);
-                if (this.player.blocks.getOpcode(block) === 'sensing_touchingcolor') {
-                    const colorBlock = this.player.blocks.getBlock(block.inputs.COLOR.block);
-                    if (colorBlock.fields.COLOUR.value === this.target) {
-                        ifBlock = block.parent;
-                        break;
-                    }
-                }
-            }
+        // If we've found a valid path from start to the target. The fitness is determined by the index of the
+        // closest waypoint with the target representing the last waypoint.
+        if (this._pathToTarget) {
+            const distances = this._pathToTarget.map(waypoint => waypoint.distanceTo(playerEndPosition));
+            // Offset by one to give a poor solution an advantage over no solution at all.
+            return distances.indexOf(Math.min(...distances)) + 1;
         }
-        // Otherwise if the target name does not start with an '#' we are searching for a sprite.
+        // If we haven't found a valid path yet, assign poor fitness.
         else {
-            for (const blockId of Object.keys(this.player.blocks._blocks)) {
-                const block = this.player.blocks.getBlock(blockId);
-                if (this.player.blocks.getOpcode(block) === 'sensing_touchingobjectmenu' &&
-                    block.fields.TOUCHINGOBJECTMENU.value === this.target) {
-                    ifBlock = this.player.blocks.getBlock(block.parent).parent;
-                    break;
-                }
-            }
+            return 0.1;
         }
-
-        if (!ifBlock) {
-            throw new Error("Target sprite/color not found. Please check your config file.")
-        }
-        return traces[ifBlock].distances[0][0];
-    }
-
-    /**
-     * Calculates the travel distance of the player. The travel distance influences the final fitness value based on
-     * a predefined weight. The travel distance can be used to overcome local optima.
-     * @param playerEnd the final position of the player after executing the project.
-     * @return Returns the travelled distance of the player.
-     */
-    private distanceTravelled(playerEnd: { x: number, y: number }) {
-        return Math.sqrt(Math.pow(this.playerStart.x - playerEnd.x, 2) +
-            Math.pow(this.playerStart.y - playerEnd.y, 2));
     }
 }

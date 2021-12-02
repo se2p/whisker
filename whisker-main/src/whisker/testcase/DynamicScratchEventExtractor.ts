@@ -59,6 +59,7 @@ export class DynamicScratchEventExtractor extends ScratchEventExtractor {
         // We always need a WaitEvent otherwise, ExtensionLocalSearch if applied will produce codons having values
         // of -1.
         eventList.push(new WaitEvent());
-        return Arrays.distinctObjects(eventList);
+        const equalityFunction = (a: ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 }

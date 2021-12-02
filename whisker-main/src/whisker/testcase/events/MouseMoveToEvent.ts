@@ -41,6 +41,13 @@ export class MouseMoveToEvent extends ScratchEvent {
         return `t.mouseMoveToEvent(${Math.trunc(this.x)}, ${Math.trunc(this.y)});`;
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `MouseMoveToEvent`;
+        event[`args`] = {"x": this.x, "y": this.y}
+        return event;
+    }
+
     public toString(): string {
         return "MouseMoveToEvent " + Math.trunc(this.x) + "/" + Math.trunc(this.y);
     }
@@ -62,6 +69,6 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     stringIdentifier(): string {
-        return "MouseMoveToEvent-" + this.x + "-" + this.y;
+        return `MouseMoveToEvent-${this.x}-${this.y}`;
     }
 }

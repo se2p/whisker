@@ -73,6 +73,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
                 eventList.push(new ClickSpriteEvent(target));
             }
         }
-        return Arrays.distinctObjects(eventList);
+        const equalityFunction = (a: ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 }
