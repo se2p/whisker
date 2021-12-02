@@ -99,14 +99,18 @@ export abstract class ScratchEventExtractor {
             // look at the block(s) inside a conditional statement
             if (block.inputs.CONDITION) {
                 const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
-                // Handle conditional statements with two condition blocks
-                if (condition.inputs.OPERAND1) {
-                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
+                // Check if there is indeed a condition. Some programs may have included a conditional statement
+                // but did not insert a condition.
+                if (condition) {
+                    // Handle conditional statements with two condition blocks
+                    if (condition.inputs.OPERAND1) {
+                        this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
+                    }
+                    if (condition.inputs.OPERAND1) {
+                        this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
+                    }
+                    foundEvents.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
                 }
-                if (condition.inputs.OPERAND1) {
-                    this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
-                }
-                foundEvents.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
             }
 
             // handle procedure calls by mapping the call to its corresponding procedure_definition
