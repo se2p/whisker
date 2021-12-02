@@ -178,10 +178,16 @@ describe("Arrays", () => {
         expect(array.length).toBe(length);
     });
 
-    test("Return last element from array", () => {
-        const array = [2, 1, 5, 3, 4, 7, 9, 0, 8, 6];
+    test("Arrays.last returns last element from array", () => {
         const actual = Arrays.last(array);
         const expected = array[array.length - 1];
         expect(actual).toBe(expected);
+    });
+
+    test("Arrays.last does not modify source array", () => {
+        const array = [2, 1, 5, 3, 4, 7, 9, 0, 8, 6];
+        const copy = [...array];
+        Arrays.last(array);
+        expect(array).toStrictEqual(copy);
     });
 });
