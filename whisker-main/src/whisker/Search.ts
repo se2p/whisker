@@ -207,12 +207,6 @@ seed ${configSeed} defined within the config files.`);
         this.printTests(tests);
         const csvOutput = this.outputCSV(config);
 
-        if (Container.isNeuroevolution &&
-            (Container.config.neuroevolutionProperties.populationType === 'static' ||
-                Container.config.neuroevolutionProperties.populationType === 'dynamic')) {
-            testListWithSummary.summary = csvOutput;
-        }
-
         const javaScriptText = this.testsToString(tests);
         return [javaScriptText, testListWithSummary.summary, csvOutput];
     }

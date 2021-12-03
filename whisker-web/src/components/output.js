@@ -63,7 +63,7 @@ class Output {
 
     save () {
         if (this.getText().length > 1) {
-            if (this.getText().includes('Nodes')) {
+            if (this.getText().includes('Networks') && this.getText().includes('Nodes')) {
                 const blob = new Blob([this.getText()], {type: 'application/json;charset=utf-8'});
                 if (this.title) {
                     FileSaver.saveAs(blob, `${this.title}.json`);

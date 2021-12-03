@@ -71,40 +71,54 @@ t.assume.matches(actual, expected, message);
 space, enter, up arrow, right arrow, down arrow, left arrow
 
 /* Events. */
-await t.wait(steps);
 t.greenFlag();
 t.end();
 t.clickStage();
-t.clickSprite(name, steps?);
+t.clickSprite(spriteName, steps?);
 t.clickClone(clone, steps?);
 t.clickCloneByCoords(x, y, steps?);
-t.dragSprite(name, x, y);
+t.dragSprite(spriteName, x, y);
 t.keyPress(key, steps?);
 t.keyRelease(key, steps?);
 t.mouseDown(boolean);
 t.mouseMove(x, y, steps);
 t.typeText(answer);
+t.sendSound(volume, steps?);
 
 /* Sprite information. */
 t.getSprites(condition, skipStage?);
 t.getSpritesAtPoint(x, y);
 t.getSpriteAtPoint(x, y);
-t.getSprite(name);
+t.getSprite(spriteName);
 t.getStage();
 t.getNewSprites(condition);
+t.getRotationStyle(spriteName);
+t.getSpriteVariable(spriteName, variableName);
 t.onSpriteMoved(callback);
 t.onSpriteVisualChange(func);
+t.onSayOrThink(func)
+t.onVariableChange(func)
+
+/* Set Sprite Properties */
+t.setVisibility(spriteName, visibility);
+t.setSpriteVariable(spriteName, variableName, value);
 
 /* Other Information. */
 t.getStageSize();
 t.getMousePos();
 t.isMouseDown();
 t.isKeyDown(key);
+t.getGlobalVariable(variableName);
+t.getAnswer();
+t.isQuestionAsked();
 // Returns the the acceleration factor, for example \texttt{10} at 300 Hz as the execution is accelerated by a
 // factor of 10 compared to the default 30 Hz frequency
 t.getAccelerationFactor(); // returns the accel
 // Takes a string which gets logged into the log and output field
 t.log(message);
+
+/* Set Global Properties */
+t.setGlobalVariable(variableName, value);
 ```
 
 ### Sprite Object (s)
@@ -124,9 +138,9 @@ s.bounds;
 
 /* Get Attributes */
 s.getVariables(condition, skipStage?);
-s.getVariable(name, skipStage?);
+s.getVariable(variableName, skipStage?);
 s.getLists(skipStage?);
-s.getList(name, skipStage?);
+s.getList(listName, skipStage?);
 s.getInstances();
 s.getOriginal();
 s.getClones(withSelf?);
@@ -135,7 +149,7 @@ s.getCloneCount(withSelf?);
 s.getNewClones();
 s.getCostumes();
 s.getCostumeByIndex(index);
-s.getCostumeByName(name);
+s.getCostumeByName(costumeName);
 s.getCostumeCount();
 
 /* Check Sprite Touching */
@@ -143,7 +157,7 @@ s.isPointinBounds(x, y);
 s.isIntersectingBounds(otherBounds);
 s.isTouchingMouse();
 s.isTouchingMouse();
-s.isTouchingSprite(name);
+s.isTouchingSprite(spriteName);
 s.isTouchingColor([r,g,b]);
 s.isColorTouchingColor(targetRgb, maskRgb);
 ```
@@ -183,7 +197,6 @@ t.cancelRun();
 
 /* Run information. */
 t.getTotalTimeElapsed();
-t.getTotalTimeElapsed();
 t.getRunTimeElapsed();
 t.getTotalStepsExecuted();
 t.getRunStepsExecuted();
@@ -201,6 +214,7 @@ t.getRealRunTimeElapsed();
 
 /* Inputs. */
 t.addInput(time, ioData);
+t.addInputs(inputs);
 t.reAddInput(time, input);
 t.inputImmediate(ioData);
 t.removeInput(input);
@@ -215,7 +229,7 @@ t.setRandomInputInterval(timeInterval);
 t.detectRandomInputs(props);
 
 /* Constraints. */
-t.addConstraint(func, name);
+t.addConstraint(func, constraintName);
 t.reAddConstraint(constraint);
 t.removeConstraint(constraint);
 t.clearConstraints();

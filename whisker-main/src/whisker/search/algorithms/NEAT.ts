@@ -6,7 +6,6 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NeatPopulation} from "../../whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 import {NetworkFitnessFunction} from "../../whiskerNet/NetworkFitness/NetworkFitnessFunction";
 import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
-import {StaticTestNetworkPopulation} from "../../whiskerNet/NeuroevolutionPopulations/StaticTestNetworkPopulation";
 import Arrays from "../../utils/Arrays";
 import {NeatProperties} from "../../whiskerNet/NeatProperties";
 import {NeatChromosome} from "../../whiskerNet/Networks/NeatChromosome";
@@ -101,8 +100,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         switch (this._neuroevolutionProperties.populationType) {
             case 'random':
                 return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
-            case 'static':
-                return new StaticTestNetworkPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
             case 'dynamic':
             case 'neat':
             default:

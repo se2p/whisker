@@ -61,9 +61,8 @@ const loadModelFromString = function (models) {
 };
 
 const loadTestsFromString = async function (string) {
-    // Check for dynamic or static NE-TestSuite.
-    if ((`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes')) ||
-        (`${string}`.toLowerCase().includes('testcase') && `${string}`.toLowerCase().includes('event'))) {
+    // Check for dynamic test suites.
+    if ((`${string}`.toLowerCase().includes('network') && `${string}`.toLowerCase().includes('nodes'))) {
         const tests = `${string}`;
         Whisker.tests = tests;
         Whisker.testEditor.setValue(string);
