@@ -9,7 +9,7 @@
         "type": "git",
         "url": "git+ssh://git@github.com/se2p/whisker-main"
     },
-    "main": "./src/index.js",
+    "main": "./dist/src/index.js",
     "scripts": {
         "build": "if [ -d dist ]; then rm -rf dist; fi && tsc --incremental && webpack --progress --colors --bail",
         "build:prod": "if [ -d dist ]; then rm -rf dist; fi && NODE_ENV=production webpack --progress --colors --bail",
