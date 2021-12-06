@@ -18,8 +18,6 @@
  *
  */
 
-
-import {List} from "../../../../src/whisker/utils/List";
 import {OneMaxFitnessFunction} from "../../../../src/whisker/bitstring/OneMaxFitnessFunction";
 import {BitstringChromosome} from "../../../../src/whisker/bitstring/BitstringChromosome";
 import {RandomSearch} from "../../../../src/whisker/search/algorithms/RandomSearch";
@@ -29,11 +27,12 @@ import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingcon
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {StatisticsCollector} from "../../../../src/whisker/utils/StatisticsCollector";
+import Arrays from "../../../../src/whisker/utils/Arrays";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
     setCurrentSolution(chromosome: BitstringChromosome) {
-        this._bestIndividuals.clear();
-        this._bestIndividuals.add(chromosome);
+        Arrays.clear(this._bestIndividuals);
+        this._bestIndividuals.push(chromosome);
     }
     setIterations(iterations:number) {
         this._iterations = iterations;
@@ -44,9 +43,7 @@ class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
 describe('OptimalSolutionStoppingCondition', () => {
 
     test('Both conditions false', async () => {
-        const bits = new List<boolean>();
-        bits.add(true);
-        bits.add(false);
+        const bits = [true, false];
         const chromosome = new BitstringChromosome(bits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const maxIterations = 10;
@@ -66,9 +63,7 @@ describe('OptimalSolutionStoppingCondition', () => {
     });
 
     test('Both conditions true', async () => {
-        const bits = new List<boolean>();
-        bits.add(true);
-        bits.add(true);
+        const bits = [true, true];
         const chromosome = new BitstringChromosome(bits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const maxIterations = 10;
@@ -88,9 +83,7 @@ describe('OptimalSolutionStoppingCondition', () => {
     });
 
     test('First condition true only', async () => {
-        const bits = new List<boolean>();
-        bits.add(true);
-        bits.add(true);
+        const bits = [true, true];
         const chromosome = new BitstringChromosome(bits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const maxIterations = 10;
@@ -110,9 +103,7 @@ describe('OptimalSolutionStoppingCondition', () => {
     });
 
     test('Second condition true only', async () => {
-        const bits = new List<boolean>();
-        bits.add(true);
-        bits.add(false);
+        const bits = [true, false];
         const chromosome = new BitstringChromosome(bits,
             new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
         const maxIterations = 10;

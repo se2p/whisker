@@ -37,4 +37,8 @@ export class FixedIterationsStoppingCondition<T extends Chromosome> implements S
     getProgress(): number {
         return StatisticsCollector.getInstance().iterationCount / this._maxIterations;
     }
+
+    get maxIterations(): number {
+        return this._maxIterations;
+    }
 }

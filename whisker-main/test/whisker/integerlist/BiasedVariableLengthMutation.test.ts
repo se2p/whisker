@@ -1,5 +1,4 @@
 import {IntegerListChromosome} from "../../../src/whisker/integerlist/IntegerListChromosome";
-import {List} from "../../../src/whisker/utils/List";
 import {Randomness} from "../../../src/whisker/utils/Randomness";
 import {BiasedVariableLengthMutation} from "../../../src/whisker/integerlist/BiasedVariableLengthMutation";
 import {SinglePointRelativeCrossover} from "../../../src/whisker/search/operators/SinglePointRelativeCrossover";
@@ -9,40 +8,37 @@ describe("BiasedVariableLengthMutation Test", () => {
     const random = Randomness.getInstance();
     const min = 0;
     const max = 420;
-    const crossover = new SinglePointRelativeCrossover<IntegerListChromosome>();
-    const mutation = new BiasedVariableLengthMutation(min, max, 20, 5);
+    const crossover = new SinglePointRelativeCrossover<IntegerListChromosome>(2);
+    const mutation = new BiasedVariableLengthMutation(min, max, 20, 2, 5);
 
     test("Test apply mutation", () => {
-        const codons = new List<number>(Array.from(
-            {length: 10}, () => Math.floor(random.nextInt(min, max))));
+        const codons = Array.from({length: 10}, () => Math.floor(random.nextInt(min, max)));
         const chromosome = new IntegerListChromosome(codons, mutation, crossover)
         let mutant = mutation.apply(chromosome)
         for (let i = 0; i < 30; i++) {
             mutant = mutation.apply(mutant)
         }
-        expect(mutant.getGenes().getElements()).not.toEqual(chromosome.getGenes().getElements())
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
     });
 
-    test("Test apply mutation with minimal chromosome size of 1", () => {
-        const codons = new List<number>(Array.from(
-            {length: 1}, () => Math.floor(random.nextInt(min, max))));
+    test("Test apply mutation with minimal chromosome size of 2 (specified virtual space)", () => {
+        const codons = Array.from({length: 2}, () => Math.floor(random.nextInt(min, max)));
         const chromosome = new IntegerListChromosome(codons, mutation, crossover)
         let mutant = mutation.apply(chromosome)
         for (let i = 0; i < 30; i++) {
             mutant = mutation.apply(mutant)
         }
-        expect(mutant.getGenes().getElements()).not.toEqual(chromosome.getGenes().getElements())
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
     });
 
     test("Test apply mutation maximum chromosome size", () => {
-        const codons = new List<number>(Array.from(
-            {length: 20}, () => Math.floor(random.nextInt(min, max))));
+        const codons = Array.from({length: 20}, () => Math.floor(random.nextInt(min, max)));
         const chromosome = new IntegerListChromosome(codons, mutation, crossover)
         let mutant = mutation.apply(chromosome)
         for (let i = 0; i < 30; i++) {
             mutant = mutation.apply(mutant)
         }
-        expect(mutant.getGenes().getElements()).not.toEqual(chromosome.getGenes().getElements())
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
     })
 
     // https://dracoblue.net/dev/linear-least-squares-in-javascript/
@@ -109,8 +105,8 @@ describe("BiasedVariableLengthMutation Test", () => {
         const histogram = Array(length).fill(0);
 
         const recordMutations = (original, mutant) => {
-            const originalElements = original.getGenes().getElements();
-            const mutantElements = mutant.getGenes().getElements();
+            const originalElements = original.getGenes();
+            const mutantElements = mutant.getGenes();
 
             const zip = (a, b) => a.map((k, i) => [k, b[i], i]);
 
@@ -121,8 +117,7 @@ describe("BiasedVariableLengthMutation Test", () => {
             }
         }
 
-        const codons = new List<number>(Array.from(
-            {length: length}, () => Math.floor(random.nextInt(min, max))));
+        const codons = Array.from({length: length}, () => Math.floor(random.nextInt(min, max)));
         for (let i = 0, chromosome = new IntegerListChromosome(codons, mutation, crossover), mutant; i < repetitions; i++, chromosome = mutant) {
             mutant = mutation.apply(chromosome);
             recordMutations(chromosome, mutant);

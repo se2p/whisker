@@ -20,7 +20,6 @@
 
 import {FitnessFunction} from "../search/FitnessFunction";
 import {IntegerListChromosome} from "../integerlist/IntegerListChromosome";
-import {List} from "../utils/List";
 import {Mutation} from "../search/Mutation";
 import {Crossover} from "../search/Crossover";
 import {ExecutionTrace} from "./ExecutionTrace";
@@ -48,12 +47,11 @@ export class TestChromosome extends IntegerListChromosome {
     private _coverage = new Set<string>();
 
     /**
-     * The position in the codons list after which no additional blocks have been covered,
-     * i.e the index of the codon coverage has not increased further.
+     * The position in the codons list after which no additional improvement in fitness could be observed.
      */
-    private _lastImprovedCoverageCodon: number;
+    private _lastImprovedCodon: number;
 
-    constructor(codons: List<number>, mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
+    constructor(codons: number[], mutationOp: Mutation<IntegerListChromosome>, crossoverOp: Crossover<IntegerListChromosome>) {
         super(codons, mutationOp, crossoverOp);
         this._trace = null;
     }
@@ -91,12 +89,12 @@ export class TestChromosome extends IntegerListChromosome {
         this._coverage = value;
     }
 
-    get lastImprovedCoverageCodon(): number {
-        return this._lastImprovedCoverageCodon;
+    get lastImprovedCodon(): number {
+        return this._lastImprovedCodon;
     }
 
-    set lastImprovedCoverageCodon(value: number) {
-        this._lastImprovedCoverageCodon = value;
+    set lastImprovedCodon(value: number) {
+        this._lastImprovedCodon = value;
     }
 
     get lastImprovedTrace(): ExecutionTrace {
@@ -110,18 +108,18 @@ export class TestChromosome extends IntegerListChromosome {
     clone(): TestChromosome {
         const clone = new TestChromosome(this.getGenes(), this.getMutationOperator(), this.getCrossoverOperator());
         clone.trace = this._trace;
-        clone.lastImprovedCoverageCodon = this.lastImprovedCoverageCodon;
+        clone.lastImprovedCodon = this.lastImprovedCodon;
         clone.lastImprovedTrace = this.lastImprovedTrace;
         return clone;
     }
 
-    cloneWith(newGenes: List<number>): TestChromosome {
+    cloneWith(newGenes: number[]): TestChromosome {
         return new TestChromosome(newGenes, this.getMutationOperator(), this.getCrossoverOperator());
     }
 
     public getNumEvents(): number {
         assert(this._trace != null);
-        return this._trace.events.size();
+        return this._trace.events.length;
     }
 
     public toString = (): string => {

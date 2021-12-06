@@ -38,6 +38,13 @@ export class WaitEvent extends ScratchEvent {
         return `await t.wait(${this._steps});`;
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `WaitEvent`;
+        event[`args`] = {"steps": this._steps}
+        return event;
+    }
+
     public toString(): string {
         return "Wait for " + this._steps + " steps";
     }

@@ -1,8 +1,8 @@
-
 import {TestChromosome} from "./TestChromosome";
 import {AbstractVariableLengthMutation} from "../integerlist/AbstractVariableLengthMutation";
-import { List } from "../utils/List";
-import { EventAndParameters } from "./ExecutionTrace";
+import {EventAndParameters} from "./ExecutionTrace";
+import Arrays from "../utils/Arrays";
+import {WaitEvent} from "./events/WaitEvent";
 
 /**
  * Sets the probabilities for mutating codons based on the similarity of surrounding events.
@@ -22,8 +22,8 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
 
     private _probabilities: number[] = [];
 
-    constructor(min: number, max: number, length: number, gaussianMutationPower: number) {
-        super(min, max, length, gaussianMutationPower);
+    constructor(min: number, max: number, length: number, reservedCodons:number , gaussianMutationPower: number) {
+        super(min, max, length, reservedCodons, gaussianMutationPower);
     }
 
     protected _getMutationProbability(idx: number): number {
@@ -31,23 +31,31 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
     }
 
     private _setDefaultProbabilities(chromosome: TestChromosome): void {
-        const numberOfCodons = chromosome.getLength();
-        const p = 1 / numberOfCodons;
-        this._probabilities = Array(numberOfCodons).fill(p);
+        const eventGroups = Arrays.chunk(chromosome.getGenes(), this._reservedCodons);
+        const numberOfEventGroups = eventGroups.length;
+        const p = 1 / numberOfEventGroups;
+        this._probabilities = Array(numberOfEventGroups).fill(p);
     }
 
-    private _setSharedProbabilities(chromosome: TestChromosome, events: List<EventAndParameters>): void {
-        this._probabilities = EventBiasedMutation.computeSharedProbabilities(chromosome.getLength(), events);
+    private _setSharedProbabilities(chromosome: TestChromosome, events: EventAndParameters[]): void {
+        const eventGroups = Arrays.chunk(chromosome.getGenes(), this._reservedCodons);
+        this._probabilities = EventBiasedMutation.computeSharedProbabilities(eventGroups.length, events);
     }
 
-    static computeSharedProbabilities(chromosomeLength: number, events: List<EventAndParameters>): number[] {
-       const indicesByEventType = new Map<string, number[]>();
+    static computeSharedProbabilities(eventGroupsLength: number, events: EventAndParameters[]): number[] {
+        const indicesByEventType = new Map<string, number[]>();
 
         let codonIndex = 0;
-        for (const ep of events) {
-            const { event } = ep;
+        for (let eventIndex = 0; eventIndex < events.length; eventIndex++) {
+            const ep = events[eventIndex];
+            const {event} = ep;
             if (event == undefined) {
                 break;
+            }
+
+            // Skip WaitEvents that are inserted between selected Events during TestExecution.
+            if(eventIndex % 2 !== 0 && event instanceof WaitEvent && event.getParameters()[0] === 1){
+                continue;
             }
 
             const ctorName = event.constructor.name;
@@ -56,10 +64,8 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
             }
 
             const indices = indicesByEventType.get(ctorName);
-            const count = ep.getCodonCount();
-            for (const upper = codonIndex + count; codonIndex < upper; codonIndex++) {
-                indices.push(codonIndex);
-            }
+            indices.push(codonIndex);
+            codonIndex++;
         }
 
         const numberDifferentEventTypes = indicesByEventType.size;
@@ -73,7 +79,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
             }
         }
 
-        while (probabilities.length < chromosomeLength) {
+        while (probabilities.length < eventGroupsLength) {
             probabilities.push(0);
         }
 
@@ -81,7 +87,7 @@ export class EventBiasedMutation extends AbstractVariableLengthMutation<TestChro
     }
 
     private _initializeMutationProbabilities(chromosome: TestChromosome): void {
-        const { events } = chromosome.trace;
+        const {events} = chromosome.trace;
 
         if (events) {
             this._setSharedProbabilities(chromosome, events);

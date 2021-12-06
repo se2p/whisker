@@ -19,7 +19,6 @@
  */
 
 import {Randomness} from "../../../src/whisker/utils/Randomness";
-import {List} from "../../../src/whisker/utils/List";
 
 describe("Randomness", () => {
 
@@ -46,7 +45,7 @@ describe("Randomness", () => {
     test("Set initial seed as empty string", () =>{
         const seed = "";
         Randomness.setInitialSeeds(seed);
-        expect(Date.now() - Randomness.getInitialRNGSeed()).toBeLessThan(10);
+        expect(Date.now() - Randomness.getInitialRNGSeed()).toBeLessThan(1000);
         expect(Randomness.getInstance()).toBeInstanceOf(Randomness);
     })
 
@@ -94,18 +93,10 @@ describe("Randomness", () => {
         }
     });
 
-    test("Pick a random element from a collection", () => {
+    test("Pick a random element from an array", () => {
         const random = Randomness.getInstance();
-        const array: number[] = [1, 2, 3];
-        const num = random.pick(array);
-
-        expect(array).toContain(num);
-    });
-
-    test("Pick a random element from a List", () => {
-        const random = Randomness.getInstance();
-        const list = new List([1,2,3])
-        const num = random.pickRandomElementFromList(list);
+        const list = [1,2,3];
+        const num = random.pick(list);
 
         expect(list).toContain(num);
     });

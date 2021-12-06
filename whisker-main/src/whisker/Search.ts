@@ -23,7 +23,6 @@
 import {TestGenerator} from "./testgenerator/TestGenerator";
 import WhiskerUtil from "../test/whisker-util.js";
 import {WhiskerTest} from "./testgenerator/WhiskerTest";
-import {List} from "./utils/List";
 import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {WhiskerSearchConfiguration} from "./utils/WhiskerSearchConfiguration";
 import {Container} from "./utils/Container";
@@ -32,7 +31,6 @@ import {Randomness} from "./utils/Randomness";
 import {JavaScriptConverter} from "./testcase/JavaScriptConverter";
 import {TestChromosome} from "./testcase/TestChromosome";
 import {EventAndParameters, ExecutionTrace} from "./testcase/ExecutionTrace";
-import {ScratchEvent} from "./testcase/events/ScratchEvent";
 import {WaitEvent} from "./testcase/events/WaitEvent";
 import {WhiskerTestListWithSummary} from "./testgenerator/WhiskerTestListWithSummary";
 import {FixedTimeStoppingCondition} from "./search/stoppingconditions/FixedTimeStoppingCondition";
@@ -42,6 +40,7 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
+import {FixedIterationsStoppingCondition} from "./search/stoppingconditions/FixedIterationsStoppingCondition";
 
 export class Search {
 
@@ -58,16 +57,16 @@ export class Search {
         return await testGenerator.generateTests(project);
     }
 
-    private printTests(tests: List<WhiskerTest>): void {
+    private printTests(tests: WhiskerTest[]): void {
         let i = 0;
-        console.log(`Total number of tests: ${tests.size()}`);
+        console.log(`Total number of tests: ${tests.length}`);
         for (const test of tests) {
             console.log(`Test ${i}:\n${test.toString()}`);
             i++;
         }
     }
 
-    private testsToString(tests: List<WhiskerTest>): string {
+    private testsToString(tests: WhiskerTest[]): string {
         const converter = new JavaScriptConverter();
         return converter.getSuiteText(tests);
     }
@@ -93,13 +92,13 @@ export class Search {
         const csvString: string = stats.asCsv();
         console.log(csvString);
 
-        const tests = new List<WhiskerTest>();
-        const dummyTest = new TestChromosome(new List<number>(), null, null);
-        const events = new List<EventAndParameters>();
-        events.add(new EventAndParameters(new WaitEvent(), [0]));
+        const tests: WhiskerTest[] = [];
+        const dummyTest = new TestChromosome([], null, null);
+        const events: EventAndParameters[] = [];
+        events.push(new EventAndParameters(new WaitEvent(), [0]));
         dummyTest.trace = new ExecutionTrace([], events);
 
-        tests.add(new WhiskerTest(dummyTest));
+        tests.push(new WhiskerTest(dummyTest));
         const javaScriptText = this.testsToString(tests);
         return [javaScriptText, 'empty project'];
     }
@@ -112,12 +111,26 @@ export class Search {
          * For example, if a project contains a "wait 60 seconds" block, we might get n+60 entries. This is
          * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
          */
-        let stoppingCondition : StoppingCondition<Chromosome>;
-        if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
+        let stoppingCondition: StoppingCondition<Chromosome>;
+        if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator) {
+            let maxIterations: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-        }
-        else {
-            stoppingCondition = config.searchAlgorithmProperties.getStoppingCondition();
+            if (stoppingCondition instanceof FixedIterationsStoppingCondition) {
+                maxIterations = stoppingCondition.maxIterations;
+            } else if (stoppingCondition instanceof OneOfStoppingCondition) {
+                for (const d of stoppingCondition.conditions) {
+                    if (d instanceof FixedIterationsStoppingCondition) {
+                        if (maxIterations == undefined || maxIterations > d.maxIterations) { // take the minimum
+                            maxIterations = d.maxIterations;
+                        }
+                    }
+                }
+            }
+            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(maxIterations);
+            console.log(csvOutput);
+            return csvOutput;
+        } else {
+            stoppingCondition = config.searchAlgorithmProperties.stoppingCondition;
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.
@@ -150,10 +163,10 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
-                     configName: string, accelerationFactor: number, seedString: string): Promise<Array<string>> {
+    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
+                     accelerationFactor: number, seedString: string, template?: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
-
+        Container.template = template;
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);
@@ -167,7 +180,8 @@ export class Search {
         if (!ScratchEventExtractor.hasEvents(this.vm)) {
             return this.handleEmptyProject();
         }
-        console.log(this.vm)
+        config._setReservedCodons(vm);
+        console.log(this.vm);
 
         await util.prepare(accelerationFactor || 1);
         util.start();
@@ -178,7 +192,7 @@ export class Search {
             // Prioritize seed set by CLI
             if (configSeed) {
                 console.warn(`You have specified two seeds! Using seed ${seedString} from the CLI and ignoring \
-seed ${configSeed} defined within the config files.`)
+seed ${configSeed} defined within the config files.`);
             }
             Randomness.setInitialSeeds(seedString);
         } else if (configSeed) {
@@ -192,6 +206,12 @@ seed ${configSeed} defined within the config files.`)
         const tests = testListWithSummary.testList;
         this.printTests(tests);
         const csvOutput = this.outputCSV(config);
+
+        if (Container.isNeuroevolution &&
+            (Container.config.neuroevolutionProperties.populationType === 'static' ||
+                Container.config.neuroevolutionProperties.populationType === 'dynamic')) {
+            testListWithSummary.summary = csvOutput;
+        }
 
         const javaScriptText = this.testsToString(tests);
         return [javaScriptText, testListWithSummary.summary, csvOutput];

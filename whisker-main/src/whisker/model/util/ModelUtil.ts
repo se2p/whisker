@@ -105,18 +105,12 @@ export abstract class ModelUtil {
     /**
      * Check the attribute name.
      * @param testDriver Instance of the test driver.
-     * @param sprite Sprite instance.
+     * @param spriteName Sprite's name.
      * @param attrName Name of the attribute e.g. x.
      */
-    static checkAttributeExistence(testDriver: TestDriver, sprite: Sprite, attrName: string) {
-        let undefinedVal;
-        try {
-            undefinedVal = eval("sprite." + attrName) == null;
-        } catch (e) {
-            throw getAttributeNotFoundError(attrName, sprite.name);
-        }
-        if (undefinedVal) {
-            throw getAttributeNotFoundError(attrName, sprite.name);
+    static checkAttributeExistence(testDriver: TestDriver, spriteName: string, attrName: string) {
+        if (!this.isAnAttribute(attrName)) {
+            throw getAttributeNotFoundError(attrName, spriteName);
         }
     }
 
@@ -232,10 +226,17 @@ export abstract class ModelUtil {
     }
 
     private static isAnAttribute(attrName: string) {
+        return this.testAttributeName(attrName) ||
+            (attrName.startsWith('old.') && this.testAttributeName(attrName.substring(4)));
+    }
+
+    private static testAttributeName(attrName: string) {
+        // currentCostume and costume both get the name of the current costume.
         return attrName === "effects" || attrName === "x" || attrName === "y" || attrName === "pos"
             || attrName === "direction" || attrName === "visible" || attrName === "size"
-            || attrName === "currentCostume" || attrName === "volume" || attrName === "layerOrder"
-            || attrName === "sayText" || attrName.startsWith('old');
+            || attrName === "currentCostume" || attrName === "costume" || attrName === "currentCostumeName"
+            || attrName === "volume" || attrName === "layerOrder"
+            || attrName === "sayText" || attrName == "rotationStyle";
     }
 
     /**

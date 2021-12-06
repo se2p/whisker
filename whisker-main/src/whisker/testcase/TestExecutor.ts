@@ -22,7 +22,6 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 import {TestChromosome} from "./TestChromosome";
 import {EventAndParameters, ExecutionTrace} from "./ExecutionTrace";
-import {List} from "../utils/List";
 import {ScratchEvent} from "./events/ScratchEvent";
 import {WaitEvent} from "./events/WaitEvent";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
@@ -32,6 +31,9 @@ import {ScratchEventExtractor} from "./ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime";
 import {EventSelector} from "./EventSelector";
 import VMWrapper = require("../../vm/vm-wrapper.js");
+import {Container} from "../utils/Container";
+import {VariableLengthConstrainedChromosomeMutation} from "../integerlist/VariableLengthConstrainedChromosomeMutation";
+import {ReductionLocalSearch} from "../search/operators/LocalSearch/ReductionLocalSearch";
 
 
 export class TestExecutor {
@@ -52,7 +54,7 @@ export class TestExecutor {
         this.recordInitialState();
     }
 
-    async executeTests(tests: List<TestChromosome>): Promise<void> {
+    async executeTests(tests: TestChromosome[]): Promise<void> {
         for (const testChromosome of tests) {
             if (testChromosome.trace == null) {
                 await this.execute(testChromosome);
@@ -65,7 +67,7 @@ export class TestExecutor {
      * @param testChromosome the testChromosome that should be executed.
      */
     async execute(testChromosome: TestChromosome): Promise<ExecutionTrace> {
-        const events = new List<EventAndParameters>();
+        const events: EventAndParameters[] = [];
 
         Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
@@ -76,54 +78,63 @@ export class TestExecutor {
 
         let numCodon = 0;
         const codons = testChromosome.getGenes();
-        let totalCoverageSize = 0;
-        let codonLastImproved = 0;
-        let lastImprovedTrace: ExecutionTrace;
+        let fitnessValues: number[];
         let targetFitness = Number.MAX_SAFE_INTEGER;
 
-        while (numCodon < codons.size() && (this._projectRunning || this.hasActionEvents(availableEvents))) {
+        while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
-            if (availableEvents.isEmpty()) {
+            if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
-            // Select and send the next Event to the VM.
+            // Select and send the next Event to the VM & calculate the new fitness values.
             numCodon = await this.selectAndSendEvent(codons, numCodon, availableEvents, events);
 
-            // Check if the sent event increased the block coverage. If so save the state up to this point in time.
-            const currentCoverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-            if (currentCoverage.size > totalCoverageSize) {
-                codonLastImproved = numCodon;
-                totalCoverageSize = currentCoverage.size;
-                lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
-            }
+            // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
+            testChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
+            testChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
             // Check if we came closer to cover a specific block. This is only makes sense when using a SingleObjective
             // focused Algorithm like MIO.
             if (testChromosome.targetFitness) {
-                testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events.clone());
-                testChromosome.coverage = currentCoverage;
+                // Enforce the recalculation of the fitness value by deleting the cached value.
+                testChromosome.deleteCacheEntry(testChromosome.targetFitness);
                 const currentFitness = testChromosome.getFitness(testChromosome.targetFitness);
                 if (testChromosome.targetFitness.compare(currentFitness, targetFitness) > 0) {
                     targetFitness = currentFitness;
                     testChromosome.lastImprovedFitnessCodon = numCodon;
                 }
             }
+
+            // Determine the last improved codon and trace if we require it for further mutation/localSearch operations.
+            if (TestExecutor.doRequireLastImprovedCodon(testChromosome)) {
+                // If this was the first executed event we have to set up the reference fitnessValues first.
+                if (!fitnessValues) {
+                    fitnessValues = TestExecutor.calculateUncoveredFitnessValues(testChromosome);
+                }
+                const newFitnessValues = TestExecutor.calculateUncoveredFitnessValues(testChromosome);
+
+
+                // Check if the latest execution of the given event has improved overall fitness.
+                if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
+                    testChromosome.lastImprovedCodon = numCodon;
+                    testChromosome.lastImprovedTrace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, [...events]);
+                }
+                fitnessValues = newFitnessValues;
+            }
         }
 
         // Check if the last event had to use a codon from the start of the codon list.
         // Extend the codon list by the required amount of codons by duplicating the first few codons.
-        if (numCodon > codons.size()) {
-            const codonsToDuplicate = numCodon - codons.size();
-            codons.addList(codons.subList(0, codonsToDuplicate));
+        if (numCodon > codons.length) {
+            const codonsToDuplicate = numCodon - codons.length;
+            codons.push(...codons.slice(0, codonsToDuplicate));
         }
 
         // Set attributes of the testChromosome after executing its genes.
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        testChromosome.lastImprovedCoverageCodon = codonLastImproved;
-        testChromosome.lastImprovedTrace = lastImprovedTrace;
 
 
         this._vmWrapper.end();
@@ -146,19 +157,19 @@ export class TestExecutor {
         let availableEvents = this._eventExtractor.extractEvents(this._vm);
         let eventCount = 0;
         const random = Randomness.getInstance();
-        const events = new List<EventAndParameters>();
+        const events: EventAndParameters[] = [];
 
         while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
-            if (availableEvents.isEmpty()) {
+            if (availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
             // Randomly select an event and increase the event count.
-            const eventIndex = random.nextInt(0, availableEvents.size());
-            randomEventChromosome.getGenes().add(eventIndex);
-            const event = availableEvents.get(eventIndex);
+            const eventIndex = random.nextInt(0, availableEvents.length);
+            randomEventChromosome.getGenes().push(eventIndex);
+            const event = availableEvents[eventIndex];
             eventCount++;
 
             // If the selected event requires additional parameters; select them randomly as well.
@@ -166,13 +177,13 @@ export class TestExecutor {
                 // args are set in the event itself since the event knows which range of random values makes sense.
                 event.setParameter(null, "random");
             }
-            events.add(new EventAndParameters(event, event.getParameters()));
+            events.push(new EventAndParameters(event, event.getParameters()));
             await event.apply();
             StatisticsCollector.getInstance().incrementEventsCount()
 
             // Send a WaitEvent to the VM
             const waitEvent = new WaitEvent(1);
-            events.add(new EventAndParameters(waitEvent, []));
+            events.push(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
 
         }
@@ -193,15 +204,15 @@ export class TestExecutor {
      * @param events collects the chosen events including its parameters
      * @returns the new position in the codon list after selecting an event and its parameters.
      */
-    public async selectAndSendEvent(codons: List<number>, numCodon: number, availableEvents: List<ScratchEvent>,
-                                    events: List<EventAndParameters>): Promise<number> {
-        // Select the next event and set its parameter
+    public async selectAndSendEvent(codons: number[], numCodon: number, availableEvents: ScratchEvent[],
+                                    events: EventAndParameters[]): Promise<number> {
         const nextEvent: ScratchEvent = this._eventSelector.selectEvent(codons, numCodon, availableEvents);
         numCodon++;
         const parameters = TestExecutor.getArgs(nextEvent, codons, numCodon);
         nextEvent.setParameter(parameters, "codon");
-        events.add(new EventAndParameters(nextEvent, parameters));
-        numCodon += nextEvent.numSearchParameter();
+        events.push(new EventAndParameters(nextEvent, parameters));
+        // We subtract 1 since we already consumed the event-codon.
+        numCodon += (Container.config.searchAlgorithmProperties['reservedCodons'] - 1);
         this.notify(nextEvent, parameters);
         // Send the chosen Event including its parameters to the VM
         await nextEvent.apply();
@@ -209,7 +220,7 @@ export class TestExecutor {
 
         // Send a WaitEvent to the VM
         const waitEvent = new WaitEvent(1);
-        events.add(new EventAndParameters(waitEvent, []));
+        events.push(new EventAndParameters(waitEvent, []));
         await waitEvent.apply();
         return numCodon;
     }
@@ -220,10 +231,10 @@ export class TestExecutor {
      * @param codons the list of codons
      * @param codonPosition the starting position from which on codons should be collected as parameters
      */
-    private static getArgs(event: ScratchEvent, codons: List<number>, codonPosition: number): number[] {
+    private static getArgs(event: ScratchEvent, codons: number[], codonPosition: number): number[] {
         const args = [];
         for (let i = 0; i < event.numSearchParameter(); i++) {
-            args.push(codons.get(codonPosition++ % codons.size()));
+            args.push(codons[codonPosition++ % codons.length]);
         }
         return args;
     }
@@ -259,8 +270,8 @@ export class TestExecutor {
      * Checks if the given event list contains actionEvents, i.e events other than WaitEvents.
      * @param events the event list to check.
      */
-    private hasActionEvents(events: List<ScratchEvent>) {
-        return events.filter(event => !(event instanceof WaitEvent)).size() > 0;
+    private hasActionEvents(events: ScratchEvent[]) {
+        return events.filter(event => !(event instanceof WaitEvent)).length > 0;
     }
 
     public resetState(): void {
@@ -288,8 +299,9 @@ export class TestExecutor {
             this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
             this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
             this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
-            this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
-            this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
+            const x = this._initialState[targetsKey]["x"];
+            const y = this._initialState[targetsKey]["y"];
+            this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
         }
     }
 
@@ -309,5 +321,46 @@ export class TestExecutor {
                 y: this._vm.runtime.targets[targetsKey]["y"],
             }
         }
+    }
+
+    /**
+     * Determined whether we have to save the last improved codon.
+     * @param chromosome the chromosome holding its mutation operator.
+     * @returns boolean determining whether we have to determine the last improved codon.
+     */
+    public static doRequireLastImprovedCodon(chromosome: TestChromosome): boolean {
+        return chromosome.getMutationOperator() instanceof VariableLengthConstrainedChromosomeMutation ||
+            Container.config.getLocalSearchOperators().some(operator => operator instanceof ReductionLocalSearch);
+    }
+
+    /**
+     * Gathers the fitness value for each uncovered block. This can be used to trace the execution back up to which
+     * point no further improvement has been seen.
+     * @param chromosome the chromosome carrying the block trace used to calculate the fitness values.
+     * @return number[] representing the array of fitness values for uncovered blocks only.
+     */
+    public static calculateUncoveredFitnessValues(chromosome: TestChromosome): number[] {
+        // Flush fitnessCache to enforce a recalculation of the fitness values.
+        chromosome.flushFitnessCache();
+        const fitnessValues: number[] = []
+        for (const fitnessFunction of Container.statementFitnessFunctions) {
+            // Only look at fitnessValues originating from uncovered blocks.
+            const fitness = chromosome.getFitness(fitnessFunction);
+            if (!fitnessFunction.isOptimal(fitness)) {
+                fitnessValues.push(chromosome.getFitness(fitnessFunction));
+            }
+        }
+        return fitnessValues;
+    }
+
+    /**
+     * Compares fitness values between oldFitnessValues and newFitnessValues and determined whether we see any
+     * improvement within the newFitnessValues.
+     * @param oldFitnessValues the old fitness values used as a reference point
+     * @param newFitnessValues new fitness values which might show some improvements.
+     */
+    public static hasFitnessOfUncoveredStatementsImproved(oldFitnessValues: number[], newFitnessValues: number[]): boolean {
+        return newFitnessValues.length < oldFitnessValues.length ||
+            newFitnessValues.some((value, index) => value < oldFitnessValues[index]);
     }
 }

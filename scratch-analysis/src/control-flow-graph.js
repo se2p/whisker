@@ -12,7 +12,7 @@ import {Graph, GraphNode, Mapping} from './graph-utils';
  * @see GraphNode
  */
 export class ControlFlowGraph extends Graph {
-    constructor () {
+    constructor() {
         const entryNode = new GraphNode('Entry');
         const exitNode = new GraphNode('Exit');
 
@@ -26,7 +26,7 @@ export class ControlFlowGraph extends Graph {
  * @see GraphNode
  */
 export class EventNode extends GraphNode {
-    constructor (id, event) {
+    constructor(id, event) {
         super(id);
 
         this.event = event;
@@ -39,7 +39,7 @@ export class EventNode extends GraphNode {
  * @see GraphNode
  */
 export class UserEventNode extends GraphNode {
-    constructor (id, userEvent) {
+    constructor(id, userEvent) {
         super(id);
 
         this.userEvent = userEvent;
@@ -114,102 +114,105 @@ const _extendBasicBlockSuccessors2 = (cfg, successors, shouldSuccessors, startNo
 const _fixControlStatement = (cfg, successors, controlNode) => {
     const controlStmt = controlNode.block;
     switch (controlStmt.opcode) {
-    case 'control_repeat_until': {
-        const branchStart = getBranchStart(controlStmt);
-        // Check whether the branch is empty.
-        if (branchStart) {
-            _extendBasicBlockSuccessors(cfg, successors, [controlNode, cfg.exit()], cfg.getNode(branchStart), true);
-        }
-        break;
-    }
-    case 'control_repeat': {
-        const branchStart = getBranchStart(controlStmt);
-        // Check whether the branch is empty.
-        if (branchStart) {
-            _extendBasicBlockSuccessors(cfg, successors, [controlNode], cfg.getNode(branchStart), true);
-        }
-        break;
-    }
-    case 'control_forever': {
-        const branchStart = getBranchStart(controlStmt);
-        if (branchStart) {
-            _extendBasicBlockSuccessors(cfg, successors, [controlNode], cfg.getNode(branchStart), true);
-            successors.set(controlNode.id, [cfg.getNode(branchStart), cfg.exit()]);
-        } else {
-            successors.set(controlNode.id, [cfg.exit()]);
-        }
-
-        break;
-    }
-    case 'control_if': {
-        const ifBranchStart = getBranchStart(controlStmt);
-        if (ifBranchStart) {
-            const afterControl = successors.getAsArray(controlNode.id)
-                .filter(n => n.id !== ifBranchStart);
-
-            _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(ifBranchStart), false);
-        }
-        break;
-    }
-    case 'control_if_else': {
-        const ifBranchStart = getBranchStart(controlStmt);
-        const elseBranchStart = getElseBranchStart(controlStmt);
-
-        if (ifBranchStart && elseBranchStart) {
-            const afterControl = successors.getAsArray(controlNode.id)
-                .filter(n => n.id !== ifBranchStart && n.id !== elseBranchStart);
-            successors.removeAll(controlNode.id, afterControl);
-
-            _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(ifBranchStart), false);
-            _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(elseBranchStart), false);
-        } else if (ifBranchStart) {
-            // Only if branch has content
-            const afterControl = successors.getAsArray(controlNode.id)
-                .filter(n => n.id !== ifBranchStart);
-
-            _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(ifBranchStart), false);
-        } else if (elseBranchStart) {
-            // Only else branch has content
-            const afterControl = successors.getAsArray(controlNode.id)
-                .filter(n => n.id !== elseBranchStart);
-
-            _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(elseBranchStart), false);
-        } else {
-            // None has content -> no changes
-        }
-        break;
-    }
-    case 'control_stop': {
-        const stopOption = Extract.stopOption(controlStmt);
-        switch (stopOption) {
-        case 'this script':
-        case 'all': {
-            successors.set(controlNode.id, [cfg.exit()]);
+        case 'control_repeat_until': {
+            const branchStart = getBranchStart(controlStmt);
+            // Check whether the branch is empty.
+            if (branchStart) {
+                _extendBasicBlockSuccessors(cfg, successors, [controlNode, cfg.exit()], cfg.getNode(branchStart), true);
+            }
             break;
         }
-        case 'other scripts in sprite':
-            // Since this is just a 'normal' block, we can ignore it
+        case 'control_repeat': {
+            const branchStart = getBranchStart(controlStmt);
+            // Check whether the branch is empty.
+            if (branchStart) {
+                _extendBasicBlockSuccessors(cfg, successors, [controlNode], cfg.getNode(branchStart), true);
+            }
+
+            // Adding a "fake" edge from the loop head to the exit node turns repeat loops into control dependencies.
+            successors.put(controlNode.id, cfg.exit());
+
             break;
-        default:
-            console.log(`Unrecognized stop option ${stopOption}.`);
         }
-        break;
-    }
-    case 'control_delete_this_clone':
-        successors.set(controlNode.id, [cfg.exit()]);
-        break;
-    case 'control_wait_until':
-        successors.put(controlNode.id, cfg.getNode(controlNode.id));
-        successors.put(controlNode.id, cfg.exit());
-        break;
-    case 'control_wait':
-    case 'control_start_as_clone':
-    case 'control_create_clone_of':
-        // Can ignore these cases
-        break;
-    default: {
-        console.log(`Unhandled control statement ${controlStmt.opcode} for block ${controlStmt.id}`);
-    }
+        case 'control_forever': {
+            const branchStart = getBranchStart(controlStmt);
+            if (branchStart) {
+                _extendBasicBlockSuccessors(cfg, successors, [controlNode], cfg.getNode(branchStart), true);
+                successors.set(controlNode.id, [cfg.getNode(branchStart), cfg.exit()]);
+            } else {
+                successors.set(controlNode.id, [cfg.exit()]);
+            }
+
+            break;
+        }
+        case 'control_if': {
+            const ifBranchStart = getBranchStart(controlStmt);
+            if (ifBranchStart) {
+                const afterControl = successors.getAsArray(controlNode.id)
+                    .filter(n => n.id !== ifBranchStart);
+
+                _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(ifBranchStart), false);
+            }
+            break;
+        }
+        case 'control_if_else': {
+            const ifBranchStart = getBranchStart(controlStmt);
+            const elseBranchStart = getElseBranchStart(controlStmt);
+
+            if (ifBranchStart && elseBranchStart) {
+                const afterControl = successors.getAsArray(controlNode.id)
+                    .filter(n => n.id !== ifBranchStart && n.id !== elseBranchStart);
+                successors.removeAll(controlNode.id, afterControl);
+
+                _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(ifBranchStart), false);
+                _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(elseBranchStart), false);
+            } else if (ifBranchStart) {
+                // Only if branch has content
+                const afterControl = successors.getAsArray(controlNode.id)
+                    .filter(n => n.id !== ifBranchStart);
+
+                _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(ifBranchStart), false);
+            } else if (elseBranchStart) {
+                // Only else branch has content
+                const afterControl = successors.getAsArray(controlNode.id)
+                    .filter(n => n.id !== elseBranchStart);
+
+                _extendBasicBlockSuccessors(cfg, successors, afterControl, cfg.getNode(elseBranchStart), false);
+            } else {
+                // None has content -> no changes
+            }
+            break;
+        }
+        case 'control_stop': {
+            const stopOption = Extract.stopOption(controlStmt);
+            switch (stopOption) {
+                case 'this script':
+                case 'all': {
+                    successors.set(controlNode.id, [cfg.exit()]);
+                    break;
+                }
+                case 'other scripts in sprite':
+                    // Since this is just a 'normal' block, we can ignore it
+                    break;
+                default:
+                    console.log(`Unrecognized stop option ${stopOption}.`);
+            }
+            break;
+        }
+        case 'control_delete_this_clone':
+            successors.set(controlNode.id, [cfg.exit()]);
+            break;
+        case 'control_wait_until':
+            successors.put(controlNode.id, cfg.getNode(controlNode.id));
+            successors.put(controlNode.id, cfg.exit());
+            break;
+        case 'control_start_as_clone':
+        case 'control_create_clone_of':
+            // Can ignore these cases
+            break;
+        default: {
+            console.log(`Unhandled control statement ${controlStmt.opcode} for block ${controlStmt.id}`);
+        }
     }
 };
 
@@ -230,9 +233,16 @@ const _fixControlStatements = (cfg, successors, node, visited) => {
     visited.push(node);
 
     const block = node.block;
-    if (block && ControlFilter.controlBlock(block)) {
+    if (block && ControlFilter.controlBlock(block) && !ControlFilter.executionHaltingBlock(block)) {
         _fixControlStatement(cfg, successors, node);
     }
+
+    // We add a "fake" edge from execution halting Blocks to the exit node in order to turn those blocks
+    // into control dependencies.
+    else if (block && ControlFilter.executionHaltingBlock(block)) {
+        successors.put(node.id, cfg.exit());
+    }
+
     for (const next of successors.get(node.id)) {
         _fixControlStatements(cfg, successors, next, visited);
     }
@@ -266,22 +276,22 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
         opcode: node.block.opcode
     };
     switch (node.block.opcode) {
-    case 'event_whenflagclicked': {
-        // necessary event information already complete
-        break;
-    }
-    case 'event_whenthisspriteclicked': {
-        event.value = Extract.clickedSprite(targets, node.block);
-        break;
-    }
-    case 'event_whenstageclicked': {
-        event.value = 'Stage';
-        break;
-    }
-    case 'event_whenkeypressed': {
-        event.value = Extract.clickedKey(node.block);
-        break;
-    }
+        case 'event_whenflagclicked': {
+            // necessary event information already complete
+            break;
+        }
+        case 'event_whenthisspriteclicked': {
+            event.value = Extract.clickedSprite(targets, node.block);
+            break;
+        }
+        case 'event_whenstageclicked': {
+            event.value = 'Stage';
+            break;
+        }
+        case 'event_whenkeypressed': {
+            event.value = Extract.clickedKey(node.block);
+            break;
+        }
     }
 
     const eventKey = `${event.name}${event.value ? (`:${event.value}`) : ''}`;
@@ -433,7 +443,7 @@ export const generateCFG = vm => {
     // Adds an extra event node for Broadcast and Cloning events
     // iff an event has at least one sending AND receiving block.
     for (const eventName of eventSend.keys()) {
-        const sendEvents  = eventSend.get(eventName);
+        const sendEvents = eventSend.get(eventName);
         const receiveEvents = eventReceive.get(eventName);
 
         if (sendEvents.size && receiveEvents.size) {

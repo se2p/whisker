@@ -18,7 +18,7 @@
  *
  */
 
-import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
+import {GeneticAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {Randomness} from "../utils/Randomness";
 import {TestChromosome} from "./TestChromosome";
 import {Mutation} from "../search/Mutation";
@@ -30,7 +30,7 @@ export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerat
     private readonly _minInitialLength: number;
     private readonly _maxInitialLength: number;
 
-    constructor(properties: SearchAlgorithmProperties<TestChromosome>,
+    constructor(properties: GeneticAlgorithmProperties<TestChromosome>,
                 mutationOp: Mutation<TestChromosome>,
                 crossoverOp: Crossover<TestChromosome>,
                 minInitialLength: number,
@@ -40,8 +40,14 @@ export class VariableLengthTestChromosomeGenerator extends TestChromosomeGenerat
         this._maxInitialLength = maxInitialLength;
     }
 
+    /**
+     * Randomly select a length in the range of [minInitialLength, maxInitialLength] that includes the reserved
+     * codon space.
+     * @returns number representing the length of the codon sequence that should be generated.
+     */
     protected getLength(): number {
-        return Randomness.getInstance().nextInt(this._minInitialLength, this._maxInitialLength);
+        const length = Randomness.getInstance().nextInt(this._minInitialLength, this._maxInitialLength);
+        return length * this._properties.reservedCodons;
     }
 
 }

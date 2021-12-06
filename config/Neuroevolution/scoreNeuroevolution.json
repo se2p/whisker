@@ -1,11 +1,12 @@
 {
     "testGenerator": "neuroevolution",
     "algorithm": "neat",
+    "testSuiteType": "dynamic",
     "populationType": "neat",
-    "populationSize": 5,
-    "numberOfSpecies": 10,
+    "populationSize": 150,
+    "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
-    "penalizingAge": 15,
+    "penalizingAge": 20,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
     "extractor": "neuroevolution",
@@ -24,8 +25,8 @@
         "mutationAddConnection": 0.05,
         "recurrentConnection": 0.1,
         "addConnectionTries": 50,
-        "populationChampionNumberOffspring": 5,
-        "populationChampionNumberClones": 3,
+        "populationChampionNumberOffspring": 3,
+        "populationChampionNumberClones": 1,
         "populationChampionConnectionMutation": 0.3,
         "mutationAddNode": 0.03,
         "mutateWeights": 0.6,
@@ -35,7 +36,7 @@
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 5.0,
+        "distanceThreshold": 3.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
         "weightCoefficient": 0.3
@@ -46,8 +47,7 @@
     },
     "networkFitness": {
         "type": "score",
-        "timeout": 10000000,
-        "offset": 0.01
+        "timeout": 10000
     },
     "stoppingCondition": {
         "type": "combined",
@@ -57,7 +57,8 @@
                 "iterations": 50
             },
             {
-                "type": "optimal"
+                "type": "fixedTime",
+                "duration": 828000000
             }
         ]
     },

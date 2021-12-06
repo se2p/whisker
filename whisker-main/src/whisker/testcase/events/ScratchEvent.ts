@@ -72,9 +72,15 @@ export abstract class ScratchEvent {
     abstract toString(): string;
 
     /**
-     * Returns an identifier as string. Events containing parameters defined during search obtain the same
-     * identifier and Events whose parameters are determined by the ScratchEventExtractor get different identifiers.
-     * The id is used to query the right RegressionNode if search defined parameters for a specific Event are needed.
+     * Transforms the event into a JSON representation.
+     */
+    abstract toJSON(): Record<string, any>
+
+    /**
+     The stringIdentifier is not intended to be entirely unique. Its aim is to differentiate events based on
+     their type and the properties that are determined by the event extractor but not on the parameters determined by
+     codons during the search since that's the relevant information we need when deciding if two events should be
+     treated as similar or not, for example, during TestExecution.
      */
     abstract stringIdentifier(): string;
 

@@ -47,7 +47,6 @@ const cli = {
             .option('-s, --scratchPath <Path>', 'Scratch application to run, or directory containing results', false)
             .option('-t, --testPath <Path>', 'Tests to run', false)
             .option('-m, --modelPath <Path>', 'Model to test with', false)
-            // todo not clear with model repetition
             .option('-mr, --modelRepetition <Integer>', 'Model test repetitions. Ignored if a test suite is specified.', "1")
             .option('-mt, --modelDuration <Integer>', 'Maximal time of one model test run in seconds', "30")
             .option('-mcs, --modelCaseSensitive <Boolean>', 'Whether model test should test names case sensitive', false)
@@ -63,6 +62,7 @@ const cli = {
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
             .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
+            .option('-n, --isNeuroevolution', 'If Whisker should use dynamic test suites', false)
             .option('-se, --seed <Integer>', 'Seeds the Scratch-VM using the specified integer');
 
         commander.parse(process.argv);
@@ -87,6 +87,7 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
+            isNeuroevolution,
             seed
         } = commander._optionValues;
 
@@ -112,6 +113,7 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
+            isNeuroevolution,
             seed
         };
     }

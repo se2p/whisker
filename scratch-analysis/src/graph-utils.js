@@ -107,6 +107,10 @@ class Graph {
         this._nodes[node.id] = node;
     }
 
+    removeNode(node){
+        delete this._nodes[node.id];
+    }
+
     addEdge (node, successor) {
         this._predecessors.put(successor.id, node);
         this._successors.put(node.id, successor);

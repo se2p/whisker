@@ -11,7 +11,7 @@ const {Constraints} = require('./constraints');
  * Wraps the used virtual machine and extends existing functionality.
  */
 class VMWrapper {
-    constructor (vm) {
+    constructor(vm) {
 
         /**
          * @type {VirtualMachine} The used virtual machine.
@@ -96,7 +96,7 @@ class VMWrapper {
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
         this._onQuestion = this.onQuestion.bind(this);
-        this._onAnswer   = this.onAnswer.bind(this);
+        this._onAnswer = this.onAnswer.bind(this);
         this._onTargetCreated = this.sprites.onTargetCreated.bind(this.sprites);
         this._onSayOrThink = this.sprites.doOnSayOrThink.bind(this.sprites);
         this._onVariableChange = this.sprites.doOnVariableChange.bind(this.sprites);
@@ -107,7 +107,7 @@ class VMWrapper {
      * @param {string} action The message about the action to take.
      * @returns {string} The action message..
      */
-    onConstraintFailure (action) {
+    onConstraintFailure(action) {
         if (action) {
             this.actionOnConstraintFailure = action;
         }
@@ -118,7 +118,7 @@ class VMWrapper {
      * Takes a run step.
      * @returns {Promise<*>} Returns AssertionError, if constraint failed.
      */
-    async step () {
+    async step() {
         this.callbacks.callCallbacks(false);
         await this._yield();
 
@@ -162,10 +162,10 @@ class VMWrapper {
      * @param {number=} steps Number of steps the run is lasting.
      * @returns {number} Runtime in ms.
      */
-    async run (condition, timeout, steps) {
+    async run(condition, timeout, steps) {
         if (this.isRunning()) {
             throw new Error('Warning: A run was started while another run was still going! Make sure you are not ' +
-                          'missing any await-statements in your test.');
+                'missing any await-statements in your test.');
         }
 
         condition = condition || (() => false);
@@ -186,8 +186,8 @@ class VMWrapper {
             this.stepsExecuted++;
 
             if (constraintError &&
-               (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
-                this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
+                (this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_FAIL ||
+                    this.actionOnConstraintFailure === VMWrapper.ON_CONSTRAINT_FAILURE_STOP)) {
                 break;
             }
         }
@@ -212,7 +212,7 @@ class VMWrapper {
      * @param {number} time Time constraint for runtime.
      * @returns {number} Runtime in ms.
      */
-    async runForTime (time) {
+    async runForTime(time) {
         return await this.run(undefined, time);
     }
 
@@ -222,7 +222,7 @@ class VMWrapper {
      * @param {number=} timeout Time constraint for runtime.
      * @returns {number} Runtime in ms.
      */
-    async runUntil (condition, timeout) {
+    async runUntil(condition, timeout) {
         return await this.run(condition, timeout);
     }
 
@@ -232,7 +232,7 @@ class VMWrapper {
      * @param {number=} timeout Time constraint for runtime.
      * @returns {number} Runtime in ms .
      */
-    async runUntilChanges (callback, timeout) {
+    async runUntilChanges(callback, timeout) {
         const initialValue = callback();
         return await this.run(() => callback() !== initialValue, timeout);
     }
@@ -242,21 +242,21 @@ class VMWrapper {
      * @param {number} steps Step constraint for run.
      * @returns {number} Runtime in steps.
      */
-    async runForSteps (steps) {
+    async runForSteps(steps) {
         return this.convertFromTimeToSteps(await this.run(undefined, undefined, steps));
     }
 
     /**
      * Cancels the current run by setting the running property to false.
      */
-    cancelRun () {
+    cancelRun() {
         this.running = false;
     }
 
     /**
      * Cancels and aborts the current run.
      */
-    abort () {
+    abort() {
         this.cancelRun();
         this.aborted = true;
         log.warn("Run aborted");
@@ -266,7 +266,7 @@ class VMWrapper {
      * Gives back the total timespan since the start of the test suite taking the acceleration factor into account.
      * @return {number} Runtime in ms.
      */
-    getTotalTimeElapsed () {
+    getTotalTimeElapsed() {
         return this.getTotalStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
@@ -274,7 +274,7 @@ class VMWrapper {
      * Gives back the timespan since the last run started taking the acceleration factor into account.
      * @return {number} Runtime in ms.
      */
-    getRunTimeElapsed () {
+    getRunTimeElapsed() {
         return this.getRunStepsExecuted() * this.vm.runtime.currentStepTime * this.accelerationFactor;
     }
 
@@ -282,7 +282,7 @@ class VMWrapper {
      * Gives back the total executed steps since the start of the test suite.
      * @return {number} Runtime in steps.
      */
-    getTotalStepsExecuted () {
+    getTotalStepsExecuted() {
         return this.stepsExecuted;
     }
 
@@ -290,7 +290,7 @@ class VMWrapper {
      * Gives back the executed steps since the start of the last run.
      * @return {number} Runtime in steps.
      */
-    getRunStepsExecuted () {
+    getRunStepsExecuted() {
         return this.stepsExecuted - this.runStartStepsExecuted;
     }
 
@@ -299,7 +299,7 @@ class VMWrapper {
      * @param {number} steps Number of steps to wait.
      * @returns {Promise<void>} Promise that resolves after targets are installed.
      */
-    async wait (steps) {
+    async wait(steps) {
         await this.runForSteps(steps);
     }
 
@@ -309,10 +309,11 @@ class VMWrapper {
      * @param {number} accelerationFactor The used acceleration factor.
      * @returns {Promise<void>} Promise that resolves after targets are installed.
      */
-    async setup (project, accelerationFactor = 1) {
+    async setup(project, accelerationFactor = 1) {
         delete Runtime.THREAD_STEP_INTERVAL;
         Runtime.THREAD_STEP_INTERVAL = 1000 / 30 / accelerationFactor;
         this.vm.runtime.currentStepTime = Runtime.THREAD_STEP_INTERVAL;
+        this.vm.runtime.accelerationFactor = accelerationFactor;
         this.stepper.setStepTime(Runtime.THREAD_STEP_INTERVAL);
         clearInterval(this.vm.runtime._steppingInterval);
         this.accelerationFactor = accelerationFactor;
@@ -336,7 +337,7 @@ class VMWrapper {
      * @param deviceName Name of the device to set.
      * @param method Device method to set.
      */
-    instrumentDevice (deviceName, method) {
+    instrumentDevice(deviceName, method) {
         const device = this.vm.runtime.ioDevices[deviceName];
         let original = device[method];
 
@@ -355,7 +356,7 @@ class VMWrapper {
      * @param primitive Runtime primitive to set.
      * @param argument Primitive argument to set.
      */
-    instrumentPrimitive (primitive, argument) {
+    instrumentPrimitive(primitive, argument) {
         let original = this.vm.runtime._primitives[primitive];
 
         if (original.isInstrumented) {
@@ -375,7 +376,8 @@ class VMWrapper {
     /**
      * Start the vm wrapper by resetting it to its original state and starting the virtual machine.
      */
-    start () {
+    start() {
+        this.vm.runtime.stopAll();
         this.callbacks.clearCallbacks();
         this.inputs.clearInputs();
         this.constraints.clearConstraints();
@@ -404,7 +406,7 @@ class VMWrapper {
     /**
      * Stop the vm wrapper by resetting it to its original state and stopping the virtual machine.
      */
-    end () {
+    end() {
         this.cancelRun();
         this.vm.stopAll();
         this.vm.runtime._step();
@@ -426,7 +428,7 @@ class VMWrapper {
      * Start the tested project by activating the greenFlag block.
      */
     // TODO: reset sprites on green flag?
-    greenFlag () {
+    greenFlag() {
         this.vm.greenFlag();
     }
 
@@ -436,7 +438,7 @@ class VMWrapper {
      * @param {number} y The y coordinate on the client.
      * @return {{x: number, y: number}} The converted coordinates.
      */
-    getScratchCoords (x, y) {
+    getScratchCoords(x, y) {
         const rect = this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
         const [nWidth, nHeight] = this.vm.runtime.renderer.getNativeSize();
         return {
@@ -451,7 +453,7 @@ class VMWrapper {
      * @param {number} y The y coordinate on the scratch canvas.
      * @return {{x: number, y: number}} The converted coordinates.
      */
-    getClientCoords (x, y) {
+    getClientCoords(x, y) {
         const rect = this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
         const [nWidth, nHeight] = this.vm.runtime.renderer.getNativeSize();
         return {
@@ -464,7 +466,7 @@ class VMWrapper {
      * Gives back the width and height of the scratch stage.
      * @return {{width: number, height: number}} The stage size.
      */
-    getStageSize () {
+    getStageSize() {
         const [width, height] = this.vm.runtime.renderer.getNativeSize();
         return {
             width,
@@ -477,7 +479,7 @@ class VMWrapper {
      * @param {number} timeDuration The time in ms to convert.
      * @return {number} The converted time in steps.
      */
-    convertFromTimeToSteps (timeDuration) {
+    convertFromTimeToSteps(timeDuration) {
         const stepDuration = this.vm.runtime.currentStepTime * this.accelerationFactor;
         return timeDuration / stepDuration;
     }
@@ -485,14 +487,15 @@ class VMWrapper {
     /**
      * Finds the RenderedTarget instance of a sprite using the sprite's name.
      * @param spriteName The name of the sprite we are searching the RenderedTarget instance for.
-     * @return {RenderedTarget} The found target.
+     * @return {RenderedTarget} The found target or undefined if no target with a matching name was found.
      */
-    getTargetBySpriteName (spriteName) {
+    getTargetBySpriteName(spriteName) {
         for (const target of this.vm.runtime.targets) {
             if (target.sprite.name === spriteName) {
                 return target;
             }
         }
+        return undefined;
     }
 
     /**
@@ -501,7 +504,7 @@ class VMWrapper {
      * @param {number} y The y coordinate of the target.
      * @return {RenderedTarget} The found target.
      */
-    getTargetBySpriteCoords (x, y) {
+    getTargetBySpriteCoords(x, y) {
         for (const target of this.vm.runtime.targets) {
             if (target.x === x && target.y === y) {
                 return target;
@@ -510,10 +513,29 @@ class VMWrapper {
     }
 
     /**
+     * Getter for a global variable that is accessible through all sprites.
+     * @param {string} variableName the name of the variable we are querying.
+     * @returns {string} the value of the variable if found, undefined otherwise.
+     */
+    getGlobalVariable(variableName) {
+        return this.sprites.getSpriteVariable('Stage', variableName);
+    }
+
+    /**
+     * Setter for a global variable that is accessible through all sprites.
+     * @param {string} variableName the name of the variable whose value we want to change.
+     * @param {string} value the value we assign to the queried variable.
+     * @returns {boolean} true iff the value of the specified variable was changed, false otherwise.
+     */
+    setGlobalVariable(variableName, value) {
+        return this.sprites.setSpriteVariable('Stage', variableName, value);
+    }
+
+    /**
      * Gives back the answer given to the ask-and-wait block.
      * @return {string} Answer text.
      */
-    getAnswer () {
+    getAnswer() {
         return this.vm.runtime._primitives.sensing_answer();
     }
 
@@ -521,7 +543,7 @@ class VMWrapper {
      * Tests whether the ask block is currently active for a given target (a sprite or the stage).
      * @return {boolean} true if ask block is active, false otherwise.
      */
-    isQuestionAsked () {
+    isQuestionAsked() {
         return this.question !== null;
     }
 
@@ -529,7 +551,7 @@ class VMWrapper {
      * Sets the new ask block that is displayed.
      * @param question The new ask block.
      */
-    onQuestion (question) {
+    onQuestion(question) {
         this.question = question; // question can be null when questions are cleared
     }
 
@@ -537,7 +559,7 @@ class VMWrapper {
      * Resets the ask block if an answer is given.
      * @param answer The given answer.
      */
-    onAnswer (answer) {
+    onAnswer(answer) {
         this.question = null;
     }
 
@@ -546,7 +568,7 @@ class VMWrapper {
      * position relative to the viewport.
      * @return {DOMRect} The canvas rectangle object.
      */
-    getCanvasRect () {
+    getCanvasRect() {
         return this.vm.runtime.renderer.gl.canvas.getBoundingClientRect();
     }
 
@@ -554,7 +576,7 @@ class VMWrapper {
      * Gives back if the virtual machine is currently running.
      * @returns {boolean} true if running, false otherwise.
      */
-    isRunning () {
+    isRunning() {
         return this.running;
     }
 
@@ -562,21 +584,21 @@ class VMWrapper {
      * Gives back if the tested project is currently running.
      * @returns {boolean} true if running, false otherwise.
      */
-    isProjectRunning () {
+    isProjectRunning() {
         return this.projectRunning;
     }
 
     /**
      * Sets the project to running on start.
      */
-    onRunStart () {
+    onRunStart() {
         this.projectRunning = true;
     }
 
     /**
      * Sets the project to not running on stop.
      */
-    onRunStop () {
+    onRunStop() {
         this.projectRunning = false;
     }
 
@@ -592,7 +614,7 @@ class VMWrapper {
      * Message to fail on constraint failure.
      * @returns {string} Failure message.
      */
-    static get ON_CONSTRAINT_FAILURE_FAIL () {
+    static get ON_CONSTRAINT_FAILURE_FAIL() {
         return 'fail';
     }
 
@@ -600,7 +622,7 @@ class VMWrapper {
      * Message to stop on constraint failure.
      * @returns {string} Failure message.
      */
-    static get ON_CONSTRAINT_FAILURE_STOP () {
+    static get ON_CONSTRAINT_FAILURE_STOP() {
         return 'stop';
     }
 
@@ -608,7 +630,7 @@ class VMWrapper {
      * Message to do nothing on constraint failure.
      * @returns {string} Failure message.
      */
-    static get ON_CONSTRAINT_FAILURE_NOTHING () {
+    static get ON_CONSTRAINT_FAILURE_NOTHING() {
         return 'nothing';
     }
 }

@@ -57,9 +57,24 @@ class Output {
         $(this.div).hide();
     }
 
+    setTitle (title){
+        this.title = title;
+    }
+
     save () {
-        const blob = new Blob([this.getText()], {type: 'text/plain;charset=utf-8'});
-        FileSaver.saveAs(blob, 'output.txt');
+        if (this.getText().length > 1) {
+            if (this.getText().includes('Nodes')) {
+                const blob = new Blob([this.getText()], {type: 'application/json;charset=utf-8'});
+                if (this.title) {
+                    FileSaver.saveAs(blob, `${this.title}.json`);
+                } else {
+                    FileSaver.saveAs(blob, `populationRecord.json`);
+                }
+            } else {
+                const blob = new Blob([this.getText()], {type: 'text/plain;charset=utf-8'});
+                FileSaver.saveAs(blob, 'output.txt');
+            }
+        }
     }
 }
 
