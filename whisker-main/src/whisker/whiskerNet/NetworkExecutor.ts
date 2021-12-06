@@ -84,10 +84,6 @@ export class NetworkExecutor {
         switch (this._eventSelection) {
             case 'random':
                 return this.executeRandom(network);
-            case 'events':
-                return this.executeStaticTestSuite(network);
-            case 'eventsExtended':
-                return this.executeStaticTestSuiteExtended(network);
             case 'network':
             default:
                 return this.executeNetwork(network);
@@ -264,124 +260,6 @@ export class NetworkExecutor {
 
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
-        return network.trace;
-    }
-
-    /**
-     * Lets a neural network play the given Scratch game by always selecting the defined events.
-     * This approach equals an execution of a static test suite containing test case
-     * @param network the network which should play the given game.
-     */
-    private async executeStaticTestSuite(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events = network.trace.events;
-        let eventIndex = 0;
-
-        Randomness.seedScratch();
-
-        // Set up the Scratch-VM and start the game
-        const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._projectRunning = true;
-        this._vmWrapper.start();
-
-        // Initialise Timer for the timeout
-        let timer = Date.now();
-        this._timeout += Date.now();
-
-        // Play the game until we reach a GameOver state or the timeout
-        while (this._projectRunning && eventIndex < events.length && timer < this._timeout) {
-            // Select the nextEvent.
-            const nextEvent = events[eventIndex].event;
-            const args = events[eventIndex].parameters;
-            eventIndex++;
-            this.notify(nextEvent, args);
-            await nextEvent.apply();
-            StatisticsCollector.getInstance().incrementEventsCount();
-            timer = Date.now();
-        }
-
-        // Save the executed Trace and the covered blocks
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
-        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-
-        // End and reset the VM.
-        this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-
-        StatisticsCollector.getInstance().numberFitnessEvaluations++;
-
-        // Codons not needed here
-        network.codons = [];
-        return network.trace;
-    }
-
-    /**
-     * Lets a neural network play the given Scratch game by always selecting the defined events.
-     * This approach equals an execution of a static test suite containing test case however if the testSuite runs
-     * out of events to execute and the project is still running & has time left, it falls back to randomly
-     * selecting events from the set of available events.
-     * @param network the network which should play the given game.
-     */
-    private async executeStaticTestSuiteExtended(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events = network.trace.events;
-        let eventIndex = 0;
-
-        Randomness.seedScratch();
-
-        // Set up the Scratch-VM and start the game
-        const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._projectRunning = true;
-        this._vmWrapper.start();
-
-        // Initialise Timer for the timeout
-        let timer = Date.now();
-        this._timeout += Date.now();
-
-        // Play the game until we reach a GameOver state or the timeout
-        while (this._projectRunning && timer < this._timeout) {
-            // Select the nextEvent by fetching the nextEvent from the staticTestSuite if there are events left
-            let nextEvent: ScratchEvent
-            let args = []
-            if (eventIndex < events.length) {
-                nextEvent = events[eventIndex][0];
-                args = events[eventIndex][1];
-                eventIndex++;
-            }
-            // If there are no events left, fall back to random event selection
-            else {
-                // Collect the currently available events
-                this.availableEvents = this._eventExtractor.extractEvents(this._vm);
-
-                if (this.availableEvents.length === 0) {
-                    console.log("Whisker-Main: No events available for project.");
-                    break;
-                }
-                // Select the nextEvent, set its parameters and send it to the Scratch-VM
-                nextEvent = this._random.pick(this.availableEvents)
-                for (let i = 0; i < nextEvent.numSearchParameter(); i++) {
-                    nextEvent.setParameter(args, 'random');
-                    args.push(nextEvent.getParameters());
-                }
-            }
-            this.notify(nextEvent, args);
-            await nextEvent.apply();
-            StatisticsCollector.getInstance().incrementEventsCount();
-            timer = Date.now();
-        }
-
-        // Save the executed Trace and the covered blocks
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
-        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-
-        // End and reset the VM.
-        this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-
-        StatisticsCollector.getInstance().numberFitnessEvaluations++;
-
-        // Codons not needed here
-        network.codons = [];
         return network.trace;
     }
 

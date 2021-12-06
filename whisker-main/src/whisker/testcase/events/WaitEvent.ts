@@ -31,11 +31,11 @@ export class WaitEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.wait(this._steps);
+        await Container.testDriver.runForSteps(this._steps);
     }
 
     public toJavaScript(): string {
-        return `await t.wait(${this._steps});`;
+        return `await t.runForSteps(${this._steps});`;
     }
 
     public toJSON(): Record<string, any> {
