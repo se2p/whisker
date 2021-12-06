@@ -73,7 +73,7 @@ const _getDominators = cfg => {
                 const currentPredDominators = dominanceMap.get(predecessor);
                 // predDominators.intersect(currentPredDominators);
                 for (const predDom of predDominators) {
-                    if (!currentPredDominators.has(predDom)) {
+                    if (!currentPredDominators || !currentPredDominators.has(predDom)) {
                         predDominators.delete(predDom);
                     }
                 }
