@@ -237,7 +237,7 @@ const _fixControlStatements = (cfg, successors, node, visited) => {
         _fixControlStatement(cfg, successors, node);
     }
 
-    // We add a "fake" edge from execution halting Blocks to the exit node in order to turn those blocks
+        // We add a "fake" edge from execution halting Blocks to the exit node in order to turn those blocks
     // into control dependencies.
     else if (block && ControlFilter.executionHaltingBlock(block)) {
         successors.put(node.id, cfg.exit());
@@ -446,8 +446,7 @@ export const generateCFG = vm => {
             // Special handling for nextBackdrop statements.
             if (LooksFilter.nextBackdrop(node.block)) {
                 nextBackDropNodes.push(node)
-            }
-            else {
+            } else {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
                     eventSend.put(`backdrop:${backdropTarget}`, node);
@@ -511,6 +510,25 @@ export const generateCFG = vm => {
         }
     }
 
+    // Remove statement blocks that have no predecessors in the CFG which are therefore unreachable.
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (const node of cfg.getAllNodes()) {
+            if (node.block !== undefined &&
+                StatementFilter.isStatementBlock(node.block) &&
+                cfg.getTransitivePredecessors(node).size === 0) {
+                // If we are about to delete a node form the CFG we also have to delete it from the successor's
+                // predecessor mapping in order to repeat those recursively if they
+                for (const suc of successors.get(node.id)) {
+                    const predecessors = cfg.predecessors(suc.id);
+                    predecessors.delete(node)
+                }
+                cfg.removeNode(node);
+                changed = true;
+            }
+        }
+    }
     return cfg;
 };
 
