@@ -459,18 +459,19 @@ export const generateCFG = vm => {
     cfg.addNode(cfg.entry());
     cfg.addNode(cfg.exit());
 
-    // Adds an extra event node for Broadcast and Cloning events
-    // iff an event has at least one sending AND receiving block.
-    const eventNames = new Set([...eventSend.keys(), ...eventReceive.keys()]);
-    for (const eventName of eventNames) {
-        const sendEvents = eventSend.get(eventName);
-        const receiveEvents = eventReceive.get(eventName);
+    // Adds an extra event node for Broadcast and Cloning events iff the respective events can be triggered.
+    const eventIds = new Set([...eventSend.keys(), ...eventReceive.keys()]);
+    for (const eventId of eventIds) {
+        const sendEvents = eventSend.get(eventId);
+        const receiveEvents = eventReceive.get(eventId);
+        const splitEventId = eventId.split(':');
+        const eventType = splitEventId.shift();
+        const eventValue = splitEventId.join('');
 
         // If we have matching sender and receiver of events create connections between them.
         if (sendEvents.size > 0 && receiveEvents.size > 0) {
-            const [eventType, eventValue] = eventName.split(':');
             const event = {type: eventType, value: eventValue};
-            const sendNode = new EventNode(eventName, event);
+            const sendNode = new EventNode(eventId, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());
@@ -483,10 +484,9 @@ export const generateCFG = vm => {
         }
         // Otherwise, if we have a receiveEvent for a specific backdrop but not a matching sendEvent, we check
         // if there are any switch to next backdrop events as they could trigger the backdrop receive event.
-        else if (sendEvents.size === 0 && receiveEvents.size > 0 && eventName.split(':')[0] === 'backdrop') {
-            const [eventType, eventValue] = eventName.split(':');
+        else if (sendEvents.size === 0 && receiveEvents.size > 0 && eventId.split(':')[0] === 'backdrop') {
             const event = {type: eventType, value: eventValue};
-            const sendNode = new EventNode(eventName, event);
+            const sendNode = new EventNode(eventId, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());
