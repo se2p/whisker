@@ -1,4 +1,4 @@
-import {ControlFilter, EventFilter, StatementFilter} from './block-filter';
+import {ControlFilter, EventFilter, LooksFilter, StatementFilter} from './block-filter';
 import {Extract, getAllBlocks, getBranchStart, getElseBranchStart} from './utils';
 import {Graph, GraphNode, Mapping} from './graph-utils';
 
@@ -237,7 +237,7 @@ const _fixControlStatements = (cfg, successors, node, visited) => {
         _fixControlStatement(cfg, successors, node);
     }
 
-    // We add a "fake" edge from execution halting Blocks to the exit node in order to turn those blocks
+        // We add a "fake" edge from execution halting Blocks to the exit node in order to turn those blocks
     // into control dependencies.
     else if (block && ControlFilter.executionHaltingBlock(block)) {
         successors.put(node.id, cfg.exit());
@@ -333,6 +333,7 @@ export const generateCFG = vm => {
     const eventSend = new Mapping();
     const eventReceive = new Mapping();
     const successors = new Mapping();
+    const nextBackDropNodes = [];
 
     // First, we insert all nodes into the CFG.
     for (const block of Object.values(blocks)) {
@@ -365,20 +366,27 @@ export const generateCFG = vm => {
      *    However, this is not always the case; we need to query the procedures_prototype which then contains a
      *    reference to the corresponding procedures_definition.
      */
-    const customBlockDefinitions = new Map(); // Maps proccodes to the corresponding procedures_definition
+    const customBlockDefinitions = new Map();
+    // Maps proccodes to the corresponding procedures_definition. The key  is formed by combining the proccode
+    // with the name of the sprite in which the given block is contained in. This is necessary since multiple sprites
+    // could have differing procedure_definitions with the same proccode.
     for (const block of Object.values(blocks)) {
         if (block.opcode === 'procedures_definition') {
             if (block.inputs.custom_block.block) {
+                const targetName = findTargetOfBlock(targets, block).sprite.name;
                 const customBlockPrototype = blocks[block.inputs.custom_block.block];
                 const proccode = customBlockPrototype.mutation.proccode;
-                customBlockDefinitions.set(proccode, new GraphNode(block.id, block));
+                const definitionCallKey = proccode + "-" + targetName;
+                customBlockDefinitions.set(definitionCallKey, new GraphNode(block.id, block));
             }
         } else if (block.opcode === 'procedures_prototype') {
-            const proccode = block.mutation.proccode;
             const customBlockDefinition = blocks[block.parent];
+            const proccode = block.mutation.proccode;
             if (customBlockDefinition) {
+                const targetName = findTargetOfBlock(targets, block).sprite.name;
+                const definitionCallKey = proccode + "-" + targetName;
                 const customBlockNode = new GraphNode(customBlockDefinition.id, customBlockDefinition);
-                customBlockDefinitions.set(proccode, customBlockNode);
+                customBlockDefinitions.set(definitionCallKey, customBlockNode);
             }
         }
     }
@@ -392,7 +400,9 @@ export const generateCFG = vm => {
         const callsCustomBlock = node.block.opcode === 'procedures_call';
         if (callsCustomBlock) { // Adds an edge from the call site of a custom block to its definition
             const proccode = node.block.mutation.proccode;
-            const callee = customBlockDefinitions.get(proccode);
+            const targetName = findTargetOfBlock(targets, node.block).sprite.name;
+            const definitionCallKey = proccode + "-" + targetName;
+            const callee = customBlockDefinitions.get(definitionCallKey);
             successors.put(node.id, callee)
             // FIXME: there also need to be edges that go back from the definition to all its call sites
         }
@@ -428,11 +438,20 @@ export const generateCFG = vm => {
         }
         if (EventFilter.backdropStart(node.block)) {
             const backdropTarget = Extract.backdropStartTarget(targets, node.block);
-            eventReceive.put(`backdrop:${backdropTarget}`, node);
+            if (checkIfBackdropExists(vm, backdropTarget)) {
+                eventReceive.put(`backdrop:${backdropTarget}`, node);
+            }
         }
-        if (EventFilter.backdropChange(node.block)) {
-            const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
-            eventSend.put(`backdrop:${backdropTarget}`, node);
+        if (LooksFilter.backdropChange(node.block)) {
+            // Special handling for nextBackdrop statements.
+            if (LooksFilter.nextBackdrop(node.block)) {
+                nextBackDropNodes.push(node)
+            } else {
+                const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
+                if (checkIfBackdropExists(vm, backdropTarget)) {
+                    eventSend.put(`backdrop:${backdropTarget}`, node);
+                }
+            }
         }
     }
 
@@ -440,20 +459,38 @@ export const generateCFG = vm => {
     cfg.addNode(cfg.entry());
     cfg.addNode(cfg.exit());
 
-    // Adds an extra event node for Broadcast and Cloning events
-    // iff an event has at least one sending AND receiving block.
-    for (const eventName of eventSend.keys()) {
-        const sendEvents = eventSend.get(eventName);
-        const receiveEvents = eventReceive.get(eventName);
+    // Adds an extra event node for Broadcast and Cloning events iff the respective events can be triggered.
+    const eventIds = new Set([...eventSend.keys(), ...eventReceive.keys()]);
+    for (const eventId of eventIds) {
+        const sendEvents = eventSend.get(eventId);
+        const receiveEvents = eventReceive.get(eventId);
+        const splitEventId = eventId.split(':');
+        const eventType = splitEventId.shift();
+        const eventValue = splitEventId.join('');
 
-        if (sendEvents.size && receiveEvents.size) {
-            const [eventType, eventValue] = eventName.split(':');
+        // If we have matching sender and receiver of events create connections between them.
+        if (sendEvents.size > 0 && receiveEvents.size > 0) {
             const event = {type: eventType, value: eventValue};
-            const sendNode = new EventNode(eventName, event);
+            const sendNode = new EventNode(eventId, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());
             for (const sender of sendEvents) {
+                successors.put(sender.id, sendNode);
+                for (const receiver of receiveEvents) {
+                    successors.put(sendNode.id, receiver);
+                }
+            }
+        }
+        // Otherwise, if we have a receiveEvent for a specific backdrop but not a matching sendEvent, we check
+        // if there are any switch to next backdrop events as they could trigger the backdrop receive event.
+        else if (sendEvents.size === 0 && receiveEvents.size > 0 && eventId.split(':')[0] === 'backdrop') {
+            const event = {type: eventType, value: eventValue};
+            const sendNode = new EventNode(eventId, event);
+
+            cfg.addNode(sendNode);
+            successors.put(sendNode.id, cfg.exit());
+            for (const sender of nextBackDropNodes) {
                 successors.put(sender.id, sendNode);
                 for (const receiver of receiveEvents) {
                     successors.put(sendNode.id, receiver);
@@ -473,6 +510,45 @@ export const generateCFG = vm => {
         }
     }
 
+    // Remove statement blocks that have no predecessors in the CFG which are therefore unreachable.
+    let changed = true;
+    while (changed) {
+        changed = false;
+        for (const node of cfg.getAllNodes()) {
+            if (node.block !== undefined &&
+                StatementFilter.isStatementBlock(node.block) &&
+                cfg.getTransitivePredecessors(node).size === 0) {
+                // If we are about to delete a node form the CFG we also have to delete it from the successor's
+                // predecessor mapping in order to repeat those recursively if they
+                for (const suc of successors.get(node.id)) {
+                    const predecessors = cfg.predecessors(suc.id);
+                    predecessors.delete(node)
+                }
+                cfg.removeNode(node);
+                changed = true;
+            }
+        }
+    }
     return cfg;
 };
+
+const findTargetOfBlock = (targets, block) => {
+    for (const target of targets) {
+        if (block.id in target.blocks._blocks) {
+            return target;
+        }
+    }
+    return undefined;
+}
+
+const checkIfBackdropExists = (vm, backdropName) => {
+    const stage = vm.runtime.getTargetForStage();
+    const backdrops = stage.sprite.costumes;
+    for (const backDrop of Object.values(backdrops)) {
+        if (backDrop.name === backdropName) {
+            return true;
+        }
+    }
+    return false;
+}
 

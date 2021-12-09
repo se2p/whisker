@@ -36,7 +36,7 @@ import Arrays from "../utils/Arrays";
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
     // TODO: Additional keys?
-    private readonly _keys = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter'];
+    private static readonly _KEYS = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter'];
 
     private readonly _random: Randomness;
 
@@ -88,7 +88,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_keypressed': {
                 // Only add if we have not yet found any keyPress-Events. No need to add all keys several times
                 if (!eventList.some(event => event instanceof KeyPressEvent)) {
-                    for (const key of this._keys) {
+                    for (const key of StaticScratchEventExtractor._KEYS) {
                         eventList.push(new KeyPressEvent(key));
                     }
                 }

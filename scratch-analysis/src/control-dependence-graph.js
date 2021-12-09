@@ -157,16 +157,7 @@ const generateCDG = cfg => {
     cfg = cloneGraph(cfg);
     const postDominatedTree = computePostDominatedTree(cfg);
     const reversedPostDominatedTree = reverseGraph(postDominatedTree);
-    const cdg =  _computeControlDependenceGraph(cfg, postDominatedTree, reversedPostDominatedTree);
-    // Remove statement blocks that have no predecessors in the CDG and are therefore unreachable.
-    for(const node of cdg.getAllNodes()){
-        if(node.block !== undefined &&
-            StatementFilter.isStatementBlock(node.block) &&
-            cdg.getTransitivePredecessors(node).size === 0){
-            cdg.removeNode(node);
-            cfg.removeNode(node);
-        }
-    }
+    const cdg = _computeControlDependenceGraph(cfg, postDominatedTree, reversedPostDominatedTree);
     return cdg;
 };
 
