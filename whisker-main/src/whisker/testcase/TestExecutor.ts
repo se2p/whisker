@@ -81,6 +81,7 @@ export class TestExecutor {
         let fitnessValues: number[];
         let targetFitness = Number.MAX_SAFE_INTEGER;
 
+        const startTime = Date.now();
         while (numCodon < codons.length && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
@@ -124,6 +125,7 @@ export class TestExecutor {
                 fitnessValues = newFitnessValues;
             }
         }
+        const endTime = Date.now() - startTime;
 
         // Check if the last event had to use a codon from the start of the codon list.
         // Extend the codon list by the required amount of codons by duplicating the first few codons.
@@ -136,10 +138,13 @@ export class TestExecutor {
         testChromosome.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         testChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
-
         this._vmWrapper.end();
         this.resetState();
+
+        StatisticsCollector.getInstance().executedTests++;
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
+        StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
+
         return testChromosome.trace;
     }
 
@@ -159,6 +164,7 @@ export class TestExecutor {
         const random = Randomness.getInstance();
         const events: EventAndParameters[] = [];
 
+        const startTime = Date.now();
         while (eventCount < numberOfEvents && (this._projectRunning || this.hasActionEvents(availableEvents))) {
             availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (availableEvents.length === 0) {
@@ -187,12 +193,18 @@ export class TestExecutor {
             await waitEvent.apply();
 
         }
+        const endTime = Date.now() - startTime;
         const trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         randomEventChromosome.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
         randomEventChromosome.trace = trace;
+
         this._vmWrapper.end();
         this.resetState();
+
+        StatisticsCollector.getInstance().executedTests++;
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
+        StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
+
         return trace;
     }
 

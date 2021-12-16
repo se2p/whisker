@@ -39,8 +39,11 @@ export class StatisticsCollector {
     private _testEventCount: number; //events in final test suite
     private _bestTestSuiteSize: number;
     private _numberFitnessEvaluations: number;
+    private _executedTests: number
     private _createdTestsToReachFullCoverage: number;
     private _startTime: number;
+    private _averageTestExecutionTime: number;
+    private _averageTestExecutionCount: number;
     private _timeToReachFullCoverage: number;
     private _highestNetworkFitness: number;
     private readonly _covOverTime: Map<number, number>;
@@ -64,6 +67,9 @@ export class StatisticsCollector {
         this._bestTestSuiteSize = 0;
         this._bestCoverage = 0;
         this._startTime = 0;
+        this._executedTests = 0;
+        this._averageTestExecutionTime = 0;
+        this._averageTestExecutionCount = 0;
         this._testEventCount = 0;
         this._numberFitnessEvaluations = 0;
         this._highestNetworkFitness = 0;
@@ -131,7 +137,7 @@ export class StatisticsCollector {
      * Increments the number of covered fitness functions by one
      */
     public incrementCoveredFitnessFunctionCount(coveredFitnessFunction: FitnessFunction<Chromosome>): void {
-        if(!this.coveredFitnessFunctions.includes(coveredFitnessFunction)) {
+        if (!this.coveredFitnessFunctions.includes(coveredFitnessFunction)) {
             this.coveredFitnessFunctions.push(coveredFitnessFunction);
             this._coveredFitnessFunctionsCount++;
             const timeStamp = Date.now() - this._startTime;
@@ -147,6 +153,12 @@ export class StatisticsCollector {
         if (networkFitness > this._highestNetworkFitness) {
             this._highestNetworkFitness = networkFitness;
         }
+    }
+
+    public updateAverageTestExecutionTime(newValue: number): void {
+        this._averageTestExecutionCount++;
+        this._averageTestExecutionTime = this._averageTestExecutionTime + (
+            (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
     }
 
     get bestCoverage(): number {
@@ -194,6 +206,14 @@ export class StatisticsCollector {
 
     set numberFitnessEvaluations(value: number) {
         this._numberFitnessEvaluations = value;
+    }
+
+    get executedTests(): number {
+        return this._executedTests;
+    }
+
+    set executedTests(value: number) {
+        this._executedTests = value;
     }
 
     get createdTestsToReachFullCoverage(): number {
@@ -261,11 +281,13 @@ export class StatisticsCollector {
         const coverageValues = values.join(",");
 
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "testsuiteEventCount", "executedEventsCount", "bestTestSuiteSize",
-            "numberFitnessEvaluations", "createdTestsToReachFullCoverage", "timeToReachFullCoverage"];
+            "bestCoverage", "testsuiteEventCount", "executedEventsCount", "executedTests", "averageTestExecutionTime",
+            "bestTestSuiteSize", "numberFitnessEvaluations", "createdTestsToReachFullCoverage",
+            "timeToReachFullCoverage"];
         const headerRow = headers.join(",").concat(",", coveragesHeaders);
-        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
-            this._bestCoverage, this._testEventCount, this._eventsCount, this._bestTestSuiteSize,
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
+            this._coveredFitnessFunctionsCount, this._bestCoverage, this._testEventCount, this._eventsCount,
+            this._executedTests, this._averageTestExecutionTime, this._bestTestSuiteSize,
             this._numberFitnessEvaluations, this._createdTestsToReachFullCoverage, this._timeToReachFullCoverage];
         const dataRow = data.join(",").concat(",", coverageValues);
         return [headerRow, dataRow].join("\n");
