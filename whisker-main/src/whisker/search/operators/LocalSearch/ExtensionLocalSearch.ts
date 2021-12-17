@@ -286,7 +286,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             StatisticsCollector.getInstance().numberFitnessEvaluations++;
             fitnessValues = newFitnessValues;
         }
-        StatisticsCollector.getInstance().executedTests++;
+        StatisticsCollector.getInstance().incrementExecutedTests();
         return {lastImprovedCodon, lastImprovedTrace};
     }
 

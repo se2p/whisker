@@ -141,7 +141,7 @@ export class TestExecutor {
         this._vmWrapper.end();
         this.resetState();
 
-        StatisticsCollector.getInstance().executedTests++;
+        StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
 
@@ -201,7 +201,7 @@ export class TestExecutor {
         this._vmWrapper.end();
         this.resetState();
 
-        StatisticsCollector.getInstance().executedTests++;
+        StatisticsCollector.getInstance().incrementExecutedTests();
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
         StatisticsCollector.getInstance().updateAverageTestExecutionTime(endTime);
 

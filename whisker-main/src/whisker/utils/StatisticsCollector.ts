@@ -161,6 +161,10 @@ export class StatisticsCollector {
             (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
     }
 
+    public incrementExecutedTests(): void {
+        this._executedTests++;
+    }
+
     get bestCoverage(): number {
         return this._bestCoverage;
     }
@@ -208,14 +212,6 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = value;
     }
 
-    get executedTests(): number {
-        return this._executedTests;
-    }
-
-    set executedTests(value: number) {
-        this._executedTests = value;
-    }
-
     get createdTestsToReachFullCoverage(): number {
         return this._createdTestsToReachFullCoverage;
     }
@@ -241,7 +237,7 @@ export class StatisticsCollector {
     }
 
     /**
-     * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so called
+     * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so-called
      * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
      * truncate this timeline. The optional parameter `numberOfCoverageValues` can be used to specify how many entries
      * this timeline should consist of. If no value or `undefined` is given, all entries are included.
