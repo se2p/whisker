@@ -32,6 +32,7 @@ import Arrays from "../../../utils/Arrays";
 import {EventSelector} from "../../../testcase/EventSelector";
 import VMWrapper = require("../../../../vm/vm-wrapper.js");
 import {TestExecutor} from "../../../testcase/TestExecutor";
+import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
@@ -272,7 +273,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 }
                 fitnessValuesUnchanged = 0;
             }
-            // Otherwise increase the stop enforcing counter.
+            // Otherwise, increase the stop enforcing counter.
             else {
                 fitnessValuesUnchanged++;
             }
@@ -282,8 +283,10 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 done = true;
             }
 
+            StatisticsCollector.getInstance().numberFitnessEvaluations++;
             fitnessValues = newFitnessValues;
         }
+        StatisticsCollector.getInstance().incrementExecutedTests();
         return {lastImprovedCodon, lastImprovedTrace};
     }
 
