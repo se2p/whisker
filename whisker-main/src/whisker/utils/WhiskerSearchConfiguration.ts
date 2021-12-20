@@ -80,8 +80,10 @@ export class WhiskerSearchConfiguration {
         this._config = Preconditions.checkNotUndefined(dict);
         if (this.getAlgorithm() === SearchAlgorithmType.NEAT) {
             this._searchAlgorithmProperties = this.setNeuroevolutionProperties();
+            Container.isNeuroevolution = true
         } else {
             this._searchAlgorithmProperties = this.setSearchAlgorithmProperties();
+            Container.isNeuroevolution = false;
         }
     }
 
