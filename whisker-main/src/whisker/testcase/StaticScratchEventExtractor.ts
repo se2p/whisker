@@ -129,7 +129,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             }
             case 'sensing_askandwait':
                 // Type text
-                eventList.push(new TypeTextEvent(this._randomText(3)));
+                eventList.push(...this._getTypeTextEvents());
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
