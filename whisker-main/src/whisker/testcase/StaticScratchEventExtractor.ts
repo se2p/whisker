@@ -35,9 +35,6 @@ import Arrays from "../utils/Arrays";
 
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
-    // TODO: Additional keys?
-    private static readonly _KEYS = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter'];
-
     private readonly _random: Randomness;
 
     /**
@@ -84,14 +81,16 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
         }
 
         switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed':
-            case 'sensing_keypressed': {
-                // Only add if we have not yet found any keyPress-Events. No need to add all keys several times
-                if (!eventList.some(event => event instanceof KeyPressEvent)) {
-                    for (const key of StaticScratchEventExtractor._KEYS) {
-                        eventList.push(new KeyPressEvent(key));
-                    }
-                }
+            case 'event_whenkeypressed': {  // Key press in HatBlocks
+                const fields = target.blocks.getFields(block);
+                eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                // one event per concrete key for which there is a hat block
+                break;
+            }
+            case 'sensing_keypressed': { // Key press in SensingBlocks
+                const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
+                const fields = target.blocks.getFields(keyOptionsBlock);
+                eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
                 break;
             }
             case 'sensing_mousex':
