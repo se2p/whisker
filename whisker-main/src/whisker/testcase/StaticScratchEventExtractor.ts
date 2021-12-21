@@ -139,10 +139,13 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 // Click stage
                 eventList.push(new ClickStageEvent());
                 break;
-            case 'event_whengreaterthan':
+            case 'event_whengreaterthan': {
                 // Sound
-                eventList.push(new SoundEvent(this._random.nextInt(0, 101)));
+                const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
+                const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
+                eventList.push(new SoundEvent(soundValue));
                 break;
+            }
         }
         return eventList;
     }
