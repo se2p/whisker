@@ -1,8 +1,7 @@
-const {$} = require('./web-libs');
-
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 
+/* Translation resources */
 const indexDE = require('./locales/de/index.json');
 const indexEN = require('./locales/en/index.json');
 const faqDE = require('./locales/de/faq.json');
@@ -13,29 +12,39 @@ const imprintDE = require('./locales/de/imprint.json');
 const imprintEN = require('./locales/en/imprint.json');
 const privacyDE = require('./locales/de/privacy.json');
 const privacyEN = require('./locales/en/privacy.json');
+const footerDE = require('./locales/de/footer.json');
+const footerEN = require('./locales/en/footer.json');
+const headerDE = require('./locales/de/header.json');
+const headerEN = require('./locales/en/header.json');
 const modelEditorDE = require('./locales/de/modelEditor.json');
 const modelEditorEN = require('./locales/en/modelEditor.json');
+
+/* Important libraries */
+const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
 const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
+/* Components */
 const Thread = require('scratch-vm/src/engine/thread');
-
 const TestTable = require('./components/test-table');
 const TestEditor = require('./components/test-editor');
 const Scratch = require('./components/scratch-stage');
 const FileSelect = require('./components/file-select');
 const Output = require('./components/output');
 const InputRecorder = require('./components/input-recorder');
+const Footer = require('./components/footer');
+const Header = require('./components/header');
 const ModelEditor = require('./components/model-editor');
 
 const {showModal, escapeHtml} = require('./utils.js');
-
 const Whisker = window.Whisker = {};
 window.$ = $;
 
+/* Acceleration */
 const DEFAULT_ACCELERATION_FACTOR = 1;
 const accSlider = $('#acceleration-factor').slider();
+
 
 const LANGUAGE_OPTION = 'lng';
 const initialParams = new URLSearchParams(window.location.search); // This is only valid for initialization and has to be retrieved again afterwards
@@ -85,7 +94,6 @@ const loadTestsFromString = async function (string) {
     Whisker.tests = tests;
     Whisker.testEditor.setValue(string);
     Whisker.testTable.setTests(tests);
-
     return tests;
 };
 
@@ -98,7 +106,7 @@ const enableVMRelatedButtons = function () {
 };
 
 const runSearch = async function () {
-    disableVMRelatedButtons('#run-search');
+    _disableVMRelatedButtons('#run-search');
     accSlider.slider('disable');
     Whisker.scratch.stop();
     const projectName = Whisker.projectFileSelect.getName();
@@ -121,30 +129,20 @@ const runSearch = async function () {
     Whisker.outputLog.print(`${testListWithSummary}\n`);
     Whisker.outputLog.print(csv);
     accSlider.slider('enable');
-    enableVMRelatedButtons();
+    _enableVMRelatedButtons();
     return tests;
 };
-
-function _showRunIcon () {
-    $('#run-tests-icon').show();
-    $('#stop-tests-icon').hide();
-}
-
-function _showStopIcon () {
-    $('#run-tests-icon').hide();
-    $('#stop-tests-icon').show();
-}
 
 const _runTestsWithCoverage = async function (vm, project, tests) {
     if (testsRunning) {
         testsRunning = false;
         _showRunIcon();
-        enableVMRelatedButtons();
+        _enableVMRelatedButtons();
         Whisker.scratch.stop();
         Whisker.testRunner.abort();
         Whisker.testTable.updateAfterAbort();
     } else {
-        disableVMRelatedButtons('#run-all-tests');
+        _disableVMRelatedButtons('#run-all-tests');
         testsRunning = true;
         _showStopIcon();
         $('#green-flag').prop('disabled', true);
@@ -307,17 +305,6 @@ const initComponents = function () {
     $('#acceleration-value').text(DEFAULT_ACCELERATION_FACTOR);
 };
 
-function showAndJumpTo (elem) {
-    $(elem).show();
-    jumpTo(elem);
-}
-
-function jumpTo (elem) {
-    location.href = '#'; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
-    location.href = elem;
-    window.scrollBy(0, -100); // respect header size
-}
-
 const initEvents = function () {
     $('#acceleration-factor')
         .on('slide', slideEvt => {
@@ -368,11 +355,11 @@ const initEvents = function () {
     $('#record').on('click', () => {
         $('#record').tooltip('hide');
         if (Whisker.inputRecorder.isRecording()) {
-            enableVMRelatedButtons();
+            _enableVMRelatedButtons();
             Whisker.inputRecorder.stopRecording();
             Whisker.scratch.disableInput();
         } else {
-            disableVMRelatedButtons('.record-related');
+            _disableVMRelatedButtons('.record-related');
             Whisker.scratch.enableInput();
             Whisker.inputRecorder.startRecording();
         }
@@ -410,7 +397,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            showAndJumpTo('#scratch-controls');
+            _showAndJumpTo('#scratch-controls');
         } else {
             $(event.target)
                 .parent()
@@ -423,7 +410,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            showAndJumpTo('#test-editor-div');
+            _showAndJumpTo('#test-editor-div');
             Whisker.testEditor.show();
         } else {
             $(event.target)
@@ -437,7 +424,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            showAndJumpTo('#model-editor');
+            _showAndJumpTo('#model-editor');
             Whisker.modelEditor.reposition();
         } else {
             $(event.target)
@@ -451,7 +438,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            showAndJumpTo('#output-run');
+            _showAndJumpTo('#output-run');
         } else {
             $(event.target)
                 .parent()
@@ -464,7 +451,7 @@ const initEvents = function () {
             $(event.target)
                 .parent()
                 .addClass('active');
-            showAndJumpTo('#output-log');
+            _showAndJumpTo('#output-log');
         } else {
             $(event.target)
                 .parent()
@@ -482,65 +469,16 @@ const initEvents = function () {
                 const tests = runSearch();
                 tests.then(
                     result => {
-                        loadTestsFromString(result);
-                        jumpTo('#test-table');
+                        loadTestsFromString(result).then();
+                        _jumpTo('#test-table');
                         $('#run-search').show();
                         $('#search-running').hide();
                     }
                 );
             }
-        });
-    $('#run-search').show();
+        }).show();
     $('#search-running').hide();
     _addFileListeners();
-};
-
-const _addFileListeners = function () {
-    $('#fileselect-config').on('change', event => {
-        const fileName = Whisker.configFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-    $('#fileselect-project').on('change', event => {
-        const fileName = Whisker.projectFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-    $('#fileselect-tests').on('change', event => {
-        const fileName = Whisker.testFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-    $('#fileselect-models').on('change', event => {
-        const fileName = Whisker.modelFileSelect.getName();
-        $(event.target).parent()
-            .removeAttr('data-i18n')
-            .attr('title', fileName);
-        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName('label')[0];
-        _showTooltipIfTooLong(label, event);
-    });
-};
-
-const _showTooltipIfTooLong = function (label, event) {
-    $(event.target).parent()
-        .tooltip('dispose');
-    if (label.scrollWidth > label.offsetWidth) {
-        $(event.target).parent()
-            .tooltip({animation: true});
-        setTimeout(() => {
-            $(event.target).parent()
-                .tooltip('hide');
-        }, 2000);
-    }
 };
 
 const toggleComponents = function () {
@@ -557,35 +495,79 @@ const toggleComponents = function () {
     }
 };
 
-const hideAdvanced = function () {
-    $('#scratch-controls').hide();
-};
 
-const initLangSelect = function () {
-    const newLabel = document.createElement('label');
-    let html = '<select id="lang-select">'; const lngs = ['de', 'en']; let i;
-    for (i = 0; i < lngs.length; i++) {
-        html += `<option value='${lngs[i]}' `;
-        if ((initialLanguage != null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
-            html += 'selected';
-        }
-        html += ` data-i18n="${lngs[i]}">${i18next.t(lngs[i])}</option>`;
+const loadHeader = function () {
+    _initLangSelect();
+    localize('#header');
+    if (window.location.href.includes('index')) {
+        $('#link').attr('href', 'index.html');
+        $('#small-logo').attr('src', 'assets/whisker-text-logo.png');
+        $('#banner').attr('src', 'assets/banner_slim.jpg');
+    } else {
+        $('#link').attr('href', '../index.html');
+        $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
+        $('#banner').attr('src', '../assets/banner_slim.jpg');
     }
-    html += '</select>';
-    newLabel.innerHTML = html;
-    document.querySelector('#form-lang').appendChild(newLabel);
-};
+    /* Add border to header if it sticks to the top */
+    $(function () {
+        const stickyHeader = $('.sticky');
+        const stickyHeaderPosition = stickyHeader.offset().top;
+        $(window).scroll(function () {
+            const scroll = $(window).scrollTop();
+            if (scroll > stickyHeaderPosition + 1) {
+                stickyHeader.addClass('scrolled');
+                $('#small-logo').show();
+            } else {
+                stickyHeader.removeClass('scrolled');
+                $('#small-logo').hide();
+            }
+        });
+    });
+    $('#form-lang').on('change', () => {
+        $('[data-toggle="tooltip"]').tooltip('dispose');
+        const lng = $('#lang-select').val();
+        _translateTestTableTooltips(i18next.language, lng); // This has to be executed before the current language is changed
+        const params = new URLSearchParams(window.location.search);
+        params.set(LANGUAGE_OPTION, lng);
+        window.history.pushState('', '', '?' + params.toString());
+        i18next.changeLanguage(lng).then(_updateLang());
+    });
+    $('.nav-link').on('click', event => {
+        const lng = $('#lang-select').val();
+        const href = event.target.getAttribute('href');
+        if (href) {
+            location.href = href + '?lng=' + lng;
+            event.preventDefault();
+        }
+    });
+}
+
+const loadFooter = function () {
+    localize('#footer');
+    if (window.location.href.includes('index')) {
+        $('#imprint').attr('href', 'html/imprint.html');
+        $('#privacy').attr('href', 'html/privacy.html');
+        $('#logo-img').attr('src', 'assets/uniPassauLogo.png');
+    } else {
+        $('#imprint').attr('href', './imprint.html');
+        $('#privacy').attr('href', './privacy.html');
+        $('#logo-img').attr('src', '../assets/uniPassauLogo.png');
+    }
+}
 
 $(document)
     .ready(() => {
-        initLangSelect();
-        hideAdvanced();
+        $('#scratch-controls').hide();
         initScratch();
         initComponents();
         initEvents();
         toggleComponents();
-
     });
+
+window.onload = function () {
+    loadHeader();
+    loadFooter();
+}
 
 window.onbeforeunload = function () {
     if (window.localStorage) {
@@ -615,7 +597,7 @@ i18next
         lng: initialLanguage,
         fallbackLng: 'de',
         debug: false,
-        ns: ['index', 'faq', 'contact', 'imprint', 'modelEditor', 'privacy'],
+        ns: ['index', 'faq', 'contact', 'imprint', 'privacy', 'footer', 'header', 'modelEditor'],
         defaultNS: 'index',
         interpolation: {
             escapeValue: false
@@ -626,44 +608,105 @@ i18next
                 faq: faqDE,
                 contact: contactDE,
                 imprint: imprintDE,
-                modelEditor: modelEditorDE,
-                privacy: privacyDE
+                privacy: privacyDE,
+                footer: footerDE,
+                header: headerDE,
+                modelEditor: modelEditorDE
             },
             en: {
                 index: indexEN,
                 faq: faqEN,
                 contact: contactEN,
                 imprint: imprintEN,
-                modelEditor: modelEditorEN,
-                privacy: privacyEN
+                privacy: privacyEN,
+                footer: footerEN,
+                header: headerEN,
+                modelEditor: modelEditorEN
             }
         }
-    }, () => {
-        updateContent();
+    }, function () {
+        _updateLang();
     }).then();
 
-function updateContent () {
-    localize('#body');
-    $('[data-toggle="tooltip"]').tooltip();
-    if (Whisker.testTable) {
-        Whisker.testTable.hideTestDetails();
-    }
-    _updateFilenameLabels();
+function _showRunIcon() {
+    $('#run-tests-icon').show();
+    $('#stop-tests-icon').hide();
 }
 
-function _updateFilenameLabels () {
-    if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
-        $('#project-label').html(Whisker.projectFileSelect.getName());
+function _showStopIcon() {
+    $('#run-tests-icon').hide();
+    $('#stop-tests-icon').show();
+}
+
+const _enableVMRelatedButtons = function () {
+    $('.vm-related').prop('disabled', false);
+}
+
+const _disableVMRelatedButtons = function (exception) {
+    $(`.vm-related:not(${exception})`).prop('disabled', true);
+}
+
+function _showAndJumpTo(elem) {
+    $(elem).show();
+    _jumpTo(elem);
+}
+
+function _jumpTo(elem) {
+    location.href = "#"; // this line is required to work around a bug in WebKit (Chrome / Safari) according to stackoverflow
+    location.href = elem
+    window.scrollBy(0, -100) // respect header size
+}
+
+const _addFileListeners = function () {
+    $('#fileselect-config').on('change', event => {
+        const fileName = Whisker.configFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        const label = document.querySelector('#fileselect-config').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-project').on('change', event => {
+        const fileName = Whisker.projectFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        const label = document.querySelector('#fileselect-project').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-tests').on('change', event => {
+        const fileName = Whisker.testFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        const label = document.querySelector('#fileselect-tests').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
+    });
+    $('#fileselect-models').on('change', event => {
+        const fileName = Whisker.modelFileSelect.getName();
+        $(event.target).parent().removeAttr('data-i18n').attr('title', fileName);
+        const label = document.querySelector('#fileselect-models').parentElement.getElementsByTagName("label")[0];
+        _showTooltipIfTooLong(label, event);
+    });
+}
+
+const _showTooltipIfTooLong = function (label, event) {
+    $(event.target).parent().tooltip('dispose');
+    if (label.scrollWidth > label.offsetWidth) {
+        $(event.target).parent().tooltip({animation: true});
+        setTimeout(() => {
+            $(event.target).parent().tooltip('hide')
+        }, 2000);
     }
-    if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
-        $('#tests-label').html(Whisker.testFileSelect.getName());
+}
+
+const _initLangSelect = function () {
+    const newLabel = document.createElement('label');
+    let html = '<select id="lang-select">', lngs = ["de", "en"], i;
+    for (i = 0; i < lngs.length; i++) {
+        html += "<option value='" + lngs[i] + "' ";
+        if ((initialLanguage != null && lngs[i] === initialLanguage) || lngs[i] === 'de') {
+            html += "selected";
+        }
+        html += " data-i18n=\"" + lngs[i] + "\">" + i18next.t(lngs[i]) + "</option>";
     }
-    if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
-        $('#config-label').html(Whisker.configFileSelect.getName());
-    }
-    if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
-        $('#model-label').html(Whisker.modelFileSelect.getName());
-    }
+    html += '</select>';
+    newLabel.innerHTML = html;
+    document.querySelector('#form-lang').appendChild(newLabel);
 }
 
 function _translateTestTableTooltips (oldLanguage, newLanguage) {
@@ -685,6 +728,14 @@ function _getKeyByValue (langData, value) {
     return Object.keys(langData).find(key => langData[key] === value);
 }
 
+function _updateLang() {
+    localize('#body');
+    $('[data-toggle="tooltip"]').tooltip();
+    if (Whisker.testTable) {
+        Whisker.testTable.hideTestDetails();
+    }
+}
+
 $('#form-lang').on('change', () => {
     $('[data-toggle="tooltip"]').tooltip('dispose');
     const lng = $('#lang-select').val();
@@ -692,7 +743,7 @@ $('#form-lang').on('change', () => {
     const params = new URLSearchParams(window.location.search);
     params.set(LANGUAGE_OPTION, lng);
     window.history.pushState('', '', `?${params.toString()}`);
-    i18next.changeLanguage(lng).then(updateContent());
+    i18next.changeLanguage(lng).then(_updateLang());
 });
 
 $('.nav-link').on('click', event => {
@@ -702,7 +753,23 @@ $('.nav-link').on('click', event => {
         location.href = `${href}?lng=${lng}`;
         event.preventDefault();
     }
+    _updateFilenameLabels();
 });
+
+function _updateFilenameLabels() {
+    if (Whisker.projectFileSelect && Whisker.projectFileSelect.hasName()) {
+        $('#project-label').html(Whisker.projectFileSelect.getName());
+    }
+    if (Whisker.testFileSelect && Whisker.testFileSelect.hasName()) {
+        $('#tests-label').html(Whisker.testFileSelect.getName());
+    }
+    if (Whisker.configFileSelect && Whisker.configFileSelect.hasName()) {
+        $('#config-label').html(Whisker.configFileSelect.getName());
+    }
+    if (Whisker.modelFileSelect && Whisker.modelFileSelect.hasName()) {
+        $('#model-label').html(Whisker.modelFileSelect.getName());
+    }
+}
 
 /* Add border to header if it sticks to the top */
 $(() => {
@@ -719,5 +786,6 @@ $(() => {
         }
     });
 });
+
 
 export {i18next as i18n};
