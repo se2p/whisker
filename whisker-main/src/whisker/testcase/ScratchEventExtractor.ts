@@ -61,6 +61,7 @@ export abstract class ScratchEventExtractor {
 
     protected availableTextSnippets: string[] = [];
     protected proceduresMap = new Map<string, ScratchEvent[]>();
+    protected static _fixedStrings = ["0", "10", "Hello", this._randomText(3)];
 
     protected constructor(vm: VirtualMachine) {
         this.extractAvailableTextSnippets(vm);
@@ -377,16 +378,15 @@ export abstract class ScratchEventExtractor {
      * Collects all available text snippets that can be used for generating answers.
      */
     public extractAvailableTextSnippets(vm: VirtualMachine): void {
-        this.availableTextSnippets = [];
-        // TODO: Text length with random length?
-        this.availableTextSnippets.push(this._randomText(3)); // TODO: Any hints on text?
+        this.availableTextSnippets.push(...ScratchEventExtractor._fixedStrings);
 
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     const snippet = this._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
-                    if (snippet != '' && !this.availableTextSnippets.includes(snippet))
+                    if (snippet != '' && !this.availableTextSnippets.includes(snippet)) {
                         this.availableTextSnippets.push(snippet);
+                    }
                 }
             }
         }
@@ -413,7 +413,7 @@ export abstract class ScratchEventExtractor {
         }
     }
 
-    protected _randomText(length: number): string {
+    protected static _randomText(length: number): string {
         let answer = '';
         const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
         for (let i = 0; i < length; i++) {
