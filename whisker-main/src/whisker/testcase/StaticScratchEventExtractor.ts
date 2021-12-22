@@ -30,7 +30,6 @@ import {MouseDownEvent} from "./events/MouseDownEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
-import {TypeTextEvent} from "./events/TypeTextEvent";
 import Arrays from "../utils/Arrays";
 import {Container} from "../utils/Container";
 
@@ -111,9 +110,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 break;
             }
 
-            case 'sensing_touchingobject':
-            case 'sensing_touchingcolor' :
-            case 'sensing_coloristouchingcolor': {
+            case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
                 const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
@@ -140,6 +137,13 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 }
                 break;
             }
+
+            case 'sensing_touchingcolor' :
+            case 'sensing_coloristouchingcolor': {
+                eventList.push(new DragSpriteEvent(target));
+                break
+            }
+
             case 'sensing_distanceto': {
                 const distanceMenuBlock = target.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
                 const field = target.blocks.getFields(distanceMenuBlock);
