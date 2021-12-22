@@ -151,8 +151,6 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
         const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
         let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
-        let fitnessValuesUnchanged = 0;
-        let done = false;
         let lastImprovedCodon = chromosome.lastImprovedCodon;
         let lastImprovedTrace: ExecutionTrace;
 
@@ -162,7 +160,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         this._projectRunning = true;
         let extendWait = false;
         let previousEvents: ScratchEvent[] = [];
-        while (codons.length < upperLengthBound && this._projectRunning && !done) {
+        while (codons.length < upperLengthBound && this._projectRunning) {
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
 
             // If we have no events available, we can only stop.
@@ -264,23 +262,21 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
             const newFitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
 
-            // Check if the latest event has improved the fitness, if yes update properties and reset the stop enforcing
-            // counter.
+            // Check if the latest event has improved the fitness, if yes update properties and keep extending the
+            // codons.
             if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
                 if(TestExecutor.doRequireLastImprovedCodon(chromosome)) {
                     lastImprovedCodon = codons.length;
                     lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
                 }
-                fitnessValuesUnchanged = 0;
             }
-            // Otherwise, increase the stop enforcing counter.
+            // Otherwise, stop.
             else {
-                fitnessValuesUnchanged++;
+                break;
             }
-
-            // If we see no improvements after adding three Waits, or if we have covered all blocks we stop.
-            if (fitnessValuesUnchanged >= 3 || newFitnessValues.length === 0) {
-                done = true;
+            // We also stop if we covered all blocks.
+            if (newFitnessValues.length === 0) {
+                break
             }
 
             StatisticsCollector.getInstance().numberFitnessEvaluations++;
