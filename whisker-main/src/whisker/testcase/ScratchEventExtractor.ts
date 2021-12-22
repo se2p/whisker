@@ -161,12 +161,8 @@ export abstract class ScratchEventExtractor {
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                let value: string
-                if (field.VARIABLE) {
-                    value = field.VARIABLE.value
-                } else {
-                    value = field.TOUCHINGOBJECTMENU.value;
-                }
+                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
+
                 // Target senses Mouse
                 if (value == "_mouse_") {
                     const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
@@ -176,6 +172,7 @@ export abstract class ScratchEventExtractor {
                     }
                     eventList.push(new MouseMoveEvent());
                 }
+
                 // Target senses edge
                 else if (value === "_edge_" && !target.isTouchingEdge()) {
                     const random = Randomness.getInstance();
@@ -193,8 +190,10 @@ export abstract class ScratchEventExtractor {
                         y = random.pick([-stageHeight, stageHeight])
                     }
                     eventList.push(new DragSpriteEvent(target, x, y));
-                } else {
-                    // Target senses another sprite
+                }
+
+                // Target senses another sprite
+                else {
                     let sensedRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
 
                     // Check if the sensedTarget is present in the given project and if the sprite we are about to
