@@ -30,13 +30,10 @@ import {MouseDownEvent} from "./events/MouseDownEvent";
 import {ClickSpriteEvent} from "./events/ClickSpriteEvent";
 import {ClickStageEvent} from "./events/ClickStageEvent";
 import {SoundEvent} from "./events/SoundEvent";
-import {TypeTextEvent} from "./events/TypeTextEvent";
 import Arrays from "../utils/Arrays";
+import {Container} from "../utils/Container";
 
 export class StaticScratchEventExtractor extends ScratchEventExtractor {
-
-    // TODO: Additional keys?
-    private static readonly _KEYS = ['space', 'left arrow', 'up arrow', 'right arrow', 'down arrow', 'enter'];
 
     private readonly _random: Randomness;
 
@@ -66,7 +63,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
 
         eventList.push(new WaitEvent())
 
-        const equalityFunction = (a: ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        const equalityFunction = (a: ScratchEvent, b: ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
         return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 
@@ -84,14 +81,16 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
         }
 
         switch (target.blocks.getOpcode(block)) {
-            case 'event_whenkeypressed':
-            case 'sensing_keypressed': {
-                // Only add if we have not yet found any keyPress-Events. No need to add all keys several times
-                if (!eventList.some(event => event instanceof KeyPressEvent)) {
-                    for (const key of StaticScratchEventExtractor._KEYS) {
-                        eventList.push(new KeyPressEvent(key));
-                    }
-                }
+            case 'event_whenkeypressed': {  // Key press in HatBlocks
+                const fields = target.blocks.getFields(block);
+                eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                // one event per concrete key for which there is a hat block
+                break;
+            }
+            case 'sensing_keypressed': { // Key press in SensingBlocks
+                const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
+                const fields = target.blocks.getFields(keyOptionsBlock);
+                eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
                 break;
             }
             case 'sensing_mousex':
@@ -101,12 +100,50 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 eventList.push(new MouseMoveEvent());
                 break;
             }
-            case 'sensing_touchingobject':
+
+            case 'motion_goto': {
+                // GoTo MousePointer block
+                const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
+                if (goToMenu.fields.TO.value === '_mouse_') {
+                    eventList.push(new MouseMoveEvent());
+                }
+                break;
+            }
+
+            case 'sensing_touchingobject': {
+                const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
+                const field = target.blocks.getFields(touchingMenuBlock);
+                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
+
+                // Target senses edge
+                if (value === "_edge_") {
+                    const random = Randomness.getInstance();
+                    let x: number;
+                    let y: number;
+                    const stageWidth = Container.vmWrapper.getStageSize().width / 2;
+                    const stageHeight = Container.vmWrapper.getStageSize().height / 2;
+                    if (random.randomBoolean()) {
+                        // Snap to the left or right edge and randomly select the y-coordinate
+                        x = random.pick([-stageWidth, stageWidth]);
+                        y = random.nextInt(-stageHeight, stageHeight);
+                    } else {
+                        // Snap to upper or lower edge and randomly select the x-coordinate
+                        x = random.nextInt(-stageWidth, stageWidth);
+                        y = random.pick([-stageHeight, stageHeight])
+                    }
+                    eventList.push(new DragSpriteEvent(target, x, y));
+                } else {
+                    eventList.push(new DragSpriteEvent(target));
+                }
+                break;
+            }
+
             case 'sensing_touchingcolor' :
             case 'sensing_coloristouchingcolor': {
                 eventList.push(new DragSpriteEvent(target));
-                break;
+                break
             }
+
             case 'sensing_distanceto': {
                 const distanceMenuBlock = target.blocks.getBlock(block.inputs.DISTANCETOMENU.block);
                 const field = target.blocks.getFields(distanceMenuBlock);
@@ -117,8 +154,8 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 break;
             }
             case 'motion_pointtowards': {
-                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block)
-                if (towards['fields'].TOWARDS.value === '_mouse_')
+                const towards = target.blocks.getBlock(block.inputs.TOWARDS.block);
+                if (towards.fields.TOWARDS && towards.fields.TOWARDS.value === '_mouse_')
                     eventList.push(new MouseMoveEvent());
                 break;
             }
@@ -130,7 +167,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             }
             case 'sensing_askandwait':
                 // Type text
-                eventList.push(new TypeTextEvent(this._randomText(3)));
+                eventList.push(...this._getTypeTextEvents());
                 break;
             case 'event_whenthisspriteclicked':
                 // Click sprite
@@ -140,10 +177,46 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 // Click stage
                 eventList.push(new ClickStageEvent());
                 break;
-            case 'event_whengreaterthan':
+            case 'event_whengreaterthan': {
                 // Sound
-                eventList.push(new SoundEvent(this._random.nextInt(0, 101)));
+                const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
+                const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
+                eventList.push(new SoundEvent(soundValue));
                 break;
+            }
+            case 'sensing_loudness': {
+                try {
+                    const operatorBlock = target.blocks.getBlock(block.parent);
+                    // Find out on which side of the operator the value which is compared against the volume is placed.
+                    let compareValueOperatorBlock: ScratchBlocks
+                    let compareValueIsFirstOperand: boolean;
+
+                    if (operatorBlock.inputs.OPERAND1.block !== block.id) {
+                        compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND1.block);
+                        compareValueIsFirstOperand = true;
+                    } else {
+                        compareValueOperatorBlock = target.blocks.getBlock(operatorBlock.inputs.OPERAND2.block);
+                        compareValueIsFirstOperand = false;
+                    }
+
+                    // Now that we know where to find the value which is compared against the current volume value, we
+                    // can set the volume appropriately.
+                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                    // Greater than
+                    if (operatorBlock.opcode === 'operator_gt') {
+                        compareValueIsFirstOperand ? volumeValue -= 1 : volumeValue += 1;
+                    }
+                    // Lower than
+                    else if (operatorBlock.opcode === 'operator_lt') {
+                        compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
+                    }
+                    eventList.push(new SoundEvent(volumeValue))
+                }
+                    // If we cannot infer the correct volume, simply set the volume to the highest possible value.
+                catch (e) {
+                    eventList.push(new SoundEvent(100));
+                }
+            }
         }
         return eventList;
     }

@@ -126,7 +126,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     getApproachLevel(chromosome: TestChromosome): number {
         const trace = chromosome.trace;
-        let min: number = Number.MAX_VALUE;
+        let min = Number.MAX_SAFE_INTEGER;
 
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
             const newMin = this._approachLevelByTrace(blockTrace, min);
@@ -139,7 +139,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
     private _approachLevelByTrace(blockTrace, currentMin: number) {
-        let min = Number.MAX_VALUE;
+        let min = Number.MAX_SAFE_INTEGER;
         if (this._approachLevels[blockTrace.id] <= currentMin) {
             min = this._approachLevels[blockTrace.id]
         }
@@ -156,8 +156,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     getBranchDistance(chromosome: TestChromosome): number {
         const trace = chromosome.trace;
-        let minBranchApproachLevel: number = Number.MAX_VALUE;
-        let branchDistance = Number.MAX_VALUE;
+        let minBranchApproachLevel: number = Number.MAX_SAFE_INTEGER;
+        let branchDistance = Number.MAX_SAFE_INTEGER;
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
             let traceMin;
             if (blockTrace.id === this._targetNode.block.id) {
@@ -205,6 +205,14 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         }
 
         return branchDistance;
+    }
+
+    getCFG(): ControlFlowGraph {
+        return this._cfg;
+    }
+
+    getTargetNode(): string {
+        return this._targetNode;
     }
 
     getCFGDistance(chromosome: TestChromosome, hasUnexecutedCdgPredecessor: boolean): number {

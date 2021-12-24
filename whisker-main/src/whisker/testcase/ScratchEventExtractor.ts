@@ -61,6 +61,7 @@ export abstract class ScratchEventExtractor {
 
     protected availableTextSnippets: string[] = [];
     protected proceduresMap = new Map<string, ScratchEvent[]>();
+    protected static _fixedStrings = ["0", "10", "Hello", this._randomText(3)];
 
     protected constructor(vm: VirtualMachine) {
         this.extractAvailableTextSnippets(vm);
@@ -161,12 +162,8 @@ export abstract class ScratchEventExtractor {
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                let value: string
-                if (field.VARIABLE) {
-                    value = field.VARIABLE.value
-                } else {
-                    value = field.TOUCHINGOBJECTMENU.value;
-                }
+                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
+
                 // Target senses Mouse
                 if (value == "_mouse_") {
                     const currentMousePosition = Container.vmWrapper.inputs.getMousePos();
@@ -176,6 +173,7 @@ export abstract class ScratchEventExtractor {
                     }
                     eventList.push(new MouseMoveEvent());
                 }
+
                 // Target senses edge
                 else if (value === "_edge_" && !target.isTouchingEdge()) {
                     const random = Randomness.getInstance();
@@ -193,8 +191,10 @@ export abstract class ScratchEventExtractor {
                         y = random.pick([-stageHeight, stageHeight])
                     }
                     eventList.push(new DragSpriteEvent(target, x, y));
-                } else {
-                    // Target senses another sprite
+                }
+
+                // Target senses another sprite
+                else {
                     let sensedRenderedTarget = Container.vmWrapper.getTargetBySpriteName(value);
 
                     // Check if the sensedTarget is present in the given project and if the sprite we are about to
@@ -378,16 +378,15 @@ export abstract class ScratchEventExtractor {
      * Collects all available text snippets that can be used for generating answers.
      */
     public extractAvailableTextSnippets(vm: VirtualMachine): void {
-        this.availableTextSnippets = [];
-        // TODO: Text length with random length?
-        this.availableTextSnippets.push(this._randomText(3)); // TODO: Any hints on text?
+        this.availableTextSnippets.push(...ScratchEventExtractor._fixedStrings);
 
         for (const target of vm.runtime.targets) {
             if (target.hasOwnProperty('blocks')) {
                 for (const blockId of Object.keys(target.blocks._blocks)) {
                     const snippet = this._extractAvailableTextSnippets(target, target.blocks.getBlock(blockId));
-                    if (snippet != '' && !this.availableTextSnippets.includes(snippet))
+                    if (snippet != '' && !this.availableTextSnippets.includes(snippet)) {
                         this.availableTextSnippets.push(snippet);
+                    }
                 }
             }
         }
@@ -414,7 +413,7 @@ export abstract class ScratchEventExtractor {
         }
     }
 
-    protected _randomText(length: number): string {
+    protected static _randomText(length: number): string {
         let answer = '';
         const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDDEFGHIJKLMNOPQRSTUVWXYZ';
         for (let i = 0; i < length; i++) {
