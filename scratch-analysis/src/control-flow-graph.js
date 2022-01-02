@@ -446,11 +446,14 @@ export const generateCFG = vm => {
             // Special handling for nextBackdrop statements.
             if (LooksFilter.nextBackdrop(node.block)) {
                 nextBackDropNodes.push(node)
-            } else {
+            } else if (node.block.fields.hasOwnProperty("BACKDROP")) {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
                     eventSend.put(`backdrop:${backdropTarget}`, node);
                 }
+            } else {
+                // TODO: Add edges to all items in eventReceive starting with backdrop
+
             }
         }
     }
