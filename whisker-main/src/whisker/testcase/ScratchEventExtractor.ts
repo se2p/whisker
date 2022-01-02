@@ -140,7 +140,11 @@ export abstract class ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                if (fields.hasOwnProperty("KEY_OPTION")) {
+                    eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                } else {
+                    // TODO: The key is dynamically computed
+                }
                 break;
             }
             case 'sensing_mousex':
