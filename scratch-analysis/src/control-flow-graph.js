@@ -403,7 +403,11 @@ export const generateCFG = vm => {
             const targetName = findTargetOfBlock(targets, node.block).sprite.name;
             const definitionCallKey = proccode + "-" + targetName;
             const callee = customBlockDefinitions.get(definitionCallKey);
-            successors.put(node.id, callee)
+            if (callee) {
+                successors.put(node.id, callee)
+            } else {
+                console.log("Call to undefined procedure: " + definitionCallKey);
+            }
             // FIXME: there also need to be edges that go back from the definition to all its call sites
         }
 
