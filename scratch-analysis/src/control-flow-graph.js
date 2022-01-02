@@ -422,12 +422,20 @@ export const generateCFG = vm => {
             successors.put(userEventNode.id, node);
         }
         if (EventFilter.broadcastSend(node.block)) {
-            const event = Extract.broadcastForStatement(blocks, node.block);
-            eventSend.put(`broadcast:${event}`, node);
+            if (!blocks[node.block.inputs.BROADCAST_INPUT.block].fields.hasOwnProperty("BROADCAST_OPTION")) {
+                // TODO: Broadcast target is dynamically computed, overapproximate by linking to all receivers
+            } else {
+                const event = Extract.broadcastForStatement(blocks, node.block);
+                eventSend.put(`broadcast:${event}`, node);
+            }
         }
         if (EventFilter.broadcastReceive(node.block)) {
-            const event = Extract.broadcastForBlock(node.block);
-            eventReceive.put(`broadcast:${event}`, node);
+            if (!node.block.fields.hasOwnProperty("BROADCAST_OPTION")) {
+                // TODO: Broadcast target is dynamically computed, overapproximate by linking to all receivers
+            } else {
+                const event = Extract.broadcastForBlock(node.block);
+                eventReceive.put(`broadcast:${event}`, node);
+            }
         }
         if (EventFilter.cloneCreate(node.block)) {
             let cloneTarget = Extract.cloneCreateTarget(blocks, node.block);
