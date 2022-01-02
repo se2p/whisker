@@ -458,7 +458,7 @@ export const generateCFG = vm => {
             // Special handling for nextBackdrop statements.
             if (LooksFilter.nextBackdrop(node.block)) {
                 nextBackDropNodes.push(node)
-            } else if (node.block.fields.hasOwnProperty("BACKDROP")) {
+            } else if (node.block.inputs.hasOwnProperty("BACKDROP")) {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
                     eventSend.put(`backdrop:${backdropTarget}`, node);
@@ -483,7 +483,7 @@ export const generateCFG = vm => {
         const eventType = splitEventId.shift();
         const eventValue = splitEventId.join('');
 
-        // If we have matching sender and receiver of events create connections between them.
+        // If we have matching sender and receiver of events, create connections between them.
         if (sendEvents.size > 0 && receiveEvents.size > 0) {
             const event = {type: eventType, value: eventValue};
             const sendNode = new EventNode(eventId, event);
@@ -525,7 +525,7 @@ export const generateCFG = vm => {
         }
     }
 
-    // Remove statement blocks that have no predecessors in the CFG which are therefore unreachable.
+    // Remove statement blocks that have no predecessors in the CFG and are therefore unreachable.
     let changed = true;
     while (changed) {
         changed = false;
