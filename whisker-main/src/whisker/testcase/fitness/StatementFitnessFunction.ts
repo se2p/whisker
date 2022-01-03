@@ -377,6 +377,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
                         requiredCondition = false;
                     }
+                } else {
+                    // If there is no else branch, we need to look at the true branch?
+                    requiredCondition = true;
                 }
                 break;
             }
