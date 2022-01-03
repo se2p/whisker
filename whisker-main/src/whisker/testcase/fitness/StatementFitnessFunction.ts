@@ -372,9 +372,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     requiredCondition = true;
                     break;
                 }
-                const elseBlock = controlNode.block.inputs.SUBSTACK2.block;
-                if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
-                    requiredCondition = false;
+                if (controlNode.block.inputs.SUBSTACK2 !== undefined) {
+                    const elseBlock = controlNode.block.inputs.SUBSTACK2.block;
+                    if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
+                        requiredCondition = false;
+                    }
                 }
                 break;
             }
