@@ -107,7 +107,7 @@ export abstract class ScratchEventExtractor {
                     if (condition.inputs.OPERAND1) {
                         this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
                     }
-                    if (condition.inputs.OPERAND1) {
+                    if (condition.inputs.OPERAND2) {
                         this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
                     }
                     foundEvents.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
