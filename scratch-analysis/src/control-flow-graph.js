@@ -308,6 +308,31 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
     return eventNode;
 };
 
+
+const getBroadcastTargets = blocks => {
+    let broadcastTargets = new Set();
+    for (const block of Object.values(blocks)) {
+        if (EventFilter.broadcastReceive(block)) {
+            const event = Extract.broadcastForBlock(block);
+            broadcastTargets.add(`broadcast:${event}`);
+        }
+    }
+    return broadcastTargets;
+}
+
+const getBackdropTargets = (blocks, vm) => {
+    let backdropTargets = new Set();
+    for (const block of Object.values(blocks)) {
+        if (EventFilter.backdropStart(block)) {
+            const backdropTarget = Extract.backdropStartTarget(blocks, block);
+            if (checkIfBackdropExists(vm, backdropTarget)) {
+                backdropTargets.add(`backdrop:${backdropTarget}`);
+            }
+        }
+    }
+    return backdropTargets;
+}
+
 /**
  * Constructs an interprocedural control flow graph (CFG) for all blocks of a program.
  *
@@ -327,6 +352,8 @@ export const generateCFG = vm => {
 
     // Collect all Scratch blocks from the sprites.
     const blocks = getAllBlocks(targets);
+    const backdropTargets = getBackdropTargets(blocks, vm);
+    const broadcastTargets = getBroadcastTargets(blocks);
 
     const cfg = new ControlFlowGraph();
     const userEvents = new Map();
@@ -426,7 +453,10 @@ export const generateCFG = vm => {
                 const event = Extract.broadcastForStatement(blocks, node.block);
                 eventSend.put(`broadcast:${event}`, node);
             } else {
-                // TODO: Broadcast target is dynamically computed, overapproximate by linking to all receivers
+                // Add edges to all items in eventReceive starting with a message
+                for (const broadcastTarget of broadcastTargets) {
+                    eventSend.put(broadcastTarget, node);
+                }
             }
         }
         if (EventFilter.broadcastReceive(node.block)) {
@@ -461,8 +491,10 @@ export const generateCFG = vm => {
                     eventSend.put(`backdrop:${backdropTarget}`, node);
                 }
             } else {
-                // TODO: Add edges to all items in eventReceive starting with backdrop
-
+                // Add edges to all items in eventReceive starting with backdrop
+                for (const backdropTarget of backdropTargets) {
+                    eventSend.put(backdropTarget, node);
+                }
             }
         }
     }
