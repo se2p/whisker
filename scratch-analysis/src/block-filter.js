@@ -126,6 +126,9 @@ const EventFilter = {
     broadcastReceive: block =>
         block.opcode === 'event_whenbroadcastreceived',
 
+    broadcastMenu: block =>
+        block.opcode === 'event_broadcast_menu',
+
     cloneCreate: block =>
         block.opcode === 'control_create_clone_of',
 
