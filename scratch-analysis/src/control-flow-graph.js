@@ -459,7 +459,7 @@ export const generateCFG = vm => {
             if (LooksFilter.nextBackdrop(node.block)) {
                 nextBackDropNodes.push(node)
             }
-            else if (node.block.fields.hasOwnProperty("BACKDROP") || node.block.inputs.hasOwnProperty("BACKDROP")) {
+            else if (LooksFilter.backdropBlock(blocks[node.block.inputs.BACKDROP.block])) {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
                     eventSend.put(`backdrop:${backdropTarget}`, node);

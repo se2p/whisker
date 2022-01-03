@@ -76,6 +76,9 @@ const LooksFilter = {
         block.opcode === 'looks_think' ||
         block.opcode === 'looks_thinkforsecs',
 
+    backdropBlock: block =>
+        block.opcode === 'looks_backdrop',
+
     looksBlock: block =>
         block.opcode.startsWith('looks_') &&
         !block.opcode.endsWith('_menu') && !(
