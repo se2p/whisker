@@ -292,6 +292,11 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
             event.value = Extract.clickedKey(node.block);
             break;
         }
+        case 'event_whengreaterthan': {
+            // TODO: Technically, only sound is a user event but the block can also refer to the timer
+            event.value = node.block.fields.WHENGREATERTHANMENU;
+            break;
+        }
     }
 
     const eventKey = `${event.name}${event.value ? (`:${event.value}`) : ''}`;

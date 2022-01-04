@@ -105,7 +105,8 @@ const EventFilter = {
         block.opcode === 'event_whenflagclicked' ||
         block.opcode === 'event_whenthisspriteclicked' ||
         block.opcode === 'event_whenstageclicked' ||
-        block.opcode === 'event_whenkeypressed',
+        block.opcode === 'event_whenkeypressed' ||
+        block.opcode === 'event_whengreaterthan',
 
     greenFlag: block =>
         block.opcode === 'event_whenflagclicked',
