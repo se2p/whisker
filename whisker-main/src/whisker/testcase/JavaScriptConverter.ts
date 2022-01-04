@@ -61,7 +61,7 @@ export class JavaScriptConverter {
             for (const test of tests) {
                 text += "const test" + i + " = async function (t) {\n";
                 for (const {event} of test.chromosome.trace.events) {
-                    text += "  " + event.toJavaScript() + "\n";
+                    text += "  " + JSON.stringify(event.toJavaScript()) + "\n";
                 }
                 text += "}\n";
 
