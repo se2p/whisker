@@ -448,13 +448,27 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 // Get all nodes being dependent on the branching block.
                 let mergeNodes = [...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()];
 
-                // Find the last Block which either
-                // has no child and is not another branch block -> end of branch
-                // or has another branch block as child -> nested branches
-                mergeNodes = mergeNodes.filter(node => (node.block !== undefined) && (!node.block.next ||
-                    ControlFilter.branch(StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg).block)));
+                // Now we have to find the last block in the branch. This can be either
+                // 1) a block without a child
+                const lastBlock = mergeNodes.filter(node => node.block !== undefined && !node.block.next);
 
-                // Filter other branch blocks, they are contained within their own mergeMap key.
+                // 2) or a block whose child is a branch --> nested branches
+                const filterNestedBranches = (node) => {
+                    if(node.block.next == undefined){
+                        return false;
+                    }
+                    const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg)
+                    if(childOfNode == undefined){
+                        return false;
+                    }
+                    return ControlFilter.branch(childOfNode.block)
+                }
+                const nestedBranches = mergeNodes.filter(node => node.block !== undefined && filterNestedBranches(node));
+
+                // Now we combine both possibilities.
+                mergeNodes = [...lastBlock, ...nestedBranches];
+
+                // Filter single branch blocks, they are contained within their own mergeMap key.
                 mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
 
                 // Add the branching block if it isn't present
