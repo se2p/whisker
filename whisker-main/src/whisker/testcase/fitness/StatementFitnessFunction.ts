@@ -329,17 +329,21 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             case 'control_repeat': {
                 requiredCondition = false;
-                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
-                    requiredCondition = true;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                    if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                        requiredCondition = true;
+                    }
                 }
                 break;
             }
             case 'control_repeat_until': {
                 requiredCondition = true;
-                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
-                    requiredCondition = false;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                    if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                        requiredCondition = false;
+                    }
                 }
                 break;
             }
