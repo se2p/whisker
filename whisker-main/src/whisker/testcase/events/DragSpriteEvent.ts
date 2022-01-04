@@ -45,7 +45,8 @@ export class DragSpriteEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return `t.dragSprite('${this._target.sprite.name}', ${this._x}, ${this._y});`;
+        const spriteName = this._target.sprite.name.replace(/'/g, "\\'")
+        return `t.dragSprite('${spriteName}', ${this._x}, ${this._y});`;
     }
 
     public toJSON(): Record<string, any> {
