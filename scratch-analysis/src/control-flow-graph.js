@@ -192,7 +192,8 @@ const _fixControlStatement = (cfg, successors, controlNode) => {
                     break;
                 }
                 case 'other scripts in sprite':
-                    // Since this is just a 'normal' block, we can ignore it
+                case 'other scripts in stage':
+                    // Since this is just a 'normal' block after which other blocks can follow, we can ignore it.
                     break;
                 default:
                     console.log(`Unrecognized stop option ${stopOption}.`);
@@ -451,17 +452,14 @@ export const generateCFG = vm => {
                 const targetName = findTargetOfBlock(targets, block).sprite.name;
                 const customBlockPrototype = blocks[block.inputs.custom_block.block];
                 const proccode = customBlockPrototype.mutation.proccode;
-                const definitionCallKey = proccode + "-" + targetName;
+                let definitionCallKey = proccode + "-" + targetName;
+                if (customBlockDefinitions.has(definitionCallKey)) {
+                    console.warn("Duplicate procedure definition for the custom block: ", proccode);
+                    console.warn("Scratch will only execute one single procedure definition. Consider removing duplicates for a better code quality!")
+                    const keys = [...customBlockDefinitions.keys()].filter(key => key.includes(definitionCallKey));
+                    definitionCallKey += "-" + keys.length;
+                }
                 customBlockDefinitions.set(definitionCallKey, new GraphNode(block.id, block));
-            }
-        } else if (block.opcode === 'procedures_prototype') {
-            const customBlockDefinition = blocks[block.parent];
-            const proccode = block.mutation.proccode;
-            if (customBlockDefinition) {
-                const targetName = findTargetOfBlock(targets, block).sprite.name;
-                const definitionCallKey = proccode + "-" + targetName;
-                const customBlockNode = new GraphNode(customBlockDefinition.id, customBlockDefinition);
-                customBlockDefinitions.set(definitionCallKey, customBlockNode);
             }
         }
     }
@@ -477,11 +475,14 @@ export const generateCFG = vm => {
             const proccode = node.block.mutation.proccode;
             const targetName = findTargetOfBlock(targets, node.block).sprite.name;
             const definitionCallKey = proccode + "-" + targetName;
-            const callee = customBlockDefinitions.get(definitionCallKey);
-            if (callee) {
-                successors.put(node.id, callee)
-            } else {
-                console.log("Call to undefined procedure: " + definitionCallKey);
+            const definitionKeys = [...customBlockDefinitions.keys()].filter(key => key.includes(definitionCallKey));
+            for (const definitionKey of definitionKeys) {
+                const callee = customBlockDefinitions.get(definitionKey);
+                if (callee) {
+                    successors.put(node.id, callee)
+                } else {
+                    console.warn("Call to undefined procedure: " + definitionCallKey);
+                }
             }
             // FIXME: there also need to be edges that go back from the definition to all its call sites
         }
