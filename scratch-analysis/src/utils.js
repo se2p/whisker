@@ -8,6 +8,8 @@ const targetForBlockId = (targets, blockId) => {
 
 const getAllBlocks = targets => targets.reduce((acc, target) => Object.assign(acc, target.blocks._blocks), {});
 
+const countAllBlocks = targets => targets.reduce((acc, target) => acc += target.blocks._blocks.length, 0);
+
 const getBranchStart = statement => {
     if (statement.inputs.hasOwnProperty('SUBSTACK')) {
         return statement.inputs.SUBSTACK.block;
@@ -56,6 +58,7 @@ const Extract = {
 };
 
 export {
+    countAllBlocks,
     getAllBlocks,
     getBranchStart,
     getElseBranchStart,

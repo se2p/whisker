@@ -1,5 +1,5 @@
 import {ControlFilter, EventFilter, LooksFilter, StatementFilter} from './block-filter';
-import {Extract, getAllBlocks, getBranchStart, getElseBranchStart} from './utils';
+import {Extract, countAllBlocks, getAllBlocks, getBranchStart, getElseBranchStart} from './utils';
 import {Graph, GraphNode, Mapping} from './graph-utils';
 
 /**
@@ -357,6 +357,9 @@ export const generateCFG = vm => {
 
     // Collect all Scratch blocks from the sprites.
     const blocks = getAllBlocks(targets);
+    if (Object.keys(blocks).length != countAllBlocks(targets)) {
+        console.warn("Number of blocks does not match, there seem to be duplicate block IDs. This will cause problems.")
+    }
     const backdropTargets = getBackdropTargets(blocks, vm);
     const broadcastTargets = getBroadcastTargets(blocks);
 
