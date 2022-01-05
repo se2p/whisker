@@ -285,13 +285,19 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
             //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
-            throw 'Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
-            + targetNode.block.opcode;
+            console.warn('Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
+            + targetNode.block.opcode +" with id " + targetNode.block.id);
+            return [];
         }
 
         let targetNodeQueue: GraphNode[];
         if (hasUnexecutedCdgPredecessor) {
             targetNodeQueue = bfsPredecessors(this._cdg, this._targetNode, chromosome.coverage);
+            if (targetNodeQueue.length === 0) {
+                // If no predecessor was found, something is wrong, e.g. nothing was covered.
+                // By returning max, the effect is essentially that the CFG distance is not used.
+                return Number.MAX_SAFE_INTEGER;
+            }
         } else {
             targetNodeQueue = [this._targetNode]
         }
