@@ -339,6 +339,24 @@ const getBackdropTargets = (blocks, vm) => {
 }
 
 /**
+ * Create unique block ID
+ * Based on https://github.com/LLK/scratch-blocks/blob/develop/core/utils.js
+ * Soup omits $ because that would screw up the String.replaceAll later
+ */
+const soup_ = '!#()%*+,-./:;=?@[]^_`{|}~' + // $
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+export const genUid = function() {
+    var length = 20;
+    var soupLength = soup_.length;
+    var id = [];
+    for (var i = 0; i < length; i++) {
+        id[i] = soup_.charAt(Math.random() * soupLength);
+    }
+    return id.join('');
+};
+
+
+/**
  * Constructs an interprocedural control flow graph (CFG) for all blocks of a program.
  *
  * The given blocks represent the Abstract Syntax Tree (AST) of each script.
@@ -356,9 +374,31 @@ export const generateCFG = vm => {
     const targets = vm.runtime.targets;
 
     // Collect all Scratch blocks from the sprites.
-    const blocks = getAllBlocks(targets);
-    if (Object.keys(blocks).length != countAllBlocks(targets)) {
-        console.warn("Number of blocks does not match, there seem to be duplicate block IDs. This will cause problems.")
+    let blocks = getAllBlocks(targets);
+
+    // Block IDs should be unique, but there can be broken projects with duplicate IDs.
+    // We attempt to replace these IDs to fix the project
+    const numBlocks = countAllBlocks(targets);
+    if (Object.keys(blocks).length != numBlocks) {
+        console.warn("Number of blocks does not match, there seem to be duplicate block IDs. This will cause problems: " + Object.keys(blocks).length +" vs. "+numBlocks);
+        let blockIds = new Set()
+        for (const target of targets) {
+            for (const blk of Object.values(target.blocks._blocks)) {
+                if (blockIds.has(blk.id)) {
+                    const replacementId = genUid();
+                    console.log("Duplicate block: "+blk.id+" in sprite "+target.id+", replacing with "+replacementId);
+                    target.blocks._blocks = JSON.parse(JSON.stringify(target.blocks._blocks).replaceAll(blk.id, replacementId));
+                    target.blocks._scripts = JSON.parse(JSON.stringify(target.blocks._scripts).replaceAll(blk.id, replacementId));
+                }
+                blockIds.add(blk.id);
+            }
+        }
+        blocks = getAllBlocks(targets);
+        if (Object.keys(blocks).length != countAllBlocks(targets)) {
+            console.log("Number of blocks still doesn't match: " +Object.keys(blocks).length);
+        } else {
+            console.log("Blocks successfully fixed");
+        }
     }
     const backdropTargets = getBackdropTargets(blocks, vm);
     const broadcastTargets = getBroadcastTargets(blocks);
