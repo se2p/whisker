@@ -282,7 +282,7 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
             break;
         }
         case 'event_whenthisspriteclicked': {
-            event.value = Extract.clickedSprite(targets, node.block);
+            event.value = Extract.clickedSprite(node.block);
             break;
         }
         case 'event_whenstageclicked': {
@@ -346,7 +346,7 @@ const getBackdropTargets = (blocks, vm) => {
  */
 const soup_ = '!#()%*+,-./:;=?@[]^_`{|}~' + // $
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-export const genUid = function() {
+export const genUid = function () {
     var length = 20;
     var soupLength = soup_.length;
     var id = [];
@@ -374,33 +374,45 @@ export const generateCFG = vm => {
     // So called "renderer targets" (the individual sprites and the stage) in the current project.
     const targets = vm.runtime.targets;
 
-    // Collect all Scratch blocks from the sprites.
-    let blocks = getAllBlocks(targets);
+    // To avoid duplicates in the CFG we save blocks using the key combination blockId-SpriteName, where SpriteName
+    // corresponds to the name of the sprite the given block is contained in.
+    let blocks = {}
+    for (const target of targets) {
+        for (const block of Object.values(target.blocks._blocks)) {
+            const blockKey = block.id + "-" + target.sprite.name;
+            const blockClone = JSON.parse(JSON.stringify(block))
+            blockClone['target'] = target.sprite.name;
+            changeBlockIds(blockClone, target)
+            blocks[blockKey] = blockClone
+        }
+    }
 
-    // Block IDs should be unique, but there can be broken projects with duplicate IDs.
-    // We attempt to replace these IDs to fix the project
+    // Combining blockIds with the sprite name *should* render the occurrence of duplicates impossible. Since the VM
+    // itself would overwrite the duplicate ids in the blockContainer object. We nonetheless add a safety check here.
     const numBlocks = countAllBlocks(targets);
-    if (Object.keys(blocks).length != numBlocks) {
-        console.warn("Number of blocks does not match, there seem to be duplicate block IDs. This will cause problems: " + Object.keys(blocks).length +" vs. "+numBlocks);
+    if (Object.keys(blocks).length !== numBlocks) {
+        console.warn("Number of blocks does not match, there seem to be duplicate block IDs. This will cause problems: " + Object.keys(blocks).length + " vs. " + numBlocks);
         let blockIds = new Set()
+        blocks = {}
         for (const target of targets) {
             for (const blk of Object.values(target.blocks._blocks)) {
                 if (blockIds.has(blk.id)) {
                     const replacementId = genUid();
-                    console.log("Duplicate block: "+blk.id+" in sprite "+target.id+", replacing with "+replacementId);
+                    console.log("Duplicate block: " + blk.id + " in sprite " + target.id + ", replacing with " + replacementId);
                     target.blocks._blocks = JSON.parse(JSON.stringify(target.blocks._blocks).replaceAll(blk.id, replacementId));
                     target.blocks._scripts = JSON.parse(JSON.stringify(target.blocks._scripts).replaceAll(blk.id, replacementId));
+                    blocks[replacementId] = blk;
                 }
                 blockIds.add(blk.id);
             }
         }
-        blocks = getAllBlocks(targets);
-        if (Object.keys(blocks).length != countAllBlocks(targets)) {
-            console.log("Number of blocks still doesn't match: " +Object.keys(blocks).length);
+        if (Object.keys(blocks).length !== countAllBlocks(targets)) {
+            console.log("Number of blocks still doesn't match: " + Object.keys(blocks).length);
         } else {
             console.log("Blocks successfully fixed");
         }
     }
+
     const backdropTargets = getBackdropTargets(blocks, vm);
     const broadcastTargets = getBroadcastTargets(blocks);
 
@@ -412,7 +424,7 @@ export const generateCFG = vm => {
     const nextBackDropNodes = [];
 
     // First, we insert all nodes into the CFG.
-    for (const block of Object.values(blocks)) {
+    for (const [id, block] of Object.entries(blocks)) {
 
         // Certain Scratch blocks are not related to control flow; they are not "statement blocks". For example, none
         // of the blocks in the "Operators" category (e.g., arithmetic and boolean operators) are statement blocks.
@@ -428,7 +440,7 @@ export const generateCFG = vm => {
             continue;
         }
 
-        cfg.addNode(new GraphNode(block.id, block));
+        cfg.addNode(new GraphNode(id, block));
     }
 
     /*
@@ -449,10 +461,9 @@ export const generateCFG = vm => {
     for (const block of Object.values(blocks)) {
         if (block.opcode === 'procedures_definition') {
             if (block.inputs.custom_block.block) {
-                const targetName = findTargetOfBlock(targets, block).sprite.name;
                 const customBlockPrototype = blocks[block.inputs.custom_block.block];
                 const proccode = customBlockPrototype.mutation.proccode;
-                let definitionCallKey = proccode + "-" + targetName;
+                let definitionCallKey = proccode + "-" + block.target;
                 if (customBlockDefinitions.has(definitionCallKey)) {
                     console.warn("Duplicate procedure definition for the custom block: ", proccode);
                     console.warn("Scratch will only execute one single procedure definition. Consider removing duplicates for a better code quality!")
@@ -473,8 +484,7 @@ export const generateCFG = vm => {
         const callsCustomBlock = node.block.opcode === 'procedures_call';
         if (callsCustomBlock) { // Adds an edge from the call site of a custom block to its definition
             const proccode = node.block.mutation.proccode;
-            const targetName = findTargetOfBlock(targets, node.block).sprite.name;
-            const definitionCallKey = proccode + "-" + targetName;
+            const definitionCallKey = proccode + "-" + node.block.target;
             const definitionKeys = [...customBlockDefinitions.keys()].filter(key => key.includes(definitionCallKey));
             for (const definitionKey of definitionKeys) {
                 const callee = customBlockDefinitions.get(definitionKey);
@@ -515,12 +525,12 @@ export const generateCFG = vm => {
         if (EventFilter.cloneCreate(node.block)) {
             let cloneTarget = Extract.cloneCreateTarget(blocks, node.block);
             if (cloneTarget === '_myself_') {
-                cloneTarget = Extract.cloneSendTarget(targets, node.block);
+                cloneTarget = Extract.cloneSendTarget(node.block);
             }
             eventSend.put(`clone:${cloneTarget}`, node);
         }
         if (EventFilter.cloneStart(node.block)) {
-            const cloneTarget = Extract.cloneSendTarget(targets, node.block);
+            const cloneTarget = Extract.cloneSendTarget(node.block);
             eventReceive.put(`clone:${cloneTarget}`, node);
         }
         if (EventFilter.backdropStart(node.block)) {
@@ -533,8 +543,7 @@ export const generateCFG = vm => {
             // Special handling for nextBackdrop statements.
             if (LooksFilter.nextBackdrop(node.block)) {
                 nextBackDropNodes.push(node)
-            }
-            else if (LooksFilter.backdropBlock(blocks[node.block.inputs.BACKDROP.block])) {
+            } else if (LooksFilter.backdropBlock(blocks[node.block.inputs.BACKDROP.block])) {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
                     eventSend.put(`backdrop:${backdropTarget}`, node);
@@ -625,15 +634,6 @@ export const generateCFG = vm => {
     return cfg;
 };
 
-const findTargetOfBlock = (targets, block) => {
-    for (const target of targets) {
-        if (block.id in target.blocks._blocks) {
-            return target;
-        }
-    }
-    return undefined;
-}
-
 const checkIfBackdropExists = (vm, backdropName) => {
     const stage = vm.runtime.getTargetForStage();
     const backdrops = stage.sprite.costumes;
@@ -643,5 +643,17 @@ const checkIfBackdropExists = (vm, backdropName) => {
         }
     }
     return false;
+}
+
+function changeBlockIds(block, target) {
+    // TODO: Are there other keys that map to ids we need to replace here?
+    const idKeys = ['id', 'next', 'parent', 'block']
+    for (const k in block) {
+        if (typeof block[k] === 'object' && block[k] !== null) {
+            changeBlockIds(block[k], target)
+        } else if (idKeys.includes(k) && block[k] !== null) {
+            block[k] = block[k] + "-" + target.sprite.name;
+        }
+    }
 }
 

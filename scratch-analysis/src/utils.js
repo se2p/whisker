@@ -1,11 +1,3 @@
-const targetForBlockId = (targets, blockId) => {
-    for (const target of targets) {
-        if (target.blocks._blocks.hasOwnProperty(blockId)) {
-            return target;
-        }
-    }
-};
-
 const getAllBlocks = targets => targets.reduce((acc, target) => Object.assign(acc, target.blocks._blocks), {});
 
 const countAllBlocks = targets => targets.reduce((acc, target) => acc += Object.keys(target.blocks._blocks).length, 0);
@@ -33,8 +25,8 @@ const Extract = {
         blocks[statement.inputs.BACKDROP.block].fields.BACKDROP.value,
     cloneCreateTarget: (blocks, statement) =>
         blocks[statement.inputs.CLONE_OPTION.block].fields.CLONE_OPTION.value,
-    cloneSendTarget: (targets, block) =>
-        targetForBlockId(targets, block.id).sprite.name,
+    cloneSendTarget: block =>
+        block.target,
     direction: (blocks, statement) =>
         parseInt(blocks[statement.inputs.DIRECTION.block].fields.NUM.value, 10),
     xPosition: (blocks, statement) =>
@@ -51,8 +43,8 @@ const Extract = {
         blocks[statement.inputs.VALUE.block].fields.TEXT.value,
     stopOption: block =>
         block.fields.STOP_OPTION.value,
-    clickedSprite: (targets, block) =>
-        targetForBlockId(targets, block.id).sprite.name,
+    clickedSprite: block =>
+        block.target,
     clickedKey: block =>
         block.fields.KEY_OPTION.value
 };
