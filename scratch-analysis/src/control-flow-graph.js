@@ -387,32 +387,6 @@ export const generateCFG = vm => {
         }
     }
 
-    // Combining blockIds with the sprite name *should* render the occurrence of duplicates impossible. Since the VM
-    // itself would overwrite the duplicate ids in the blockContainer object. We nonetheless add a safety check here.
-    const numBlocks = countAllBlocks(targets);
-    if (Object.keys(blocks).length !== numBlocks) {
-        console.warn("Number of blocks does not match, there seem to be duplicate block IDs. This will cause problems: " + Object.keys(blocks).length + " vs. " + numBlocks);
-        let blockIds = new Set()
-        blocks = {}
-        for (const target of targets) {
-            for (const blk of Object.values(target.blocks._blocks)) {
-                if (blockIds.has(blk.id)) {
-                    const replacementId = genUid();
-                    console.log("Duplicate block: " + blk.id + " in sprite " + target.id + ", replacing with " + replacementId);
-                    target.blocks._blocks = JSON.parse(JSON.stringify(target.blocks._blocks).replaceAll(blk.id, replacementId));
-                    target.blocks._scripts = JSON.parse(JSON.stringify(target.blocks._scripts).replaceAll(blk.id, replacementId));
-                    blocks[replacementId] = blk;
-                }
-                blockIds.add(blk.id);
-            }
-        }
-        if (Object.keys(blocks).length !== countAllBlocks(targets)) {
-            console.log("Number of blocks still doesn't match: " + Object.keys(blocks).length);
-        } else {
-            console.log("Blocks successfully fixed");
-        }
-    }
-
     const backdropTargets = getBackdropTargets(blocks, vm);
     const broadcastTargets = getBroadcastTargets(blocks);
 
