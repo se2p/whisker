@@ -136,6 +136,9 @@ const EventFilter = {
     cloneStart: block =>
         block.opcode === 'control_start_as_clone',
 
+    cloneMenu: block =>
+        block.opcode === "control_create_clone_of_menu",
+
     backdropStart: block =>
         block.opcode === 'event_whenbackdropswitchesto',
 
