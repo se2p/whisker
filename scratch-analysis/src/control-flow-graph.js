@@ -339,6 +339,17 @@ const getBackdropTargets = (blocks, vm) => {
     return backdropTargets;
 }
 
+const getCloneTargets = blocks => {
+    let cloneTargets = new Set();
+    for (const block of Object.values(blocks)) {
+        if (EventFilter.cloneStart(block)) {
+            const cloneTarget = Extract.cloneSendTarget(block);
+            cloneTargets.add(`clone:${cloneTarget}`);
+        }
+    }
+    return cloneTargets;
+}
+
 /**
  * Create unique block ID
  * Based on https://github.com/LLK/scratch-blocks/blob/develop/core/utils.js
@@ -387,8 +398,9 @@ export const generateCFG = vm => {
         }
     }
 
-    const backdropTargets = getBackdropTargets(blocks, vm);
+    const backdropTargets  = getBackdropTargets(blocks, vm);
     const broadcastTargets = getBroadcastTargets(blocks);
+    const cloneTargets     = getCloneTargets(blocks);
 
     const cfg = new ControlFlowGraph();
     const userEvents = new Map();
@@ -497,11 +509,18 @@ export const generateCFG = vm => {
             eventReceive.put(`broadcast:${event}`, node);
         }
         if (EventFilter.cloneCreate(node.block)) {
-            let cloneTarget = Extract.cloneCreateTarget(blocks, node.block);
-            if (cloneTarget === '_myself_') {
-                cloneTarget = Extract.cloneSendTarget(node.block);
+            if (EventFilter.cloneMenu([node.block.inputs.CLONE_OPTION.block])) {
+                let cloneTarget = Extract.cloneCreateTarget(blocks, node.block);
+                if (cloneTarget === '_myself_') {
+                    cloneTarget = Extract.cloneSendTarget(node.block);
+                }
+                eventSend.put(`clone:${cloneTarget}`, node);
+            } else {
+                // Overapproximate since the target is not known statically
+                for (const cloneTarget of cloneTargets) {
+                    eventSend.put(cloneTarget, node);
+                }
             }
-            eventSend.put(`clone:${cloneTarget}`, node);
         }
         if (EventFilter.cloneStart(node.block)) {
             const cloneTarget = Extract.cloneSendTarget(node.block);
