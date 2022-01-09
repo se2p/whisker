@@ -319,8 +319,8 @@ const getBroadcastTargets = blocks => {
     let broadcastTargets = new Set();
     for (const block of Object.values(blocks)) {
         if (EventFilter.broadcastReceive(block)) {
-            const event = Extract.broadcastForBlock(block);
-            broadcastTargets.add(`broadcast:${event}`);
+            const event = Extract.broadcastForBlock(block).replace(`-${block.target}`, '');
+            broadcastTargets.add(`broadcast:${block.target}:${event}`);
         }
     }
     return broadcastTargets;
@@ -332,7 +332,7 @@ const getBackdropTargets = (blocks, vm) => {
         if (EventFilter.backdropStart(block)) {
             const backdropTarget = Extract.backdropStartTarget(blocks, block);
             if (checkIfBackdropExists(vm, backdropTarget)) {
-                backdropTargets.add(`backdrop:${backdropTarget}`);
+                backdropTargets.add(`backdrop:${block.target}:${backdropTarget}`);
             }
         }
     }
@@ -344,7 +344,7 @@ const getCloneTargets = blocks => {
     for (const block of Object.values(blocks)) {
         if (EventFilter.cloneStart(block)) {
             const cloneTarget = Extract.cloneSendTarget(block);
-            cloneTargets.add(`clone:${cloneTarget}`);
+            cloneTargets.add(`clone:${block.target}:${cloneTarget}`);
         }
     }
     return cloneTargets;
@@ -390,7 +390,7 @@ export const generateCFG = vm => {
     let blocks = {}
     for (const target of targets) {
         for (const block of Object.values(target.blocks._blocks)) {
-            const blockKey = block.id + "-" + target.sprite.name;
+            const blockKey = `${block.id}-${target.sprite.name}`;
             const blockClone = JSON.parse(JSON.stringify(block))
             blockClone['target'] = target.sprite.name;
             changeBlockIds(blockClone, target)
@@ -398,9 +398,9 @@ export const generateCFG = vm => {
         }
     }
 
-    const backdropTargets  = getBackdropTargets(blocks, vm);
+    const backdropTargets = getBackdropTargets(blocks, vm);
     const broadcastTargets = getBroadcastTargets(blocks);
-    const cloneTargets     = getCloneTargets(blocks);
+    const cloneTargets = getCloneTargets(blocks);
 
     const cfg = new ControlFlowGraph();
     const userEvents = new Map();
@@ -495,8 +495,8 @@ export const generateCFG = vm => {
         }
         if (EventFilter.broadcastSend(node.block)) {
             if (EventFilter.broadcastMenu(blocks[node.block.inputs.BROADCAST_INPUT.block])) {
-                const event = Extract.broadcastForStatement(blocks, node.block);
-                eventSend.put(`broadcast:${event}`, node);
+                const event = Extract.broadcastForStatement(blocks, node.block).replace(`-${node.block.target}`, '');
+                eventSend.put(`broadcast:${node.block.target}:${event}`, node);
             } else {
                 // Add edges to all items in eventReceive starting with a message
                 for (const broadcastTarget of broadcastTargets) {
@@ -505,8 +505,8 @@ export const generateCFG = vm => {
             }
         }
         if (EventFilter.broadcastReceive(node.block)) {
-            const event = Extract.broadcastForBlock(node.block);
-            eventReceive.put(`broadcast:${event}`, node);
+            const event = Extract.broadcastForBlock(node.block).replace(`-${node.block.target}`, '');
+            eventReceive.put(`broadcast:${node.block.target}:${event}`, node);
         }
         if (EventFilter.cloneCreate(node.block)) {
             if (EventFilter.cloneMenu([node.block.inputs.CLONE_OPTION.block])) {
@@ -514,7 +514,7 @@ export const generateCFG = vm => {
                 if (cloneTarget === '_myself_') {
                     cloneTarget = Extract.cloneSendTarget(node.block);
                 }
-                eventSend.put(`clone:${cloneTarget}`, node);
+                eventSend.put(`clone:${node.block.target}:${cloneTarget}`, node);
             } else {
                 // Overapproximate since the target is not known statically
                 for (const cloneTarget of cloneTargets) {
@@ -524,12 +524,12 @@ export const generateCFG = vm => {
         }
         if (EventFilter.cloneStart(node.block)) {
             const cloneTarget = Extract.cloneSendTarget(node.block);
-            eventReceive.put(`clone:${cloneTarget}`, node);
+            eventReceive.put(`clone:${node.block.target}:${cloneTarget}`, node);
         }
         if (EventFilter.backdropStart(node.block)) {
             const backdropTarget = Extract.backdropStartTarget(targets, node.block);
             if (checkIfBackdropExists(vm, backdropTarget)) {
-                eventReceive.put(`backdrop:${backdropTarget}`, node);
+                eventReceive.put(`backdrop:${node.block.target}:${backdropTarget}`, node);
             }
         }
         if (LooksFilter.backdropChange(node.block)) {
@@ -539,7 +539,7 @@ export const generateCFG = vm => {
             } else if (LooksFilter.backdropBlock(blocks[node.block.inputs.BACKDROP.block])) {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
-                    eventSend.put(`backdrop:${backdropTarget}`, node);
+                    eventSend.put(`backdrop:${node.block.target}:${backdropTarget}`, node);
                 }
             } else {
                 // Add edges to all items in eventReceive starting with backdrop
@@ -556,17 +556,27 @@ export const generateCFG = vm => {
 
     // Adds an extra event node for Broadcast and Cloning events iff the respective events can be triggered.
     const eventIds = new Set([...eventSend.keys(), ...eventReceive.keys()]);
-    for (const eventId of eventIds) {
-        const sendEvents = eventSend.get(eventId);
-        const receiveEvents = eventReceive.get(eventId);
-        const splitEventId = eventId.split(':');
-        const eventType = splitEventId.shift();
-        const eventValue = splitEventId.join('');
+    for (const eventKey of eventIds) {
+
+        const splitEventId = eventKey.split(':')
+        const eventType = splitEventId[0];
+        const eventTarget = splitEventId[1];
+        const eventId = splitEventId[2];
+
+        const sendEvents = eventSend.get(eventKey);
+        const receiveEvents = new Set();
+        for (const key of eventReceive.keys()) {
+            if (key.split(':')[2] === eventId) {
+                for (const eventNode of eventReceive.get(key)) {
+                    receiveEvents.add(eventNode)
+                }
+            }
+        }
 
         // If we have matching sender and receiver of events, create connections between them.
         if (sendEvents.size > 0 && receiveEvents.size > 0) {
-            const event = {type: eventType, value: eventValue};
-            const sendNode = new EventNode(eventId, event);
+            const event = {type: eventType, value: eventId};
+            const sendNode = new EventNode(`${eventType}:${eventId}-${eventTarget}`, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());
@@ -577,10 +587,11 @@ export const generateCFG = vm => {
                 }
             }
         }
-        // Otherwise, if we have a receiveEvent for a specific backdrop but not a matching sendEvent, we check
+
+            // Otherwise, if we have a receiveEvent for a specific backdrop but not a matching sendEvent, we check
         // if there are any switch to next backdrop events as they could trigger the backdrop receive event.
         else if (sendEvents.size === 0 && receiveEvents.size > 0 && eventId.split(':')[0] === 'backdrop') {
-            const event = {type: eventType, value: eventValue};
+            const event = {type: eventType, value: eventId};
             const sendNode = new EventNode(eventId, event);
 
             cfg.addNode(sendNode);
