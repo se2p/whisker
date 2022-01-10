@@ -560,7 +560,6 @@ export const generateCFG = vm => {
 
         const splitEventId = eventKey.split(':')
         const eventType = splitEventId[0];
-        const eventTarget = splitEventId[1];
         const eventId = splitEventId[2];
 
         const sendEvents = eventSend.get(eventKey);
@@ -576,7 +575,7 @@ export const generateCFG = vm => {
         // If we have matching sender and receiver of events, create connections between them.
         if (sendEvents.size > 0 && receiveEvents.size > 0) {
             const event = {type: eventType, value: eventId};
-            const sendNode = new EventNode(`${eventType}:${eventId}-${eventTarget}`, event);
+            const sendNode = new EventNode(`${eventType}:${eventId}`, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());
@@ -592,7 +591,7 @@ export const generateCFG = vm => {
         // if there are any switch to next backdrop events as they could trigger the backdrop receive event.
         else if (sendEvents.size === 0 && receiveEvents.size > 0 && eventId.split(':')[0] === 'backdrop') {
             const event = {type: eventType, value: eventId};
-            const sendNode = new EventNode(eventId, event);
+            const sendNode = new EventNode(`${eventType}:${eventId}`, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());

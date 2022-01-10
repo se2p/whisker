@@ -77,7 +77,7 @@ const LooksFilter = {
         block.opcode === 'looks_thinkforsecs',
 
     backdropBlock: block =>
-        block.opcode === 'looks_backdrop',
+        block.opcode === 'looks_backdrops',
 
     looksBlock: block =>
         block.opcode.startsWith('looks_') &&
