@@ -319,7 +319,7 @@ const getBroadcastTargets = blocks => {
     let broadcastTargets = new Set();
     for (const block of Object.values(blocks)) {
         if (EventFilter.broadcastReceive(block)) {
-            const event = Extract.broadcastForBlock(block).replace(`-${block.target}`, '');
+            const event = removeSuffix(Extract.broadcastForBlock(block));
             broadcastTargets.add(`broadcast:${block.target}:${event}`);
         }
     }
@@ -495,7 +495,7 @@ export const generateCFG = vm => {
         }
         if (EventFilter.broadcastSend(node.block)) {
             if (EventFilter.broadcastMenu(blocks[node.block.inputs.BROADCAST_INPUT.block])) {
-                const event = Extract.broadcastForStatement(blocks, node.block).replace(`-${node.block.target}`, '');
+                const event = removeSuffix(Extract.broadcastForStatement(blocks, node.block));
                 eventSend.put(`broadcast:${node.block.target}:${event}`, node);
             } else {
                 // Add edges to all items in eventReceive starting with a message
@@ -505,7 +505,7 @@ export const generateCFG = vm => {
             }
         }
         if (EventFilter.broadcastReceive(node.block)) {
-            const event = Extract.broadcastForBlock(node.block).replace(`-${node.block.target}`, '');
+            const event = removeSuffix(Extract.broadcastForBlock(node.block));
             eventReceive.put(`broadcast:${node.block.target}:${event}`, node);
         }
         if (EventFilter.cloneCreate(node.block)) {
@@ -646,6 +646,11 @@ const checkIfBackdropExists = (vm, backdropName) => {
         }
     }
     return false;
+}
+
+const removeSuffix = a => {
+    const cuttingPoint = a.lastIndexOf('-');
+    return a.substring(0, cuttingPoint);
 }
 
 function changeBlockIds(block, target) {
