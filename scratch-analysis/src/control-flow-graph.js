@@ -320,7 +320,7 @@ const getBroadcastTargets = blocks => {
     for (const block of Object.values(blocks)) {
         if (EventFilter.broadcastReceive(block)) {
             const event = Extract.broadcastForBlock(block);
-            broadcastTargets.add(`broadcast:${block.target}:${event}`);
+            broadcastTargets.add(`broadcast:${event}`);
         }
     }
     return broadcastTargets;
@@ -332,7 +332,7 @@ const getBackdropTargets = (blocks, vm) => {
         if (EventFilter.backdropStart(block)) {
             const backdropTarget = Extract.backdropStartTarget(blocks, block);
             if (checkIfBackdropExists(vm, backdropTarget)) {
-                backdropTargets.add(`backdrop:${block.target}:${backdropTarget}`);
+                backdropTargets.add(`backdrop:${backdropTarget}`);
             }
         }
     }
@@ -344,7 +344,7 @@ const getCloneTargets = blocks => {
     for (const block of Object.values(blocks)) {
         if (EventFilter.cloneStart(block)) {
             const cloneTarget = Extract.cloneSendTarget(block);
-            cloneTargets.add(`clone:${block.target}:${cloneTarget}`);
+            cloneTargets.add(`clone:${cloneTarget}`);
         }
     }
     return cloneTargets;
@@ -496,7 +496,7 @@ export const generateCFG = vm => {
         if (EventFilter.broadcastSend(node.block)) {
             if (EventFilter.broadcastMenu(blocks[node.block.inputs.BROADCAST_INPUT.block])) {
                 const event = Extract.broadcastForStatement(blocks, node.block);
-                eventSend.put(`broadcast:${node.block.target}:${event}`, node);
+                eventSend.put(`broadcast:${event}`, node);
             } else {
                 // Add edges to all items in eventReceive starting with a message
                 for (const broadcastTarget of broadcastTargets) {
@@ -506,7 +506,7 @@ export const generateCFG = vm => {
         }
         if (EventFilter.broadcastReceive(node.block)) {
             const event = Extract.broadcastForBlock(node.block);
-            eventReceive.put(`broadcast:${node.block.target}:${event}`, node);
+            eventReceive.put(`broadcast:${event}`, node);
         }
         if (EventFilter.cloneCreate(node.block)) {
             if (EventFilter.cloneMenu([node.block.inputs.CLONE_OPTION.block])) {
@@ -514,7 +514,7 @@ export const generateCFG = vm => {
                 if (cloneTarget === '_myself_') {
                     cloneTarget = Extract.cloneSendTarget(node.block);
                 }
-                eventSend.put(`clone:${node.block.target}:${cloneTarget}`, node);
+                eventSend.put(`clone:${cloneTarget}`, node);
             } else {
                 // Overapproximate since the target is not known statically
                 for (const cloneTarget of cloneTargets) {
@@ -524,12 +524,12 @@ export const generateCFG = vm => {
         }
         if (EventFilter.cloneStart(node.block)) {
             const cloneTarget = Extract.cloneSendTarget(node.block);
-            eventReceive.put(`clone:${node.block.target}:${cloneTarget}`, node);
+            eventReceive.put(`clone:${cloneTarget}`, node);
         }
         if (EventFilter.backdropStart(node.block)) {
             const backdropTarget = Extract.backdropStartTarget(targets, node.block);
             if (checkIfBackdropExists(vm, backdropTarget)) {
-                eventReceive.put(`backdrop:${node.block.target}:${backdropTarget}`, node);
+                eventReceive.put(`backdrop:${backdropTarget}`, node);
             }
         }
         if (LooksFilter.backdropChange(node.block)) {
@@ -539,7 +539,7 @@ export const generateCFG = vm => {
             } else if (LooksFilter.backdropBlock(blocks[node.block.inputs.BACKDROP.block])) {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
-                    eventSend.put(`backdrop:${node.block.target}:${backdropTarget}`, node);
+                    eventSend.put(`backdrop:${backdropTarget}`, node);
                 }
             } else {
                 // Add edges to all items in eventReceive starting with backdrop
@@ -560,17 +560,10 @@ export const generateCFG = vm => {
 
         const splitEventId = eventKey.split(':')
         const eventType = splitEventId[0];
-        const eventId = splitEventId[2];
+        const eventId = splitEventId[1];
 
         const sendEvents = eventSend.get(eventKey);
-        const receiveEvents = new Set();
-        for (const key of eventReceive.keys()) {
-            if (key.split(':')[2] === eventId) {
-                for (const eventNode of eventReceive.get(key)) {
-                    receiveEvents.add(eventNode)
-                }
-            }
-        }
+        const receiveEvents = eventReceive.get(eventKey);
 
         // If we have matching sender and receiver of events, create connections between them.
         if (sendEvents.size > 0 && receiveEvents.size > 0) {
@@ -587,9 +580,10 @@ export const generateCFG = vm => {
             }
         }
 
-            // Otherwise, if we have a receiveEvent for a specific backdrop but not a matching sendEvent, we check
-        // if there are any switch to next backdrop events as they could trigger the backdrop receive event.
-        else if (sendEvents.size === 0 && receiveEvents.size > 0 && eventId.split(':')[0] === 'backdrop') {
+        // If we have blocks reacting to a backdrop switch and switch to next backdrop blocks, we over-approximate by
+        // linking all next backdrop blocks to every backdrop reacting block since we do not know which specific
+        // backdrop the next one will be.
+        if (eventType === 'backdrop' && receiveEvents.size > 0 && nextBackDropNodes.length > 0) {
             const event = {type: eventType, value: eventId};
             const sendNode = new EventNode(`${eventType}:${eventId}`, event);
 

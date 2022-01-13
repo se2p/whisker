@@ -16,7 +16,7 @@ const getElseBranchStart = statement => {
 
 const Extract = {
     broadcastForBlock: block =>
-        block.fields.BROADCAST_OPTION.value,
+        block.fields.BROADCAST_OPTION.value.toLowerCase(),
     broadcastForStatement: (blocks, statement) =>
         Extract.broadcastForBlock(blocks[statement.inputs.BROADCAST_INPUT.block]),
     backdropStartTarget: (blocks, statement) =>
