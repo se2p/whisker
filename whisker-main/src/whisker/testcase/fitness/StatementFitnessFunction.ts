@@ -173,6 +173,10 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 if (this._canComputeControlDistance(blockTrace)) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
+                    if (controlNode === undefined) {
+                        console.warn("Traced block not found in CDG: "+blockTrace.id);
+                        continue;
+                    }
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
 
                     // blockTrace distances contains a list of all measured distances in a condition
