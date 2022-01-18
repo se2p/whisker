@@ -91,6 +91,6 @@ export class KeyPressEvent extends ScratchEvent {
     }
 
     stringIdentifier(): string {
-        return `KeyPressEvent-"${this._keyOption}`;
+        return `KeyPressEvent-${this._keyOption}`;
     }
 }

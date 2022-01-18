@@ -1,5 +1,6 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
+import {DynamicSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/DynamicSuite";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -95,10 +96,6 @@ const loadTestsFromString = async function (string) {
     Whisker.testEditor.setValue(string);
     Whisker.testTable.setTests(tests);
     return tests;
-};
-
-const disableVMRelatedButtons = function (exception) {
-    $(`.vm-related:not(${exception})`).prop('disabled', true);
 };
 
 const enableVMRelatedButtons = function () {
@@ -245,13 +242,22 @@ const runAllTests = async function () {
     Whisker.scratch.stop();
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
-    for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
-        const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
-        Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
-        Whisker.outputRun.println();
-        Whisker.outputLog.println();
+
+    // Dynamic Suite
+    if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
+        await Whisker.dynamicSuite.execute(Whisker.tests, Whisker.scratch.vm);
+    }
+
+    // Static Suite
+    else {
+        for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
+            const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
+            Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
+            await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+            Whisker.outputRun.println();
+            Whisker.outputLog.println();
+        }
     }
 };
 
@@ -295,6 +301,7 @@ const initComponents = function () {
     Whisker.inputRecorder = new InputRecorder(Whisker.scratch);
 
     Whisker.search = new Search.Search(Whisker.scratch.vm);
+    Whisker.dynamicSuite = new DynamicSuite();
     Whisker.configFileSelect = new FileSelect($('#fileselect-config')[0],
         fileSelect => fileSelect.loadAsArrayBuffer());
 

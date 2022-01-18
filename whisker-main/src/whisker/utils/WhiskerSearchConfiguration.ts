@@ -428,7 +428,7 @@ export class WhiskerSearchConfiguration {
             case 'templateNetwork': {
                 const eventExtractor = new NeuroevolutionScratchEventExtractor(Container.vm);
                 return new NeatChromosomeGeneratorTemplateNetwork(this._config['mutation'], this._config['crossover'],
-                    Container.template, eventExtractor.extractEvents(Container.vm));
+                    Container.template, eventExtractor.extractStaticEvents(Container.vm));
             }
             case 'test':
             default:

@@ -62,7 +62,6 @@ const cli = {
             .option('-o, --isLiveOutputCoverage', 'If new output of the coverage should be printed regularly', false)
             .option('-l, --isLiveLogEnabled', 'If the new output of the log should be printed regularly', false)
             .option('-g, --generateTests [Path]', 'If new tests should be generated and where to put them', false)
-            .option('-n, --isNeuroevolution', 'If Whisker should use dynamic test suites', false)
             .option('-se, --seed <Integer>', 'Seeds the Scratch-VM using the specified integer');
 
         commander.parse(process.argv);
@@ -87,7 +86,6 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
-            isNeuroevolution,
             seed
         } = commander._optionValues;
 
@@ -113,7 +111,6 @@ const cli = {
             isLiveOutputCoverage,
             isLiveLogEnabled,
             generateTests,
-            isNeuroevolution,
             seed
         };
     }

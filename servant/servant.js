@@ -20,7 +20,7 @@ const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, errorWitnessPath,
     addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, isNeuroevolution, seed
+    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -74,7 +74,7 @@ async function init () {
             .finally(() => rimraf.sync(tmpDir));
     }
     // Dynamic Test suite using Neuroevolution
-    else if(isNeuroevolution){
+    else if(testPath.endsWith('.json')){
         if (fs.lstatSync(scratchPath).isDirectory()) {
             const csvs = [];
             for (const file of fs.readdirSync(scratchPath)) {
@@ -265,9 +265,6 @@ async function runDynamicTestSuite (browser, scratchPath) {
     page.on('error', error => {
         logger.error(error);
         process.exit(1);
-    }).on('pageerror', async (error) => {
-        await browser.close();
-        return Promise.reject(error);
     });
 
     function optionallyEnableConsoleForward () {
@@ -281,14 +278,19 @@ async function runDynamicTestSuite (browser, scratchPath) {
         }
     }
 
+    /**
+     * Configure the Whisker instance, by setting the application file, test file and accelerationFactor, after the page
+     * was loaded.
+     */
     async function configureWhiskerWebInstance () {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
-        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-        await (await page.$('#fileselect-config')).uploadFile(configPath);
-        await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
-        console.log('Whisker-Web: Web Instance Configuration Complete');
+        await page.evaluate(s => document.querySelector('#seed').value = s, seed);
+        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        if (testPath) {
+            await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        }
+        await showHiddenFunctionality(page);
     }
 
     /**
@@ -314,15 +316,18 @@ async function runDynamicTestSuite (browser, scratchPath) {
         return `${csvHeader}\n${csvBody}`;
     }
 
-    async function executeSearch () {
-        await (await page.$('#run-search')).click();
+    /**
+     * Executes the tests, by clicking the button.
+     */
+    async function executeTests () {
+        await (await page.$('#run-all-tests')).click();
     }
 
     try {
         optionallyEnableConsoleForward();
         await configureWhiskerWebInstance();
         logger.debug("Dynamic TestSuite");
-        await executeSearch();
+        await executeTests();
         const csvOutput = await readTestOutput();
         await page.close();
         return Promise.resolve(csvOutput);

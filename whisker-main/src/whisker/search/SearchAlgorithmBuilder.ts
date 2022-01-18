@@ -40,7 +40,7 @@ import {FitnessFunctionType} from "./FitnessFunctionType";
 import {StatementFitnessFunctionFactory} from "../testcase/fitness/StatementFitnessFunctionFactory";
 import {Container} from "../utils/Container";
 import {SimpleGA} from "./algorithms/SimpleGA";
-import {NEAT} from "./algorithms/NEAT";
+import {NEAT} from "../whiskerNet/Algorithms/NEAT";
 import {LocalSearch} from "./operators/LocalSearch/LocalSearch";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 
