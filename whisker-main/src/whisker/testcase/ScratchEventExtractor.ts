@@ -107,7 +107,7 @@ export abstract class ScratchEventExtractor {
                     if (condition.inputs.OPERAND1) {
                         this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
                     }
-                    if (condition.inputs.OPERAND1) {
+                    if (condition.inputs.OPERAND2) {
                         this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
                     }
                     foundEvents.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
@@ -140,7 +140,11 @@ export abstract class ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                if (fields.hasOwnProperty("KEY_OPTION")) {
+                    eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                } else {
+                    // TODO: The key is dynamically computed
+                }
                 break;
             }
             case 'sensing_mousex':

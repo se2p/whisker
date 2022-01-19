@@ -1,5 +1,5 @@
 import {ControlFilter, EventFilter, LooksFilter, StatementFilter} from './block-filter';
-import {Extract, getAllBlocks, getBranchStart, getElseBranchStart} from './utils';
+import {Extract, getBranchStart, getElseBranchStart} from './utils';
 import {Graph, GraphNode, Mapping} from './graph-utils';
 
 /**
@@ -192,7 +192,8 @@ const _fixControlStatement = (cfg, successors, controlNode) => {
                     break;
                 }
                 case 'other scripts in sprite':
-                    // Since this is just a 'normal' block, we can ignore it
+                case 'other scripts in stage':
+                    // Since this is just a 'normal' block after which other blocks can follow, we can ignore it.
                     break;
                 default:
                     console.log(`Unrecognized stop option ${stopOption}.`);
@@ -281,7 +282,7 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
             break;
         }
         case 'event_whenthisspriteclicked': {
-            event.value = Extract.clickedSprite(targets, node.block);
+            event.value = Extract.clickedSprite(node.block);
             break;
         }
         case 'event_whenstageclicked': {
@@ -290,6 +291,11 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
         }
         case 'event_whenkeypressed': {
             event.value = Extract.clickedKey(node.block);
+            break;
+        }
+        case 'event_whengreaterthan': {
+            // TODO: Technically, only sound is a user event but the block can also refer to the timer
+            event.value = node.block.fields.WHENGREATERTHANMENU;
             break;
         }
     }
@@ -308,6 +314,60 @@ const addOrGetUserEventNode = (targets, cfg, successors, userEvents, node) => {
     return eventNode;
 };
 
+
+const getBroadcastTargets = blocks => {
+    let broadcastTargets = new Set();
+    for (const block of blocks.values()) {
+        if (EventFilter.broadcastReceive(block)) {
+            const event = Extract.broadcastForBlock(block);
+            broadcastTargets.add(`broadcast:${event}`);
+        }
+    }
+    return broadcastTargets;
+}
+
+const getBackdropTargets = (blocks, vm) => {
+    let backdropTargets = new Set();
+    for (const block of blocks.values()) {
+        if (EventFilter.backdropStart(block)) {
+            const backdropTarget = Extract.backdropStartTarget(block);
+            if (checkIfBackdropExists(vm, backdropTarget)) {
+                backdropTargets.add(`backdrop:${backdropTarget}`);
+            }
+        }
+    }
+    return backdropTargets;
+}
+
+const getCloneTargets = blocks => {
+    let cloneTargets = new Set();
+    for (const block of blocks.values()) {
+        if (EventFilter.cloneStart(block)) {
+            const cloneTarget = Extract.cloneSendTarget(block);
+            cloneTargets.add(`clone:${cloneTarget}`);
+        }
+    }
+    return cloneTargets;
+}
+
+/**
+ * Create unique block ID
+ * Based on https://github.com/LLK/scratch-blocks/blob/develop/core/utils.js
+ * Soup omits $ because that would screw up the String.replaceAll later
+ */
+const soup_ = '!#()%*+,-./:;=?@[]^_`{|}~' + // $
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+export const genUid = function () {
+    var length = 20;
+    var soupLength = soup_.length;
+    var id = [];
+    for (var i = 0; i < length; i++) {
+        id[i] = soup_.charAt(Math.random() * soupLength);
+    }
+    return id.join('');
+};
+
+
 /**
  * Constructs an interprocedural control flow graph (CFG) for all blocks of a program.
  *
@@ -325,8 +385,23 @@ export const generateCFG = vm => {
     // So called "renderer targets" (the individual sprites and the stage) in the current project.
     const targets = vm.runtime.targets;
 
-    // Collect all Scratch blocks from the sprites.
-    const blocks = getAllBlocks(targets);
+    // To avoid duplicates in the CFG we save blocks using the key combination blockId-SpriteName, where SpriteName
+    // corresponds to the name of the sprite the given block is contained in.
+    let blocks = new Map()
+    for (const target of targets) {
+        for (const block of Object.values(target.blocks._blocks)) {
+            const blockKey = `${block.id}-${target.sprite.name}`;
+            // Create a deep clone for the CFG to not alter the block residing in the Scratch-VM.
+            const blockClone = JSON.parse(JSON.stringify(block))
+            blockClone['target'] = target.sprite.name;
+            changeBlockIds(blockClone, target)
+            blocks.set(blockKey, blockClone);
+        }
+    }
+
+    const backdropTargets = getBackdropTargets(blocks, vm);
+    const broadcastTargets = getBroadcastTargets(blocks);
+    const cloneTargets = getCloneTargets(blocks);
 
     const cfg = new ControlFlowGraph();
     const userEvents = new Map();
@@ -336,7 +411,7 @@ export const generateCFG = vm => {
     const nextBackDropNodes = [];
 
     // First, we insert all nodes into the CFG.
-    for (const block of Object.values(blocks)) {
+    for (const [id, block] of blocks.entries()) {
 
         // Certain Scratch blocks are not related to control flow; they are not "statement blocks". For example, none
         // of the blocks in the "Operators" category (e.g., arithmetic and boolean operators) are statement blocks.
@@ -352,7 +427,7 @@ export const generateCFG = vm => {
             continue;
         }
 
-        cfg.addNode(new GraphNode(block.id, block));
+        cfg.addNode(new GraphNode(id, block));
     }
 
     /*
@@ -370,23 +445,19 @@ export const generateCFG = vm => {
     // Maps proccodes to the corresponding procedures_definition. The key  is formed by combining the proccode
     // with the name of the sprite in which the given block is contained in. This is necessary since multiple sprites
     // could have differing procedure_definitions with the same proccode.
-    for (const block of Object.values(blocks)) {
+    for (const block of blocks.values()) {
         if (block.opcode === 'procedures_definition') {
             if (block.inputs.custom_block.block) {
-                const targetName = findTargetOfBlock(targets, block).sprite.name;
-                const customBlockPrototype = blocks[block.inputs.custom_block.block];
+                const customBlockPrototype = blocks.get(block.inputs.custom_block.block);
                 const proccode = customBlockPrototype.mutation.proccode;
-                const definitionCallKey = proccode + "-" + targetName;
+                let definitionCallKey = proccode + "-" + block.target;
+                if (customBlockDefinitions.has(definitionCallKey)) {
+                    console.warn("Duplicate procedure definition for the custom block: ", proccode);
+                    console.warn("Scratch will only execute one single procedure definition. Consider removing duplicates for a better code quality!")
+                    const keys = [...customBlockDefinitions.keys()].filter(key => key.includes(definitionCallKey));
+                    definitionCallKey += "-" + keys.length;
+                }
                 customBlockDefinitions.set(definitionCallKey, new GraphNode(block.id, block));
-            }
-        } else if (block.opcode === 'procedures_prototype') {
-            const customBlockDefinition = blocks[block.parent];
-            const proccode = block.mutation.proccode;
-            if (customBlockDefinition) {
-                const targetName = findTargetOfBlock(targets, block).sprite.name;
-                const definitionCallKey = proccode + "-" + targetName;
-                const customBlockNode = new GraphNode(customBlockDefinition.id, customBlockDefinition);
-                customBlockDefinitions.set(definitionCallKey, customBlockNode);
             }
         }
     }
@@ -400,10 +471,16 @@ export const generateCFG = vm => {
         const callsCustomBlock = node.block.opcode === 'procedures_call';
         if (callsCustomBlock) { // Adds an edge from the call site of a custom block to its definition
             const proccode = node.block.mutation.proccode;
-            const targetName = findTargetOfBlock(targets, node.block).sprite.name;
-            const definitionCallKey = proccode + "-" + targetName;
-            const callee = customBlockDefinitions.get(definitionCallKey);
-            successors.put(node.id, callee)
+            const definitionCallKey = proccode + "-" + node.block.target;
+            const definitionKeys = [...customBlockDefinitions.keys()].filter(key => key.includes(definitionCallKey));
+            for (const definitionKey of definitionKeys) {
+                const callee = customBlockDefinitions.get(definitionKey);
+                if (callee) {
+                    successors.put(node.id, callee)
+                } else {
+                    console.warn("Call to undefined procedure: " + definitionCallKey);
+                }
+            }
             // FIXME: there also need to be edges that go back from the definition to all its call sites
         }
 
@@ -418,26 +495,40 @@ export const generateCFG = vm => {
             successors.put(userEventNode.id, node);
         }
         if (EventFilter.broadcastSend(node.block)) {
-            const event = Extract.broadcastForStatement(blocks, node.block);
-            eventSend.put(`broadcast:${event}`, node);
+            if (EventFilter.broadcastMenu(blocks.get(node.block.inputs.BROADCAST_INPUT.block))) {
+                const event = Extract.broadcastForStatement(blocks, node.block);
+                eventSend.put(`broadcast:${event}`, node);
+            } else {
+                // Add edges to all items in eventReceive starting with a message
+                for (const broadcastTarget of broadcastTargets) {
+                    eventSend.put(broadcastTarget, node);
+                }
+            }
         }
         if (EventFilter.broadcastReceive(node.block)) {
             const event = Extract.broadcastForBlock(node.block);
             eventReceive.put(`broadcast:${event}`, node);
         }
         if (EventFilter.cloneCreate(node.block)) {
-            let cloneTarget = Extract.cloneCreateTarget(blocks, node.block);
-            if (cloneTarget === '_myself_') {
-                cloneTarget = Extract.cloneSendTarget(targets, node.block);
+            if (EventFilter.cloneMenu([node.block.inputs.CLONE_OPTION.block])) {
+                let cloneTarget = Extract.cloneCreateTarget(blocks, node.block);
+                if (cloneTarget === '_myself_') {
+                    cloneTarget = Extract.cloneSendTarget(node.block);
+                }
+                eventSend.put(`clone:${cloneTarget}`, node);
+            } else {
+                // Overapproximate since the target is not known statically
+                for (const cloneTarget of cloneTargets) {
+                    eventSend.put(cloneTarget, node);
+                }
             }
-            eventSend.put(`clone:${cloneTarget}`, node);
         }
         if (EventFilter.cloneStart(node.block)) {
-            const cloneTarget = Extract.cloneSendTarget(targets, node.block);
+            const cloneTarget = Extract.cloneSendTarget(node.block);
             eventReceive.put(`clone:${cloneTarget}`, node);
         }
         if (EventFilter.backdropStart(node.block)) {
-            const backdropTarget = Extract.backdropStartTarget(targets, node.block);
+            const backdropTarget = Extract.backdropStartTarget(node.block);
             if (checkIfBackdropExists(vm, backdropTarget)) {
                 eventReceive.put(`backdrop:${backdropTarget}`, node);
             }
@@ -446,10 +537,15 @@ export const generateCFG = vm => {
             // Special handling for nextBackdrop statements.
             if (LooksFilter.nextBackdrop(node.block)) {
                 nextBackDropNodes.push(node)
-            } else {
+            } else if (LooksFilter.backdropBlock(blocks.get(node.block.inputs.BACKDROP.block))) {
                 const backdropTarget = Extract.backdropChangeTarget(blocks, node.block);
                 if (checkIfBackdropExists(vm, backdropTarget)) {
                     eventSend.put(`backdrop:${backdropTarget}`, node);
+                }
+            } else {
+                // Add edges to all items in eventReceive starting with backdrop
+                for (const backdropTarget of backdropTargets) {
+                    eventSend.put(backdropTarget, node);
                 }
             }
         }
@@ -461,17 +557,19 @@ export const generateCFG = vm => {
 
     // Adds an extra event node for Broadcast and Cloning events iff the respective events can be triggered.
     const eventIds = new Set([...eventSend.keys(), ...eventReceive.keys()]);
-    for (const eventId of eventIds) {
-        const sendEvents = eventSend.get(eventId);
-        const receiveEvents = eventReceive.get(eventId);
-        const splitEventId = eventId.split(':');
-        const eventType = splitEventId.shift();
-        const eventValue = splitEventId.join('');
+    for (const eventKey of eventIds) {
 
-        // If we have matching sender and receiver of events create connections between them.
+        const splitEventId = eventKey.split(':')
+        const eventType = splitEventId[0];
+        const eventId = splitEventId[1];
+
+        const sendEvents = eventSend.get(eventKey);
+        const receiveEvents = eventReceive.get(eventKey);
+
+        // If we have matching sender and receiver of events, create connections between them.
         if (sendEvents.size > 0 && receiveEvents.size > 0) {
-            const event = {type: eventType, value: eventValue};
-            const sendNode = new EventNode(eventId, event);
+            const event = {type: eventType, value: eventId};
+            const sendNode = new EventNode(`${eventType}:${eventId}`, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());
@@ -482,11 +580,13 @@ export const generateCFG = vm => {
                 }
             }
         }
-        // Otherwise, if we have a receiveEvent for a specific backdrop but not a matching sendEvent, we check
-        // if there are any switch to next backdrop events as they could trigger the backdrop receive event.
-        else if (sendEvents.size === 0 && receiveEvents.size > 0 && eventId.split(':')[0] === 'backdrop') {
-            const event = {type: eventType, value: eventValue};
-            const sendNode = new EventNode(eventId, event);
+
+        // If we have blocks reacting to a backdrop switch and switch to next backdrop blocks, we over-approximate by
+        // linking all next backdrop blocks to every backdrop reacting block since we do not know which specific
+        // backdrop the next one will be.
+        if (eventType === 'backdrop' && receiveEvents.size > 0 && nextBackDropNodes.length > 0) {
+            const event = {type: eventType, value: eventId};
+            const sendNode = new EventNode(`${eventType}:${eventId}`, event);
 
             cfg.addNode(sendNode);
             successors.put(sendNode.id, cfg.exit());
@@ -510,7 +610,7 @@ export const generateCFG = vm => {
         }
     }
 
-    // Remove statement blocks that have no predecessors in the CFG which are therefore unreachable.
+    // Remove statement blocks that have no predecessors in the CFG and are therefore unreachable.
     let changed = true;
     while (changed) {
         changed = false;
@@ -532,15 +632,6 @@ export const generateCFG = vm => {
     return cfg;
 };
 
-const findTargetOfBlock = (targets, block) => {
-    for (const target of targets) {
-        if (block.id in target.blocks._blocks) {
-            return target;
-        }
-    }
-    return undefined;
-}
-
 const checkIfBackdropExists = (vm, backdropName) => {
     const stage = vm.runtime.getTargetForStage();
     const backdrops = stage.sprite.costumes;
@@ -550,5 +641,17 @@ const checkIfBackdropExists = (vm, backdropName) => {
         }
     }
     return false;
+}
+
+function changeBlockIds(block, target) {
+    // TODO: Are there other keys that map to ids we need to replace here?
+    const idKeys = ['id', 'next', 'parent', 'block']
+    for (const k in block) {
+        if (typeof block[k] === 'object' && block[k] !== null) {
+            changeBlockIds(block[k], target)
+        } else if (idKeys.includes(k) && block[k] !== null) {
+            block[k] = block[k] + "-" + target.sprite.name;
+        }
+    }
 }
 

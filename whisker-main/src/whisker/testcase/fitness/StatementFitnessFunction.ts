@@ -101,7 +101,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const branchDistance = this.getBranchDistance(chromosome);
 
         let cfgDistanceNormalized;
-        if (branchDistance === 0) {
+        if (branchDistance === 0 && approachLevel < Number.MAX_SAFE_INTEGER) {
             cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome, approachLevel > 0));
         } else {
             cfgDistanceNormalized = 1;
@@ -173,6 +173,10 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 if (this._canComputeControlDistance(blockTrace)) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
+                    if (controlNode === undefined) {
+                        console.warn("Traced block not found in CDG: "+blockTrace.id);
+                        continue;
+                    }
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
 
                     // blockTrace distances contains a list of all measured distances in a condition
@@ -285,13 +289,19 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
             //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
-            throw 'Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
-            + targetNode.block.opcode;
+            console.warn('Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
+            + targetNode.block.opcode +" with id " + targetNode.block.id);
+            return [];
         }
 
         let targetNodeQueue: GraphNode[];
         if (hasUnexecutedCdgPredecessor) {
             targetNodeQueue = bfsPredecessors(this._cdg, this._targetNode, chromosome.coverage);
+            if (targetNodeQueue.length === 0) {
+                // If no predecessor was found, something is wrong, e.g. nothing was covered.
+                // By returning max, the effect is essentially that the CFG distance is not used.
+                return Number.MAX_SAFE_INTEGER;
+            }
         } else {
             targetNodeQueue = [this._targetNode]
         }
@@ -329,17 +339,21 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             case 'control_repeat': {
                 requiredCondition = false;
-                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
-                    requiredCondition = true;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                    if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                        requiredCondition = true;
+                    }
                 }
                 break;
             }
             case 'control_repeat_until': {
                 requiredCondition = true;
-                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
-                    requiredCondition = false;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                    if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                        requiredCondition = false;
+                    }
                 }
                 break;
             }
@@ -372,9 +386,14 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     requiredCondition = true;
                     break;
                 }
-                const elseBlock = controlNode.block.inputs.SUBSTACK2.block;
-                if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
-                    requiredCondition = false;
+                if (controlNode.block.inputs.SUBSTACK2 !== undefined) {
+                    const elseBlock = controlNode.block.inputs.SUBSTACK2.block;
+                    if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
+                        requiredCondition = false;
+                    }
+                } else {
+                    // If there is no else branch, we need to look at the true branch?
+                    requiredCondition = true;
                 }
                 break;
             }
@@ -439,13 +458,27 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 // Get all nodes being dependent on the branching block.
                 let mergeNodes = [...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()];
 
-                // Find the last Block which either
-                // has no child and is not another branch block -> end of branch
-                // or has another branch block as child -> nested branches
-                mergeNodes = mergeNodes.filter(node => (node.block !== undefined) && (!node.block.next ||
-                    ControlFilter.branch(StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg).block)));
+                // Now we have to find the last block in the branch. This can be either
+                // 1) a block without a child
+                const lastBlock = mergeNodes.filter(node => node.block !== undefined && !node.block.next);
 
-                // Filter other branch blocks, they are contained within their own mergeMap key.
+                // 2) or a block whose child is a branch --> nested branches
+                const filterNestedBranches = (node) => {
+                    if(node.block.next == undefined){
+                        return false;
+                    }
+                    const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg)
+                    if(childOfNode == undefined){
+                        return false;
+                    }
+                    return ControlFilter.branch(childOfNode.block)
+                }
+                const nestedBranches = mergeNodes.filter(node => node.block !== undefined && filterNestedBranches(node));
+
+                // Now we combine both possibilities.
+                mergeNodes = [...lastBlock, ...nestedBranches];
+
+                // Filter single branch blocks, they are contained within their own mergeMap key.
                 mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
 
                 // Add the branching block if it isn't present

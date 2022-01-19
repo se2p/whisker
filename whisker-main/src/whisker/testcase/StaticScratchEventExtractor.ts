@@ -90,7 +90,11 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'sensing_keypressed': { // Key press in SensingBlocks
                 const keyOptionsBlock = target.blocks.getBlock(block.inputs.KEY_OPTION.block);
                 const fields = target.blocks.getFields(keyOptionsBlock);
-                eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                if (fields.hasOwnProperty("KEY_OPTION")) {
+                    eventList.push(new KeyPressEvent(fields.KEY_OPTION.value));
+                } else {
+                    // TODO: The key is dynamically computed
+                }
                 break;
             }
             case 'sensing_mousex':
@@ -178,10 +182,20 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 eventList.push(new ClickStageEvent());
                 break;
             case 'event_whengreaterthan': {
-                // Sound
-                const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
-                const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
-                eventList.push(new SoundEvent(soundValue));
+                if (block.fields.WHENGREATERTHANMENU.value == "loudness") {
+                    // Sound
+                    const soundParameterBlock = target.blocks.getBlock(block.inputs.VALUE.block);
+                    if (soundParameterBlock.fields.hasOwnProperty("NUM")) {
+                        const soundValue = Number.parseFloat(soundParameterBlock.fields.NUM.value) + 1;
+                        eventList.push(new SoundEvent(soundValue));
+                    } else {
+                        // TODO: Handle case where volume is dynamically derived
+                        eventList.push(new SoundEvent(0));
+                        eventList.push(new SoundEvent(10));
+                    }
+                } else {
+                    // TODO: Handle timer?
+                }
                 break;
             }
             case 'sensing_loudness': {

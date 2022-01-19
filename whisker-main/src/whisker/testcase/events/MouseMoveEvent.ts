@@ -21,8 +21,6 @@
 import {ScratchEvent} from "./ScratchEvent";
 import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
-import {ScratchInterface} from "../../scratch/ScratchInterface";
-import {ScratchPosition} from "../../scratch/ScratchPosition";
 import {Randomness} from "../../utils/Randomness";
 
 
