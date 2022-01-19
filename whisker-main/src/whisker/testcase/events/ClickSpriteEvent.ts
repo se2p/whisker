@@ -43,7 +43,8 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         if (this._target.isOriginal) {
-            return `t.clickSprite('${this._target.sprite.name}', ${this._steps});`;
+            const spriteName = this._target.sprite.name.replace(/'/g, "\\'")
+            return `t.clickSprite('${spriteName}', ${this._steps});`;
         } else {
             return `t.clickCloneByCoords(${this._target.x}, ${this._target.y}, ${this._steps});`;
         }

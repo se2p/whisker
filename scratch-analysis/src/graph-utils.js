@@ -70,7 +70,7 @@ class GraphNode {
 
     toString () {
         if (this.block && this.block.opcode) {
-            return `${this.block.opcode}:${this.id.substring(0, 2)}`;
+            return `${this.block.opcode}:${this.id.substring(0, 2)}-${this.block.target}`;
         } else { // eslint-disable-line no-else-return
             return this.id;
         }

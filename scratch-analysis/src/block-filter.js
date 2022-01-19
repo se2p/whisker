@@ -76,6 +76,9 @@ const LooksFilter = {
         block.opcode === 'looks_think' ||
         block.opcode === 'looks_thinkforsecs',
 
+    backdropBlock: block =>
+        block.opcode === 'looks_backdrops',
+
     looksBlock: block =>
         block.opcode.startsWith('looks_') &&
         !block.opcode.endsWith('_menu') && !(
@@ -102,7 +105,8 @@ const EventFilter = {
         block.opcode === 'event_whenflagclicked' ||
         block.opcode === 'event_whenthisspriteclicked' ||
         block.opcode === 'event_whenstageclicked' ||
-        block.opcode === 'event_whenkeypressed',
+        block.opcode === 'event_whenkeypressed' ||
+        block.opcode === 'event_whengreaterthan',
 
     greenFlag: block =>
         block.opcode === 'event_whenflagclicked',
@@ -123,11 +127,17 @@ const EventFilter = {
     broadcastReceive: block =>
         block.opcode === 'event_whenbroadcastreceived',
 
+    broadcastMenu: block =>
+        block.opcode === 'event_broadcast_menu',
+
     cloneCreate: block =>
         block.opcode === 'control_create_clone_of',
 
     cloneStart: block =>
         block.opcode === 'control_start_as_clone',
+
+    cloneMenu: block =>
+        block.opcode === "control_create_clone_of_menu",
 
     backdropStart: block =>
         block.opcode === 'event_whenbackdropswitchesto',
