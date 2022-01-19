@@ -2,7 +2,7 @@ import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/Neuroevolution
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
+import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 
 describe("NeuroevolutionUtil Tests", () => {
 

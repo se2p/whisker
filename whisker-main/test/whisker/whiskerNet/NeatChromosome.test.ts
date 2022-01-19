@@ -16,7 +16,7 @@ import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEv
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
+import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 
 describe('Test NetworkChromosome', () => {
 

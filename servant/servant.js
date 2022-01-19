@@ -287,9 +287,7 @@ async function runDynamicTestSuite (browser, scratchPath) {
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
-        if (testPath) {
-            await (await page.$('#fileselect-tests')).uploadFile(testPath);
-        }
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
         await showHiddenFunctionality(page);
     }
 

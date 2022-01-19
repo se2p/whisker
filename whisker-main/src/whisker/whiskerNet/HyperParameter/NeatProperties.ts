@@ -1,6 +1,6 @@
-import {StoppingCondition} from "../search/StoppingCondition";
-import {NetworkFitnessFunction} from "./NetworkFitness/NetworkFitnessFunction";
-import {NeatChromosome} from "./Networks/NeatChromosome";
+import {StoppingCondition} from "../../search/StoppingCondition";
+import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
+import {NeatChromosome} from "../Networks/NeatChromosome";
 
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.

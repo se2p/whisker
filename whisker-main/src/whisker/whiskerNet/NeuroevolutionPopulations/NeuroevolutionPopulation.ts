@@ -1,6 +1,6 @@
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NeatProperties} from "../NeatProperties";
+import {NeatProperties} from "../HyperParameter/NeatProperties";
 
 export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
 

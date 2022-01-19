@@ -47,11 +47,32 @@ export class JavaScriptConverter {
 
         // Generate dynamic test suite.
         if (Container.config.getTestSuiteType() === 'dynamic') {
+            const testJSON = {}
+
+            // Set necessary configuration parameter for re-executing the dynamic suite.
+            const configs = {}
+            configs['testSuiteType'] = 'dynamic'
+            configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
+            configs['networkFitness'] = Container.config.neuroevolutionProperties.networkFitness.toParameterIdentifier();
+            configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
+            configs['seed'] = Container.config.getRandomSeed();
+
+            const durationConfigs = {}
+            durationConfigs['waitStepUpperBound'] = Container.config.getWaitStepUpperBound();
+            durationConfigs['pressDurationUpperBound'] = Container.config.getPressDurationUpperBound();
+            durationConfigs['soundDuration'] = Container.config.getSoundDuration();
+            durationConfigs['clickDuration'] = Container.config.getClickDuration();
+            configs['durations'] = durationConfigs;
+
+            testJSON['Configs'] = configs
+
+            // Save the networks.
             const networkTestSuite = {};
             for (let i = 0; i < tests.length; i++) {
                 networkTestSuite[`Network ${i}`] = tests[i].chromosome;
             }
-            return JSON.stringify(networkTestSuite, undefined, 4);
+            testJSON['Networks'] = networkTestSuite;
+            return JSON.stringify(testJSON, undefined, 4);
         }
         // Generate static test suite.
         else {

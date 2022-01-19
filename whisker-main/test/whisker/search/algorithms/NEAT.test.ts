@@ -13,10 +13,7 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
-import {NeatProperties} from "../../../../src/whisker/whiskerNet/NeatProperties";
-import {NeatChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
-import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
+import {NeatProperties} from "../../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 
 
 describe('Test NEAT', () => {
@@ -93,6 +90,10 @@ describe('Test NEAT', () => {
                 const fitness = random.nextInt(1, 100);
                 network.fitness = fitness;
                 return Promise.resolve(fitness);
+            }
+
+            toParameterIdentifier(): string {
+                return 'Dummy'
             }
         }
         properties.stoppingCondition = new FixedIterationsStoppingCondition(iterations);

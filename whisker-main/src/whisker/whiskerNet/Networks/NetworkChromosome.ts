@@ -54,7 +54,7 @@ export abstract class NetworkChromosome extends Chromosome {
     protected readonly _connections: ConnectionGene[];
 
     /**
-     * The stabilize count of the network defining how often the network has to be executed in order to reach a
+     * The stabilisation count of the network defining how often the network has to be executed in order to reach a
      * stable state.
      */
     private _stabiliseCount = 0;
@@ -63,6 +63,12 @@ export abstract class NetworkChromosome extends Chromosome {
      * True if this network implements at least one recurrent connection
      */
     private _isRecurrent = false;
+
+    /**
+     * Saves the ActivationTrace in a mapping from step to ActivationTrace. A single step can save multiple
+     * ActivationTraces in order to cover as many valid program states as possible.
+     */
+    private _activationTrace = new Map<number, number[][]>();
 
     /**
      * The fitness value of the network.
@@ -562,6 +568,21 @@ export abstract class NetworkChromosome extends Chromosome {
         }
     }
 
+    /**
+     * Adds a single ActivationTrace after executing a Scratch-Step to the ActivationTrace map.
+     * @param step the previously performed step whose ActivationTrace should be recorded.
+     */
+    public addActivationTrace(step: number): void {
+        this.sortNodes();
+        const activationTrace: number[] = []
+        this._allNodes.forEach(node => activationTrace.push(node.activationValue));
+        if (this._activationTrace.has(step)) {
+            this.activationTrace.get(step).push(activationTrace);
+        } else {
+            this._activationTrace.set(step, [activationTrace]);
+        }
+    }
+
     get inputNodes(): Map<string, Map<string, InputNode>> {
         return this._inputNodes;
     }
@@ -596,6 +617,10 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set fitness(value: number) {
         this._fitness = value;
+    }
+
+    get activationTrace(): Map<number, number[][]> {
+        return this._activationTrace;
     }
 
     get trace(): ExecutionTrace {

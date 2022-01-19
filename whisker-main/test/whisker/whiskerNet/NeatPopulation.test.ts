@@ -4,7 +4,7 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
+import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import Arrays from "../../../src/whisker/utils/Arrays";
 import {InputNode} from "../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {ClassificationNode} from "../../../src/whisker/whiskerNet/NetworkComponents/ClassificationNode";

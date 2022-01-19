@@ -130,7 +130,7 @@ export class Search {
             console.log(csvOutput);
             return csvOutput;
         } else {
-            stoppingCondition = config.searchAlgorithmProperties.stoppingCondition;
+            stoppingCondition = config.properties.stoppingCondition;
         }
 
         // Retrieve the time limit (in milliseconds) of the search, if any.

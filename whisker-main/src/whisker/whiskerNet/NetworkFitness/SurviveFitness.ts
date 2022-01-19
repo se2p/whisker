@@ -22,4 +22,8 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         executor.resetState();
         return surviveTime;
     }
+
+    public toParameterIdentifier(): string {
+        return 'survive';
+    }
 }

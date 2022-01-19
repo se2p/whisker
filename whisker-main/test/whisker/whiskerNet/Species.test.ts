@@ -7,7 +7,7 @@ import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent"
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import Arrays from "../../../src/whisker/utils/Arrays";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
+import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 
 describe("Species Test", () => {
 

@@ -1,5 +1,5 @@
 import {OptimalSolutionStoppingCondition} from "../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
+import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 
 describe("Test NeuroevolutionProperties", () => {
 

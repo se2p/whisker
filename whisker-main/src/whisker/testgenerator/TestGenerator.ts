@@ -51,10 +51,10 @@ export abstract class TestGenerator {
         const builder = new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .addSelectionOperator(this._config.getSelectionOperator())
             .addLocalSearchOperators(this._config.getLocalSearchOperators())
-            .addProperties(this._config.searchAlgorithmProperties);
+            .addProperties(this._config.properties);
         if (initializeFitnessFunction) {
             builder.initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.searchAlgorithmProperties['chromosomeLength'], // FIXME: unsafe access
+                this._config.properties['chromosomeLength'], // FIXME: unsafe access
                 this._config.getFitnessFunctionTargets());
             this._fitnessFunctions = builder.fitnessFunctions;
         }
@@ -65,7 +65,7 @@ export abstract class TestGenerator {
     protected extractCoverageGoals(): Map<number, FitnessFunction<any>> {
         return new SearchAlgorithmBuilder(this._config.getAlgorithm())
             .initializeFitnessFunction(this._config.getFitnessFunctionType(),
-                this._config.searchAlgorithmProperties['chromosomeLength'], // FIXME: unsafe access
+                this._config.properties['chromosomeLength'], // FIXME: unsafe access
                 this._config.getFitnessFunctionTargets()).fitnessFunctions;
     }
 

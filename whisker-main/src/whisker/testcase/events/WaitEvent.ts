@@ -79,7 +79,7 @@ export class WaitEvent extends ScratchEvent {
         // statements once.
         if(!Container.isNeuroevolution &&
             this._steps % Container.config.getWaitStepUpperBound() !== 0 &&
-            this._steps !== Container.config.searchAlgorithmProperties['integerRange'].max) {
+            this._steps !== Container.config.properties['integerRange'].max) {
             this._steps %= Container.config.getWaitStepUpperBound();
         }
     }

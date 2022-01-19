@@ -56,4 +56,8 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
         }
         return points;
     }
+
+    public toParameterIdentifier(): string {
+        return 'score';
+    }
 }

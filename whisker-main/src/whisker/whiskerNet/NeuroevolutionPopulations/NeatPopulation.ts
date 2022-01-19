@@ -4,9 +4,8 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
-import {NeatProperties} from "../NeatProperties";
+import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
-import {NodeGene} from "../NetworkComponents/NodeGene";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 

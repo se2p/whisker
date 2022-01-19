@@ -152,6 +152,7 @@ export class NetworkExecutor {
             const indexOfMaxValue = output.reduce(
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.push(indexOfMaxValue);
+            network.addActivationTrace(codons.length - 1);
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents[indexOfMaxValue];

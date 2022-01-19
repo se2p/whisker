@@ -1,7 +1,7 @@
 import {Randomness} from "../../utils/Randomness";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "./NeatPopulation";
-import {NeatProperties} from "../NeatProperties";
+import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
 
 export class Species<C extends NeatChromosome> {

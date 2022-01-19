@@ -7,7 +7,7 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import {RandomNeuroevolutionPopulation} from "../NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 import Arrays from "../../utils/Arrays";
-import {NeatProperties} from "../NeatProperties";
+import {NeatProperties} from "../HyperParameter/NeatProperties";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {

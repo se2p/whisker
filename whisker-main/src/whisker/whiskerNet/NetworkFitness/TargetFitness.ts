@@ -5,7 +5,6 @@ import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {PathFinder} from "../../scratch/PathFinder";
 import {ScratchPosition} from "../../scratch/ScratchPosition";
-import {ScratchInterface} from "../../scratch/ScratchInterface";
 
 export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
@@ -109,5 +108,9 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         else {
             return 0.1;
         }
+    }
+
+    public toParameterIdentifier(): string {
+        return 'target';
     }
 }

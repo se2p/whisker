@@ -28,13 +28,13 @@ export class NetworkLoader {
      * @param networkSuite
      * @param scratchEvents
      */
-    constructor(networkSuite: string, scratchEvents: ScratchEvent[]) {
-        this._networkSuite = JSON.parse(networkSuite);
+    constructor(networkSuite: Record<string, (number | string | Record<string, (number | string)>)>,
+                scratchEvents: ScratchEvent[]) {
+        this._networkSuite = networkSuite;
         this._scratchEvents = scratchEvents;
-        console.log("Events: ", scratchEvents)
     }
 
-    public loadNetwork(): NeatChromosome[] {
+    public loadNetworks(): NeatChromosome[] {
         const networks = [];
         for (const savedNetwork of Object.values(this._networkSuite)) {
             const allNodes: NodeGene[] = [];
@@ -61,7 +61,6 @@ export class NetworkLoader {
                     }
                     case "C": {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
-                        console.log(event)
                         if (event) {
                             const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID, false);
                             classificationNode.uID = savedNode['id'];
