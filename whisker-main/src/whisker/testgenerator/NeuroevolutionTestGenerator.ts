@@ -6,6 +6,7 @@ import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {WhiskerTest} from "./WhiskerTest";
 import {Container} from "../utils/Container";
 import Arrays from "../utils/Arrays";
+import {Randomness} from "../utils/Randomness";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -16,6 +17,21 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
         const testChromosomes = Arrays.distinct(archive.values());
+        const parameter = Container.config.neuroevolutionProperties;
+
+        // Execute the final suite on as many program states as possible. Different program states are enforced
+        // through diverging seeds.
+        const scratchSeeds = Array(parameter.repetitions).fill(0).map(
+            () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
+        for (const network of testChromosomes) {
+            for (let i = 0; i < parameter.repetitions; i++) {
+                Randomness.setScratchSeed(scratchSeeds[i]);
+                await parameter.networkFitness.getFitness(network, parameter.timeout, parameter.eventSelection);
+            }
+        }
+
+        console.log("Networks: ", testChromosomes)
+
         let testSuite: WhiskerTest[];
         if (Container.config.getTestSuiteType() === 'dynamic') {
             testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));

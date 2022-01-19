@@ -9,6 +9,7 @@
     "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
+    "repetitions": 100,
     "extractor": "neuroevolution",
     "chromosome": {
         "type": "sparseNetwork"

@@ -160,9 +160,15 @@ export class NeatProperties {
     private _networkFitness: NetworkFitnessFunction<NeatChromosome>;
 
     /**
-     * Timout for the execution of a scratch game during the evaluation of the network
+     * Timeout for the execution of a scratch game during the evaluation of the network.
      */
     private _timeout: number
+
+    /**
+     * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
+     * ActivationTrace across many program states with diverging seeds.
+     */
+    private _repetitions: number;
 
     /**
      * Determines how the events should be selected.
@@ -426,6 +432,14 @@ export class NeatProperties {
 
     set timeout(value: number) {
         this._timeout = value;
+    }
+
+    get repetitions(): number {
+        return this._repetitions;
+    }
+
+    set repetitions(value: number) {
+        this._repetitions = value;
     }
 
     get eventSelection(): string {

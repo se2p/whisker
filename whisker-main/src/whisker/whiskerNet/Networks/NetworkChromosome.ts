@@ -66,9 +66,17 @@ export abstract class NetworkChromosome extends Chromosome {
 
     /**
      * Saves the ActivationTrace in a mapping from step to ActivationTrace. A single step can save multiple
-     * ActivationTraces in order to cover as many valid program states as possible.
+     * ActivationTraces in order to cover as many valid program states as possible. The ActivationTrace itself offers
+     * a key-like structure within its array, since the indices represent the node id of the corresponding
+     * activation value.
      */
-    private _activationTrace = new Map<number, number[][]>();
+    private _activationTrace = new Map<string, number[][]>();
+
+    /**
+     * A saved ActivationTrace from a previous Run. The saved AT will be compared against the current one in order to
+     * find diverging states. The savedActivationTrace has the same structure as the current ActivationTrace.
+     */
+    private _savedActivationTrace = new Map<string, number[][]>();
 
     /**
      * The fitness value of the network.
@@ -572,10 +580,10 @@ export abstract class NetworkChromosome extends Chromosome {
      * Adds a single ActivationTrace after executing a Scratch-Step to the ActivationTrace map.
      * @param step the previously performed step whose ActivationTrace should be recorded.
      */
-    public addActivationTrace(step: number): void {
+    public addActivationTrace(step: string): void {
         this.sortNodes();
         const activationTrace: number[] = []
-        this._allNodes.forEach(node => activationTrace.push(node.activationValue));
+        this._allNodes.forEach(node => activationTrace[node.uID] = node.activationValue);
         if (this._activationTrace.has(step)) {
             this.activationTrace.get(step).push(activationTrace);
         } else {
@@ -619,8 +627,16 @@ export abstract class NetworkChromosome extends Chromosome {
         this._fitness = value;
     }
 
-    get activationTrace(): Map<number, number[][]> {
+    get activationTrace(): Map<string, number[][]> {
         return this._activationTrace;
+    }
+
+    get savedActivationTrace(): Map<string, number[][]> {
+        return this._savedActivationTrace;
+    }
+
+    set savedActivationTrace(value: Map<string, number[][]>) {
+        this._savedActivationTrace = value;
     }
 
     get trace(): ExecutionTrace {

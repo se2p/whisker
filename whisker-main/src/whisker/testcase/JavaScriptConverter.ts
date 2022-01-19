@@ -56,6 +56,7 @@ export class JavaScriptConverter {
             configs['networkFitness'] = Container.config.neuroevolutionProperties.networkFitness.toParameterIdentifier();
             configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
             configs['seed'] = Container.config.getRandomSeed();
+            configs['repetitions'] = Container.config.neuroevolutionProperties.repetitions;
 
             const durationConfigs = {}
             durationConfigs['waitStepUpperBound'] = Container.config.getWaitStepUpperBound();

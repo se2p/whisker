@@ -21,6 +21,12 @@ export class DynamicSuiteParameter {
      */
     private _eventSelection: string
 
+    /**
+     * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
+     * ActivationTrace across many program states with diverging seeds.
+     */
+    private _repetitions: number;
+
     get networkFitness(): NetworkFitnessFunction<NeatChromosome> {
         return this._networkFitness;
     }
@@ -43,5 +49,13 @@ export class DynamicSuiteParameter {
 
     set eventSelection(value: string) {
         this._eventSelection = value;
+    }
+
+    get repetitions(): number {
+        return this._repetitions;
+    }
+
+    set repetitions(value: number) {
+        this._repetitions = value;
     }
 }

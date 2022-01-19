@@ -92,6 +92,7 @@ export class NetworkLoader {
             const mutation = new NeatMutation({});
             const crossover = new NeatCrossover({})
             const network = new NeatChromosome(allNodes, allConnections, mutation, crossover);
+            network.savedActivationTrace = new Map(Object.entries(savedNetwork['AT']))
             networks.push(network);
         }
         return networks;

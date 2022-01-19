@@ -231,6 +231,7 @@ export class NeatChromosome extends NetworkChromosome {
             connections[`Con ${i}`] = this.connections[i].toJSON();
         }
         network[`Cons`] = connections;
+        network['AT'] = Object.fromEntries(this.activationTrace);
         return network;
     }
 

@@ -158,7 +158,7 @@ export class WhiskerSearchConfiguration {
         const eventExtractor = new StaticScratchEventExtractor(vm);
         const programEvents = eventExtractor.extractEvents(vm);
         const numSearchParams = programEvents.map(event => event.numSearchParameter());
-         // Add 1 for the event-codon itself.
+        // Add 1 for the event-codon itself.
         this.properties['reservedCodons'] = Math.max(...numSearchParams) + 1;
         this.properties['chromosomeLength'] *= this.properties['reservedCodons'];
     }
@@ -200,6 +200,7 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
+        const repetitions = this._config['repetitions'] as number;
         const timeout = this._config['networkFitness']['timeout'];
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
 
@@ -234,6 +235,7 @@ export class WhiskerSearchConfiguration {
         properties.excessCoefficient = excessCoefficient;
         properties.weightCoefficient = weightCoefficient;
 
+        properties.repetitions = repetitions;
         properties.timeout = timeout;
         properties.doPrintPopulationRecord = doPrintPopulationRecord;
 
@@ -246,11 +248,12 @@ export class WhiskerSearchConfiguration {
         return this._properties as NeatProperties;
     }
 
-    private setDynamicSuiteParameter(): DynamicSuiteParameter{
+    private setDynamicSuiteParameter(): DynamicSuiteParameter {
         const parameter = new DynamicSuiteParameter();
         parameter.timeout = this._config['timeout'];
         parameter.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness'])
         parameter.eventSelection = this._config['eventSelection'];
+        parameter.repetitions = this._config['repetitions'];
         return parameter;
     }
 
