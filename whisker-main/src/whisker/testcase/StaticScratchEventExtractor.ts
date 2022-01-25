@@ -119,8 +119,13 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
                 const field = target.blocks.getFields(touchingMenuBlock);
                 const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
 
+                // Target senses Mouse
+                if (value == "_mouse_") {
+                    eventList.push(new MouseMoveEvent());
+                }
+
                 // Target senses edge
-                if (value === "_edge_") {
+                else if (value === "_edge_") {
                     const random = Randomness.getInstance();
                     let x: number;
                     let y: number;
