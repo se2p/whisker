@@ -74,6 +74,7 @@ export class InputExtraction {
      */
     private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, number[]>, vmWrapper: VMWrapper): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
+        // Stage Bounds -> (width: 480, height: 360)
         const stageBounds = vmWrapper.getStageSize();
 
 
@@ -164,21 +165,13 @@ export class InputExtraction {
         let dx = Math.abs(x1 - x2);
         if (x1 > x2)
             dx *= -1;
-        if (Math.sign(x1) === Math.sign(x2))
-            dx /= (stageWidth / 2.);
-        else {
-            dx /= stageWidth;
-        }
+        dx = dx / stageWidth;
 
         // Calculate the normalised distance of the y-Dimension
         let dy = Math.abs(y1 - y2);
         if (y1 > y2)
             dy *= -1;
-        if (Math.sign(y1) === Math.sign(y2))
-            dy /= (stageHeight / 2.);
-        else {
-            dy /= stageHeight;
-        }
+        dy = dy / stageHeight;
 
         // Clamp within the stage
         dx = Math.max(-1, Math.min(dx, 1))

@@ -73,7 +73,7 @@ export class JavaScriptConverter {
                 networkTestSuite[`Network ${i}`] = tests[i].chromosome;
             }
             testJSON['Networks'] = networkTestSuite;
-            return JSON.stringify(testJSON, undefined, 4);
+            return JSON.stringify(testJSON);
         }
         // Generate static test suite.
         else {

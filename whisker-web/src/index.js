@@ -253,6 +253,7 @@ const runAllTests = async function () {
             const dynamicSuite = new DynamicSuite();
             const properties = {};
             properties.acceleration = $('#acceleration-value').text();
+            properties.seed = document.getElementById('seed').value;
             await dynamicSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, Whisker.tests,
                 properties);
             coverage = CoverageGenerator.getCoverage();

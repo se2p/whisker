@@ -61,6 +61,10 @@ export class ClassificationNode extends NodeGene {
             return 0.0;
     }
 
+    public identifier(): string{
+        return `C:${this.event.stringIdentifier()}`
+    }
+
     toString(): string {
         return `ClassificationNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\

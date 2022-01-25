@@ -2,6 +2,7 @@ import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
+import uid from "scratch-vm/@types/scratch-vm/util/uid";
 
 export class HiddenNode extends NodeGene {
 
@@ -49,6 +50,10 @@ export class HiddenNode extends NodeGene {
             return this.activationValue;
         } else
             return 0.0;
+    }
+
+    public identifier(): string{
+        return `H:${this.uID}`
     }
 
     toString(): string {

@@ -58,6 +58,10 @@ export class InputNode extends NodeGene {
         }
     }
 
+    public identifier(): string{
+        return `I:${this.sprite}-${this.feature}`
+    }
+
     toString(): string {
         return `InputNode{ID: ${this.uID},\
  Value: ${this.activationValue},\

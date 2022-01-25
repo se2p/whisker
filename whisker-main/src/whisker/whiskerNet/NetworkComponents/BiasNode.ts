@@ -51,6 +51,10 @@ export class BiasNode extends NodeGene {
         this.activatedFlag = true;
     }
 
+    public identifier(): string{
+        return `B`;
+    }
+
     toString(): string {
         return `BiasNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\

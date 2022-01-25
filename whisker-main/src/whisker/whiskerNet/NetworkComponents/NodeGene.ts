@@ -97,9 +97,11 @@ export abstract class NodeGene {
 
     public abstract clone(): NodeGene
 
-    abstract toString(): string
+    public abstract identifier(): string;
 
-    abstract toJSON(): Record<string, (number | string)>;
+    public abstract toString(): string
+
+    public abstract toJSON(): Record<string, (number | string)>;
 
     get uID(): number {
         return this._uID;

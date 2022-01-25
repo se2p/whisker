@@ -79,6 +79,10 @@ export class RegressionNode extends NodeGene {
         return this._event;
     }
 
+    public identifier(): string{
+        return `R:${this.event.stringIdentifier()}-${this.eventParameter}`
+    }
+
     toString(): string {
         return `RegressionNode{ID: ${this.uID}\
 , Value: ${this.activationValue}\

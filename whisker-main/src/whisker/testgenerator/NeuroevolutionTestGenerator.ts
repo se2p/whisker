@@ -24,6 +24,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         const scratchSeeds = Array(parameter.repetitions).fill(0).map(
             () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
         for (const network of testChromosomes) {
+            network.freeze = true;
             for (let i = 0; i < parameter.repetitions; i++) {
                 Randomness.setScratchSeed(scratchSeeds[i]);
                 await parameter.networkFitness.getFitness(network, parameter.timeout, parameter.eventSelection);

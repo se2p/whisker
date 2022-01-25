@@ -5,6 +5,8 @@ import WhiskerUtil from "../../../test/whisker-util";
 import {ScratchProject} from "../../scratch/ScratchProject";
 import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
+import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
+import {Randomness} from "../../utils/Randomness";
 
 export class DynamicSuite {
 
@@ -13,6 +15,16 @@ export class DynamicSuite {
 
         const util = new WhiskerUtil(vm, project);
         const vmWrapper = util.getVMWrapper();
+
+        // Check if a seed has been set.
+        const seedString = properties.seed.toString();
+        if(seedString !== 'undefined' && seedString !== "") {
+            Randomness.setInitialSeeds(properties.seed);
+        }
+        // If not set a random seed.
+        else{
+            Randomness.setInitialSeeds(Date.now());
+        }
 
         const testJSON = JSON.parse(testFile);
         const config = new WhiskerSearchConfiguration(testJSON['Configs']);
@@ -30,9 +42,7 @@ export class DynamicSuite {
         const eventExtractor = new NeuroevolutionScratchEventExtractor(vm);
         const networkLoader = new NetworkLoader(testJSON['Networks'], eventExtractor.extractStaticEvents(vm));
         const networks = networkLoader.loadNetworks();
-        for(const network of networks){
-            await parameter.networkFitness.getFitness(network, parameter.timeout, parameter.eventSelection);
-        }
+        const sa = new Map<string, number>();
 
         return true;
     }

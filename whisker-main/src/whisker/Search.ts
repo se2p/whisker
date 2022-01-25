@@ -198,6 +198,9 @@ seed ${configSeed} defined within the config files.`);
         } else if (configSeed) {
             Randomness.setInitialSeeds(configSeed);
         }
+        else{
+            Randomness.setInitialSeeds(Date.now());
+        }
 
         StatisticsCollector.getInstance().reset();
         StatisticsCollector.getInstance().projectName = projectName;

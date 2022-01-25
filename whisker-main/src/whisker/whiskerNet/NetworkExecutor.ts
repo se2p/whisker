@@ -117,7 +117,8 @@ export class NetworkExecutor {
         let timer = Date.now();
         this._timeout += Date.now();
 
-        // Play the game until we reach a GameOver state or the timeout
+        // Play the game until we reach a GameOver state or the timeout.
+        let stepCount = 0;
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm)
@@ -152,7 +153,6 @@ export class NetworkExecutor {
             const indexOfMaxValue = output.reduce(
                 (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
             codons.push(indexOfMaxValue);
-            network.addActivationTrace((codons.length - 1).toFixed());
 
             // Select the nextEvent, set its parameters and send it to the Scratch-VM
             const nextEvent: ScratchEvent = this.availableEvents[indexOfMaxValue];
@@ -170,6 +170,15 @@ export class NetworkExecutor {
             const waitEvent = new WaitEvent(1);
             events.push(new EventAndParameters(waitEvent, []));
             await waitEvent.apply();
+
+            // Record ActivationTrace. Skip step 0 as this simply reflects how the project was loaded. However,
+            // we are interested in step 1 as this one reflects initialisation values.
+            if(network.freeze && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
+                //network.addNodeActivationTrace(stepCount.toFixed());
+                network.updateActivationTrace(stepCount);
+            }
+            stepCount++;
+
             timer = Date.now();
         }
 

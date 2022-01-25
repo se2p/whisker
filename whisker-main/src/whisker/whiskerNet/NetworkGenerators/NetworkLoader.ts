@@ -10,6 +10,8 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {NeatCrossover} from "../Operators/NeatCrossover";
+import {ActivationTrace} from "../Misc/ActivationTrace";
+import {NodeType} from "../NetworkComponents/NodeType";
 
 export class NetworkLoader {
 
@@ -92,9 +94,15 @@ export class NetworkLoader {
             const mutation = new NeatMutation({});
             const crossover = new NeatCrossover({})
             const network = new NeatChromosome(allNodes, allConnections, mutation, crossover);
-            network.savedActivationTrace = new Map(Object.entries(savedNetwork['AT']))
+
+            network.savedActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
+            for (const [step, stepTraces] of Object.entries(savedNetwork['AT'])) {
+                network.savedActivationTrace.trace.set(Number(step), stepTraces as number[][]);
+            }
+
             networks.push(network);
         }
+        console.log(networks)
         return networks;
     }
 }

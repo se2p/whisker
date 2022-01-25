@@ -198,8 +198,8 @@ export class Randomness {
     public nextGaussian(mean: number, std: number): number {
         let x, y, s;
         do {
-            x = Math.random() * 2 - 1;
-            y = Math.random() * 2 - 1;
+            x = this.nextDouble() * 2 - 1;
+            y = this.nextDouble() * 2 - 1;
             s = x * x + y * y;
         } while (s >= 1 || s == 0);
         s = Math.sqrt(-2.0 * Math.log(s) / s);

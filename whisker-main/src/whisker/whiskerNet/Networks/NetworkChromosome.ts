@@ -11,6 +11,7 @@ import {RegressionNode} from "../NetworkComponents/RegressionNode";
 import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
+import {ActivationTrace} from "../Misc/ActivationTrace";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -65,18 +66,15 @@ export abstract class NetworkChromosome extends Chromosome {
     private _isRecurrent = false;
 
     /**
-     * Saves the ActivationTrace in a mapping from step to ActivationTrace. A single step can save multiple
-     * ActivationTraces in order to cover as many valid program states as possible. The ActivationTrace itself offers
-     * a key-like structure within its array, since the indices represent the node id of the corresponding
-     * activation value.
+     * Saves the ActivationTrace that holds all node activation values seen so far.
      */
-    private _activationTrace = new Map<string, number[][]>();
+    private _currentActivationTrace: ActivationTrace;
 
     /**
-     * A saved ActivationTrace from a previous Run. The saved AT will be compared against the current one in order to
-     * find diverging states. The savedActivationTrace has the same structure as the current ActivationTrace.
+     * Used for loading an ActivationTrace from a previous run, to compare it with ActivationTraces of a current run.
      */
-    private _savedActivationTrace = new Map<string, number[][]>();
+    private _savedActivationTrace: ActivationTrace;
+
 
     /**
      * The fitness value of the network.
@@ -100,9 +98,15 @@ export abstract class NetworkChromosome extends Chromosome {
     private _codons: number[] = [];
 
     /**
+     * Determines whether the network is allowed to update its input/output nodes during execution.
+     */
+    private _freeze = false
+
+    /**
      * Random number generator.
      */
     protected readonly _random = Randomness.getInstance();
+
 
     /**
      * Constructs a new NetworkChromosome.
@@ -192,24 +196,26 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param events a list of encountered events.
      */
     public updateOutputNodes(events: ScratchEvent[]): void {
-        let updated = false;
-        for (const event of events) {
-            if (!this.classificationNodes.has(event.stringIdentifier())) {
-                updated = true;
-                const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID);
-                this.allNodes.push(classificationNode);
-                this.connectOutputNode(classificationNode);
-                for (const parameter of event.getSearchParameterNames()) {
-                    const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE);
-                    this.allNodes.push(regressionNode);
-                    this.connectOutputNode(regressionNode);
+        if (!this._freeze) {
+            let updated = false;
+            for (const event of events) {
+                if (!this.classificationNodes.has(event.stringIdentifier())) {
+                    updated = true;
+                    const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID);
+                    this.allNodes.push(classificationNode);
+                    this.connectOutputNode(classificationNode);
+                    for (const parameter of event.getSearchParameterNames()) {
+                        const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE);
+                        this.allNodes.push(regressionNode);
+                        this.connectOutputNode(regressionNode);
+                    }
                 }
             }
-        }
-        // If the network's structure has changed generate the new network and update the stabilize count.
-        if (updated) {
-            this.generateNetwork();
-            this.updateStabiliseCount(100);
+            // If the network's structure has changed generate the new network and update the stabilize count.
+            if (updated) {
+                this.generateNetwork();
+                this.updateStabiliseCount(100);
+            }
         }
     }
 
@@ -431,16 +437,20 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     private setUpInputs(inputs: Map<string, Map<string, number>>): void {
         // First check if we encountered new nodes.
-        this.updateInputNodes(inputs);
+        if (!this._freeze) {
+            this.updateInputNodes(inputs);
+        }
         inputs.forEach((spriteValue, spriteKey) => {
             spriteValue.forEach((featureValue, featureKey) => {
                 const iNode = this.inputNodes.get(spriteKey).get(featureKey);
-                iNode.activationCount++;
-                iNode.activatedFlag = true;
-                iNode.nodeValue = featureValue;
-                iNode.activationValue = featureValue;
-            })
-        })
+                if (iNode) {
+                    iNode.activationCount++;
+                    iNode.activatedFlag = true;
+                    iNode.nodeValue = featureValue;
+                    iNode.activationValue = featureValue;
+                }
+            });
+        });
     }
 
     /**
@@ -514,10 +524,10 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Sorts the nodes of this network according to their types.
+     * Sorts the nodes of this network according to their types and uIDs in increasing order.
      */
     private sortNodes(): void {
-        this.allNodes.sort((a, b) => a.type - b.type);
+        this.allNodes.sort((a, b) => a.type - b.type || a.uID - b.uID);
     }
 
     /**
@@ -580,15 +590,15 @@ export abstract class NetworkChromosome extends Chromosome {
      * Adds a single ActivationTrace after executing a Scratch-Step to the ActivationTrace map.
      * @param step the previously performed step whose ActivationTrace should be recorded.
      */
-    public addActivationTrace(step: string): void {
+    public updateActivationTrace(step: number): void {
         this.sortNodes();
-        const activationTrace: number[] = []
-        this._allNodes.forEach(node => activationTrace[node.uID] = node.activationValue);
-        if (this._activationTrace.has(step)) {
-            this.activationTrace.get(step).push(activationTrace);
-        } else {
-            this._activationTrace.set(step, [activationTrace]);
+        const tracedNodes = this.allNodes.filter(node => node.type === NodeType.INPUT);
+
+        if(this.currentActivationTrace === undefined){
+            this.currentActivationTrace = new ActivationTrace(tracedNodes);
         }
+
+        this.currentActivationTrace.update(step, tracedNodes);
     }
 
     get inputNodes(): Map<string, Map<string, InputNode>> {
@@ -627,15 +637,19 @@ export abstract class NetworkChromosome extends Chromosome {
         this._fitness = value;
     }
 
-    get activationTrace(): Map<string, number[][]> {
-        return this._activationTrace;
+    get currentActivationTrace(): ActivationTrace {
+        return this._currentActivationTrace;
     }
 
-    get savedActivationTrace(): Map<string, number[][]> {
+    set currentActivationTrace(value: ActivationTrace) {
+        this._currentActivationTrace = value;
+    }
+
+    get savedActivationTrace(): ActivationTrace {
         return this._savedActivationTrace;
     }
 
-    set savedActivationTrace(value: Map<string, number[][]>) {
+    set savedActivationTrace(value: ActivationTrace) {
         this._savedActivationTrace = value;
     }
 
@@ -673,5 +687,13 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set isRecurrent(value: boolean) {
         this._isRecurrent = value;
+    }
+
+    set freeze(value: boolean) {
+        this._freeze = value;
+    }
+
+    get freeze(): boolean {
+        return this._freeze;
     }
 }
