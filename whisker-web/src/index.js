@@ -499,7 +499,7 @@ const toggleComponents = function () {
 const loadHeader = function () {
     _initLangSelect();
     localize('#header');
-    if (window.location.href.includes('html')) {
+    if (window.location.href.includes('/html')) {
         $('#link').attr('href', '../index.html');
         $('#small-logo').attr('src', '../assets/whisker-text-logo.png');
         $('#banner').attr('src', '../assets/banner_slim.jpg');
@@ -544,7 +544,7 @@ const loadHeader = function () {
 
 const loadFooter = function () {
     localize('#footer');
-    if (window.location.href.includes('html')) {
+    if (window.location.href.includes('/html')) {
         $('#imprint').attr('href', './imprint.html');
         $('#privacy').attr('href', './privacy.html');
         $('#logo-img').attr('src', '../assets/uniPassauLogo.png');
