@@ -398,12 +398,7 @@ class Inputs {
      */
     clickSprite (spriteName, steps= 1 ) {
         if (this.vmWrapper.getTargetBySpriteName(spriteName) != null) {
-            this.inputImmediate({
-                device: 'mouse',
-                sprite: this.vmWrapper.sprites.getSprite(spriteName),
-                isDown: true,
-                steps: steps
-            });
+            this.vmWrapper.vm.runtime.startHats('event_whenthisspriteclicked', null, this.vmWrapper.getTargetBySpriteName(spriteName));
         }
     }
 

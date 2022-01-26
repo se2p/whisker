@@ -54,7 +54,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
 
         eventList.push(new ClickStageEvent());
         eventList.push(new WaitEvent());
-        eventList.push(new TypeTextEvent(this._randomText(3)));
+        eventList.push(new TypeTextEvent(ScratchEventExtractor._randomText(3)));
         eventList.push(new MouseDownEvent(true));
         eventList.push(new MouseDownEvent(false));
         eventList.push(new MouseMoveEvent());
@@ -73,6 +73,7 @@ export class NaiveScratchEventExtractor extends ScratchEventExtractor {
                 eventList.push(new ClickSpriteEvent(target));
             }
         }
-        return Arrays.distinctObjects(eventList);
+        const equalityFunction = (a: ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        return Arrays.distinctByComparator(eventList, equalityFunction);
     }
 }

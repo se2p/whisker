@@ -44,7 +44,15 @@ export class KeyPressEvent extends ScratchEvent {
     }
 
     public toJavaScript(): string {
-        return `t.keyPress('${this._keyOption}', ${this._steps});`;
+        const keyName = this._keyOption.replace(/'/g, "\\'")
+        return `t.keyPress('${keyName}', ${this._steps});\n  ${new WaitEvent(this._steps).toJavaScript()}`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `KeyPressEvent`;
+        event[`args`] = {"key": this._keyOption, "steps": this._steps}
+        return event;
     }
 
     public toString(): string {
@@ -76,9 +84,14 @@ export class KeyPressEvent extends ScratchEvent {
                 break;
         }
         this._steps %= Container.config.getPressDurationUpperBound();
+
+        // If the event has been selected ensure that it is executed for at least one step.
+        if(this._steps < 1){
+            this._steps = 1;
+        }
     }
 
     stringIdentifier(): string {
-        return "KeyPressEvent-" + this._keyOption;
+        return `KeyPressEvent-"${this._keyOption}`;
     }
 }

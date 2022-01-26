@@ -27,14 +27,14 @@ describe('SinglePointRelativeCrossover', () => {
     test('Select best for maximizing fitness function', () => {
         const bits1 = [true, true];
         const parent1 = new BitstringChromosome(bits1,
-            new BitflipMutation(), new SinglePointRelativeCrossover<BitstringChromosome>());
+            new BitflipMutation(), new SinglePointRelativeCrossover<BitstringChromosome>(1));
 
         const bits2 = [false, false, false, false];
         const parent2 = new BitstringChromosome(bits2,
-            new BitflipMutation(), new SinglePointRelativeCrossover<BitstringChromosome>());
+            new BitflipMutation(), new SinglePointRelativeCrossover<BitstringChromosome>(1));
 
 
-        const xover = new SinglePointRelativeCrossover();
+        const xover = new SinglePointRelativeCrossover(1);
         const [offspring1, offspring2] = xover.apply(parent1, parent2);
 
         let numTrue = 0;

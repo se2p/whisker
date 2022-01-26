@@ -1,8 +1,8 @@
-import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/HiddenNode";
-import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
-import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
-import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
-import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
+import {HiddenNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/HiddenNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
 import {NeuroevolutionUtil} from "../../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 
 
@@ -10,26 +10,28 @@ describe("hiddenNode Tests", () => {
     let hiddenNode: NodeGene
 
     beforeEach(() => {
-        hiddenNode = new HiddenNode(1, ActivationFunction.SIGMOID);
+        hiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
+        hiddenNode.uID = 1;
     })
 
     test("Constructor Test", () => {
 
-        const hiddenNode = new HiddenNode(10, ActivationFunction.SIGMOID);
+        const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
+        hiddenNode.uID = 10;
 
-        expect(hiddenNode.id).toBe(10);
+        expect(hiddenNode.uID).toBe(10);
         expect(hiddenNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(hiddenNode.type).toBe(NodeType.HIDDEN);
         expect(hiddenNode.nodeValue).toBe(0);
         expect(hiddenNode.lastActivationValue).toBe(0);
-        expect(hiddenNode.activationValue).toBe(0)
+        expect(hiddenNode.activationValue).toBe(undefined)
         expect(hiddenNode.activatedFlag).toBe(false)
         expect(hiddenNode.activationCount).toBe(0);
         expect(hiddenNode.traversed).toBe(false)
         expect(hiddenNode.incomingConnections.length).toBe(0);
     })
 
-    test("Reset Node", () =>{
+    test("Reset Node", () => {
         hiddenNode.activationCount = 10;
         hiddenNode.activationValue = 2;
         hiddenNode.nodeValue = 10;
@@ -46,23 +48,27 @@ describe("hiddenNode Tests", () => {
 
     })
 
-    test("Equals Test", () =>{
-        const hiddenNode2 = new HiddenNode(1, ActivationFunction.SIGMOID);
-        expect(hiddenNode2.equals(hiddenNode)).toBe(true)
+    test("Equals Test", () => {
+        const hiddenNode2 = new HiddenNode(ActivationFunction.SIGMOID);
+        hiddenNode2.uID = 1;
+        expect(hiddenNode2.equals(hiddenNode)).toBe(true);
 
-        const hiddenNode3 = new HiddenNode(2, ActivationFunction.SIGMOID);
-        expect(hiddenNode3.equals(hiddenNode)).toBe(false)
+        const hiddenNode3 = new HiddenNode(ActivationFunction.SIGMOID);
+        hiddenNode3.uID = 2;
+        expect(hiddenNode3.equals(hiddenNode)).toBe(false);
 
-        const hiddenNode4 = new HiddenNode(1, ActivationFunction.NONE);
-        expect(hiddenNode4.equals(hiddenNode)).toBe(false)
+        const hiddenNode4 = new HiddenNode(ActivationFunction.NONE);
+        hiddenNode4.uID = 1;
+        expect(hiddenNode4.equals(hiddenNode)).toBe(false);
 
-        const biasNode = new BiasNode(1);
-        expect(biasNode.equals(hiddenNode)).toBe(false)
+        const biasNode = new BiasNode();
+        biasNode.uID = 1;
+        expect(biasNode.equals(hiddenNode)).toBe(false);
     })
 
     test("Clone Test", () => {
         const clone = hiddenNode.clone();
-        expect(clone.id).toBe(hiddenNode.id);
+        expect(clone.uID).toBe(hiddenNode.uID);
         expect(clone.equals(hiddenNode)).toBe(true);
         expect(clone === hiddenNode).toBe(false);
     })
@@ -77,7 +83,8 @@ describe("hiddenNode Tests", () => {
         expect(hiddenNode.getActivationValue()).toBe(0);
         expect(hiddenNode.activationValue).toBe(0);
 
-        const hiddenNode2 = new HiddenNode(2, ActivationFunction.NONE)
+        const hiddenNode2 = new HiddenNode(ActivationFunction.NONE);
+        hiddenNode2.uID = 2;
         hiddenNode2.nodeValue = 5;
         hiddenNode2.activationCount = 10;
         expect(hiddenNode2.getActivationValue()).toBe(5);
@@ -88,9 +95,10 @@ describe("hiddenNode Tests", () => {
     })
 
     test("toString Test", () => {
+        hiddenNode.activationValue = 0;
         const out = hiddenNode.toString();
         expect(out).toContain(`HiddenNode{ID: 1\
 , Value: 0\
-, InputConnections: ${[]}}`)
+, InputConnections: ${[]}`)
     })
 })

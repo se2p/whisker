@@ -20,7 +20,9 @@
 
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import Arrays from "../../../src/whisker/utils/Arrays";
-import {expect} from "@jest/globals";
+import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
+import {MouseDownEvent} from "../../../src/whisker/testcase/events/MouseDownEvent";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 
 describe("Arrays", () => {
 
@@ -144,6 +146,28 @@ describe("Arrays", () => {
         expect(distinct.length).toBe(1);
     });
 
+    test("Distinct objects by custom defined comparator", () => {
+        const comparator = (a:ScratchEvent, b:ScratchEvent) => a.stringIdentifier() === b.stringIdentifier();
+        const array = [new ClickStageEvent(), new MouseDownEvent(false), new MouseDownEvent(false),
+            new MouseMoveEvent(2,1), new MouseMoveEvent(2, 1), new MouseMoveEvent(10, 10)];
+        const distinct = Arrays.distinctByComparator(array, comparator);
+        expect(distinct.length).toBe(3);
+        expect(distinct[0].stringIdentifier()).toBe(array[0].stringIdentifier());
+        expect(distinct[1].stringIdentifier()).toBe(array[1].stringIdentifier());
+        expect(distinct[2].stringIdentifier()).toBe(array[3].stringIdentifier());
+    });
+
+    test("Range function stepSize of 1", () => {
+        const rangeArray = Arrays.range(0, 10, 1);
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(45)
+    });
+
+    test("Range function stepSize of 100", () => {
+        const rangeArray = Arrays.range(0, 850, 100);
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(3600)
+    });
+
+
     test("Create random Array in range", () =>{
         const minValue = 10;
         const maxValue = 30;
@@ -152,5 +176,18 @@ describe("Arrays", () => {
         expect(Math.min(...array)).toBeGreaterThanOrEqual(minValue);
         expect(Math.max(...array)).toBeLessThanOrEqual(maxValue);
         expect(array.length).toBe(length);
-    })
+    });
+
+    test("Arrays.last returns last element from array", () => {
+        const actual = Arrays.last(array);
+        const expected = array[array.length - 1];
+        expect(actual).toBe(expected);
+    });
+
+    test("Arrays.last does not modify source array", () => {
+        const array = [2, 1, 5, 3, 4, 7, 9, 0, 8, 6];
+        const copy = [...array];
+        Arrays.last(array);
+        expect(array).toStrictEqual(copy);
+    });
 });

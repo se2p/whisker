@@ -31,6 +31,8 @@ import {ScratchEventExtractor} from "../../../testcase/ScratchEventExtractor";
 import Arrays from "../../../utils/Arrays";
 import {EventSelector} from "../../../testcase/EventSelector";
 import VMWrapper = require("../../../../vm/vm-wrapper.js");
+import {TestExecutor} from "../../../testcase/TestExecutor";
+import {StatisticsCollector} from "../../../utils/StatisticsCollector";
 
 
 export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
@@ -73,7 +75,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      */
     isApplicable(chromosome: TestChromosome): boolean {
         return chromosome.getGenes().length < Container.config.searchAlgorithmProperties['chromosomeLength'] && // // FIXME: unsafe access
-            this._originalChromosomes.indexOf(chromosome) < 0 && this.calculateFitnessValues(chromosome).length > 0;
+            this._originalChromosomes.indexOf(chromosome) < 0 && TestExecutor.calculateUncoveredFitnessValues(chromosome).length > 0;
     }
 
     /**
@@ -108,7 +110,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const newChromosome = chromosome.cloneWith(newCodons);
         newChromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
         newChromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-        newChromosome.lastImprovedCoverageCodon = lastImprovedResults.lastImprovedCodon;
+        newChromosome.lastImprovedCodon = lastImprovedResults.lastImprovedCodon;
         newChromosome.lastImprovedTrace = lastImprovedResults.lastImprovedTrace;
 
         // Reset the trace and coverage of the original chromosome
@@ -148,20 +150,18 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
         const upperLengthBound = Container.config.searchAlgorithmProperties['chromosomeLength'];
         const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
         const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
-        let fitnessValues = this.calculateFitnessValues(chromosome);
-        let fitnessValuesUnchanged = 0;
-        let done = false;
-        let totalCoverageSize = chromosome.coverage.size;
-        let lastImprovedCodon = chromosome.lastImprovedCoverageCodon;
-        let lastImprovedTrace: ExecutionTrace
+        let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
+        let lastImprovedCodon = chromosome.lastImprovedCodon;
+        let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
 
         // Monitor if the Scratch-VM is still running. If it isn't, stop adding Waits as they have no effect.
         const _onRunStop = this.projectStopped.bind(this);
         this._vmWrapper.vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         let extendWait = false;
-        let previousEvents:ScratchEvent[] = [];
-        while (codons.length < upperLengthBound && this._projectRunning && !done) {
+        let previousEvents: ScratchEvent[] = [];
+        while (codons.length < upperLengthBound && this._projectRunning) {
+            StatisticsCollector.getInstance().numberFitnessEvaluations++;
             const availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm);
 
             // If we have no events available, we can only stop.
@@ -181,7 +181,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 const typeEventCodon = Arrays.findElement(availableEvents, typeTextEvent);
                 codons.push(typeEventCodon);
                 // Fill reservedCodons codons.
-                codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, reservedCodons-1))
+                codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, reservedCodons - 1))
                 events.push(new EventAndParameters(typeTextEvent, []));
                 await typeTextEvent.apply();
                 extendWait = false;
@@ -197,11 +197,11 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
 
                 // Add missing reservedCodons.
                 const parameter: number[] = [];
-                for (let i = 0; i < reservedCodons-1; i++) {
+                for (let i = 0; i < reservedCodons - 1; i++) {
                     parameter.push(this._random.nextInt(lowerCodonValueBound, upperCodonValueBound + 1));
                 }
                 codons.push(...parameter);
-                if(chosenNewEvent.numSearchParameter() > 0){
+                if (chosenNewEvent.numSearchParameter() > 0) {
                     const eventParameter = parameter.slice(0, chosenNewEvent.numSearchParameter());
                     chosenNewEvent.setParameter(eventParameter, "codon");
                     events.push(new EventAndParameters(chosenNewEvent, eventParameter));
@@ -229,7 +229,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     // duration; Replace the old Event in the events list of the chromosome with the new one.
                     codons[codons.length - (reservedCodons - 1)] = newWaitDuration;
                     const waitEvent = new WaitEvent(newWaitDuration);
-                    events[events.length -1] = new EventAndParameters(waitEvent, [newWaitDuration]);
+                    events[events.length - 1] = new EventAndParameters(waitEvent, [newWaitDuration]);
                     await waitEvent.apply();
                 } else {
                     // Find the integer representing a WaitEvent in the availableEvents list and add it to the list of codons.
@@ -242,8 +242,8 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                     codons.push(Container.config.getWaitStepUpperBound());
 
                     let addedCodons = 2;
-                    while (addedCodons < reservedCodons){
-                        codons.push(this._random.nextInt(lowerCodonValueBound, upperCodonValueBound+1));
+                    while (addedCodons < reservedCodons) {
+                        codons.push(this._random.nextInt(lowerCodonValueBound, upperCodonValueBound + 1));
                         addedCodons++;
                     }
 
@@ -261,54 +261,29 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             // Set the trace and coverage for the current state of the VM to properly calculate the fitnessValues.
             chromosome.trace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, events);
             chromosome.coverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-            const newFitnessValues = this.calculateFitnessValues(chromosome);
+            const newFitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
 
-            // Reset counter if we obtained smaller fitnessValues, or keep covering more and more blocks
-            if (newFitnessValues.length < fitnessValues.length ||
-                newFitnessValues.some((value, index) => value < fitnessValues[index])) {
-                fitnessValuesUnchanged = 0;
+            // Check if the latest event has improved the fitness, if yes update properties and keep extending the
+            // codons.
+            if (TestExecutor.hasFitnessOfUncoveredStatementsImproved(fitnessValues, newFitnessValues)) {
+                if (TestExecutor.doRequireLastImprovedCodon(chromosome)) {
+                    lastImprovedCodon = codons.length;
+                    lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
+                }
             }
-            // Otherwise increase the counter.
+            // Otherwise, stop.
             else {
-                fitnessValuesUnchanged++;
+                break;
+            }
+            // We also stop if we covered all blocks.
+            if (newFitnessValues.length === 0) {
+                break
             }
 
-            // If we see no improvements after adding three Waits, or if we have covered all blocks we stop.
-            if (fitnessValuesUnchanged >= 3 || newFitnessValues.length === 0) {
-                done = true;
-            }
-
-            // Check if the sent event increased the block coverage. If so update the state up to this point in time.
-            const currentCoverage = this._vmWrapper.vm.runtime.traceInfo.tracer.coverage as Set<string>;
-            if (currentCoverage.size > totalCoverageSize) {
-                lastImprovedCodon = codons.length;
-                totalCoverageSize = currentCoverage.size;
-                lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);
-            }
             fitnessValues = newFitnessValues;
         }
+        StatisticsCollector.getInstance().incrementExecutedTests();
         return {lastImprovedCodon, lastImprovedTrace};
-    }
-
-    /**
-     * Gathers the fitness value for each uncovered block. This helps us in deciding if it makes sense adding
-     * additional waits.
-     * @param chromosome the chromosome carrying the block trace used to calculate the fitness value
-     * @return Returns an array of discovered fitness values for uncovered blocks only.
-     */
-    private calculateFitnessValues(chromosome: TestChromosome): number[] {
-        const fitnessValues: number[] = []
-        // Flush fitnessCache to enforce a recalculation of the fitness values.
-        chromosome.flushFitnessCache();
-        for (const fitnessFunction of this._algorithm.getFitnessFunctions()) {
-            // Only look at fitnessValues originating from uncovered blocks AND
-            // blocks not already covered by previous chromosomes modified by local search.
-            const fitness = chromosome.getFitness(fitnessFunction);
-            if (!fitnessFunction.isOptimal(fitness)) {
-                fitnessValues.push(chromosome.getFitness(fitnessFunction));
-            }
-        }
-        return fitnessValues;
     }
 
     /**

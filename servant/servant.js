@@ -20,7 +20,7 @@ const start = Date.now();
 const {
     whiskerURL, scratchPath, testPath, modelPath, modelRepetition, modelDuration, modelCaseSensitive, errorWitnessPath,
     addRandomInputs, accelerationFactor, csvFile, configPath, isHeadless, numberOfTabs, isConsoleForwarded,
-    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, seed
+    isLiveOutputCoverage, isLiveLogEnabled, generateTests, isGenerateWitnessTestOnly, isNeuroevolution, seed
 } = cli.start();
 
 if (isGenerateWitnessTestOnly) {
@@ -56,6 +56,7 @@ async function init () {
         devtools: !production
     });
 
+    // Test generation
     if (generateTests) {
         // Todo use correct config
         const downloadPath = typeof generateTests === 'string' ? generateTests : __dirname;
@@ -71,7 +72,45 @@ async function init () {
             })
             .catch(errors => logger.error('Error on generating tests: ', errors))
             .finally(() => rimraf.sync(tmpDir));
-    } else {
+    }
+    // Dynamic Test suite using Neuroevolution
+    else if(isNeuroevolution){
+        if (fs.lstatSync(scratchPath).isDirectory()) {
+            const csvs = [];
+            for (const file of fs.readdirSync(scratchPath)) {
+                if (!file.endsWith("sb3")) {
+                    logger.info("Not a Scratch project: "+file);
+                    continue;
+                }
+                logger.info("Testing project "+file);
+                const csvOutput = await runDynamicTestSuite(browser, scratchPath + '/' + file);
+                const csvArray = csvOutput.split('\n');
+                if(csvs.length === 0){
+                    csvs.push(csvArray[0]);
+                }
+                csvs.push(csvArray[1]);
+            }
+            const output = csvs.join('\n');
+            if (csvFile !== false) {
+                console.info("Creating CSV summary in "+csvFile);
+                fs.writeFileSync(csvFile, output);
+            }
+        } else {
+            const output = await runDynamicTestSuite(browser, scratchPath);
+            if (csvFile !== false) {
+                console.info("Creating CSV summary in "+csvFile);
+                fs.writeFileSync(csvFile, output);
+            }
+        }
+        await browser.close();
+    }
+    // Standard TestSuite / Model-based testing
+    else {
+        if (csvFile != false && fs.existsSync(csvFile)) {
+            console.error(`CSV file already exists, aborting`);
+            await browser.close();
+            return;
+        }
         const csvs = [];
 
         if (fs.lstatSync(scratchPath).isDirectory()) {
@@ -90,12 +129,8 @@ async function init () {
         }
 
         if (csvFile != false) {
-            if (fs.existsSync(csvFile)) {
-                console.warn(`CSV file ${csvFile} already exists, will be overwritten!`);
-            } else {
-                console.info(`Creating CSV summary in ${csvFile}`);
-            }
-            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs, modelPath));
+            console.info(`Creating CSV summary in ${csvFile}`);
+            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
         }
         await browser.close();
     }
@@ -164,6 +199,9 @@ async function runGeneticSearch (browser, downloadPath) {
         await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
         await (await page.$('#fileselect-project')).uploadFile(scratchPath);
         await (await page.$('#fileselect-config')).uploadFile(configPath);
+        if(testPath) {
+            await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        }
         await showHiddenFunctionality(page);
         await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
         await page.evaluate(s => document.querySelector('#seed').value = s, seed);
@@ -213,10 +251,81 @@ async function runGeneticSearch (browser, downloadPath) {
         logger.debug("Executing search");
         await executeSearch();
         const output = await readTestOutput();
-        logger.debug(`Downloading tests to ${downloadPath}/tests.js`);
+        logger.debug(`Downloading tests to ${downloadPath}`);
         await downloadTests();
         await page.close();
         return Promise.resolve(output);
+    } catch (e) {
+        return Promise.reject(e);
+    }
+}
+
+async function runDynamicTestSuite (browser, scratchPath) {
+    const page = await browser.newPage({context: Date.now()});
+    page.on('error', error => {
+        logger.error(error);
+        process.exit(1);
+    }).on('pageerror', async (error) => {
+        await browser.close();
+        return Promise.reject(error);
+    });
+
+    function optionallyEnableConsoleForward () {
+        if (isConsoleForwarded) {
+            page.on('console', msg => {
+                if (msg._args.length) {
+                    logger.info(`Forwarded: `, msg._args.map(arg => arg._remoteObject.value)
+                        .join(' '));
+                }
+            });
+        }
+    }
+
+    async function configureWhiskerWebInstance () {
+        await page.goto(whiskerURL, {waitUntil: 'networkidle0'});
+        await (await page.$('#fileselect-project')).uploadFile(scratchPath);
+        await (await page.$('#fileselect-config')).uploadFile(configPath);
+        await (await page.$('#fileselect-tests')).uploadFile(testPath);
+        await showHiddenFunctionality(page);
+        await page.evaluate(factor => document.querySelector('#acceleration-value').innerText = factor, accelerationFactor);
+        console.log('Whisker-Web: Web Instance Configuration Complete');
+    }
+
+    /**
+     * Reads the coverage and log field until the summary is printed into the coverage field, indicating that the test
+     * run is over.
+     */
+    async function readTestOutput () {
+        const logOutput = await page.$('#output-log .output-content');
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('uncovered')) {
+                break;
+            }
+            await page.waitForTimeout(1000);
+        }
+        // Get CSV-Output
+        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+        const coverageLogLines = outputLog.split('\n');
+        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
+        const csvHeader = coverageLogLines[csvHeaderIndex];
+        const csvBody = coverageLogLines[csvHeaderIndex + 1]
+        return `${csvHeader}\n${csvBody}`;
+    }
+
+    async function executeSearch () {
+        await (await page.$('#run-search')).click();
+    }
+
+    try {
+        optionallyEnableConsoleForward();
+        await configureWhiskerWebInstance();
+        logger.debug("Dynamic TestSuite");
+        await executeSearch();
+        const csvOutput = await readTestOutput();
+        await page.close();
+        return Promise.resolve(csvOutput);
     } catch (e) {
         return Promise.reject(e);
     }

@@ -23,6 +23,7 @@ import {Container} from "../../utils/Container";
 import {ParameterType} from "./ParameterType";
 import {Randomness} from "../../utils/Randomness";
 
+
 export class MouseMoveEvent extends ScratchEvent {
 
     private _x: number;
@@ -40,6 +41,13 @@ export class MouseMoveEvent extends ScratchEvent {
 
     public toJavaScript(): string {
         return `t.mouseMove(${Math.trunc(this._x)}, ${Math.trunc(this._y)});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `MouseMoveEvent`;
+        event[`args`] = {"x": this._x, "y": this._y}
+        return event;
     }
 
     public toString(): string {

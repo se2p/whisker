@@ -31,11 +31,18 @@ export class WaitEvent extends ScratchEvent {
     }
 
     async apply(): Promise<void> {
-        await Container.testDriver.wait(this._steps);
+        await Container.testDriver.runForSteps(this._steps);
     }
 
     public toJavaScript(): string {
-        return `await t.wait(${this._steps});`;
+        return `await t.runForSteps(${this._steps});`;
+    }
+
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `WaitEvent`;
+        event[`args`] = {"steps": this._steps}
+        return event;
     }
 
     public toString(): string {
@@ -66,7 +73,15 @@ export class WaitEvent extends ScratchEvent {
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }
-        this._steps %= Container.config.getWaitStepUpperBound();
+
+        // Only enforce the UpperBound range if we do not use Neuroevolution and if the codon value is likely to not
+        // stem from ExtensionLocalSearch as otherwise the local search operator would only reach wait dependent
+        // statements once.
+        if(!Container.isNeuroevolution &&
+            this._steps % Container.config.getWaitStepUpperBound() !== 0 &&
+            this._steps !== Container.config.searchAlgorithmProperties['integerRange'].max) {
+            this._steps %= Container.config.getWaitStepUpperBound();
+        }
     }
 
     stringIdentifier(): string {

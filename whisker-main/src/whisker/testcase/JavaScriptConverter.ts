@@ -20,12 +20,13 @@
 
 import {TestChromosome} from "./TestChromosome";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
+import {Container} from "../utils/Container";
 
 export class JavaScriptConverter {
 
     getText(test: TestChromosome): string {
         let text = "const test = async function (t) {\n";
-        for (const { event } of test.trace.events) {
+        for (const {event} of test.trace.events) {
             text += "  " + event.toJavaScript() + "\n";
         }
         text += "  t.end();\n";
@@ -44,34 +45,45 @@ export class JavaScriptConverter {
 
     getSuiteText(tests: WhiskerTest[]): string {
 
-        let text = "";
-        let i = 0;
-        let footer = "";
-        for (const test of tests) {
-            text += "const test"+i+" = async function (t) {\n";
-            for (const {event} of test.chromosome.trace.events) {
-                text += "  " + event.toJavaScript() + "\n";
+        // Generate dynamic test suite.
+        if (Container.config.getTestSuiteType() === 'dynamic') {
+            const networkTestSuite = {};
+            for (let i = 0; i < tests.length; i++) {
+                networkTestSuite[`Network ${i}`] = tests[i].chromosome;
             }
-            text += "}\n";
-
-            footer += "  {\n";
-            footer += "      test: test"+i+",\n";
-            footer += "      name: 'Generated Test',\n";
-            footer += "      description: '',\n";
-            footer += "      categories: []\n";
-            if (i < tests.length - 1) {
-                footer += "  },\n";
-            } else {
-                footer += "  }\n";
-            }
-
-            i++;
+            return JSON.stringify(networkTestSuite, undefined, 4);
         }
+        // Generate static test suite.
+        else {
+            let text = "";
+            let i = 0;
+            let footer = "";
+            for (const test of tests) {
+                text += "const test" + i + " = async function (t) {\n";
+                for (const {event} of test.chromosome.trace.events) {
+                    text += "  " + event.toJavaScript() + "\n";
+                }
+                text += "}\n";
 
-        text += "\nmodule.exports = [\n";
-        text += footer;
-        text += "]\n";
+                footer += "  {\n";
+                footer += "      test: test" + i + ",\n";
+                footer += "      name: 'Generated Test',\n";
+                footer += "      description: '',\n";
+                footer += "      categories: []\n";
+                if (i < tests.length - 1) {
+                    footer += "  },\n";
+                } else {
+                    footer += "  }\n";
+                }
 
-        return text;
+                i++;
+            }
+
+            text += "\nmodule.exports = [\n";
+            text += footer;
+            text += "]\n";
+
+            return text;
+        }
     }
 }

@@ -12,7 +12,7 @@ class TestDriver {
      * @param {object} props The properties of the test driver.
      */
     // TODO: get rid of clear... methods
-    constructor (vmWrapper, props) {
+    constructor(vmWrapper, props) {
         this.vmWrapper = vmWrapper;
         this.vm = vmWrapper.vm;
 
@@ -30,7 +30,6 @@ class TestDriver {
         this.mouseMove = vmWrapper.inputs.mouseMove.bind(vmWrapper.inputs);
         this.typeText = vmWrapper.inputs.typeText.bind(vmWrapper.inputs);
         this.sendSound = vmWrapper.inputs.sendSound.bind(vmWrapper.inputs);
-        this.wait = vmWrapper.wait.bind(vmWrapper);
 
         /* Sprite Information */
         this.getSprites = vmWrapper.sprites.getSprites.bind(vmWrapper.sprites);
@@ -39,16 +38,28 @@ class TestDriver {
         this.getSprite = vmWrapper.sprites.getSprite.bind(vmWrapper.sprites);
         this.getStage = vmWrapper.sprites.getStage.bind(vmWrapper.sprites);
         this.getNewSprites = vmWrapper.sprites.getNewSprites.bind(vmWrapper.sprites);
+        this.getRotationStyle = vmWrapper.sprites.getRotationStyle.bind(vmWrapper.sprites);
+        this.getSpriteVariable = vmWrapper.sprites.getSpriteVariable.bind(vmWrapper.sprites);
         this.onSpriteMoved = vmWrapper.sprites.onSpriteMoved.bind(vmWrapper.sprites);
         this.onSpriteVisualChange = vmWrapper.sprites.onSpriteVisualChange.bind(vmWrapper.sprites);
         this.onSayOrThink = vmWrapper.sprites.onSayOrThink.bind(vmWrapper.sprites);
         this.onVariableChange = vmWrapper.sprites.onVariableChange.bind(vmWrapper.sprites);
+
+        /* Set Sprite Properties */
+        this.setVisibility = vmWrapper.sprites.setVisibility.bind(vmWrapper.sprites);
+        this.setSpriteVariable = vmWrapper.sprites.setSpriteVariable.bind(vmWrapper.sprites);
 
         /* Other Information */
         this.getStageSize = vmWrapper.getStageSize.bind(vmWrapper);
         this.getMousePos = vmWrapper.inputs.getMousePos.bind(vmWrapper.inputs);
         this.isMouseDown = vmWrapper.inputs.isMouseDown.bind(vmWrapper.inputs);
         this.isKeyDown = vmWrapper.inputs.isKeyDown.bind(vmWrapper.inputs);
+        this.getGlobalVariable = vmWrapper.getGlobalVariable.bind(vmWrapper);
+        this.getAnswer = vmWrapper.getAnswer.bind(vmWrapper);
+        this.isQuestionAsked = vmWrapper.isQuestionAsked.bind(vmWrapper);
+
+        /* Set Global Properties */
+        this.setGlobalVariable = vmWrapper.setGlobalVariable.bind(vmWrapper);
 
         /* Running the program. */
         this.run = vmWrapper.run.bind(vmWrapper);
@@ -85,8 +96,6 @@ class TestDriver {
         this.clearInputs = vmWrapper.inputs.clearInputs.bind(vmWrapper.inputs);
         this.resetMouse = vmWrapper.inputs.resetMouse.bind(vmWrapper.inputs);
         this.resetKeyboard = vmWrapper.inputs.resetKeyboard.bind(vmWrapper.inputs);
-        this.getAnswer = vmWrapper.getAnswer.bind(vmWrapper);
-        this.isQuestionAsked = vmWrapper.isQuestionAsked.bind(vmWrapper);
 
         /* Random inputs / Automated input generation. */
         this.registerRandomInputs = vmWrapper.randomInputs.registerRandomInputs.bind(vmWrapper.randomInputs);

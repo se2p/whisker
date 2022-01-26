@@ -1,22 +1,23 @@
-import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/BiasNode";
-import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkNodes/ActivationFunction";
-import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeType";
-import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkNodes/NodeGene";
-import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkNodes/InputNode";
+import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/BiasNode";
+import {ActivationFunction} from "../../../../src/whisker/whiskerNet/NetworkComponents/ActivationFunction";
+import {NodeType} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeType";
+import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/NodeGene";
+import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 
 
 describe("BiasNode Tests", () => {
     let biasNode: NodeGene
 
     beforeEach(() => {
-        biasNode = new BiasNode(1);
+        biasNode = new BiasNode();
+        biasNode.uID = 1;
     })
 
     test("Constructor Test", () => {
 
-        const biasNode = new BiasNode(10);
+        const biasNode = new BiasNode();
 
-        expect(biasNode.id).toEqual(10);
+        expect(biasNode.uID).toEqual(1);
         expect(biasNode.activationFunction).toEqual(ActivationFunction.NONE);
         expect(biasNode.type).toEqual(NodeType.BIAS);
         expect(biasNode.nodeValue).toEqual(1);
@@ -40,19 +41,22 @@ describe("BiasNode Tests", () => {
     })
 
     test("Equals Test", () =>{
-        const biasNode2 = new BiasNode(1);
+        const biasNode2 = new BiasNode();
+        biasNode2.uID = 1;
         expect(biasNode2.equals(biasNode)).toBeTruthy()
 
-        const biasNode3 = new BiasNode(2);
+        const biasNode3 = new BiasNode();
+        biasNode3.uID = 2;
         expect(biasNode3.equals(biasNode)).toBeFalsy()
 
-        const inputNode = new InputNode(1,"Sprite1", "X-Position");
+        const inputNode = new InputNode("Sprite1", "X-Position");
+        inputNode.uID = 1;
         expect(inputNode.equals(biasNode)).toBeFalsy()
     })
 
     test("Clone Test", () => {
         const clone = biasNode.clone();
-        expect(clone.id).toEqual(biasNode.id);
+        expect(clone.uID).toEqual(biasNode.uID);
         expect(clone.equals(biasNode)).toBeTruthy();
         expect(clone === biasNode).toBeFalsy();
     })

@@ -20,18 +20,21 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ControlDependenceGraph, ControlFlowGraph, GraphNode} from 'scratch-analysis'
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode, Graph} from 'scratch-analysis'
 import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
 import {Trace} from "scratch-vm/src/engine/tracing.js";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
+
+    private static _EXECUTION_HALTING_OPCODES = ['control_wait', 'looks_thinkforsecs', 'looks_sayforsecs',
+        'motion_glideto', 'motion_glidesecstoxy', 'sound_playuntildone', 'text2speech_speakAndWait'];
 
     private readonly _targetNode: GraphNode;
     private readonly _cdg: ControlDependenceGraph;
     private readonly _cfg: ControlFlowGraph;
     private readonly _approachLevels: Record<string, number>
     private readonly _eventMapping: Record<string, string>
-    private _forceCFG = false;
+
 
     constructor(targetNode: GraphNode, cdg: ControlDependenceGraph, cfg: ControlFlowGraph) {
         this._targetNode = targetNode;
@@ -39,13 +42,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         this._cfg = cfg;
         this._eventMapping = {};
         this._approachLevels = this._calculateApproachLevels(targetNode, cdg);
-
-        // If we have an execution halting block as parent enforce the calculation of the CFG distance to keep track
-        // of the remaining halting duration until the given block is reached.
-        const parent = StatementFitnessFunction.getParentOfNode(targetNode, this._cdg);
-        if (parent !== undefined && ControlFilter.executionHaltingBlock(parent.block)) {
-            this.forceCFG = true;
-        }
     }
 
     private _calculateApproachLevels(targetNode: GraphNode, cdg: ControlDependenceGraph) {
@@ -95,7 +91,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         if (chromosome.trace == null) {
             throw Error("Test case not executed");
         }
-
         if (chromosome.coverage.has(this._targetNode.id)) {
             // Shortcut: If the target is covered, we don't need to spend
             // any time on calculating anything
@@ -106,12 +101,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const branchDistance = this.getBranchDistance(chromosome);
 
         let cfgDistanceNormalized;
-        if ((approachLevel === 0 && branchDistance === 0) || this._forceCFG) {
-            cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome));
+        if (branchDistance === 0 && approachLevel < Number.MAX_SAFE_INTEGER) {
+            cfgDistanceNormalized = StatementFitnessFunction._normalize(this.getCFGDistance(chromosome, approachLevel > 0));
         } else {
             cfgDistanceNormalized = 1;
         }
-        return approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
+        return 2 * approachLevel + StatementFitnessFunction._normalize(branchDistance) + cfgDistanceNormalized;
     }
 
     compare(value1: number, value2: number): number {
@@ -131,7 +126,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     getApproachLevel(chromosome: TestChromosome): number {
         const trace = chromosome.trace;
-        let min: number = Number.MAX_VALUE;
+        let min = Number.MAX_SAFE_INTEGER;
 
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
             const newMin = this._approachLevelByTrace(blockTrace, min);
@@ -144,7 +139,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
     private _approachLevelByTrace(blockTrace, currentMin: number) {
-        let min = Number.MAX_VALUE;
+        let min = Number.MAX_SAFE_INTEGER;
         if (this._approachLevels[blockTrace.id] <= currentMin) {
             min = this._approachLevels[blockTrace.id]
         }
@@ -161,8 +156,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     getBranchDistance(chromosome: TestChromosome): number {
         const trace = chromosome.trace;
-        let minBranchApproachLevel: number = Number.MAX_VALUE;
-        let branchDistance = Number.MAX_VALUE;
+        let minBranchApproachLevel: number = Number.MAX_SAFE_INTEGER;
+        let branchDistance = Number.MAX_SAFE_INTEGER;
         for (const [key, blockTrace] of Object.entries(trace.blockTraces)) {
             let traceMin;
             if (blockTrace.id === this._targetNode.block.id) {
@@ -178,6 +173,10 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 if (this._canComputeControlDistance(blockTrace)) {
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
+                    if (controlNode === undefined) {
+                        console.warn("Traced block not found in CDG: "+blockTrace.id);
+                        continue;
+                    }
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
 
                     // blockTrace distances contains a list of all measured distances in a condition
@@ -185,9 +184,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     // The first is the true distance, the second the false distance
                     let newDistance;
                     if (requiredCondition) {
-                        newDistance = blockTrace.distances[0][0]
+                        newDistance = blockTrace.distances[0][0];
                     } else {
-                        newDistance = blockTrace.distances[0][1]
+                        newDistance = blockTrace.distances[0][1];
                     }
 
                     if (traceMin < minBranchApproachLevel ||
@@ -212,34 +211,35 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return branchDistance;
     }
 
-    getCFGDistance(chromosome: TestChromosome): number {
+    getCFG(): ControlFlowGraph {
+        return this._cfg;
+    }
 
+    getTargetNode(): string {
+        return this._targetNode;
+    }
+
+    getCFGDistance(chromosome: TestChromosome, hasUnexecutedCdgPredecessor: boolean): number {
         /*
             function bfs: go through blocks from the targetNode, all uncovered blocks are visited ones. However, to avoid
             situations where there's more than one path from the targetNode to the last item in the block trace(e.g., in a if condition),
             we need to still record levels, and use a queue to save nodes for BFS.
         */
-        function bfs(cfg, targetNode, coveredBlocks) {
-            const queue = [targetNode];
-            const visited = new Set([targetNode]);
+        function bfs(graph: Graph, targetNodeQueue: GraphNode[], coveredBlocks: Set<string>): number {
+            const queue = targetNodeQueue;
+            const visited = new Set(targetNodeQueue);
             let node;
-            let level = -1;
+            let step = -1;
             while (queue.length > 0) {
                 const qSize = queue.length;
-                level += 1;
+                step += 1;
                 for (let i = 0; i < qSize; i++) {
                     node = queue.shift();
                     if (coveredBlocks.has(node.id)) {
-                        // If we stop at an execution halting block we use its relative remaining halting
-                        // duration as the CFG distance instead of simply incrementing the CFG. Since at this point
-                        // we have already incremented it by one we first have to decrement it again.
-                        if (ControlFilter.executionHaltingBlock(node.block)) {
-                            level = (level - 1) + chromosome.trace.blockTraces[node.id].remainingScaledHaltingDuration;
-                        }
-                        return level;
+                        return step;
                     }
                     visited.add(node);
-                    for (const pred of cfg.predecessors(node.id)) {
+                    for (const pred of graph.predecessors(node.id)) {
                         if (!visited.has(pred)) {
                             queue.push(pred);
                         }
@@ -249,15 +249,63 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             /*
             the only possibility that none of the targetNode's predecessors is included in blockTrace, is that
             the targetNode is events, userEvents, or starting ones, e.g., Entry, start, keypressed:space. In those cases,
-            because approach level and branch distance is already 0, these blocks must be executed anyway, so
+            because branch distance is already 0, these blocks must be executed anyway, so
             return 0.
              */
             return 0;
         }
 
-        const coveredBlocks = chromosome.coverage;
-        return bfs(this._cfg, this._targetNode, coveredBlocks);
+        /* function bfsPredecessors:
+         inside the CDG, find a list of <un-executed predecessor>, that
+         1. has the shortest distance to <targetNode>
+         2. is the direct successor of an <executed predecessor>
+         <exit> <----------- <targetNode> <------------------- <un-executed predecessor><executed predecessor>
+                                           (^shortest)              (^two adjacent nodes) */
+        function bfsPredecessors(graph: Graph, targetNode: GraphNode, coveredBlocks: Set<string>): GraphNode[] {
+            const queue = [targetNode];
+            const visited = new Set([targetNode]);
+            let node;
+            const res = new Set();
+            while (queue.length > 0) {
+                const qSize = queue.length;
+                for (let i = 0; i < qSize; i++) {
+                    node = queue.shift();
+                    for (const pred of graph.predecessors(node.id)) {
+                        if (!visited.has(pred)) {
+                            if (coveredBlocks.has(pred.id) || graph.predecessors(pred.id).size === 0) {
+                                //  graph.predecessors(pred.id).size === 0 means the program looks like this:
+                                // <exit> <----------- <targetNode> <------------------- <un-executed predecessor><Entry/Events>
+                                // here, the  <un-executed predecessor> is node, <Entry/Event> is pred
+                                res.add(node);
+                            }
+                            visited.add(pred);
+                            queue.push(pred);
+                        }
+                    }
+                }
+                if (res.size > 0) {
+                    return [...res]
+                }
+            }
+            //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
+            //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
+            console.warn('Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
+            + targetNode.block.opcode +" with id " + targetNode.block.id);
+            return [];
+        }
 
+        let targetNodeQueue: GraphNode[];
+        if (hasUnexecutedCdgPredecessor) {
+            targetNodeQueue = bfsPredecessors(this._cdg, this._targetNode, chromosome.coverage);
+            if (targetNodeQueue.length === 0) {
+                // If no predecessor was found, something is wrong, e.g. nothing was covered.
+                // By returning max, the effect is essentially that the CFG distance is not used.
+                return Number.MAX_SAFE_INTEGER;
+            }
+        } else {
+            targetNodeQueue = [this._targetNode]
+        }
+        return bfs(this._cfg, targetNodeQueue, chromosome.coverage);
     }
 
 
@@ -271,12 +319,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
      * @param blockTrace the blockTrace from which we can determine the branch distance.
      * @returns boolean determining if we extract the branchDistance from the given blockTrace.
      */
-    private _canComputeControlDistance(blockTrace: Trace):boolean{
+    private _canComputeControlDistance(blockTrace: Trace): boolean {
         return !this._targetNode.block.opcode.startsWith("event_when") &&
             this._targetNode.block.opcode !== 'control_start_as_clone' &&
-            blockTrace.opcode.startsWith("control") &&
-            !(blockTrace.opcode === "control_wait") &&
-            (blockTrace.distances[0] !== undefined);
+            (blockTrace.opcode.startsWith("control") ||
+                StatementFitnessFunction._EXECUTION_HALTING_OPCODES.includes(blockTrace.opcode));
     }
 
     private _checkControlBlock(statement: GraphNode, controlNode: GraphNode): boolean {
@@ -292,17 +339,21 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             }
             case 'control_repeat': {
                 requiredCondition = false;
-                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
-                    requiredCondition = true;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                    if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                        requiredCondition = true;
+                    }
                 }
                 break;
             }
             case 'control_repeat_until': {
                 requiredCondition = true;
-                const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
-                if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
-                    requiredCondition = false;
+                if (controlNode.block.inputs.SUBSTACK !== undefined) {
+                    const repeatBlock = controlNode.block.inputs.SUBSTACK.block;
+                    if (this._matchesBranchStart(statement, controlNode, repeatBlock)) {
+                        requiredCondition = false;
+                    }
                 }
                 break;
             }
@@ -335,10 +386,28 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     requiredCondition = true;
                     break;
                 }
-                const elseBlock = controlNode.block.inputs.SUBSTACK2.block;
-                if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
-                    requiredCondition = false;
+                if (controlNode.block.inputs.SUBSTACK2 !== undefined) {
+                    const elseBlock = controlNode.block.inputs.SUBSTACK2.block;
+                    if (this._matchesBranchStart(statement, controlNode, elseBlock)) {
+                        requiredCondition = false;
+                    }
+                } else {
+                    // If there is no else branch, we need to look at the true branch?
+                    requiredCondition = true;
                 }
+                break;
+            }
+
+            // Time-dependent execution halting blocks.
+            case 'control_wait':
+            case 'looks_thinkforsecs':
+            case 'looks_sayforsecs':
+            case 'motion_glidesecstoxy':
+            case 'motion_glideto':
+            case 'sound_playuntildone':
+            case 'text2speech_speakAndWait': {
+                requiredCondition = true;
+                break;
             }
         }
         return requiredCondition;
@@ -376,9 +445,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const mergeNodeMap = new Map<GraphNode, GraphNode[]>();
         for (const fitnessFunction of fitnessFunctions) {
 
-            // We add nodes right after execution halting blocks in order to be able to optimise for the scaled
-            // CFG-distance which incorporates the remaining duration until the respective thread is allowed to
-            // resume its execution.
+            // Handling of an execution halting block.
             if (ControlFilter.executionHaltingBlock(fitnessFunction._targetNode.block)) {
                 const childNode = this.getChildOfNode(fitnessFunction._targetNode, fitnessFunction._cdg);
                 if (childNode !== undefined) {
@@ -391,13 +458,27 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 // Get all nodes being dependent on the branching block.
                 let mergeNodes = [...fitnessFunction._cdg._successors.get(fitnessFunction._targetNode.id).values()];
 
-                // Find the last Block which either
-                // has no child and is not another branch block -> end of branch
-                // or has another branch block as child -> nested branches
-                mergeNodes = mergeNodes.filter(node => (node.block !== undefined) && (!node.block.next ||
-                    ControlFilter.branch(StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg).block)));
+                // Now we have to find the last block in the branch. This can be either
+                // 1) a block without a child
+                const lastBlock = mergeNodes.filter(node => node.block !== undefined && !node.block.next);
 
-                // Filter other branch blocks, they are contained within their own mergeMap key.
+                // 2) or a block whose child is a branch --> nested branches
+                const filterNestedBranches = (node) => {
+                    if(node.block.next == undefined){
+                        return false;
+                    }
+                    const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg)
+                    if(childOfNode == undefined){
+                        return false;
+                    }
+                    return ControlFilter.branch(childOfNode.block)
+                }
+                const nestedBranches = mergeNodes.filter(node => node.block !== undefined && filterNestedBranches(node));
+
+                // Now we combine both possibilities.
+                mergeNodes = [...lastBlock, ...nestedBranches];
+
+                // Filter single branch blocks, they are contained within their own mergeMap key.
                 mergeNodes = mergeNodes.filter(node => !ControlFilter.singleBranch(node.block));
 
                 // Add the branching block if it isn't present
@@ -505,9 +586,5 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     public toString = (): string => {
         return `${this._targetNode.id} of type ${this._targetNode.block.opcode}`;
-    }
-
-    set forceCFG(value: boolean) {
-        this._forceCFG = value;
     }
 }

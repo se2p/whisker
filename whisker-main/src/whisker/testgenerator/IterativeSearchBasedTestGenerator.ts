@@ -23,6 +23,8 @@ import {TestChromosome} from '../testcase/TestChromosome';
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import Arrays from "../utils/Arrays";
+import {Container} from "../utils/Container";
+import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 
 /**
  * To generate a test suite using single-objective search,
@@ -49,7 +51,7 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
         const totalGoals = this._fitnessFunctions.size;
         let createdTestsToReachFullCoverage = 0;
         for (const fitnessFunction of this._fitnessFunctions.keys()) {
-            console.log(`Current goal ${numGoal}/${totalGoals}:${fitnessFunction}`);
+            console.log(`Current goal ${numGoal}/${totalGoals}:${this._fitnessFunctions.get(fitnessFunction)}`);
             numGoal++;
             if (this._archive.has(fitnessFunction)) {
                 // If already covered, we don't need to search again
@@ -59,7 +61,11 @@ export class IterativeSearchBasedTestGenerator extends TestGenerator {
             // Generate searchAlgorithm responsible for covering the selected target statement.
             // TODO: Somehow set the fitness function as objective
             const searchAlgorithm = this.buildSearchAlgorithm(false);
-            searchAlgorithm.setFitnessFunction(this._fitnessFunctions.get(fitnessFunction));
+            const nextFitnessTarget = this._fitnessFunctions.get(fitnessFunction);
+            searchAlgorithm.setFitnessFunction(nextFitnessTarget);
+            if(nextFitnessTarget instanceof StatementFitnessFunction) {
+                Container.statementFitnessFunctions = [nextFitnessTarget];
+            }
             searchAlgorithm.setFitnessFunctions(this._fitnessFunctions);
             // TODO: Assuming there is at least one solution?
             const archive = await searchAlgorithm.findSolution();

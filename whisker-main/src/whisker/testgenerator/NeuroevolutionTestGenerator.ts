@@ -4,6 +4,8 @@ import {SearchAlgorithmBuilder} from "../search/SearchAlgorithmBuilder";
 import {SearchAlgorithmProperties} from "../search/SearchAlgorithmProperties";
 import {WhiskerTestListWithSummary} from "./WhiskerTestListWithSummary";
 import {NEAT} from "../search/algorithms/NEAT";
+import {WhiskerTest} from "./WhiskerTest";
+import {Container} from "../utils/Container";
 import Arrays from "../utils/Arrays";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
@@ -15,15 +17,16 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         const searchAlgorithm = this.buildSearchAlgorithm(true);
         const archive = await searchAlgorithm.findSolution();
         const testChromosomes = Arrays.distinct(archive.values());
-        const testSuite = await this.getTestSuite(testChromosomes);
+        let testSuite: WhiskerTest[];
+        if (Container.config.getTestSuiteType() === 'dynamic') {
+            testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
+        } else {
+            testSuite = this.getTestSuite(testChromosomes);
+        }
+
         await this.collectStatistics(testSuite);
         const summary = this.summarizeSolution(archive);
-        const testListWithSummary = new WhiskerTestListWithSummary(testSuite, summary);
-        // TODO: It is deeply necessary to separate NE and SearchAlgorithms.
-        if(searchAlgorithm instanceof NEAT){
-            testListWithSummary.networkPopulation = searchAlgorithm.getPopulationRecordAsJSON();
-        }
-        return testListWithSummary;
+        return new WhiskerTestListWithSummary(testSuite, summary);
     }
 
     /**

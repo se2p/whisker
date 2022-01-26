@@ -42,6 +42,13 @@ export class SoundEvent extends ScratchEvent {
         return `t.sendSound(${this._volume}, ${this._steps});`;
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`type`] = `SoundEvent`;
+        event[`args`] = {"volume": this._volume}
+        return event;
+    }
+
     public toString(): string {
         return `SoundEvent ${this._volume} for ${this._steps} steps`;
     }

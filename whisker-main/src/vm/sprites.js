@@ -5,7 +5,7 @@ const RenderedTarget = require('scratch-vm/src/sprites/rendered-target');
  * Gives the user basic functionality to access and manipulate scratch sprites in whisker tests.
  */
 class Sprites {
-    constructor (vmWrapper) {
+    constructor(vmWrapper) {
 
         /**
          * @type {VMWrapper} The wrapper for the vm.
@@ -69,7 +69,7 @@ class Sprites {
      * @param {RenderedTarget} target The target to wrap.
      * @returns {Sprite} The wrapped target as a sprite.
      */
-    wrapTarget (target) {
+    wrapTarget(target) {
         let wrapper = this.sprites[target.id];
         if (wrapper) {
             return wrapper;
@@ -91,7 +91,7 @@ class Sprites {
      * @param {boolean=} skipStage A value that specifies if the scratch stage should be included.
      * @returns {Sprite[]} An array of the found sprites.
      */
-    getSprites (condition, skipStage = true) {
+    getSprites(condition, skipStage = true) {
         let sprites = this.vmWrapper.vm.runtime.targets
             .filter(target => target.sprite)
             .map(this.wrapTarget.bind(this));
@@ -113,7 +113,7 @@ class Sprites {
      * @param {number} y The y coordinate of the searched sprites.
      * @returns {Sprite[]} An array of the found sprites.
      */
-    getSpritesAtPoint (x, y) {
+    getSpritesAtPoint(x, y) {
         return this.getSprites()
             .filter(sprite => !sprite.isStage && sprite.isPointInBounds(x, y))
             .sort((a, b) => b.layerOrder - a.layerOrder);
@@ -125,7 +125,7 @@ class Sprites {
      * @param {number} y The y coordinate of the searched sprite.
      * @returns {?Sprite} The found sprite.
      */
-    getSpriteAtPoint (x, y) {
+    getSpriteAtPoint(x, y) {
         const sprites = this.getSpritesAtPoint(x, y);
         return (sprites.length > 0) ? sprites[0] : null;
     }
@@ -135,7 +135,7 @@ class Sprites {
      * @param {string} name The name of the searched sprite.
      * @returns {Sprite} The found sprite.
      */
-    getSprite (name) {
+    getSprite(name) {
         for (const sprite of this.getSprites()) {
             if (sprite.isOriginal && sprite.name === name) {
                 return sprite;
@@ -147,7 +147,7 @@ class Sprites {
      * Returns the current scratch stage of the tested project.
      * @returns {Sprite} The used stage.
      */
-    getStage () {
+    getStage() {
         return this.wrapTarget(this.vmWrapper.vm.runtime.getTargetForStage());
     }
 
@@ -156,7 +156,7 @@ class Sprites {
      * @param {Function=} condition The condition to meet.
      * @returns {Sprite[]} An array of the found sprites.
      */
-    getNewSprites (condition) {
+    getNewSprites(condition) {
         condition = condition || (() => true);
 
         const newSprites = [];
@@ -173,9 +173,21 @@ class Sprites {
     }
 
     /**
+     * Getter for the rotation style of a sprite (left-right, all around, don't rotate)
+     * @param {string} spriteName the name of the sprite from which we want to retrieve the rotation style.
+     * @returns {string} the rotation style of the given sprite (left-right, all around, don't rotate)
+     */
+    getRotationStyle(spriteName) {
+        const spriteRenderedTarget = this.vmWrapper.getTargetBySpriteName(spriteName);
+        if (spriteRenderedTarget) {
+            return spriteRenderedTarget.rotationStyle;
+        }
+    }
+
+    /**
      * Updates all {@link Sprite Sprites} to have their attributes up-to-date.
      */
-    update () {
+    update() {
         for (const sprite of Object.values(this.sprites)) {
             sprite._update();
         }
@@ -185,7 +197,7 @@ class Sprites {
      * When a new target is created, it is wrapped as a new {@link Sprite}.
      * @param newTarget The newly created target.
      */
-    onTargetCreated (newTarget) {
+    onTargetCreated(newTarget) {
         if (typeof newTarget.sprite !== 'undefined') {
             this.wrapTarget(newTarget);
         }
@@ -194,16 +206,29 @@ class Sprites {
     /**
      * Clears out all sprites that are currently stored.
      */
-    reset () {
+    reset() {
         this.sprites = {};
         this.spritesBefore = {};
+    }
+
+    /**
+     * Sets the visibility of a sprite. Can be used to govern the ability of a sprite to touch other sprites.
+     * @param {string} spriteName the name of the sprite whose visibility should be changed.
+     * @param {boolean} visibility if set to true the sprite will be visible,
+     *                             if set to false the sprite will be invisible.
+     */
+    setVisibility(spriteName, visibility) {
+        const sprite = this.vmWrapper.getTargetBySpriteName(spriteName);
+        if (sprite) {
+            sprite.setVisible(visibility);
+        }
     }
 
     /**
      * When a {@link Sprite} moves, its movement is registered.
      * @param {RenderedTarget} target The moved target.
      */
-    doOnSpriteMoved (target) {
+    doOnSpriteMoved(target) {
         if (this._onSpriteMoved) {
             this._onSpriteMoved(this.wrapTarget(target));
         }
@@ -216,7 +241,7 @@ class Sprites {
      * When a {@link Sprite} changes its current appearance, this action is registered.
      * @param {RenderedTarget} target The changed target.
      */
-    doOnSpriteVisualChange (target) {
+    doOnSpriteVisualChange(target) {
         if (this._onSpriteVisualChange) {
             this._onSpriteVisualChange(this.wrapTarget(target));
         }
@@ -228,7 +253,7 @@ class Sprites {
     /**
      * @param {RenderedTarget} target .
      */
-    doOnSayOrThink (target) {
+    doOnSayOrThink(target) {
         if (this._onSayOrThink) {
             this._onSayOrThink(this.wrapTarget(target));
         }
@@ -242,7 +267,7 @@ class Sprites {
      * @param newValue
      * @param oldValue
      */
-    doOnVariableChange (variableName, newValue, oldValue) {
+    doOnVariableChange(variableName, newValue, oldValue) {
         for (const sprite of Object.values(this.sprites)) {
             sprite.updateVariables(variableName, newValue, oldValue);
         }
@@ -255,10 +280,44 @@ class Sprites {
     }
 
     /**
+     * Getter for sprite specific variable.
+     * @param {string} spriteName the name of the sprite that contains the queried variable.
+     * @param {string} variableName the name of the variable we are querying.
+     * @returns {string} the value of the variable if found, undefined otherwise.
+     */
+    getSpriteVariable(spriteName, variableName) {
+        const spriteRenderedTarget = this.vmWrapper.getTargetBySpriteName(spriteName);
+        for (const variable of Object.values(spriteRenderedTarget.variables)) {
+            if (variable.name === variableName) {
+                return variable.value;
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Setter for a sprite specific variable.
+     * @param {string} spriteName the name of the sprite that contains the variable whose value we want to change.
+     * @param {string} variableName the name of the variable whose value we want to change.
+     * @param {string} value the value we assign to the queried variable.
+     * @returns {boolean} true iff the value of the specified variable was changed, false otherwise.
+     */
+    setSpriteVariable(spriteName, variableName, value) {
+        const spriteRenderedTarget = this.vmWrapper.getTargetBySpriteName(spriteName);
+        for (const variable of Object.values(spriteRenderedTarget.variables)) {
+            if (variable.name === variableName) {
+                variable.value = value;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * When a {@link Sprite} moved, a specific function is called.
      * @param {(Function|null)} func The function to call.
      */
-    onSpriteMoved (func) {
+    onSpriteMoved(func) {
         this._onSpriteMoved = func;
     }
 
@@ -274,42 +333,42 @@ class Sprites {
      * When a {@link Sprite} changes its visual appearance, a specific function is called.
      * @param {(Function|null)} func The function to call.
      */
-    onSpriteVisualChange (func) {
+    onSpriteVisualChange(func) {
         this._onSpriteVisualChange = func;
     }
 
     /**
      * @param {(Function|null)} func .
      */
-    onSpriteVisualChangeModel (func) {
+    onSpriteVisualChangeModel(func) {
         this._onSpriteVisualChangeModel = func;
     }
 
     /**
      * @param {(Function|null)} func .
      */
-    onSayOrThink (func) {
+    onSayOrThink(func) {
         this._onSayOrThink = func;
     }
 
     /**
      * @param {(Function|null)} func .
      */
-    onSayOrThinkModel (func) {
+    onSayOrThinkModel(func) {
         this._onSayOrThinkModel = func;
     }
 
     /**
      * @param {(Function|null)} func .
      */
-    onVariableChange (func) {
+    onVariableChange(func) {
         this._onVariableChange = func;
     }
 
     /**
      * @param {(Function|null)} func .
      */
-    onVariableChangeModel (func) {
+    onVariableChangeModel(func) {
         this._onVariableChangeModel = func;
     }
 }

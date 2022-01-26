@@ -33,6 +33,12 @@ export class ClickStageEvent extends ScratchEvent {
         return 't.clickStage();';
     }
 
+    public toJSON(): Record<string, any> {
+        const event = {}
+        event[`Type`] = `ClickStageEvent`;
+        return event;
+    }
+
     public toString(): string {
         return "ClickStage"
     }

@@ -40,6 +40,7 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
+import {FixedIterationsStoppingCondition} from "./search/stoppingconditions/FixedIterationsStoppingCondition";
 
 export class Search {
 
@@ -110,11 +111,25 @@ export class Search {
          * For example, if a project contains a "wait 60 seconds" block, we might get n+60 entries. This is
          * inconvenient as it makes data analysis more complicated. Therefore, we truncate the timeline to n entries.
          */
-        let stoppingCondition : StoppingCondition<Chromosome>;
-        if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator){
+        let stoppingCondition: StoppingCondition<Chromosome>;
+        if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator) {
+            let maxIterations: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-        }
-        else {
+            if (stoppingCondition instanceof FixedIterationsStoppingCondition) {
+                maxIterations = stoppingCondition.maxIterations;
+            } else if (stoppingCondition instanceof OneOfStoppingCondition) {
+                for (const d of stoppingCondition.conditions) {
+                    if (d instanceof FixedIterationsStoppingCondition) {
+                        if (maxIterations == undefined || maxIterations > d.maxIterations) { // take the minimum
+                            maxIterations = d.maxIterations;
+                        }
+                    }
+                }
+            }
+            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(maxIterations);
+            console.log(csvOutput);
+            return csvOutput;
+        } else {
             stoppingCondition = config.searchAlgorithmProperties.stoppingCondition;
         }
 
@@ -148,10 +163,10 @@ export class Search {
     /*
      * Main entry point -- called from whisker-web
      */
-    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string,
-                     configName: string, accelerationFactor: number, seedString: string): Promise<Array<string>> {
+    public async run(vm: VirtualMachine, project: ScratchProject, projectName: string, configRaw: string, configName: string,
+                     accelerationFactor: number, seedString: string, template?: string): Promise<Array<string>> {
         console.log("Whisker-Main: Starting Search based algorithm");
-
+        Container.template = template;
         const util = new WhiskerUtil(vm, project);
         const configJson = JSON.parse(configRaw);
         const config = new WhiskerSearchConfiguration(configJson);

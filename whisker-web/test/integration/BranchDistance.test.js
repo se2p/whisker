@@ -1,4 +1,5 @@
 const fileUrl = require('file-url');
+const exp = require("constants");
 
 const timeout = process.env.SLOWMO ? 70000 : 80000;
 const ACCELERATION = 10;
@@ -25,6 +26,22 @@ async function readFitnessLog() {
     }
 }
 
+/**
+ * Checks approachLevel, branchDistance and CFG-Distance for executionHaltingBlocks.
+ * @returns {Promise<void>}
+ */
+async function checkFitnessValuesForExecutionHaltingBlocks(){
+    await (await page.$('#run-search')).click();
+    const log = await readFitnessLog();
+    const approachLevel = log.uncoveredBlocks[0].ApproachLevel;
+    await expect(approachLevel).toBe(0);
+    const branchDistance = log.uncoveredBlocks[0].BranchDistance;
+    await expect(branchDistance).toBeLessThanOrEqual(1);
+    await expect(branchDistance).toBeGreaterThan(0);
+    const CFGDistance = log.uncoveredBlocks[0].CFGDistance;
+    await expect(CFGDistance).toBe(Number.MAX_VALUE);
+}
+
 beforeEach(async () => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
@@ -41,6 +58,27 @@ describe('Fitness tests', () => {
         const longerDistanceBranchDistance = log.uncoveredBlocks[0].BranchDistance;
         const shorterDistanceBranchDistance = log.uncoveredBlocks[1].BranchDistance;
         await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+    }, timeout);
+
+    test('Test color touching color branch distance', async () => {
+        await loadProject('test/integration/branchDistance/ColorTouchingColorDistance.sb3')
+        await (await page.$('#run-search')).click();
+        const {uncoveredBlocks} = await readFitnessLog();
+
+        // The distance between the purple and red rectangle (longer, they do not touch), and
+        // the distance between the purple and green rectangle (shorter, they do not touch).
+        const longerDistanceBranchDistance = uncoveredBlocks[0].BranchDistance;
+        const shorterDistanceBranchDistance = uncoveredBlocks[1].BranchDistance;
+        await expect(longerDistanceBranchDistance).toBeGreaterThan(shorterDistanceBranchDistance);
+
+        // The purple and yellow rectangle do touch, but the purple rectangle does not contain the color red. So this
+        // block always returns false, and the true distance is always 1.
+        const trueDistance = uncoveredBlocks[2].BranchDistance;
+        await expect(trueDistance).toBe(1);
+
+        // The purple and yellow rectangle already touch, the false distance must always be 1.
+        const falseDistance = uncoveredBlocks[3].BranchDistance;
+        await expect(falseDistance).toBe(1);
     }, timeout);
 
     test('Test edge touching branch distance', async () => {
@@ -183,12 +221,63 @@ describe('Fitness tests', () => {
         await expect(branchDistance).toBe(9);
     }, timeout);
 
-    test('Test CFG distance', async () => {
-        await loadProject('test/integration/cfgDistance/MoveWithConditions.sb3')
+    test('Test CFG distance when branch distance !== 0', async () => {
+        await loadProject('test/integration/cfgDistance/NestedConditions.sb3')
         await (await page.$('#run-search')).click();
         const log = await readFitnessLog();
-        const cfg1 = log.uncoveredBlocks[0].CFGDistance;
-        const cfg2 = log.uncoveredBlocks[1].CFGDistance;
-        await expect(cfg1).toBe(Number.MAX_VALUE) && expect(cfg2).toBe(Number.MAX_VALUE);
+        const [controlWaitBlock1, controlWaitBlock2] = log.uncoveredBlocks.filter(b => b.block.endsWith("control_wait"));
+        const controlStopBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_stop"))[0];
+        const controlIfBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("control_if"))[0];
+        await expect(controlWaitBlock1.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlWaitBlock2.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlStopBlock.CFGDistance).toBe(Number.MAX_VALUE);
+        await expect(controlIfBlock.CFGDistance).toBe(Number.MAX_VALUE);
+    }, timeout);
+
+    test('Test CFG distance when branch distance == 0', async () => {
+        await loadProject('test/integration/cfgDistance/CFGDistanceWithDefineHack.sb3')
+        await (await page.$('#run-search')).click();
+        const log = await readFitnessLog();
+        const moveStepsBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_movesteps"))[0];
+        expect(moveStepsBlock.CFGDistance).toBe(1);
+        const looksSayBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("looks_say"))[0];
+        expect(looksSayBlock.CFGDistance).toBe(2);
+        const motionTurnLeftBlock = log.uncoveredBlocks.filter(b => b.block.endsWith("motion_turnleft"))[0];
+        expect(motionTurnLeftBlock.CFGDistance).toBe(3);
+    }, timeout);
+
+    test('Test branchDistance for execution halting wait', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-Wait.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting say for seconds blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-SayForSeconds.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for seconds blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-ThinkForSeconds.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for glide to (x,y) blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideToXY.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for glide to blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-GlideTo.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for play sound until done blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
+    }, timeout);
+
+    test('Test branchDistance for execution halting think for text2speech blocks', async () => {
+        await loadProject('test/integration/branchDistance/ExecutionHalting-PlaySoundUntilDone.sb3')
+        await checkFitnessValuesForExecutionHaltingBlocks();
     }, timeout);
 });

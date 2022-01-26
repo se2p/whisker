@@ -1,0 +1,9 @@
+{
+    "t-tap" : "Zeige Resultat in TAP13 Format",
+    "tap" : "TAP13",
+    "t-log" : "Zeige Daten der Logdatei",
+    "log" : "Log",
+    "show-advanced" : "Zeige Funktionen Testgenerierung und Eingaben aufzeichnen",
+    "advanced" : "Testautomatisierung",
+    "test-editor" : "Test Editor"
+}

@@ -6,7 +6,7 @@ import {EventAndParameters, ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
 import {WaitEvent} from "../testcase/events/WaitEvent";
-import {NetworkChromosome} from "./NetworkChromosome";
+import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
@@ -23,12 +23,12 @@ export class NetworkExecutor {
     /**
      * The wrapper of the Scratch-VM
      */
-    private _vmWrapper: VMWrapper
+    private readonly _vmWrapper: VMWrapper
 
     /**
      * Collects the available events at the current state of the Scratch-VM
      */
-    private availableEvents: ScratchEvent[];
+    private availableEvents: ScratchEvent[] = [];
 
     /**
      * Monitors the execution of the Scratch-VM
@@ -53,7 +53,7 @@ export class NetworkExecutor {
     /**
      * Random generator
      */
-    private _random: Randomness;
+    private _random = Randomness.getInstance();
 
     /**
      * Extractor to determine possible events
@@ -61,35 +61,50 @@ export class NetworkExecutor {
     private _eventExtractor: ScratchEventExtractor;
 
     /**
+     * Defines how a network will select events during its playthrough
+     */
+    private readonly _eventSelection: string
+
+    /**
      * Constructs a new NetworkExecutor object.
      * @param vmWrapper the wrapper of the Scratch-VM.
      * @param timeout timeout after which each playthrough is halted.
+     * @param eventSelection defines how a network will select events during its playthrough.
      */
-    constructor(vmWrapper: VMWrapper, timeout: number) {
+    constructor(vmWrapper: VMWrapper, timeout: number, eventSelection?: string) {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
-        this._random = Randomness.getInstance();
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
+        this._eventSelection = eventSelection;
         this.recordInitialState();
+    }
+
+    async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
+        switch (this._eventSelection) {
+            case 'random':
+                return this.executeRandom(network);
+            case 'network':
+            default:
+                return this.executeNetwork(network);
+        }
     }
 
     /**
      * Lets a neural network play the given Scratch game.
      * @param network the network which should play the given game.
      */
-    async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
+    private async executeNetwork(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
         let workingNetwork = false;
         const codons: number[] = [];
 
-        // Check how many activations a network needs to stabilise
-        const stabilizeCounter = network.stabilizedCounter(100);
         Randomness.seedScratch();
-        // Activate the network <stabilizeCounter + 1> times to stabilise it for classification
+
+        // Activate the network <stabilizeCounter> times to stabilise it for classification
         network.flushNodeValues();
-        for (let i = 0; i < stabilizeCounter + 1; i++) {
-            workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vm));
+        for (let i = 0; i < network.stabiliseCount; i++) {
+            workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vmWrapper));
         }
 
         // Set up the Scratch-VM and start the game
@@ -104,15 +119,15 @@ export class NetworkExecutor {
 
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
-            // Collect the currently available events
-            this.availableEvents = this._eventExtractor.extractEvents(this._vmWrapper.vm)
+            // Collect the currently available events.
+            this.availableEvents = this._eventExtractor.extractEvents(this._vm)
             if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
             }
 
             // Load the inputs into the Network
-            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper.vm);
+            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
 
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
@@ -126,7 +141,7 @@ export class NetworkExecutor {
             // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
             else {
                 network.flushNodeValues();
-                for (let i = 0; i < stabilizeCounter + 1; i++) {
+                for (let i = 0; i < network.stabiliseCount; i++) {
                     workingNetwork = network.activateNetwork(spriteFeatures);
                 }
             }
@@ -167,11 +182,82 @@ export class NetworkExecutor {
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
-        // If we found a defect network let it go extinct!
+        // Should not happen!
         if (!workingNetwork) {
-            console.error("Found defect Network", network)
-            network.hasDeathMark = true;
+            console.error("Found defect Network", network);
         }
+        // Save the codons in order to transform the network into a TestChromosome later
+        network.codons = codons;
+        return network.trace;
+    }
+
+    /**
+     * Lets a neural network play the given Scratch game by randomly choosing events.
+     * @param network the network which should play the given game.
+     */
+    private async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
+        const events: EventAndParameters[] = [];
+        const codons: number[] = [];
+
+        Randomness.seedScratch();
+
+        // Set up the Scratch-VM and start the game
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
+
+        // Initialise Timer for the timeout
+        let timer = Date.now();
+        this._timeout += Date.now();
+        this.availableEvents = this._eventExtractor.extractEvents(this._vm)
+
+
+        // Play the game until we reach a GameOver state or the timeout
+        while (this._projectRunning && timer < this._timeout) {
+            // Collect the currently available events
+            this.availableEvents = this._eventExtractor.extractEvents(this._vm);
+
+            if (this.availableEvents.length === 0) {
+                console.log("Whisker-Main: No events available for project.");
+                break;
+            }
+
+            // Check if we encountered additional events during the playthrough
+            // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
+            network.updateOutputNodes(this.availableEvents);
+
+            // Select the nextEvent, set its parameters and send it to the Scratch-VM
+            const randomEventIndex = this._random.nextInt(0, this.availableEvents.length);
+            const nextEvent: ScratchEvent = this.availableEvents[randomEventIndex];
+            const parameters = [];
+            if (nextEvent.numSearchParameter() > 0) {
+                parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
+                nextEvent.setParameter(parameters, "regression");
+            }
+            codons.push(randomEventIndex);
+            events.push(new EventAndParameters(nextEvent, parameters));
+            this.notify(nextEvent, parameters);
+            await nextEvent.apply();
+            StatisticsCollector.getInstance().incrementEventsCount();
+
+            // Add a waitEvent in the end of each round.
+            const waitEvent = new WaitEvent(1);
+            events.push(new EventAndParameters(waitEvent, []));
+            await waitEvent.apply();
+            timer = Date.now();
+        }
+
+        // Save the executed Trace and the covered blocks
+        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
+        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
+        // End and reset the VM.
+        this._vmWrapper.end();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+
         // Save the codons in order to transform the network into a TestChromosome later
         network.codons = codons;
         return network.trace;
@@ -185,7 +271,7 @@ export class NetworkExecutor {
     }
 
     private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
-        const args = []
+        const args = [];
         for (const node of network.regressionNodes.get(event.stringIdentifier())) {
             args.push(node.activationValue);
         }
@@ -204,10 +290,12 @@ export class NetworkExecutor {
     private recordInitialState(): void {
         for (const targetsKey in this._vm.runtime.targets) {
             this._initialState[targetsKey] = {
+                name: this._vm.runtime.targets[targetsKey].sprite['name'],
                 direction: this._vm.runtime.targets[targetsKey]["direction"],
                 currentCostume: this._vm.runtime.targets[targetsKey]["currentCostume"],
                 draggable: this._vm.runtime.targets[targetsKey]["draggable"],
                 dragging: this._vm.runtime.targets[targetsKey]["dragging"],
+                drawableID: this._vm.runtime.targets[targetsKey]['drawableID'],
                 effects: Object.assign({}, this._vm.runtime.targets[targetsKey]["effects"]),
                 videoState: this._vm.runtime.targets[targetsKey]["videoState"],
                 videoTransparency: this._vm.runtime.targets[targetsKey]["videoTransparency"],
@@ -242,6 +330,7 @@ export class NetworkExecutor {
             this._vm.runtime.targets[targetsKey]["currentCostume"] = this._initialState[targetsKey]["currentCostume"];
             this._vm.runtime.targets[targetsKey]["draggable"] = this._initialState[targetsKey]["draggable"];
             this._vm.runtime.targets[targetsKey]["dragging"] = this._initialState[targetsKey]["dragging"];
+            this._vm.runtime.targets[targetsKey]["drawableID"] = this._initialState[targetsKey]["drawableID"];
             this._vm.runtime.targets[targetsKey]["effects"] = Object.assign({}, this._initialState[targetsKey]["effects"]);
             this._vm.runtime.targets[targetsKey]["videoState"] = this._initialState[targetsKey]["videoState"];
             this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
