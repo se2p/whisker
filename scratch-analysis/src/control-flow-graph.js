@@ -114,14 +114,7 @@ const _extendBasicBlockSuccessors2 = (cfg, successors, shouldSuccessors, startNo
 const _fixControlStatement = (cfg, successors, controlNode) => {
     const controlStmt = controlNode.block;
     switch (controlStmt.opcode) {
-        case 'control_repeat_until': {
-            const branchStart = getBranchStart(controlStmt);
-            // Check whether the branch is empty.
-            if (branchStart) {
-                _extendBasicBlockSuccessors(cfg, successors, [controlNode, cfg.exit()], cfg.getNode(branchStart), true);
-            }
-            break;
-        }
+        case 'control_repeat_until':
         case 'control_repeat': {
             const branchStart = getBranchStart(controlStmt);
             // Check whether the branch is empty.
