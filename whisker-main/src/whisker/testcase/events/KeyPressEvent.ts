@@ -40,7 +40,7 @@ export class KeyPressEvent extends ScratchEvent {
         // Press the specified key
         Container.testDriver.keyPress(this._keyOption, this._steps);
         // Wait for the key to be released again.
-        await new WaitEvent(this._steps).apply();
+        //await new WaitEvent(this._steps).apply();
     }
 
     public toJavaScript(): string {
