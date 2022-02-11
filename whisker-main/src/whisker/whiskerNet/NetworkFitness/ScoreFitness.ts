@@ -38,9 +38,9 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
             for (const value of Object.values(target.variables)) {
                 // @ts-ignore
                 const name = value.name.toLowerCase();
-                if (//name.includes('punkte') ||
-                   // name.includes('points') ||
-                   // name.includes('score') ||
+                if (name.includes('punkte') ||
+                    name.includes('points') ||
+                    name.includes('score') ||
                     name.includes('level') ||
                     name.includes('hits') ||
                     name.includes('treffer') ||

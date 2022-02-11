@@ -39,8 +39,10 @@ export class KeyPressEvent extends ScratchEvent {
     async apply(): Promise<void> {
         // Press the specified key
         Container.testDriver.keyPress(this._keyOption, this._steps);
-        // Wait for the key to be released again.
-        //await new WaitEvent(this._steps).apply();
+        // Wait for the key to be released again if we use a codon based test generator.
+        if(!Container.isNeuroevolution) {
+            await new WaitEvent(this._steps).apply();
+        }
     }
 
     public toJavaScript(): string {
