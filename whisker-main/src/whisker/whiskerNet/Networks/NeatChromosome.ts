@@ -122,7 +122,7 @@ export class NeatChromosome extends NetworkChromosome {
                     const iNode = new InputNode(spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
                     this.allNodes.push(iNode);
-                    // By Chance we connect the new Node to the network.
+                    // By chance, we connect the new Node to the network.
                     if (this._random.nextDouble() < 0.5 ||
                         Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
                         this.connectInputNode(iNode);

@@ -75,6 +75,7 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     private _savedActivationTrace: ActivationTrace;
 
+    private _surpriseAdequacy = new Map<string, number>();
 
     /**
      * The fitness value of the network.
@@ -651,6 +652,10 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set savedActivationTrace(value: ActivationTrace) {
         this._savedActivationTrace = value;
+    }
+
+    get surpriseAdequacy(): Map<string, number> {
+        return this._surpriseAdequacy;
     }
 
     get trace(): ExecutionTrace {

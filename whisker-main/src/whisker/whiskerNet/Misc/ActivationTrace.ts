@@ -33,7 +33,7 @@ export class ActivationTrace {
                     if (!nodeStepTrace.has(nodeKey)) {
                         nodeStepTrace.set(nodeKey, [repetitionTrace[i]]);
                     } else {
-                        nodeStepTrace.get(i.toFixed()).push(repetitionTrace[i]);
+                        nodeStepTrace.get(nodeKey).push(repetitionTrace[i]);
                     }
                 }
             }
