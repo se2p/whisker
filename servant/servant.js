@@ -300,18 +300,13 @@ async function runDynamicTestSuite (browser, scratchPath) {
         // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-            if (currentLog.includes('uncovered')) {
+            if (currentLog.includes('projectName')) {
                 break;
             }
             await page.waitForTimeout(1000);
         }
         // Get CSV-Output
-        const outputLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-        const coverageLogLines = outputLog.split('\n');
-        const csvHeaderIndex = coverageLogLines.findIndex(logLine => logLine.startsWith('projectName'));
-        const csvHeader = coverageLogLines[csvHeaderIndex];
-        const csvBody = coverageLogLines[csvHeaderIndex + 1]
-        return `${csvHeader}\n${csvBody}`;
+        return await (await logOutput.getProperty('innerHTML')).jsonValue();
     }
 
     /**

@@ -123,8 +123,7 @@ export class NeatChromosome extends NetworkChromosome {
                     spriteNodes.set(featureKey, iNode);
                     this.allNodes.push(iNode);
                     // By chance, we connect the new Node to the network.
-                    if (this._random.nextDouble() < 0.5 ||
-                        Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
+                    if (this._random.nextDouble() < 0.5) {
                         this.connectInputNode(iNode);
                     }
                 })
@@ -142,8 +141,7 @@ export class NeatChromosome extends NetworkChromosome {
                         savedSpriteMap.set(featureKey, iNode);
                         this.allNodes.push(iNode);
                         // By chance or if we use fully connected networks, we connect the new Node to the network.
-                        if (this._random.nextDouble() < 0.5 ||
-                            Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
+                        if (this._random.nextDouble() < 0.5) {
                             this.connectInputNode(iNode);
                         }
                     }

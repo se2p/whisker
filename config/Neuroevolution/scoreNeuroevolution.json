@@ -55,11 +55,14 @@
         "conditions": [
             {
                 "type": "fixedIteration",
-                "iterations": 25
+                "iterations": 50
             },
             {
                 "type": "fixedTime",
                 "duration": 828000000
+            },
+            {
+                "type": "optimal"
             }
         ]
     },

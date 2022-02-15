@@ -2,40 +2,133 @@ import {ActivationTrace} from "./ActivationTrace";
 import Statistics from "../../utils/Statistics";
 import Arrays from "../../utils/Arrays";
 import {matrix} from "mathjs";
+import {Randomness} from "../../utils/Randomness";
 
 export class SurpriseAdequacy {
 
-    public static likelihoodBased(training: ActivationTrace, test: ActivationTrace): Map<number, boolean>{
-        // For each step, compare the ATs during training and testing.
-        const surpriseMap = new Map<number, boolean>();
-        for (let i = 0; i < test.trace.size; i++) {
+    public static LSA(trainingTraces: ActivationTrace, testTraces: ActivationTrace): number {
+
+        // The game could not be started, so we penalize with a SA value of 100;
+        if(!testTraces){
+            return 100;
+        }
+
+        const training = trainingTraces.clone();
+        const test = testTraces.clone();
+        let surpriseAdequacy = 0;
+        let stepCount = 0;
+        // Go through each step and calculate the LSA.
+        for (const step of test.trace.keys()) {
 
             // If the test run performed more steps than the test run we stop since have no training AT to compare.
-            if (!training.trace.has(i)){
+            if (!training.trace.has(step)) {
+                return surpriseAdequacy / stepCount;
+            }
+
+            const trainingTrace = training.trace.get(step);
+            const testTrace = test.trace.get(step);
+
+            for (const nodeId of trainingTrace.keys()) {
+                if (!testTrace.has(nodeId)) {
+                    trainingTrace.delete(nodeId);
+                }
+            }
+
+            for (const nodeId of testTrace.keys()) {
+                if (!trainingTrace.has(nodeId)) {
+                    testTrace.delete(nodeId);
+                }
+            }
+
+            // Calculate the LSA and compare.
+            const trainingStepTraces = training.getStepTrace(step);
+            const testStepTrace = test.getStepTrace(step);
+
+            if (trainingStepTraces.length < 5) {
+                return surpriseAdequacy / stepCount;
+            }
+
+            surpriseAdequacy += this.calculateLSA(trainingStepTraces, testStepTrace[0]);
+            stepCount++;
+        }
+        return surpriseAdequacy / stepCount;
+    }
+
+    private static calculateLSA(trainingTraces: number[][], testTrace: number[]) {
+        let kdeSum = 0;
+        const bandwidth = Statistics.multivariateBandwidthScott(matrix(trainingTraces));
+
+        for (const trainingTrace of trainingTraces) {
+            const traceDifference = Arrays.subtract(testTrace, trainingTrace);
+            kdeSum += Statistics.multivariateGaussianKernel(traceDifference, bandwidth);
+        }
+
+        const density = kdeSum / trainingTraces.length;
+        return -Math.log(density);
+    }
+
+    private static calculateLSAThreshold(trainingTrace: ActivationTrace, thresholdFactor: number): Map<number, number> {
+        const thresholdMap = new Map<number, number>();
+        const random = Randomness.getInstance();
+        const trainingStepTrace = trainingTrace.groupBySteps();
+        for (const step of trainingStepTrace.keys()) {
+            const stepTrace = trainingStepTrace.get(step);
+
+            if (stepTrace.length < 10) {
+                return thresholdMap;
+            }
+
+            let LSA = 0;
+            const repetitions = 5;
+            for (let i = 0; i < repetitions; i++) {
+                const randomIndex = random.nextInt(0, stepTrace.length);
+                const randomSample = stepTrace[randomIndex];
+                LSA += this.calculateLSA(stepTrace, randomSample);
+            }
+            LSA /= repetitions;
+            LSA = LSA < 0 ? LSA / thresholdFactor : LSA * thresholdFactor;
+            thresholdMap.set(step, LSA);
+        }
+        return thresholdMap;
+    }
+
+    public static likelihoodNodeBased(training: ActivationTrace, test: ActivationTrace): Map<number, Map<string, boolean>> {
+        // For each step, compare the ATs during training and testing.
+        const surpriseMap = new Map<number, Map<string, boolean>>();
+        for (const step of test.trace.keys()) {
+            // If the test run performed more steps than the test run we stop since have no training AT to compare.
+            if (!training.trace.has(step)) {
                 return surpriseMap;
             }
+            surpriseMap.set(step, new Map<string, boolean>());
 
-            const trainingTraces = training.trace.get(i);
-            const testTrace = test.trace.get(i);
-            let kdeSum = 0;
-            const bandwidth = Statistics.bandwidthScott(matrix(trainingTraces));
+            for (const [nodeId, nodeTrace] of test.trace.get(step).entries()) {
+                const testValue = nodeTrace[0];
+                const trainingValues = training.trace.get(step).get(nodeId);
+                const LSA = this.calculateLSANodeBased(trainingValues, testValue);
 
-            for(const trainingTrace of trainingTraces){
-                const traceDifference = Arrays.subtract(testTrace[0], trainingTrace);
-                kdeSum += Statistics.multivariateGaussianKernel(traceDifference, bandwidth);
-            }
-
-            const density = kdeSum / trainingTraces.length;
-            const lsa = -Math.log(density)
-
-            if(lsa > 1){
-                surpriseMap.set(i, true)
-            }
-            else{
-                surpriseMap.set(i, false);
+                // Check if the test AT for the given step and node is surprising.
+                if (LSA > 2.5) {
+                    surpriseMap.get(step).set(nodeId, true);
+                } else {
+                    surpriseMap.get(step).set(nodeId, false);
+                }
             }
         }
         return surpriseMap;
+    }
+
+    private static calculateLSANodeBased(trainingTrace: number[], testTrace: number) {
+        let kdeSum = 0;
+        const bandwidth = Statistics.bandwidthSilverman(trainingTrace);
+
+        for (const trainingValue of trainingTrace) {
+            const traceDifference = testTrace - trainingValue;
+            kdeSum += Statistics.gaussianKernel(traceDifference / bandwidth);
+        }
+
+        const density = kdeSum / (trainingTrace.length * bandwidth);
+        return -Math.log(density);
     }
 
     /*

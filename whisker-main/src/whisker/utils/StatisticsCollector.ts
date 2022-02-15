@@ -20,6 +20,7 @@
 
 import {FitnessFunction} from "../search/FitnessFunction";
 import {Chromosome} from "../search/Chromosome";
+import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 
 /**
  * Singleton class to collect statistics from search runs
@@ -50,6 +51,11 @@ export class StatisticsCollector {
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
     private readonly _bestNetworkFitness: Map<number, number>;
 
+    // Dynamic Suite
+    private readonly _networks: NetworkChromosome[];
+    private _surpriseAdequacy: number;
+    private _surpriseNodeAdequacy: number;
+
     private readonly _unknownProject = "(unknown)";
     private readonly _unknownConfig = "(unknown)"
 
@@ -76,6 +82,9 @@ export class StatisticsCollector {
         this._covOverTime = new Map<number, number>();
         this.coveredFitnessFunctions = [];
         this._bestNetworkFitness = new Map<number, number>();
+        this._networks = [];
+        this._surpriseAdequacy = 0;
+        this._surpriseNodeAdequacy = 0;
     }
 
     public static getInstance(): StatisticsCollector {
@@ -236,6 +245,26 @@ export class StatisticsCollector {
         this._timeToReachFullCoverage = value;
     }
 
+    get networks(): NetworkChromosome[] {
+        return this._networks;
+    }
+
+    get surpriseAdequacy(): number {
+        return this._surpriseAdequacy;
+    }
+
+    set surpriseAdequacy(value: number) {
+        this._surpriseAdequacy = value;
+    }
+
+    get surpriseNodeAdequacy(): number {
+        return this._surpriseNodeAdequacy;
+    }
+
+    set surpriseNodeAdequacy(value: number) {
+        this._surpriseNodeAdequacy = value;
+    }
+
     /**
      * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so-called
      * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
@@ -328,6 +357,21 @@ export class StatisticsCollector {
             this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness];
         const dataRow = data.join(",").concat(",", fitnessValues);
         return [headerRow, dataRow].join("\n");
+    }
+
+    public asCsvDynamicSuite(): string {
+        let csv = "projectName, network, fitnessFunctionCount," +
+            " totalCoveredFitnessFunctionCount, networkFitness, surpriseStepAdequacy, surpriseNodeAdequacy\n";
+
+        for (let i = 0; i < this.networks.length; i++) {
+            const network = this.networks[i];
+            const data = [this._projectName, i, this._fitnessFunctionCount,
+                this._coveredFitnessFunctionsCount, network.fitness, network.surpriseAdequacyStep,
+                network.surpriseAdequacyNodes];
+            const dataRow = data.join(",").concat("\n");
+            csv = csv.concat(dataRow);
+        }
+        return csv;
     }
 
     private _adjustCoverageOverTime() {

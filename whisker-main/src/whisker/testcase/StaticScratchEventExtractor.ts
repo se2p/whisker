@@ -108,7 +108,7 @@ export class StaticScratchEventExtractor extends ScratchEventExtractor {
             case 'motion_goto': {
                 // GoTo MousePointer block
                 const goToMenu = target.blocks.getBlock(block.inputs.TO.block);
-                if (goToMenu.fields.TO.value === '_mouse_') {
+                if (goToMenu.fields.TO && goToMenu.fields.TO.value === '_mouse_') {
                     eventList.push(new MouseMoveEvent());
                 }
                 break;

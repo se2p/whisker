@@ -1,5 +1,6 @@
 import Statistics from "../../../src/whisker/utils/Statistics";
 import {matrix, identity, Matrix, index} from "mathjs";
+import {expect} from "@jest/globals";
 
 describe("Distributions", () => {
 
@@ -35,6 +36,29 @@ describe("Distributions", () => {
         expect(Math.round(Statistics.std(differentValues) * 100) / 100).toBe(5.71);
     });
 
+    test("Median calculation with even length", () => {
+        const testValues = [1, 2, 3, 4];
+        expect(Statistics.median(testValues)).toBe(2.5);
+    });
+
+    test("Median calculation with odd length", () => {
+        const testValues = [1, 2, 3, 4, 5];
+        expect(Statistics.median(testValues)).toBe(3);
+    });
+
+    test("Median with equal values", () => {
+        expect(Statistics.median(equalValues)).toBe(equalValues[0]);
+    });
+
+    test("Interquartile range calculation", () => {
+        const testValues = [1, 2, 3, 4, 5];
+        expect(Statistics.iqr(testValues)).toBe(3);
+    });
+
+    test("Interquartile range with equal values", () => {
+        expect(Statistics.iqr(equalValues)).toBe(0);
+    });
+
     test("Multivariate Gaussian Kernel with identity matrix", () => {
         const testVector = [0.1, 0.2, 0.3];
         const bandwidth = identity(testVector.length) as Matrix;
@@ -44,7 +68,7 @@ describe("Distributions", () => {
 
     test("Test scott bandwidth", () => {
         const dataMatrix = matrix([[0, 1.6], [0.4, 2], [0.2, 1.8]]);
-        const scottBandwidth = Statistics.bandwidthScott(dataMatrix);
+        const scottBandwidth = Statistics.multivariateBandwidthScott(dataMatrix);
         // We should only get values > 0 on the diagonal of the Matrix.
         expect(scottBandwidth.subset(index(0, 0))).toBeGreaterThan(0);
         expect(scottBandwidth.subset(index(1, 1))).toBeGreaterThan(0);

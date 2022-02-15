@@ -2,56 +2,84 @@ import {NodeGene} from "../NetworkComponents/NodeGene";
 
 export class ActivationTrace {
 
-    private readonly _trace: Map<number, number[][]>;
+    private readonly _trace: Map<number, Map<string, number[]>>;
     private readonly _tracedNodes: NodeGene[];
 
-    constructor(_tracedNodes: NodeGene[]) {
-        this._trace = new Map<number, number[][]>();
-        this._tracedNodes = _tracedNodes;
+    constructor(tracedNodes: NodeGene[]) {
+        this._trace = new Map<number, Map<string, number[]>>();
+        this._tracedNodes = tracedNodes;
     }
 
 
     public update(step: number, nodes: NodeGene[]): void {
-        const nodeActivations = nodes.map(node => Number(node.activationValue.toFixed(4)));
+        // Check if we encountered a new node.
+        const tracedIds = this._tracedNodes.map(node => node.identifier());
+        for (const node of nodes) {
+            const nodeId = node.identifier();
+            if (!tracedIds.includes(nodeId)) {
+                this._tracedNodes.push(node);
+            }
+        }
+
+        // Add the activation of each node to its corresponding activation trace.
         if (!this._trace.has(step)) {
-            this._trace.set(step, [nodeActivations]);
-        } else {
-            this._trace.get(step).push(nodeActivations);
+            this._trace.set(step, new Map<string, number[]>());
+        }
+        const stepTrace = this._trace.get(step);
+        for (const node of nodes) {
+            const nodeId = node.identifier();
+            const activationValue = Math.round(node.activationValue * 1000) / 1000;
+            if (!stepTrace.has(nodeId)) {
+                stepTrace.set(nodeId, [activationValue]);
+            } else {
+                stepTrace.get(nodeId).push(activationValue);
+            }
         }
     }
 
-    public groupByNodes(): Map<number, Map<string, number[]>> {
-        const nodeActivationTrace = new Map<number, Map<string, number[]>>();
-        // Go through each recorded step.
-        for (const [step, stepTraces] of this._trace.entries()) {
-            const nodeStepTrace = new Map<string, number[]>();
-            // Go through each repetition within a step.
-            for (const repetitionTrace of stepTraces) {
-                // Extract the node values of the current repetition.
-                for (let i = 0; i < repetitionTrace.length; i++) {
-                    const nodeKey = this._tracedNodes[i].identifier();
-                    if (!nodeStepTrace.has(nodeKey)) {
-                        nodeStepTrace.set(nodeKey, [repetitionTrace[i]]);
+    public groupBySteps(): Map<number, number[][]> {
+        const stepActivationTraces = new Map<number, number[][]>();
+        for (const [step, nodeMap] of this._trace.entries()) {
+            const stepTraces: number[][] = [];
+            for (const activationValues of nodeMap.values()) {
+                for (let i = 0; i < activationValues.length; i++) {
+                    if (!stepTraces[i]) {
+                        stepTraces.push([activationValues[i]]);
                     } else {
-                        nodeStepTrace.get(nodeKey).push(repetitionTrace[i]);
+                        stepTraces[i].push(activationValues[i]);
                     }
                 }
             }
-            // Set the recorded nodeTraces to the corresponding step.
-            nodeActivationTrace.set(step, nodeStepTrace);
+            stepActivationTraces.set(step, stepTraces);
         }
-        return nodeActivationTrace;
+        return stepActivationTraces;
+    }
+
+    public getStepTrace(step: number): number[][] {
+        return this.groupBySteps().get(step);
+    }
+
+    public clone(): ActivationTrace {
+        const clone = new ActivationTrace(this._tracedNodes);
+        for (const [step, nodeMap] of this._trace.entries()) {
+            clone.trace.set(step, new Map(nodeMap));
+        }
+        return clone;
     }
 
     public toJSON(): Record<number, number[][]> {
-        const activationRecord = {}
-        for (const [step, value] of this._trace.entries()) {
-            activationRecord[step] = value;
+        const activationTrace = {};
+        for (const [step, nodeMap] of this._trace.entries()) {
+            const stepTrace = {};
+            for (const [node, activationValues] of nodeMap) {
+                stepTrace[node] = activationValues;
+            }
+            activationTrace[step] = stepTrace;
         }
-        return activationRecord
+        return activationTrace
     }
 
-    get trace(): Map<number, number[][]> {
+    get trace(): Map<number, Map<string, number[]>> {
         return this._trace;
     }
 }

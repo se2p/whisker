@@ -75,7 +75,21 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     private _savedActivationTrace: ActivationTrace;
 
-    private _surpriseAdequacy = new Map<string, number>();
+    /**
+     * Determines whether an ActivationTrace should be recorded during a playthrough.
+     */
+    private _recordActivationTrace = false;
+
+    /**
+     * The average surprise value across all steps and nodes.
+     */
+    private _surpriseAdequacyStep = 0;
+
+    /**
+     * The average surprise value across all steps but split up by nodes.
+     * @private
+     */
+    private _surpriseAdequacyNodes = 0;
 
     /**
      * The fitness value of the network.
@@ -99,15 +113,9 @@ export abstract class NetworkChromosome extends Chromosome {
     private _codons: number[] = [];
 
     /**
-     * Determines whether the network is allowed to update its input/output nodes during execution.
-     */
-    private _freeze = false
-
-    /**
      * Random number generator.
      */
     protected readonly _random = Randomness.getInstance();
-
 
     /**
      * Constructs a new NetworkChromosome.
@@ -169,8 +177,8 @@ export abstract class NetworkChromosome extends Chromosome {
                 this.inputNodes.set(spriteKey, spriteNodes);
             }
 
-                // We haven't encountered a new Sprite but we still have to check if we encountered new features of a
-            // Sprite.
+                // We haven't encountered a new Sprite, but we still have to check
+            // if we encountered new features of a Sprite.
             else {
                 spriteFeatures.forEach((featureValue, featureKey) => {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
@@ -197,26 +205,24 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param events a list of encountered events.
      */
     public updateOutputNodes(events: ScratchEvent[]): void {
-        if (!this._freeze) {
-            let updated = false;
-            for (const event of events) {
-                if (!this.classificationNodes.has(event.stringIdentifier())) {
-                    updated = true;
-                    const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID);
-                    this.allNodes.push(classificationNode);
-                    this.connectOutputNode(classificationNode);
-                    for (const parameter of event.getSearchParameterNames()) {
-                        const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE);
-                        this.allNodes.push(regressionNode);
-                        this.connectOutputNode(regressionNode);
-                    }
+        let updated = false;
+        for (const event of events) {
+            if (!this.classificationNodes.has(event.stringIdentifier())) {
+                updated = true;
+                const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID);
+                this.allNodes.push(classificationNode);
+                this.connectOutputNode(classificationNode);
+                for (const parameter of event.getSearchParameterNames()) {
+                    const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE);
+                    this.allNodes.push(regressionNode);
+                    this.connectOutputNode(regressionNode);
                 }
             }
-            // If the network's structure has changed generate the new network and update the stabilize count.
-            if (updated) {
-                this.generateNetwork();
-                this.updateStabiliseCount(100);
-            }
+        }
+        // If the network's structure has changed generate the new network and update the stabilize count.
+        if (updated) {
+            this.generateNetwork();
+            this.updateStabiliseCount(100);
         }
     }
 
@@ -438,9 +444,7 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     private setUpInputs(inputs: Map<string, Map<string, number>>): void {
         // First check if we encountered new nodes.
-        if (!this._freeze) {
-            this.updateInputNodes(inputs);
-        }
+        this.updateInputNodes(inputs);
         inputs.forEach((spriteValue, spriteKey) => {
             spriteValue.forEach((featureValue, featureKey) => {
                 const iNode = this.inputNodes.get(spriteKey).get(featureKey);
@@ -595,7 +599,7 @@ export abstract class NetworkChromosome extends Chromosome {
         this.sortNodes();
         const tracedNodes = this.allNodes.filter(node => node.type === NodeType.INPUT);
 
-        if(this.currentActivationTrace === undefined){
+        if (this.currentActivationTrace === undefined) {
             this.currentActivationTrace = new ActivationTrace(tracedNodes);
         }
 
@@ -654,8 +658,28 @@ export abstract class NetworkChromosome extends Chromosome {
         this._savedActivationTrace = value;
     }
 
-    get surpriseAdequacy(): Map<string, number> {
-        return this._surpriseAdequacy;
+    get recordActivationTrace(): boolean {
+        return this._recordActivationTrace;
+    }
+
+    set recordActivationTrace(value: boolean) {
+        this._recordActivationTrace = value;
+    }
+
+    get surpriseAdequacyStep(): number {
+        return this._surpriseAdequacyStep;
+    }
+
+    set surpriseAdequacyStep(value: number) {
+        this._surpriseAdequacyStep = value;
+    }
+
+    get surpriseAdequacyNodes(): number {
+        return this._surpriseAdequacyNodes;
+    }
+
+    set surpriseAdequacyNodes(value: number) {
+        this._surpriseAdequacyNodes = value;
     }
 
     get trace(): ExecutionTrace {
@@ -692,13 +716,5 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set isRecurrent(value: boolean) {
         this._isRecurrent = value;
-    }
-
-    set freeze(value: boolean) {
-        this._freeze = value;
-    }
-
-    get freeze(): boolean {
-        return this._freeze;
     }
 }

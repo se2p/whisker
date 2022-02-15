@@ -173,8 +173,7 @@ export class NetworkExecutor {
 
             // Record ActivationTrace. Skip step 0 as this simply reflects how the project was loaded. However,
             // we are interested in step 1 as this one reflects initialisation values.
-            if(network.freeze && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
-                //network.addNodeActivationTrace(stepCount.toFixed());
+            if(network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
                 network.updateActivationTrace(stepCount);
             }
             stepCount++;

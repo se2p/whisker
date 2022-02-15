@@ -247,6 +247,7 @@ const runAllTests = async function () {
     if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
         let coverage;
         try {
+            const projectName = Whisker.projectFileSelect.getName();
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
@@ -254,11 +255,11 @@ const runAllTests = async function () {
             const properties = {};
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
-            await dynamicSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, Whisker.tests,
-                properties);
+            const csv = await dynamicSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, projectName,
+                Whisker.tests, properties);
             coverage = CoverageGenerator.getCoverage();
-            console.log(coverage);
             CoverageGenerator.restoreClasses({Thread});
+            Whisker.outputLog.println(csv);
         } finally {
             _showRunIcon();
             enableVMRelatedButtons();

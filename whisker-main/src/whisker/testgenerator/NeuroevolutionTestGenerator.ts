@@ -24,15 +24,12 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
         const scratchSeeds = Array(parameter.repetitions).fill(0).map(
             () => Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER));
         for (const network of testChromosomes) {
-            network.freeze = true;
+            network.recordActivationTrace = true;
             for (let i = 0; i < parameter.repetitions; i++) {
                 Randomness.setScratchSeed(scratchSeeds[i]);
                 await parameter.networkFitness.getFitness(network, parameter.timeout, parameter.eventSelection);
             }
         }
-
-        console.log("Networks: ", testChromosomes)
-
         let testSuite: WhiskerTest[];
         if (Container.config.getTestSuiteType() === 'dynamic') {
             testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));

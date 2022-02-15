@@ -35,8 +35,9 @@ describe("Distributions", () => {
         // Add single AT to step 1
         activationTrace.update(1, nodeTraces[0][0]);
         expect(activationTrace.trace.size).toBe(1);
-        expect(activationTrace.trace.get(1).length).toBe(1);
-        expect(activationTrace.trace.get(1)[0].length).toBe(nodeTraces[0][0].length);
+        expect(activationTrace.trace.get(1).get("I:0-0").length).toBe(1);
+        expect(activationTrace.trace.get(1).get("I:1-1").length).toBe(1);
+        expect(activationTrace.trace.get(1).size).toBe(nodeTraces[0][0].length);
 
         // Add several ATs to step 2
         const numTraces = 20
@@ -44,11 +45,30 @@ describe("Distributions", () => {
             activationTrace.update(2, nodeTraces[2][i]);
         }
         expect(activationTrace.trace.size).toBe(2);
-        expect(activationTrace.trace.get(2).length).toBe(numTraces);
-        expect(activationTrace.trace.get(2)[0].length).toBe(nodeTraces[0][0].length);
+        expect(activationTrace.trace.get(2).get("I:0-0").length).toBe(numTraces);
+        expect(activationTrace.trace.get(2).get("I:1-1").length).toBe(numTraces);
+        expect(activationTrace.trace.get(2).size).toBe(nodeTraces[0][0].length);
+
+        // Add new node to ATs of step 3
+        for(const repetition of nodeTraces){
+            for(const nodes of repetition){
+                const id = "New";
+                nodes.push(new InputNode(id, id))
+            }
+        }
+
+        // Add step 3 to the trace.
+        for (let i = 0; i < nodeTraces[0].length; i++) {
+            activationTrace.update(3, nodeTraces[3][i]);
+        }
+        expect(activationTrace.trace.size).toBe(3);
+        expect(activationTrace.trace.get(1).size).toBeLessThan(activationTrace.trace.get(3).size)
+        expect(activationTrace.trace.get(3).get("I:0-0").length).toBe(nodeTraces[0].length);
+        expect(activationTrace.trace.get(3).get("I:New-New").length).toBe(nodeTraces[0].length);
+        expect(activationTrace.trace.get(3).size).toBe(nodeTraces[0][0].length);
     });
 
-    test("Group AT by Nodes", () =>{
+    test("Group AT by Steps", () =>{
         for (let step = 0; step < nodeTraces.length; step++) {
             const stepTraces = nodeTraces[step];
             for(const stepTraceRepetition of stepTraces){
@@ -56,11 +76,38 @@ describe("Distributions", () => {
             }
         }
 
-        const nodeActivationTraces = activationTrace.groupByNodes();
-        expect(nodeActivationTraces.size).toBe(nodeTraces.length);
-        expect(nodeActivationTraces.get(0).size).toBe(nodeTraces[0][0].length);
-        expect(nodeActivationTraces.get(0).get("I:0-0").length).toBe(nodeTraces[0].length);
-        expect(nodeActivationTraces.get(0).get("I:0-0")[0]).toBe(activationTrace.trace.get(0)[0][0])
+        const stepActivationTraces = activationTrace.groupBySteps();
+        expect(stepActivationTraces.size).toBe(nodeTraces.length);
+        expect(stepActivationTraces.get(0).length).toBe(nodeTraces[0].length);
+        expect(stepActivationTraces.get(0)[0].length).toBe(nodeTraces[0][0].length)
+    });
+
+    test("Get trace for a specific step", () => {
+        for (let step = 0; step < nodeTraces.length; step++) {
+            const stepTraces = nodeTraces[step];
+            for(const stepTraceRepetition of stepTraces){
+                activationTrace.update(step, stepTraceRepetition);
+            }
+        }
+
+        const stepActivationTrace = activationTrace.getStepTrace(0);
+        expect(stepActivationTrace.length).toBe(nodeTraces[0].length);
+        expect(stepActivationTrace[0].length).toBe(nodeTraces[0][0].length);
+        expect(stepActivationTrace[1][3]).toBe(nodeTraces[0][1][3].activationValue);
+    });
+
+    test("Clone", () =>{
+        for (let step = 0; step < nodeTraces.length; step++) {
+            const stepTraces = nodeTraces[step];
+            for(const stepTraceRepetition of stepTraces){
+                activationTrace.update(step, stepTraceRepetition);
+            }
+        }
+
+        const clone = activationTrace.clone();
+        expect(clone.trace.size).toBe(activationTrace.trace.size);
+        clone.trace.delete(0);
+        expect(clone.trace.size).toBe(activationTrace.trace.size - 1);
     });
 
     test("JSON representation of AT", () =>{
@@ -70,9 +117,9 @@ describe("Distributions", () => {
 
         const json = activationTrace.toJSON();
         expect(Object.keys(json).length).toBe(2);
-        expect(json[0].length).toBe(2);
-        expect(json[0][0].length).toBe(nodeTraces[0][0].length);
-        expect(json[3].length).toBe(1);
-        expect(json[3][0].length).toBe(nodeTraces[0][0].length);
+        expect(Object.keys(json[0]).length).toBe(nodeTraces[0][0].length);
+        expect(json[0]["I:0-0"].length).toBe(2);
+        expect(Object.keys(json[3]).length).toBe(nodeTraces[0][0].length);
+        expect(json[3]["I:1-1"].length).toBe(1);
     });
 });

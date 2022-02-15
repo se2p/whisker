@@ -4,7 +4,7 @@ import {Randomness} from "../../../../src/whisker/utils/Randomness";
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {SurpriseAdequacy} from "../../../../src/whisker/whiskerNet/Misc/SurpriseAdequacy";
 
-describe("Distributions", () => {
+describe("Surprise Adequacy", () => {
 
     const random = Randomness.getInstance();
     let trainingNodeTrace: NodeGene[][][];
@@ -14,7 +14,7 @@ describe("Distributions", () => {
         trainingNodeTrace = [];
         for (let step = 0; step < 10; step++) {
             const stepTrace: NodeGene[][] = [];
-            for (let repetitions = 0; repetitions < 100; repetitions++) {
+            for (let repetitions = 0; repetitions < 30; repetitions++) {
                 const repetitionTrace: NodeGene[] = [];
                 for (let numNode = 0; numNode < 15; numNode++) {
                     const iNode = new InputNode(numNode.toString(), numNode.toString());
@@ -51,10 +51,8 @@ describe("Distributions", () => {
             testTrace.update(step, testNodeTrace[step]);
         }
 
-        const surpriseMap = SurpriseAdequacy.likelihoodBased(trainingTrace, testTrace);
-        const noSurprises = [...surpriseMap.values()].every(surpriseBoolean => !surpriseBoolean);
-        expect(surpriseMap.size).toBe(testNodeTrace.length);
-        expect(noSurprises).toBeTruthy();
+        const surpriseValue = SurpriseAdequacy.LSA(trainingTrace, testTrace);
+        expect(surpriseValue).toBeLessThan(1);
     });
 
     test("Likelihood based Surprise Adequacy; different distribution as test AT; shorter training trace", () => {
@@ -63,7 +61,7 @@ describe("Distributions", () => {
             const stepTrace: NodeGene[] = [];
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
                 const iNode = new InputNode(i.toString(), i.toString());
-                iNode.activationValue = Math.round(random.nextDoubleMinMax(0, 1) * 100) / 100;
+                iNode.activationValue = Math.round(random.nextDoubleMinMax(0.5, 1) * 100) / 100;
                 stepTrace.push(iNode);
             }
             testNodeTrace.push(stepTrace);
@@ -73,10 +71,8 @@ describe("Distributions", () => {
             testTrace.update(step, testNodeTrace[step]);
         }
 
-        const surpriseMap = SurpriseAdequacy.likelihoodBased(trainingTrace, testTrace);
-        const noSurprises = [...surpriseMap.values()].every(surpriseBoolean => !surpriseBoolean);
-        expect(surpriseMap.size).toBe(trainingNodeTrace.length);
-        expect(noSurprises).toBeFalsy();
+        const surpriseValue = SurpriseAdequacy.LSA(trainingTrace, testTrace);
+        expect(surpriseValue).toBeGreaterThan(5);
     });
 
     test("Likelihood based Surprise Adequacy; equal ATs", () => {
@@ -85,10 +81,58 @@ describe("Distributions", () => {
             testTrace.update(step, trainingNodeTrace[step][0]);
         }
 
-        const surpriseMap = SurpriseAdequacy.likelihoodBased(trainingTrace, testTrace);
-        expect(surpriseMap.size).toBe(trainingNodeTrace.length);
-        const noSurprises = [...surpriseMap.values()].every(surpriseBoolean => !surpriseBoolean);
-        expect(surpriseMap.size).toBe(trainingNodeTrace.length);
-        expect(noSurprises).toBeTruthy();
+        const surpriseValue = SurpriseAdequacy.LSA(trainingTrace, testTrace);
+        expect(surpriseValue).toBeLessThan(1);
+    });
+
+    test("Likelihood based Surprise Adequacy; equal ATs; too few samples", () => {
+        const testTrace = new ActivationTrace(trainingNodeTrace[0][0]);
+        for (let step = 0; step < trainingNodeTrace.length; step++) {
+            testTrace.update(step, trainingNodeTrace[step][0]);
+        }
+
+        const shortStep = 5
+        for (const nodeId of trainingTrace.trace.get(shortStep).keys()) {
+            trainingTrace.trace.get(shortStep).set(nodeId, [Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100]);
+        }
+
+        const surpriseValue = SurpriseAdequacy.LSA(trainingTrace, testTrace);
+        expect(surpriseValue).toBeLessThan(1);
+    });
+
+    test("Likelihood based Surprise Adequacy; mismatching nodes", () => {
+        const steps = 3;
+        const reps = 5;
+        const nodes = 10;
+        const trainingTrace = new ActivationTrace([]);
+        for (let step = 0; step < steps; step++) {
+            for (let repetitions = 0; repetitions < reps; repetitions++) {
+                const repetitionTrace: NodeGene[] = [];
+                for (let numNode = 0; numNode < nodes; numNode++) {
+                    const iNode = new InputNode(numNode.toString(), numNode.toString());
+                    iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                    repetitionTrace.push(iNode);
+                }
+                repetitionTrace.push(new InputNode("Training", "New"));
+                trainingTrace.update(step, repetitionTrace);
+            }
+        }
+
+        const testTrace = new ActivationTrace([])
+        for (let step = 0; step < steps; step++) {
+            const nodeTrace: NodeGene[] = [];
+            for (let numNode = 0; numNode < nodes; numNode++) {
+                const iNode = new InputNode(numNode.toString(), numNode.toString());
+                iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                nodeTrace.push(iNode);
+            }
+            nodeTrace.push(new InputNode("Test", "New"));
+            testTrace.update(step, nodeTrace);
+        }
+
+        const surpriseValue = SurpriseAdequacy.LSA(trainingTrace, testTrace);
+        expect(surpriseValue).toBeLessThan(1);
+        expect(trainingTrace.trace.get(0).size).toBe(nodes + 1);
+        expect(testTrace.trace.get(0).size).toBe(nodes + 1);
     });
 });

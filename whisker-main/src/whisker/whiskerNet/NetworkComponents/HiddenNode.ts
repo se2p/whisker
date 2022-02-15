@@ -2,7 +2,6 @@ import {NodeGene} from "./NodeGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
 import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
-import uid from "scratch-vm/@types/scratch-vm/util/uid";
 
 export class HiddenNode extends NodeGene {
 

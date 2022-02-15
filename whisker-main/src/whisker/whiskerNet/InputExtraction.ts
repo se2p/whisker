@@ -82,12 +82,12 @@ export class InputExtraction {
         const spritePosition = ScratchInterface.getPositionOfTarget(target);
         const x = this.mapValueIntoRange(spritePosition.x, -stageBounds.width / 2, stageBounds.width / 2);
         const y = this.mapValueIntoRange(spritePosition.y, -stageBounds.height / 2, stageBounds.height / 2);
-        spriteFeatures.set("X-Position", x);
-        spriteFeatures.set("Y-Position", y);
+        spriteFeatures.set("X", x);
+        spriteFeatures.set("Y", y);
 
         // Collect direction of Sprite
         const direction = this.mapValueIntoRange(target.direction, -180, 180);
-        spriteFeatures.set("Direction", direction);
+        spriteFeatures.set("Dir", direction);
 
         // If we have a path to a goal extract the signed x and y distance to the next wayPoint as input.
         if (Container.pathToGoal) {
@@ -111,13 +111,13 @@ export class InputExtraction {
                             const distances = this.calculateDistancesSigned(target.x, sensingTarget.x, target.y, sensingTarget.y,
                                 stageBounds.width, stageBounds.height);
                             if (target.isOriginal) {
-                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-X", distances.dx);
-                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "-Y", distances.dy);
+                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "X", distances.dx);
+                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "Y", distances.dy);
                             } else {
                                 const distanceId = this.distanceFromOrigin(sensingTarget);
-                                const cloneId = Arrays.findElement(cloneMap.get(sensingTarget.sprite.name),distanceId);
-                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-X", distances.dx);
-                                spriteFeatures.set("DistanceTo" + sensingTarget.sprite.name + "Clone" + cloneId + "-Y", distances.dy);
+                                const cloneId = Arrays.findElement(cloneMap.get(sensingTarget.sprite.name), distanceId);
+                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "Clone" + cloneId + "X", distances.dx);
+                                spriteFeatures.set("Dist" + sensingTarget.sprite.name + "Clone" + cloneId + "Y", distances.dy);
                             }
                         }
                     }
@@ -129,7 +129,7 @@ export class InputExtraction {
                     // Only active nodes whose rangeFinder sensed something.
                     const distances = this.calculateColorDistanceRangeFinder(target, sensedColor);
                     for (const direction in distances) {
-                        spriteFeatures.set(`Distance-${direction}-To-${sensedColor}`, distances[direction]);
+                        spriteFeatures.set(`Dist${direction}${sensedColor}`, distances[direction]);
                     }
                 }
                     break;
@@ -316,7 +316,8 @@ export class InputExtraction {
      */
     private static mapValueIntoRange(value: number, input_start: number, input_end: number,
                                      output_start = -1, output_end = 1) {
-        return (value - input_start) / (input_end - input_start) * (output_end - output_start) + output_start
+        const mappedValue = (value - input_start) / (input_end - input_start) * (output_end - output_start) + output_start;
+        return Math.max(-1, Math.min(1, mappedValue));
     }
 
     /**

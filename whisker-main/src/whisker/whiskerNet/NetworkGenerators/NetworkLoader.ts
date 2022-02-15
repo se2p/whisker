@@ -96,13 +96,16 @@ export class NetworkLoader {
             const network = new NeatChromosome(allNodes, allConnections, mutation, crossover);
 
             network.savedActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
-            for (const [step, stepTraces] of Object.entries(savedNetwork['AT'])) {
-                network.savedActivationTrace.trace.set(Number(step), stepTraces as number[][]);
+            for (const [step, nodeTraces] of Object.entries(savedNetwork['AT'])) {
+                const nodeStepTraces = new Map<string, number[]>();
+                for (const [nodeId, activationValues] of Object.entries(nodeTraces)) {
+                    nodeStepTraces.set(nodeId, activationValues);
+                }
+                network.savedActivationTrace.trace.set(Number(step), nodeStepTraces);
             }
 
             networks.push(network);
         }
-        console.log(networks)
         return networks;
     }
 }
