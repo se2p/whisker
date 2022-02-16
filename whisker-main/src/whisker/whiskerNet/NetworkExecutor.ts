@@ -31,11 +31,6 @@ export class NetworkExecutor {
     private availableEvents: ScratchEvent[] = [];
 
     /**
-     * Monitors the execution of the Scratch-VM
-     */
-    private eventObservers: EventObserver[] = [];
-
-    /**
      * The initial sate of the Scratch-VM
      */
     private _initialState = {};
@@ -49,6 +44,14 @@ export class NetworkExecutor {
      * Timeout after which each playthrough is halted
      */
     private _timeout: number;
+
+    /**
+     * Defines how long we wait and do not ask for a network action after executing a WaitEvent. We use this to
+     * repeatedly send waits having a step length of 1 instead of a single wait having the accumulated desired step
+     * length since we want to evenly record the activation trace after every x steps and for this have to activate
+     * the network with the current inputs.
+     */
+    private _waitCount: number;
 
     /**
      * Random generator
@@ -75,6 +78,7 @@ export class NetworkExecutor {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
+        this._waitCount = 0;
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
         this._eventSelection = eventSelection;
         this.recordInitialState();
@@ -97,7 +101,6 @@ export class NetworkExecutor {
     private async executeNetwork(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
         let workingNetwork = false;
-        const codons: number[] = [];
 
         Randomness.seedScratch();
 
@@ -106,6 +109,7 @@ export class NetworkExecutor {
         for (let i = 0; i < network.stabiliseCount; i++) {
             workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vmWrapper));
         }
+        network.codons = [];
 
         // Set up the Scratch-VM and start the game
         const _onRunStop = this.projectStopped.bind(this);
@@ -147,33 +151,18 @@ export class NetworkExecutor {
                 }
             }
 
-            // Get the classification results by using the softmax function over the outputNode values
-            const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            // Choose the event with the highest probability according to the softmax values
-            const indexOfMaxValue = output.reduce(
-                (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-            codons.push(indexOfMaxValue);
-
-            // Select the nextEvent, set its parameters and send it to the Scratch-VM
-            const nextEvent: ScratchEvent = this.availableEvents[indexOfMaxValue];
-            const parameters = [];
-            if (nextEvent.numSearchParameter() > 0) {
-                parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
-                nextEvent.setParameter(parameters, "regression");
+            // If we don't have to Wait select a new event.
+            if (this._waitCount < 1) {
+                await this.selectAndExecuteNextEvent(network, events);
             }
-            events.push(new EventAndParameters(nextEvent, parameters));
-            this.notify(nextEvent, parameters);
-            await nextEvent.apply();
-            StatisticsCollector.getInstance().incrementEventsCount();
-
-            // Add a waitEvent in the end of each round.
-            const waitEvent = new WaitEvent(1);
-            events.push(new EventAndParameters(waitEvent, []));
-            await waitEvent.apply();
+            // Otherwise, keep waiting until we waited for defined desired step length of a preceding WaitEvent.
+            else {
+                await this.executeWait();
+            }
 
             // Record ActivationTrace. Skip step 0 as this simply reflects how the project was loaded. However,
             // we are interested in step 1 as this one reflects initialisation values.
-            if(network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
+            if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
                 network.updateActivationTrace(stepCount);
             }
             stepCount++;
@@ -195,8 +184,7 @@ export class NetworkExecutor {
         if (!workingNetwork) {
             console.error("Found defect Network", network);
         }
-        // Save the codons in order to transform the network into a TestChromosome later
-        network.codons = codons;
+
         return network.trace;
     }
 
@@ -246,7 +234,6 @@ export class NetworkExecutor {
             }
             codons.push(randomEventIndex);
             events.push(new EventAndParameters(nextEvent, parameters));
-            this.notify(nextEvent, parameters);
             await nextEvent.apply();
             StatisticsCollector.getInstance().incrementEventsCount();
 
@@ -279,18 +266,59 @@ export class NetworkExecutor {
         return this._projectRunning = false;
     }
 
+    /**
+     * Selects the next event and executes it.
+     * @param network determines the next action to take.
+     * @param events saves a trace of executed events.
+     */
+    private async selectAndExecuteNextEvent(network: NetworkChromosome, events: EventAndParameters[]) {
+        // Get the classification results by using the softmax function over the outputNode values
+        const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+        // Choose the event with the highest probability according to the softmax values
+        const indexOfMaxValue = output.reduce(
+            (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
+        network.codons.push(indexOfMaxValue);
+
+        // Select the nextEvent, set its parameters and send it to the Scratch-VM
+        const nextEvent: ScratchEvent = this.availableEvents[indexOfMaxValue];
+        const parameters = [];
+        if (nextEvent.numSearchParameter() > 0) {
+            parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
+            if (nextEvent instanceof WaitEvent) {
+                this._waitCount = Math.round(NeuroevolutionUtil.relu(parameters[0])) - 1;
+            } else {
+                nextEvent.setParameter(parameters, "regression");
+            }
+        }
+        events.push(new EventAndParameters(nextEvent, parameters));
+        await nextEvent.apply();
+
+        // To perform non-waiting actions, we have to execute a Wait.
+        if (!(nextEvent instanceof WaitEvent)) {
+            const waitEvent = new WaitEvent(1);
+            events.push(new EventAndParameters(waitEvent, []));
+            await waitEvent.apply();
+        }
+
+        StatisticsCollector.getInstance().incrementEventsCount();
+    }
+
+    /**
+     * Executes a WaitEvent with a duration of one step and decrements the current waiting count.
+     */
+    private async executeWait() {
+        // Add a WaitEvent if we have a wait count > 0.
+        const waitEvent = new WaitEvent(1);
+        await waitEvent.apply();
+        this._waitCount--;
+    }
+
     private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
         const args = [];
         for (const node of network.regressionNodes.get(event.stringIdentifier())) {
             args.push(node.activationValue);
         }
         return args;
-    }
-
-    private notify(event: ScratchEvent, args: number[]): void {
-        for (const observer of this.eventObservers) {
-            observer.update(event, args);
-        }
     }
 
     /**
