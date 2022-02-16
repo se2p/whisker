@@ -191,3 +191,25 @@ Whisker is supported by the project FR 2955/3-1 funded by the
   year      = {2020},
 }
 ```
+
+```
+@misc{götz2022modelbased,
+      title={Model-based Testing of Scratch Programs},
+      author={Katharina Götz and Patric Feldmeier and Gordon Fraser},
+      year={2022},
+      eprint={2202.06271},
+      archivePrefix={arXiv},
+      primaryClass={cs.SE}
+}
+```
+
+```
+@misc{deiner2022automated,
+      title={Automated Test Generation for Scratch Programs},
+      author={Adina Deiner and Patric Feldmeier and Gordon Fraser and Sebastian Schweikl and Wengran Wang},
+      year={2022},
+      eprint={2202.06274},
+      archivePrefix={arXiv},
+      primaryClass={cs.SE}
+}
+```
