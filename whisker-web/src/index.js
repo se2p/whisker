@@ -113,7 +113,7 @@ const runSearch = async function () {
     const configName =
         Whisker.configFileSelect.hasName() ?
             Whisker.configFileSelect.getName() :
-            'default.json';
+            'mio.json';
     console.log(`Whisker-Web: loading project ${projectName}`);
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();

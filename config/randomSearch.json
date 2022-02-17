@@ -2,11 +2,11 @@
     "testGenerator": "manyObjective",
     "algorithm": "random",
     "extractor": "dynamic",
-    "eventSelector": "interleaving",
+    "eventSelector": "clustering",
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
-        "maxSampleLength": 40
+        "maxSampleLength": 20
     },
     "fitnessFunction": {
         "type": "statement",
@@ -30,8 +30,8 @@
     },
     "durations": {
         "waitStepUpperBound": 100,
-        "clickDuration": 3,
-        "pressDuration": 10,
-        "soundDuration": 10
+        "clickDuration": 1,
+        "pressDuration": 5,
+        "soundDuration": 1
     }
 }
