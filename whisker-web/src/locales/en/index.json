@@ -37,7 +37,7 @@
     "clear" : "Clear",
     "t-clear" : "Clear content",
     "no-file" : "No file selected.",
-    "default" : "default.json",
+    "mio-config" : "mio.json",
     "browse" : "Browse...",
     "no-tests" : "No tests or models loaded",
     "test-execution" : "Test execution",
