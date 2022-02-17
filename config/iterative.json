@@ -2,12 +2,12 @@
     "testGenerator": "iterative",
     "algorithm": "onePlusOne",
     "extractor": "dynamic",
-    "eventSelector": "interleaving",
+    "eventSelector": "clustering",
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
         "maxSampleLength": 20,
-        "maxLength": 40
+        "maxLength": 20
     },
     "mutation": {
         "operator": "variableLength",
@@ -23,7 +23,7 @@
         "conditions": [
             {
                 "type": "fixedTime",
-                "duration": 100000
+                "duration": 6000000
             },
             {
                 "type": "optimal"
@@ -36,8 +36,8 @@
     },
     "durations": {
         "waitStepUpperBound": 100,
-        "clickDuration": 3,
-        "pressDuration": 10,
-        "soundDuration": 10
+        "clickDuration": 1,
+        "pressDuration": 5,
+        "soundDuration": 1
     }
 }

@@ -2,13 +2,13 @@
     "testGenerator": "manyObjective",
     "algorithm": "mosa",
     "extractor": "dynamic",
-    "eventSelector": "interleaving",
-    "populationSize": 70,
+    "eventSelector": "clustering",
+    "populationSize": 30,
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
         "maxSampleLength": 20,
-        "maxLength": 40
+        "maxLength": 20
     },
     "mutation": {
         "operator": "variableLength",
@@ -17,18 +17,19 @@
     },
     "crossover": {
         "operator": "singlePointRelative",
-        "probability": 0.8
+        "probability": 0.7
     },
     "localSearch": [
         {
             "type": "Extension",
-            "probability": 0.1,
-            "newEventProbability": 0.2
+            "probability": 0.3,
+            "newEventProbability": 0.5
         },
         {
             "type": "Reduction",
             "probability": 0.3
         }
+
     ],
     "selection": {
         "operator": "rank"
@@ -55,8 +56,8 @@
     },
     "durations": {
         "waitStepUpperBound": 100,
-        "clickDuration": 3,
-        "pressDuration": 10,
-        "soundDuration": 10
+        "clickDuration": 1,
+        "pressDuration": 5,
+        "soundDuration": 1
     }
 }
