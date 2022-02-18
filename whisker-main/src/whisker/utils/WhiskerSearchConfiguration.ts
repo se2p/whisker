@@ -180,7 +180,7 @@ export class WhiskerSearchConfiguration {
 
         const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number
         const interspeciesMating = this._config['crossover']['interspeciesRate'] as number
-        const crossoverWeightAverageRate =  this._config['crossover']['weightAverageRate'] as number
+        const crossoverWeightAverageRate = this._config['crossover']['weightAverageRate'] as number
 
         const mutationWithoutCrossover = this._config['mutation']['mutationWithoutCrossover'] as number
         const mutationAddConnection = this._config['mutation']['mutationAddConnection'] as number
@@ -258,18 +258,16 @@ export class WhiskerSearchConfiguration {
         parameter.timeout = this._config['timeout'];
         parameter.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness'])
         parameter.repetitions = this._config['repetitions'];
-        parameter.train = this._config['train'] as string == 'true';
 
         // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli
         //  parameter. Maybe good default values which balance performance and time required for
         //  re-training are also fine...
-        if(parameter.train) {
-            parameter.trainPopulationSize = this._config['trainPopulationSize'] as number;
-            const iterationStoppingCondition = new FixedIterationsStoppingCondition(10);
-            const optimalSolutionStoppingCondition = new OptimalSolutionStoppingCondition();
-            parameter.trainStoppingCondition = new OneOfStoppingCondition(
-                iterationStoppingCondition, optimalSolutionStoppingCondition);
-        }
+        parameter.trainPopulationSize = this._config['trainPopulationSize'] as number;
+        const iterationStoppingCondition = new FixedIterationsStoppingCondition(10);
+        const optimalSolutionStoppingCondition = new OptimalSolutionStoppingCondition();
+        parameter.trainStoppingCondition = new OneOfStoppingCondition(
+            iterationStoppingCondition, optimalSolutionStoppingCondition);
+
         return parameter;
     }
 

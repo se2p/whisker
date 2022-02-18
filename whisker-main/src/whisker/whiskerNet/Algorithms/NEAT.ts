@@ -79,6 +79,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             await this.evaluateNetworks(population.networks);
             population.updatePopulationStatistics();
             this.reportOfCurrentIteration(population);
+            this.updateBestIndividualAndStatistics(population);
             population.evolve();
             this._iterations++;
         }

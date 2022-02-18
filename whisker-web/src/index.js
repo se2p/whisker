@@ -253,6 +253,7 @@ const runAllTests = async function () {
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
             const dynamicSuite = new DynamicSuite();
             const properties = {};
+            properties.train = 1;
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
             const csv = await dynamicSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, projectName,

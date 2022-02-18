@@ -7,9 +7,8 @@ import {Randomness} from "../../utils/Randomness";
 export class SurpriseAdequacy {
 
     public static LSA(trainingTraces: ActivationTrace, testTraces: ActivationTrace): number {
-
         // The game could not be started, so we penalize with a SA value of 100;
-        if(!testTraces){
+        if (!testTraces) {
             return 100;
         }
 
@@ -40,14 +39,16 @@ export class SurpriseAdequacy {
                 }
             }
 
-            // Calculate the LSA and compare.
-            const trainingStepTraces = training.getStepTrace(step);
+            // Extract both traces for the given step and make sure both represent the same number of activations.
             const testStepTrace = test.getStepTrace(step);
+            const trainingStepTraces = training.getStepTrace(step).filter(
+                trace => trace.length == testStepTrace[0].length);
 
             if (trainingStepTraces.length < 5) {
                 return surpriseAdequacy / stepCount;
             }
 
+            // Calculate Surprise Adequacy.
             surpriseAdequacy += this.calculateLSA(trainingStepTraces, testStepTrace[0]);
             stepCount++;
         }

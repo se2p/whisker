@@ -40,6 +40,7 @@ export class DynamicSuite {
         const testJSON = JSON.parse(testFile);
         const config = new WhiskerSearchConfiguration(testJSON['Configs']);
         const parameter = config.dynamicSuiteParameter;
+        parameter.train = properties['train'] == 1;
 
         Container.vm = vm;
         Container.vmWrapper = vmWrapper;
@@ -59,7 +60,7 @@ export class DynamicSuite {
         let networks = networkLoader.loadNetworks();
 
         // Re-train the loaded networks on the given project.
-        if (config.dynamicSuiteParameter.train) {
+        if (parameter.train) {
             const neat = new NEAT();
             const neatParameter = this.setTrainParameter(parameter, neat);
             networks = await neat.train(networks, neatParameter);
