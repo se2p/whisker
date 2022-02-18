@@ -70,7 +70,7 @@ Options:
                                             to wait for its completion (default: false)
   -a,   --accelerationFactor <Integer>    Acceleration factor (default: "1")
   -v,   --csvFile <Path>                  Name of CSV File to put output into (default: false)
-  -c,   --configPath <Path>               Path to a configuration file (default: "../config/default.json")
+  -c,   --configPath <Path>               Path to a configuration file (default: "../config/mio.json")
   -d,   --isHeadless                      If should run headless (d like in decapitated)
   -p,   --numberOfTabs <Integer>          The number of tabs to execute the tests in (default: 1)
   -k,   --isConsoleForwarded              If the browser\'s console output should be forwarded (default: false)

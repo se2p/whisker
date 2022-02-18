@@ -1,6 +1,6 @@
 const {$} = require('../web-libs');
 
-const standardConfig = require('../../../config/default.json');
+const standardConfig = require('../../../config/mio.json');
 
 /**
  * <label></label>

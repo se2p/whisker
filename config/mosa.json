@@ -1,8 +1,9 @@
 {
-    "testGenerator": "iterative",
-    "algorithm": "onePlusOne",
+    "testGenerator": "manyObjective",
+    "algorithm": "mosa",
     "extractor": "dynamic",
     "eventSelector": "clustering",
+    "populationSize": 30,
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
@@ -13,6 +14,25 @@
         "operator": "variableLength",
         "probability": 1,
         "gaussianMutationPower": 5
+    },
+    "crossover": {
+        "operator": "singlePointRelative",
+        "probability": 0.7
+    },
+    "localSearch": [
+        {
+            "type": "Extension",
+            "probability": 0.3,
+            "newEventProbability": 0.5
+        },
+        {
+            "type": "Reduction",
+            "probability": 0.3
+        }
+
+    ],
+    "selection": {
+        "operator": "rank"
     },
     "fitnessFunction": {
         "type": "statement",

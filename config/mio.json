@@ -2,25 +2,25 @@
     "testGenerator": "manyObjective",
     "algorithm": "mio",
     "extractor": "dynamic",
-    "eventSelector": "interleaving",
-    "startOfFocusedPhase": 0.5,
+    "eventSelector": "clustering",
+    "startOfFocusedPhase": 1,
     "chromosome": {
         "type": "variableLengthTest",
         "minSampleLength": 2,
         "maxSampleLength": 20,
-        "maxLength": 40
+        "maxLength": 20
     },
     "mutation": {
         "operator": "variableLength",
         "gaussianMutationPower": 5,
         "maxMutationCountStart": 0,
-        "maxMutationCountFocusedPhase": 10
+        "maxMutationCountFocusedPhase": 3
     },
     "localSearch": [
         {
             "type": "Extension",
-            "probability": 0.1,
-            "newEventProbability": 0.2
+            "probability": 0.3,
+            "newEventProbability": 0.5
         },
         {
             "type": "Reduction",
@@ -28,8 +28,8 @@
         }
     ],
     "selection": {
-        "randomSelectionProbabilityStart": 0.5,
-        "randomSelectionProbabilityFocusedPhase": 0
+        "randomSelectionProbabilityStart": 0.9,
+        "randomSelectionProbabilityFocusedPhase": 0.5
     },
     "fitnessFunction": {
         "type": "statement",
@@ -48,8 +48,8 @@
         ]
     },
     "archive": {
-        "maxArchiveSizeStart": 10,
-        "maxArchiveSizeFocusedPhase": 1
+        "maxArchiveSizeStart": 15,
+        "maxArchiveSizeFocusedPhase": 5
     },
     "integerRange": {
         "min": 0,
@@ -57,8 +57,8 @@
     },
     "durations": {
         "waitStepUpperBound": 100,
-        "clickDuration": 3,
-        "pressDuration": 10,
-        "soundDuration": 10
+        "clickDuration": 1,
+        "pressDuration": 5,
+        "soundDuration": 1
     }
 }
