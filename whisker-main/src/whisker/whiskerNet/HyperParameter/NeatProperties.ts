@@ -4,151 +4,163 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.
+ * All parameter values are set to default values but should be altered to reflect the given problem domain.
  */
 export class NeatProperties {
 
     // ----------------- Population Management -------------------
 
     /**
-     * Defines the type of NeuroevolutionPopulation
+     * Defines the type of NeuroevolutionPopulation.
      */
-    private _populationType: string;
+    private _populationType = 'neat';
 
     /**
      * The size of the population that will be initially generated.
      */
-    private _populationSize: number;
+    private _populationSize = 150;
 
     /**
      * Number of desired species.
      */
-    private _numberOfSpecies: number;
+    private _numberOfSpecies = 5;
 
     /**
      * Specifies how many member of the species survive in each generation
      */
-    private _parentsPerSpecies: number
+    private _parentsPerSpecies = 0.20;
 
     /**
      * Specifies when Species start go get penalized due to their age
-     * This helps younger species to be able to develop themself for some time
+     * This helps younger species to be able to develop themselves for some time.
      */
-    private _penalizingAge: number
+    private _penalizingAge = 15;
 
     /**
      * Specifies how much of a boost young generations should get (1.0 resembles no boost at all).
      */
-    private _ageSignificance: number
+    private _ageSignificance = 1.0;
 
     /**
      * The probability of adding a Sprite as Input to the network during the generation of the network population
      */
-    private _inputRate: number
+    private _inputRate = 0.3;
 
 
     // ----------------- Mutation -------------------
     /**
      * The Probability of applying Mutation without Crossover
      */
-    private _mutationWithoutCrossover: number
+    private _mutationWithoutCrossover = 0.25
 
     /**
      * The probability for adding a new connection between nodes during mutation
      */
-    private _mutationAddConnection: number
+    private _mutationAddConnection = 0.05
 
     /**
      * The rate of adding a recurrent connection during the "addConnection" mutation
      */
-    private _recurrentConnection: number
+    private _recurrentConnection = 0.1;
 
     /**
      * How often we try finding a new connection that fits our desires (recurrent/not recurrent) during the
      * "addConnection" mutation
      */
-    private _addConnectionTries: number
+    private _addConnectionTries = 50;
 
     /**
      * Defines how many offspring are reserved for the population Champion.
      */
-    private _populationChampionNumberOffspring: number
+    private _populationChampionNumberOffspring = 3;
 
     /**
      * Defines how often we clone the population Champion.
      */
-    private _populationChampionNumberClones: number
+    private _populationChampionNumberClones = 1;
 
     /**
      * The Population Champion gets a unique probability of mutating the connections of his network
      */
-    private _populationChampionConnectionMutation: number
+    private _populationChampionConnectionMutation = 0.3;
 
     /**
      * The probability for adding a new node to the network during mutation
      */
-    private _mutationAddNode: number
+    private _mutationAddNode = 0.03;
 
     /**
      * The probability for mutating the weights of the connections between nodes
      */
-    private _mutateWeights: number
+    private _mutateWeights = 0.6;
 
     /**
      * Defines how strong the weights are perturbed during weight mutation
      */
-    private _perturbationPower: number
+    private _perturbationPower = 2.5;
 
     /**
      * The probability for enabling/disabling a connection between nodes
      */
-    private _mutateToggleEnableConnection: number
+    private _mutateToggleEnableConnection = 0.1;
 
     /**
      * Defines how many connections are toggled during a toggleEnableConnection mutation
      */
-    private _toggleEnableConnectionTimes: number
+    private _toggleEnableConnectionTimes = 3;
 
     /**
      * The probability for enabling a previously disabled connection between nodes
      */
-    private _mutateEnableConnection: number
+    private _mutateEnableConnection = 0.03;
 
 
     // ----------------- Crossover -------------------
     /**
      * The Probability of applying Crossover without a Mutation following
      */
-    private _crossoverWithoutMutation: number
+    private _crossoverWithoutMutation = 0.25;
 
     /**
-     * Defines how often organisms mate outside of their species
+     * Defines how often organisms mate outside their species
      */
-    private _interspeciesMating: number
+    private _interspeciesMating = 0.001;
+
+    /**
+     * Defines how often we average the weights of two matching genes during crossover.
+     */
+    private _crossoverWeightAverageRate = 0.4;
 
 
     // ----------------- Compatibility Distance -------------------
     /**
      * Determines up to which distance threshold two organisms belong to the same species
      */
-    private _distanceThreshold: number
+    private _distanceThreshold = 3.0;
 
     /**
      * Defines the importance of disjoint connections
      */
-    private _disjointCoefficient
+    private _disjointCoefficient = 1;
 
     /**
      * Defines the importance of excess connections
      */
-    private _excessCoefficient: number
+    private _excessCoefficient = 1;
 
     /**
      * Defines the importance of the weights in case of matching connections
      */
-    private _weightCoefficient: number
+    private _weightCoefficient = 0.5;
 
 
     // ----------------- Miscellaneous -------------------
+
+    /**
+     * Determines how networks choose the next event (random | activation).
+     */
+    private _eventSelection: string
+
     /**
      * The stopping condition for the corresponding search algorithm.
      */
@@ -162,24 +174,18 @@ export class NeatProperties {
     /**
      * Timeout for the execution of a scratch game during the evaluation of the network.
      */
-    private _timeout: number
+    private _timeout = 30000;
 
     /**
      * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
      * ActivationTrace across many program states with diverging seeds.
      */
-    private _repetitions: number;
-
-    /**
-     * Determines how the events should be selected.
-     */
-    private _eventSelection: string
+    private _repetitions = 100;
 
     /**
      * Determines the type of the returned testSuite (static/dynamic)
-     * @private
      */
-    private _testSuiteType: string
+    private _testSuiteType = 'dynamic'
 
     /**
      * The template of a static/dynamic test
@@ -187,20 +193,10 @@ export class NeatProperties {
     private _testTemplate: string;
 
     /**
-     * Defines whether after after each generation a population record containing all chromosomes should be printed in
+     * Defines whether after each generation a population record containing all chromosomes should be printed in
      * JSON format.
      */
-    private _doPrintPopulationRecord: boolean
-
-    /**
-     * Constructs an object that stores all relevant properties of a Neuroevolution Algorithm.
-     * @param populationSize the size of the population
-     */
-    constructor(populationSize: number) {
-        this._populationSize = populationSize;
-    }
-
-    // Getter and Setter
+    private _printPopulationRecord = false;
 
     get populationType(): string {
         return this._populationType;
@@ -378,6 +374,14 @@ export class NeatProperties {
         this._interspeciesMating = value;
     }
 
+    get crossoverWeightAverageRate(): number {
+        return this._crossoverWeightAverageRate;
+    }
+
+    set crossoverWeightAverageRate(value: number) {
+        this._crossoverWeightAverageRate = value;
+    }
+
     get distanceThreshold(): number {
         return this._distanceThreshold;
     }
@@ -408,6 +412,14 @@ export class NeatProperties {
 
     set weightCoefficient(value: number) {
         this._weightCoefficient = value;
+    }
+
+    get eventSelection(): string {
+        return this._eventSelection;
+    }
+
+    set eventSelection(value: string) {
+        this._eventSelection = value;
     }
 
     get stoppingCondition(): StoppingCondition<NeatChromosome> {
@@ -442,14 +454,6 @@ export class NeatProperties {
         this._repetitions = value;
     }
 
-    get eventSelection(): string {
-        return this._eventSelection;
-    }
-
-    set eventSelection(value: string) {
-        this._eventSelection = value;
-    }
-
     get testSuiteType(): string {
         return this._testSuiteType;
     }
@@ -466,11 +470,11 @@ export class NeatProperties {
         this._testTemplate = value;
     }
 
-    get doPrintPopulationRecord(): boolean {
-        return this._doPrintPopulationRecord;
+    get printPopulationRecord(): boolean {
+        return this._printPopulationRecord;
     }
 
-    set doPrintPopulationRecord(value: boolean) {
-        this._doPrintPopulationRecord = value;
+    set printPopulationRecord(value: boolean) {
+        this._printPopulationRecord = value;
     }
 }

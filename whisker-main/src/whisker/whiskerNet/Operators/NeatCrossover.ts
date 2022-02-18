@@ -17,7 +17,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
     /**
      * Probability of averaging the weight of two matching genes during crossover.
      */
-    private readonly crossoverAverageWeights: number;
+    private readonly crossoverWeightAverageRate: number;
 
     /**
      * Constructs a new NeatCrossover object.
@@ -25,7 +25,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
      */
     constructor(crossoverConfig: Record<string, (string | number)>) {
         super();
-        this.crossoverAverageWeights = crossoverConfig.weightAverageRate as number;
+        this.crossoverWeightAverageRate = crossoverConfig.weightAverageRate as number;
     }
 
     /**
@@ -42,7 +42,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
 
         // Decide if we want to inherit the weight of one parent or
         // the average of both parents when we have a matching connection
-        const avgWeights = this.random.nextDouble() < this.crossoverAverageWeights;
+        const avgWeights = this.random.nextDouble() < this.crossoverWeightAverageRate;
         const child = this.multipointCrossover(parent1Clone, parent2Clone, avgWeights);
         return [child, undefined];
     }

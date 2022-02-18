@@ -9,6 +9,7 @@ import {RandomNeuroevolutionPopulation} from "../NeuroevolutionPopulations/Rando
 import Arrays from "../../utils/Arrays";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {NeatTrainPopulation} from "../NeuroevolutionPopulations/NeatTrainPopulation";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -43,7 +44,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * @returns Solution for the given problem
      */
     async findSolution(): Promise<Map<number, NeatChromosome>> {
-        // Report the current state of the search after <reportPeriod> iterations.
         const population = this.getPopulation();
         population.generatePopulation();
         this._iterations = 0;
@@ -61,16 +61,41 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     }
 
     /**
+     * Re-trains an existing set of networks on a (new) project.
+     * @param startingNetworks the networks that will serve as a starting point for the re-train process.
+     * @param parameter the parameters used during re-training.
+     * @returns List of re-trained networks.
+     */
+    public async train(startingNetworks: NeatChromosome[], parameter: NeatProperties): Promise<NeatChromosome[]> {
+        this._neuroevolutionProperties = parameter;
+        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
+        this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
+        const population = this.getPopulation(startingNetworks);
+        population.generatePopulation();
+        this._iterations = 0;
+        this._startTime = Date.now();
+
+        while (!(this._stoppingCondition.isFinished(this))) {
+            await this.evaluateNetworks(population.networks);
+            population.updatePopulationStatistics();
+            this.reportOfCurrentIteration(population);
+            population.evolve();
+            this._iterations++;
+        }
+        return Arrays.distinct([...this._archive.values()]);
+    }
+
+    /**
      * Updates the archive of covered block statements. Each chromosome is mapped to the block it covers.
-     * Additionally we save the best performing chromosome regarding the achieved network fitness.
+     * Additionally, we save the best performing chromosome regarding the achieved network fitness.
      *
      * @param candidateChromosome The candidate chromosome to update the archive with.
      */
     protected updateArchive(candidateChromosome: NeatChromosome): void {
 
         // We save the first chromosome which managed to cover a block instead of the best performing network since
-        // otherwise the dynamic test suite later fails to cover the easiest blocks, e.g simple GameOver state.
-        // For fairness we do the same if a static test suite is targeted.
+        // otherwise the dynamic test suite later fails to cover the easiest blocks, e.g. simple GameOver state.
+        // For fairness, we do the same if a static test suite is targeted.
         // Because we are nonetheless interested in the best performing network, we include the best performing
         // network as an additional key to the archive in the case of a dynamic TestSuite.
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
@@ -96,10 +121,12 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Generate the desired type of NeuroevolutionPopulation to be used by the NEAT algorithm.
      * @returns NeuroevolutionPopulation defined in the config files.
      */
-    private getPopulation(): NeatPopulation {
+    private getPopulation(startingNetworks?: NeatChromosome[]): NeatPopulation {
         switch (this._neuroevolutionProperties.populationType) {
             case 'random':
                 return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
+            case 'train':
+                return new NeatTrainPopulation(this._neuroevolutionProperties, startingNetworks);
             case 'dynamic':
             case 'neat':
             default:
@@ -148,7 +175,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         const coveredGoals = this._neuroevolutionProperties.testSuiteType === 'dynamic' ?
             this._archive.size - 1 : this._archive.size
         console.log(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
-        if (this._neuroevolutionProperties.doPrintPopulationRecord) {
+        if (this._neuroevolutionProperties.printPopulationRecord) {
             const currentPopulationRecord = {}
             currentPopulationRecord[`Generation ${this._iterations}`] = population;
             console.log(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`)

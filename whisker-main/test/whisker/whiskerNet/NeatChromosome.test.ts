@@ -75,7 +75,8 @@ describe('Test NetworkChromosome', () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
         chromosome = generator.get();
-        properties = new NeatProperties(10);
+        properties = new NeatProperties();
+        properties.populationSize = 10;
     })
 
     test('Constructor Test', () => {

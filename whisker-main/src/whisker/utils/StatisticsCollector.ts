@@ -360,8 +360,8 @@ export class StatisticsCollector {
     }
 
     public asCsvDynamicSuite(): string {
-        let csv = "projectName, network, fitnessFunctionCount," +
-            " totalCoveredFitnessFunctionCount, networkFitness, surpriseStepAdequacy, surpriseNodeAdequacy\n";
+        let csv = "projectName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,networkFitness," +
+            "surpriseStepAdequacy,surpriseNodeAdequacy\n";
 
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];

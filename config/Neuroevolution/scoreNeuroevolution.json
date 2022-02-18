@@ -3,6 +3,7 @@
     "algorithm": "neat",
     "testSuiteType": "dynamic",
     "populationType": "neat",
+    "eventSelection": "activation",
     "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
@@ -38,8 +39,8 @@
     },
     "compatibility": {
         "distanceThreshold": 3.0,
-        "disjointCoefficient": 2,
-        "excessCoefficient": 2,
+        "disjointCoefficient": 1,
+        "excessCoefficient": 1,
         "weightCoefficient": 0.5
     },
     "fitnessFunction": {

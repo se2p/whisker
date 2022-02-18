@@ -1,5 +1,6 @@
 import {NetworkFitnessFunction} from "../NetworkFitness/NetworkFitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
+import {StoppingCondition} from "../../search/StoppingCondition";
 
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.
@@ -26,6 +27,25 @@ export class DynamicSuiteParameter {
      * ActivationTrace across many program states with diverging seeds.
      */
     private _repetitions: number;
+
+
+    // ---------------------------------- Train Parameter ---------------------------------------------
+
+    /**
+     * Determines whether the networks should be re-trained on the given project.
+     */
+    private _train: boolean;
+
+    /**
+     * Population size during the re-training process.
+     */
+    private _trainPopulationSize = 100;
+
+    /**
+     * Stopping conditions during the re-training process.
+     */
+    private _trainStoppingCondition: StoppingCondition<NeatChromosome>;
+
 
     get networkFitness(): NetworkFitnessFunction<NeatChromosome> {
         return this._networkFitness;
@@ -57,5 +77,29 @@ export class DynamicSuiteParameter {
 
     set repetitions(value: number) {
         this._repetitions = value;
+    }
+
+    get train(): boolean {
+        return this._train;
+    }
+
+    set train(value: boolean) {
+        this._train = value;
+    }
+
+    get trainPopulationSize(): number {
+        return this._trainPopulationSize;
+    }
+
+    set trainPopulationSize(value: number) {
+        this._trainPopulationSize = value;
+    }
+
+    get trainStoppingCondition(): StoppingCondition<NeatChromosome> {
+        return this._trainStoppingCondition;
+    }
+
+    set trainStoppingCondition(value: StoppingCondition<NeatChromosome>) {
+        this._trainStoppingCondition = value;
     }
 }

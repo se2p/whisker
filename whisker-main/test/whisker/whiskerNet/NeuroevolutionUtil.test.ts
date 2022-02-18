@@ -53,7 +53,8 @@ describe("NeuroevolutionUtil Tests", () => {
         sprite2.set("DistanceToWhite-Y", 9);
         genInputs.set("Sprite2", sprite2);
         populationSize = 50;
-        properties = new NeatProperties(populationSize);
+        properties = new NeatProperties();
+        properties.populationSize = populationSize;
         properties.weightCoefficient = 0.4;
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;

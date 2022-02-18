@@ -169,9 +169,9 @@ export class WhiskerSearchConfiguration {
     }
 
     public setNeuroevolutionProperties(): NeatProperties {
-        const populationSize = this._config['populationSize'] as number;
-        const properties = new NeatProperties(populationSize);
+        const properties = new NeatProperties();
 
+        const populationSize = this._config['populationSize'] as number;
         const parentsPerSpecies = this._config['parentsPerSpecies'] as number;
         const numberOfSpecies = this._config['numberOfSpecies'] as number;
         const penalizingAge = this._config['penalizingAge'] as number;
@@ -180,6 +180,7 @@ export class WhiskerSearchConfiguration {
 
         const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number
         const interspeciesMating = this._config['crossover']['interspeciesRate'] as number
+        const crossoverWeightAverageRate =  this._config['crossover']['weightAverageRate'] as number
 
         const mutationWithoutCrossover = this._config['mutation']['mutationWithoutCrossover'] as number
         const mutationAddConnection = this._config['mutation']['mutationAddConnection'] as number
@@ -200,10 +201,12 @@ export class WhiskerSearchConfiguration {
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
+        const eventSelection = this._config['eventSelection'] as string;
         const repetitions = this._config['repetitions'] as number;
         const timeout = this._config['networkFitness']['timeout'];
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
 
+        properties.populationSize = populationSize;
         properties.populationType = this._config[`populationType`] as string;
         properties.testSuiteType = this.getTestSuiteType();
         properties.testTemplate = Container.template;
@@ -215,6 +218,7 @@ export class WhiskerSearchConfiguration {
 
         properties.crossoverWithoutMutation = crossoverWithoutMutation;
         properties.interspeciesMating = interspeciesMating;
+        properties.crossoverWeightAverageRate = crossoverWeightAverageRate;
 
         properties.mutationWithoutCrossover = mutationWithoutCrossover;
         properties.mutationAddConnection = mutationAddConnection;
@@ -235,9 +239,10 @@ export class WhiskerSearchConfiguration {
         properties.excessCoefficient = excessCoefficient;
         properties.weightCoefficient = weightCoefficient;
 
+        properties.eventSelection = eventSelection;
         properties.repetitions = repetitions;
         properties.timeout = timeout;
-        properties.doPrintPopulationRecord = doPrintPopulationRecord;
+        properties.printPopulationRecord = doPrintPopulationRecord;
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
         properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']['type']);
@@ -252,8 +257,19 @@ export class WhiskerSearchConfiguration {
         const parameter = new DynamicSuiteParameter();
         parameter.timeout = this._config['timeout'];
         parameter.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness'])
-        parameter.eventSelection = this._config['eventSelection'];
         parameter.repetitions = this._config['repetitions'];
+        parameter.train = this._config['train'] as string == 'true';
+
+        // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli
+        //  parameter. Maybe good default values which balance performance and time required for
+        //  re-training are also fine...
+        if(parameter.train) {
+            parameter.trainPopulationSize = this._config['trainPopulationSize'] as number;
+            const iterationStoppingCondition = new FixedIterationsStoppingCondition(10);
+            const optimalSolutionStoppingCondition = new OptimalSolutionStoppingCondition();
+            parameter.trainStoppingCondition = new OneOfStoppingCondition(
+                iterationStoppingCondition, optimalSolutionStoppingCondition);
+        }
         return parameter;
     }
 

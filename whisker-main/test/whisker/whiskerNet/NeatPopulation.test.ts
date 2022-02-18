@@ -64,7 +64,8 @@ describe("Test NeatPopulation", () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         chromosomeGenerator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
-        properties = new NeatProperties(size);
+        properties = new NeatProperties();
+        properties.populationSize = size;
         properties.disjointCoefficient = 1;
         properties.excessCoefficient = 1;
         properties.weightCoefficient = 0.3;

@@ -88,7 +88,7 @@ export class NetworkExecutor {
         switch (this._eventSelection) {
             case 'random':
                 return this.executeRandom(network);
-            case 'network':
+            case 'activation':
             default:
                 return this.executeNetwork(network);
         }

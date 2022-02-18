@@ -1,15 +1,10 @@
 import {OptimalSolutionStoppingCondition} from "../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 
-describe("Test NeuroevolutionProperties", () => {
-
-    test("Test Constructor", () => {
-        const properties = new NeatProperties(10);
-        expect(properties.populationSize).toBe(10);
-    })
+describe("Test NeatProperties", () => {
 
     test("Test Getter and Setter", () => {
-        const properties = new NeatProperties(10);
+        const properties = new NeatProperties();
         properties.populationSize = 50;
         properties.parentsPerSpecies = 0.3;
         properties.penalizingAge = 30;

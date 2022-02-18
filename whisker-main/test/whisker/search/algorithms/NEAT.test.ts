@@ -73,7 +73,8 @@ describe('Test NEAT', () => {
         const iterations = 20;
         const populationSize = 150;
         const random = Randomness.getInstance();
-        properties = new NeatProperties(populationSize);
+        properties = new NeatProperties();
+        properties.populationSize = populationSize;
 
         properties.networkFitness = new class implements NetworkFitnessFunction<NetworkChromosome> {
             compare(value1: number, value2: number): number {

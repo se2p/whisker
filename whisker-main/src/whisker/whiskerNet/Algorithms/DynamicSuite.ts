@@ -10,13 +10,15 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
-import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {TestChromosome} from "../../testcase/TestChromosome";
+import {NEAT} from "./NEAT";
+import {NeatProperties} from "../HyperParameter/NeatProperties";
+import {FitnessFunction} from "../../search/FitnessFunction";
+import {DynamicSuiteParameter} from "../HyperParameter/DynamicSuiteParameter";
 
 export class DynamicSuite {
 
-    private _statementMap: Map<number, StatementFitnessFunction>;
+    private _statementMap: Map<number, FitnessFunction<NeatChromosome>>;
     private _archive = new Map<number, NetworkChromosome>();
 
     public async execute(vm: VirtualMachine, project: ScratchProject, projectName: string, testFile: string,
@@ -51,9 +53,19 @@ export class DynamicSuite {
         await util.prepare(properties['acceleration'] || 1);
         util.start();
 
+        // Load the saved networks from the test file.
         const eventExtractor = new NeuroevolutionScratchEventExtractor(vm);
         const networkLoader = new NetworkLoader(testJSON['Networks'], eventExtractor.extractStaticEvents(vm));
-        const networks = networkLoader.loadNetworks();
+        let networks = networkLoader.loadNetworks();
+
+        // Re-train the loaded networks on the given project.
+        if (config.dynamicSuiteParameter.train) {
+            const neat = new NEAT();
+            const neatParameter = this.setTrainParameter(parameter, neat);
+            networks = await neat.train(networks, neatParameter);
+        }
+
+        // Execute the dynamic suite.
         for (const network of networks) {
             network.recordActivationTrace = true;
             await parameter.networkFitness.getFitness(network, parameter.timeout, parameter.eventSelection);
@@ -70,11 +82,11 @@ export class DynamicSuite {
     }
 
     private initialiseFitnessTargets() {
-        this._statementMap = new Map<number, StatementFitnessFunction>();
+        this._statementMap = new Map<number, FitnessFunction<NeatChromosome>>();
         const fitnessFactory = new StatementFitnessFunctionFactory();
         const fitnessTargets = fitnessFactory.extractFitnessFunctions(Container.vm, []);
         for (let i = 0; i < fitnessTargets.length; i++) {
-            this._statementMap.set(i, fitnessTargets[i]);
+            this._statementMap.set(i, fitnessTargets[i] as unknown as FitnessFunction<NeatChromosome>);
         }
         StatisticsCollector.getInstance().fitnessFunctionCount = fitnessTargets.length;
     }
@@ -82,12 +94,23 @@ export class DynamicSuite {
     private updateArchive(network: NeatChromosome) {
         for (const statementKey of this._statementMap.keys()) {
             const fitnessFunction = this._statementMap.get(statementKey);
-            const statementFitness = fitnessFunction.getFitness(network as unknown as TestChromosome);
+            const statementFitness = fitnessFunction.getFitness(network);
             if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(statementKey)) {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(statementKey, network);
             }
         }
+    }
+
+    private setTrainParameter(parameter: DynamicSuiteParameter, neat:NEAT){
+        neat.setFitnessFunctions(this._statementMap);
+        const neatParameter = new NeatProperties();
+        neatParameter.populationType='train';
+        neatParameter.populationSize = parameter.trainPopulationSize;
+        neatParameter.timeout = parameter.timeout;
+        neatParameter.networkFitness = parameter.networkFitness;
+        neatParameter.stoppingCondition = parameter.trainStoppingCondition;
+        return neatParameter;
     }
 
 }
