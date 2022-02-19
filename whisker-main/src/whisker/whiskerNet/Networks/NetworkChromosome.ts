@@ -87,9 +87,13 @@ export abstract class NetworkChromosome extends Chromosome {
 
     /**
      * The average surprise value across all steps but split up by nodes.
-     * @private
      */
     private _surpriseAdequacyNodes = 0;
+
+    /**
+     * Counts the number of surprises and normalises it with the number of performed steps.
+     */
+    private _surpriseCounterNormalised = 0;
 
     /**
      * The fitness value of the network.
@@ -680,6 +684,14 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set surpriseAdequacyNodes(value: number) {
         this._surpriseAdequacyNodes = value;
+    }
+
+    get surpriseCounterNormalised(): number {
+        return this._surpriseCounterNormalised;
+    }
+
+    set surpriseCounterNormalised(value: number) {
+        this._surpriseCounterNormalised = value;
     }
 
     get trace(): ExecutionTrace {

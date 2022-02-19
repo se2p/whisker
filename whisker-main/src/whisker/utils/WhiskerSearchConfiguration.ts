@@ -262,8 +262,8 @@ export class WhiskerSearchConfiguration {
         // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli
         //  parameter. Maybe good default values which balance performance and time required for
         //  re-training are also fine...
-        parameter.trainPopulationSize = this._config['trainPopulationSize'] as number;
-        const iterationStoppingCondition = new FixedIterationsStoppingCondition(10);
+        parameter.trainPopulationSize = 50;
+        const iterationStoppingCondition = new FixedIterationsStoppingCondition(5);
         const optimalSolutionStoppingCondition = new OptimalSolutionStoppingCondition();
         parameter.trainStoppingCondition = new OneOfStoppingCondition(
             iterationStoppingCondition, optimalSolutionStoppingCondition);

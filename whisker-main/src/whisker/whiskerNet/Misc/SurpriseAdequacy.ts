@@ -68,60 +68,88 @@ export class SurpriseAdequacy {
         return -Math.log(density);
     }
 
-    private static calculateLSAThreshold(trainingTrace: ActivationTrace, thresholdFactor: number): Map<number, number> {
-        const thresholdMap = new Map<number, number>();
-        const random = Randomness.getInstance();
-        const trainingStepTrace = trainingTrace.groupBySteps();
-        for (const step of trainingStepTrace.keys()) {
-            const stepTrace = trainingStepTrace.get(step);
-
-            if (stepTrace.length < 10) {
-                return thresholdMap;
-            }
-
-            let LSA = 0;
-            const repetitions = 5;
-            for (let i = 0; i < repetitions; i++) {
-                const randomIndex = random.nextInt(0, stepTrace.length);
-                const randomSample = stepTrace[randomIndex];
-                LSA += this.calculateLSA(stepTrace, randomSample);
-            }
-            LSA /= repetitions;
-            LSA = LSA < 0 ? LSA / thresholdFactor : LSA * thresholdFactor;
-            thresholdMap.set(step, LSA);
-        }
-        return thresholdMap;
-    }
-
-    public static likelihoodNodeBased(training: ActivationTrace, test: ActivationTrace): Map<number, Map<string, boolean>> {
-        // For each step, compare the ATs during training and testing.
+    public static LSANodeBased(training: ActivationTrace, test: ActivationTrace): [number, Map<number, Map<string, boolean>>] {
         const surpriseMap = new Map<number, Map<string, boolean>>();
+        let sa = 0;
+        let stepCount = 0;
+        if (!test) {
+            for (const [step, stepTrace] of training.trace.entries()) {
+                surpriseMap.set(step, new Map<string, boolean>());
+                for (const nodeId of stepTrace.keys()) {
+                    surpriseMap.get(step).set(nodeId, true);
+                }
+            }
+            return [100, surpriseMap];
+        }
+        // For each step, compare the ATs during training and testing.
         for (const step of test.trace.keys()) {
+            stepCount++;
             // If the test run performed more steps than the test run we stop since have no training AT to compare.
             if (!training.trace.has(step)) {
-                return surpriseMap;
+                return [sa / stepCount, surpriseMap];
             }
             surpriseMap.set(step, new Map<string, boolean>());
 
             for (const [nodeId, nodeTrace] of test.trace.get(step).entries()) {
                 const testValue = nodeTrace[0];
-                const trainingValues = training.trace.get(step).get(nodeId);
-                const LSA = this.calculateLSANodeBased(trainingValues, testValue);
 
-                // Check if the test AT for the given step and node is surprising.
-                if (LSA > 2.5) {
+                // Continue if the training run did not record any activations on a given input.
+                if (!training.trace.get(step).has(nodeId)) {
+                    continue;
+                }
+                const trainingValues = training.trace.get(step).get(nodeId);
+
+                // If we have too few values to check against we cannot make a valid prediction and stop since we
+                // won't get more values in the future.
+                if (trainingValues.length < 20) {
+                    return [sa / stepCount, surpriseMap];
+                }
+
+                // Define the threshold for a surprising activation and the surprise value itself.
+                const threshold = this.getLSAThreshold(trainingValues);
+                const LSA = this.calculateLSANodeBased(trainingValues, testValue);
+                sa += Math.min(100, LSA);
+
+                // Determine if we found a surprising activation, which is the case if the LSA is bigger than 0,
+                // bigger than the threshold and if we have an activation value that is not present in the reference
+                // trace.
+                if (LSA > 0 && LSA > threshold && !trainingValues.includes(testValue)) {
                     surpriseMap.get(step).set(nodeId, true);
                 } else {
                     surpriseMap.get(step).set(nodeId, false);
                 }
             }
         }
-        return surpriseMap;
+        return [sa / stepCount, surpriseMap];
+    }
+
+    private static getLSAThreshold(traceValues: number[]): number {
+        if (traceValues.every(value => value == traceValues[0])) {
+            return 1;
+        }
+
+        let lsa = 0;
+        const repetitions = 20;
+        const random = Randomness.getInstance();
+        for (let i = 0; i < repetitions; i++) {
+            const value = random.pick(traceValues);
+            lsa += this.calculateLSANodeBased(traceValues, value);
+        }
+        return Math.max(1, lsa / repetitions) * 2;
     }
 
     private static calculateLSANodeBased(trainingTrace: number[], testTrace: number) {
         let kdeSum = 0;
         const bandwidth = Statistics.bandwidthSilverman(trainingTrace);
+        const equal = trainingTrace.every(value => value == testTrace);
+
+        if (equal) {
+            return 0;
+        }
+        const std = Statistics.std(trainingTrace);
+        if (std < 0.0001) {
+            return Math.abs(trainingTrace[0] - testTrace) * 10;
+        }
 
         for (const trainingValue of trainingTrace) {
             const traceDifference = testTrace - trainingValue;

@@ -48,6 +48,10 @@ export default class Statistics {
             }
         }
 
+        if(upperQuartile.length == 0 || lowerQuartile.length == 0){
+            return 1;
+        }
+
         const q1 = this.median(lowerQuartile);
         const q3 = this.median(upperQuartile);
         return q3 - q1;

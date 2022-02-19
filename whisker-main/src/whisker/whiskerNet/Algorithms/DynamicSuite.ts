@@ -73,13 +73,27 @@ export class DynamicSuite {
             this.updateArchive(network);
             if (network.savedActivationTrace) {
                 network.surpriseAdequacyStep = SurpriseAdequacy.LSA(network.savedActivationTrace, network.currentActivationTrace);
-                network.surpriseAdequacyNodes = 0;
+                const nodeSA = SurpriseAdequacy.LSANodeBased(network.savedActivationTrace, network.currentActivationTrace);
+                network.surpriseAdequacyNodes = nodeSA[0];
+                network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
             }
             StatisticsCollector.getInstance().networks.push(network);
         }
         const csvOutput = StatisticsCollector.getInstance().asCsvDynamicSuite();
         console.log(csvOutput)
         return csvOutput;
+    }
+
+    private static getNumberOfSurprises(surpriseMap: Map<number, Map<string, boolean>>): number {
+        let surpriseCounter = 0;
+        for (const stepTrace of surpriseMap.values()) {
+            for (const surprise of stepTrace.values()) {
+                if (surprise) {
+                    surpriseCounter++;
+                }
+            }
+        }
+        return surpriseCounter;
     }
 
     private initialiseFitnessTargets() {
@@ -103,10 +117,10 @@ export class DynamicSuite {
         }
     }
 
-    private setTrainParameter(parameter: DynamicSuiteParameter, neat:NEAT){
+    private setTrainParameter(parameter: DynamicSuiteParameter, neat: NEAT) {
         neat.setFitnessFunctions(this._statementMap);
         const neatParameter = new NeatProperties();
-        neatParameter.populationType='train';
+        neatParameter.populationType = 'train';
         neatParameter.populationSize = parameter.trainPopulationSize;
         neatParameter.timeout = parameter.timeout;
         neatParameter.networkFitness = parameter.networkFitness;
