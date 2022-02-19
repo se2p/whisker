@@ -95,6 +95,8 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     private _surpriseCounterNormalised = 0;
 
+    private _zScore = 0;
+
     /**
      * The fitness value of the network.
      */
@@ -692,6 +694,14 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set surpriseCounterNormalised(value: number) {
         this._surpriseCounterNormalised = value;
+    }
+
+    get zScore(): number {
+        return this._zScore;
+    }
+
+    set zScore(value: number) {
+        this._zScore = value;
     }
 
     get trace(): ExecutionTrace {

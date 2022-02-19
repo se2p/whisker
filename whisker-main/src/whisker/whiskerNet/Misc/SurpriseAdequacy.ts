@@ -160,31 +160,72 @@ export class SurpriseAdequacy {
         return -Math.log(density);
     }
 
-    /*
-    public static zScore(reference: ActivationTrace, test:ActivationTrace): Map<string, boolean>{
-        const outliers = new Map<string, boolean>();
-        for(const [node, trace] of reference.inputTrace.entries()){
-            const testValue = test.inputTrace.get(node)[0];
-            outliers.set(node, this.predictOutlierZScore(trace, testValue))
+
+    public static zScore(training: ActivationTrace, test:ActivationTrace): [number, Map<number, Map<string, boolean>>]{
+        const surpriseMap = new Map<number, Map<string, boolean>>();
+        let zScore = 0;
+        let stepCount = 0;
+        if (!test) {
+            for (const [step, stepTrace] of training.trace.entries()) {
+                surpriseMap.set(step, new Map<string, boolean>());
+                for (const nodeId of stepTrace.keys()) {
+                    surpriseMap.get(step).set(nodeId, true);
+                }
+            }
+            return [5, surpriseMap];
         }
-        return outliers;
+        // For each step, compare the ATs during training and testing.
+        for (const step of test.trace.keys()) {
+            stepCount++;
+            // If the test run performed more steps than the test run we stop since have no training AT to compare.
+            if (!training.trace.has(step)) {
+                return [zScore / stepCount, surpriseMap];
+            }
+            surpriseMap.set(step, new Map<string, boolean>());
+
+            for (const [nodeId, nodeTrace] of test.trace.get(step).entries()) {
+                const testValue = nodeTrace[0];
+
+                // Continue if the training run did not record any activations on a given input.
+                if (!training.trace.get(step).has(nodeId)) {
+                    continue;
+                }
+                const trainingValues = training.trace.get(step).get(nodeId);
+
+                // If we have too few values to check against we cannot make a valid prediction and stop since we
+                // won't get more values in the future.
+                if (trainingValues.length < 20) {
+                    return [zScore / stepCount, surpriseMap];
+                }
+
+                // Define the threshold for a surprising activation and the surprise value itself.
+                const z = this.calculateZScore(trainingValues, testValue);
+                zScore += z;
+
+                // Determine if we found a surprising activation, which is the case if the LSA is bigger than 0,
+                // bigger than the threshold and if we have an activation value that is not present in the reference
+                // trace.
+                if (zScore > 3 && !trainingValues.includes(testValue)) {
+                    surpriseMap.get(step).set(nodeId, true);
+                } else {
+                    surpriseMap.get(step).set(nodeId, false);
+                }
+            }
+        }
+        return [zScore / stepCount, surpriseMap];
     }
 
-    private static predictOutlierZScore(referenceTrace: number[], testValue: number): boolean{
-        // We need enough data points to make a prediction!
-        if(referenceTrace.length < 10){
-            return undefined
+    private static calculateZScore(referenceTrace: number[], testValue: number): number{
+        const mean = Statistics.mean(referenceTrace);
+        const std = Statistics.std(referenceTrace);
+        if(std < 0.001 && mean != testValue){
+            return Math.abs(testValue - mean) * 4;
         }
-
-        const [mean, std] = this.meanAndStd(referenceTrace);
-        if(std == 0 && mean != testValue){
-            return true
+        else if(std < 0.001 && mean == testValue){
+            return 0;
         }
         else{
-            const zScore = (testValue - mean) / std;
-            return Math.abs(zScore) > 3;
+            return Math.abs((testValue - mean) / std);
         }
     }
-
-     */
 }

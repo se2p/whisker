@@ -41,6 +41,7 @@ export class DynamicSuite {
         const config = new WhiskerSearchConfiguration(testJSON['Configs']);
         const parameter = config.dynamicSuiteParameter;
         parameter.train = properties['train'] == 1;
+        parameter.train = false
 
         Container.vm = vm;
         Container.vmWrapper = vmWrapper;
@@ -76,6 +77,9 @@ export class DynamicSuite {
                 const nodeSA = SurpriseAdequacy.LSANodeBased(network.savedActivationTrace, network.currentActivationTrace);
                 network.surpriseAdequacyNodes = nodeSA[0];
                 network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
+                const z =  SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
+                network.zScore = z[0];
+                console.log(z[1]);
             }
             StatisticsCollector.getInstance().networks.push(network);
         }
