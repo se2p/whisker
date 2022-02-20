@@ -162,4 +162,50 @@ describe("Test NeatCrossover", () => {
             expect(child2.updateStabiliseCount(20)).not.toBe(-1);
         }
     })
+
+    test("CrossoverTest with excess genes and average weight", () => {
+        const crossoverConfig = {
+            "operator": "neatCrossover",
+            // Should disable Mutation; Where is this used?!
+            "crossoverWithoutMutation": 1.0,
+            //"crossoverWithoutMutation": 0.2,
+            "interspeciesRate": 0.001,
+            // Always use the average
+            "weightAverageRate": 1.0
+        };
+        const crossoverOp = new NeatCrossover(crossoverConfig);
+
+
+        // Create Nodes of first network
+        const iNode1 = new InputNode("InputNode", "Nothing");
+        iNode1.uID = 0;
+        const oNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
+        oNode1.uID = 1;
+        nodes1 = [iNode1, oNode1];
+
+        // Create Connections of first parent
+        parent1Connections = [new ConnectionGene(iNode1, oNode1, 1, true, 1, false)];
+
+
+        // Create Nodes of second network
+        const iNode2 = iNode1.clone();
+        const oNode2 = oNode1.clone();
+        nodes2 = [iNode2, oNode2];
+
+        // No connections for second network
+        parent2Connections = [];
+
+
+        const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp);
+        parent1.fitness = 1;
+        const parent2 = new NeatChromosome(nodes2, parent2Connections, mutationOp, crossoverOp);
+        parent2.fitness = 0;
+
+
+        const child = crossoverOp.apply(parent1, parent2)[0]
+
+
+        expect(child.connections.length).toBe(1)
+        expect(child.connections[0].weight).toBe(1)
+    })
 })
