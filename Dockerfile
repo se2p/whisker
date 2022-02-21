@@ -37,6 +37,18 @@
 # (1) Build Stage
 #-------------------------------------------------------------------------------
 
+# To make sure we always use the same version of the base image, we specify the
+# desired digest of the image instead of a tag. Image tags are dynamic references,
+# and might change over time [1]. Tags of Node.JS along with their digests can be
+# found here [2]. The digest or tag to use can be overridden on the command line with
+# `--build-arg node_version=...`
+#
+# [1] https://www.ibm.com/docs/en/filenet-p8-platform/5.5.x?topic=deployment-choosing-image-tags-digests
+# [2] https://hub.docker.com/_/node?tab=tags
+#
+# Currently, this digest corresponds to the tag 16.14.0-buster-slim:
+ARG node_version=@sha256:a2cae65fae1a545b332cb3fc9a3581ebdd748ec71ca3f539b183fa3f4119f496
+
 # (a) We use a slim base image that already includes Node.JS, and install only
 #     a minimal set of missing packages required to run Puppeteer. In
 #     particular, this includes various shared libraries (*.so files), and
@@ -51,7 +63,7 @@
 #     Then, just copy this list of dependencies and install them below. This
 #     will most likely pull in a lot of unwanted packages, too, but at least
 #     Puppeteer will work then.
-FROM node:lts-buster-slim as base
+FROM node${node_version} as base
 RUN apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y \
         tini \
@@ -112,7 +124,14 @@ RUN yarn build \
 # and the yarn build cache from the final image.
 FROM base as execute
 
-# https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
+# Signal Node.JS that we are running in a production environment. This leads to some
+# differences compared to a development environment [1], such as logging and caching.
+# Note: Environment variables set with ENV persist [2] (they are still set when running
+# the container from the built image), in contrast to ARG [3] (it does not persist).
+#
+# [1] https://nodejs.dev/learn/nodejs-the-difference-between-development-and-production
+# [2] https://docs.docker.com/engine/reference/builder/#env
+# [3] https://docs.docker.com/engine/reference/builder/#arg
 ENV NODE_ENV=production
 
 # Copy the build of Whisker from the build layer to the execution layer.

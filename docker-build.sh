@@ -5,6 +5,7 @@ declare -l BRANCH # Make contents of the variable lowercase
 readonly BRANCH=$(git rev-parse --abbrev-ref HEAD)
 readonly TAG="whisker:${BRANCH}-${COMMIT}"
 
+# Try to detect available docker commands.
 function set_docker_cmd() {
     if [[ -z "${DOCKER_CMD}" ]]; then
         if command -v dockerd-rootless-infosun &>/dev/null; then
@@ -16,14 +17,15 @@ function set_docker_cmd() {
     fi
 }
 
-function run_docker_cmd() {
+# Helper function to run docker.
+function my_docker() {
     set_docker_cmd
     eval "${DOCKER_CMD}" "$@"
 }
 
 function main() {
     echo "Building docker image of Whisker with tag ${TAG}"
-    run_docker_cmd image build . -t "${TAG}" -f Dockerfile
+    my_docker image build . -t "${TAG}" -f Dockerfile
 
     readonly tar_file="${TAG}.tar"
     echo "Saving image to ${tar_file}.gz"
@@ -31,7 +33,7 @@ function main() {
     #   docker save tag | gzip > tarfile.tar.gz
     # But this leads to invalid TAR header errors when attempting to load the
     # tar file with docker again. In contrast, this command does work:
-    run_docker_cmd save "${TAG}" -o "${tar_file}" && gzip -f "${tar_file}"
+    my_docker save "${TAG}" -o "${tar_file}" && gzip -f "${tar_file}"
 }
 
 main
