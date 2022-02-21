@@ -19,6 +19,7 @@ describe("Surprise Adequacy", () => {
                 for (let numNode = 0; numNode < 15; numNode++) {
                     const iNode = new InputNode(numNode.toString(), numNode.toString());
                     iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                    iNode.activatedFlag = true;
                     repetitionTrace.push(iNode);
                 }
                 stepTrace.push(repetitionTrace);
@@ -42,6 +43,7 @@ describe("Surprise Adequacy", () => {
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
                 const iNode = new InputNode(i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                iNode.activatedFlag = true;
                 stepTrace.push(iNode);
             }
             testNodeTrace.push(stepTrace);
@@ -62,6 +64,7 @@ describe("Surprise Adequacy", () => {
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
                 const iNode = new InputNode(i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                iNode.activatedFlag = true;
                 stepTrace.push(iNode);
             }
             testNodeTrace.push(stepTrace);
@@ -87,6 +90,7 @@ describe("Surprise Adequacy", () => {
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
                 const iNode = new InputNode(i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.5, 1) * 100) / 100;
+                iNode.activatedFlag = true;
                 stepTrace.push(iNode);
             }
             testNodeTrace.push(stepTrace);
@@ -107,6 +111,7 @@ describe("Surprise Adequacy", () => {
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
                 const iNode = new InputNode(i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.5, 1) * 100) / 100;
+                iNode.activatedFlag = true;
                 stepTrace.push(iNode);
             }
             testNodeTrace.push(stepTrace);
@@ -196,9 +201,13 @@ describe("Surprise Adequacy", () => {
                 for (let numNode = 0; numNode < nodes; numNode++) {
                     const iNode = new InputNode(numNode.toString(), numNode.toString());
                     iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                    iNode.activatedFlag = true;
                     repetitionTrace.push(iNode);
                 }
-                repetitionTrace.push(new InputNode("Training", "New"));
+                const newINode = new InputNode("Training", "New");
+                newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                newINode.activatedFlag = true;
+                repetitionTrace.push(newINode);
                 trainingTrace.update(step, repetitionTrace);
             }
         }
@@ -209,9 +218,13 @@ describe("Surprise Adequacy", () => {
             for (let numNode = 0; numNode < nodes; numNode++) {
                 const iNode = new InputNode(numNode.toString(), numNode.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                iNode.activatedFlag = true;
                 nodeTrace.push(iNode);
             }
-            nodeTrace.push(new InputNode("Test", "New"));
+            const newINode = new InputNode("Test", "New");
+            newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+            newINode.activatedFlag = true;
+            nodeTrace.push(newINode);
             testTrace.update(step, nodeTrace);
         }
 
@@ -232,9 +245,13 @@ describe("Surprise Adequacy", () => {
                 for (let numNode = 0; numNode < nodes; numNode++) {
                     const iNode = new InputNode(numNode.toString(), numNode.toString());
                     iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                    iNode.activatedFlag = true;
                     repetitionTrace.push(iNode);
                 }
-                repetitionTrace.push(new InputNode("Training", "New"));
+                const newINode = new InputNode("Training", "New");
+                newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                newINode.activatedFlag = true;
+                repetitionTrace.push(newINode);
                 trainingTrace.update(step, repetitionTrace);
             }
         }
@@ -245,9 +262,13 @@ describe("Surprise Adequacy", () => {
             for (let numNode = 0; numNode < nodes; numNode++) {
                 const iNode = new InputNode(numNode.toString(), numNode.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+                iNode.activatedFlag = true;
                 nodeTrace.push(iNode);
             }
-            nodeTrace.push(new InputNode("Test", "New"));
+            const newINode = new InputNode("Test", "New");
+            newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
+            newINode.activatedFlag = true;
+            nodeTrace.push(newINode);
             testTrace.update(step, nodeTrace);
         }
 

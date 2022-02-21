@@ -13,8 +13,9 @@ export class ActivationTrace {
 
     public update(step: number, nodes: NodeGene[]): void {
         // Check if we encountered a new node.
+        const activatedNodes = nodes.filter(node => node.activatedFlag);
         const tracedIds = this._tracedNodes.map(node => node.identifier());
-        for (const node of nodes) {
+        for (const node of activatedNodes) {
             const nodeId = node.identifier();
             if (!tracedIds.includes(nodeId)) {
                 this._tracedNodes.push(node);
@@ -26,15 +27,13 @@ export class ActivationTrace {
             this._trace.set(step, new Map<string, number[]>());
         }
         const stepTrace = this._trace.get(step);
-        for (const node of nodes) {
-            if (node.activatedFlag) {
-                const nodeId = node.identifier();
-                const activationValue = Math.round(node.activationValue * 1000) / 1000;
-                if (!stepTrace.has(nodeId)) {
-                    stepTrace.set(nodeId, [activationValue]);
-                } else {
-                    stepTrace.get(nodeId).push(activationValue);
-                }
+        for (const node of activatedNodes) {
+            const nodeId = node.identifier();
+            const activationValue = Math.round(node.activationValue * 1000) / 1000;
+            if (!stepTrace.has(nodeId)) {
+                stepTrace.set(nodeId, [activationValue]);
+            } else {
+                stepTrace.get(nodeId).push(activationValue);
             }
         }
     }

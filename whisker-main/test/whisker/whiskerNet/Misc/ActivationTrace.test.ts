@@ -3,7 +3,7 @@ import {NodeGene} from "../../../../src/whisker/whiskerNet/NetworkComponents/Nod
 import {InputNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/InputNode";
 import {Randomness} from "../../../../src/whisker/utils/Randomness";
 
-describe("Distributions", () => {
+describe("Activation Trace", () => {
 
     let nodeTraces: NodeGene[][][];
     let activationTrace: ActivationTrace;
@@ -18,6 +18,7 @@ describe("Distributions", () => {
                 const repetitionTrace: NodeGene[] = [];
                 for (let numNode = 0; numNode < 15; numNode++) {
                     const iNode = new InputNode(numNode.toString(), numNode.toString());
+                    iNode.activatedFlag = true;
                     iNode.activationValue = random.nextInt(0, 100);
                     repetitionTrace.push(iNode);
                 }
@@ -53,7 +54,11 @@ describe("Distributions", () => {
         for(const repetition of nodeTraces){
             for(const nodes of repetition){
                 const id = "New";
-                nodes.push(new InputNode(id, id))
+                const iNodeActivated = new InputNode(id, 'Activated');
+                const iNodeDeactivated = new InputNode(id, 'Deactivated');
+                iNodeActivated.activatedFlag = true;
+                nodes.push(iNodeActivated)
+                nodes.push(iNodeDeactivated);
             }
         }
 
@@ -64,8 +69,8 @@ describe("Distributions", () => {
         expect(activationTrace.trace.size).toBe(3);
         expect(activationTrace.trace.get(1).size).toBeLessThan(activationTrace.trace.get(3).size)
         expect(activationTrace.trace.get(3).get("I:0-0").length).toBe(nodeTraces[0].length);
-        expect(activationTrace.trace.get(3).get("I:New-New").length).toBe(nodeTraces[0].length);
-        expect(activationTrace.trace.get(3).size).toBe(nodeTraces[0][0].length);
+        expect(activationTrace.trace.get(3).get("I:New-Activated").length).toBe(nodeTraces[0].length);
+        expect(activationTrace.trace.get(3).size).toBe(nodeTraces[0][0].length - 1);
     });
 
     test("Group AT by Steps", () =>{
