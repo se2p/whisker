@@ -10,12 +10,19 @@ fi
 # The base command for Whisker. We enable headless mode, console and log
 # forwarding, and already set the file URL of the Whisker instance.
 whisker() {
+    info
     node servant.js \
         -d \
         -k \
         -l \
         -u ../whisker-web/dist/index.html \
         "$@"
+}
+
+info() {
+    node_ver=$(node --version)
+    . /etc/os-release
+    echo "INFO: Running ${node_ver} on ${PRETTY_NAME}" >&2
 }
 
 # We support redirection of stdout and stderr to files in a custom directory.
