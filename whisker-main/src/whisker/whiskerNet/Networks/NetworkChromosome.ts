@@ -449,6 +449,13 @@ export abstract class NetworkChromosome extends Chromosome {
      * @param inputs a map which maps each sprite to its input feature vector.
      */
     private setUpInputs(inputs: Map<string, Map<string, number>>): void {
+
+        // Reset the input nodes' activation flag to only use inputs during activation for which we collected values.
+        for(const iNodeMap of this.inputNodes.values()){
+            for(const iNode of iNodeMap.values()){
+                iNode.activatedFlag = false;
+            }
+        }
         // First check if we encountered new nodes.
         this.updateInputNodes(inputs);
         inputs.forEach((spriteValue, spriteKey) => {

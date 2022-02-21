@@ -27,12 +27,14 @@ export class ActivationTrace {
         }
         const stepTrace = this._trace.get(step);
         for (const node of nodes) {
-            const nodeId = node.identifier();
-            const activationValue = Math.round(node.activationValue * 1000) / 1000;
-            if (!stepTrace.has(nodeId)) {
-                stepTrace.set(nodeId, [activationValue]);
-            } else {
-                stepTrace.get(nodeId).push(activationValue);
+            if (node.activatedFlag) {
+                const nodeId = node.identifier();
+                const activationValue = Math.round(node.activationValue * 1000) / 1000;
+                if (!stepTrace.has(nodeId)) {
+                    stepTrace.set(nodeId, [activationValue]);
+                } else {
+                    stepTrace.get(nodeId).push(activationValue);
+                }
             }
         }
     }

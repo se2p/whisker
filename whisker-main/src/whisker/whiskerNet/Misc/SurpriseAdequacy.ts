@@ -114,6 +114,13 @@ export class SurpriseAdequacy {
                 // bigger than the threshold and if we have an activation value that is not present in the reference
                 // trace.
                 if (LSA > 0 && LSA > threshold && !trainingValues.includes(testValue)) {
+                    console.log("-----------------")
+                    console.log("NodeID: ", nodeId)
+                    console.log("Training1", training)
+                    console.log("Training: ", trainingValues)
+                    console.log("Test: ", testValue)
+                    console.log("LSA: ", LSA)
+                    console.log("Threshold: ", threshold)
                     surpriseMap.get(step).set(nodeId, true);
                 } else {
                     surpriseMap.get(step).set(nodeId, false);
