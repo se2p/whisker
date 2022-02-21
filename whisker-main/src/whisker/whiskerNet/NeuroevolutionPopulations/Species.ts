@@ -324,7 +324,7 @@ export class Species<C extends NeatChromosome> {
         let child = parent1.crossover(parent2)[0];
 
         // Decide if we additionally apply mutation, which is done randomly with a user-defined probability or
-        // if both parents have a compatibility distance of 0, i.e they have the same structure and weights.
+        // if both parents have a compatibility distance of 0, i.e. they have the same structure and weights.
         const distance = population.compatibilityDistance(parent1, parent2);
         if (this._randomness.nextDouble() < 1 - this._hyperParameter.crossoverWithoutMutation || distance === 0) {
             child = child.mutate();

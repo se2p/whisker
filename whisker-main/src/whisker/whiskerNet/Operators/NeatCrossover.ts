@@ -102,37 +102,40 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
         let i1 = 0;
         let i2 = 0;
 
-        // Average weight, only used when the flag is activated
-        let avgWeight = 0;
+        // Average weight, only used when the flag is activated.
+        let avgWeight = undefined;
 
-        // Booleans for deciding if we inherit a connection and if we enable the new Connection
+        // Booleans for deciding if we inherit a connection and if we enable the new Connection.
         let skip = false;
         let disable = false;
 
-        // Here we save the chosen connection for each iteration of the while loop and if its a recurrent one.
+        // Here we save the chosen connection for each iteration of the while loop and if it's a recurrent one.
         let currentConnection: ConnectionGene;
         let recurrent = false;
 
         while (i1 < parent1Size || i2 < parent2Size) {
 
-            // reset the skip value
+            // reset the skip value and the avgWeight value
             skip = false;
+            avgWeight = undefined;
 
             // Excess Genes coming from parent2
             if (i1 >= parent1Size) {
                 currentConnection = parent2.connections[i2];
                 i2++;
                 // Skip excess genes from the worse parent
-                if (p1Better)
+                if (p1Better) {
                     skip = true;
+                }
             }
             // Excess genes coming from parent 1
             else if (i2 >= parent2Size) {
                 currentConnection = parent1.connections[i1];
                 i1++;
                 // Skip excess genes from the worse parent
-                if (!p1Better)
+                if (!p1Better) {
                     skip = true;
+                }
             }
 
             // Matching genes or Disjoint Genes
@@ -144,13 +147,15 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
 
                 // Matching genes are chosen randomly between the parents
                 if (parent1Innovation === parent2Innovation) {
-                    if (this.random.nextDouble() < 0.5)
+                    if (this.random.nextDouble() < 0.5) {
                         currentConnection = parent1Connection;
-                    else
+                    } else {
                         currentConnection = parent2Connection;
+                    }
 
-                    if (avgWeights)
+                    if (avgWeights) {
                         avgWeight = (parent1Connection.weight + parent2Connection.weight) / 2.0;
+                    }
 
                     // If one of both is disabled the new Connection is likely to be disabled as well
                     if (!parent1Connection.isEnabled || !parent2Connection.isEnabled) {
@@ -166,13 +171,15 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
                 else if (parent1Innovation < parent2Innovation) {
                     currentConnection = parent1Connection;
                     i1++;
-                    if (!p1Better)
+                    if (!p1Better) {
                         skip = true;
+                    }
                 } else {
                     currentConnection = parent2Connection;
                     i2++;
-                    if (p1Better)
+                    if (p1Better) {
                         skip = true;
+                    }
                 }
             }
 
@@ -217,24 +224,27 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
                     currentConnection.isRecurrent);
 
                 // Set the isRecurrent flag if we added a isRecurrent connection
-                if (newConnection.isRecurrent)
+                if (newConnection.isRecurrent) {
                     recurrent = true;
+                }
 
                 // Collect the disabled Connections -> if we produce a defect network we sequentially enable the
                 // connections stored here until we found a path from input to output, i.e repaired the network
-                if (disable)
+                if (disable) {
                     disabledConnections.push(newConnection);
+                }
 
-                // Average the weight if we set the flag
-                if (avgWeights)
+                // Average the weight if we calculated a value for matching genes.
+                if (avgWeight) {
                     newConnection.weight = avgWeight;
+                }
 
                 disable = false;
                 newConnections.push(newConnection);
             }
         }
 
-        // Finally create the child with the selected Connections and Nodes
+        // Finally, create the child with the selected Connections and Nodes
         const child = new NeatChromosome(newNodes, newConnections, parent1.getMutationOperator(), parent1.getCrossoverOperator())
         child.generateNetwork();
 

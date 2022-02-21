@@ -22,7 +22,6 @@ describe("Test NeatCrossover", () => {
     beforeEach(() => {
         const crossoverConfig = {
             "operator": "neatCrossover",
-            "crossoverWithoutMutation": 0.2,
             "interspeciesRate": 0.001,
             "weightAverageRate": 0.4
         };
@@ -166,9 +165,6 @@ describe("Test NeatCrossover", () => {
     test("CrossoverTest with excess genes and average weight", () => {
         const crossoverConfig = {
             "operator": "neatCrossover",
-            // Should disable Mutation; Where is this used?!
-            "crossoverWithoutMutation": 1.0,
-            //"crossoverWithoutMutation": 0.2,
             "interspeciesRate": 0.001,
             // Always use the average
             "weightAverageRate": 1.0
