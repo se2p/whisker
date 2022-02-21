@@ -363,6 +363,7 @@ export class StatisticsCollector {
         let csv = "projectName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,networkFitness," +
             "surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
 
+        this.networks.sort((a, b) => b.fitness - a.fitness);
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];
             const data = [this._projectName, i, this._fitnessFunctionCount,

@@ -86,8 +86,10 @@ export class InputExtraction {
         spriteFeatures.set("Y", y);
 
         // Collect direction of Sprite
-        const direction = this.mapValueIntoRange(target.direction, -180, 180);
-        spriteFeatures.set("Dir", direction);
+        if(target.rotationStyle === 'all around') {
+            const direction = this.mapValueIntoRange(target.direction, -180, 180);
+            spriteFeatures.set("Dir", direction);
+        }
 
         // If we have a path to a goal extract the signed x and y distance to the next wayPoint as input.
         if (Container.pathToGoal) {
