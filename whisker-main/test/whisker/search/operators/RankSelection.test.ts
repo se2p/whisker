@@ -41,7 +41,7 @@ describe('RankSelection', () => {
             selectionCount.set(selected, selectionCount.get(selected) + 1);
         }
         for (let i = 0; i < populationSize - 1; i++) {
-            expect(selectionCount.get(population[i]) < selectionCount.get(population[i + 1])).toBeTruthy();
+            expect(selectionCount.get(population[i])).toBeLessThanOrEqual(selectionCount.get(population[i + 1]));
         }
     });
 });
