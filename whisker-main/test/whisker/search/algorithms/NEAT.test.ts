@@ -93,7 +93,7 @@ describe('Test NEAT', () => {
                 return Promise.resolve(fitness);
             }
 
-            toParameterIdentifier(): string {
+            identifier(): string {
                 return 'Dummy'
             }
         }

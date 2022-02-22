@@ -105,7 +105,8 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             }
         }
 
-        // If we dont have a population Champion apply either structural mutation or non structural mutation but not both!
+        // If we don't have a population Champion apply either structural mutation or non-structural mutation but
+        // not both!
         else {
             // Structural mutation
             if (this._random.nextDouble() < this._mutationAddNode) {

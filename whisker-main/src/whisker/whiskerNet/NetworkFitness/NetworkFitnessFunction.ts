@@ -21,5 +21,5 @@ export interface NetworkFitnessFunction<T extends NetworkChromosome> {
      * @returns String identifier used within the WhiskerSearchConfiguration class for identifying the desired
      * fitness function.
      */
-    toParameterIdentifier(): string;
+    identifier(): string;
 }

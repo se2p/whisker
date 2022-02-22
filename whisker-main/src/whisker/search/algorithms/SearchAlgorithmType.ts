@@ -50,5 +50,10 @@ export enum SearchAlgorithmType {
     /**
      * Value for "NEAT" search algorithm.
      */
-    NEAT
+    NEAT,
+
+    /**
+     * Value for explorative "NEAT"
+     */
+    EXPLORATIVE_NEAT
 }

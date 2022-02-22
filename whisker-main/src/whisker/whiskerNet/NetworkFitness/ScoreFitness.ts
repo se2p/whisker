@@ -11,8 +11,8 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * Calculates the score the network has achieved while playing the game.
      * @param network the network that should be evaluated
      * @param timeout the timeout defining how long a network is allowed to play the game.
-     * @param eventSelection defines how the network should be executed (network (default) | random | static
-     * events | eventsExtended).
+     * @param eventSelection defines how the network should be executed (random | activation).
+     * @returns Promise<number> the achieved score.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
@@ -58,7 +58,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
         return points;
     }
 
-    public toParameterIdentifier(): string {
+    public identifier(): string {
         return 'score';
     }
 }

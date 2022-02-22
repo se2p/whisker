@@ -53,8 +53,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
      * Calculates the novelty score.
      * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
-     * @param eventSelection defines how the network should be executed (network (default) | random | static
-     * events | eventsExtended).
+     * @param eventSelection defines how the network should be executed (random | activation).
      * @returns Promise<number> the sparseness of the network's behaviour, which is a metric of novelty.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
@@ -110,7 +109,7 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
         }
     }
 
-    public toParameterIdentifier(): string {
+    public identifier(): string {
         return 'target';
     }
 }

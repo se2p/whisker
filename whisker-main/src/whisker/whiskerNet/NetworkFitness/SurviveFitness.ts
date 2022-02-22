@@ -6,11 +6,11 @@ import {NetworkExecutor} from "../NetworkExecutor";
 export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
-     * Calculates the survive fitness which is defined to be the time a network has survived within a game.
-     * @param network the network that should be evaluated
+     * Calculates how long a network has survived within a game.
+     * @param network the network that should be evaluated.
      * @param timeout the timeout defining how long a network is allowed to play the game.
-     * @param eventSelection defines how the network should be executed (network (default) | random | static
-     * events | eventsExtended).
+     * @param eventSelection defines how the network should be executed (random | activation).
+     * @returns Promise<number> the survived time in seconds.
      */
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection?: string): Promise<number> {
         const start = Date.now();
@@ -23,7 +23,7 @@ export class SurviveFitness implements NetworkFitnessFunction<NetworkChromosome>
         return surviveTime;
     }
 
-    public toParameterIdentifier(): string {
+    public identifier(): string {
         return 'survive';
     }
 }

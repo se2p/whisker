@@ -60,6 +60,7 @@ import {NeatChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/Nea
 import {NeatChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorTemplateNetwork";
 import {DynamicSuiteParameter} from "../whiskerNet/HyperParameter/DynamicSuiteParameter";
+import {StatementFitness} from "../whiskerNet/NetworkFitness/StatementFitness";
 
 
 class ConfigException implements Error {
@@ -83,7 +84,8 @@ export class WhiskerSearchConfiguration {
         if (!this._config['testGenerator'] && this.getTestSuiteType() == 'dynamic') {
             this._properties = this.setDynamicSuiteParameter();
             Container.isNeuroevolution = true;
-        } else if (this.getAlgorithm() === SearchAlgorithmType.NEAT) {
+        } else if (this.getAlgorithm() === SearchAlgorithmType.NEAT ||
+            this.getAlgorithm() === SearchAlgorithmType.EXPLORATIVE_NEAT) {
             this._properties = this.setNeuroevolutionProperties();
             Container.isNeuroevolution = true
         } else {
@@ -487,6 +489,8 @@ export class WhiskerSearchConfiguration {
             return new ScoreFitness();
         else if (fitnessFunction === 'survive')
             return new SurviveFitness();
+        else if (fitnessFunction === 'statement')
+            return new StatementFitness();
         else if (fitnessFunction === 'target')
             return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
                 fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
@@ -525,6 +529,8 @@ export class WhiskerSearchConfiguration {
                 return SearchAlgorithmType.MIO;
             case'neat':
                 return SearchAlgorithmType.NEAT;
+            case 'explorativeNeat':
+                return SearchAlgorithmType.EXPLORATIVE_NEAT;
             default:
                 throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this._config['algorithm']);
         }

@@ -309,7 +309,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     }
 
 
-    private static _normalize(x: number): number {
+    public static _normalize(x: number): number {
         return x / (x + 1.0);
     }
 

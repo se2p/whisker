@@ -16,18 +16,18 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     /**
      * The search parameters.
      */
-    private _neuroevolutionProperties: NeatProperties;
+    protected _neuroevolutionProperties: NeatProperties;
 
     /**
      * The fitnessFunction used to evaluate the networks of Neuroevolution Algorithm.
      */
-    private _networkFitnessFunction: NetworkFitnessFunction<NeatChromosome>;
+    protected _networkFitnessFunction: NetworkFitnessFunction<NeatChromosome>;
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
      * @param networks the networks to evaluate -> Current population
      */
-    private async evaluateNetworks(networks: NeatChromosome[]): Promise<void> {
+    protected async evaluateNetworks(networks: NeatChromosome[]): Promise<void> {
         for (const network of networks) {
             // Evaluate the networks by letting them play the game.
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout, this._neuroevolutionProperties.eventSelection);
@@ -122,7 +122,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Generate the desired type of NeuroevolutionPopulation to be used by the NEAT algorithm.
      * @returns NeuroevolutionPopulation defined in the config files.
      */
-    private getPopulation(startingNetworks?: NeatChromosome[]): NeatPopulation {
+    protected getPopulation(startingNetworks?: NeatChromosome[]): NeatPopulation {
         switch (this._neuroevolutionProperties.populationType) {
             case 'random':
                 return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties);
@@ -138,7 +138,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     /**
      * Updates the List of the best networks found so far and the statistics used for reporting.
      */
-    private updateBestIndividualAndStatistics(population: NeatPopulation): void {
+    protected updateBestIndividualAndStatistics(population: NeatPopulation): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().incrementIterationCount();
@@ -158,7 +158,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * Reports the current state of the search.
      * @param population the population of networks
      */
-    private reportOfCurrentIteration(population: NeatPopulation): void {
+    protected reportOfCurrentIteration(population: NeatPopulation): void {
         console.log(`Iteration:  ${this._iterations}`);
         console.log(`Highest Network Fitness:  ${population.highestFitness}`);
         console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.fitness}`);

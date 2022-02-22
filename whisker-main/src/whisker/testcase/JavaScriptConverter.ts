@@ -52,7 +52,7 @@ export class JavaScriptConverter {
             const configs = {}
             configs['testSuiteType'] = 'dynamic'
             configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
-            configs['networkFitness'] = Container.config.neuroevolutionProperties.networkFitness.toParameterIdentifier();
+            configs['networkFitness'] = Container.config.neuroevolutionProperties.networkFitness.identifier();
             configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
             configs['seed'] = Container.config.getRandomSeed();
             configs['repetitions'] = Container.config.neuroevolutionProperties.repetitions;
