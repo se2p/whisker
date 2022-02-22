@@ -373,6 +373,70 @@ describe('Test NetworkChromosome', () => {
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
     })
 
+    test('Network activation without hidden layer and deactivated input nodes', () => {
+        // Create input Nodes
+        const nodes: NodeGene[] = [];
+        const iNode1 = new InputNode("Sprite1", "X-Position");
+        iNode1.uID = 0;
+        const iNode2 = new InputNode("Sprite1", "Y-Position");
+        iNode2.uID = 1;
+        const iNode3 = new InputNode("Sprite1", "Costume");
+        iNode3.uID = 2;
+        const bias = new BiasNode();
+        bias.uID = 3;
+        nodes.push(iNode1);
+        nodes.push(iNode2);
+        nodes.push(iNode3);
+        nodes.push(bias);
+
+        // Create classification and Regression Output Nodes
+        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
+        classificationNode1.uID = 4;
+        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
+        classificationNode2.uID = 5;
+        const regressionNode1 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
+        regressionNode1.uID = 6;
+        const regressionNode2 = new RegressionNode(new MouseMoveEvent(), "X", ActivationFunction.NONE);
+        regressionNode2.uID = 7;
+        nodes.push(classificationNode1);
+        nodes.push(classificationNode2);
+        nodes.push(regressionNode1);
+        nodes.push(regressionNode2);
+
+        // Create Connections
+        const connections: ConnectionGene[] = [];
+        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.1, true, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[5], 0.2, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[4], 0.3, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[5], 0.4, true, 1, false));
+        connections.push(new ConnectionGene(nodes[3], nodes[4], 0.5, true, 1, false));
+        connections.push(new ConnectionGene(nodes[3], nodes[5], 0.6, true, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[6], 0.7, true, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[7], 0.8, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
+
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        const inputs = new Map<string, Map<string, number>>();
+        const sprite1 = new Map<string, number>();
+        sprite1.set("X-Position", 1);
+        inputs.set("Sprite1", sprite1);
+        chromosome.activateNetwork(inputs);
+        const availableEvents = [new WaitEvent(), new ClickStageEvent()];
+        const softmaxOutput: number[] = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
+        for (let i = 0; i < softmaxOutput.length; i++) {
+            softmaxOutput[i] = Number(softmaxOutput[i].toFixed(3))
+        }
+        expect(nodes[1].activatedFlag).toBeFalsy();
+        expect(chromosome.outputNodes[0].nodeValue).toEqual(0.6);
+        expect(chromosome.outputNodes[1].nodeValue).toEqual(0.8);
+        expect(chromosome.outputNodes[2].nodeValue).toEqual(0.7);
+        expect(chromosome.outputNodes[3].nodeValue).toEqual(0.8);
+        expect(nodes[0].activatedFlag).toBeTruthy();
+        expect(softmaxOutput).toEqual([0.45, 0.55]);
+        expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
+    })
+
     test('Network activation with hidden layer', () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];

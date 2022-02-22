@@ -383,7 +383,7 @@ export class WhiskerSearchConfiguration {
             return operators;
         }
 
-        // Otherwise add the defined local search operators
+        // Otherwise, add the defined local search operators
         for (const operator of localSearchOperators) {
             let type: LocalSearch<any>;
             switch (operator['type']) {

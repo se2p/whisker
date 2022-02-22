@@ -21,8 +21,8 @@ export class DynamicSuite {
     private _statementMap: Map<number, FitnessFunction<NeatChromosome>>;
     private _archive = new Map<number, NetworkChromosome>();
 
-    public async execute(vm: VirtualMachine, project: ScratchProject, projectName: string, testFile: string,
-                         properties: Record<string, number>): Promise<string> {
+    public async execute(vm: VirtualMachine, project: ScratchProject, testFile: string,
+                         properties: Record<string, (number | string)>): Promise<string> {
 
         const util = new WhiskerUtil(vm, project);
         const vmWrapper = util.getVMWrapper();
@@ -47,12 +47,13 @@ export class DynamicSuite {
         Container.vmWrapper = vmWrapper;
         Container.config = config;
         Container.testDriver = util.getTestDriver({});
-        Container.acceleration = properties['acceleration'];
+        Container.acceleration = properties['acceleration'] as number;
         this.initialiseFitnessTargets();
 
-        StatisticsCollector.getInstance().projectName = projectName;
+        StatisticsCollector.getInstance().projectName = properties.projectName as string;
+        StatisticsCollector.getInstance().testName = properties.testName as string;
 
-        await util.prepare(properties['acceleration'] || 1);
+        await util.prepare(properties['acceleration'] as number || 1);
         util.start();
 
         // Load the saved networks from the test file.
@@ -77,7 +78,7 @@ export class DynamicSuite {
                 const nodeSA = SurpriseAdequacy.LSANodeBased(network.savedActivationTrace, network.currentActivationTrace);
                 network.surpriseAdequacyNodes = nodeSA[0];
                 network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
-                const z =  SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
+                const z = SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
                 network.zScore = z[0];
                 console.log(z[1]);
             }

@@ -247,17 +247,18 @@ const runAllTests = async function () {
     if ((`${Whisker.tests}`.toLowerCase().includes('network') && `${Whisker.tests}`.toLowerCase().includes('nodes'))) {
         let coverage;
         try {
-            const projectName = Whisker.projectFileSelect.getName();
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
             const dynamicSuite = new DynamicSuite();
             const properties = {};
             properties.train = 1;
+            properties.projectName = Whisker.projectFileSelect.getName();
+            properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
-            const csv = await dynamicSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, projectName,
-                Whisker.tests, properties);
+            const csv = await dynamicSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, Whisker.tests,
+                properties);
             coverage = CoverageGenerator.getCoverage();
             CoverageGenerator.restoreClasses({Thread});
             Whisker.outputLog.println(csv);

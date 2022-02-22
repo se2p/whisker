@@ -4,13 +4,13 @@
     "testSuiteType": "dynamic",
     "populationType": "neat",
     "eventSelection": "activation",
-    "populationSize": 150,
-    "numberOfSpecies": 5,
+    "populationSize": 200,
+    "numberOfSpecies": 10,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
-    "repetitions": 100,
+    "repetitions": 200,
     "extractor": "neuroevolution",
     "chromosome": {
         "type": "sparseNetwork"
@@ -38,10 +38,10 @@
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 3.0,
+        "distanceThreshold": 10.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
-        "weightCoefficient": 0.5
+        "weightCoefficient": 0.3
     },
     "fitnessFunction": {
         "type": "statement",
@@ -49,7 +49,7 @@
     },
     "networkFitness": {
         "type": "survive",
-        "timeout": 10000
+        "timeout": 60000
     },
     "stoppingCondition": {
         "type": "combined",

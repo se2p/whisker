@@ -52,6 +52,7 @@ export class StatisticsCollector {
     private readonly _bestNetworkFitness: Map<number, number>;
 
     // Dynamic Suite
+    private _testName: string;
     private readonly _networks: NetworkChromosome[];
     private _surpriseAdequacy: number;
     private _surpriseNodeAdequacy: number;
@@ -245,6 +246,10 @@ export class StatisticsCollector {
         this._timeToReachFullCoverage = value;
     }
 
+    set testName(value: string) {
+        this._testName = value;
+    }
+
     get networks(): NetworkChromosome[] {
         return this._networks;
     }
@@ -360,13 +365,13 @@ export class StatisticsCollector {
     }
 
     public asCsvDynamicSuite(): string {
-        let csv = "projectName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,networkFitness," +
+        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,networkFitness," +
             "surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
 
         this.networks.sort((a, b) => b.fitness - a.fitness);
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];
-            const data = [this._projectName, i, this._fitnessFunctionCount,
+            const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
                 this._coveredFitnessFunctionsCount, network.fitness, network.surpriseAdequacyStep,
                 network.surpriseAdequacyNodes, network.surpriseCounterNormalised, network.zScore];
             const dataRow = data.join(",").concat("\n");
