@@ -26,7 +26,6 @@ import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/s
 import {OnePlusOneEA} from "../../../../src/whisker/search/algorithms/OnePlusOneEA";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
@@ -40,7 +39,8 @@ describe('OnePlusOneEa', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */ };
+        Container.debugLog = () => { /* suppress output */
+        };
     });
 
     test('Trivial bitstring with OneMax', async () => {
@@ -59,7 +59,7 @@ describe('OnePlusOneEa', () => {
         };
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
-        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.ONE_PLUS_ONE)
+        const builder = new SearchAlgorithmBuilder('onePlusOne')
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))
@@ -104,7 +104,7 @@ describe('OnePlusOneEa', () => {
         search.setFitnessFunction(fitnessFunction);
         expect(search["_fitnessFunction"]).toBe(fitnessFunction);
 
-        expect(function() {
+        expect(function () {
             search.setSelectionOperator(null);
         }).toThrow();
     });

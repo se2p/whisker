@@ -29,7 +29,6 @@ import {RankSelection} from "../../../../src/whisker/search/operators/RankSelect
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {Container} from "../../../../src/whisker/utils/Container";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
@@ -47,18 +46,18 @@ describe('MOSA', () => {
     const maxIterations = 100;
 
 
-
     beforeEach(() => {
         const mock = new VMWrapperMock();
         mock.init()
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */ };
+        Container.debugLog = () => { /* suppress output */
+        };
 
-        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MOSA);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mosa');
         const stoppingCondition = new OneOfStoppingCondition(new FixedIterationsStoppingCondition(maxIterations),
-                new OptimalSolutionStoppingCondition());
+            new OptimalSolutionStoppingCondition());
 
         const properties = {
             populationSize,
@@ -151,7 +150,7 @@ describe('MOSA', () => {
 
     test("Not supported setter", () => {
         const searchAlgorithm: MOSA<BitstringChromosome> = new MOSA();
-        expect(function() {
+        expect(function () {
             searchAlgorithm.setFitnessFunction(null);
         }).toThrow();
     });

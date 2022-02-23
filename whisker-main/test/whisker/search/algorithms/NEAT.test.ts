@@ -1,6 +1,5 @@
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
@@ -14,9 +13,6 @@ import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveE
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatProperties} from "../../../../src/whisker/whiskerNet/NeatProperties";
-import {NeatChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
-import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {ScratchEvent} from "../../../../src/whisker/testcase/events/ScratchEvent";
 
 
 describe('Test NEAT', () => {
@@ -72,7 +68,7 @@ describe('Test NEAT', () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
 
-        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
+        const builder = new SearchAlgorithmBuilder('neat');
         const iterations = 20;
         const populationSize = 150;
         const random = Randomness.getInstance();

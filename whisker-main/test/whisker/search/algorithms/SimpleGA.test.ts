@@ -25,7 +25,6 @@ import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingcon
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {SimpleGA} from "../../../../src/whisker/search/algorithms/SimpleGA";
@@ -42,7 +41,8 @@ describe('SimpleGA', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */ };
+        Container.debugLog = () => { /* suppress output */
+        };
     });
 
     test('Trivial bitstring with SimpleGA', async () => {
@@ -61,7 +61,7 @@ describe('SimpleGA', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
-        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.SIMPLEGA)
+        const builder = new SearchAlgorithmBuilder('simpleGA')
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(), new SinglePointCrossover()))

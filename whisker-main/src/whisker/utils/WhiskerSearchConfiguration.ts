@@ -78,16 +78,16 @@ export class WhiskerSearchConfiguration {
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
-        if (this.getAlgorithm() === SearchAlgorithmType.NEAT) {
+        if (this.getAlgorithm() === "neat") {
             this._searchAlgorithmProperties = this.setNeuroevolutionProperties();
             Container.isNeuroevolution = true
         } else {
-            this._searchAlgorithmProperties = this.setSearchAlgorithmProperties();
+            this._searchAlgorithmProperties = this._buildSearchAlgorithmProperties();
             Container.isNeuroevolution = false;
         }
     }
 
-    private setSearchAlgorithmProperties(): SearchAlgorithmProperties<any> {
+    private _buildSearchAlgorithmProperties(): SearchAlgorithmProperties<any> {
         // Properties all search algorithms have in common.
         const commonProps = {
             testGenerator: this._config["testGenerator"],
@@ -103,7 +103,7 @@ export class WhiskerSearchConfiguration {
         // Properties specific to every algorithm.
         const specificProps = (() => {
             switch (this.getAlgorithm()) {
-                case SearchAlgorithmType.MIO:
+                case "mio":
                     return {
                         maxMutationCount: {
                             start: this._config["mutation"]["maxMutationCountStart"],
@@ -119,18 +119,18 @@ export class WhiskerSearchConfiguration {
                             focusedPhase: this._config["archive"]["maxArchiveSizeFocusedPhase"],
                         },
                     };
-                case SearchAlgorithmType.ONE_PLUS_ONE:
+                case "onePlusOne":
                     return {
                         mutationProbability: this._config["mutation"]["probability"],
                     };
-                case SearchAlgorithmType.SIMPLEGA:
-                case SearchAlgorithmType.MOSA:
+                case "simpleGA":
+                case "mosa":
                     return {
                         populationSize: this._config["populationSize"],
                         crossoverProbability: this._config["crossover"]["probability"],
                         mutationProbability: this._config["mutation"]["probability"],
                     };
-                case SearchAlgorithmType.RANDOM:
+                case "random":
                 default:
                     return {};
             }
@@ -249,19 +249,21 @@ export class WhiskerSearchConfiguration {
 
     private _getStoppingCondition(stoppingCondition: Record<string, any>): StoppingCondition<any> {
         const stoppingCond = stoppingCondition["type"];
-        if (stoppingCond == "fixedIteration") {
-            return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
-        } else if (stoppingCond == "fixedTime") {
-            return new FixedTimeStoppingCondition(stoppingCondition["duration"]);
-        } else if (stoppingCond == "optimal") {
-            return new OptimalSolutionStoppingCondition()
-        } else if (stoppingCond == 'events') {
-            return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
-        } else if (stoppingCond == 'evaluations') {
-            return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
-        } else if (stoppingCond == "combined") {
-            const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
-            return new OneOfStoppingCondition(...conditions)
+        switch (stoppingCond) {
+            case "fixedIteration":
+                return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
+            case "fixedTime":
+                return new FixedTimeStoppingCondition(stoppingCondition["duration"]);
+            case "optimal":
+                return new OptimalSolutionStoppingCondition()
+            case 'events':
+                return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
+            case 'evaluations':
+                return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
+            case "combined": {
+                const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
+                return new OneOfStoppingCondition(...conditions)
+            }
         }
 
         throw new ConfigException("No stopping condition given");
@@ -482,22 +484,7 @@ export class WhiskerSearchConfiguration {
     }
 
     public getAlgorithm(): SearchAlgorithmType {
-        switch (this._config['algorithm']) {
-            case 'random':
-                return SearchAlgorithmType.RANDOM;
-            case 'onePlusOne':
-                return SearchAlgorithmType.ONE_PLUS_ONE;
-            case 'simpleGA':
-                return SearchAlgorithmType.SIMPLEGA;
-            case 'mosa':
-                return SearchAlgorithmType.MOSA;
-            case 'mio':
-                return SearchAlgorithmType.MIO;
-            case'neat':
-                return SearchAlgorithmType.NEAT;
-            default:
-                throw new IllegalArgumentException("Invalid configuration. Unknown algorithm: " + this._config['algorithm']);
-        }
+        return this._config['algorithm'];
     }
 
     public getTestGenerator(): TestGenerator {
