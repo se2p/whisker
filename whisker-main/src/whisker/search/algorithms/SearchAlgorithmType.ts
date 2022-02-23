@@ -21,34 +21,11 @@
 /**
  * A enum that shows all available types of search algorithms that can be used.
  */
-export enum SearchAlgorithmType {
-    /**
-     * Value for 'Random' search algorithm.
-     */
-    RANDOM,
-
-    /**
-     * Value for 'MOSA' search algorithm.
-     */
-    MOSA,
-
-    /**
-     * Value for 'MIO' search algorithm.
-     */
-    MIO,
-
-    /**
-     * Value for 'One + One' search algorithm.
-     */
-    ONE_PLUS_ONE,
-
-    /**
-     * Value for 'Simple GA' search algorithm.
-     */
-    SIMPLEGA,
-
-    /**
-     * Value for "NEAT" search algorithm.
-     */
-    NEAT
-}
+export type SearchAlgorithmType =
+    | 'random'
+    | 'mosa'
+    | 'mio'
+    | 'onePlusOne'
+    | 'simpleGA'
+    | 'neat'
+    ;

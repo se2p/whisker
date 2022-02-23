@@ -213,22 +213,22 @@ export class SearchAlgorithmBuilder<C extends Chromosome> {
     buildSearchAlgorithm(): SearchAlgorithm<C> {
         let searchAlgorithm: SearchAlgorithm<C>;
         switch (this._algorithm) {
-            case SearchAlgorithmType.MOSA:
+            case "mosa":
                 searchAlgorithm = this._buildMOSA();
                 break;
-            case SearchAlgorithmType.MIO:
+            case "mio":
                 searchAlgorithm = this._buildMIO();
                 break;
-            case SearchAlgorithmType.ONE_PLUS_ONE:
+            case "onePlusOne":
                 searchAlgorithm = this._buildOnePlusOne();
                 break;
-            case SearchAlgorithmType.SIMPLEGA:
+            case "simpleGA":
                 searchAlgorithm = this._buildSimpleGA();
                 break;
-            case SearchAlgorithmType.NEAT:
+            case "neat":
                 searchAlgorithm = this._buildNEAT() as unknown as SearchAlgorithm<C>
                 break;
-            case SearchAlgorithmType.RANDOM:
+            case "random":
             default:
                 searchAlgorithm = this._buildRandom();
         }
