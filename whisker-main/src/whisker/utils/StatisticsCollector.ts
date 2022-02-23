@@ -336,14 +336,13 @@ export class StatisticsCollector {
         // data becomes difficult to merge. Therefore, the number of columns should be padded in this case so that
         // the number of iterations is always identical.
         if (truncateFitnessTimeline) {
-            const nextIteration = this.iterationCount > 0 ? this.iterationCount : 0;
-            const nextCoverageValue = this._bestNetworkFitness.get(this.iterationCount - 1);
-
+            const nextIteration = this.iterationCount > 0 ? this.iterationCount + 1 : 0;
+            const nextFitnessValue = this._highestNetworkFitness;
             const lengthDiff = Math.abs(numberOfIterations - this.iterationCount);
 
             const range: (until: number) => number[] = (until) => [...Array(until).keys()];
             const headerPadding = range(lengthDiff).map(x => nextIteration + x)
-            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
+            const valuePadding = Array(lengthDiff).fill(nextFitnessValue);
 
             header = [...header, ...headerPadding].slice(0, numberOfIterations);
             values = [...values, ...valuePadding].slice(0, numberOfIterations);

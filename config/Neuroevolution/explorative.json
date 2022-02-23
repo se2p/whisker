@@ -38,7 +38,7 @@
         "mutateEnableConnection": 0.03
     },
     "compatibility": {
-        "distanceThreshold": 7.0,
+        "distanceThreshold": 5.0,
         "disjointCoefficient": 1,
         "excessCoefficient": 1,
         "weightCoefficient": 0.3

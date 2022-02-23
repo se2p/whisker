@@ -20,6 +20,7 @@ export class ExplorativeNEAT extends NEAT {
         const totalGoals = this._fitnessFunctions.size;
         while (this._archive.size != totalGoals && !(this._stoppingCondition.isFinished(this))) {
             this.setNextGoal();
+            console.log(`Next goal ${this._currentStatementKey}/${this._fitnessFunctions.size}:${this._currentTargetStatement}`);
             const population = this.getPopulation();
             population.generatePopulation();
             this._intermediateIterations = 0;
@@ -109,7 +110,7 @@ export class ExplorativeNEAT extends NEAT {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size
-        StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, this._archive.size);
+        StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(StatisticsCollector.getInstance().iterationCount, this._archive.size);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
