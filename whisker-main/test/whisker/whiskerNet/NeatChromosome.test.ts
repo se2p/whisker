@@ -95,7 +95,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.isSpeciesChampion).toBeFalsy();
         expect(chromosome.isPopulationChampion).toBeFalsy();
         expect(chromosome.isParent).toBeFalsy();
-        expect(chromosome.expectedOffspring).toEqual(undefined);
+        expect(chromosome.expectedOffspring).toEqual(0);
         expect(chromosome.numberOffspringPopulationChamp).toEqual(undefined);
         expect(chromosome.trace).toEqual(undefined);
         expect(chromosome.coverage.size).toEqual(0);
