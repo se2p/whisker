@@ -26,7 +26,6 @@ import {OneOfStoppingCondition} from "../../../../src/whisker/search/stoppingcon
 import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/stoppingconditions/OptimalSolutionStoppingCondition";
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
@@ -40,7 +39,8 @@ describe('RandomSearch', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */ };
+        Container.debugLog = () => { /* suppress output */
+        };
     });
 
     test('Trivial bitstring with OneMax', async () => {
@@ -60,7 +60,7 @@ describe('RandomSearch', () => {
 
         const fitnessFunction = new OneMaxFitnessFunction(properties.chromosomeLength);
 
-        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.RANDOM)
+        const builder = new SearchAlgorithmBuilder('random')
             .addProperties(properties)
             .addChromosomeGenerator(new BitstringChromosomeGenerator(properties,
                 new BitflipMutation(),
