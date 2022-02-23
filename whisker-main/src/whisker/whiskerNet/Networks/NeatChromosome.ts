@@ -48,7 +48,7 @@ export class NeatChromosome extends NetworkChromosome {
     /**
      * The number of offspring this network is allowed to produce.
      */
-    private _expectedOffspring: number;
+    private _expectedOffspring = 0;
 
     /**
      * The number of additional offspring the population champion is allowed to produce.

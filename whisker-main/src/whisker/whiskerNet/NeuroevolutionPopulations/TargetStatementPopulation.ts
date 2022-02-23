@@ -11,7 +11,7 @@ export class TargetStatementPopulation extends NeatPopulation {
     constructor(hyperParameter: NeatProperties, targetStatement: StatementFitnessFunction, startingNetwork: NeatChromosome) {
         super(undefined, hyperParameter);
         this._targetStatement = targetStatement;
-        this._startingNetwork = startingNetwork.clone();
+        this._startingNetwork = startingNetwork;
         this._startingNetwork.targetFitness = this._targetStatement;
     }
 
@@ -21,8 +21,7 @@ export class TargetStatementPopulation extends NeatPopulation {
      */
     public generatePopulation(): void {
         // Add the starting network to the population.
-        this.networks.push(this._startingNetwork);
-
+        this.networks.push(this._startingNetwork.clone());
         // Keep mutating the starting network until we have reached the desired population size.
         while (this.networks.length < this.hyperParameter.populationSize) {
             const mutant = this._startingNetwork.mutate();

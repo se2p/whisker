@@ -336,7 +336,7 @@ export class StatisticsCollector {
         // data becomes difficult to merge. Therefore, the number of columns should be padded in this case so that
         // the number of iterations is always identical.
         if (truncateFitnessTimeline) {
-            const nextIteration = this.iterationCount > 0 ? this.iterationCount + 1 : 0;
+            const nextIteration = header[header.length - 1] === undefined ? 0 : header[header.length - 1] + 1;
             const nextFitnessValue = this._highestNetworkFitness;
             const lengthDiff = Math.abs(numberOfIterations - this.iterationCount);
 

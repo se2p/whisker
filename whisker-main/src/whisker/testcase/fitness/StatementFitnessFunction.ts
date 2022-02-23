@@ -174,7 +174,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
                     const controlNode = this._cdg.getNode(blockTrace.id);
                     if (controlNode === undefined) {
-                        console.warn("Traced block not found in CDG: "+blockTrace.id);
+                        console.warn("Traced block not found in CDG: " + blockTrace.id);
                         continue;
                     }
                     const requiredCondition = this._checkControlBlock(this._targetNode, controlNode);
@@ -215,7 +215,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return this._cfg;
     }
 
-    getTargetNode(): string {
+    getTargetNode(): GraphNode {
         return this._targetNode;
     }
 
@@ -290,7 +290,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
             //this is not possible, because in those case, either branch distance == approach level == 0; or branch distance != 0
             console.warn('Cannot find closest (un-executed predecessor)(executed predecessor) node pair for targetNode: '
-            + targetNode.block.opcode +" with id " + targetNode.block.id);
+                + targetNode.block.opcode + " with id " + targetNode.block.id);
             return [];
         }
 
@@ -432,7 +432,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     /**
      * Traverse through all fitnessFunctions and extract the independent ones. A fitnessFunction is defined to be
      * independent if it is
-     *  - the child of a execution halting block
+     *  - the child of an execution halting block
      *  - the last block inside a branching statement
      *  - the last block inside a block of statements being dependent on a hatBlock
      *  We call the blocks of independent fitnessFunctions mergeBlocks since all blocks contained in the same branch
@@ -464,11 +464,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
                 // 2) or a block whose child is a branch --> nested branches
                 const filterNestedBranches = (node) => {
-                    if(node.block.next == undefined){
+                    if (node.block.next == undefined) {
                         return false;
                     }
                     const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg)
-                    if(childOfNode == undefined){
+                    if (childOfNode == undefined) {
                         return false;
                     }
                     return ControlFilter.branch(childOfNode.block)
@@ -526,6 +526,39 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             statementMap.set(keyStatement, valueStatements);
         }));
         return statementMap;
+    }
+
+    //TODO: Are execution halting blocks like waits handled correctly?
+    public static getNextUncoveredNodePairs(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Map<StatementFitnessFunction, StatementFitnessFunction> {
+        const nearestUncoveredMap = new Map<StatementFitnessFunction, StatementFitnessFunction>();
+        if (allStatements.length === uncoveredStatements.length) {
+            const flagClicked = allStatements.find(statement => statement.getTargetNode().block.opcode === 'event_whenflagclicked');
+            nearestUncoveredMap.set(flagClicked, undefined);
+            return nearestUncoveredMap;
+        }
+
+        const cdg = uncoveredStatements[0]._cdg;
+        const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
+        for (const statement of uncoveredStatements) {
+            const parent = StatementFitnessFunction.getParentOfNode(statement.getTargetNode(), cdg);
+            if (!parent) {
+                throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`)
+            }
+            const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
+            if (!uncoveredStatements.includes(parentStatement)) {
+                nearestUncoveredMap.set(statement, parentStatement);
+            }
+        }
+        return nearestUncoveredMap;
+    }
+
+    private static mapNodeToStatement(node: GraphNode, allStatements: StatementFitnessFunction[]): StatementFitnessFunction {
+        for (const statement of allStatements) {
+            if (statement.getTargetNode().id === node.id) {
+                return statement;
+            }
+        }
+        return undefined;
     }
 
     /**

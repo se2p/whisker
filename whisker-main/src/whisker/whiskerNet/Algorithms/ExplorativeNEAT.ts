@@ -7,48 +7,74 @@ import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {TargetStatementPopulation} from "../NeuroevolutionPopulations/TargetStatementPopulation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
+import {Randomness} from "../../utils/Randomness";
 
 export class ExplorativeNEAT extends NEAT {
 
     private _currentStatementKey: number;
     private _currentTargetStatement: StatementFitnessFunction;
+    private _parentKeyOfTargetStatement: number;
     private _intermediateIterations = 0;
+    private _fitnessFunctionMap: Map<number, StatementFitnessFunction>;
 
     async findSolution(): Promise<Map<number, NeatChromosome>> {
         this._startTime = Date.now();
+        this._iterations = 0;
+        this._fitnessFunctionMap = new Map(this._fitnessFunctions) as unknown as Map<number, StatementFitnessFunction>;
         StatisticsCollector.getInstance().iterationCount = 0;
         const totalGoals = this._fitnessFunctions.size;
         while (this._archive.size != totalGoals && !(this._stoppingCondition.isFinished(this))) {
             this.setNextGoal();
-            console.log(`Next goal ${this._currentStatementKey}/${this._fitnessFunctions.size}:${this._currentTargetStatement}`);
+            console.log(`Next goal ${this._archive.size}/${totalGoals}:${this._currentTargetStatement}`);
             const population = this.getPopulation();
             population.generatePopulation();
             this._intermediateIterations = 0;
-            while (!(this._stoppingCondition.isFinished(this)) && !this._archive.has(this._currentStatementKey)) {
+            while (!this._stoppingCondition.isFinished(this)) {
                 await this.evaluateNetworks(population.networks);
+                this.updateBestIndividualAndStatistics();
+                if (this._archive.has(this._currentStatementKey)) {
+                    console.log(`Covered Statement ${this._currentStatementKey}:${this._currentTargetStatement}`);
+                    break;
+                }
                 population.updatePopulationStatistics();
                 this.reportOfCurrentIteration(population);
-                this.updateBestIndividualAndStatistics();
                 population.evolve();
                 for (const network of population.networks) {
                     network.targetFitness = this._currentTargetStatement;
                 }
                 this._intermediateIterations++;
+                this._iterations++;
             }
         }
         return this._archive;
     }
 
     private setNextGoal(): void {
-        const coveredGoals = [...this._archive.keys()];
-        const openGoals = [...this._fitnessFunctions.keys()].filter(key => !coveredGoals.includes(key));
-        this._currentStatementKey = openGoals[0];
-        const nextStatement = this._fitnessFunctions.get(this._currentStatementKey);
-        if (nextStatement instanceof StatementFitnessFunction) {
-            this._currentTargetStatement = nextStatement;
-        } else {
-            throw (`Wrong fitness type: ${typeof nextStatement}. Explorative NEAT requires StatementFitnessFunctions`);
+        const uncoveredStatements: StatementFitnessFunction[] = [];
+        const allStatements = [...this._fitnessFunctionMap.values()];
+        for (const [key, statement] of this._fitnessFunctionMap.entries()) {
+            if (!this._archive.has(key)) {
+                uncoveredStatements.push(statement);
+            }
         }
+        const random = Randomness.getInstance();
+        const uncoveredPairs = StatementFitnessFunction.getNextUncoveredNodePairs(allStatements, uncoveredStatements);
+        this._currentTargetStatement = random.pick([...uncoveredPairs.keys()]);
+        this._currentStatementKey = this.mapStatementToKey(this._currentTargetStatement);
+        const parentStatement = uncoveredPairs.get(this._currentTargetStatement);
+        if (parentStatement !== undefined) {
+            this._parentKeyOfTargetStatement = this.mapStatementToKey(uncoveredPairs.get(this._currentTargetStatement));
+        }
+
+    }
+
+    private mapStatementToKey(statement: StatementFitnessFunction): number {
+        for (const [key, st] of this._fitnessFunctionMap.entries()) {
+            if (st.getTargetNode().id === statement.getTargetNode().id) {
+                return key
+            }
+        }
+        return undefined;
     }
 
     /**
@@ -108,9 +134,9 @@ export class ExplorativeNEAT extends NEAT {
     protected updateBestIndividualAndStatistics(): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
-        StatisticsCollector.getInstance().incrementIterationCount();
+        StatisticsCollector.getInstance().iterationCount = this._iterations;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size
-        StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(StatisticsCollector.getInstance().iterationCount, this._archive.size);
+        StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, this._archive.size);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
@@ -121,8 +147,14 @@ export class ExplorativeNEAT extends NEAT {
     }
 
     protected getPopulation(): NeatPopulation {
+        let startingNetwork: NeatChromosome
+        if (this._parentKeyOfTargetStatement === undefined) {
+            startingNetwork = this._chromosomeGenerator.get();
+        } else {
+            startingNetwork = this._archive.get(this._parentKeyOfTargetStatement);
+        }
         return new TargetStatementPopulation(this._neuroevolutionProperties, this._currentTargetStatement,
-            this._chromosomeGenerator.get());
+            startingNetwork);
     }
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
