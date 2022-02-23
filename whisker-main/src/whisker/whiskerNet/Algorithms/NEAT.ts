@@ -160,8 +160,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      */
     protected reportOfCurrentIteration(population: NeatPopulation): void {
         console.log(`Iteration:  ${this._iterations}`);
-        console.log(`Highest Network Fitness:  ${population.highestFitness}`);
-        console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.fitness}`);
+        console.log(`Best Network Fitness:  ${population.bestFitness}`);
+        console.log(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
         console.log(`Average Network Fitness: ${population.averageFitness}`)
         console.log(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
         for (const species of population.species) {

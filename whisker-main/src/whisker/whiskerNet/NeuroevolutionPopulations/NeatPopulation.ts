@@ -56,7 +56,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Generates a new generation of networks by evolving the current population.
      */
     public evolve(): void {
-        // Remove chromosomes which are not allowed to reproduce.
+        // Remove chromosomes that are not allowed to reproduce.
         for (const chromosome of this.networks) {
             if (!chromosome.isParent) {
                 const specie = chromosome.species;
@@ -103,6 +103,11 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             Arrays.remove(this.species, doomedSpecie);
         }
         this.generation++;
+
+        if (this.networks.length != this.hyperParameter.populationSize) {
+            throw (`The population size has changed from ${this.hyperParameter.populationSize} to
+            ${this.networks.length} members. This should NOT happen!`)
+        }
     }
 
     /**
@@ -154,7 +159,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             fitnessSum += network.sharedFitness;
         }
         const numberOrganisms = this.networks.length;
-        this._averageSharedFitness = fitnessSum / numberOrganisms;
+        this.averageSharedFitness = fitnessSum / numberOrganisms;
     }
 
     /**
@@ -164,7 +169,11 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // Compute the expected number of offspring for each network which depends on its fitness value
         // in comparison to the averageFitness of the population
         for (const network of this.networks) {
-            network.expectedOffspring = network.sharedFitness / this._averageSharedFitness;
+            if (this.hyperParameter.isMinimisationObjective) {
+                network.expectedOffspring = (1 / network.sharedFitness) / (1 / this._averageSharedFitness);
+            } else {
+                network.expectedOffspring = network.sharedFitness / this.averageSharedFitness;
+            }
         }
 
         // Now calculate the number of offspring in each species
@@ -188,10 +197,24 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             const lostChildren = this.populationSize - totalOffspringExpected;
             this.populationChampion.species.expectedOffspring += lostChildren;
         }
+        // Newly created species having only one member do not have to share their fitness value, which might lead
+        // to overpopulation.
+        else if (totalOffspringExpected > this.populationSize) {
+            let excessChildren = totalOffspringExpected - this.populationSize;
+            const threshold = this.populationSize / this.species.length;
+            const bigSpecies = this.species.filter(species => species.expectedOffspring >= threshold);
+            let iterator = 0;
+            while (excessChildren > 0) {
+                bigSpecies[iterator % bigSpecies.length].expectedOffspring--;
+                iterator++;
+                excessChildren--;
+            }
+        }
 
         // Check for fitness stagnation
-        if (this.populationChampion.fitness > this.highestFitness) {
-            this.highestFitness = this.populationChampion.fitness;
+        if ((this.hyperParameter.isMinimisationObjective && this.populationChampion.fitness < this.bestFitness) ||
+            (!this.hyperParameter.isMinimisationObjective && this.populationChampion.fitness > this.bestFitness)) {
+            this.bestFitness = this.populationChampion.fitness;
             this.highestFitnessLastChanged = 0;
         } else {
             this.highestFitnessLastChanged++;
@@ -392,7 +415,11 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Sorts the networks of the population according to their fitness values in decreasing order.
      */
     protected sortPopulation(): void {
-        this.networks.sort((a, b) => b.fitness - a.fitness)
+        if (this.hyperParameter.isMinimisationObjective) {
+            this.networks.sort((a, b) => a.fitness - b.fitness)
+        } else {
+            this.networks.sort((a, b) => b.fitness - a.fitness)
+        }
     }
 
     /**
@@ -418,7 +445,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public clone(): NeatPopulation {
         const clone = new NeatPopulation(this.generator, this.hyperParameter);
         clone.speciesCount = this.speciesCount;
-        clone.highestFitness = this.highestFitness;
+        clone.bestFitness = this.bestFitness;
         clone.highestFitnessLastChanged = this.highestFitnessLastChanged;
         clone.averageFitness = this.averageFitness;
         clone.generation = this.generation;
@@ -439,7 +466,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public toJSON(): Record<string, (number | Species<NeatChromosome>)> {
         const population = {};
         population[`aF`] = Number(this.averageFitness.toFixed(4));
-        population[`hF`] = Number(this.highestFitness.toFixed(4));
+        population[`bF`] = Number(this.bestFitness.toFixed(4));
         population[`PC`] = this.populationChampion.uID;
         for (let i = 0; i < this.species.length; i++) {
             population[`S ${i}`] = this.species[i].toJSON();

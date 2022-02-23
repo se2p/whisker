@@ -2,7 +2,6 @@ import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
-import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 
 export class StatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -16,13 +15,7 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
-        if(network.targetFitness.isCovered(network)){
-            network.fitness = 1;
-        }
-        else {
-            const fitness = StatementFitnessFunction._normalize(network.targetFitness.getBranchDistance(network));
-            network.fitness = 1 - fitness;
-        }
+        network.fitness = network.targetFitness.getBranchDistance(network);
         executor.resetState();
         return network.fitness;
     }

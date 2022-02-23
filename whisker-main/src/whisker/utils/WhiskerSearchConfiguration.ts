@@ -247,7 +247,13 @@ export class WhiskerSearchConfiguration {
         properties.printPopulationRecord = doPrintPopulationRecord;
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
-        properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']['type']);
+        if (this.getAlgorithm() === SearchAlgorithmType.EXPLORATIVE_NEAT) {
+            properties.networkFitness = new StatementFitness();
+            properties.isMinimisationObjective = true;
+        } else {
+            properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']['type']);
+            properties.isMinimisationObjective = false;
+        }
         return properties;
     }
 
@@ -258,7 +264,8 @@ export class WhiskerSearchConfiguration {
     private setDynamicSuiteParameter(): DynamicSuiteParameter {
         const parameter = new DynamicSuiteParameter();
         parameter.timeout = this._config['timeout'];
-        parameter.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness'])
+        parameter.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']);
+        parameter.isMinimisationObjective = parameter.networkFitness instanceof StatementFitness;
         parameter.repetitions = this._config['repetitions'];
 
         // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli

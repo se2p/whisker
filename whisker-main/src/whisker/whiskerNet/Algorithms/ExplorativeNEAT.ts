@@ -3,7 +3,6 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {SearchAlgorithmProperties} from "../../search/SearchAlgorithmProperties";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
-import {StatementFitness} from "../NetworkFitness/StatementFitness";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {TargetStatementPopulation} from "../NeuroevolutionPopulations/TargetStatementPopulation";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
@@ -21,7 +20,6 @@ export class ExplorativeNEAT extends NEAT {
         const totalGoals = this._fitnessFunctions.size;
         while (this._archive.size != totalGoals && !(this._stoppingCondition.isFinished(this))) {
             this.setNextGoal();
-            console.log(`Current goal ${this._archive.size}/${totalGoals}: ${this._currentTargetStatement}`);
             const population = this.getPopulation();
             population.generatePopulation();
             this._intermediateIterations = 0;
@@ -50,8 +48,6 @@ export class ExplorativeNEAT extends NEAT {
         } else {
             throw (`Wrong fitness type: ${typeof nextStatement}. Explorative NEAT requires StatementFitnessFunctions`);
         }
-
-        console.log(this._currentTargetStatement);
     }
 
     /**
@@ -93,11 +89,12 @@ export class ExplorativeNEAT extends NEAT {
         console.log(`Intermediate Iteration:  ${this._intermediateIterations}`);
         console.log(`Covered Statements: ${this._archive.size}/${this._fitnessFunctions.size}`)
         console.log(`Current fitness Target: ${this._fitnessFunctions.get(this._currentStatementKey)}`);
-        console.log(`Highest Network Fitness:  ${population.highestFitness}`);
-        console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.fitness}`);
+        console.log(`Best Network Fitness:  ${population.bestFitness}`);
+        console.log(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
         console.log(`Average Network Fitness: ${population.averageFitness}`)
         console.log(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
-        for (const species of population.species) {
+        const sortedSpecies = population.species.sort((a, b) => b.averageFitness - a.averageFitness);
+        for (const species of sortedSpecies) {
             console.log(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
         }
         console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
@@ -130,7 +127,7 @@ export class ExplorativeNEAT extends NEAT {
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         this._neuroevolutionProperties = properties as unknown as NeatProperties;
         this._neuroevolutionProperties.populationType = 'explorative';
-        this._networkFitnessFunction = new StatementFitness();
-        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition
+        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
+        this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
 }

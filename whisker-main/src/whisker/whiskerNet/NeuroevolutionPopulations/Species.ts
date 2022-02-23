@@ -96,24 +96,28 @@ export class Species<C extends NeatChromosome> {
      * Assigns the shared fitness value to each member of the species.
      */
     public assignSharedFitness(): void {
-        // Calculate the age debt based on the penalizing factor -> Determines after how much generations of no improvement
-        // the species gets penalized
+        // Calculate the age debt based on the penalizing factor -> Determines after how many generations of no
+        // improvement the species gets penalized
         let ageDept = (this.age - this.ageOfLastImprovement + 1) - this.hyperParameter.penalizingAge;
-        if (ageDept == 0)
+        if (ageDept == 0) {
             ageDept = 1;
+        }
 
         for (const network of this.networks) {
             network.sharedFitness = network.fitness;
 
             // Penalize fitness if it has not improved for a certain amount of ages
             if (ageDept >= 1) {
-                network.sharedFitness = network.sharedFitness * 0.01;
+                const penalizingFactor = this.hyperParameter.isMinimisationObjective ? 100 : 0.01;
+                network.sharedFitness = network.sharedFitness * penalizingFactor;
                 console.log(`Penalizing stagnant species ${this.uID}`)
             }
 
             // Boost fitness for young generations to give them a chance to evolve for some generations.
             if (this._age <= 10) {
-                network.sharedFitness = network.sharedFitness * this.hyperParameter.ageSignificance;
+                const boostFactor = this.hyperParameter.isMinimisationObjective ?
+                    1 / this.hyperParameter.ageSignificance : this.hyperParameter.ageSignificance;
+                network.sharedFitness *= boostFactor;
             }
 
             // Do not allow negative fitness values
@@ -122,7 +126,8 @@ export class Species<C extends NeatChromosome> {
             }
 
             // Share fitness with the entire species.
-            network.sharedFitness = network.sharedFitness / this.networks.length;
+            this.hyperParameter.isMinimisationObjective ?
+                network.sharedFitness *= this.networks.length : network.sharedFitness /= this.networks.length
 
         }
         this.markParents();
@@ -141,7 +146,10 @@ export class Species<C extends NeatChromosome> {
 
 
         // Update the age of last improvement based on the best performing network's fitness value.
-        if (champion.fitness > this.allTimeBestFitness) {
+        if (!this.hyperParameter.isMinimisationObjective && champion.fitness > this.allTimeBestFitness) {
+            this.ageOfLastImprovement = this.age;
+            this.allTimeBestFitness = champion.fitness;
+        } else if (this.hyperParameter.isMinimisationObjective && champion.fitness < this.allTimeBestFitness) {
             this.ageOfLastImprovement = this.age;
             this.allTimeBestFitness = champion.fitness;
         }
@@ -196,13 +204,17 @@ export class Species<C extends NeatChromosome> {
      * Calculates the number of offspring based on the average fitness across all members of the species. Saves
      * leftOvers occurring due to rounding errors and carries them on from calculation to calculation across all
      * species to assign them to the population champion's species in the end.
-     * @param leftOver leftOver makes sure to not loose childs due to rounding errors.
+     * @param leftOver leftOver makes sure to not lose childs due to rounding errors.
      * @param totalAvgSpeciesFitness the average fitness of all species combined.
      * @param populationSize the size of the whole population.
      * @returns number leftOver collects rounding errors to ensure a constant populationSize.
      */
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
-        const expectedOffspring = (this.calculateAverageSharedFitness() / totalAvgSpeciesFitness) * populationSize;
+        let fitnessComparison = this.calculateAverageSharedFitness() / totalAvgSpeciesFitness;
+        if (this.hyperParameter.isMinimisationObjective) {
+            fitnessComparison = 1 / fitnessComparison;
+        }
+        const expectedOffspring = fitnessComparison * populationSize;
         const intExpectedOffspring = Math.floor(expectedOffspring);
         const fractionExpectedOffspring = expectedOffspring % 1;
 
@@ -262,7 +274,7 @@ export class Species<C extends NeatChromosome> {
                 child = this.breedMutationOnly();
             }
 
-            // Otherwise we apply crossover.
+            // Otherwise, we apply crossover.
             else {
                 child = this.breedCrossover(population, populationSpecies);
             }
@@ -308,7 +320,7 @@ export class Species<C extends NeatChromosome> {
         }
 
         // Select second parent from a different species.
-        else  {
+        else {
             const candidateSpecies = populationSpecies.filter(species => species.uID !== this.uID && species.networks.length > 0);
             // Check if we have at least one other species that contains at least 1 network.
             if (candidateSpecies.length > 0) {
@@ -336,7 +348,11 @@ export class Species<C extends NeatChromosome> {
      * Sorts the species' networks in decreasing order according to their fitness values.
      */
     public sortNetworks(): void {
-        this.networks.sort((a, b) => b.fitness - a.fitness)
+        if (this.hyperParameter.isMinimisationObjective) {
+            this.networks.sort((a, b) => a.fitness - b.fitness)
+        } else {
+            this.networks.sort((a, b) => b.fitness - a.fitness)
+        }
     }
 
     /**

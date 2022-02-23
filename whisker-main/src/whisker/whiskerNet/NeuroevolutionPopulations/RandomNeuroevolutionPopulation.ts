@@ -22,8 +22,9 @@ export class RandomNeuroevolutionPopulation extends NeatPopulation {
         this.populationChampion.isPopulationChampion = true;
 
         // Update the highest fitness value found so far.
-        if (this.populationChampion.fitness > this.highestFitness) {
-            this.highestFitness = this.populationChampion.fitness;
+        if ((this.hyperParameter.isMinimisationObjective && this.populationChampion.fitness < this.bestFitness) ||
+            (!this.hyperParameter.isMinimisationObjective && this.populationChampion.fitness > this.bestFitness)) {
+            this.bestFitness = this.populationChampion.fitness;
             this.highestFitnessLastChanged = 0;
         } else {
             this.highestFitnessLastChanged++;

@@ -172,6 +172,11 @@ export class NeatProperties {
     private _networkFitness: NetworkFitnessFunction<NeatChromosome>;
 
     /**
+     * Determines whether the objective is a minimisation task.
+     */
+    private _isMinimisationObjective = false;
+
+    /**
      * Timeout for the execution of a scratch game during the evaluation of the network.
      */
     private _timeout = 30000;
@@ -436,6 +441,14 @@ export class NeatProperties {
 
     set networkFitness(value: NetworkFitnessFunction<NeatChromosome>) {
         this._networkFitness = value;
+    }
+
+    get isMinimisationObjective(): boolean {
+        return this._isMinimisationObjective;
+    }
+
+    set isMinimisationObjective(value: boolean) {
+        this._isMinimisationObjective = value;
     }
 
     get timeout(): number {

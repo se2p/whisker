@@ -88,7 +88,7 @@ describe("Test NeatPopulation", () => {
 
     test("Test Constructor", () => {
         expect(population.speciesCount).toBeGreaterThan(0);
-        expect(population.highestFitness).toBe(0);
+        expect(population.bestFitness).toBe(0);
         expect(population.highestFitnessLastChanged).toBe(0);
         expect(population.numberOfSpeciesTargeted).toBe(numberOfSpecies);
         expect(population.generator).toBeInstanceOf(NeatChromosomeGeneratorSparse);
@@ -103,7 +103,7 @@ describe("Test NeatPopulation", () => {
     test("Test Getter and Setter", () => {
 
         population.speciesCount = 3;
-        population.highestFitness = 3;
+        population.bestFitness = 3;
         population.highestFitnessLastChanged = 3;
         population.generation = 3;
         population.averageFitness = 3;
@@ -112,7 +112,7 @@ describe("Test NeatPopulation", () => {
         population.populationChampion = champ;
 
         expect(population.speciesCount).toBe(3);
-        expect(population.highestFitness).toBe(3);
+        expect(population.bestFitness).toBe(3);
         expect(population.highestFitnessLastChanged).toBe(3);
         expect(population.generation).toBe(3);
         expect(population.averageFitness).toBe(3);
@@ -137,7 +137,7 @@ describe("Test NeatPopulation", () => {
     })
 
     test("Test evolution stagnant population with only one species", () => {
-        population.highestFitness = 60;
+        population.bestFitness = 60;
         population.highestFitnessLastChanged = 100;
         const firstSpecie = population.species[0];
         Arrays.clear(population.species);
