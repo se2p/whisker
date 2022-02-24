@@ -477,18 +477,20 @@ export class WhiskerSearchConfiguration {
 
     public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NetworkChromosome> {
         const networkFitnessDef = fitnessFunction['type'];
-        if (networkFitnessDef === 'score')
-            return new ScoreFitness();
-        else if (networkFitnessDef === 'survive')
-            return new SurviveFitness();
-        else if (networkFitnessDef === 'target')
-            return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
-                fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
-        else if (networkFitnessDef === 'novelty') {
-            return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
-                fitnessFunction['archiveThreshold']);
+        switch (networkFitnessDef) {
+            case 'score':
+                return new ScoreFitness();
+            case 'survive':
+                return new SurviveFitness();
+            case 'target':
+                return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
+                    fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
+            case 'novelty':
+                return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
+                    fitnessFunction['archiveThreshold']);
+            default:
+                throw new ConfigException(`Unknown network fitness function ${networkFitnessDef}`);
         }
-        throw new ConfigException("No Network Fitness specified in the config file!")
     }
 
 
