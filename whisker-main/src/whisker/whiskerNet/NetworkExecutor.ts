@@ -12,6 +12,7 @@ import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime"
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
+import {KeyPressEvent} from "../testcase/events/KeyPressEvent";
 
 export class NetworkExecutor {
 
@@ -284,6 +285,9 @@ export class NetworkExecutor {
         const parameters = [];
         if (nextEvent.numSearchParameter() > 0) {
             parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
+
+            // If we have a WaitEvent we set the waitCount to the derived parameter value and decrease by one since
+            // we are about to execute a single wait right now anyways...
             if (nextEvent instanceof WaitEvent) {
                 this._waitCount = Math.round(NeuroevolutionUtil.relu(parameters[0])) - 1;
             } else {

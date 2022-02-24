@@ -227,10 +227,10 @@ export class InputExtraction {
 
         // Gather required constants
         const targetPosition = ScratchInterface.getPositionOfTarget(target);
-        const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
+        const rangeFinderAngles = [0, 90, 180, -90]
         const rangeFinderDistances = {};
         // Check for each rangeFinder if it can detect an angle. We have 6 sensors attached to our source Sprite:
-        // Front (0), Front-Left (-45), Front-Right (45), Left (-90), Right (90) and Back (180)
+        // Front (0), Left (-90), Right (90) and Back (180)
         for (const angle of rangeFinderAngles) {
             // Adjust the currently selected rangeFinder to the pointing direction of the source sprite.
             const adjustedAngle = target.direction + angle;
@@ -275,7 +275,7 @@ export class InputExtraction {
     }
 
     /**
-     * Assings a given angel to the corresponding rangefinder position.
+     * Assigns a given angel to the corresponding rangefinder position.
      * @param angle the angle for which a range finder should be fetched.
      * @returns string defining the position of the rangefinder.
      */

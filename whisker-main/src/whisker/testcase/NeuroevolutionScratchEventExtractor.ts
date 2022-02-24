@@ -23,7 +23,7 @@ export class NeuroevolutionScratchEventExtractor extends ScratchEventExtractor {
         // Remove KeyPressEvents if the corresponding Key is already pressed.
         scratchEvents = scratchEvents.filter(event => !(event instanceof  KeyPressEvent) || !Container.vmWrapper.inputs.isKeyDown(String(event.getParameters()[0])));
         // Remove DragSpriteEvents.
-        return scratchEvents.filter((event) => !(event instanceof DragSpriteEvent));
+        return scratchEvents.filter(event => !(event instanceof DragSpriteEvent));
     }
 
     /**

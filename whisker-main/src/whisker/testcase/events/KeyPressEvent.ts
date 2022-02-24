@@ -85,8 +85,9 @@ export class KeyPressEvent extends ScratchEvent {
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }
-        this._steps %= Container.config.getPressDurationUpperBound();
-
+        if(!Container.isNeuroevolution) {
+            this._steps %= Container.config.getPressDurationUpperBound();
+        }
         // If the event has been selected ensure that it is executed for at least one step.
         if(this._steps < 1){
             this._steps = 1;

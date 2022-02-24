@@ -485,13 +485,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * @return true if not a single output node has been activated at least once.
      */
     private outputsOff(): boolean {
-        let activatedOnce = true
-        this.outputNodes
-        for (const outputNode of this.outputNodes) {
-            if (outputNode.activationCount !== 0)
-                activatedOnce = false;
-        }
-        return activatedOnce;
+        return this.outputNodes.every(node => !node.activatedFlag);
     }
 
     /**

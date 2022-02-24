@@ -168,12 +168,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     protected assignNumberOfOffspring(): void {
         // Compute the expected number of offspring for each network which depends on its fitness value
         // in comparison to the averageFitness of the population
-        console.log("Average: ", this.averageSharedFitness)
         for (const network of this.networks) {
             network.expectedOffspring = network.sharedFitness / this.averageSharedFitness;
-            console.log("------------------------------")
-            console.log("Fitness: ", network.sharedFitness)
-            console.log("Expected Offspring: ", network.expectedOffspring)
         }
 
         // Now calculate the number of offspring in each species
@@ -183,8 +179,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             leftOver = specie.getNumberOfOffspringsNEAT(leftOver);
             totalOffspringExpected += specie.expectedOffspring;
         }
-
-        console.log("Total Offspring: ", totalOffspringExpected);
 
         // Find the population champion and reward him with additional children.
         this.sortPopulation();
@@ -200,11 +194,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             this.populationChampion.species.expectedOffspring += lostChildren;
         }
 
-        console.log("Effective Offspring: ", this.species.reduce((a, b) => a + b.expectedOffspring, 0));
-
         // Check for fitness stagnation
-        if ((this.hyperParameter.isMinimisationObjective && this.populationChampion.fitness < this.bestFitness) ||
-            (!this.hyperParameter.isMinimisationObjective && this.populationChampion.fitness > this.bestFitness)) {
+        if (this.populationChampion.fitness > this.bestFitness) {
             this.bestFitness = this.populationChampion.fitness;
             this.highestFitnessLastChanged = 0;
         } else {
@@ -406,11 +397,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Sorts the networks of the population according to their fitness values in decreasing order.
      */
     protected sortPopulation(): void {
-        if (this.hyperParameter.isMinimisationObjective) {
-            this.networks.sort((a, b) => a.fitness - b.fitness)
-        } else {
-            this.networks.sort((a, b) => b.fitness - a.fitness)
-        }
+        this.networks.sort((a, b) => b.fitness - a.fitness)
     }
 
     /**

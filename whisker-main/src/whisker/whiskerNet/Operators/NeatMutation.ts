@@ -101,7 +101,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             if (this._random.nextDouble() <= this._populationChampionConnectionMutation) {
                 this.mutateAddConnection(mutant, this._addConnectionTries);
             } else {
-                this.mutateWeight(mutant, this._perturbationPower, 1);
+                this.mutateWeight(mutant, this._perturbationPower);
             }
         }
 
@@ -118,7 +118,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             // Non structural mutation
             else {
                 if (this._random.nextDouble() < this._mutateWeights)
-                    this.mutateWeight(mutant, this._perturbationPower, 1);
+                    this.mutateWeight(mutant, this._perturbationPower);
                 if (this._random.nextDouble() < this._mutateToggleEnableConnection)
                     this.mutateToggleEnableConnection(mutant, this._toggleEnableConnectionTimes);
                 if (this._random.nextDouble() < this._mutateEnableConnection)
@@ -275,14 +275,14 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         let foundNode = false;
         for (const hiddenNode of this._hiddenNodes.keys()) {
             const nodePair = this._hiddenNodes.get(hiddenNode);
-            if(nodePair[0].equals(fromNode) && nodePair[1].equals(toNode)){
+            if (nodePair[0].equals(fromNode) && nodePair[1].equals(toNode)) {
                 newNode.uID = hiddenNode.uID;
                 foundNode = true;
                 break;
             }
         }
 
-        if(!foundNode){
+        if (!foundNode) {
             this._hiddenNodes.set(newNode, [fromNode, toNode]);
         }
 
@@ -308,52 +308,17 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      * Perturbs all weights of a network.
      * @param chromosome the chromosome to mutate
      * @param power the strength of the perturbation
-     * @param rate defines if we add a value to a connection weight or replace the connection weight entirely
      */
-    public mutateWeight(chromosome: NeatChromosome, power: number, rate: number): void {
-        let gaussPoint = 0;
-        let coldGaussPoint = 0;
-
-        // Randomly shake things up!
-        const severe = this._random.nextDouble() > 0.5;
-
+    // TODO: Think about decreasing the mutation power for early genes since they proved to work...
+    public mutateWeight(chromosome: NeatChromosome, power: number): void {
         const connections = chromosome.connections;
-        const connectionsSize = connections.length;
-        const endPart = connectionsSize * 0.8;
-        const powerMod = 1.0;
-        let counter = 0;
-
-
         for (const connection of connections) {
-            if (severe) {
-                gaussPoint = 0.3;
-                coldGaussPoint = 0.1;
+            if (this._random.nextDouble() < 0.1) {
+                connection.weight = this._random.nextDoubleMinMax(-power, power);
             } else {
-
-                if (connectionsSize >= 10 && counter > endPart) {
-                    gaussPoint = 0.5;
-                    coldGaussPoint = 0.3;
-                } else {
-                    if (this._random.nextDouble() > 0.5) {
-                        gaussPoint = 1.0 - rate;
-                        coldGaussPoint = 1.0 - rate - 0.1;
-                    } else {
-                        gaussPoint = 1.0 - rate;
-                        coldGaussPoint = 1.0 - rate;
-                    }
-                }
+                connection.weight = this._random.nextGaussian(connection.weight, power);
             }
-
-            const randomPosNegValue = this._random.randomBoolean() ? +1 : -1;
-            const weightModification = randomPosNegValue * this._random.nextDouble() * power * powerMod;
-            const randomDouble = this._random.nextDouble();
-            if (randomDouble > gaussPoint)
-                connection.weight += weightModification;
-            else if (randomDouble > coldGaussPoint)
-                connection.weight = weightModification;
-            counter++;
         }
-
     }
 
     /**

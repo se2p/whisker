@@ -75,7 +75,7 @@ export class Species<C extends NeatChromosome> {
     /**
      * Constructs a new Species.
      * @param uID the id of the species
-     * @param novel true if its a new species
+     * @param novel true if it's a new species
      * @param hyperParameter the search parameters
      */
     constructor(uID: number, novel: boolean, hyperParameter: NeatProperties) {
@@ -108,16 +108,14 @@ export class Species<C extends NeatChromosome> {
 
             // Penalize fitness if it has not improved for a certain amount of ages
             if (ageDept >= 1) {
-                const penalizingFactor = this.hyperParameter.isMinimisationObjective ? 100 : 0.01;
+                const penalizingFactor = 0.01;
                 network.sharedFitness = network.sharedFitness * penalizingFactor;
                 console.log(`Penalizing stagnant species ${this.uID}`)
             }
 
             // Boost fitness for young generations to give them a chance to evolve for some generations.
             if (this._age <= 10) {
-                const boostFactor = this.hyperParameter.isMinimisationObjective ?
-                    1 / this.hyperParameter.ageSignificance : this.hyperParameter.ageSignificance;
-                network.sharedFitness *= boostFactor;
+                network.sharedFitness *= this.hyperParameter.ageSignificance;
             }
 
             // Do not allow negative fitness values
@@ -126,8 +124,7 @@ export class Species<C extends NeatChromosome> {
             }
 
             // Share fitness with the entire species.
-            this.hyperParameter.isMinimisationObjective ?
-                network.sharedFitness *= this.networks.length : network.sharedFitness /= this.networks.length
+            network.sharedFitness /= this.networks.length
 
         }
         this.markParents();
@@ -146,10 +143,7 @@ export class Species<C extends NeatChromosome> {
 
 
         // Update the age of last improvement based on the best performing network's fitness value.
-        if (!this.hyperParameter.isMinimisationObjective && champion.fitness > this.allTimeBestFitness) {
-            this.ageOfLastImprovement = this.age;
-            this.allTimeBestFitness = champion.fitness;
-        } else if (this.hyperParameter.isMinimisationObjective && champion.fitness < this.allTimeBestFitness) {
+        if (champion.fitness > this.allTimeBestFitness) {
             this.ageOfLastImprovement = this.age;
             this.allTimeBestFitness = champion.fitness;
         }
@@ -172,7 +166,7 @@ export class Species<C extends NeatChromosome> {
      * Those leftOvers are carried on from calculation to calculation across all species and are awarded to the
      * population champion's species.
      * The given implementation follows the approach described within the NEAT publication.
-     * @param leftOver makes sure to not loose childs due to rounding errors.
+     * @param leftOver makes sure to not lose childs due to rounding errors.
      * @returns number leftOver collects rounding errors to ensure a constant populationSize.
      */
     public getNumberOfOffspringsNEAT(leftOver: number): number {
@@ -210,11 +204,7 @@ export class Species<C extends NeatChromosome> {
      * @returns number leftOver collects rounding errors to ensure a constant populationSize.
      */
     public getNumberOffspringsAvg(leftOver: number, totalAvgSpeciesFitness: number, populationSize: number): number {
-        let fitnessComparison = this.calculateAverageSharedFitness() / totalAvgSpeciesFitness;
-        if (this.hyperParameter.isMinimisationObjective) {
-            fitnessComparison = 1 / fitnessComparison;
-        }
-        const expectedOffspring = fitnessComparison * populationSize;
+        const expectedOffspring = (this.calculateAverageSharedFitness() / totalAvgSpeciesFitness) * populationSize;
         const intExpectedOffspring = Math.floor(expectedOffspring);
         const fractionExpectedOffspring = expectedOffspring % 1;
 
@@ -348,11 +338,7 @@ export class Species<C extends NeatChromosome> {
      * Sorts the species' networks in decreasing order according to their fitness values.
      */
     public sortNetworks(): void {
-        if (this.hyperParameter.isMinimisationObjective) {
-            this.networks.sort((a, b) => a.fitness - b.fitness)
-        } else {
-            this.networks.sort((a, b) => b.fitness - a.fitness)
-        }
+        this.networks.sort((a, b) => b.fitness - a.fitness)
     }
 
     /**

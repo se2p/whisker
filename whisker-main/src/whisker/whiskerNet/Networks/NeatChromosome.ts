@@ -6,8 +6,6 @@ import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {InputNode} from "../NetworkComponents/InputNode";
-import {Container} from "../../utils/Container";
-import {NeatChromosomeGeneratorFullyConnected} from "../NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 
 export class NeatChromosome extends NetworkChromosome {
     /**

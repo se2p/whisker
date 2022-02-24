@@ -32,7 +32,7 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
     /**
      * The highest fitness value ever achieved through all generations.
      */
-    private _bestFitness: number;
+    private _bestFitness = 0;
 
     /**
      * Number of iterations since the highest network fitness has improved.
@@ -58,11 +58,6 @@ export abstract class NeuroevolutionPopulation<C extends NetworkChromosome> {
         this._hyperParameter = hyperParameter;
         this._populationSize = hyperParameter.populationSize;
         this._generator = generator;
-        if (hyperParameter.isMinimisationObjective) {
-            this._bestFitness = Number.MAX_SAFE_INTEGER;
-        } else {
-            this._bestFitness = 0;
-        }
     }
 
     /**

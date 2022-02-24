@@ -98,12 +98,16 @@ describe("Test NeatMutation", () => {
             originalWeights.push(connection.weight);
 
         const mutatedWeights = [];
-        mutation.mutateWeight(networkChromosome, 1.5, 1);
+        mutation.mutateWeight(networkChromosome, 1);
+        mutation.mutateWeight(networkChromosome, 1)
         for (const connection of networkChromosome.connections) {
             mutatedWeights.push(connection.weight);
         }
         originalWeights.sort();
         mutatedWeights.sort();
+        const originalSum = originalWeights.reduce((a, b) => a + b, 0);
+        const mutatedSum = mutatedWeights.reduce((a, b) => a +b , 0)
+        expect(originalSum).not.toEqual(mutatedSum);
         expect(mutatedWeights).toHaveLength(originalWeights.length);
     })
 
