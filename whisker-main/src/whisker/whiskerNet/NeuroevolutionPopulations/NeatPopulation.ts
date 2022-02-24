@@ -168,12 +168,12 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     protected assignNumberOfOffspring(): void {
         // Compute the expected number of offspring for each network which depends on its fitness value
         // in comparison to the averageFitness of the population
+        console.log("Average: ", this.averageSharedFitness)
         for (const network of this.networks) {
-            if (this.hyperParameter.isMinimisationObjective) {
-                network.expectedOffspring = (1 / network.sharedFitness) / (1 / this._averageSharedFitness);
-            } else {
-                network.expectedOffspring = network.sharedFitness / this.averageSharedFitness;
-            }
+            network.expectedOffspring = network.sharedFitness / this.averageSharedFitness;
+            console.log("------------------------------")
+            console.log("Fitness: ", network.sharedFitness)
+            console.log("Expected Offspring: ", network.expectedOffspring)
         }
 
         // Now calculate the number of offspring in each species
@@ -183,6 +183,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             leftOver = specie.getNumberOfOffspringsNEAT(leftOver);
             totalOffspringExpected += specie.expectedOffspring;
         }
+
+        console.log("Total Offspring: ", totalOffspringExpected);
 
         // Find the population champion and reward him with additional children.
         this.sortPopulation();
@@ -197,19 +199,8 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
             const lostChildren = this.populationSize - totalOffspringExpected;
             this.populationChampion.species.expectedOffspring += lostChildren;
         }
-        // Newly created species having only one member do not have to share their fitness value, which might lead
-        // to overpopulation.
-        else if (totalOffspringExpected > this.populationSize) {
-            let excessChildren = totalOffspringExpected - this.populationSize;
-            const threshold = this.populationSize / this.species.length;
-            const bigSpecies = this.species.filter(species => species.expectedOffspring >= threshold);
-            let iterator = 0;
-            while (excessChildren > 0) {
-                bigSpecies[iterator % bigSpecies.length].expectedOffspring--;
-                iterator++;
-                excessChildren--;
-            }
-        }
+
+        console.log("Effective Offspring: ", this.species.reduce((a, b) => a + b.expectedOffspring, 0));
 
         // Check for fitness stagnation
         if ((this.hyperParameter.isMinimisationObjective && this.populationChampion.fitness < this.bestFitness) ||

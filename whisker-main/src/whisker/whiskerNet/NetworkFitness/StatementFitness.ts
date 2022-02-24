@@ -15,12 +15,11 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
     async getFitness(network: NetworkChromosome, timeout: number, eventSelection: string): Promise<number> {
         const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
         await executor.execute(network);
-        const branchFitness = network.targetFitness.getBranchDistance(network);
-        const approachLevel = network.targetFitness.getApproachLevel(network);
-        const cfgDistance = network.targetFitness.getCFGDistance(network, approachLevel > 0);
-        network.fitness = branchFitness + 10000 * approachLevel;
-        if(branchFitness === 0){
-            network.fitness += cfgDistance;
+        const fitness = network.targetFitness.getFitness(network);
+        if (fitness > 0) {
+            network.fitness = 1 / fitness;
+        } else {
+            network.fitness = 1;
         }
         executor.resetState();
         return network.fitness;

@@ -249,7 +249,7 @@ export class WhiskerSearchConfiguration {
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
         if (this.getAlgorithm() === SearchAlgorithmType.EXPLORATIVE_NEAT) {
             properties.networkFitness = new StatementFitness();
-            properties.isMinimisationObjective = true;
+            properties.isMinimisationObjective = false;
         } else {
             properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']['type']);
             properties.isMinimisationObjective = false;
