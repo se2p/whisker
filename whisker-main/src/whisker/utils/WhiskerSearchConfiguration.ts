@@ -62,12 +62,8 @@ import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGener
 
 
 class ConfigException implements Error {
-    message: string;
-    name: string;
-
-    constructor(message: string) {
-        this.name = "ConfigException";
-        this.message = message;
+    constructor(readonly message: string, readonly name: string = "ConfigException") {
+        // empty
     }
 }
 
