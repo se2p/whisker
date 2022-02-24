@@ -17,7 +17,6 @@
         "maxMutationCountFocusedPhase": 10
     },
     "selection": {
-        "operator": "rank",
         "randomSelectionProbabilityStart": 0.5,
         "randomSelectionProbabilityFocusedPhase": 0
     },

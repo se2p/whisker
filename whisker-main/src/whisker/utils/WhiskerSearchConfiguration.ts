@@ -336,7 +336,17 @@ export class WhiskerSearchConfiguration {
         if (!this._config['selection']) {
             return undefined;
         }
+
         const selectionOperator = this._config['selection']['operator'];
+
+        if (this.getAlgorithm() == "mio") {
+            if (selectionOperator != undefined) {
+                throw new ConfigException(`MIO cannot use selection operator ${selectionOperator}`);
+            } else {
+                return undefined; // dummy value, MIO actually doesn't use a selection operator
+            }
+        }
+
         switch (selectionOperator) {
             case 'tournament':
                 return new TournamentSelection(this._config['selection']['tournamentSize']) as unknown as Selection<any>;
