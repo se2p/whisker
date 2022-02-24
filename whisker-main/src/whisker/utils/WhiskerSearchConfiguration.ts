@@ -62,12 +62,8 @@ import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGener
 
 
 class ConfigException implements Error {
-    message: string;
-    name: string;
-
-    constructor(message: string) {
-        this.name = "ConfigException";
-        this.message = message;
+    constructor(readonly message: string, readonly name: string = "ConfigException") {
+        // empty
     }
 }
 
@@ -153,7 +149,7 @@ export class WhiskerSearchConfiguration {
         const eventExtractor = new StaticScratchEventExtractor(vm);
         const programEvents = eventExtractor.extractEvents(vm);
         const numSearchParams = programEvents.map(event => event.numSearchParameter());
-         // Add 1 for the event-codon itself.
+        // Add 1 for the event-codon itself.
         this.searchAlgorithmProperties['reservedCodons'] = Math.max(...numSearchParams) + 1;
         this.searchAlgorithmProperties['chromosomeLength'] *= this.searchAlgorithmProperties['reservedCodons'];
     }
@@ -264,9 +260,9 @@ export class WhiskerSearchConfiguration {
                 const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
                 return new OneOfStoppingCondition(...conditions)
             }
+            default:
+                throw new ConfigException(`Unknown stopping condition ${stoppingCond}`);
         }
-
-        throw new ConfigException("No stopping condition given");
     }
 
     private _getMutationOperator(): Mutation<any> {
@@ -274,7 +270,8 @@ export class WhiskerSearchConfiguration {
         if (!this._config['mutation']) {
             return undefined;
         }
-        switch (this._config['mutation']['operator']) {
+        const mutationOperator = this._config['mutation']['operator']
+        switch (mutationOperator) {
             case 'bitFlip':
                 return new BitflipMutation();
             case 'variableLength':
@@ -310,8 +307,9 @@ export class WhiskerSearchConfiguration {
             case'neatMutation':
                 return new NeatMutation(this._config['mutation'])
             case 'integerList':
-            default:
                 return new IntegerListMutation(this._config['integerRange']['min'], this._config['integerRange']['max']);
+            default:
+                throw new ConfigException(`Unknown mutation operator ${mutationOperator}`);
         }
     }
 
@@ -320,14 +318,16 @@ export class WhiskerSearchConfiguration {
         if (!this._config['crossover']) {
             return undefined;
         }
-        switch (this._config['crossover']['operator']) {
+        const crossoverOperator = this._config['crossover']['operator'];
+        switch (crossoverOperator) {
             case 'singlePointRelative':
                 return new SinglePointRelativeCrossover(this.searchAlgorithmProperties['reservedCodons']);
             case 'neatCrossover':
                 return new NeatCrossover(this._config['crossover']);
             case 'singlePoint':
-            default:
                 return new SinglePointCrossover();
+            default:
+                throw new ConfigException(`Unknown crossover operator ${crossoverOperator}`);
         }
     }
 
@@ -336,12 +336,24 @@ export class WhiskerSearchConfiguration {
         if (!this._config['selection']) {
             return undefined;
         }
-        switch (this._config['selection']['operator']) {
+
+        const selectionOperator = this._config['selection']['operator'];
+
+        if (this.getAlgorithm() == "mio") {
+            if (selectionOperator != undefined) {
+                throw new ConfigException(`MIO cannot use selection operator ${selectionOperator}`);
+            } else {
+                return undefined; // dummy value, MIO actually doesn't use a selection operator
+            }
+        }
+
+        switch (selectionOperator) {
             case 'tournament':
                 return new TournamentSelection(this._config['selection']['tournamentSize']) as unknown as Selection<any>;
             case 'rank':
-            default:
                 return new RankSelection();
+            default:
+                throw new ConfigException(`Unknown selection operator ${selectionOperator}`);
         }
     }
 
@@ -365,6 +377,9 @@ export class WhiskerSearchConfiguration {
                 case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
                         this.getEventSelector(), operator['probability']);
+                    break;
+                default:
+                    throw new ConfigException(`Unknown local search operator ${operator['type']}`);
             }
 
             operators.push(type);
@@ -373,7 +388,8 @@ export class WhiskerSearchConfiguration {
     }
 
     public getEventExtractor(): ScratchEventExtractor {
-        switch (this._config['extractor']) {
+        const eventExtractor = this._config['extractor'];
+        switch (eventExtractor) {
             case 'naive':
                 return new NaiveScratchEventExtractor(Container.vm);
             case 'wait':
@@ -383,25 +399,29 @@ export class WhiskerSearchConfiguration {
             case 'neuroevolution':
                 return new NeuroevolutionScratchEventExtractor(Container.vm);
             case 'dynamic':
-            default:
                 return new DynamicScratchEventExtractor(Container.vm);
+            default:
+                throw new ConfigException(`Unknown event extractor ${eventExtractor}`);
         }
     }
 
     public getEventSelector(): EventSelector {
-        switch (this._config['eventSelector']) {
+        const eventSelector = this._config['eventSelector'];
+        switch (eventSelector) {
             case 'clustering': {
                 const {integerRange} = this._config;
                 return new ClusteringEventSelector(integerRange);
             }
             case 'interleaving':
-            default:
                 return new InterleavingEventSelector();
+            default:
+                throw new ConfigException(`Unknown event selector ${eventSelector}`);
         }
     }
 
     public getChromosomeGenerator(): ChromosomeGenerator<any> {
-        switch (this._config['chromosome']['type']) {
+        const chromosomeGenerator = this._config['chromosome']['type'];
+        switch (chromosomeGenerator) {
             case 'bitString':
                 return new BitstringChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
                     this._getMutationOperator(),
@@ -433,40 +453,44 @@ export class WhiskerSearchConfiguration {
                     Container.template, eventExtractor.extractEvents(Container.vm));
             }
             case 'test':
-            default:
                 return new TestChromosomeGenerator(this.searchAlgorithmProperties as GeneticAlgorithmProperties<any>,
                     this._getMutationOperator(),
                     this._getCrossoverOperator());
+            default:
+                throw new ConfigException(`Unknown chromosome generator ${chromosomeGenerator}`);
         }
     }
 
     public getFitnessFunctionType(): FitnessFunctionType {
-        const fitnessFunctionDef = this._config['fitnessFunction'];
-        switch (fitnessFunctionDef["type"]) {
+        const fitnessFunction = this._config['fitnessFunction']["type"];
+        switch (fitnessFunction) {
             case 'statement':
                 return FitnessFunctionType.STATEMENT;
             case 'one-max':
                 return FitnessFunctionType.ONE_MAX;
             case 'single-bit':
-            default:
                 return FitnessFunctionType.SINGLE_BIT;
+            default:
+                throw new ConfigException(`Unknown fitness function ${fitnessFunction}`);
         }
     }
 
     public getNetworkFitnessFunction(fitnessFunction: Record<string, any>): NetworkFitnessFunction<NetworkChromosome> {
         const networkFitnessDef = fitnessFunction['type'];
-        if (networkFitnessDef === 'score')
-            return new ScoreFitness();
-        else if (networkFitnessDef === 'survive')
-            return new SurviveFitness();
-        else if (networkFitnessDef === 'target')
-            return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
-                fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
-        else if (networkFitnessDef === 'novelty') {
-            return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
-                fitnessFunction['archiveThreshold']);
+        switch (networkFitnessDef) {
+            case 'score':
+                return new ScoreFitness();
+            case 'survive':
+                return new SurviveFitness();
+            case 'target':
+                return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
+                    fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
+            case 'novelty':
+                return new NoveltyTargetNetworkFitness(fitnessFunction['player'], fitnessFunction['neighbourCount'],
+                    fitnessFunction['archiveThreshold']);
+            default:
+                throw new ConfigException(`Unknown network fitness function ${networkFitnessDef}`);
         }
-        throw new ConfigException("No Network Fitness specified in the config file!")
     }
 
 
@@ -545,7 +569,8 @@ export class WhiskerSearchConfiguration {
         if (this._config["debugLogging"] == true) {
             return (...data) => console.log('DEBUG:', ...data);
         } else {
-            return () => { /* no-op */
+            return () => {
+                /* no-op */
             };
         }
     }
