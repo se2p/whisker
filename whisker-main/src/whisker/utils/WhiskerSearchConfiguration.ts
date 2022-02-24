@@ -367,6 +367,9 @@ export class WhiskerSearchConfiguration {
                 case "Reduction":
                     type = new ReductionLocalSearch(Container.vmWrapper, this.getEventExtractor(),
                         this.getEventSelector(), operator['probability']);
+                    break;
+                default:
+                    throw new ConfigException(`Unknown local search operator ${operator['type']}`);
             }
 
             operators.push(type);
