@@ -62,10 +62,10 @@ describe("BiasNode Tests", () => {
     })
 
     test("getActivationValue Test", () => {
-        expect(biasNode.getActivationValue()).toEqual(1);
+        expect(biasNode.activate()).toEqual(1);
         expect(biasNode.activationValue).toEqual(1)
         biasNode.reset()
-        expect(biasNode.getActivationValue()).toEqual(1);
+        expect(biasNode.activate()).toEqual(1);
         expect(biasNode.activationValue).toEqual(1)
     })
 

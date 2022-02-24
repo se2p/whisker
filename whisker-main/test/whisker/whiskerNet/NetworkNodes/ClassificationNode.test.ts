@@ -84,20 +84,20 @@ describe("classificationNode Tests", () => {
         classificationNode.nodeValue = 10;
         classificationNode.activationCount = 1;
         const sigmoidResult = NeuroevolutionUtil.sigmoid(10, -4.9);
-        expect(classificationNode.getActivationValue()).toBe(sigmoidResult);
+        expect(classificationNode.activate()).toBe(sigmoidResult);
         expect(classificationNode.activationValue).toBe(sigmoidResult)
         classificationNode.reset()
-        expect(classificationNode.getActivationValue()).toBe(0);
+        expect(classificationNode.activate()).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
 
         const classificationNode2 = new ClassificationNode(new WaitEvent(), ActivationFunction.NONE);
         classificationNode2.uID = 2;
         classificationNode2.nodeValue = 5;
         classificationNode2.activationCount = 10;
-        expect(classificationNode2.getActivationValue()).toBe(5);
+        expect(classificationNode2.activate()).toBe(5);
         expect(classificationNode2.activationValue).toBe(5)
         classificationNode2.reset()
-        expect(classificationNode2.getActivationValue()).toBe(0);
+        expect(classificationNode2.activate()).toBe(0);
         expect(classificationNode2.activationValue).toBe(0);
     })
 

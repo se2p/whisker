@@ -45,7 +45,7 @@ export class ClassificationNode extends NodeGene {
      * Calculates the activation value of the classification node based on the node value and the activation function.
      * @returns number activation value of the classification node.
      */
-    getActivationValue(): number {
+    activate(): number {
         if (this.activationCount > 0) {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:

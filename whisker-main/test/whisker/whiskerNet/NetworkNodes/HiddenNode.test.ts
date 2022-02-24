@@ -77,20 +77,20 @@ describe("hiddenNode Tests", () => {
         hiddenNode.nodeValue = 10;
         hiddenNode.activationCount = 1;
         const sigmoidResult = NeuroevolutionUtil.sigmoid(10, -4.9);
-        expect(hiddenNode.getActivationValue()).toBe(sigmoidResult);
+        expect(hiddenNode.activate()).toBe(sigmoidResult);
         expect(hiddenNode.activationValue).toBe(sigmoidResult)
         hiddenNode.reset()
-        expect(hiddenNode.getActivationValue()).toBe(0);
+        expect(hiddenNode.activate()).toBe(0);
         expect(hiddenNode.activationValue).toBe(0);
 
         const hiddenNode2 = new HiddenNode(ActivationFunction.NONE);
         hiddenNode2.uID = 2;
         hiddenNode2.nodeValue = 5;
         hiddenNode2.activationCount = 10;
-        expect(hiddenNode2.getActivationValue()).toBe(5);
+        expect(hiddenNode2.activate()).toBe(5);
         expect(hiddenNode2.activationValue).toBe(5)
         hiddenNode2.reset()
-        expect(hiddenNode2.getActivationValue()).toBe(0);
+        expect(hiddenNode2.activate()).toBe(0);
         expect(hiddenNode2.activationValue).toBe(0);
     })
 

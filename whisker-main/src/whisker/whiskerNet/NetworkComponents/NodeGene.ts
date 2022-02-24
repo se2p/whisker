@@ -79,7 +79,7 @@ export abstract class NodeGene {
      * Calculates the activation value of the node based on the node value and the activation function.
      * @returns number activation value of the given node.
      */
-    public abstract getActivationValue(): number
+    public abstract activate(): number
 
     /**
      * Resets the node.

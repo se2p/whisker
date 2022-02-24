@@ -36,7 +36,7 @@ export class HiddenNode extends NodeGene {
      * Calculates the activation value of the hidden node based on the node value and the activation function.
      * @returns number activation value of the hidden node.
      */
-    getActivationValue(): number {
+    activate(): number {
         if (this.activationCount > 0) {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:

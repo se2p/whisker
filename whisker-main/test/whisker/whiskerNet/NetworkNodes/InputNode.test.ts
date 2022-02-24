@@ -74,10 +74,10 @@ describe("InputNode Tests", () => {
     })
 
     test("getActivationValue Test", () => {
-        expect(inputNode.getActivationValue()).toEqual(0);
+        expect(inputNode.activate()).toEqual(0);
         expect(inputNode.activationValue).toEqual(0)
         inputNode.nodeValue = 10;
-        expect(inputNode.getActivationValue()).toEqual(10);
+        expect(inputNode.activate()).toEqual(10);
         expect(inputNode.activationValue).toEqual(10)
     })
 

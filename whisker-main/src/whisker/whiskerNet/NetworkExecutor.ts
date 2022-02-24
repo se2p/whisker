@@ -1,7 +1,6 @@
 import VMWrapper = require("../../vm/vm-wrapper.js");
 import VirtualMachine from "scratch-vm/src/virtual-machine";
 import {ScratchEvent} from "../testcase/events/ScratchEvent";
-import {EventObserver} from "../testcase/EventObserver";
 import {EventAndParameters, ExecutionTrace} from "../testcase/ExecutionTrace";
 import {Randomness} from "../utils/Randomness";
 import {StatisticsCollector} from "../utils/StatisticsCollector";
@@ -47,14 +46,6 @@ export class NetworkExecutor {
     private _timeout: number;
 
     /**
-     * Defines how long we wait and do not ask for a network action after executing a WaitEvent. We use this to
-     * repeatedly send waits having a step length of 1 instead of a single wait having the accumulated desired step
-     * length since we want to evenly record the activation trace after every x steps and for this have to activate
-     * the network with the current inputs.
-     */
-    private _waitCount: number;
-
-    /**
      * Random generator
      */
     private _random = Randomness.getInstance();
@@ -79,7 +70,6 @@ export class NetworkExecutor {
         this._vmWrapper = vmWrapper;
         this._vm = vmWrapper.vm;
         this._timeout = timeout;
-        this._waitCount = 0;
         this._eventExtractor = new NeuroevolutionScratchEventExtractor(this._vm);
         this._eventSelection = eventSelection;
         this.recordInitialState();
@@ -152,14 +142,7 @@ export class NetworkExecutor {
                 }
             }
 
-            // If we don't have to Wait select a new event.
-            if (this._waitCount < 1) {
-                await this.selectAndExecuteNextEvent(network, events);
-            }
-            // Otherwise, keep waiting until we waited for defined desired step length of a preceding WaitEvent.
-            else {
-                await this.executeWait();
-            }
+            await this.selectAndExecuteNextEvent(network, events);
 
             // Record ActivationTrace. Skip step 0 as this simply reflects how the project was loaded. However,
             // we are interested in step 1 as this one reflects initialisation values.
@@ -276,26 +259,24 @@ export class NetworkExecutor {
         // Get the classification results by using the softmax function over the outputNode values
         const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
         // Choose the event with the highest probability according to the softmax values
-        const indexOfMaxValue = output.reduce(
-            (iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0);
-        network.codons.push(indexOfMaxValue);
+        const max = Math.max(...output);
+        const maxIndex = output.indexOf(max);
+        network.codons.push(maxIndex);
 
         // Select the nextEvent, set its parameters and send it to the Scratch-VM
-        const nextEvent: ScratchEvent = this.availableEvents[indexOfMaxValue];
+        const nextEvent: ScratchEvent = this.availableEvents[maxIndex];
         const parameters = [];
         if (nextEvent.numSearchParameter() > 0) {
             parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
-
-            // If we have a WaitEvent we set the waitCount to the derived parameter value and decrease by one since
-            // we are about to execute a single wait right now anyways...
-            if (nextEvent instanceof WaitEvent) {
-                this._waitCount = Math.round(NeuroevolutionUtil.relu(parameters[0])) - 1;
-            } else {
-                nextEvent.setParameter(parameters, "regression");
-            }
+            nextEvent.setParameter(parameters, "regression");
         }
-        events.push(new EventAndParameters(nextEvent, parameters));
-        await nextEvent.apply();
+
+        // Do not double press Keys as this just interrupts the key press, which leads to effectively pressing no
+        // key at all.
+        if(!(nextEvent instanceof  KeyPressEvent) || !this._vmWrapper.inputs.isKeyDown(String(nextEvent.getParameters()[0]))){
+            events.push(new EventAndParameters(nextEvent, parameters));
+            await nextEvent.apply();
+        }
 
         // To perform non-waiting actions, we have to execute a Wait.
         if (!(nextEvent instanceof WaitEvent)) {
@@ -305,16 +286,6 @@ export class NetworkExecutor {
         }
 
         StatisticsCollector.getInstance().incrementEventsCount();
-    }
-
-    /**
-     * Executes a WaitEvent with a duration of one step and decrements the current waiting count.
-     */
-    private async executeWait() {
-        // Add a WaitEvent if we have a wait count > 0.
-        const waitEvent = new WaitEvent(1);
-        await waitEvent.apply();
-        this._waitCount--;
     }
 
     private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {

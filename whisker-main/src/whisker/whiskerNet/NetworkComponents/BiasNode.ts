@@ -39,7 +39,7 @@ export class BiasNode extends NodeGene {
      * The bias node is defined to always send a bias value of 1 into the network.
      * @returns the bias node's activation function which is defined to have a constant value of one.
      */
-    getActivationValue(): number {
+    activate(): number {
         return 1;
     }
 

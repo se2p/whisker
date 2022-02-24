@@ -406,13 +406,13 @@ export abstract class NetworkChromosome extends Chromosome {
         // Repeatedly send the input signals through the network until at least one output node gets activated.
         while (this.outputsOff() || !activatedOnce) {
             abortCount++;
-            if (abortCount >= 100) {
+            if (abortCount == 20) {
                 return false;
             }
 
             // For each node compute the sum of its incoming connections.
             for (const node of this.allNodes) {
-                if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
+                if (node.type !== NodeType.INPUT) {
 
                     // Reset the activation Flag and the activation value.
                     node.nodeValue = 0.0;
@@ -420,7 +420,7 @@ export abstract class NetworkChromosome extends Chromosome {
 
                     for (const connection of node.incomingConnections) {
                         incomingValue = connection.weight * connection.source.activationValue;
-                        if (connection.source.activatedFlag) {
+                        if (connection.source.activatedFlag || connection.source.type === NodeType.INPUT) {
                             node.activatedFlag = true;
                         }
                         node.nodeValue += incomingValue;
@@ -428,13 +428,13 @@ export abstract class NetworkChromosome extends Chromosome {
                 }
             }
 
-            // Activate all the non-input nodes.
+            // Activate all the non-input nodes based on their incoming activations   .
             for (const node of this.allNodes) {
-                if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
+                if (node.type !== NodeType.INPUT) {
                     // Only activate if we received some input
                     if (node.activatedFlag) {
                         node.lastActivationValue = node.activationValue;
-                        node.activationValue = node.getActivationValue();
+                        node.activate();
                         node.activationCount++;
                     }
                 }

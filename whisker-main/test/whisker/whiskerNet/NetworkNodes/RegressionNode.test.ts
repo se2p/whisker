@@ -92,22 +92,22 @@ describe("regressionNode Tests", () => {
         regressionNodeNone.activationCount = 1;
         regressionNodeRelu.nodeValue = -1;
         regressionNodeRelu.activationCount = 1;
-        expect(regressionNodeNone.getActivationValue()).toBe(10);
+        expect(regressionNodeNone.activate()).toBe(10);
         expect(regressionNodeNone.activationValue).toBe(10);
-        expect(regressionNodeRelu.getActivationValue()).toBe(0);
+        expect(regressionNodeRelu.activate()).toBe(0);
         expect(regressionNodeRelu.activationValue).toBe(0);
         regressionNodeNone.reset();
-        expect(regressionNodeNone.getActivationValue()).toBe(0);
+        expect(regressionNodeNone.activate()).toBe(0);
         expect(regressionNodeNone.activationValue).toBe(0);
 
         const regressionNodeNone2 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
         regressionNodeNone2.uID = 2;
         regressionNodeNone2.nodeValue = 5;
         regressionNodeNone2.activationCount = 10;
-        expect(regressionNodeNone2.getActivationValue()).toBe(5);
+        expect(regressionNodeNone2.activate()).toBe(5);
         expect(regressionNodeNone2.activationValue).toBe(5);
         regressionNodeNone2.reset();
-        expect(regressionNodeNone2.getActivationValue()).toBe(0);
+        expect(regressionNodeNone2.activate()).toBe(0);
         expect(regressionNodeNone2.activationValue).toBe(0);
     })
 

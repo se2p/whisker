@@ -51,7 +51,7 @@ export class InputNode extends NodeGene {
      * Since input nodes no not apply any activation function, the activationValue is set to the pure node value.
      * @returns number activation value of the input node.
      */
-    getActivationValue(): number {
+    activate(): number {
         {
             this.activationValue = this.nodeValue;
             return this.activationValue;
