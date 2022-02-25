@@ -3,13 +3,13 @@
     "algorithm": "explorativeNeat",
     "populationType": "neat",
     "eventSelection": "activation",
-    "populationSize": 3,
+    "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
     "ageSignificance": 1.0,
     "inputRate": 0.3,
-    "repetitions": 2,
+    "repetitions": 200,
     "extractor": "neuroevolution",
     "chromosome": {
         "type": "fullyConnectedNetwork"
@@ -48,7 +48,7 @@
     },
     "networkFitness": {
         "type": "statement",
-        "timeout": 600000
+        "timeout": 20000
     },
     "stoppingCondition": {
         "type": "combined",
@@ -66,7 +66,7 @@
             },
             {
                 "type": "evaluations",
-                "maxEvaluations": 10
+                "maxEvaluations": 7500
             }
         ]
     },
