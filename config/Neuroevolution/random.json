@@ -3,7 +3,7 @@
     "algorithm": "explorativeNeat",
     "populationType": "random",
     "eventSelection": "activation",
-    "populationSize": 5,
+    "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,
     "penalizingAge": 15,
