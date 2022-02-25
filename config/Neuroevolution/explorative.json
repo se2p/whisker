@@ -55,7 +55,8 @@
         "conditions": [
             {
                 "type": "fixedTime",
-                "duration": 829800000
+                "duration": 414900000
+
             },
             {
                 "type": "optimal"
