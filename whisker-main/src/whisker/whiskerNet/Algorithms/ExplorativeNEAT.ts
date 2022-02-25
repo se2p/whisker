@@ -8,6 +8,7 @@ import {TargetStatementPopulation} from "../NeuroevolutionPopulations/TargetStat
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {Randomness} from "../../utils/Randomness";
+import {RandomNeuroevolutionPopulation} from "../NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 
 export class ExplorativeNEAT extends NEAT {
 
@@ -147,19 +148,22 @@ export class ExplorativeNEAT extends NEAT {
     }
 
     protected getPopulation(): NeatPopulation {
-        let startingNetwork: NeatChromosome
-        if (this._parentKeyOfTargetStatement === undefined) {
-            startingNetwork = this._chromosomeGenerator.get();
+        if (this._neuroevolutionProperties.populationType === 'random') {
+            return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties, this._currentTargetStatement);
         } else {
-            startingNetwork = this._archive.get(this._parentKeyOfTargetStatement);
+            let startingNetwork: NeatChromosome
+            if (this._parentKeyOfTargetStatement === undefined) {
+                startingNetwork = this._chromosomeGenerator.get();
+            } else {
+                startingNetwork = this._archive.get(this._parentKeyOfTargetStatement);
+            }
+            return new TargetStatementPopulation(this._neuroevolutionProperties, this._currentTargetStatement,
+                startingNetwork);
         }
-        return new TargetStatementPopulation(this._neuroevolutionProperties, this._currentTargetStatement,
-            startingNetwork);
     }
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         this._neuroevolutionProperties = properties as unknown as NeatProperties;
-        this._neuroevolutionProperties.populationType = 'explorative';
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }

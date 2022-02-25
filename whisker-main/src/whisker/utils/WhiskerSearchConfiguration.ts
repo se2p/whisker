@@ -209,7 +209,7 @@ export class WhiskerSearchConfiguration {
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
 
         properties.populationSize = populationSize;
-        properties.populationType = this._config[`populationType`] as string;
+        properties.populationType = this._config['populationType'] as string;
         properties.testTemplate = Container.template;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;

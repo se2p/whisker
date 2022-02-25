@@ -6,11 +6,9 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 export class TargetStatementPopulation extends NeatPopulation {
 
     private readonly _startingNetwork: NeatChromosome;
-    private readonly _targetStatement: StatementFitnessFunction;
 
     constructor(hyperParameter: NeatProperties, targetStatement: StatementFitnessFunction, startingNetwork: NeatChromosome) {
-        super(undefined, hyperParameter);
-        this._targetStatement = targetStatement;
+        super(undefined, hyperParameter, targetStatement);
         this._startingNetwork = startingNetwork;
         this._startingNetwork.targetFitness = this._targetStatement;
     }

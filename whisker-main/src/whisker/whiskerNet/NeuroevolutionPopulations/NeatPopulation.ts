@@ -6,6 +6,7 @@ import {NeatMutation} from "../Operators/NeatMutation";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -32,13 +33,21 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     private _speciesCount = 0;
 
     /**
-     * Constructs a new NeatPopulation
-     * @param generator the ChromosomeGenerator used for creating the initial population.
-     * @param hyperParameter the defined search parameters
+     * The targeted Scratch statement, required for statement network fitness.
      */
-    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties) {
+    protected readonly _targetStatement: StatementFitnessFunction;
+
+    /**
+     * Constructs a new NeatPopulation.
+     * @param generator the ChromosomeGenerator used for creating the initial population.
+     * @param hyperParameter the defined search parameters.
+     * @param targetStatement the targeted Scratch statement, required for statement network fitness.
+     */
+    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties,
+                targetStatement?: StatementFitnessFunction) {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
+        this._targetStatement = targetStatement;
     }
 
     /**
@@ -47,6 +56,9 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public generatePopulation(): void {
         while (this.networks.length < this.populationSize) {
             const network = this.generator.get();
+            if (this._targetStatement) {
+                network.targetFitness = this._targetStatement;
+            }
             this.networks.push(network);
             this.speciate(network);
         }
