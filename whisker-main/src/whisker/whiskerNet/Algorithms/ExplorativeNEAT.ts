@@ -90,7 +90,7 @@ export class ExplorativeNEAT extends NEAT {
             // Update the archive and stop in the middle of the evaluation if we covered the targeted statement,
             // or depleted the search budget.
             this.updateArchive(network);
-            if (this._archive.has(this._currentStatementKey)) {
+            if (this._archive.has(this._currentStatementKey) || this._stoppingCondition.isFinished(this)) {
                 return;
             }
         }
