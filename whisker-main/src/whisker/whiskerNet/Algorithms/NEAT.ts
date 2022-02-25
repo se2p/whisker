@@ -110,9 +110,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
         // Save the best performing chromosome
         const bestNetworkKey = this._fitnessFunctions.size + 1;
-        if (this._neuroevolutionProperties.testSuiteType === 'dynamic' &&
-            (!this._archive.has(bestNetworkKey) ||
-                this._archive.get(bestNetworkKey).fitness < candidateChromosome.fitness)) {
+        if (!this._archive.has(bestNetworkKey) ||
+            this._archive.get(bestNetworkKey).fitness < candidateChromosome.fitness) {
             this._archive.set(bestNetworkKey, candidateChromosome);
         }
         this._bestIndividuals = Arrays.distinctObjects([...this._archive.values()]);
@@ -142,8 +141,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().incrementIterationCount();
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount =
-            this._neuroevolutionProperties.testSuiteType === 'dynamic' ? this._archive.size - 1 : this._archive.size
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size - 1;
         StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, population.populationChampion.fitness);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.fitness);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
@@ -173,9 +171,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
             }
         }
         console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
-        const coveredGoals = this._neuroevolutionProperties.testSuiteType === 'dynamic' ?
-            this._archive.size - 1 : this._archive.size
-        console.log(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
+        console.log(`Covered goals: ${this._archive.size - 1 + "/" + this._fitnessFunctions.size}`);
         if (this._neuroevolutionProperties.printPopulationRecord) {
             const currentPopulationRecord = {}
             currentPopulationRecord[`Generation ${this._iterations}`] = population;

@@ -1,7 +1,6 @@
 {
     "testGenerator": "neuroevolution",
     "algorithm": "neat",
-    "testSuiteType": "dynamic",
     "populationType": "neat",
     "eventSelection": "activation",
     "populationSize": 200,

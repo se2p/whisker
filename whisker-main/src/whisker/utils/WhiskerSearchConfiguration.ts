@@ -81,7 +81,7 @@ export class WhiskerSearchConfiguration {
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
 
-        if (!this._config['testGenerator'] && this.getTestSuiteType() == 'dynamic') {
+        if (this.getTestSuiteType() == 'dynamic') {
             this._properties = this.setDynamicSuiteParameter();
             Container.isNeuroevolution = true;
         } else if (this.getAlgorithm() === SearchAlgorithmType.NEAT ||
@@ -210,7 +210,6 @@ export class WhiskerSearchConfiguration {
 
         properties.populationSize = populationSize;
         properties.populationType = this._config[`populationType`] as string;
-        properties.testSuiteType = this.getTestSuiteType();
         properties.testTemplate = Container.template;
         properties.numberOfSpecies = numberOfSpecies;
         properties.parentsPerSpecies = parentsPerSpecies;
@@ -294,9 +293,9 @@ export class WhiskerSearchConfiguration {
         } else if (stoppingCond == "optimal") {
             return new OptimalSolutionStoppingCondition()
         } else if (stoppingCond == 'events') {
-            return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
+            return new ExecutedEventsStoppingCondition(stoppingCondition['maxEvents']);
         } else if (stoppingCond == 'evaluations') {
-            return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
+            return new FitnessEvaluationStoppingCondition(stoppingCondition['maxEvaluations']);
         } else if (stoppingCond == "combined") {
             const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
             return new OneOfStoppingCondition(...conditions)

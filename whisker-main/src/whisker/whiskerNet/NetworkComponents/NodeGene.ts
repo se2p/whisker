@@ -25,9 +25,19 @@ export abstract class NodeGene {
     private readonly _activationFunction: number
 
     /**
-     * The activation value of a node, which is defined to be the activation function applied to the node value.
+     * Activation value of a node.
      */
     private _activationValue: number
+
+    /**
+     * Activation value of the previous time step.
+     */
+    private _lastActivationValue = 0;
+
+    /**
+     * Activation value two time steps prior.
+     */
+    private _lastActivationValue2 = 0;
 
     /**
      * Counts how often this node has been activated.
@@ -43,11 +53,6 @@ export abstract class NodeGene {
      * Holds all incoming connections.
      */
     private _incomingConnections: ConnectionGene[] = [];
-
-    /**
-     * Activation value of a previous time step.
-     */
-    private _lastActivationValue = 0;
 
     /**
      * True if this node has been traversed.
@@ -89,6 +94,7 @@ export abstract class NodeGene {
         this.activationValue = 0;
         this.nodeValue = 0;
         this.lastActivationValue = 0;
+        this.lastActivationValue2 = 0;
         this.activatedFlag = false;
         this.traversed = false;
     }
@@ -161,6 +167,14 @@ export abstract class NodeGene {
 
     set lastActivationValue(value: number) {
         this._lastActivationValue = value;
+    }
+
+    get lastActivationValue2(): number {
+        return this._lastActivationValue2;
+    }
+
+    set lastActivationValue2(value: number) {
+        this._lastActivationValue2 = value;
     }
 
     get traversed(): boolean {

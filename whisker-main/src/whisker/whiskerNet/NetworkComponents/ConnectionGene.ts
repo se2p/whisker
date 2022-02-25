@@ -27,6 +27,11 @@ export class ConnectionGene {
     private _innovation: number;
 
     /**
+     * Marks time delayed connections.
+     */
+    private _timeDelay: boolean;
+
+    /**
      * Defines whether the connection is a recurrent connection.
      */
     private readonly _isRecurrent: boolean;
@@ -52,6 +57,7 @@ export class ConnectionGene {
         this._isEnabled = enabled;
         this._innovation = innovation;
         this._isRecurrent = recurrent;
+        this._timeDelay = false;
     }
 
     /**
@@ -136,6 +142,14 @@ export class ConnectionGene {
 
     set innovation(innovation: number) {
         this._innovation = innovation;
+    }
+
+    get timeDelay(): boolean {
+        return this._timeDelay;
+    }
+
+    set timeDelay(value: boolean) {
+        this._timeDelay = value;
     }
 
     get isRecurrent(): boolean {

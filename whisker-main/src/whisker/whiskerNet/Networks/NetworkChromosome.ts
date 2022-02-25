@@ -419,11 +419,18 @@ export abstract class NetworkChromosome extends Chromosome {
                     node.activatedFlag = false;
 
                     for (const connection of node.incomingConnections) {
-                        incomingValue = connection.weight * connection.source.activationValue;
-                        if (connection.source.activatedFlag || connection.source.type === NodeType.INPUT) {
-                            node.activatedFlag = true;
+
+                        // Handle time delayed connections.
+                        if (connection.timeDelay) {
+                            incomingValue = connection.weight * connection.source.lastActivationValue;
+                            node.nodeValue += incomingValue;
+                        } else {
+                            incomingValue = connection.weight * connection.source.activationValue;
+                            if (connection.source.activatedFlag || connection.source.type === NodeType.INPUT) {
+                                node.activatedFlag = true;
+                            }
+                            node.nodeValue += incomingValue;
                         }
-                        node.nodeValue += incomingValue;
                     }
                 }
             }
@@ -433,6 +440,11 @@ export abstract class NetworkChromosome extends Chromosome {
                 if (node.type !== NodeType.INPUT) {
                     // Only activate if we received some input
                     if (node.activatedFlag) {
+
+                        // Keep track of previous activations
+                        node.lastActivationValue2 = node.lastActivationValue;
+                        node.lastActivationValue = node.activationValue;
+
                         node.lastActivationValue = node.activationValue;
                         node.activate();
                         node.activationCount++;
@@ -451,8 +463,8 @@ export abstract class NetworkChromosome extends Chromosome {
     private setUpInputs(inputs: Map<string, Map<string, number>>): void {
 
         // Reset the input nodes' activation flag to only use inputs during activation for which we collected values.
-        for(const iNodeMap of this.inputNodes.values()){
-            for(const iNode of iNodeMap.values()){
+        for (const iNodeMap of this.inputNodes.values()) {
+            for (const iNode of iNodeMap.values()) {
                 iNode.activatedFlag = false;
             }
         }
@@ -462,6 +474,8 @@ export abstract class NetworkChromosome extends Chromosome {
             spriteValue.forEach((featureValue, featureKey) => {
                 const iNode = this.inputNodes.get(spriteKey).get(featureKey);
                 if (iNode) {
+                    iNode.lastActivationValue2 = iNode.lastActivationValue;
+                    iNode.lastActivationValue = iNode.activationValue;
                     iNode.activationCount++;
                     iNode.activatedFlag = true;
                     iNode.nodeValue = featureValue;

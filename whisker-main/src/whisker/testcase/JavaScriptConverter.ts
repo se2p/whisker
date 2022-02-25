@@ -44,9 +44,38 @@ export class JavaScriptConverter {
     }
 
     getSuiteText(tests: WhiskerTest[]): string {
-        // Generate dynamic test suite.
-        if (Container.config.getTestSuiteType() === 'dynamic') {
-            const testJSON = {}
+        // Generate static test suite.
+        let text = "";
+        let i = 0;
+        let footer = "";
+        for (const test of tests) {
+            text += "const test" + i + " = async function (t) {\n";
+            for (const {event} of test.chromosome.trace.events) {
+                text += "  " + event.toJavaScript() + "\n";
+            }
+            text += "}\n";
+
+            footer += "  {\n";
+            footer += "      test: test" + i + ",\n";
+            footer += "      name: 'Generated Test',\n";
+            footer += "      description: '',\n";
+            footer += "      categories: []\n";
+            if (i < tests.length - 1) {
+                footer += "  },\n";
+            } else {
+                footer += "  }\n";
+            }
+
+            i++;
+        }
+
+        text += "\nmodule.exports = [\n";
+        text += footer;
+        text += "]\n";
+
+        if (Container.isNeuroevolution) {
+            const testSuites = {}
+            const networkJSON = {}
 
             // Set necessary configuration parameter for re-executing the dynamic suite.
             const configs = {}
@@ -64,47 +93,19 @@ export class JavaScriptConverter {
             durationConfigs['clickDuration'] = Container.config.getClickDuration();
             configs['durations'] = durationConfigs;
 
-            testJSON['Configs'] = configs
+            networkJSON['Configs'] = configs
 
             // Save the networks.
             const networkTestSuite = {};
             for (let i = 0; i < tests.length; i++) {
                 networkTestSuite[`Network ${i}`] = tests[i].chromosome;
             }
-            testJSON['Networks'] = networkTestSuite;
-            return JSON.stringify(testJSON);
+            networkJSON['Networks'] = networkTestSuite;
+            testSuites['Static'] = text;
+            testSuites['Dynamic'] = networkJSON;
+            return JSON.stringify(testSuites);
         }
-        // Generate static test suite.
-        else {
-            let text = "";
-            let i = 0;
-            let footer = "";
-            for (const test of tests) {
-                text += "const test" + i + " = async function (t) {\n";
-                for (const {event} of test.chromosome.trace.events) {
-                    text += "  " + event.toJavaScript() + "\n";
-                }
-                text += "}\n";
 
-                footer += "  {\n";
-                footer += "      test: test" + i + ",\n";
-                footer += "      name: 'Generated Test',\n";
-                footer += "      description: '',\n";
-                footer += "      categories: []\n";
-                if (i < tests.length - 1) {
-                    footer += "  },\n";
-                } else {
-                    footer += "  }\n";
-                }
-
-                i++;
-            }
-
-            text += "\nmodule.exports = [\n";
-            text += footer;
-            text += "]\n";
-
-            return text;
-        }
+        return text;
     }
 }

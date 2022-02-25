@@ -6,6 +6,7 @@ import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 import {InputNode} from "../NetworkComponents/InputNode";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 export class NeatChromosome extends NetworkChromosome {
     /**
@@ -212,10 +213,13 @@ export class NeatChromosome extends NetworkChromosome {
     public toJSON(): Record<string, (number | NodeGene | ConnectionGene)> {
         const network = {};
         network[`id`] = this.uID;
-        network[`nF`] = Number(this.fitness.toFixed(4));
-        network[`sF`] = Number(this.sharedFitness.toFixed(4));
-        network[`eO`] = Number(this.expectedOffspring.toFixed(4));
-        network[`k`] = this.isParent;
+        //network[`nF`] = Number(this.fitness.toFixed(4));
+        //network[`sF`] = Number(this.sharedFitness.toFixed(4));
+        //network[`eO`] = Number(this.expectedOffspring.toFixed(4));
+        //network[`k`] = this.isParent;
+        if(this.targetFitness instanceof StatementFitnessFunction) {
+            network[`tf`] = this.targetFitness.getTargetNode().id;
+        }
 
         const nodes = {}
         for (let i = 0; i < this.allNodes.length; i++) {

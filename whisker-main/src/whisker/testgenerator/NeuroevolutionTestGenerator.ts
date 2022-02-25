@@ -9,6 +9,7 @@ import Arrays from "../utils/Arrays";
 import {Randomness} from "../utils/Randomness";
 import {NeatChromosome} from "../whiskerNet/Networks/NeatChromosome";
 import {NetworkExecutor} from "../whiskerNet/NetworkExecutor";
+import {StatisticsCollector} from "../utils/StatisticsCollector";
 
 export class NeuroevolutionTestGenerator extends TestGenerator {
 
@@ -23,7 +24,9 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
 
         // Execute the final suite on as many program states as possible. Different program states are enforced
         // through diverging seeds.
-        if (Container.config.getTestSuiteType() === "dynamic") {
+        if (parameter.repetitions && parameter.repetitions > 0) {
+            // Save the number of fitness evaluations to recover them later.
+            const trueEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
             // Sort according to the achieved fitness.
             testChromosomes = testChromosomes.sort(
                 (a, b) => (b as NeatChromosome).fitness - (a as NeatChromosome).fitness);
@@ -39,14 +42,9 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
                     executor.resetState();
                 }
             }
+            StatisticsCollector.getInstance().numberFitnessEvaluations = trueEvaluations;
         }
-        let testSuite: WhiskerTest[];
-        if (Container.config.getTestSuiteType() === 'dynamic') {
-            testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
-        } else {
-            testSuite = this.getTestSuite(testChromosomes);
-        }
-
+        const testSuite = testChromosomes.map(chromosome => new WhiskerTest(chromosome));
         await this.collectStatistics(testSuite);
         const summary = this.summarizeSolution(archive);
         return new WhiskerTestListWithSummary(testSuite, summary);

@@ -215,7 +215,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return this._cfg;
     }
 
-    getTargetNode(): GraphNode {
+    public getTargetNode(): GraphNode {
         return this._targetNode;
     }
 

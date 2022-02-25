@@ -183,11 +183,6 @@ export class NeatProperties {
     private _repetitions = 100;
 
     /**
-     * Determines the type of the returned testSuite (static/dynamic)
-     */
-    private _testSuiteType = 'dynamic'
-
-    /**
      * The template of a static/dynamic test
      */
     private _testTemplate: string;
@@ -452,14 +447,6 @@ export class NeatProperties {
 
     set repetitions(value: number) {
         this._repetitions = value;
-    }
-
-    get testSuiteType(): string {
-        return this._testSuiteType;
-    }
-
-    set testSuiteType(value: string) {
-        this._testSuiteType = value;
     }
 
     get testTemplate(): string {

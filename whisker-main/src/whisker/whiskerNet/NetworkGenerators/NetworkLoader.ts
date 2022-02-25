@@ -12,6 +12,7 @@ import {NeatMutation} from "../Operators/NeatMutation";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {ActivationTrace} from "../Misc/ActivationTrace";
 import {NodeType} from "../NetworkComponents/NodeType";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 export class NetworkLoader {
 
@@ -26,16 +27,27 @@ export class NetworkLoader {
     private readonly _scratchEvents: ScratchEvent[];
 
     /**
+     * The list of statements in a given scratch project.
+     */
+    private readonly _scratchStatements: StatementFitnessFunction[];
+
+    /**
      * Constructs a new network loader that loads networks from a saved json file.
-     * @param networkSuite
-     * @param scratchEvents
+     * @param networkSuite the json record of saved networks.
+     * @param scratchEvents the extracted Scratch events of a project.
+     * @param scratchStatements the extracted statements of a Scratch project.
      */
     constructor(networkSuite: Record<string, (number | string | Record<string, (number | string)>)>,
-                scratchEvents: ScratchEvent[]) {
+                scratchEvents: ScratchEvent[], scratchStatements?: StatementFitnessFunction[]) {
         this._networkSuite = networkSuite;
         this._scratchEvents = scratchEvents;
+        this._scratchStatements = scratchStatements;
     }
 
+    /**
+     * Loads networks from a saved json record.
+     * @returns NeatChromosome[] the list of loaded and instantiated networks.
+     */
     public loadNetworks(): NeatChromosome[] {
         const networks = [];
         for (const savedNetwork of Object.values(this._networkSuite)) {
@@ -92,8 +104,18 @@ export class NetworkLoader {
                 }
             }
             const mutation = new NeatMutation({});
-            const crossover = new NeatCrossover({})
+            const crossover = new NeatCrossover({});
             const network = new NeatChromosome(allNodes, allConnections, mutation, crossover);
+
+            // If the generated networks are based on the StatementFitness function, we load their fitness targets.
+            if (savedNetwork['tf']) {
+                const targetId = savedNetwork['tf'];
+                for (const statement of this._scratchStatements) {
+                    if (statement.getTargetNode().id === targetId) {
+                        network.targetFitness = statement;
+                    }
+                }
+            }
 
             network.savedActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
             for (const [step, nodeTraces] of Object.entries(savedNetwork['AT'])) {

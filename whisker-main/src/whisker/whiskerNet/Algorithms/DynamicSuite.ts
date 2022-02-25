@@ -15,6 +15,7 @@ import {NEAT} from "./NEAT";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {DynamicSuiteParameter} from "../HyperParameter/DynamicSuiteParameter";
+import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 export class DynamicSuite {
 
@@ -41,7 +42,7 @@ export class DynamicSuite {
         const config = new WhiskerSearchConfiguration(testJSON['Configs']);
         const parameter = config.dynamicSuiteParameter;
         parameter.train = properties['train'] == 1;
-        parameter.train = false
+        parameter.train = false;
 
         Container.vm = vm;
         Container.vmWrapper = vmWrapper;
@@ -57,8 +58,9 @@ export class DynamicSuite {
         util.start();
 
         // Load the saved networks from the test file.
+        const fitnessTargets = [...this._statementMap.values()] as unknown as StatementFitnessFunction[];
         const eventExtractor = new NeuroevolutionScratchEventExtractor(vm);
-        const networkLoader = new NetworkLoader(testJSON['Networks'], eventExtractor.extractStaticEvents(vm));
+        const networkLoader = new NetworkLoader(testJSON['Networks'], eventExtractor.extractStaticEvents(vm), fitnessTargets);
         let networks = networkLoader.loadNetworks();
 
         // Re-train the loaded networks on the given project.
