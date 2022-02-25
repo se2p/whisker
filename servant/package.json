@@ -20,7 +20,6 @@
     "license": "ISC",
     "type": "commonjs",
     "engines": {
-        "node": ">=14.19.0"
+        "node": ">=16.0.0"
     }
-
 }
