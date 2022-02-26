@@ -540,7 +540,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
         for (const statement of uncoveredStatements) {
             const parents = StatementFitnessFunction.getCDGParent(statement._targetNode, cdg);
-            if (!parent) {
+            if (!parents) {
                 throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`)
             }
             for (const parent of parents) {
@@ -582,7 +582,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
         // Parents could be EventNodes, for example when having a block that depends on clone being created.
         if (predecessors.some(pred => pred instanceof EventNode)) {
-            const eventNodes = predecessors.filter(pred => pred instanceof EventNode);
+            const eventNodes = predecessors.filter(pred => pred instanceof EventNode && pred.id != node.id);
             const eventPredecessors = [];
             // Fetch the parent of every EventNode parent...
             for (const eventNode of eventNodes) {
