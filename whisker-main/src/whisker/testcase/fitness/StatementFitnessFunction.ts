@@ -539,13 +539,15 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const cdg = uncoveredStatements[0]._cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
         for (const statement of uncoveredStatements) {
-            const parent = StatementFitnessFunction.getCDGParent(statement._targetNode, cdg);
+            const parents = StatementFitnessFunction.getCDGParent(statement._targetNode, cdg);
             if (!parent) {
                 throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`)
             }
-            const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
-            if (!uncoveredStatements.includes(parentStatement) || parentStatement._targetNode.id === statement._targetNode.id) {
-                nearestUncoveredMap.set(statement, parentStatement);
+            for (const parent of parents) {
+                const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
+                if (!uncoveredStatements.includes(parentStatement) || parentStatement._targetNode.id === statement._targetNode.id) {
+                    nearestUncoveredMap.set(statement, parentStatement);
+                }
             }
         }
         return nearestUncoveredMap;
@@ -574,20 +576,36 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         }
     }
 
-    private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
+    private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode[] {
         const predecessors = Array.from(cdg.predecessors(node.id)) as GraphNode[];
         // Get the true parent of event receiver blocks.
-        if (predecessors.length === 1 && predecessors[0] instanceof EventNode) {
-            const eventNode = predecessors[0];
-            return StatementFitnessFunction.getCDGParent(eventNode, cdg);
+
+        // Parents could be EventNodes, for example when having a block that depends on clone being created.
+        if (predecessors.some(pred => pred instanceof EventNode)) {
+            const eventNodes = predecessors.filter(pred => pred instanceof EventNode);
+            const eventPredecessors = [];
+            // Fetch the parent of every EventNode parent...
+            for (const eventNode of eventNodes) {
+                eventPredecessors.push(StatementFitnessFunction.getCDGParent(eventNode, cdg));
+            }
+            return eventPredecessors.flat();
         }
+
         // For user event blocks like key press just return the hat block.
         else if (predecessors.length === 1 && predecessors[0] instanceof UserEventNode) {
-            return node;
+            return [node];
+        }
+
+        // Statements with a self reference
+        else if (predecessors.length > 1) {
+            const filtered = predecessors.filter(node => node.block !== undefined);
+            if (filtered.length === 1 && filtered[0].id === node.id) {
+                return [node];
+            }
         }
 
         // Otherwise, make sure to filter for StatementBlocks and duplicates as in repeat blocks.
-        return predecessors.find(pred => pred.block !== undefined && pred.id !== node.id);
+        return predecessors.filter(pred => pred.block !== undefined && pred.id !== node.id);
     }
 
     /**
