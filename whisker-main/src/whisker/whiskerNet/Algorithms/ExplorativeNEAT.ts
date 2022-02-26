@@ -152,7 +152,10 @@ export class ExplorativeNEAT extends NEAT {
             return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties, this._currentTargetStatement);
         } else {
             let startingNetwork: NeatChromosome
-            if (this._parentKeyOfTargetStatement === undefined) {
+            // User event related statements, like key press hat blocks do not have a saved network
+            // but are a valid target. Furthermore, the first target will always be the flag, which does not have a
+            // parent statement.
+            if (this._parentKeyOfTargetStatement === undefined || !this._archive.has(this._parentKeyOfTargetStatement)) {
                 startingNetwork = this._chromosomeGenerator.get();
             } else {
                 startingNetwork = this._archive.get(this._parentKeyOfTargetStatement);

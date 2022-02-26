@@ -20,7 +20,7 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ControlDependenceGraph, ControlFlowGraph, GraphNode, Graph} from 'scratch-analysis'
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode, EventNode, UserEventNode, Graph} from 'scratch-analysis'
 import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
 import {Trace} from "scratch-vm/src/engine/tracing.js";
 
@@ -528,7 +528,6 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return statementMap;
     }
 
-    //TODO: Are execution halting blocks like waits handled correctly?
     public static getNextUncoveredNodePairs(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Map<StatementFitnessFunction, StatementFitnessFunction> {
         const nearestUncoveredMap = new Map<StatementFitnessFunction, StatementFitnessFunction>();
         if (allStatements.length === uncoveredStatements.length) {
@@ -540,12 +539,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         const cdg = uncoveredStatements[0]._cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
         for (const statement of uncoveredStatements) {
-            const parent = StatementFitnessFunction.getParentOfNode(statement.getTargetNode(), cdg);
+            const parent = StatementFitnessFunction.getCDGParent(statement._targetNode, cdg);
             if (!parent) {
                 throw (`Undefined parent of ${statement._targetNode.id}; cdg: ${cdg.toCoverageDot(uncoveredKeys)}`)
             }
             const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
-            if (!uncoveredStatements.includes(parentStatement)) {
+            if (!uncoveredStatements.includes(parentStatement) || parentStatement._targetNode.id === statement._targetNode.id) {
                 nearestUncoveredMap.set(statement, parentStatement);
             }
         }
@@ -573,6 +572,22 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         } else {
             return undefined;
         }
+    }
+
+    private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode {
+        const predecessors = Array.from(cdg.predecessors(node.id)) as GraphNode[];
+        // Get the true parent of event receiver blocks.
+        if (predecessors.length === 1 && predecessors[0] instanceof EventNode) {
+            const eventNode = predecessors[0];
+            return StatementFitnessFunction.getCDGParent(eventNode, cdg);
+        }
+        // For user event blocks like key press just return the hat block.
+        else if (predecessors.length === 1 && predecessors[0] instanceof UserEventNode) {
+            return node;
+        }
+
+        // Otherwise, make sure to filter for StatementBlocks and duplicates as in repeat blocks.
+        return predecessors.find(pred => pred.block !== undefined && pred.id !== node.id);
     }
 
     /**
