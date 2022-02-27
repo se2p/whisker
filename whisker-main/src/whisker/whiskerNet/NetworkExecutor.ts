@@ -44,7 +44,7 @@ export class NetworkExecutor {
     /**
      * Timeout after which each playthrough is halted
      */
-    private _timeout: number;
+    private readonly _timeout: number;
 
     /**
      * Random generator
@@ -115,10 +115,14 @@ export class NetworkExecutor {
                 eventIndex = this._random.nextInt(0, this.availableEvents.length);
                 workingNetwork = true   // Set to true since we did not activate the network...
             } else {
-                // Flush the network and activate it until the output stabilizes.
-                network.flushNodeValues();
-                for (let i = 0; i < network.stabiliseCount; i++) {
+                if (network.isRecurrent) {
                     workingNetwork = network.activateNetwork(spriteFeatures);
+                } else {
+                    // Flush the network and activate it until the output stabilizes.
+                    network.flushNodeValues();
+                    for (let i = 0; i < network.getMaxDepth(); i++) {
+                        workingNetwork = network.activateNetwork(spriteFeatures);
+                    }
                 }
 
                 // Choose the event with the highest probability according to the softmax values

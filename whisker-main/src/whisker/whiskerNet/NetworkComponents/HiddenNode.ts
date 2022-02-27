@@ -15,6 +15,25 @@ export class HiddenNode extends NodeGene {
         super(activationFunction, NodeType.HIDDEN, incrementIDCounter);
     }
 
+    depth(d: number): number {
+        let cur_depth: number //The depth of the current node
+        let max = d; //The max depth
+
+        // Recurrency
+        if (d > 100) {
+            return 10;
+        }
+        for (const connection of this.incomingConnections) {
+            const inNode = connection.source;
+            cur_depth = inNode.depth(d + 1);
+            if (cur_depth > max) {
+                max = cur_depth;
+            }
+        }
+
+        return max;
+    }
+
     equals(other: unknown): boolean {
         if (!(other instanceof HiddenNode)) return false;
         return this.uID === other.uID && this.activationFunction === other.activationFunction;
@@ -37,7 +56,7 @@ export class HiddenNode extends NodeGene {
      * @returns number activation value of the hidden node.
      */
     activate(): number {
-        if (this.activationCount > 0) {
+        if (this.activatedFlag) {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:
                     this.activationValue = NeuroevolutionUtil.sigmoid(this.nodeValue, -4.9);

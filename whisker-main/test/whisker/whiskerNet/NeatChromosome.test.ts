@@ -196,120 +196,6 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.regressionNodes.get(new MouseMoveEvent().constructor.name).length).toEqual(2);
     })
 
-    test('Test stabilizedCounter without hidden Layer', () => {
-        const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode2.uID = 1;
-        const bias = new BiasNode();
-        bias.uID = 2;
-
-        nodes.push(iNode1);
-        nodes.push(iNode2);
-        nodes.push(bias);
-
-        // Create classification Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 3;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 4;
-        nodes.push(classificationNode1);
-        nodes.push(classificationNode2);
-
-        // Create Connections
-        const connections: ConnectionGene[] = [];
-        connections.push(new ConnectionGene(nodes[0], nodes[3], 0.2, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.5, false, 2, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[3], 0.2, false, 3, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[4], 1, true, 4, false));
-        connections.push(new ConnectionGene(nodes[2], nodes[3], 0.2, true, 5, false));
-        connections.push(new ConnectionGene(nodes[2], nodes[4], 0.7, true, 6, false));
-
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
-        const counter = chromosome.updateStabiliseCount(5);
-        expect(counter).toEqual(2);
-    })
-
-    test('Test stabilizedCounter with hidden Layer', () => {
-        const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode2.uID = 1;
-        const bias = new BiasNode();
-        bias.uID = 2;
-        nodes.push(iNode1);
-        nodes.push(iNode2);
-        nodes.push(bias);
-
-        // Create classification Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 3;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 4;
-        nodes.push(classificationNode1);
-        nodes.push(classificationNode2);
-
-        const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        hiddenNode.uID = 5;
-        const deepHiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        deepHiddenNode.uID = 6;
-        nodes.push(hiddenNode);
-        nodes.push(deepHiddenNode);
-
-        // Create Connections
-        const connections: ConnectionGene[] = [];
-        connections.push(new ConnectionGene(nodes[0], nodes[3], 0.2, true, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.5, false, 2, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[3], 0.2, false, 3, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[4], 1, true, 4, false));
-        connections.push(new ConnectionGene(nodes[2], nodes[3], 0.2, true, 5, false));
-        connections.push(new ConnectionGene(nodes[2], nodes[4], 0.7, true, 6, false));
-        connections.push(new ConnectionGene(nodes[0], hiddenNode, 0.3, true, 7, false));
-        connections.push(new ConnectionGene(hiddenNode, nodes[3], 0.7, true, 8, false));
-        connections.push(new ConnectionGene(hiddenNode, deepHiddenNode, 0.3, true, 9, false));
-        connections.push(new ConnectionGene(deepHiddenNode, nodes[4], 1, true, 10, false));
-
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
-        const counter = chromosome.updateStabiliseCount(5);
-        expect(counter).toEqual(4);
-    })
-
-    test('Test stabilizedCounter with unstable network', () => {
-        const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode2.uID = 1;
-        const bias = new BiasNode();
-        bias.uID = 2;
-        nodes.push(iNode1);
-        nodes.push(iNode2);
-        nodes.push(bias);
-
-        // Create classification Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 3;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 4;
-        nodes.push(classificationNode1);
-        nodes.push(classificationNode2);
-
-        // Create Connections
-        const connections: ConnectionGene[] = [];
-        connections.push(new ConnectionGene(nodes[0], nodes[3], 0.2, false, 1, false));
-        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.5, false, 2, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[3], 0.2, false, 3, false));
-        connections.push(new ConnectionGene(nodes[1], nodes[4], 1, false, 4, false));
-        connections.push(new ConnectionGene(nodes[2], nodes[3], 0.2, false, 5, false));
-        connections.push(new ConnectionGene(nodes[2], nodes[4], 0.7, false, 6, false));
-
-        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
-        const counter = chromosome.updateStabiliseCount(5);
-        expect(counter).toEqual(-1);
-    })
-
     test('Network activation without hidden layer', () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];
@@ -360,6 +246,9 @@ describe('Test NetworkChromosome', () => {
         sprite1.set("Y-Position", 2);
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
+        for (let i = 0; i < chromosome.getMaxDepth(); i++) {
+            chromosome.activateNetwork(inputs)
+        }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
         const softmaxOutput: number[] = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
         for (let i = 0; i < softmaxOutput.length; i++) {
@@ -422,6 +311,9 @@ describe('Test NetworkChromosome', () => {
         sprite1.set("X-Position", 1);
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
+        for (let i = 0; i < chromosome.getMaxDepth(); i++) {
+            chromosome.activateNetwork(inputs)
+        }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
         const softmaxOutput: number[] = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents)
         for (let i = 0; i < softmaxOutput.length; i++) {
@@ -488,9 +380,9 @@ describe('Test NetworkChromosome', () => {
         sprite2.set("X-Position", 2);
         inputs.set("Sprite1", sprite1);
         inputs.set("Sprite2", sprite2);
-        chromosome.activateNetwork(inputs);
         chromosome.flushNodeValues();
-        for (let i = 0; i < 5; i++) {
+        const depth = chromosome.getMaxDepth();
+        for (let i = 0; i < depth; i++) {
             chromosome.activateNetwork(inputs);
         }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
@@ -558,24 +450,23 @@ describe('Test NetworkChromosome', () => {
         sprite1.set("X-Position", 1);
         sprite1.set("Y-Position", 2);
         inputs.set("Sprite1", sprite1);
-        chromosome.activateNetwork(inputs);
+        chromosome.flushNodeValues();
+        const depth = chromosome.getMaxDepth();
+        for (let i = 0; i < depth; i++) {
+            chromosome.activateNetwork(inputs);
+        }
         const availableEvents = [new WaitEvent(), new ClickStageEvent()];
-        chromosome.activateNetwork(inputs);
         const firstOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
+
         // New input has to propagate through network.
-        sprite1.set("X-Position", 1);
+        sprite1.set("X-Position", 5);
         sprite1.set("Y-Position", 4);
         inputs.set("Sprite1", sprite1);
         chromosome.activateNetwork(inputs);
-        chromosome.activateNetwork(inputs);
         const secondOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
         chromosome.activateNetwork(inputs);
-        chromosome.activateNetwork(inputs);
-        const thirdOutput = NeuroevolutionUtil.softmaxEvents(chromosome, availableEvents);
-        expect(chromosome.updateStabiliseCount(100)).toEqual(0);
         expect(Math.round(firstOutput.reduce((a, b) => a + b))).toEqual(1);
         expect(Math.round(secondOutput.reduce((a, b) => a + b))).toEqual(1);
-        expect(Math.round(thirdOutput.reduce((a, b) => a + b))).toEqual(1);
     })
 
     test("Test the recurrent Network check", () => {

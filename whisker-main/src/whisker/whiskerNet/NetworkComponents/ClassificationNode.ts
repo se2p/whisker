@@ -23,6 +23,25 @@ export class ClassificationNode extends NodeGene {
         this._event = event;
     }
 
+    depth(d: number): number {
+        let cur_depth: number //The depth of the current node
+        let max = d; //The max depth
+
+        // Recurrency
+        if (d > 100) {
+            return 10;
+        }
+        for (const connection of this.incomingConnections) {
+            const inNode = connection.source;
+            cur_depth = inNode.depth(d + 1);
+            if (cur_depth > max) {
+                max = cur_depth;
+            }
+        }
+
+        return max;
+    }
+
     equals(other: unknown): boolean {
         if (!(other instanceof ClassificationNode)) return false;
         return this.event.stringIdentifier() === other.event.stringIdentifier() &&
@@ -61,7 +80,7 @@ export class ClassificationNode extends NodeGene {
             return 0.0;
     }
 
-    public identifier(): string{
+    public identifier(): string {
         return `C:${this.event.stringIdentifier()}`
     }
 

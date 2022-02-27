@@ -156,9 +156,11 @@ describe("Test NeatCrossover", () => {
         const child2 = crossoverOp.applyFromPair([parent1, parent2])[0];
 
         // Execute 10 times. Due to randomness the connection may get activated during crossover
+        const inputs1 = child1.generateDummyInputs();
+        const inputs2 = child2.generateDummyInputs();
         for (let i = 0; i < 10; i++) {
-            expect(child1.updateStabiliseCount(20)).not.toBe(-1);
-            expect(child2.updateStabiliseCount(20)).not.toBe(-1);
+            expect(child1.activateNetwork(inputs1)).toBeTruthy();
+            expect(child2.activateNetwork(inputs2)).toBeTruthy();
         }
     })
 

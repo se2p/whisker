@@ -55,12 +55,6 @@ export abstract class NetworkChromosome extends Chromosome {
     protected readonly _connections: ConnectionGene[];
 
     /**
-     * The stabilisation count of the network defining how often the network has to be executed in order to reach a
-     * stable state.
-     */
-    private _stabiliseCount = 0;
-
-    /**
      * True if this network implements at least one recurrent connection
      */
     private _isRecurrent = false;
@@ -145,7 +139,6 @@ export abstract class NetworkChromosome extends Chromosome {
         this._allNodes = allNodes;
         this._connections = connections;
         this.generateNetwork();
-        this._stabiliseCount = this.updateStabiliseCount(100);
         if (incrementID) {
             NetworkChromosome._uIDCounter++;
         }
@@ -212,7 +205,6 @@ export abstract class NetworkChromosome extends Chromosome {
         // If the network's structure has changed generate the new network and update the stabilize count.
         if (updated) {
             this.generateNetwork();
-            this.updateStabiliseCount(100);
         }
     }
 
@@ -238,7 +230,6 @@ export abstract class NetworkChromosome extends Chromosome {
         // If the network's structure has changed generate the new network and update the stabilize count.
         if (updated) {
             this.generateNetwork();
-            this.updateStabiliseCount(100);
         }
     }
 
@@ -324,83 +315,6 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
-     * Calculates the number of activations this networks needs in order to produce a stabilised output.
-     * @param period the number of iterations each outputNode has to be stable until this network is regarded
-     * stabilised.
-     * @returns number of activations required to stabilise this network.
-     */
-    public updateStabiliseCount(period: number): number {
-        this.generateNetwork();
-        this.flushNodeValues();
-
-        // Check if we have a recurrent network.
-        if (!this.isRecurrent) {
-            for (const connection of this.connections) {
-                if (connection.isRecurrent && connection.isEnabled) {
-                    this.isRecurrent = true;
-                }
-            }
-        }
-
-        let done = false;
-        let rounds = 0;
-        let stableCounter = 0;
-        let level = 0;
-        const limit = period + 90;
-
-        // Recurrent Networks are by definition unstable.
-        if (this.isRecurrent)
-            return 0;
-
-        // Activate the network repeatedly until it stabilises or we reach the defined limit.
-        while (!done) {
-            // Network is unstable!
-            if (rounds >= limit) {
-                return -1;
-            }
-
-            // Activate network with some input values.
-            const inputs = new Map<string, Map<string, number>>();
-            this.inputNodes.forEach((sprite, k) => {
-                const spriteFeatures = new Map<string, number>();
-                sprite.forEach((featureNode, featureKey) => {
-                    spriteFeatures.set(featureKey, 1);
-                })
-                inputs.set(k, spriteFeatures);
-            })
-            this.activateNetwork(inputs);
-
-            // If our output nodes got activated check if they changed their values.
-            if (!this.outputsOff()) {
-                let hasChanged = false;
-                for (const oNode of this.outputNodes) {
-                    if (oNode.lastActivationValue !== oNode.activationValue) {
-                        hasChanged = true;
-                        break;
-                    }
-                }
-                if (!hasChanged) {
-                    stableCounter++;
-                    if (stableCounter >= period) {
-                        done = true;
-                        level = rounds;
-                        break;
-                    }
-                } else {
-                    stableCounter = 0;
-                }
-            }
-            rounds++;
-        }
-
-        // Clean the nodes and report the stabilise count.
-        this.flushNodeValues();
-        const stableCount = (level - period + 1);
-        this._stabiliseCount = stableCount;
-        return stableCount;
-    }
-
-    /**
      * Activates the network in order to get an output in regard to the fed inputs.
      * @param inputs a map which maps each sprite to its input feature vector.
      * @returns returns true if the network generated an appropriate output as expected.
@@ -409,20 +323,20 @@ export abstract class NetworkChromosome extends Chromosome {
         // Generate the network and load the inputs
         this.generateNetwork();
         this.setUpInputs(inputs);
-        let activatedOnce = false;
-        let abortCount = 0;
+        let activationCount = 0;
         let incomingValue = 0;
+        this.outputNodes.forEach(node => node.activatedFlag = false)
 
         // Repeatedly send the input signals through the network until at least one output node gets activated.
-        while (this.outputsOff() || !activatedOnce) {
-            abortCount++;
-            if (abortCount == 20) {
+        while (this.outputsOff() || activationCount < 0) {
+            activationCount++;
+            if (activationCount == 20) {
                 return false;
             }
 
             // For each node compute the sum of its incoming connections.
             for (const node of this.allNodes) {
-                if (node.type !== NodeType.INPUT) {
+                if (node.type !== NodeType.INPUT && node.type !== NodeType.BIAS) {
 
                     // Reset the activation Flag and the activation value.
                     node.nodeValue = 0.0;
@@ -430,13 +344,18 @@ export abstract class NetworkChromosome extends Chromosome {
 
                     for (const connection of node.incomingConnections) {
 
+                        // Do not include disabled connections or connections coming from deactivated inputs.
+                        if (!connection.isEnabled || (connection.source.type === NodeType.INPUT && !connection.source.activatedFlag)) {
+                            continue;
+                        }
+
                         // Handle time delayed connections.
-                        if (connection.timeDelay) {
+                        if (connection.isRecurrent) {
                             incomingValue = connection.weight * connection.source.lastActivationValue;
                             node.nodeValue += incomingValue;
                         } else {
                             incomingValue = connection.weight * connection.source.activationValue;
-                            if (connection.source.activatedFlag || connection.source.type === NodeType.INPUT) {
+                            if (connection.source.activatedFlag) {
                                 node.activatedFlag = true;
                             }
                             node.nodeValue += incomingValue;
@@ -454,16 +373,27 @@ export abstract class NetworkChromosome extends Chromosome {
                         // Keep track of previous activations
                         node.lastActivationValue2 = node.lastActivationValue;
                         node.lastActivationValue = node.activationValue;
-
-                        node.lastActivationValue = node.activationValue;
-                        node.activate();
+                        node.activationValue = node.activate();
                         node.activationCount++;
                     }
                 }
             }
-            activatedOnce = true;
         }
         return true;
+    }
+
+    public getMaxDepth():number {
+        let cur_depth: number; //The depth of the current node
+        let max = 0; //The max depth
+
+        for (const outNode of this.outputNodes) {
+            cur_depth = outNode.depth(0);
+            if (cur_depth > max) {
+                max = cur_depth;
+            }
+        }
+
+        return max;
     }
 
     /**
@@ -557,6 +487,18 @@ export abstract class NetworkChromosome extends Chromosome {
         }
         node1.traversed = true;
         return false;
+    }
+
+    public generateDummyInputs(): Map<string, Map<string, number>> {
+        const inputs = new Map<string, Map<string, number>>();
+        this.inputNodes.forEach((sprite, k) => {
+            const spriteFeatures = new Map<string, number>();
+            sprite.forEach((featureNode, featureKey) => {
+                spriteFeatures.set(featureKey, 1);
+            })
+            inputs.set(k, spriteFeatures);
+        });
+        return inputs;
     }
 
     /**
@@ -655,14 +597,6 @@ export abstract class NetworkChromosome extends Chromosome {
 
     get allNodes(): NodeGene[] {
         return this._allNodes;
-    }
-
-    get stabiliseCount(): number {
-        return this._stabiliseCount;
-    }
-
-    set stabiliseCount(value: number) {
-        this._stabiliseCount = value;
     }
 
     get fitness(): number {

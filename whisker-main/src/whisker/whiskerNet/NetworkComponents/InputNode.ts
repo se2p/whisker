@@ -28,6 +28,10 @@ export class InputNode extends NodeGene {
         this._feature = feature;
     }
 
+    depth(d:number): number {
+        return d;
+    }
+
     equals(other: unknown): boolean {
         if (!(other instanceof InputNode)) return false;
         return this.activationFunction === other.activationFunction &&

@@ -18,6 +18,10 @@ export class BiasNode extends NodeGene {
         this.activationCount = 1;
     }
 
+    depth(d:number): number {
+        return d;
+    }
+
     equals(other: unknown): boolean {
         if (!(other instanceof BiasNode)) return false;
         return this.uID === other.uID;

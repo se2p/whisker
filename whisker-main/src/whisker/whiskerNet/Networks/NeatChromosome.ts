@@ -151,7 +151,7 @@ export class NeatChromosome extends NetworkChromosome {
         // If the network's structure has changed generate the new network and update the stabilize count.
         if (updated) {
             this.generateNetwork();
-            this.updateStabiliseCount(100);
+            this.activateNetwork(this.generateDummyInputs());
         }
     }
 

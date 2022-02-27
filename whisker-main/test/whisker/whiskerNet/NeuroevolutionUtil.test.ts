@@ -64,8 +64,8 @@ describe("NeuroevolutionUtil Tests", () => {
 
     test("Test Softmax calculation", () =>{
         const chromosome = generator.get();
-        const stabiliseCount = chromosome.updateStabiliseCount(30);
-        for (let i = 0; i < stabiliseCount + 1; i++) {
+        chromosome.activateNetwork(chromosome.generateDummyInputs());
+        for (let i = 0; i < chromosome.getMaxDepth(); i++) {
             chromosome.activateNetwork(genInputs)
         }
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);

@@ -69,18 +69,14 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
         const chromosomes: NetworkChromosome[] = [];
-        let stabCount = 0;
         for (let i = 0; i < 100; i++) {
             const chromosome = generator.get();
             chromosomes.push(chromosome);
-            stabCount = chromosome.updateStabiliseCount(30);
         }
         for (const chromosome of chromosomes) {
             chromosome.generateNetwork();
             chromosome.flushNodeValues();
-            for (let i = 0; i < stabCount + 1; i++) {
-                chromosome.activateNetwork(genInputs);
-            }
+            chromosome.activateNetwork(genInputs);
             expect(chromosome.activateNetwork(genInputs)).toBeTruthy();
         }
     })

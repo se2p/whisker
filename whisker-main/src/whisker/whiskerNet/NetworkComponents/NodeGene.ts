@@ -99,6 +99,8 @@ export abstract class NodeGene {
         this.traversed = false;
     }
 
+    public abstract depth(d:number):number
+
     public abstract equals(other: unknown): boolean
 
     public abstract clone(): NodeGene
