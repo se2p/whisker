@@ -144,6 +144,8 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size - 1;
         StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, population.populationChampion.fitness);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.fitness);
+        StatisticsCollector.getInstance().updateHighestScore(population.networks);
+        StatisticsCollector.getInstance().updateHighestPlaytime(population.networks);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =

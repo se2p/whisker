@@ -1,8 +1,8 @@
 {
     "testGenerator": "neuroevolution",
     "algorithm": "explorativeNeat",
-    "populationType": "random",
-    "eventSelection": "activation",
+    "populationType": "explorative",
+    "eventSelection": "random",
     "populationSize": 150,
     "numberOfSpecies": 5,
     "parentsPerSpecies": 0.20,

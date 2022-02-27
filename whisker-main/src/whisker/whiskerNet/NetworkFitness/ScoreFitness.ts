@@ -32,7 +32,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
      * @param vm the Scratch-VM after the playthrough.
      * @returns number representing the achieved score of the network.
      */
-    private static gatherPoints(vm: VirtualMachine): number {
+    public static gatherPoints(vm: VirtualMachine): number {
         let points = 0;
         for (const target of vm.runtime.targets) {
             for (const value of Object.values(target.variables)) {

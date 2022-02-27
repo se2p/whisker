@@ -46,10 +46,14 @@ export class StatisticsCollector {
     private _averageTestExecutionTime: number;
     private _averageTestExecutionCount: number;
     private _timeToReachFullCoverage: number;
-    private _highestNetworkFitness: number;
     private readonly _covOverTime: Map<number, number>;
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
+
+    // Neuroevolution
     private readonly _bestNetworkFitness: Map<number, number>;
+    private _highestNetworkFitness: number;
+    private _highestScore: number;
+    private _highestPlayTime: number;
 
     // Dynamic Suite
     private _testName: string;
@@ -83,6 +87,8 @@ export class StatisticsCollector {
         this._covOverTime = new Map<number, number>();
         this.coveredFitnessFunctions = [];
         this._bestNetworkFitness = new Map<number, number>();
+        this._highestScore = 0;
+        this._highestPlayTime = 0;
         this._networks = [];
         this._surpriseAdequacy = 0;
         this._surpriseNodeAdequacy = 0;
@@ -169,6 +175,22 @@ export class StatisticsCollector {
         this._averageTestExecutionCount++;
         this._averageTestExecutionTime = this._averageTestExecutionTime + (
             (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
+    }
+
+    public updateHighestScore(networks: NetworkChromosome[]): void {
+        for (const network of networks) {
+            if (network.score > this._highestScore) {
+                this._highestScore = network.score;
+            }
+        }
+    }
+
+    public updateHighestPlaytime(networks: NetworkChromosome[]): void {
+        for (const network of networks) {
+            if (network.playTime > this._highestPlayTime) {
+                this._highestPlayTime = network.playTime
+            }
+        }
     }
 
     public incrementExecutedTests(): void {
@@ -353,26 +375,28 @@ export class StatisticsCollector {
 
         // Standard headers
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
-            "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage", "highestNetworkFitness"];
+            "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime'];
 
         // Average population fitness header depending on max iteration count.
         const headerRow = headers.join(",").concat(",", fitnessHeaders);
-        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount, this._coveredFitnessFunctionsCount,
-            this._bestCoverage, this._numberFitnessEvaluations, this._timeToReachFullCoverage, this._highestNetworkFitness];
+        const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
+            this._coveredFitnessFunctionsCount, this._bestCoverage, this._numberFitnessEvaluations,
+            this._timeToReachFullCoverage, this._highestNetworkFitness, this._highestScore, this._highestPlayTime];
         const dataRow = data.join(",").concat(",", fitnessValues);
         return [headerRow, dataRow].join("\n");
     }
 
     public asCsvDynamicSuite(): string {
         let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,networkFitness," +
-            "surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
+            "score', 'playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
 
         this.networks.sort((a, b) => b.fitness - a.fitness);
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];
             const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
-                this._coveredFitnessFunctionsCount, network.fitness, network.surpriseAdequacyStep,
-                network.surpriseAdequacyNodes, network.surpriseCounterNormalised, network.zScore];
+                this._coveredFitnessFunctionsCount, network.fitness, network.score, network.playTime,
+                network.surpriseAdequacyStep, network.surpriseAdequacyNodes, network.surpriseCounterNormalised,
+                network.zScore];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }

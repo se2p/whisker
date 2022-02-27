@@ -2,6 +2,7 @@ import {NetworkFitnessFunction} from "./NetworkFitnessFunction";
 import {Container} from "../../utils/Container";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
+import {ScoreFitness} from "./ScoreFitness";
 
 
 export class StatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -21,6 +22,7 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
         } else {
             network.fitness = 1;
         }
+        network.score = ScoreFitness.gatherPoints(Container.vm);
         executor.resetState();
         return network.fitness;
     }

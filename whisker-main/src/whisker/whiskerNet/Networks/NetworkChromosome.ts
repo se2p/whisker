@@ -103,6 +103,16 @@ export abstract class NetworkChromosome extends Chromosome {
     private _fitness = 0;
 
     /**
+     * The achieved score of a network.
+     */
+    private _score = 0;
+
+    /**
+     * The time a network has been playing a game.
+     */
+    private _playTime = 0;
+
+    /**
      * Saves the execution trace during the playthrough.
      */
     private _trace: ExecutionTrace;
@@ -661,6 +671,22 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set fitness(value: number) {
         this._fitness = value;
+    }
+
+    get score(): number {
+        return this._score;
+    }
+
+    set score(value: number) {
+        this._score = value;
+    }
+
+    get playTime(): number {
+        return this._playTime;
+    }
+
+    set playTime(value: number) {
+        this._playTime = value;
     }
 
     get currentActivationTrace(): ActivationTrace {

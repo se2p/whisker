@@ -36,8 +36,7 @@ export class NeuroevolutionTestGenerator extends TestGenerator {
                 network.recordActivationTrace = true;
                 for (let i = 0; i < parameter.repetitions; i++) {
                     Randomness.setScratchSeed(scratchSeeds[i]);
-                    const executor = new NetworkExecutor(Container.vmWrapper, parameter.timeout,
-                        parameter.eventSelection);
+                    const executor = new NetworkExecutor(Container.vmWrapper, parameter.timeout, 'activation');
                     await executor.execute(network);
                     executor.resetState();
                 }

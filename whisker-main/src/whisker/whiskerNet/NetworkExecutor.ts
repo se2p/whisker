@@ -12,6 +12,7 @@ import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
 import Runtime from "scratch-vm/src/engine/runtime"
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {KeyPressEvent} from "../testcase/events/KeyPressEvent";
+import {Container} from "../utils/Container";
 
 export class NetworkExecutor {
 
@@ -31,7 +32,7 @@ export class NetworkExecutor {
     private availableEvents: ScratchEvent[] = [];
 
     /**
-     * The initial sate of the Scratch-VM
+     * The initial state of the Scratch-VM
      */
     private _initialState = {};
 
@@ -76,45 +77,23 @@ export class NetworkExecutor {
     }
 
     async execute(network: NetworkChromosome): Promise<ExecutionTrace> {
-        switch (this._eventSelection) {
-            case 'random':
-                return this.executeRandom(network);
-            case 'activation':
-            default:
-                return this.executeNetwork(network);
-        }
-    }
-
-    /**
-     * Lets a neural network play the given Scratch game.
-     * @param network the network which should play the given game.
-     */
-    private async executeNetwork(network: NetworkChromosome): Promise<ExecutionTrace> {
         const events: EventAndParameters[] = [];
-        let workingNetwork = false;
-
-        Randomness.seedScratch();
-
-        // Activate the network <stabilizeCounter> times to stabilise it for classification
-        network.flushNodeValues();
-        for (let i = 0; i < network.stabiliseCount; i++) {
-            workingNetwork = network.activateNetwork(InputExtraction.extractSpriteInfo(this._vmWrapper));
-        }
-        network.codons = [];
 
         // Set up the Scratch-VM and start the game
+        Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
 
-        // Initialise Timer for the timeout
-        let timer = Date.now();
-        this._timeout += Date.now();
+        // Initialise required variables.
+        network.codons = [];
+        let stepCount = 0;
+        let workingNetwork = false;
 
         // Play the game until we reach a GameOver state or the timeout.
-        let stepCount = 0;
-        while (this._projectRunning && timer < this._timeout) {
+        const startTime = Date.now();
+        while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
             this.availableEvents = this._eventExtractor.extractEvents(this._vm)
             if (this.availableEvents.length === 0) {
@@ -122,37 +101,44 @@ export class NetworkExecutor {
                 break;
             }
 
-            // Load the inputs into the Network
+            // Update input nodes and load inputs into the Network.
             const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
 
             // Check if we encountered additional events during the playthrough
             // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
             network.updateOutputNodes(this.availableEvents);
 
-            // If we have a recurrent network we do not flush the nodes and only activate it once
-            if (network.isRecurrent) {
-                workingNetwork = network.activateNetwork(spriteFeatures);
-            }
-
-            // If we do not have a recurrent network we flush the network and activate it until the output stabilizes
-            else {
+            // Select the next event...
+            let eventIndex: number;
+            if (this._eventSelection === 'random') {
+                // Choose a random event index.
+                eventIndex = this._random.nextInt(0, this.availableEvents.length);
+                workingNetwork = true   // Set to true since we did not activate the network...
+            } else {
+                // Flush the network and activate it until the output stabilizes.
                 network.flushNodeValues();
                 for (let i = 0; i < network.stabiliseCount; i++) {
                     workingNetwork = network.activateNetwork(spriteFeatures);
                 }
+
+                // Choose the event with the highest probability according to the softmax values
+                const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+                const max = Math.max(...output);
+                eventIndex = output.indexOf(max);
             }
 
-            await this.selectAndExecuteNextEvent(network, events);
+            // Select the event matching, set required parameters and execute it.
+            network.codons.push(eventIndex);
+            const nextEvent: ScratchEvent = this.availableEvents[eventIndex];
+            await this.executeNextEvent(network, nextEvent, events);
 
-            // Record ActivationTrace. Skip step 0 as this simply reflects how the project was loaded. However,
-            // we are interested in step 1 as this one reflects initialisation values.
-            if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
-                network.updateActivationTrace(stepCount);
-            }
+            // Record the activation trace.
+            NetworkExecutor.recordActivationTrace(network, stepCount);
+
             stepCount++;
-
-            timer = Date.now();
         }
+
+        network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
@@ -161,90 +147,18 @@ export class NetworkExecutor {
         // End and reset the VM.
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-
-        StatisticsCollector.getInstance().numberFitnessEvaluations++;
 
         // Should not happen!
         if (!workingNetwork) {
             console.error("Found defect Network", network);
         }
 
-        return network.trace;
-    }
-
-    /**
-     * Lets a neural network play the given Scratch game by randomly choosing events.
-     * @param network the network which should play the given game.
-     */
-    private async executeRandom(network: NetworkChromosome): Promise<ExecutionTrace> {
-        const events: EventAndParameters[] = [];
-        const codons: number[] = [];
-
-        Randomness.seedScratch();
-
-        // Set up the Scratch-VM and start the game
-        const _onRunStop = this.projectStopped.bind(this);
-        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
-        this._projectRunning = true;
-        this._vmWrapper.start();
-
-        // Initialise Timer for the timeout
-        let timer = Date.now();
-        this._timeout += Date.now();
-        this.availableEvents = this._eventExtractor.extractEvents(this._vm)
-
-
-        // Play the game until we reach a GameOver state or the timeout
-        while (this._projectRunning && timer < this._timeout) {
-            // Collect the currently available events
-            this.availableEvents = this._eventExtractor.extractEvents(this._vm);
-
-            if (this.availableEvents.length === 0) {
-                console.log("Whisker-Main: No events available for project.");
-                break;
-            }
-
-            // Check if we encountered additional events during the playthrough
-            // If we did so add corresponding ClassificationNodes and RegressionNodes to the network.
-            network.updateOutputNodes(this.availableEvents);
-
-            // Select the nextEvent, set its parameters and send it to the Scratch-VM
-            const randomEventIndex = this._random.nextInt(0, this.availableEvents.length);
-            const nextEvent: ScratchEvent = this.availableEvents[randomEventIndex];
-            const parameters = [];
-            if (nextEvent.numSearchParameter() > 0) {
-                parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
-                nextEvent.setParameter(parameters, "regression");
-            }
-            codons.push(randomEventIndex);
-            events.push(new EventAndParameters(nextEvent, parameters));
-            await nextEvent.apply();
-            StatisticsCollector.getInstance().incrementEventsCount();
-
-            // Add a waitEvent in the end of each round.
-            const waitEvent = new WaitEvent(1);
-            events.push(new EventAndParameters(waitEvent, []));
-            await waitEvent.apply();
-            timer = Date.now();
-        }
-
-        // Save the executed Trace and the covered blocks
-        network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
-        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
-
-        // End and reset the VM.
-        this._vmWrapper.end();
-        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
-
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
-
-        // Save the codons in order to transform the network into a TestChromosome later
-        network.codons = codons;
         return network.trace;
     }
 
     /**
-     * Event listener which checks if the project is still running, i.e no GameOver state was reached.
+     * Event listener which checks if the project is still running, i.e. no GameOver state was reached.
      */
     private projectStopped() {
         return this._projectRunning = false;
@@ -253,27 +167,18 @@ export class NetworkExecutor {
     /**
      * Selects the next event and executes it.
      * @param network determines the next action to take.
+     * @param nextEvent the event that should be executed next.
      * @param events saves a trace of executed events.
      */
-    private async selectAndExecuteNextEvent(network: NetworkChromosome, events: EventAndParameters[]) {
-        // Get the classification results by using the softmax function over the outputNode values
-        const output = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-        // Choose the event with the highest probability according to the softmax values
-        const max = Math.max(...output);
-        const maxIndex = output.indexOf(max);
-        network.codons.push(maxIndex);
-
-        // Select the nextEvent, set its parameters and send it to the Scratch-VM
-        const nextEvent: ScratchEvent = this.availableEvents[maxIndex];
+    private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[]) {
         const parameters = [];
         if (nextEvent.numSearchParameter() > 0) {
             parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
             nextEvent.setParameter(parameters, "regression");
         }
 
-        // Do not double press Keys as this just interrupts the key press, which leads to effectively pressing no
-        // key at all.
-        if(!(nextEvent instanceof  KeyPressEvent) || !this._vmWrapper.inputs.isKeyDown(String(nextEvent.getParameters()[0]))){
+        // Do not double press Keys as this just interrupts the prior key press.
+        if (!this.isDoubleKeyPress(nextEvent)) {
             events.push(new EventAndParameters(nextEvent, parameters));
             await nextEvent.apply();
         }
@@ -288,12 +193,29 @@ export class NetworkExecutor {
         StatisticsCollector.getInstance().incrementEventsCount();
     }
 
+    private isDoubleKeyPress(nextEvent: ScratchEvent) {
+        const key = String(nextEvent.getParameters()[0]);
+        return nextEvent instanceof KeyPressEvent && this._vmWrapper.inputs.isKeyDown(key);
+    }
+
     private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
         const args = [];
         for (const node of network.regressionNodes.get(event.stringIdentifier())) {
             args.push(node.activationValue);
         }
         return args;
+    }
+
+    /**
+     * Records the ActivationTrace. We skip step 0 as this simply reflects how the project was loaded. However,
+     * we are interested in step 1 as this one reflects initialisation values.
+     * @param network the network whose activation trace should be updated.
+     * @param stepCount determines whether we want to record the trace at the current step.
+     */
+    private static recordActivationTrace(network: NetworkChromosome, stepCount: number) {
+        if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
+            network.updateActivationTrace(stepCount);
+        }
     }
 
     /**
