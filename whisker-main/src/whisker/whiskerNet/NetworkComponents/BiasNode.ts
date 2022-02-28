@@ -5,12 +5,11 @@ import {NodeType} from "./NodeType";
 export class BiasNode extends NodeGene {
 
     /**
-     * Creates a new bias node which has no activation function an a constant activation value of 1.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new bias node.
+     * Creates a new bias node which has no activation function a constant activation value of 1.
+     * @param uID the unique identifier of this node in the network.
      */
-    constructor(incrementIDCounter = true) {
-        super(ActivationFunction.NONE, NodeType.BIAS, incrementIDCounter);
+    constructor(uID: number) {
+        super(uID, ActivationFunction.NONE, NodeType.BIAS);
         this.nodeValue = 1;
         this.lastActivationValue = 1;
         this.activationValue = 1;
@@ -18,7 +17,7 @@ export class BiasNode extends NodeGene {
         this.activationCount = 1;
     }
 
-    depth(d:number): number {
+    depth(d: number): number {
         return d;
     }
 
@@ -28,8 +27,7 @@ export class BiasNode extends NodeGene {
     }
 
     clone(): BiasNode {
-        const clone = new BiasNode(false);
-        clone.uID = this.uID;
+        const clone = new BiasNode(this.uID);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -55,7 +53,7 @@ export class BiasNode extends NodeGene {
         this.activatedFlag = true;
     }
 
-    public identifier(): string{
+    public identifier(): string {
         return `B`;
     }
 

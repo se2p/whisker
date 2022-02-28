@@ -12,6 +12,7 @@ import {ClassificationNode} from "../NetworkComponents/ClassificationNode";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {ActivationFunction} from "../NetworkComponents/ActivationFunction";
 import {ActivationTrace} from "../Misc/ActivationTrace";
+import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 
 export abstract class NetworkChromosome extends Chromosome {
 
@@ -178,31 +179,31 @@ export abstract class NetworkChromosome extends Chromosome {
                 updated = true;
                 const spriteNodes = new Map<string, InputNode>();
                 spriteFeatures.forEach((featureValue, featureKey) => {
-                    const iNode = new InputNode(spriteKey, featureKey);
+                    const featureID = `I:${spriteKey}-${featureKey}`;
+                    const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                    const iNode = new InputNode(id, spriteKey, featureKey);
                     spriteNodes.set(featureKey, iNode);
                     this.allNodes.push(iNode);
-                    this.connectInputNode(iNode);
                 })
                 this.inputNodes.set(spriteKey, spriteNodes);
-            }
-
+            } else {
                 // We haven't encountered a new Sprite, but we still have to check
-            // if we encountered new features of a Sprite.
-            else {
+                // if we encountered new features of a Sprite.
                 spriteFeatures.forEach((featureValue, featureKey) => {
                     const savedSpriteMap = this.inputNodes.get(spriteKey);
                     if (!savedSpriteMap.has(featureKey)) {
                         updated = true;
-                        const iNode = new InputNode(spriteKey, featureKey);
+                        const featureID = `I:${spriteKey}-${featureKey}`;
+                        const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                        const iNode = new InputNode(id, spriteKey, featureKey);
                         savedSpriteMap.set(featureKey, iNode);
                         this.allNodes.push(iNode);
-                        this.connectInputNode(iNode);
                     }
-                })
+                });
             }
-        })
+        });
 
-        // If the network's structure has changed generate the new network and update the stabilize count.
+        // If the network's structure has changed re-generate the new network.
         if (updated) {
             this.generateNetwork();
         }
@@ -217,47 +218,33 @@ export abstract class NetworkChromosome extends Chromosome {
         for (const event of events) {
             if (!this.classificationNodes.has(event.stringIdentifier())) {
                 updated = true;
-                const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID);
+                const featureID = `C:${event.stringIdentifier()}`;
+                const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                const classificationNode = new ClassificationNode(id, event, ActivationFunction.SIGMOID);
                 this.allNodes.push(classificationNode);
-                this.connectOutputNode(classificationNode);
+
+                // Check if we also have to add regression nodes.
                 for (const parameter of event.getSearchParameterNames()) {
-                    const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE);
+                    const featureID = `R:${event.stringIdentifier()}-${parameter}`
+                    const id = NetworkChromosome.getNonHiddenNodeId(featureID);
+                    const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
                     this.allNodes.push(regressionNode);
-                    this.connectOutputNode(regressionNode);
                 }
             }
         }
-        // If the network's structure has changed generate the new network and update the stabilize count.
+        // If the network's structure has changed re-generate the new network.
         if (updated) {
             this.generateNetwork();
         }
     }
 
-    /**
-     * Connects an input node to the network by creating a connection between the input node and all output nodes.
-     * @param iNode the input node to connect.
-     */
-    protected connectInputNode(iNode: NodeGene): void {
-        for (const oNode of this.outputNodes) {
-            const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                true, 0, false);
-            this.connections.push(newConnection);
-            oNode.incomingConnections.push(newConnection);
-        }
-    }
-
-    /**
-     * Connects an output node to the network by creating a connection between the output node and all input nodes.
-     * @param oNode the output node to connect.
-     */
-    protected connectOutputNode(oNode: NodeGene): void {
-        for (const iNodes of this.inputNodes.values()) {
-            for (const iNode of iNodes.values()) {
-                const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                    true, 0, false)
-                this.connections.push(newConnection);
-                oNode.incomingConnections.push(newConnection);
-            }
+    private static getNonHiddenNodeId(featureID: string): number {
+        if (NeatPopulation.nodeToId.has(featureID)) {
+            return NeatPopulation.nodeToId.get(featureID);
+        } else {
+            const id = NeatPopulation.highestNodeId + 1;
+            NeatPopulation.nodeToId.set(featureID, id);
+            return id;
         }
     }
 
@@ -371,7 +358,6 @@ export abstract class NetworkChromosome extends Chromosome {
                     if (node.activatedFlag) {
 
                         // Keep track of previous activations
-                        node.lastActivationValue2 = node.lastActivationValue;
                         node.lastActivationValue = node.activationValue;
                         node.activationValue = node.activate();
                         node.activationCount++;
@@ -382,18 +368,19 @@ export abstract class NetworkChromosome extends Chromosome {
         return true;
     }
 
-    public getMaxDepth():number {
-        let cur_depth: number; //The depth of the current node
-        let max = 0; //The max depth
+    public getMaxDepth(): number {
+        let currentDepth: number;
+        let maxDepth = 0;
 
+        // Start at each output node and determine its maximum depth.
         for (const outNode of this.outputNodes) {
-            cur_depth = outNode.depth(0);
-            if (cur_depth > max) {
-                max = cur_depth;
+            currentDepth = outNode.depth(0);
+            if (currentDepth > maxDepth) {
+                maxDepth = currentDepth;
             }
         }
 
-        return max;
+        return maxDepth;
     }
 
     /**
@@ -408,13 +395,11 @@ export abstract class NetworkChromosome extends Chromosome {
                 iNode.activatedFlag = false;
             }
         }
-        // First check if we encountered new nodes.
         this.updateInputNodes(inputs);
         inputs.forEach((spriteValue, spriteKey) => {
             spriteValue.forEach((featureValue, featureKey) => {
                 const iNode = this.inputNodes.get(spriteKey).get(featureKey);
                 if (iNode) {
-                    iNode.lastActivationValue2 = iNode.lastActivationValue;
                     iNode.lastActivationValue = iNode.activationValue;
                     iNode.activationCount++;
                     iNode.activatedFlag = true;

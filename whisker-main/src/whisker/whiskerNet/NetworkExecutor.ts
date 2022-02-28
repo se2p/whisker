@@ -13,6 +13,7 @@ import Runtime from "scratch-vm/src/engine/runtime"
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 import {KeyPressEvent} from "../testcase/events/KeyPressEvent";
 import {Container} from "../utils/Container";
+import {ParameterType} from "../testcase/events/ParameterType";
 
 export class NetworkExecutor {
 
@@ -176,9 +177,10 @@ export class NetworkExecutor {
      */
     private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[]) {
         const parameters = [];
+        const argType: ParameterType = this._eventSelection as ParameterType;
         if (nextEvent.numSearchParameter() > 0) {
             parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
-            nextEvent.setParameter(parameters, "regression");
+            nextEvent.setParameter(parameters, argType);
         }
 
         // Do not double press Keys as this just interrupts the prior key press.

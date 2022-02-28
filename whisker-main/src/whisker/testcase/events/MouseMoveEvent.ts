@@ -83,7 +83,7 @@ export class MouseMoveEvent extends ScratchEvent {
                 this._y = y;
                 break;
             }
-            case "regression": {
+            case "activation": {
                 this._x = Math.tanh(args[0]) * 240;
                 this._y = Math.tanh(args[1]) * 180;
                 break;

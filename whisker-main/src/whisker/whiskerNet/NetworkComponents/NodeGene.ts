@@ -1,6 +1,7 @@
 import {ConnectionGene} from "./ConnectionGene";
 import {ActivationFunction} from "./ActivationFunction";
 import {NodeType} from "./NodeType";
+import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
 
 export abstract class NodeGene {
 
@@ -12,7 +13,7 @@ export abstract class NodeGene {
     /**
      * The unique identifier of a node.
      */
-    private _uID: number
+    private readonly _uID: number
 
     /**
      * The value of a node, which is defined to be the sum of all incoming connections.
@@ -33,11 +34,6 @@ export abstract class NodeGene {
      * Activation value of the previous time step.
      */
     private _lastActivationValue = 0;
-
-    /**
-     * Activation value two time steps prior.
-     */
-    private _lastActivationValue2 = 0;
 
     /**
      * Counts how often this node has been activated.
@@ -66,17 +62,16 @@ export abstract class NodeGene {
 
     /**
      * Creates a new node.
+     * @param uID the unique identifier of this node in the network.
      * @param activationFunction the activation function of the node
      * @param type the type of the node (Input | Hidden | Output)
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new node gene.
      */
-    protected constructor(activationFunction: ActivationFunction, type: NodeType, incrementIDCounter = true) {
-        this._uID = NodeGene._uIDCounter;
+    protected constructor(uID: number, activationFunction: ActivationFunction, type: NodeType) {
+        this._uID = uID;
         this._activationFunction = activationFunction;
         this._type = type;
-        if(incrementIDCounter){
-            NodeGene._uIDCounter++;
+        if (NeatPopulation.highestNodeId < this.uID) {
+            NeatPopulation.highestNodeId = this.uID;
         }
     }
 
@@ -94,12 +89,28 @@ export abstract class NodeGene {
         this.activationValue = 0;
         this.nodeValue = 0;
         this.lastActivationValue = 0;
-        this.lastActivationValue2 = 0;
         this.activatedFlag = false;
         this.traversed = false;
     }
 
-    public abstract depth(d:number):number
+    public depth(d: number): number {
+        // Recurrency will end up in an endless loop, in this case we assume a depth of 10
+        if (d > 100) {
+            return 10;
+        }
+
+        let currentDepth: number
+        let maxDepth = d;
+        // Recursively traverse each incoming connection to find the maximum depth.
+        for (const connection of this.incomingConnections) {
+            const inNode = connection.source;
+            currentDepth = inNode.depth(d + 1);
+            if (currentDepth > maxDepth) {
+                maxDepth = currentDepth;
+            }
+        }
+        return maxDepth;
+    }
 
     public abstract equals(other: unknown): boolean
 
@@ -113,10 +124,6 @@ export abstract class NodeGene {
 
     get uID(): number {
         return this._uID;
-    }
-
-    set uID(value: number) {
-        this._uID = value;
     }
 
     get nodeValue(): number {
@@ -169,14 +176,6 @@ export abstract class NodeGene {
 
     set lastActivationValue(value: number) {
         this._lastActivationValue = value;
-    }
-
-    get lastActivationValue2(): number {
-        return this._lastActivationValue2;
-    }
-
-    set lastActivationValue2(value: number) {
-        this._lastActivationValue2 = value;
     }
 
     get traversed(): boolean {

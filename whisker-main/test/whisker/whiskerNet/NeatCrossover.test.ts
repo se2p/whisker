@@ -47,21 +47,16 @@ describe("Test NeatCrossover", () => {
 
         // Create Nodes of first network
         nodes1 = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode1.uID = 1;
-        const iNode3 = new BiasNode();
-        iNode3.uID = 2;
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
+        const iNode3 = new BiasNode(2);
         nodes1.push(iNode1);
         nodes1.push(iNode2);
         nodes1.push(iNode3);
 
-        const oNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        oNode1.uID = 4;
+        const oNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
         nodes1.push(oNode1);
-        const hiddenNode1 = new HiddenNode(ActivationFunction.SIGMOID);
-        hiddenNode1.uID = 3;
+        const hiddenNode1 = new HiddenNode(3, ActivationFunction.SIGMOID);
         nodes1.push(hiddenNode1);
 
         // Create Connections of first parent
@@ -86,8 +81,7 @@ describe("Test NeatCrossover", () => {
         nodes2.push(oNode2);
 
         const hiddenNode2 = hiddenNode1.clone();
-        const hiddenNode3 = new HiddenNode(ActivationFunction.SIGMOID);
-        hiddenNode3.uID = 5;
+        const hiddenNode3 = new HiddenNode(5, ActivationFunction.SIGMOID);
         nodes2.push(hiddenNode2);
         nodes2.push(hiddenNode3);
 
@@ -136,10 +130,8 @@ describe("Test NeatCrossover", () => {
     })
 
     test("CrossoverTest with deactivated connections", () => {
-        const inNode = new InputNode("Sprite1", "X-Position");
-        inNode.uID = 0;
-        const outNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        outNode.uID = 2;
+        const inNode = new InputNode(0, "Sprite1", "X-Position");
+        const outNode = new ClassificationNode(2, new WaitEvent(), ActivationFunction.SIGMOID);
         const nodes: NodeGene[] = [inNode, outNode];
 
         parent1Connections = [];
@@ -175,10 +167,8 @@ describe("Test NeatCrossover", () => {
 
 
         // Create Nodes of first network
-        const iNode1 = new InputNode("InputNode", "Nothing");
-        iNode1.uID = 0;
-        const oNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        oNode1.uID = 1;
+        const iNode1 = new InputNode(0, "InputNode", "Nothing");
+        const oNode1 = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
         nodes1 = [iNode1, oNode1];
 
         // Create Connections of first parent

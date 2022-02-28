@@ -90,7 +90,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
         const disabledConnections: ConnectionGene[] = [];
 
         // Search through all input/output nodes and add them to the newNodes List
-        // This is necessary since we would otherwise loose nodes without a connection
+        // This is necessary since we would otherwise lose nodes without a connection
         for (const node of parent1.allNodes) {
             const currentNode = node.clone();
             if (node.type === NodeType.INPUT || node.type === NodeType.BIAS || node.type === NodeType.OUTPUT) {
@@ -229,7 +229,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
                 }
 
                 // Collect the disabled Connections -> if we produce a defect network we sequentially enable the
-                // connections stored here until we found a path from input to output, i.e repaired the network
+                // connections stored here until we found a path from input to output, i.e. repaired the network
                 if (disable) {
                     disabledConnections.push(newConnection);
                 }

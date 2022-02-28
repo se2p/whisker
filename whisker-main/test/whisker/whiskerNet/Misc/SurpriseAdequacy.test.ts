@@ -17,7 +17,7 @@ describe("Surprise Adequacy", () => {
             for (let repetitions = 0; repetitions < 30; repetitions++) {
                 const repetitionTrace: NodeGene[] = [];
                 for (let numNode = 0; numNode < 15; numNode++) {
-                    const iNode = new InputNode(numNode.toString(), numNode.toString());
+                    const iNode = new InputNode(numNode, numNode.toString(), numNode.toString());
                     iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                     iNode.activatedFlag = true;
                     repetitionTrace.push(iNode);
@@ -41,7 +41,7 @@ describe("Surprise Adequacy", () => {
         for (let step = 0; step < 8; step++) {
             const stepTrace: NodeGene[] = [];
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
-                const iNode = new InputNode(i.toString(), i.toString());
+                const iNode = new InputNode(i, i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                 iNode.activatedFlag = true;
                 stepTrace.push(iNode);
@@ -62,7 +62,7 @@ describe("Surprise Adequacy", () => {
         for (let step = 0; step < 8; step++) {
             const stepTrace: NodeGene[] = [];
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
-                const iNode = new InputNode(i.toString(), i.toString());
+                const iNode = new InputNode(i, i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                 iNode.activatedFlag = true;
                 stepTrace.push(iNode);
@@ -88,7 +88,7 @@ describe("Surprise Adequacy", () => {
         for (let step = 0; step < 12; step++) {
             const stepTrace: NodeGene[] = [];
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
-                const iNode = new InputNode(i.toString(), i.toString());
+                const iNode = new InputNode(i, i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.5, 1) * 100) / 100;
                 iNode.activatedFlag = true;
                 stepTrace.push(iNode);
@@ -109,7 +109,7 @@ describe("Surprise Adequacy", () => {
         for (let step = 0; step < 12; step++) {
             const stepTrace: NodeGene[] = [];
             for (let i = 0; i < trainingNodeTrace[0][0].length; i++) {
-                const iNode = new InputNode(i.toString(), i.toString());
+                const iNode = new InputNode(i, i.toString(), i.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.5, 1) * 100) / 100;
                 iNode.activatedFlag = true;
                 stepTrace.push(iNode);
@@ -199,12 +199,12 @@ describe("Surprise Adequacy", () => {
             for (let repetitions = 0; repetitions < reps; repetitions++) {
                 const repetitionTrace: NodeGene[] = [];
                 for (let numNode = 0; numNode < nodes; numNode++) {
-                    const iNode = new InputNode(numNode.toString(), numNode.toString());
+                    const iNode = new InputNode(numNode, numNode.toString(), numNode.toString());
                     iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                     iNode.activatedFlag = true;
                     repetitionTrace.push(iNode);
                 }
-                const newINode = new InputNode("Training", "New");
+                const newINode = new InputNode(nodes + 1, "Training", "New");
                 newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                 newINode.activatedFlag = true;
                 repetitionTrace.push(newINode);
@@ -216,12 +216,12 @@ describe("Surprise Adequacy", () => {
         for (let step = 0; step < steps; step++) {
             const nodeTrace: NodeGene[] = [];
             for (let numNode = 0; numNode < nodes; numNode++) {
-                const iNode = new InputNode(numNode.toString(), numNode.toString());
+                const iNode = new InputNode(numNode, numNode.toString(), numNode.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                 iNode.activatedFlag = true;
                 nodeTrace.push(iNode);
             }
-            const newINode = new InputNode("Test", "New");
+            const newINode = new InputNode(nodes + 2, "Test", "New");
             newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
             newINode.activatedFlag = true;
             nodeTrace.push(newINode);
@@ -243,12 +243,12 @@ describe("Surprise Adequacy", () => {
             for (let repetitions = 0; repetitions < reps; repetitions++) {
                 const repetitionTrace: NodeGene[] = [];
                 for (let numNode = 0; numNode < nodes; numNode++) {
-                    const iNode = new InputNode(numNode.toString(), numNode.toString());
+                    const iNode = new InputNode(numNode, numNode.toString(), numNode.toString());
                     iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                     iNode.activatedFlag = true;
                     repetitionTrace.push(iNode);
                 }
-                const newINode = new InputNode("Training", "New");
+                const newINode = new InputNode(nodes + 1, "Training", "New");
                 newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                 newINode.activatedFlag = true;
                 repetitionTrace.push(newINode);
@@ -260,12 +260,12 @@ describe("Surprise Adequacy", () => {
         for (let step = 0; step < steps; step++) {
             const nodeTrace: NodeGene[] = [];
             for (let numNode = 0; numNode < nodes; numNode++) {
-                const iNode = new InputNode(numNode.toString(), numNode.toString());
+                const iNode = new InputNode(numNode, numNode.toString(), numNode.toString());
                 iNode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
                 iNode.activatedFlag = true;
                 nodeTrace.push(iNode);
             }
-            const newINode = new InputNode("Test", "New");
+            const newINode = new InputNode(nodes + 2, "Test", "New");
             newINode.activationValue = Math.round(random.nextDoubleMinMax(0.1, 0.2) * 100) / 100;
             newINode.activatedFlag = true;
             nodeTrace.push(newINode);

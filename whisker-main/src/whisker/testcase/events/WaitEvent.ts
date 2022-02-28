@@ -68,7 +68,7 @@ export class WaitEvent extends ScratchEvent {
             case "codon":
                 this._steps = args[0];
                 break;
-            case "regression":
+            case "activation":
                 this._steps = 1;
                 break;
         }

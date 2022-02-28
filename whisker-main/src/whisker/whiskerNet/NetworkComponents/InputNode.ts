@@ -17,18 +17,17 @@ export class InputNode extends NodeGene {
 
     /**
      * Constructs a new InputNode.
+     * @param uID the unique identifier of this node in the network.
      * @param sprite the name of the sprite this InputNode is connected to.
      * @param feature the feature of the given sprite this InputNode is connected to.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new input node.
      */
-    constructor(sprite: string, feature: string, incrementIDCounter = true) {
-        super(ActivationFunction.NONE, NodeType.INPUT, incrementIDCounter);
+    constructor(uID: number, sprite: string, feature: string) {
+        super(uID, ActivationFunction.NONE, NodeType.INPUT);
         this._sprite = sprite;
         this._feature = feature;
     }
 
-    depth(d:number): number {
+    depth(d: number): number {
         return d;
     }
 
@@ -40,8 +39,7 @@ export class InputNode extends NodeGene {
     }
 
     clone(): InputNode {
-        const clone = new InputNode(this.sprite, this.feature, false);
-        clone.uID = this.uID;
+        const clone = new InputNode(this.uID, this.sprite, this.feature);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -62,7 +60,7 @@ export class InputNode extends NodeGene {
         }
     }
 
-    public identifier(): string{
+    public identifier(): string {
         return `I:${this.sprite}-${this.feature}`
     }
 

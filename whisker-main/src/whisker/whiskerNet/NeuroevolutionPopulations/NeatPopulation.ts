@@ -2,11 +2,11 @@ import {NeuroevolutionPopulation} from "./NeuroevolutionPopulation";
 import {Species} from "./Species";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
-import {NeatMutation} from "../Operators/NeatMutation";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import {Innovation, InnovationType} from "../NetworkComponents/Innovation";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
@@ -36,6 +36,22 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * The targeted Scratch statement, required for statement network fitness.
      */
     protected readonly _targetStatement: StatementFitnessFunction;
+
+    /**
+     * Saves all encountered innovations.
+     */
+    public static innovations: Innovation[] = [];
+
+    /**
+     * Keeps track of the highest node id seen so far.
+     */
+    public static highestNodeId = 0;
+
+    /**
+     * Maps input, classification and regression nodes to corresponding node ids via input features, events and
+     * event parameter respectively.
+     */
+    public static nodeToId = new Map<string, number>();
 
     /**
      * Constructs a new NeatPopulation.
@@ -341,7 +357,7 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         // and their weight differences.
         for (let i = 0; i < maxSize; i++) {
 
-            // If we exceeded the size of any of the two network, we have an excess gene.
+            // If we exceeded the size of one of the two network, we have an excess gene.
             if (i1 >= size1) {
                 excess++;
                 i2++
@@ -390,19 +406,27 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
 
     /**
      * Assigns the right innovation number for a given connection.
-     * @param newInnovation the connection gene for which an innovation number should be assigned to.
+     * @param connection the connection gene used to evaluate whether a novel innovation occurred.
+     * @param innovationType the type of innovation that occurred (newNode | newConnection).
      */
-    public static assignInnovationNumber(newInnovation: ConnectionGene): void {
-        // Check if the exact same innovation already happened in the past, if so assign the same innovation number.
-        const oldInnovation = NeatMutation._innovations.find(innovation => innovation.equalsByNodes(newInnovation));
-        if (oldInnovation !== undefined) {
-            newInnovation.innovation = oldInnovation.innovation;
+    public static findInnovation(connection: ConnectionGene, innovationType: InnovationType): Innovation | undefined {
+        let findMatchingInnovation: (innovation: Innovation, connection: ConnectionGene) => boolean;
+        if (innovationType === 'newConnection') {
+            findMatchingInnovation = (innovation, connection) => {
+                return innovation.type === 'newConnection' &&
+                    innovation.idSourceNode === connection.source.uID &&
+                    innovation.idTargetNode === connection.target.uID &&
+                    innovation.recurrent === connection.isRecurrent
+            }
+        } else if (innovationType === 'newNode') {
+            findMatchingInnovation = (innovation, connection) => {
+                return innovation.type === 'newNode' &&
+                    innovation.idSourceNode === connection.source.uID &&
+                    innovation.idTargetNode === connection.target.uID &&
+                    innovation.splitInnovation === connection.innovation;
+            }
         }
-        // If we have a novel innovation, assign the next innovation number.
-        else {
-            newInnovation.innovation = ConnectionGene.getNextInnovationNumber();
-            NeatMutation._innovations.push(newInnovation);
-        }
+        return this.innovations.find(innovation => findMatchingInnovation(innovation, connection));
     }
 
     /**

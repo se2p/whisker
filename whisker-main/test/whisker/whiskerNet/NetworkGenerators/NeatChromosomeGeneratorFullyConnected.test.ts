@@ -1,8 +1,12 @@
-import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosomeGeneratorFullyConnected} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {
+    NeatChromosomeGeneratorFullyConnected
+} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
+import {expect} from "@jest/globals";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {Randomness} from "../../../../src/whisker/utils/Randomness";
 
 describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
 
@@ -65,19 +69,18 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
         expect(neatChromosome.outputNodes.length).toBe(9);
-    })
+    });
 
-    test('Create several Chromosomes to test if defect chromosomes survive', () => {
-        const chromosomes: NetworkChromosome[] = [];
-        for (let i = 0; i < 100; i++) {
-            const chromosome = generator.get();
-            chromosomes.push(chromosome);
-        }
-        for (const chromosome of chromosomes) {
-            chromosome.generateNetwork();
-            chromosome.flushNodeValues();
-            chromosome.activateNetwork(genInputs);
-            expect(chromosome.activateNetwork(genInputs)).toBeTruthy();
-        }
-    })
+    test('Create two Chromosomes to test if every one of them gets the same innovation numbers', () => {
+        const chromosome1 = generator.get();
+        const chromosome2 = generator.get();
+        const randomNodeIndex = Randomness.getInstance().nextInt(0, chromosome1.allNodes.length);
+        expect(chromosome1.allNodes[randomNodeIndex].uID).toBe(chromosome2.allNodes[randomNodeIndex].uID);
+        expect(chromosome1.inputNodes.get("Sprite1").get("Y-Position").uID).toBe(
+            chromosome2.inputNodes.get("Sprite1").get("Y-Position").uID);
+        expect(chromosome1.outputNodes[3].uID).toBe(chromosome2.outputNodes[3].uID);
+        expect(chromosome1.connections.length).toBe(chromosome2.connections.length);
+        expect(NeatPopulation.innovations.length).toBe(chromosome1.connections.length);
+        expect(chromosome1.connections[5].innovation).toBe(chromosome2.connections[5].innovation);
+    });
 })

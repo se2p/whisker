@@ -106,86 +106,6 @@ export class NeatChromosome extends NetworkChromosome {
     }
 
     /**
-     * Adds additional input Nodes if we have encountered a new Sprite during the playthrough.
-     * @param sprites a map which maps each sprite to its input feature vector.
-     */
-    protected updateInputNodes(sprites: Map<string, Map<string, number>>): void {
-        let updated = false;
-        sprites.forEach((spriteFeatures, spriteKey) => {
-
-            // Check if we have encountered a new Sprite.
-            if (!this.inputNodes.has(spriteKey)) {
-                updated = true;
-                const spriteNodes = new Map<string, InputNode>();
-                spriteFeatures.forEach((featureValue, featureKey) => {
-                    const iNode = new InputNode(spriteKey, featureKey);
-                    spriteNodes.set(featureKey, iNode);
-                    this.allNodes.push(iNode);
-                    // By chance, we connect the new Node to the network.
-                    if (this._random.nextDouble() < 0.5) {
-                        this.connectInputNode(iNode);
-                    }
-                })
-                this.inputNodes.set(spriteKey, spriteNodes);
-            }
-
-                // We haven't encountered a new Sprite but we still have to check if we encountered new features of a
-            // Sprite.
-            else {
-                spriteFeatures.forEach((featureValue, featureKey) => {
-                    const savedSpriteMap = this.inputNodes.get(spriteKey);
-                    if (!savedSpriteMap.has(featureKey)) {
-                        updated = true;
-                        const iNode = new InputNode(spriteKey, featureKey);
-                        savedSpriteMap.set(featureKey, iNode);
-                        this.allNodes.push(iNode);
-                        // By chance or if we use fully connected networks, we connect the new Node to the network.
-                        if (this._random.nextDouble() < 0.5) {
-                            this.connectInputNode(iNode);
-                        }
-                    }
-                })
-            }
-        })
-
-        // If the network's structure has changed generate the new network and update the stabilize count.
-        if (updated) {
-            this.generateNetwork();
-            this.activateNetwork(this.generateDummyInputs());
-        }
-    }
-
-    /**
-     * Connects an input node to the network by creating a connection between the input node and all output nodes.
-     * @param iNode the input node to connect.
-     */
-    protected connectInputNode(iNode: NodeGene): void {
-        for (const oNode of this.outputNodes) {
-            const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                true, 0, false);
-            NeatPopulation.assignInnovationNumber(newConnection);
-            this.connections.push(newConnection);
-            oNode.incomingConnections.push(newConnection);
-        }
-    }
-
-    /**
-     * Connects an output node to the network by creating a connection between the output node and all input nodes.
-     * @param oNode the output node to connect.
-     */
-    protected connectOutputNode(oNode: NodeGene): void {
-        for (const iNodes of this.inputNodes.values()) {
-            for (const iNode of iNodes.values()) {
-                const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                    true, 0, false)
-                NeatPopulation.assignInnovationNumber(newConnection);
-                this.connections.push(newConnection);
-                oNode.incomingConnections.push(newConnection);
-            }
-        }
-    }
-
-    /**
      * Deep clone of a network including its structure and attributes. Does not increment the ID-Counter.
      * @returns NeatChromosome the cloned chromosome.
      */
@@ -217,7 +137,7 @@ export class NeatChromosome extends NetworkChromosome {
         //network[`sF`] = Number(this.sharedFitness.toFixed(4));
         //network[`eO`] = Number(this.expectedOffspring.toFixed(4));
         //network[`k`] = this.isParent;
-        if(this.targetFitness instanceof StatementFitnessFunction) {
+        if (this.targetFitness instanceof StatementFitnessFunction) {
             network[`tf`] = this.targetFitness.getTargetNode().id;
         }
 

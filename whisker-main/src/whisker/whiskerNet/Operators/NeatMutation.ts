@@ -7,15 +7,10 @@ import {HiddenNode} from "../NetworkComponents/HiddenNode";
 import {NetworkMutation} from "./NetworkMutation";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {Pair} from "../../utils/Pair";
+import {Innovation, InnovationProperties} from "../NetworkComponents/Innovation";
 
 
 export class NeatMutation implements NetworkMutation<NeatChromosome> {
-
-    /**
-     * Saves all encountered innovations.
-     */
-    public static _innovations: ConnectionGene[] = [];
 
     /**
      * Random generator.
@@ -72,10 +67,6 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
      */
     private readonly _mutateEnableConnection: number;
 
-    /**
-     * Saves the source and target node for each generated hidden node.
-     */
-    private readonly _hiddenNodes = new Map<HiddenNode, Pair<NodeGene>>();
 
     constructor(mutationConfig: Record<string, (string | number)>) {
         this._mutationAddConnection = mutationConfig.mutationAddConnection as number;
@@ -139,17 +130,8 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         let node2: NodeGene;
 
         // Collect all nodes to which a new connection can point -> all nodes except the input and bias nodes
-        const targetNodes: NodeGene[] = [];
-        const loopRecurrentNodes: HiddenNode[] = [];
-        for (const node of chromosome.allNodes) {
-            if ((node.type !== NodeType.INPUT) && (node.type !== NodeType.BIAS)) {
-                targetNodes.push(node);
-            }
-            // LoopRecurrency in outputNodes lead to defect network since they never stabilize
-            if (node instanceof HiddenNode) {
-                loopRecurrentNodes.push(node);
-            }
-        }
+        const targetNodes = chromosome.allNodes.filter(node =>
+            node.type !== NodeType.INPUT && node.type !== NodeType.BIAS);
 
         // Decide if we want a recurrent Connection
         let recurrentConnection = false;
@@ -164,12 +146,12 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             if (recurrentConnection) {
                 //Decide between loop and normal recurrency
                 let loopRecurrency = false
-                if (loopRecurrentNodes.length !== 0 && this._random.nextDouble() < 0.25) {
+                if (this._random.nextDouble() < 0.25) {
                     loopRecurrency = true
                 }
                 // Loop: The node points to itself X -> X
                 if (loopRecurrency) {
-                    node1 = this._random.pick(loopRecurrentNodes);
+                    node1 = this._random.pick(targetNodes);
                     node2 = node1;
                 }
                 // Normal Recurrency: Y -> X
@@ -188,7 +170,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             // Verify if the new connection is a valid one
             let skip = false;
 
-            // By chance we could get a recurrent loop connection even though we don't want one.
+            // By chance, we could get a recurrent loop connection even though we don't want one.
             if (!recurrentConnection && node1 === node2) {
                 skip = true;
             }
@@ -213,12 +195,11 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 // Verify if we got a recurrent connection if we wanted a recurrent one and vice versa
                 const threshold = chromosome.allNodes.length * chromosome.allNodes.length
                 const isRecurrent = chromosome.isRecurrentPath(node1, node2, 0, threshold);
-                if ((!isRecurrent && recurrentConnection) || (isRecurrent && !recurrentConnection)) {
-                    rounds++;
-                } else {
-                    // We found a connection so we exit the while loop
+                if (isRecurrent === recurrentConnection) {
                     rounds = tries;
                     foundConnection = true;
+                } else {
+                    rounds++;
                 }
             } else {
                 rounds++;
@@ -231,7 +212,23 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             const posNeg = this._random.randomBoolean() ? +1 : -1;
             const weight = posNeg * this._random.nextDouble() * this._perturbationPower;
             const newConnection = new ConnectionGene(node1, node2, weight, true, 0, recurrentConnection);
-            NeatPopulation.assignInnovationNumber(newConnection);
+            const innovation = NeatPopulation.findInnovation(newConnection, 'newConnection');
+
+            // Check if this innovation has occurred before.
+            if (innovation) {
+                newConnection.innovation = innovation.firstInnovationNumber;
+            } else {
+                const innovationProperties: InnovationProperties = {
+                    type: 'newConnection',
+                    idSourceNode: newConnection.source.uID,
+                    idTargetNode: newConnection.target.uID,
+                    firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
+                    recurrent: newConnection.isRecurrent
+                };
+                const newInnovation = Innovation.createInnovation(innovationProperties);
+                NeatPopulation.innovations.push(newInnovation);
+                newConnection.innovation = newInnovation.firstInnovationNumber;
+            }
             chromosome.connections.push(newConnection);
             if (recurrentConnection) {
                 chromosome.isRecurrent = true;
@@ -240,8 +237,8 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     }
 
     /**
-     * Adds a new node to the network
-     * @param chromosome the chromosome to mutate
+     * Adds a new node to the network.
+     * @param chromosome the chromosome to mutate.
      */
     mutateAddNode(chromosome: NeatChromosome): void {
 
@@ -252,14 +249,15 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         // Find a connection which is isEnabled and not a bias
         while ((count < 20) && (!found)) {
             splitConnection = this._random.pick(chromosome.connections);
-            if (splitConnection.isEnabled && (splitConnection.source.type !== NodeType.BIAS))
+            if (splitConnection.isEnabled && splitConnection.source.type !== NodeType.BIAS)
                 found = true;
             count++;
         }
 
-        // If we didnt find a connection do nothing.
-        if (!found)
+        // If we did not manage to find a connection do nothing...
+        if (!found) {
             return;
+        }
 
         // Disable the old connection
         splitConnection.isEnabled = false;
@@ -269,39 +267,45 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
         const fromNode = splitConnection.source;
         const toNode = splitConnection.target;
 
-        // Create the new hiddenNode and the connections leading in and out of the new node
-        const newNode = new HiddenNode(ActivationFunction.SIGMOID);
+        // Check if this innovation has already occurred previously.
+        const innovation = NeatPopulation.findInnovation(splitConnection, 'newNode');
 
-        let foundNode = false;
-        for (const hiddenNode of this._hiddenNodes.keys()) {
-            const nodePair = this._hiddenNodes.get(hiddenNode);
-            if (nodePair[0].equals(fromNode) && nodePair[1].equals(toNode)) {
-                newNode.uID = hiddenNode.uID;
-                foundNode = true;
-                break;
-            }
+        // Create the new HiddenNode and the two new connections.
+        let newNode: HiddenNode;
+        let connection1: ConnectionGene;
+        let connection2: ConnectionGene;
+        if (innovation) {
+            newNode = new HiddenNode(innovation.idNewNode, ActivationFunction.SIGMOID);
+            connection1 = new ConnectionGene(fromNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
+            connection2 = new ConnectionGene(newNode, toNode, oldWeight, true, innovation.secondInnovationNumber, false);
+        } else {
+            const nextNodeId = NeatPopulation.highestNodeId + 1;
+            newNode = new HiddenNode(nextNodeId, ActivationFunction.SIGMOID);
+
+            const innovationProperties: InnovationProperties = {
+                type: 'newNode',
+                idSourceNode: fromNode.uID,
+                idTargetNode: toNode.uID,
+                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
+                secondInnovationNumber: Innovation._currentHighestInnovationNumber + 2,
+                idNewNode: nextNodeId,
+                splitInnovation: splitConnection.innovation
+            };
+            const innovation = Innovation.createInnovation(innovationProperties);
+            NeatPopulation.innovations.push(innovation);
+            connection1 = new ConnectionGene(fromNode, newNode, 1.0, true, innovation.firstInnovationNumber, splitConnection.isRecurrent);
+            connection2 = new ConnectionGene(newNode, toNode, oldWeight, true, innovation.secondInnovationNumber, splitConnection.isRecurrent);
         }
 
-        if (!foundNode) {
-            this._hiddenNodes.set(newNode, [fromNode, toNode]);
-        }
-
-        const newConnection1 = new ConnectionGene(fromNode, newNode, 1, true, 0, splitConnection.isRecurrent);
-        NeatPopulation.assignInnovationNumber(newConnection1);
-        newNode.incomingConnections.push(newConnection1);
-
-        const newConnection2 = new ConnectionGene(newNode, toNode, oldWeight, true, 0, false)
-        NeatPopulation.assignInnovationNumber(newConnection2);
-        toNode.incomingConnections.push(newConnection2);
-
-        chromosome.connections.push(newConnection1);
-        chromosome.connections.push(newConnection2);
+        newNode.incomingConnections.push(connection1);
+        toNode.incomingConnections.push(connection2);
+        chromosome.connections.push(connection1);
+        chromosome.connections.push(connection2);
         chromosome.allNodes.push(newNode);
 
-        const threshold = chromosome.allNodes.length * chromosome.allNodes.length
-        chromosome.isRecurrentPath(fromNode, newNode, 0, threshold)
-        chromosome.isRecurrentPath(newNode, toNode, 0, threshold)
-
+        const threshold = chromosome.allNodes.length * chromosome.allNodes.length;
+        chromosome.isRecurrentPath(fromNode, newNode, 0, threshold);
+        chromosome.isRecurrentPath(newNode, toNode, 0, threshold);
     }
 
     /**
@@ -322,7 +326,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
     }
 
     /**
-     * Toggles the enable state of times connections of the network
+     * Toggles the enabled state of times connections of the network
      * @param chromosome the chromosome to mutate
      * @param times defines how many connections are toggled
      */
@@ -332,7 +336,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
             const chosenConnection = this._random.pick(chromosome.connections);
 
             // If we disable a connection, we have to make sure that another connection links out of the in-node
-            // in order to not loose a bigger section of the network
+            // in order to not lose a bigger section of the network
             if (chosenConnection.isEnabled) {
                 let save = false;
                 for (const otherConnection of chromosome.connections) {
@@ -348,7 +352,7 @@ export class NeatMutation implements NetworkMutation<NeatChromosome> {
                 chosenConnection.isEnabled = true;
         }
 
-        // Finally check if we changed the isRecurrent state by disabling or enabling a recurrent connection.
+        // Finally, check if we changed the isRecurrent state by disabling or enabling a recurrent connection.
         chromosome.isRecurrent = false;
         for (const connection of chromosome.connections)
             if (connection.isEnabled && connection.isRecurrent) {

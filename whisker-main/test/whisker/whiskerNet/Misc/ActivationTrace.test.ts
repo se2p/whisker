@@ -17,7 +17,7 @@ describe("Activation Trace", () => {
             for (let repetitions = 0; repetitions < 30; repetitions++) {
                 const repetitionTrace: NodeGene[] = [];
                 for (let numNode = 0; numNode < 15; numNode++) {
-                    const iNode = new InputNode(numNode.toString(), numNode.toString());
+                    const iNode = new InputNode(numNode, numNode.toString(), numNode.toString());
                     iNode.activatedFlag = true;
                     iNode.activationValue = random.nextInt(0, 100);
                     repetitionTrace.push(iNode);
@@ -51,11 +51,11 @@ describe("Activation Trace", () => {
         expect(activationTrace.trace.get(2).size).toBe(nodeTraces[0][0].length);
 
         // Add new node to ATs of step 3
-        for(const repetition of nodeTraces){
-            for(const nodes of repetition){
+        for (const repetition of nodeTraces) {
+            for (const nodes of repetition) {
                 const id = "New";
-                const iNodeActivated = new InputNode(id, 'Activated');
-                const iNodeDeactivated = new InputNode(id, 'Deactivated');
+                const iNodeActivated = new InputNode(0, id, 'Activated');
+                const iNodeDeactivated = new InputNode(1, id, 'Deactivated');
                 iNodeActivated.activatedFlag = true;
                 nodes.push(iNodeActivated)
                 nodes.push(iNodeDeactivated);
@@ -73,10 +73,10 @@ describe("Activation Trace", () => {
         expect(activationTrace.trace.get(3).size).toBe(nodeTraces[0][0].length - 1);
     });
 
-    test("Group AT by Steps", () =>{
+    test("Group AT by Steps", () => {
         for (let step = 0; step < nodeTraces.length; step++) {
             const stepTraces = nodeTraces[step];
-            for(const stepTraceRepetition of stepTraces){
+            for (const stepTraceRepetition of stepTraces) {
                 activationTrace.update(step, stepTraceRepetition);
             }
         }
@@ -90,7 +90,7 @@ describe("Activation Trace", () => {
     test("Get trace for a specific step", () => {
         for (let step = 0; step < nodeTraces.length; step++) {
             const stepTraces = nodeTraces[step];
-            for(const stepTraceRepetition of stepTraces){
+            for (const stepTraceRepetition of stepTraces) {
                 activationTrace.update(step, stepTraceRepetition);
             }
         }
@@ -101,10 +101,10 @@ describe("Activation Trace", () => {
         expect(stepActivationTrace[1][3]).toBe(nodeTraces[0][1][3].activationValue);
     });
 
-    test("Clone", () =>{
+    test("Clone", () => {
         for (let step = 0; step < nodeTraces.length; step++) {
             const stepTraces = nodeTraces[step];
-            for(const stepTraceRepetition of stepTraces){
+            for (const stepTraceRepetition of stepTraces) {
                 activationTrace.update(step, stepTraceRepetition);
             }
         }
@@ -115,7 +115,7 @@ describe("Activation Trace", () => {
         expect(clone.trace.size).toBe(activationTrace.trace.size - 1);
     });
 
-    test("JSON representation of AT", () =>{
+    test("JSON representation of AT", () => {
         activationTrace.update(0, nodeTraces[0][0]);
         activationTrace.update(0, nodeTraces[0][1]);
         activationTrace.update(3, nodeTraces[0][0]);

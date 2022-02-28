@@ -8,8 +8,7 @@ describe("InputNode Tests", () => {
     let inputNode: InputNode
 
     beforeEach(() => {
-        inputNode = new InputNode("Sprite1", "X-Position");
-        inputNode.uID = 1;
+        inputNode = new InputNode(1, "Sprite1", "X-Position");
     })
 
     test("Constructor Test", () => {
@@ -52,24 +51,19 @@ describe("InputNode Tests", () => {
     })
 
     test("Equals Test", () => {
-        const inputNode2 = new InputNode("Sprite1", "X-Position");
-        inputNode2.uID = 1;
+        const inputNode2 = new InputNode(1, "Sprite1", "X-Position");
         expect(inputNode2.equals(inputNode)).toBeTruthy();
 
-        const inputNode3 = new InputNode("Sprite1", "X-Position");
-        inputNode3.uID = 2;
+        const inputNode3 = new InputNode(2, "Sprite1", "X-Position");
         expect(inputNode3.equals(inputNode)).toBeTruthy();
 
-        const inputNode4 = new InputNode("Sprite2", "X-Position");
-        inputNode4.uID = 2;
+        const inputNode4 = new InputNode(4, "Sprite2", "X-Position");
         expect(inputNode4.equals(inputNode)).toBeFalsy();
 
-        const inputNode5 = new InputNode("Sprite1", "Y-Position");
-        inputNode5.uID = 2;
+        const inputNode5 = new InputNode(2, "Sprite1", "Y-Position");
         expect(inputNode5.equals(inputNode)).toBeFalsy();
 
-        const biasNode = new BiasNode();
-        biasNode.uID = 1;
+        const biasNode = new BiasNode(1);
         expect(biasNode.equals(inputNode)).toBeFalsy();
     })
 

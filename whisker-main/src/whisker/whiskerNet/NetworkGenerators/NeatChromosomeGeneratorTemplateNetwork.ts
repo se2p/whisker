@@ -56,28 +56,24 @@ export class NeatChromosomeGeneratorTemplateNetwork extends NeatChromosomeGenera
             const node = networkTemplate['Nodes'][nodeKey];
             switch (node.t) {
                 case "I": {
-                    const iNode = new InputNode(node.sprite, node.feature, false);
-                    iNode.uID = node.id;
+                    const iNode = new InputNode(node.id, node.sprite, node.feature);
                     allNodes.push(iNode);
                 }
                     break;
                 case "B": {
-                    const biasNode = new BiasNode(false);
-                    biasNode.uID = node.id;
+                    const biasNode = new BiasNode(node.id);
                     allNodes.push(biasNode);
                 }
                     break;
                 case "H": {
-                    const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID, false);
-                    hiddenNode.uID = node.id;
+                    const hiddenNode = new HiddenNode(node.id, ActivationFunction.SIGMOID);
                     allNodes.push(hiddenNode);
                 }
                     break;
                 case "C": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
                     if (event) {
-                        const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID, false);
-                        classificationNode.uID = node.id;
+                        const classificationNode = new ClassificationNode(node.id, event, ActivationFunction.SIGMOID);
                         allNodes.push(classificationNode);
                     }
                     break;
@@ -85,8 +81,7 @@ export class NeatChromosomeGeneratorTemplateNetwork extends NeatChromosomeGenera
                 case "R": {
                     const event = this._scratchEvents.find(event => event.stringIdentifier() === node.event);
                     if (event) {
-                        const regressionNode = new RegressionNode(event, node.eventParameter, ActivationFunction.NONE);
-                        regressionNode.uID = node.id;
+                        const regressionNode = new RegressionNode(node.id, event, node.eventParameter, ActivationFunction.NONE);
                         allNodes.push(regressionNode);
                     }
                     break;

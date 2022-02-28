@@ -18,37 +18,15 @@ export class RegressionNode extends NodeGene {
 
     /**
      * Constructs a new regression Node.
+     * @param uID the unique identifier of this node in the network.
      * @param event the event for which this regression node produces values for.
      * @param eventParameter specifies the parameter of the event this regression node produces values for.
      * @param activationFunction the activation function of the regression node.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new regression node.
-
      */
-    constructor(event: ScratchEvent, eventParameter: string, activationFunction: ActivationFunction,
-                incrementIDCounter = true) {
-        super(activationFunction, NodeType.OUTPUT, incrementIDCounter);
+    constructor(uID: number, event: ScratchEvent, eventParameter: string, activationFunction: ActivationFunction) {
+        super(uID, activationFunction, NodeType.OUTPUT);
         this._event = event;
         this._eventParameter = eventParameter;
-    }
-
-    depth(d: number): number {
-        let cur_depth: number //The depth of the current node
-        let max = d; //The max depth
-
-        // Recurrency
-        if (d > 100) {
-            return 10;
-        }
-        for (const connection of this.incomingConnections) {
-            const inNode = connection.source;
-            cur_depth = inNode.depth(d + 1);
-            if (cur_depth > max) {
-                max = cur_depth;
-            }
-        }
-
-        return max;
     }
 
     equals(other: unknown): boolean {
@@ -59,9 +37,8 @@ export class RegressionNode extends NodeGene {
     }
 
     clone(): RegressionNode {
-        const clone = new RegressionNode(this.event, this.eventParameter,
-            this.activationFunction, false);
-        clone.uID = this.uID;
+        const clone = new RegressionNode(this.uID, this.event, this.eventParameter,
+            this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -98,7 +75,7 @@ export class RegressionNode extends NodeGene {
         return this._event;
     }
 
-    public identifier(): string{
+    public identifier(): string {
         return `R:${this.event.stringIdentifier()}-${this.eventParameter}`
     }
 

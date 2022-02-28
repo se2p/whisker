@@ -8,30 +8,10 @@ export class HiddenNode extends NodeGene {
     /**
      * Constructs a new HiddenNode.
      * @param activationFunction the activation function used within this node gene.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new hidden node.
+     * @param uID the unique identifier of this node in the network.
      */
-    constructor(activationFunction: ActivationFunction, incrementIDCounter = true) {
-        super(activationFunction, NodeType.HIDDEN, incrementIDCounter);
-    }
-
-    depth(d: number): number {
-        let cur_depth: number //The depth of the current node
-        let max = d; //The max depth
-
-        // Recurrency
-        if (d > 100) {
-            return 10;
-        }
-        for (const connection of this.incomingConnections) {
-            const inNode = connection.source;
-            cur_depth = inNode.depth(d + 1);
-            if (cur_depth > max) {
-                max = cur_depth;
-            }
-        }
-
-        return max;
+    constructor(uID: number, activationFunction: ActivationFunction) {
+        super(uID, activationFunction, NodeType.HIDDEN);
     }
 
     equals(other: unknown): boolean {
@@ -40,8 +20,7 @@ export class HiddenNode extends NodeGene {
     }
 
     clone(): HiddenNode {
-        const clone = new HiddenNode(this.activationFunction, false);
-        clone.uID = this.uID;
+        const clone = new HiddenNode(this.uID, this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
@@ -70,7 +49,7 @@ export class HiddenNode extends NodeGene {
             return 0.0;
     }
 
-    public identifier(): string{
+    public identifier(): string {
         return `H:${this.uID}`
     }
 

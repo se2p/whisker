@@ -55,29 +55,25 @@ export class NetworkLoader {
             for (const savedNode of Object.values(savedNetwork['Nodes'])) {
                 switch (savedNode['t']) {
                     case "I": {
-                        const iNode = new InputNode(savedNode['sprite'], savedNode['feature'],
-                            false);
-                        iNode.uID = savedNode['id'];
+                        const iNode = new InputNode(savedNode['id'], savedNode['sprite'], savedNode['feature']);
                         allNodes.push(iNode);
                         break;
                     }
                     case "B": {
-                        const biasNode = new BiasNode(false);
-                        biasNode.uID = savedNode['id'];
+                        const biasNode = new BiasNode(savedNode['id']);
                         allNodes.push(biasNode);
                         break;
                     }
                     case "H": {
-                        const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID, false);
-                        hiddenNode.uID = savedNode['id'];
+                        const hiddenNode = new HiddenNode(savedNode['id'], ActivationFunction.SIGMOID);
                         allNodes.push(hiddenNode);
                         break;
                     }
                     case "C": {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
                         if (event) {
-                            const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID, false);
-                            classificationNode.uID = savedNode['id'];
+                            const classificationNode = new ClassificationNode(savedNode['id'], event,
+                                ActivationFunction.SIGMOID);
                             allNodes.push(classificationNode);
                         }
                         break;
@@ -85,8 +81,8 @@ export class NetworkLoader {
                     case "R": {
                         const event = this._scratchEvents.find(event => event.stringIdentifier() === savedNode['event']);
                         if (event) {
-                            const regressionNode = new RegressionNode(event, savedNode['eventP'], ActivationFunction.NONE);
-                            regressionNode.uID = savedNode['id'];
+                            const regressionNode = new RegressionNode(savedNode['id'], event, savedNode['eventP'],
+                                ActivationFunction.NONE);
                             allNodes.push(regressionNode);
                         }
                         break;

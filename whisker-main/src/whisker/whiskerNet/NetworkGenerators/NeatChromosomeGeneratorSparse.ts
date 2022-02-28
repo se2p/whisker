@@ -1,10 +1,9 @@
 import {NodeGene} from "../NetworkComponents/NodeGene";
 import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {Randomness} from "../../utils/Randomness";
-import {NeuroevolutionUtil} from "../NeuroevolutionUtil";
 import {ScratchEvent} from "../../testcase/events/ScratchEvent";
 import {NeatChromosomeGeneratorFullyConnected} from "./NeatChromosomeGeneratorFullyConnected";
-import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import Arrays from "../../utils/Arrays";
 
 export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyConnected {
 
@@ -40,25 +39,27 @@ export class NeatChromosomeGeneratorSparse extends NeatChromosomeGeneratorFullyC
      * @param outputNodes all outputNodes of the generated network.
      * @returns ConnectionGene[] the generated network connections.
      */
-    createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]):ConnectionGene[] {
+    createConnections(inputNodes: NodeGene[][], outputNodes: NodeGene[]): ConnectionGene[] {
         const connections: ConnectionGene[] = [];
+        const availableSprites: NodeGene[][] = [...inputNodes];
         // Loop at least once and until we reach the maximum connection size or randomness tells us to Stop!
         do {
             // Choose a random Sprite to add its input to the network;
-            const sprite = this._random.pick(inputNodes);
+            const sprite = this._random.pick(availableSprites);
+            Arrays.remove(availableSprites, sprite);
 
             // For each input of the Sprite create a connection to each Output-Node
             for (const inputNode of sprite) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
-                    // Check if the connection does not exist yet.
-                        NeatPopulation.assignInnovationNumber(newConnection);
-                        connections.push(newConnection)
-                        outputNode.incomingConnections.push(newConnection);
+                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0,
+                        false)
+                    this.assignInnovation(newConnection);
+                    connections.push(newConnection);
+                    outputNode.incomingConnections.push(newConnection);
                 }
             }
         }
-        while (this._random.nextDouble() < this._inputRate)
+        while (this._random.nextDouble() < this._inputRate && availableSprites.length > 0)
         return connections;
     }
 }

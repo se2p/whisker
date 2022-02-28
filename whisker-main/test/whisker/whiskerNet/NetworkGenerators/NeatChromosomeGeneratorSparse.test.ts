@@ -3,6 +3,7 @@ import {WaitEvent} from "../../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveEvent";
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
+import {NeatPopulation} from "../../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
 
 describe('Test NetworkChromosomeGeneratorSparse', () => {
 
@@ -53,7 +54,7 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.5);
-    })
+    });
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
@@ -61,24 +62,21 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
         expect(neatChromosome.allNodes.length).toBe(19); // +1 for Bias
         expect(neatChromosome.connections.length % 9).toBe(0);
         expect(neatChromosome.connections.length).toBeGreaterThan(0);
+        expect(NeatPopulation.innovations.length).toBe(neatChromosome.connections.length);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.outputNodes.length).toEqual(9);
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
-    })
+    });
 
-    test('Create several Chromosomes to test if defect chromosomes survive', () => {
+    test('Create several Chromosomes to test if we get different connections', () => {
         const chromosomes : NetworkChromosome[] = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 10; i++) {
             const chromosome = generator.get();
             chromosomes.push(chromosome);
         }
-        for(const chromosome of chromosomes){
-            chromosome.generateNetwork();
-            chromosome.flushNodeValues();
-            chromosome.activateNetwork(genInputs);
-            expect(chromosome.activateNetwork(genInputs)).toBeTruthy();
-        }
-    })
+        expect(NeatPopulation.innovations.length).toBeGreaterThanOrEqual(chromosomes[0].connections.length);
+        expect(NeatPopulation.innovations.length).toBeLessThanOrEqual(81); // UpperBound === FullyConnected
+    });
 })

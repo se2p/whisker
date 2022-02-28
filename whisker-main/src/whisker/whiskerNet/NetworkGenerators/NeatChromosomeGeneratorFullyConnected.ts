@@ -10,6 +10,7 @@ import {NeatMutation} from "../Operators/NeatMutation";
 import {NeatChromosomeGenerator} from "./NeatChromosomeGenerator";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
+import {Innovation, InnovationProperties} from "../NetworkComponents/Innovation";
 
 export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerator {
 
@@ -51,7 +52,7 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
         this._inputs.forEach((value, spriteKey) => {
             const spriteList: NodeGene[] = [];
             value.forEach((value, featureKey) => {
-                const iNode = new InputNode(spriteKey, featureKey);
+                const iNode = new InputNode(allNodes.length, spriteKey, featureKey);
                 spriteList.push(iNode)
                 allNodes.push(iNode);
             })
@@ -59,12 +60,12 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
         })
 
         // Add the Bias
-        const biasNode = new BiasNode();
+        const biasNode = new BiasNode(allNodes.length);
         allNodes.push(biasNode);
 
         // Create the classification output nodes and add them to the nodes list
         for (const event of this._scratchEvents) {
-            const classificationNode = new ClassificationNode(event, ActivationFunction.SIGMOID);
+            const classificationNode = new ClassificationNode(allNodes.length, event, ActivationFunction.SIGMOID);
             allNodes.push(classificationNode);
         }
 
@@ -97,13 +98,33 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
         for (const inputNodeVector of inputNodes) {
             for (const inputNode of inputNodeVector) {
                 for (const outputNode of outputNodes) {
-                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0, false)
-                    NeatPopulation.assignInnovationNumber(newConnection);
+                    const newConnection = new ConnectionGene(inputNode, outputNode, 0, true, 0,
+                        false);
+                    this.assignInnovation(newConnection)
                     connections.push(newConnection)
                     outputNode.incomingConnections.push(newConnection);
                 }
             }
         }
         return connections;
+    }
+
+    protected assignInnovation(newConnection: ConnectionGene): void {
+        const innovation = NeatPopulation.findInnovation(newConnection, 'newConnection');
+        // Check if this innovation has occurred before.
+        if (innovation) {
+            newConnection.innovation = innovation.firstInnovationNumber;
+        } else {
+            const innovationProperties: InnovationProperties = {
+                type: 'newConnection',
+                idSourceNode: newConnection.source.uID,
+                idTargetNode: newConnection.target.uID,
+                firstInnovationNumber: Innovation._currentHighestInnovationNumber + 1,
+                recurrent: newConnection.isRecurrent
+            };
+            const newInnovation = Innovation.createInnovation(innovationProperties);
+            NeatPopulation.innovations.push(newInnovation);
+            newConnection.innovation = newInnovation.firstInnovationNumber;
+        }
     }
 }

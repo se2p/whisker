@@ -12,15 +12,11 @@ describe("classificationNode Tests", () => {
     let classificationNode: NodeGene
 
     beforeEach(() => {
-        classificationNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode.uID = 1;
+        classificationNode = new ClassificationNode(1, new WaitEvent(), ActivationFunction.SIGMOID);
     })
 
     test("Constructor Test", () => {
-
-        const classificationNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode.uID = 10;
-
+        const classificationNode = new ClassificationNode(10, new WaitEvent(), ActivationFunction.SIGMOID);
         expect(classificationNode.uID).toBe(10);
         expect(classificationNode.activationFunction).toBe(ActivationFunction.SIGMOID);
         expect(classificationNode.type).toBe(NodeType.OUTPUT);
@@ -52,24 +48,19 @@ describe("classificationNode Tests", () => {
     })
 
     test("Equals Test", () => {
-        const classificationNode2 = new ClassificationNode(new WaitEvent, ActivationFunction.SIGMOID);
-        classificationNode2.uID = 1;
+        const classificationNode2 = new ClassificationNode(1, new WaitEvent, ActivationFunction.SIGMOID);
         expect(classificationNode2.equals(classificationNode)).toBeTruthy();
 
-        const classificationNode3 = new ClassificationNode(new WaitEvent, ActivationFunction.SIGMOID);
-        classificationNode2.uID = 2;
+        const classificationNode3 = new ClassificationNode(2, new WaitEvent, ActivationFunction.SIGMOID);
         expect(classificationNode3.equals(classificationNode)).toBeTruthy();
 
-        const classificationNode4 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode4.uID = 1;
+        const classificationNode4 = new ClassificationNode(1, new ClickStageEvent(), ActivationFunction.SIGMOID);
         expect(classificationNode4.equals(classificationNode)).toBeFalsy();
 
-        const classificationNode5 = new ClassificationNode(new WaitEvent, ActivationFunction.NONE);
-        classificationNode5.uID = 1;
+        const classificationNode5 = new ClassificationNode(1, new WaitEvent, ActivationFunction.NONE);
         expect(classificationNode5.equals(classificationNode)).toBeFalsy();
 
-        const biasNode = new BiasNode();
-        biasNode.uID = 1;
+        const biasNode = new BiasNode(1);
         expect(biasNode.equals(classificationNode)).toBe(false);
     })
 
@@ -90,8 +81,7 @@ describe("classificationNode Tests", () => {
         expect(classificationNode.activate()).toBe(0);
         expect(classificationNode.activationValue).toBe(0);
 
-        const classificationNode2 = new ClassificationNode(new WaitEvent(), ActivationFunction.NONE);
-        classificationNode2.uID = 2;
+        const classificationNode2 = new ClassificationNode(2, new WaitEvent(), ActivationFunction.NONE);
         classificationNode2.nodeValue = 5;
         classificationNode2.activationCount = 10;
         expect(classificationNode2.activate()).toBe(5);

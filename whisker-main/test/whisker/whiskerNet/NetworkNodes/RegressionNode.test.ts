@@ -13,16 +13,13 @@ describe("regressionNode Tests", () => {
     let regressionNodeRelu: RegressionNode;
 
     beforeEach(() => {
-        regressionNodeNone = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNodeNone.uID = 1;
-        regressionNodeRelu = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.RELU);
-        regressionNodeRelu.uID = 2;
+        regressionNodeNone = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.NONE);
+        regressionNodeRelu = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.RELU);
     })
 
     test("Constructor Test", () => {
 
-        const regressionNode = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNode.uID = 10;
+        const regressionNode = new RegressionNode(10, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode.uID).toBe(10);
         expect(regressionNode.activationFunction).toBe(ActivationFunction.NONE);
         expect(regressionNode.type).toBe(NodeType.OUTPUT);
@@ -53,28 +50,22 @@ describe("regressionNode Tests", () => {
     })
 
     test("Equals Test", () => {
-        const regressionNode2 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNode2.uID = 1;
+        const regressionNode2 = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode2.equals(regressionNodeNone)).toBeTruthy();
 
-        const regressionNode3 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNode3.uID = 2;
+        const regressionNode3 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
         expect(regressionNode3.equals(regressionNodeNone)).toBeTruthy();
 
-        const regressionNode4 = new RegressionNode(new MouseMoveEvent(0, 0), "Duration", ActivationFunction.NONE);
-        regressionNode4.uID = 2;
+        const regressionNode4 = new RegressionNode(2, new MouseMoveEvent(0, 0), "Duration", ActivationFunction.NONE);
         expect(regressionNode4.equals(regressionNodeNone)).toBeFalsy();
 
-        const regressionNode5 = new RegressionNode(new WaitEvent, "Steps", ActivationFunction.NONE);
-        regressionNode5.uID = 2;
+        const regressionNode5 = new RegressionNode(2, new WaitEvent, "Steps", ActivationFunction.NONE);
         expect(regressionNode5.equals(regressionNodeNone)).toBeFalsy();
 
-        const regressionNode6 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.RELU);
-        regressionNode6.uID = 1;
+        const regressionNode6 = new RegressionNode(1, new WaitEvent(), "Duration", ActivationFunction.RELU);
         expect(regressionNode6.equals(regressionNodeNone)).toBeFalsy();
 
-        const biasNode = new BiasNode();
-        biasNode.uID = 1;
+        const biasNode = new BiasNode(1);
         expect(regressionNodeNone.equals(biasNode)).toBeFalsy();
     })
 
@@ -100,8 +91,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNodeNone.activate()).toBe(0);
         expect(regressionNodeNone.activationValue).toBe(0);
 
-        const regressionNodeNone2 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNodeNone2.uID = 2;
+        const regressionNodeNone2 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
         regressionNodeNone2.nodeValue = 5;
         regressionNodeNone2.activationCount = 10;
         expect(regressionNodeNone2.activate()).toBe(5);
@@ -116,8 +106,7 @@ describe("regressionNode Tests", () => {
     })
 
     test("toString Test", () => {
-        const inputNode = new InputNode("Sprite1", "Position-X");
-        inputNode.uID = 2;
+        const inputNode = new InputNode(2, "Sprite1", "Position-X");
         const connection = new ConnectionGene(inputNode, regressionNodeNone, 2, true, 1, false);
         const incomingList: ConnectionGene[] = [];
         incomingList.push(connection);

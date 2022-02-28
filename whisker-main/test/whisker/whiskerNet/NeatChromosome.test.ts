@@ -14,9 +14,13 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
+import {
+    NeatChromosomeGeneratorSparse
+} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
+import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
+import {expect} from "@jest/globals";
 
 describe('Test NetworkChromosome', () => {
 
@@ -177,10 +181,8 @@ describe('Test NetworkChromosome', () => {
     test('Test generateNetwork with hidden Layer', () => {
         const inputNode = chromosome.inputNodes.get("Sprite1").get("X-Position");
         const outputNode = chromosome.outputNodes[0];
-        const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        hiddenNode.uID = 7;
-        const deepHiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        deepHiddenNode.uID = 8;
+        const hiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
+        const deepHiddenNode = new HiddenNode(8, ActivationFunction.SIGMOID);
         chromosome.allNodes.push(hiddenNode);
         chromosome.allNodes.push(deepHiddenNode);
         chromosome.connections.push(new ConnectionGene(inputNode, hiddenNode, 0.5, true, 7, false));
@@ -199,28 +201,20 @@ describe('Test NetworkChromosome', () => {
     test('Network activation without hidden layer', () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode2.uID = 1;
-        const iNode3 = new InputNode("Sprite1", "Costume");
-        iNode3.uID = 2;
-        const bias = new BiasNode();
-        bias.uID = 3;
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
+        const iNode3 = new InputNode(2, "Sprite1", "Costume");
+        const bias = new BiasNode(3);
         nodes.push(iNode1);
         nodes.push(iNode2);
         nodes.push(iNode3);
         nodes.push(bias);
 
         // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 4;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 5;
-        const regressionNode1 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNode1.uID = 6;
-        const regressionNode2 = new RegressionNode(new MouseMoveEvent(), "X", ActivationFunction.NONE);
-        regressionNode2.uID = 7;
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
+        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
+        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
         nodes.push(classificationNode1);
         nodes.push(classificationNode2);
         nodes.push(regressionNode1);
@@ -260,33 +254,87 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.outputNodes[3].nodeValue).toEqual(2.8)
         expect(softmaxOutput).toEqual([0.599, 0.401]);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
-    })
+    });
 
-    test('Network activation without hidden layer and deactivated input nodes', () => {
+    test('Network activation without hidden layer and novel inputs', () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode2.uID = 1;
-        const iNode3 = new InputNode("Sprite1", "Costume");
-        iNode3.uID = 2;
-        const bias = new BiasNode();
-        bias.uID = 3;
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
+        const iNode3 = new InputNode(2, "Sprite1", "Costume");
+        const bias = new BiasNode(3);
         nodes.push(iNode1);
         nodes.push(iNode2);
         nodes.push(iNode3);
         nodes.push(bias);
 
         // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 4;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 5;
-        const regressionNode1 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
-        regressionNode1.uID = 6;
-        const regressionNode2 = new RegressionNode(new MouseMoveEvent(), "X", ActivationFunction.NONE);
-        regressionNode2.uID = 7;
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
+        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
+        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
+        nodes.push(classificationNode1);
+        nodes.push(classificationNode2);
+        nodes.push(regressionNode1);
+        nodes.push(regressionNode2);
+
+        // Create Connections
+        const connections: ConnectionGene[] = [];
+        connections.push(new ConnectionGene(nodes[0], nodes[4], 0.1, true, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[5], 0.2, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[4], 0.3, false, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[5], 0.4, false, 1, false));
+        connections.push(new ConnectionGene(nodes[3], nodes[4], 0.5, true, 1, false));
+        connections.push(new ConnectionGene(nodes[3], nodes[5], 0.6, false, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[6], 0.7, true, 1, false));
+        connections.push(new ConnectionGene(nodes[0], nodes[7], 0.8, true, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[6], 0.9, false, 1, false));
+        connections.push(new ConnectionGene(nodes[1], nodes[7], 1, true, 1, false));
+
+        chromosome = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        const chromosome2 = new NeatChromosome(nodes, connections, mutationOp, crossoverOp);
+        const inputs = new Map<string, Map<string, number>>();
+        const sprite1 = new Map<string, number>();
+        sprite1.set("X-Position", 1);
+        sprite1.set("Y-Position", 2);
+        sprite1.set('Direction', 3);
+        inputs.set("Sprite1", sprite1);
+
+        const sprite2 = new Map<string, number>();
+        sprite2.set("X-Position", 4);
+        sprite2.set("Y-Position", 5);
+        inputs.set("Sprite2", sprite2);
+
+        chromosome.activateNetwork(inputs);
+        chromosome2.activateNetwork(inputs);
+        expect(NeatPopulation.nodeToId.size).toEqual(3);
+        expect(chromosome.inputNodes.get("Sprite1").get("X-Position").uID).toEqual(
+            chromosome2.inputNodes.get("Sprite1").get("X-Position").uID);
+        expect(chromosome.inputNodes.get("Sprite1").get("X-Position").uID).not.toEqual(
+            chromosome.inputNodes.get("Sprite1").get("Direction").uID);
+        expect(chromosome.inputNodes.get("Sprite1").get("Direction").uID).toEqual(
+            chromosome2.inputNodes.get("Sprite1").get("Direction").uID);
+        expect(chromosome.inputNodes.get("Sprite2").get("X-Position").uID).toEqual(
+            chromosome2.inputNodes.get("Sprite2").get("X-Position").uID);
+    });
+
+    test('Network activation without hidden layer and deactivated input nodes', () => {
+        // Create input Nodes
+        const nodes: NodeGene[] = [];
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
+        const iNode3 = new InputNode(2, "Sprite1", "Costume");
+        const bias = new BiasNode(3);
+        nodes.push(iNode1);
+        nodes.push(iNode2);
+        nodes.push(iNode3);
+        nodes.push(bias);
+
+        // Create classification and Regression Output Nodes
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
+        const regressionNode1 = new RegressionNode(6, new WaitEvent(), "Duration", ActivationFunction.NONE);
+        const regressionNode2 = new RegressionNode(7, new MouseMoveEvent(), "X", ActivationFunction.NONE);
         nodes.push(classificationNode1);
         nodes.push(classificationNode2);
         nodes.push(regressionNode1);
@@ -332,31 +380,23 @@ describe('Test NetworkChromosome', () => {
     test('Network activation with hidden layer', () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite2", "X-Position");
-        iNode2.uID = 1;
-        const iNode3 = new InputNode("Sprite2", "Costumes");
-        iNode3.uID = 2;
-        const bias = new BiasNode();
-        bias.uID = 3;
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite2", "X-Position");
+        const iNode3 = new InputNode(2, "Sprite2", "Costumes");
+        const bias = new BiasNode(3);
         nodes.push(iNode1);
         nodes.push(iNode2);
         nodes.push(iNode3);
         nodes.push(bias);
 
         // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 4;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 5;
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
         nodes.push(classificationNode1);
         nodes.push(classificationNode2);
 
-        const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        hiddenNode.uID = 6;
-        const deepHiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        deepHiddenNode.uID = 7;
+        const hiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID);
+        const deepHiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
         nodes.push(hiddenNode);
         nodes.push(deepHiddenNode);
 
@@ -403,31 +443,23 @@ describe('Test NetworkChromosome', () => {
     test('Network activation with recurrent connections', () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode2.uID = 1;
-        const iNode3 = new InputNode("Sprite1", "Costumes");
-        iNode3.uID = 2;
-        const bias = new BiasNode();
-        bias.uID = 3;
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
+        const iNode3 = new InputNode(2, "Sprite1", "Costumes");
+        const bias = new BiasNode(3);
         nodes.push(iNode1);
         nodes.push(iNode2);
         nodes.push(iNode3);
         nodes.push(bias);
 
         // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 4;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 5;
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
         nodes.push(classificationNode1);
         nodes.push(classificationNode2);
 
-        const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        hiddenNode.uID = 6;
-        const deepHiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        deepHiddenNode.uID = 7;
+        const hiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID);
+        const deepHiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
         nodes.push(hiddenNode);
         nodes.push(deepHiddenNode);
 
@@ -472,31 +504,23 @@ describe('Test NetworkChromosome', () => {
     test("Test the recurrent Network check", () => {
         // Create input Nodes
         const nodes: NodeGene[] = [];
-        const iNode1 = new InputNode("Sprite1", "X-Position");
-        iNode1.uID = 0;
-        const iNode2 = new InputNode("Sprite1", "Y-Position");
-        iNode2.uID = 1;
-        const iNode3 = new InputNode("Sprite1", "Costume");
-        iNode3.uID = 2;
-        const bias = new BiasNode();
-        bias.uID = 3;
+        const iNode1 = new InputNode(0, "Sprite1", "X-Position");
+        const iNode2 = new InputNode(1, "Sprite1", "Y-Position");
+        const iNode3 = new InputNode(2, "Sprite1", "Costume");
+        const bias = new BiasNode(3);
         nodes.push(iNode1);
         nodes.push(iNode2);
         nodes.push(iNode3);
         nodes.push(bias);
 
         // Create classification and Regression Output Nodes
-        const classificationNode1 = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
-        classificationNode1.uID = 4;
-        const classificationNode2 = new ClassificationNode(new ClickStageEvent(), ActivationFunction.SIGMOID);
-        classificationNode2.uID = 5;
+        const classificationNode1 = new ClassificationNode(4, new WaitEvent(), ActivationFunction.SIGMOID);
+        const classificationNode2 = new ClassificationNode(5, new ClickStageEvent(), ActivationFunction.SIGMOID);
         nodes.push(classificationNode1);
         nodes.push(classificationNode2);
 
-        const hiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        hiddenNode.uID = 6;
-        const deepHiddenNode = new HiddenNode(ActivationFunction.SIGMOID);
-        deepHiddenNode.uID = 7;
+        const hiddenNode = new HiddenNode(6, ActivationFunction.SIGMOID);
+        const deepHiddenNode = new HiddenNode(7, ActivationFunction.SIGMOID);
         nodes.push(hiddenNode);
         nodes.push(deepHiddenNode);
 
@@ -540,14 +564,23 @@ describe('Test NetworkChromosome', () => {
         generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
             [new WaitEvent()], 0.5);
         chromosome = generator.get();
+        const chromosome2 = generator.get();
+        const chromosome3 = generator.get();
         const oldNodeSize = chromosome.allNodes.length;
         const oldOutputNodesSize = chromosome.outputNodes.length;
         const oldRegressionNodesSize = chromosome.regressionNodes.size;
+        const oldMapSize = NeatPopulation.nodeToId.size;
         chromosome.updateOutputNodes([new MouseMoveEvent()]);
+        chromosome2.updateOutputNodes([new MouseMoveEvent()]);
+        chromosome3.updateOutputNodes([new KeyPressEvent('up arrow')])
         expect(chromosome.allNodes.length).toBeGreaterThan(oldNodeSize);
         expect(chromosome.outputNodes.length).toBeGreaterThan(oldOutputNodesSize);
         expect(chromosome.regressionNodes.size).toBeGreaterThan(oldRegressionNodesSize);
-
+        expect(NeatPopulation.nodeToId.size).toBe(oldMapSize + 5);
+        expect(chromosome.outputNodes[chromosome.outputNodes.length - 1].uID).toEqual(
+            chromosome2.outputNodes[chromosome2.outputNodes.length - 1].uID);
+        expect(chromosome.outputNodes[chromosome.outputNodes.length - 1].uID).not.toEqual(
+            chromosome3.outputNodes[chromosome3.outputNodes.length - 1].uID);
     })
 
     test("Test toString", () => {

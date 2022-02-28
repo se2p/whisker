@@ -81,7 +81,7 @@ export class KeyPressEvent extends ScratchEvent {
             case "codon":
                 this._steps = args[0];
                 break;
-            case "regression":
+            case "activation":
                 this._steps = Math.round(NeuroevolutionUtil.relu(args[0]));
                 break;
         }

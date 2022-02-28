@@ -13,33 +13,13 @@ export class ClassificationNode extends NodeGene {
 
     /**
      * Constructs a new classification Node.
+     * @param uID the unique identifier of this node in the network.
      * @param activationFunction the activation function of the classification node.
      * @param event the ScratchEvent this Classification node is representing.
-     * @param incrementIDCounter flag determining whether the uID counter should be increased after constructing a
-     * new classification node.
      */
-    constructor(event: ScratchEvent, activationFunction: ActivationFunction, incrementIDCounter = true) {
-        super(activationFunction, NodeType.OUTPUT, incrementIDCounter);
+    constructor(uID: number, event: ScratchEvent, activationFunction: ActivationFunction) {
+        super(uID, activationFunction, NodeType.OUTPUT);
         this._event = event;
-    }
-
-    depth(d: number): number {
-        let cur_depth: number //The depth of the current node
-        let max = d; //The max depth
-
-        // Recurrency
-        if (d > 100) {
-            return 10;
-        }
-        for (const connection of this.incomingConnections) {
-            const inNode = connection.source;
-            cur_depth = inNode.depth(d + 1);
-            if (cur_depth > max) {
-                max = cur_depth;
-            }
-        }
-
-        return max;
     }
 
     equals(other: unknown): boolean {
@@ -49,8 +29,7 @@ export class ClassificationNode extends NodeGene {
     }
 
     clone(): ClassificationNode {
-        const clone = new ClassificationNode(this.event, this.activationFunction, false);
-        clone.uID = this.uID;
+        const clone = new ClassificationNode(this.uID, this.event, this.activationFunction);
         clone.nodeValue = this.nodeValue;
         clone.activationValue = this.activationValue;
         clone.lastActivationValue = this.lastActivationValue;
