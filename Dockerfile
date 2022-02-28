@@ -50,20 +50,10 @@
 # https://hub.docker.com/layers/satantime/puppeteer-node/16.14.0-bullseye-slim/images/sha256-bed240a3b8cd99af56a2971046201a26fba978804f55c296bde7f9b1075d19bc?context=explore
 ARG version=@sha256:bed240a3b8cd99af56a2971046201a26fba978804f55c296bde7f9b1075d19bc
 
-# (a) We use a slim base image that already includes Node.JS, and install only
-#     a minimal set of missing packages required to run Puppeteer. In
-#     particular, this includes various shared libraries (*.so files), and
-#     the x11-utils package. Puppeteer will complain about missing *.so files.
-#     To find out which package provides the missing file, install the apt-file
-#     package and run `apt-file find <missing file>`. If in doubt, or if
-#     Puppeteer still refuses to run (as is the case when x11-utils is not
-#     installed), you can temporarily add Google Chrome to your repsitory as
-#     it's done here
-#       > https://github.com/buildkite/docker-puppeteer/blob/master/Dockerfile
-#     and list all its dependencies via `apt-get show google-chrome-stable`.
-#     Then, just copy this list of dependencies and install them below. This
-#     will most likely pull in a lot of unwanted packages, too, but at least
-#     Puppeteer will work then.
+# (a) We use a slim base image that already includes Node.JS and a minimal set
+#     of packages required to run Puppeteer (without packaging Puppeteer
+#     itself – we install the right version of Puppeteer later using yarn).
+#     We also need "tini".
 FROM satantime/puppeteer-node${version} as base
 RUN apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y tini \
