@@ -46,53 +46,25 @@
 # [1] https://www.ibm.com/docs/en/filenet-p8-platform/5.5.x?topic=deployment-choosing-image-tags-digests
 # [2] https://hub.docker.com/_/node?tab=tags
 #
-# Currently, this digest corresponds to the tag 16.14.0-buster-slim:
-ARG node_version=@sha256:a2cae65fae1a545b332cb3fc9a3581ebdd748ec71ca3f539b183fa3f4119f496
+# Currently, this digest corresponds to the tag 16.14.0-bullseye-slim:
+# https://hub.docker.com/layers/satantime/puppeteer-node/16.14.0-bullseye-slim/images/sha256-bed240a3b8cd99af56a2971046201a26fba978804f55c296bde7f9b1075d19bc?context=explore
+ARG version=@sha256:bed240a3b8cd99af56a2971046201a26fba978804f55c296bde7f9b1075d19bc
 
-# (a) We use a slim base image that already includes Node.JS, and install only
-#     a minimal set of missing packages required to run Puppeteer. In
-#     particular, this includes various shared libraries (*.so files), and
-#     the x11-utils package. Puppeteer will complain about missing *.so files.
-#     To find out which package provides the missing file, install the apt-file
-#     package and run `apt-file find <missing file>`. If in doubt, or if
-#     Puppeteer still refuses to run (as is the case when x11-utils is not
-#     installed), you can temporarily add Google Chrome to your repsitory as
-#     it's done here
-#       > https://github.com/buildkite/docker-puppeteer/blob/master/Dockerfile
-#     and list all its dependencies via `apt-get show google-chrome-stable`.
-#     Then, just copy this list of dependencies and install them below. This
-#     will most likely pull in a lot of unwanted packages, too, but at least
-#     Puppeteer will work then.
-FROM node${node_version} as base
+# (a) We use a slim base image that already includes Node.JS and a minimal set
+#     of packages required to run Puppeteer (without packaging Puppeteer
+#     itself – we install the right version of Puppeteer later using yarn).
+#     We also need "tini".
+FROM satantime/puppeteer-node${version} as base
 RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y \
-        tini \
-        libnss3 \
-        libatk1.0-0 \
-        libatk-bridge2.0-0 \
-        libcups2 \
-        libdrm2 \
-        libxkbcommon0 \
-        libxcomposite1 \
-        libxdamage1 \
-        libxrandr2 \
-        libgbm1 \
-        libgtk-3-0 \
-        libasound2 \
-        libxshmfence1 \
-        x11-utils \
-    && apt-get autoremove -y \
+    && apt-get install --no-install-recommends --no-install-suggests -y tini \
     && rm -rf /usr/share/icons
 
 # (b) Install packages only required to build Whisker, not to run it.
 #     We need git because we have a dependency to another git repository
-#     (the Scratch VM), and ca-certificates because otherwise git cannot verfiy
-#     the server certificate.
+#     (the Scratch VM).
 FROM base as build
 RUN apt-get update \
-    && apt-get install --no-install-recommends --no-install-suggests -y \
-        ca-certificates \
-        git
+    && apt-get install --no-install-recommends --no-install-suggests -y git
 
 # (c) Copy manifest files and install dependencies. This layer is only rebuilt
 #     when a manifest file changes.

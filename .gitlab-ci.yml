@@ -1,4 +1,4 @@
-image: satantime/puppeteer-node:lts-buster
+image: satantime/puppeteer-node:16.14.0-bullseye
 
 stages:
   - build
