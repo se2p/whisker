@@ -140,8 +140,11 @@ export class InputExtraction {
                 case "looks_switchcostumeto": {
                     const costumeValue = target.currentCostume;
                     const numberOfCostumes = target.sprite.costumes_.length;
-                    const costumeNormalized = this.mapValueIntoRange(costumeValue, 0, numberOfCostumes - 1);
-                    spriteFeatures.set("Costume", costumeNormalized);
+                    // Only add the costume number if there are indeed multiple costumes.
+                    if(numberOfCostumes > 1) {
+                        const costumeNormalized = this.mapValueIntoRange(costumeValue, 0, numberOfCostumes - 1);
+                        spriteFeatures.set("Costume", costumeNormalized);
+                    }
                     break;
                 }
             }

@@ -312,7 +312,7 @@ export abstract class NetworkChromosome extends Chromosome {
         this.setUpInputs(inputs);
         let activationCount = 0;
         let incomingValue = 0;
-        this.outputNodes.forEach(node => node.activatedFlag = false)
+        this.outputNodes.forEach(node => node.activatedFlag = false);
 
         // Repeatedly send the input signals through the network until at least one output node gets activated.
         while (this.outputsOff() || activationCount < 0) {
@@ -356,7 +356,6 @@ export abstract class NetworkChromosome extends Chromosome {
                 if (node.type !== NodeType.INPUT) {
                     // Only activate if we received some input
                     if (node.activatedFlag) {
-
                         // Keep track of previous activations
                         node.lastActivationValue = node.activationValue;
                         node.activationValue = node.activate();
