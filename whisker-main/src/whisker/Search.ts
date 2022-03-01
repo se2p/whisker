@@ -40,7 +40,7 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
-import {FixedIterationsStoppingCondition} from "./search/stoppingconditions/FixedIterationsStoppingCondition";
+import {FitnessEvaluationStoppingCondition} from "./search/stoppingconditions/FitnessEvaluationStoppingCondition";
 
 export class Search {
 
@@ -113,20 +113,20 @@ export class Search {
          */
         let stoppingCondition: StoppingCondition<Chromosome>;
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator) {
-            let maxIterations: number = undefined;
+            let upperBound: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-            if (stoppingCondition instanceof FixedIterationsStoppingCondition) {
-                maxIterations = stoppingCondition.maxIterations;
+            if (stoppingCondition instanceof FitnessEvaluationStoppingCondition) {
+                upperBound = stoppingCondition.maxEvaluations;
             } else if (stoppingCondition instanceof OneOfStoppingCondition) {
                 for (const d of stoppingCondition.conditions) {
-                    if (d instanceof FixedIterationsStoppingCondition) {
-                        if (maxIterations == undefined || maxIterations > d.maxIterations) { // take the minimum
-                            maxIterations = d.maxIterations;
+                    if (d instanceof FitnessEvaluationStoppingCondition) {
+                        if (upperBound == undefined || upperBound > d.maxEvaluations) {
+                            upperBound = d.maxEvaluations;
                         }
                     }
                 }
             }
-            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(maxIterations);
+            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(config.neuroevolutionProperties.populationSize, upperBound);
             console.log(csvOutput);
             return csvOutput;
         } else {

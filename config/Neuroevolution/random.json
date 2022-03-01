@@ -48,21 +48,21 @@
     },
     "networkFitness": {
         "type": "statement",
-        "timeout": 10000
+        "timeout": 15000
     },
     "stoppingCondition": {
         "type": "combined",
         "conditions": [
             {
                 "type": "fixedTime",
-                "duration": 414900000
+                "duration": 630000000
             },
             {
                 "type": "optimal"
             },
             {
                 "type": "evaluations",
-                "maxEvaluations": 8000
+                "maxEvaluations": 7500
             }
         ]
     },

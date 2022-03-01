@@ -130,18 +130,24 @@ export class ExplorativeNEAT extends NEAT {
     }
 
     /**
-     * Updates the List of the best networks found so far and the statistics used for reporting.
+     * Updates the List of the best networks found so far and the statistics used for reporting. Order is important!
      * @param population the current generation's population of networks.
      */
     protected updateBestIndividualAndStatistics(population: NeatPopulation): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().iterationCount = this._iterations;
-        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size
-        StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, this._archive.size);
-        StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         StatisticsCollector.getInstance().updateHighestScore(population.networks);
         StatisticsCollector.getInstance().updateHighestPlaytime(population.networks);
+        StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);
+
+        // Update TimeLine
+        const timeLineValues: [number, number, number] = [this._archive.size,
+            StatisticsCollector.getInstance().highestScore, StatisticsCollector.getInstance().highestPlayTime];
+        StatisticsCollector.getInstance().updateFitnessOverTime(
+            StatisticsCollector.getInstance().numberFitnessEvaluations, timeLineValues);
+
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;
             StatisticsCollector.getInstance().createdTestsToReachFullCoverage =

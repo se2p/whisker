@@ -50,10 +50,10 @@ export class StatisticsCollector {
     private readonly coveredFitnessFunctions: FitnessFunction<Chromosome>[];
 
     // Neuroevolution
-    private readonly _bestNetworkFitness: Map<number, number>;
     private _highestNetworkFitness: number;
     private _highestScore: number;
     private _highestPlayTime: number;
+    private _fitnessOverTime: Map<number, [number, number, number]>;
 
     // Dynamic Suite
     private _testName: string;
@@ -85,8 +85,8 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = 0;
         this._highestNetworkFitness = 0;
         this._covOverTime = new Map<number, number>();
+        this._fitnessOverTime = new Map<number, [number, number, number]>(); // Values are [coverage, score, survive]
         this.coveredFitnessFunctions = [];
-        this._bestNetworkFitness = new Map<number, number>();
         this._highestScore = 0;
         this._highestPlayTime = 0;
         this._networks = [];
@@ -161,10 +161,6 @@ export class StatisticsCollector {
         }
     }
 
-    public updateBestNetworkFitnessTimeline(iteration: number, bestNetworkFitness: number): void {
-        this._bestNetworkFitness.set(iteration, Math.trunc(bestNetworkFitness));
-    }
-
     public updateHighestNetworkFitness(networkFitness: number): void {
         if (networkFitness > this._highestNetworkFitness) {
             this._highestNetworkFitness = networkFitness;
@@ -191,6 +187,10 @@ export class StatisticsCollector {
                 this._highestPlayTime = network.playTime
             }
         }
+    }
+
+    public updateFitnessOverTime(timeStamp: number, value: [number, number, number]): void {
+        this._fitnessOverTime.set(timeStamp, value);
     }
 
     public incrementExecutedTests(): void {
@@ -292,6 +292,14 @@ export class StatisticsCollector {
         this._surpriseNodeAdequacy = value;
     }
 
+    get highestScore(): number {
+        return this._highestScore;
+    }
+
+    get highestPlayTime(): number {
+        return this._highestPlayTime;
+    }
+
     /**
      * Outputs a CSV string that summarizes statistics about the search. Among others, this includes a so-called
      * fitness timeline, which reports the achieved coverage over time. In some cases, it might be desirable to
@@ -345,45 +353,42 @@ export class StatisticsCollector {
         return [headerRow, dataRow].join("\n");
     }
 
-    public asCsvNeuroevolution(numberOfIterations?: number): string {
+    public asCsvNeuroevolution(sampleDistance?: number, maxTimeStamp?: number): string {
+        let fitnessHeaders: string;
+        let fitnessValues: string;
 
-        let header = [...this._bestNetworkFitness.keys()].sort((a, b) => a - b);
-        let values = [...this._bestNetworkFitness.values()];
+        if (sampleDistance && maxTimeStamp) {
+            const fitnessTimeline = this._adjustFitnessOverEvaluations(sampleDistance);
+            const header = [...fitnessTimeline.keys()];
 
-        // Truncate the fitness timeline to the given numberOfIterations count if necessary.
-        const truncateFitnessTimeline = numberOfIterations != undefined && 0 <= numberOfIterations;
+            const values: string[] = []
+            for(const value of fitnessTimeline.values()){
+                values.push(value.join('|'));
+            }
 
-        // If the search stops before the maximum iteration count has been reached, the CSV file will only include
-        // columns up to that iteration count, and not until the desired max iteration count. As a result, experiment
-        // data becomes difficult to merge. Therefore, the number of columns should be padded in this case so that
-        // the number of iterations is always identical.
-        if (truncateFitnessTimeline) {
-            const nextIteration = header[header.length - 1] === undefined ? 0 : header[header.length - 1] + 1;
-            const nextFitnessValue = this._highestNetworkFitness;
-            const lengthDiff = Math.abs(numberOfIterations - this.iterationCount);
+            // Extend the header and corresponding values up to the maxTimeStamp.
+            let latestKey = header[header.length - 1];
+            while (latestKey < maxTimeStamp) {
+                latestKey += sampleDistance;
+                header.push(latestKey);
+                values.push(values[values.length - 1]);
+            }
 
-            const range: (until: number) => number[] = (until) => [...Array(until).keys()];
-            const headerPadding = range(lengthDiff).map(x => nextIteration + x)
-            const valuePadding = Array(lengthDiff).fill(nextFitnessValue);
-
-            header = [...header, ...headerPadding].slice(0, numberOfIterations);
-            values = [...values, ...valuePadding].slice(0, numberOfIterations);
+            fitnessHeaders = header.join(",");
+            fitnessValues = values.join(",");
         }
 
-        const fitnessHeaders = header.join(",");
-        const fitnessValues = values.join(",");
-
-        // Standard headers
+        // Default header and data arrays
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
             "bestCoverage", "numberFitnessEvaluations", "timeToReachFullCoverage", "highestNetworkFitness", 'score', 'playTime'];
-
-        // Average population fitness header depending on max iteration count.
-        const headerRow = headers.join(",").concat(",", fitnessHeaders);
         const data = [this._projectName, this._configName, this._fitnessFunctionCount, this._iterationCount,
             this._coveredFitnessFunctionsCount, this._bestCoverage, this._numberFitnessEvaluations,
             this._timeToReachFullCoverage, this._highestNetworkFitness, this._highestScore, this._highestPlayTime];
-        const dataRow = data.join(",").concat(",", fitnessValues);
-        return [headerRow, dataRow].join("\n");
+
+        // Combine the header and data arrays
+        const header = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
+        const body = fitnessValues === undefined ? data.join(',') : data.join(",").concat(",", fitnessValues);
+        return [header, body].join("\n");
     }
 
     public asCsvDynamicSuite(): string {
@@ -401,6 +406,29 @@ export class StatisticsCollector {
             csv = csv.concat(dataRow);
         }
         return csv;
+    }
+
+    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, [number, number, number]> {
+        const adjusted: Map<number, [number, number, number]> = new Map();
+        let maxEvaluations = 0;
+        for (const evaluationSample of this._fitnessOverTime.keys()) {
+            const rounded = Math.round(evaluationSample / sampleDistance) * sampleDistance;
+            adjusted.set(rounded, this._fitnessOverTime.get(evaluationSample));
+            if (rounded > maxEvaluations) {
+                maxEvaluations = rounded;
+            }
+
+        }
+        let maxCov: [number, number, number] = [0, 0, 0];
+        for (let i = 0; i <= maxEvaluations; i = i + sampleDistance) {
+            if (adjusted.has(i)) {
+                maxCov = adjusted.get(i);
+            } else {
+                adjusted.set(i, maxCov);
+            }
+        }
+
+        return adjusted;
     }
 
     private _adjustCoverageOverTime() {
