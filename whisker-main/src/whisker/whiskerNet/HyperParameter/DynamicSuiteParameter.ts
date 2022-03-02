@@ -13,11 +13,6 @@ export class DynamicSuiteParameter {
     private _networkFitness: NetworkFitnessFunction<NeatChromosome>;
 
     /**
-     * Determines whether the objective is a minimisation task.
-     */
-    private _isMinimisationObjective: boolean
-
-    /**
      * Timout for the execution of a scratch game during the evaluation of the network.
      */
     private _timeout: number
@@ -58,14 +53,6 @@ export class DynamicSuiteParameter {
 
     set networkFitness(value: NetworkFitnessFunction<NeatChromosome>) {
         this._networkFitness = value;
-    }
-
-    get isMinimisationObjective(): boolean {
-        return this._isMinimisationObjective;
-    }
-
-    set isMinimisationObjective(value: boolean) {
-        this._isMinimisationObjective = value;
     }
 
     get timeout(): number {

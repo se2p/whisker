@@ -90,7 +90,15 @@ export abstract class NetworkChromosome extends Chromosome {
      */
     private _surpriseCounterNormalised = 0;
 
+    /**
+     * Average Z-Score used to evaluate the correctness of a Scratch program.
+     */
     private _zScore = 0;
+
+    /**
+     * Maps each target statement to the number of times it has been covered using different seeds.
+     */
+    private _statementTargets: Map<FitnessFunction<NetworkChromosome>, number>;
 
     /**
      * The fitness value of the network.
@@ -549,6 +557,17 @@ export abstract class NetworkChromosome extends Chromosome {
     }
 
     /**
+     * Initialises the target statements, setting each coverage count to zero.
+     * @param targets all block statements of the given Scratch program.
+     */
+    public initialiseStatementTargets(targets: FitnessFunction<NetworkChromosome>[]): void {
+        this.statementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
+        for (const t of targets) {
+            this.statementTargets.set(t, 0);
+        }
+    }
+
+    /**
      * Adds a single ActivationTrace after executing a Scratch-Step to the ActivationTrace map.
      * @param step the previously performed step whose ActivationTrace should be recorded.
      */
@@ -697,5 +716,13 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set isRecurrent(value: boolean) {
         this._isRecurrent = value;
+    }
+
+    get statementTargets(): Map<FitnessFunction<NetworkChromosome>, number> {
+        return this._statementTargets;
+    }
+
+    set statementTargets(value: Map<FitnessFunction<NetworkChromosome>, number>) {
+        this._statementTargets = value;
     }
 }

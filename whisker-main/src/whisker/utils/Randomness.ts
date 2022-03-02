@@ -47,7 +47,7 @@ export class Randomness {
      * Seed for the Scratch-VM. Initial value set to 0 to ensure that tests, generated using Whisker's TestGenerator,
      * will produce the same results if no seed is set.
      */
-    private static _scratchSeed = 0;
+    public static _scratchSeed = 0;
 
     /**
      * Private constructor to prevent construction with new
@@ -97,9 +97,11 @@ export class Randomness {
      * Set the seed for the Scratch-VM.
      * @param seed the Scratch-VM seed
      */
-    public static setScratchSeed(seed: (number | string)): void {
+    public static setScratchSeed(seed: (number | string), silence=false): void {
         const convertedSeed = this.convertSeed(seed);
-        console.log(`Seeding the Scratch-VM to ${convertedSeed}`)
+        if(!silence) {
+            console.log(`Seeding the Scratch-VM to ${convertedSeed}`)
+        }
         Randomness._scratchSeed = convertedSeed;
     }
 

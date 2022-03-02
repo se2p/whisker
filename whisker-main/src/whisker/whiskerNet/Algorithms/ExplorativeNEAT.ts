@@ -8,7 +8,6 @@ import {TargetStatementPopulation} from "../NeuroevolutionPopulations/TargetStat
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {Randomness} from "../../utils/Randomness";
-import {RandomNeuroevolutionPopulation} from "../NeuroevolutionPopulations/RandomNeuroevolutionPopulation";
 
 export class ExplorativeNEAT extends NEAT {
 
@@ -42,6 +41,7 @@ export class ExplorativeNEAT extends NEAT {
                 population.evolve();
                 for (const network of population.networks) {
                     network.targetFitness = this._currentTargetStatement;
+                    network.initialiseStatementTargets([...this._fitnessFunctions.values()]);
                 }
                 this._intermediateIterations++;
                 this._iterations++;
@@ -99,13 +99,29 @@ export class ExplorativeNEAT extends NEAT {
     protected updateArchive(candidateChromosome: NeatChromosome): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-            const statementFitness = fitnessFunction.getFitness(candidateChromosome);
-            if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(fitnessFunctionKey)) {
+            if (this.countAsCovered(fitnessFunctionKey, candidateChromosome)) {
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, candidateChromosome);
             }
         }
         this._bestIndividuals = Arrays.distinctObjects([...this._archive.values()]);
+    }
+
+    /**
+     * Checks whether a given Scratch statement counts as covered.
+     * @param fitnessFunctionKey the key of the Scratch statement that will be checked if it counts as covered.
+     * @param candidateChromosome the chromosome that is evaluated whether it covers the given statement.
+     * @returns boolean which is true if the statement counts as covered.
+     */
+    private countAsCovered(fitnessFunctionKey: number, candidateChromosome: NeatChromosome): boolean {
+        const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+        const coverageStableCount = candidateChromosome.statementTargets.get(fitnessFunction);
+        const statementFitness = fitnessFunction.getFitness(candidateChromosome);
+        return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount &&
+                !this._archive.has(fitnessFunctionKey)) ||
+            (this._neuroevolutionProperties.coverageStableCount == 0 &&
+                fitnessFunction.isOptimal(statementFitness) &&
+                !this._archive.has(fitnessFunctionKey));
     }
 
     /**
@@ -159,21 +175,15 @@ export class ExplorativeNEAT extends NEAT {
     }
 
     protected getPopulation(): NeatPopulation {
-        if (this._neuroevolutionProperties.populationType === 'random') {
-            return new RandomNeuroevolutionPopulation(this._chromosomeGenerator, this._neuroevolutionProperties, this._currentTargetStatement);
+        let startingNetwork: NeatChromosome;
+        if (this._parentKeyOfTargetStatement === undefined || !this._archive.has(this._parentKeyOfTargetStatement)) {
+            startingNetwork = this._chromosomeGenerator.get();
+            startingNetwork.initialiseStatementTargets([...this._fitnessFunctions.values()]);
         } else {
-            let startingNetwork: NeatChromosome
-            // User event related statements, like key press hat blocks do not have a saved network
-            // but are a valid target. Furthermore, the first target will always be the flag, which does not have a
-            // parent statement.
-            if (this._parentKeyOfTargetStatement === undefined || !this._archive.has(this._parentKeyOfTargetStatement)) {
-                startingNetwork = this._chromosomeGenerator.get();
-            } else {
-                startingNetwork = this._archive.get(this._parentKeyOfTargetStatement);
-            }
-            return new TargetStatementPopulation(this._neuroevolutionProperties, this._currentTargetStatement,
-                startingNetwork);
+            startingNetwork = this._archive.get(this._parentKeyOfTargetStatement);
         }
+        return new TargetStatementPopulation(this._neuroevolutionProperties, this._currentTargetStatement,
+            startingNetwork);
     }
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {

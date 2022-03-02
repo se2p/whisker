@@ -4,8 +4,6 @@ import {Species} from "../NeuroevolutionPopulations/Species";
 import {NetworkChromosome} from "./NetworkChromosome";
 import {NeatCrossover} from "../Operators/NeatCrossover";
 import {NeatMutation} from "../Operators/NeatMutation";
-import {NeatPopulation} from "../NeuroevolutionPopulations/NeatPopulation";
-import {InputNode} from "../NetworkComponents/InputNode";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 
 export class NeatChromosome extends NetworkChromosome {
@@ -117,6 +115,7 @@ export class NeatChromosome extends NetworkChromosome {
         clone.fitness = this.fitness;
         clone.sharedFitness = this.sharedFitness;
         clone.targetFitness = this.targetFitness;
+        clone.statementTargets = this.statementTargets;
         clone.species = this.species;
         clone.isSpeciesChampion = this.isSpeciesChampion;
         clone.isPopulationChampion = this.isPopulationChampion;

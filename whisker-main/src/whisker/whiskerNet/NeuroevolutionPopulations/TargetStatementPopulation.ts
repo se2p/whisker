@@ -11,6 +11,7 @@ export class TargetStatementPopulation extends NeatPopulation {
         super(undefined, hyperParameter, targetStatement);
         this._startingNetwork = startingNetwork;
         this._startingNetwork.targetFitness = this._targetStatement;
+        this._startingNetwork.initialiseStatementTargets([...this._startingNetwork.statementTargets.keys()]);
     }
 
     /**
@@ -24,6 +25,7 @@ export class TargetStatementPopulation extends NeatPopulation {
         while (this.networks.length < this.hyperParameter.populationSize) {
             const mutant = this._startingNetwork.mutate();
             mutant.targetFitness = this._targetStatement;
+            mutant.initialiseStatementTargets([...this._startingNetwork.statementTargets.keys()]);
             this.networks.push(mutant);
         }
 

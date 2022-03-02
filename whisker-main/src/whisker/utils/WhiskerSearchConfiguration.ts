@@ -204,6 +204,8 @@ export class WhiskerSearchConfiguration {
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
         const eventSelection = this._config['eventSelection'] as string;
+        const coverageStableCount = this._config['networkFitness']['stableCount'] !== undefined ?
+            this._config['networkFitness']['stableCount'] : 0
         const repetitions = this._config['repetitions'] as number;
         const timeout = this._config['networkFitness']['timeout'];
         const doPrintPopulationRecord = this._config['populationRecord'] as string === 'true';
@@ -242,12 +244,13 @@ export class WhiskerSearchConfiguration {
 
         properties.eventSelection = eventSelection;
         properties.repetitions = repetitions;
+        properties.coverageStableCount = coverageStableCount;
         properties.timeout = timeout;
         properties.printPopulationRecord = doPrintPopulationRecord;
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
         if (this.getAlgorithm() === SearchAlgorithmType.EXPLORATIVE_NEAT) {
-            properties.networkFitness = new StatementFitness();
+            properties.networkFitness = new StatementFitness(coverageStableCount);
         } else {
             properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']['type']);
         }
@@ -262,7 +265,6 @@ export class WhiskerSearchConfiguration {
         const parameter = new DynamicSuiteParameter();
         parameter.timeout = this._config['timeout'];
         parameter.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']);
-        parameter.isMinimisationObjective = parameter.networkFitness instanceof StatementFitness;
         parameter.repetitions = this._config['repetitions'];
 
         // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli
@@ -494,7 +496,7 @@ export class WhiskerSearchConfiguration {
         else if (fitnessFunction === 'survive')
             return new SurviveFitness();
         else if (fitnessFunction === 'statement')
-            return new StatementFitness();
+            return new StatementFitness(fitnessFunction['stableCount']);
         else if (fitnessFunction === 'target')
             return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
                 fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);

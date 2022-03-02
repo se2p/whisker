@@ -177,6 +177,12 @@ export class NeatProperties {
     private _timeout = 30000;
 
     /**
+     * The number of times a network has to repeatedly cover a Scratch statement with diverging seeds to count the
+     * statements as covered.
+     */
+    private _coverageStableCount = 0;
+
+    /**
      * The number of repetitions applied upon the final dynamic test suite with the aim of obtaining a broad
      * ActivationTrace across many program states with diverging seeds.
      */
@@ -439,6 +445,14 @@ export class NeatProperties {
 
     set timeout(value: number) {
         this._timeout = value;
+    }
+
+    get coverageStableCount(): number {
+        return this._coverageStableCount;
+    }
+
+    set coverageStableCount(value: number) {
+        this._coverageStableCount = value;
     }
 
     get repetitions(): number {
