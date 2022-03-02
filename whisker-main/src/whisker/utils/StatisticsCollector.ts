@@ -173,19 +173,15 @@ export class StatisticsCollector {
             (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
     }
 
-    public updateHighestScore(networks: NetworkChromosome[]): void {
-        for (const network of networks) {
-            if (network.score > this._highestScore) {
-                this._highestScore = network.score;
-            }
+    public updateHighestScore(value:number): void {
+        if(value > this.highestScore){
+            this._highestScore = value;
         }
     }
 
-    public updateHighestPlaytime(networks: NetworkChromosome[]): void {
-        for (const network of networks) {
-            if (network.playTime > this._highestPlayTime) {
-                this._highestPlayTime = network.playTime
-            }
+    public updateHighestPlaytime(value:number): void {
+        if(value > this.highestPlayTime){
+            this._highestPlayTime = value;
         }
     }
 

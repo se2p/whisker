@@ -138,13 +138,15 @@ export class ExplorativeNEAT extends NEAT {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().iterationCount = this._iterations;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
-        StatisticsCollector.getInstance().updateHighestScore(population.networks);
-        StatisticsCollector.getInstance().updateHighestPlaytime(population.networks);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);
 
+        const highestScore = Math.max(...population.networks.map(n => n.score));
+        const highestSurvive = Math.max(...population.networks.map(n => n.playTime));
+        StatisticsCollector.getInstance().updateHighestScore(highestScore);
+        StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
+
         // Update TimeLine
-        const timeLineValues: [number, number, number] = [this._archive.size,
-            StatisticsCollector.getInstance().highestScore, StatisticsCollector.getInstance().highestPlayTime];
+        const timeLineValues: [number, number, number] = [this._archive.size, highestScore, highestSurvive];
         StatisticsCollector.getInstance().updateFitnessOverTime(
             StatisticsCollector.getInstance().numberFitnessEvaluations, timeLineValues);
 

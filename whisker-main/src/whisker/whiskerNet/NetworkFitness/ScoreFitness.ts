@@ -43,7 +43,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
                     name.includes('level') ||
                     name.includes('hits') ||
                     name.includes('treffer') ||
-                    name.includes('scrollx') ||  // Super Mario
+                    //name.includes('scrollx') ||  // Super Mario
                     name === 'distance' || // Sprint Game
                     name === 'länge' || // Snake Game
                     name === 'geimpfte' || // VirusBuster Game
