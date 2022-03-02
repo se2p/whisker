@@ -49,10 +49,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
                     name === 'geimpfte' || // VirusBuster Game
                     name === 'progress') // WeightLifter Game
                 {
-                    console.log("Name: ", name)
-                    console.log("Value: ", value['value'])
                     if (value['type'] != 'list') {
-                        console.log("Added: ", name, value['value'])
                         points += Math.abs(Number(value['value']));
                     }
                 }
