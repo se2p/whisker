@@ -36,8 +36,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
         let points = 0;
         for (const target of vm.runtime.targets) {
             for (const value of Object.values(target.variables)) {
-                // @ts-ignore
-                const name = value.name.toLowerCase();
+                const name = value['name'].toLowerCase();
                 if (name.includes('punkte') ||
                     name.includes('points') ||
                     name.includes('score') ||
@@ -50,8 +49,12 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
                     name === 'geimpfte' || // VirusBuster Game
                     name === 'progress') // WeightLifter Game
                 {
-                    // @ts-ignore
-                    points += Math.abs(Number(value.value))
+                    console.log("Name: ", name)
+                    console.log("Value: ", value['value'])
+                    if (value['type'] != 'list') {
+                        console.log("Added: ", name, value['value'])
+                        points += Math.abs(Number(value['value']));
+                    }
                 }
             }
         }
