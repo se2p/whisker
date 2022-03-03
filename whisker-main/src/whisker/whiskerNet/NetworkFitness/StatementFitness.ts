@@ -20,7 +20,7 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
 
     constructor(private _stableCount: number) {
         this.random = Randomness.getInstance();
-        this.repetitionSeeds = Array(this.stableCount).fill(0).map(
+        this.repetitionSeeds = Array(this.stableCount * 1.5).fill(0).map(
             () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
     }
 
