@@ -4,6 +4,7 @@ import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {ScoreFitness} from "./ScoreFitness";
 import {Randomness} from "../../utils/Randomness";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 
 export class StatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
@@ -60,6 +61,7 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
         const originalPlayTime = network.playTime;
         const trace = network.trace.clone()
         const coverage = new Set(network.coverage);
+        const trueFitnessEvaluations = StatisticsCollector.getInstance().numberFitnessEvaluations;
 
         // Iterate over each seed and calculate the achieved fitness
         for (const seed of this.repetitionSeeds) {
@@ -90,6 +92,7 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
         network.playTime = originalPlayTime;
         network.trace = trace;
         network.coverage = coverage;
+        StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
         console.log(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`)
     }
 
