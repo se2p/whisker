@@ -64,7 +64,7 @@ export class DragSpriteEvent extends ScratchEvent {
         return [this._x, this._y, this.angle, this._target.sprite.name];
     }
 
-    setParameter(args: number[], argType: ParameterType): void {
+    setParameter(args: number[], argType: ParameterType): number[] {
         switch (argType) {
             case "random": {
                 const lowerCodonValueBound = Container.config.properties['integerRange'].min;
@@ -94,6 +94,8 @@ export class DragSpriteEvent extends ScratchEvent {
             this._x = Math.max(-stageWidth, Math.min(this._x, stageWidth));
             this._y = Math.max(-stageHeight, Math.min(this._y, stageHeight));
         }
+
+        return [this.angle]
     }
 
     numSearchParameter(): number {

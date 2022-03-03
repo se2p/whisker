@@ -63,8 +63,8 @@ export class TypeTextEvent extends ScratchEvent {
         return [];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): number[] {
+        return [];
     }
 
     stringIdentifier(): string {

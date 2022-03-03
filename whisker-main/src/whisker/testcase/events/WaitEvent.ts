@@ -60,7 +60,7 @@ export class WaitEvent extends ScratchEvent {
         return ["Duration"];
     }
 
-    setParameter(args: number[], testExecutor: ParameterType): void {
+    setParameter(args: number[], testExecutor: ParameterType): number[] {
         switch (testExecutor) {
             case "random":
                 this._steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
@@ -81,6 +81,7 @@ export class WaitEvent extends ScratchEvent {
             this._steps !== Container.config.properties['integerRange'].max) {
             this._steps %= Container.config.getWaitStepUpperBound();
         }
+        return [this._steps]
     }
 
     stringIdentifier(): string {

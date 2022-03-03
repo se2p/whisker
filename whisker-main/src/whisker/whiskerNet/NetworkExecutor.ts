@@ -149,7 +149,7 @@ export class NetworkExecutor {
         network.trace = new ExecutionTrace(this._vm.runtime.traceInfo.tracer.traces, events);
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
 
-        // End and reset the VM.
+        // Stop VM and remove listeners.
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
 
@@ -170,6 +170,32 @@ export class NetworkExecutor {
     }
 
     /**
+     * Executes an execution trace that is saved within the network.
+     * @param network the network holding the execution trace.
+     */
+    public async executeSavedTrace(network: NetworkChromosome): Promise<void>{
+        // Set up the Scratch-VM and start the game
+        Randomness.seedScratch();
+        const _onRunStop = this.projectStopped.bind(this);
+        this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        this._projectRunning = true;
+        this._vmWrapper.start();
+
+        const eventTrace = network.trace.events;
+        for (const event of eventTrace) {
+            const nextEvent = event.event;
+            const parameter = event.parameters;
+            nextEvent.setParameter(parameter, 'codon');
+            await nextEvent.apply();
+        }
+
+        // Stop VM and remove listeners.
+        this._vmWrapper.end();
+        this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);
+        StatisticsCollector.getInstance().numberFitnessEvaluations++;
+    }
+
+    /**
      * Selects the next event and executes it.
      * @param network determines the next action to take.
      * @param nextEvent the event that should be executed next.
@@ -177,22 +203,23 @@ export class NetworkExecutor {
      */
     private async executeNextEvent(network: NetworkChromosome, nextEvent: ScratchEvent, events: EventAndParameters[]) {
         const parameters = [];
+        let setParameter: number[]
         const argType: ParameterType = this._eventSelection as ParameterType;
         if (nextEvent.numSearchParameter() > 0) {
             parameters.push(...NetworkExecutor.getArgs(nextEvent, network));
-            nextEvent.setParameter(parameters, argType);
+            setParameter = nextEvent.setParameter(parameters, argType);
         }
 
         // Do not double press Keys as this just interrupts the prior key press.
         if (!this.isDoubleKeyPress(nextEvent)) {
-            events.push(new EventAndParameters(nextEvent, parameters));
+            events.push(new EventAndParameters(nextEvent, setParameter));
             await nextEvent.apply();
         }
 
         // To perform non-waiting actions, we have to execute a Wait.
         if (!(nextEvent instanceof WaitEvent)) {
             const waitEvent = new WaitEvent(1);
-            events.push(new EventAndParameters(waitEvent, []));
+            events.push(new EventAndParameters(waitEvent, [1]));
             await waitEvent.apply();
         }
 

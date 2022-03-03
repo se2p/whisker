@@ -8,6 +8,8 @@ import {TargetStatementPopulation} from "../NeuroevolutionPopulations/TargetStat
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import Arrays from "../../utils/Arrays";
 import {Randomness} from "../../utils/Randomness";
+import {OneOfStoppingCondition} from "../../search/stoppingconditions/OneOfStoppingCondition";
+import {OptimalSolutionStoppingCondition} from "../../search/stoppingconditions/OptimalSolutionStoppingCondition";
 
 export class ExplorativeNEAT extends NEAT {
 
@@ -190,6 +192,14 @@ export class ExplorativeNEAT extends NEAT {
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         this._neuroevolutionProperties = properties as unknown as NeatProperties;
         this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
+        if (this._stoppingCondition instanceof OneOfStoppingCondition){
+            for(const condition of this._stoppingCondition.conditions){
+                if(condition instanceof OptimalSolutionStoppingCondition){
+                    Arrays.remove(this._stoppingCondition.conditions, condition);
+                }
+            }
+        }
+        console.log("Conditions: ", this._stoppingCondition)
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
 }

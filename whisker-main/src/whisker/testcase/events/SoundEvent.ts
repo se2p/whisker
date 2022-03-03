@@ -65,8 +65,8 @@ export class SoundEvent extends ScratchEvent {
         return [];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): number[] {
+        return [];
     }
 
     stringIdentifier(): string {

@@ -69,8 +69,8 @@ export class ClickSpriteEvent extends ScratchEvent {
         return 0;
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): number[] {
+        return [];
     }
 
     getParameters(): (number | RenderedTarget)[] {

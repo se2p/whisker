@@ -64,8 +64,8 @@ export class MouseMoveToEvent extends ScratchEvent {
         return [];
     }
 
-    setParameter(): void {
-        return;
+    setParameter(): number[] {
+        return [];
     }
 
     stringIdentifier(): string {

@@ -25,7 +25,7 @@ import {OptimalSolutionStoppingCondition} from "./OptimalSolutionStoppingConditi
 
 export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
-    private readonly _conditions: StoppingCondition<T>[] = [];
+    private _conditions: StoppingCondition<T>[] = [];
 
     constructor(...stoppingCondition: StoppingCondition<T>[]) {
         this._conditions.push(...stoppingCondition);
@@ -45,5 +45,9 @@ export class OneOfStoppingCondition<T extends Chromosome> implements StoppingCon
 
     get conditions(): StoppingCondition<T>[] {
         return this._conditions;
+    }
+
+    set conditions(value: StoppingCondition<T>[]) {
+        this._conditions = value;
     }
 }
