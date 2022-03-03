@@ -495,9 +495,10 @@ export class WhiskerSearchConfiguration {
             return new ScoreFitness();
         else if (fitnessFunction === 'survive')
             return new SurviveFitness();
-        else if (fitnessFunction === 'statement')
-            return new StatementFitness(fitnessFunction['stableCount']);
-        else if (fitnessFunction === 'target')
+        else if (fitnessFunction === 'statement') {
+            const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 0;
+            return new StatementFitness(stableCount);
+        } else if (fitnessFunction === 'target')
             return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
                 fitnessFunction['colorObstacles'], fitnessFunction['spriteObstacles']);
         else if (fitnessFunction === 'novelty') {

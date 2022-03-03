@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicSuite';
+import {StaticSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/StaticSuite";
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -279,7 +280,41 @@ const runAllTests = async function () {
         Whisker.outputRun.println([
             coverageString
         ].join('\n'));
-    } else { // Static Suite
+    } else if (Whisker.tests[0].type === 'neuroevolution') { // Static NE Suite
+        let coverage;
+        try {
+            await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
+            CoverageGenerator.prepareClasses({Thread});
+            CoverageGenerator.prepareVM(Whisker.scratch.vm);
+            const staticSuite = new StaticSuite();
+            const properties = {};
+            properties.projectName = Whisker.projectFileSelect.getName();
+            properties.testName = Whisker.testFileSelect.getName();
+            properties.acceleration = $('#acceleration-value').text();
+            properties.seed = document.getElementById('seed').value;
+            const csv = await staticSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, Whisker.tests,
+                properties);
+            coverage = CoverageGenerator.getCoverage();
+            CoverageGenerator.restoreClasses({Thread});
+            Whisker.outputLog.println(csv);
+        } finally {
+            _showRunIcon();
+            enableVMRelatedButtons();
+            accSlider.slider('enable');
+            testsRunning = false;
+        }
+
+        if (!coverage) {
+            return;
+        }
+
+        const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
+        const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+
+        Whisker.outputRun.println([
+            coverageString
+        ].join('\n'));
+    } else { // Normal Static Suite
         for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
             const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
             Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);

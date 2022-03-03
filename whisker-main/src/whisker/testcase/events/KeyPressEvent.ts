@@ -78,6 +78,7 @@ export class KeyPressEvent extends ScratchEvent {
             case "random":
                 this._steps = Randomness.getInstance().nextInt(1, Container.config.getPressDurationUpperBound() + 1);
                 break;
+            case "value":
             case "codon":
                 this._steps = args[0];
                 break;

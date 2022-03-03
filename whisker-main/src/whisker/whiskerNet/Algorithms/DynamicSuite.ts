@@ -16,6 +16,7 @@ import {NeatProperties} from "../HyperParameter/NeatProperties";
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {DynamicSuiteParameter} from "../HyperParameter/DynamicSuiteParameter";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
+import {NetworkExecutor} from "../NetworkExecutor";
 
 export class DynamicSuite {
 
@@ -70,10 +71,11 @@ export class DynamicSuite {
             networks = await neat.train(networks, neatParameter);
         }
 
+        const executor = new NetworkExecutor(Container.vmWrapper, parameter.timeout, 'activation');
         // Execute the dynamic suite.
         for (const network of networks) {
             network.recordActivationTrace = true;
-            await parameter.networkFitness.getFitness(network, parameter.timeout, parameter.eventSelection);
+            await executor.execute(network);
             this.updateArchive(network);
             if (network.savedActivationTrace) {
                 network.surpriseAdequacyStep = SurpriseAdequacy.LSA(network.savedActivationTrace, network.currentActivationTrace);
@@ -84,6 +86,7 @@ export class DynamicSuite {
                 network.zScore = z[0];
                 console.log(z[1]);
             }
+            executor.resetState();
             StatisticsCollector.getInstance().networks.push(network);
         }
         const csvOutput = StatisticsCollector.getInstance().asCsvDynamicSuite();

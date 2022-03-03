@@ -26,42 +26,60 @@ export class ClickSpriteEvent extends ScratchEvent {
 
     private readonly _target: RenderedTarget;
     private readonly _steps: number;
+    private readonly _xClickCoordinate: number;
+    private readonly _yClickCoordinate: number;
 
-    constructor(target: RenderedTarget, steps: number = Container.config.getClickDuration()) {
+
+    constructor(target: RenderedTarget, steps: number = Container.config.getClickDuration(), x?: number, y?: number) {
         super()
         this._target = target;
         this._steps = steps;
+        if (this._target !== undefined) {
+            this._xClickCoordinate = this._target.x;
+            this._yClickCoordinate = this._target.y;
+        } else {
+            this._xClickCoordinate = x;
+            this._yClickCoordinate = y;
+        }
     }
 
     async apply(): Promise<void> {
-        if (this._target.isOriginal) {
+        if (this._target !== undefined && this._target.isOriginal) {
             Container.testDriver.clickSprite(this._target.sprite.name, this._steps);
         } else {
-            Container.testDriver.clickCloneByCoords(this._target.x, this._target.y, this._steps);
+            Container.testDriver.clickCloneByCoords(this._xClickCoordinate, this._yClickCoordinate, this._steps);
         }
     }
 
     public toJavaScript(): string {
-        if (this._target.isOriginal) {
+        if (this._target !== undefined && this._target.isOriginal) {
             const spriteName = this._target.sprite.name.replace(/'/g, "\\'")
             return `t.clickSprite('${spriteName}', ${this._steps});`;
         } else {
-            return `t.clickCloneByCoords(${this._target.x}, ${this._target.y}, ${this._steps});`;
+            return `t.clickCloneByCoords(${this._xClickCoordinate}, ${this._yClickCoordinate}, ${this._steps});`;
         }
     }
 
     public toJSON(): Record<string, any> {
         const event = {}
         event[`type`] = `ClickSpriteEvent`;
-        event[`args`] = {"target": this._target.sprite.name, "steps": this._steps}
+        if (this._target !== undefined) {
+            event[`args`] = {"target": this._target.sprite.name, "steps": this._steps};
+        } else {
+            event[`args`] = {"x": this._xClickCoordinate, "y": this._yClickCoordinate, "steps": this._steps};
+        }
         return event;
     }
 
     public toString(): string {
-        if (this._target.isOriginal) {
+        if (this._target !== undefined && this._target.isOriginal) {
             return "ClickSprite " + this._target.sprite.name;
         } else {
-            return "ClickClone " + this._target.sprite.name + " at " + this._target.x + "/" + this._target.y;
+            if (this._target !== undefined) {
+                return "ClickClone " + this._target.sprite.name + " at " + this._target.x + "/" + this._target.y;
+            } else {
+                return "ClickClone at " + this._xClickCoordinate + "/" + this._yClickCoordinate;
+            }
         }
     }
 

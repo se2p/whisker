@@ -72,6 +72,7 @@ export class DragSpriteEvent extends ScratchEvent {
                 this.angle = Randomness.getInstance().nextInt(lowerCodonValueBound, upperCodonValueBound + 1);
                 break;
             }
+            case "value":
             case "codon": {
                 this.angle = args[0];
                 break;

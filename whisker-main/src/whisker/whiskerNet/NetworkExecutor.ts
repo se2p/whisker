@@ -14,6 +14,7 @@ import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScr
 import {KeyPressEvent} from "../testcase/events/KeyPressEvent";
 import {Container} from "../utils/Container";
 import {ParameterType} from "../testcase/events/ParameterType";
+import {ScoreFitness} from "./NetworkFitness/ScoreFitness";
 
 export class NetworkExecutor {
 
@@ -143,6 +144,8 @@ export class NetworkExecutor {
             stepCount++;
         }
 
+        // Set score and play time.
+        network.score = ScoreFitness.gatherPoints(Container.vm);
         network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
@@ -173,21 +176,26 @@ export class NetworkExecutor {
      * Executes an execution trace that is saved within the network.
      * @param network the network holding the execution trace.
      */
-    public async executeSavedTrace(network: NetworkChromosome): Promise<void>{
+    public async executeSavedTrace(network: NetworkChromosome): Promise<void> {
         // Set up the Scratch-VM and start the game
         Randomness.seedScratch();
         const _onRunStop = this.projectStopped.bind(this);
         this._vm.on(Runtime.PROJECT_RUN_STOP, _onRunStop);
         this._projectRunning = true;
         this._vmWrapper.start();
+        const startTime = Date.now();
 
         const eventTrace = network.trace.events;
         for (const event of eventTrace) {
             const nextEvent = event.event;
             const parameter = event.parameters;
-            nextEvent.setParameter(parameter, 'codon');
+            nextEvent.setParameter(parameter, 'value');
             await nextEvent.apply();
         }
+
+        // Set score and play time.
+        network.score = ScoreFitness.gatherPoints(Container.vm);
+        network.playTime = Math.trunc((Date.now() - startTime)) / 1000 * Container.acceleration;
 
         // Save the executed Trace and the covered blocks
         network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;

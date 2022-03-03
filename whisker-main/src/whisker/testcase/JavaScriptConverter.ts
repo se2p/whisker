@@ -44,10 +44,34 @@ export class JavaScriptConverter {
     }
 
     getSuiteText(tests: WhiskerTest[]): string {
+
+        // If we create a NE Suite, we have to set some configurations.
+        const configs = {};
+        if (Container.isNeuroevolution) {
+            // Set necessary configuration parameter for re-executing the dynamic suite.
+            configs['testSuiteType'] = 'dynamic';
+            configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
+            configs['networkFitness'] = Container.config.neuroevolutionProperties.networkFitness.identifier();
+            if (Container.config.neuroevolutionProperties.networkFitness.identifier() === 'statement') {
+                configs['stableCount'] = Container.config.neuroevolutionProperties.coverageStableCount;
+            }
+            configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
+            configs['seed'] = Container.config.getRandomSeed();
+            configs['repetitions'] = Container.config.neuroevolutionProperties.repetitions;
+
+            const durationConfigs = {}
+            durationConfigs['waitStepUpperBound'] = Container.config.getWaitStepUpperBound();
+            durationConfigs['pressDurationUpperBound'] = Container.config.getPressDurationUpperBound();
+            durationConfigs['soundDuration'] = Container.config.getSoundDuration();
+            durationConfigs['clickDuration'] = Container.config.getClickDuration();
+            configs['durations'] = durationConfigs;
+        }
+
         // Generate static test suite.
         let text = "";
         let i = 0;
         let footer = "";
+        const type = Container.isNeuroevolution ? 'neuroevolution' : 'standard'
         for (const test of tests) {
             text += "const test" + i + " = async function (t) {\n";
             for (const {event} of test.chromosome.trace.events) {
@@ -59,7 +83,11 @@ export class JavaScriptConverter {
             footer += "      test: test" + i + ",\n";
             footer += "      name: 'Generated Test',\n";
             footer += "      description: '',\n";
-            footer += "      categories: []\n";
+            footer += "      categories: [],\n";
+            footer += "      type: '" + type + "',\n";
+            if (type === "neuroevolution") {
+                footer += "      configs: " + JSON.stringify(configs) + "\n";
+            }
             if (i < tests.length - 1) {
                 footer += "  },\n";
             } else {
@@ -76,23 +104,6 @@ export class JavaScriptConverter {
         if (Container.isNeuroevolution) {
             const testSuites = {}
             const networkJSON = {}
-
-            // Set necessary configuration parameter for re-executing the dynamic suite.
-            const configs = {}
-            configs['testSuiteType'] = 'dynamic'
-            configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
-            configs['networkFitness'] = Container.config.neuroevolutionProperties.networkFitness.identifier();
-            configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
-            configs['seed'] = Container.config.getRandomSeed();
-            configs['repetitions'] = Container.config.neuroevolutionProperties.repetitions;
-
-            const durationConfigs = {}
-            durationConfigs['waitStepUpperBound'] = Container.config.getWaitStepUpperBound();
-            durationConfigs['pressDurationUpperBound'] = Container.config.getPressDurationUpperBound();
-            durationConfigs['soundDuration'] = Container.config.getSoundDuration();
-            durationConfigs['clickDuration'] = Container.config.getClickDuration();
-            configs['durations'] = durationConfigs;
-
             networkJSON['Configs'] = configs
 
             // Save the networks.

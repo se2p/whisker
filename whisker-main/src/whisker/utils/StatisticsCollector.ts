@@ -173,14 +173,14 @@ export class StatisticsCollector {
             (newValue - this._averageTestExecutionTime) / this._averageTestExecutionCount);
     }
 
-    public updateHighestScore(value:number): void {
-        if(value > this.highestScore){
+    public updateHighestScore(value: number): void {
+        if (value > this.highestScore) {
             this._highestScore = value;
         }
     }
 
-    public updateHighestPlaytime(value:number): void {
-        if(value > this.highestPlayTime){
+    public updateHighestPlaytime(value: number): void {
+        if (value > this.highestPlayTime) {
             this._highestPlayTime = value;
         }
     }
@@ -358,7 +358,7 @@ export class StatisticsCollector {
             const header = [...fitnessTimeline.keys()];
 
             const values: string[] = []
-            for(const value of fitnessTimeline.values()){
+            for (const value of fitnessTimeline.values()) {
                 values.push(value.join('|'));
             }
 
@@ -388,16 +388,28 @@ export class StatisticsCollector {
     }
 
     public asCsvDynamicSuite(): string {
-        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,networkFitness," +
-            "score', 'playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
+        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,score" +
+            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
 
         this.networks.sort((a, b) => b.fitness - a.fitness);
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];
             const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
-                this._coveredFitnessFunctionsCount, network.fitness, network.score, network.playTime,
-                network.surpriseAdequacyStep, network.surpriseAdequacyNodes, network.surpriseCounterNormalised,
-                network.zScore];
+                this._coveredFitnessFunctionsCount, network.score, network.playTime, network.surpriseAdequacyStep,
+                network.surpriseAdequacyNodes, network.surpriseCounterNormalised, network.zScore];
+            const dataRow = data.join(",").concat("\n");
+            csv = csv.concat(dataRow);
+        }
+        return csv;
+    }
+
+    public asCsvStaticSuite(): string {
+        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,score,playTime\n";
+        this.networks.sort((a, b) => b.fitness - a.fitness);
+        for (let i = 0; i < this.networks.length; i++) {
+            const network = this.networks[i];
+            const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
+                this._coveredFitnessFunctionsCount, network.score, network.playTime];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }

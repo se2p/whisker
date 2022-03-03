@@ -65,6 +65,7 @@ export class WaitEvent extends ScratchEvent {
             case "random":
                 this._steps = Randomness.getInstance().nextInt(0, Container.config.getWaitStepUpperBound() + 1);
                 break;
+            case "value":
             case "codon":
                 this._steps = args[0];
                 break;
