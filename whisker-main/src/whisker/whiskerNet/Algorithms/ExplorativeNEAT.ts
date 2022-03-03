@@ -33,7 +33,7 @@ export class ExplorativeNEAT extends NEAT {
                 await this.evaluateNetworks(population.networks);
                 this.updateBestIndividualAndStatistics(population);
                 if (this._archive.has(this._currentStatementKey)) {
-                    console.log(`Covered Statement ${this._currentStatementKey}:${this._currentTargetStatement}`);
+                    console.log(`Covered Target Statement ${this._currentStatementKey}:${this._currentTargetStatement}`);
                     break;
                 }
                 population.updatePopulationStatistics();
@@ -100,6 +100,7 @@ export class ExplorativeNEAT extends NEAT {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
             if (this.countAsCovered(fitnessFunctionKey, candidateChromosome)) {
+                console.log(`Covered Statement ${fitnessFunctionKey}:${fitnessFunction}`);
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, candidateChromosome);
             }

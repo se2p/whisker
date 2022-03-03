@@ -21,44 +21,17 @@
 import {StoppingCondition} from '../StoppingCondition';
 import {Chromosome} from "../Chromosome";
 import {SearchAlgorithm} from "../SearchAlgorithm";
+import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 export class OptimalSolutionStoppingCondition<T extends Chromosome> implements StoppingCondition<T> {
 
     isFinished(algorithm: SearchAlgorithm<T>): boolean {
-        const solutions = algorithm.getCurrentSolution();
-        const fitnessFunctions = algorithm.getFitnessFunctions();
-
-        // TODO: This could be written in a single line by extending the List class?
-        for (const f of fitnessFunctions) {
-            let fitnessCovered = false;
-            for (const solution of solutions) {
-                const fitness = solution.getFitness(f);
-                if (f.isOptimal(fitness)) {
-                    fitnessCovered = true;
-                    break;
-                }
-            }
-
-            if (!fitnessCovered) {
-                return false;
-            }
-        }
-
-        return true;
+        const fitnessFunctionCount = [...algorithm.getFitnessFunctions()].length;
+        return StatisticsCollector.getInstance().coveredFitnessFunctionsCount === fitnessFunctionCount;
     }
 
     getProgress(algorithm: SearchAlgorithm<T>): number {
-        let coveredFitnessFunctions = 0;
-        let totalFitnessFunctions = 0;
-        for (const f of algorithm.getFitnessFunctions()) {
-            totalFitnessFunctions++;
-            for (const solution of algorithm.getCurrentSolution()) {
-                if (f.isOptimal(solution.getFitness(f))) {
-                    coveredFitnessFunctions++;
-                    break;
-                }
-            }
-        }
-        return coveredFitnessFunctions / totalFitnessFunctions;
+        const fitnessFunctionCount = [...algorithm.getFitnessFunctions()].length;
+        return fitnessFunctionCount / StatisticsCollector.getInstance().coveredFitnessFunctionsCount;
     }
 }

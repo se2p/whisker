@@ -26,8 +26,7 @@ export class TargetStatementPopulation extends NeatPopulation {
         for (const network of this._startingNetworks) {
             this.networks.push(network.clone());
         }
-        console.log("Starting: ", this._startingNetworks)
-        console.log("Before Mutation: ", this.networks.length)
+
         // Keep mutating the starting network until we have reached the desired population size.
         let i = 0;
         while (this.networks.length < this.hyperParameter.populationSize) {
@@ -38,7 +37,6 @@ export class TargetStatementPopulation extends NeatPopulation {
             this.networks.push(mutant);
             i++;
         }
-        console.log("After mutation: ", this.networks.length)
 
         // Assign each network to a species.
         this.networks.forEach(network => this.speciate(network));
