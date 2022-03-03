@@ -189,6 +189,9 @@ export class NetworkExecutor {
             await nextEvent.apply();
         }
 
+        // Save the executed Trace and the covered blocks
+        network.coverage = this._vm.runtime.traceInfo.tracer.coverage as Set<string>;
+
         // Stop VM and remove listeners.
         this._vmWrapper.end();
         this._vm.removeListener(Runtime.PROJECT_RUN_STOP, _onRunStop);

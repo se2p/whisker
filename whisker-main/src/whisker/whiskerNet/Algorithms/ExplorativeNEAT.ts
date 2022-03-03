@@ -199,7 +199,6 @@ export class ExplorativeNEAT extends NEAT {
                 }
             }
         }
-        console.log("Conditions: ", this._stoppingCondition)
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
 }
