@@ -5,13 +5,16 @@ import {NeatChromosome} from "../Networks/NeatChromosome";
 
 export class TargetStatementPopulation extends NeatPopulation {
 
-    private readonly _startingNetwork: NeatChromosome;
+    private readonly _startingNetworks: NeatChromosome[];
 
-    constructor(hyperParameter: NeatProperties, targetStatement: StatementFitnessFunction, startingNetwork: NeatChromosome) {
+    constructor(hyperParameter: NeatProperties, targetStatement: StatementFitnessFunction,
+                startingNetworks: NeatChromosome[]) {
         super(undefined, hyperParameter, targetStatement);
-        this._startingNetwork = startingNetwork;
-        this._startingNetwork.targetFitness = this._targetStatement;
-        this._startingNetwork.initialiseStatementTargets([...this._startingNetwork.statementTargets.keys()]);
+        this._startingNetworks = startingNetworks;
+        for (const network of startingNetworks) {
+            network.targetFitness = this._targetStatement;
+            network.initialiseStatementTargets([...network.statementTargets.keys()]);
+        }
     }
 
     /**
@@ -20,14 +23,22 @@ export class TargetStatementPopulation extends NeatPopulation {
      */
     public generatePopulation(): void {
         // Add the starting network to the population.
-        this.networks.push(this._startingNetwork.clone());
-        // Keep mutating the starting network until we have reached the desired population size.
-        while (this.networks.length < this.hyperParameter.populationSize) {
-            const mutant = this._startingNetwork.mutate();
-            mutant.targetFitness = this._targetStatement;
-            mutant.initialiseStatementTargets([...this._startingNetwork.statementTargets.keys()]);
-            this.networks.push(mutant);
+        for (const network of this._startingNetworks) {
+            this.networks.push(network.clone());
         }
+        console.log("Starting: ", this._startingNetworks)
+        console.log("Before Mutation: ", this.networks.length)
+        // Keep mutating the starting network until we have reached the desired population size.
+        let i = 0;
+        while (this.networks.length < this.hyperParameter.populationSize) {
+            const parent = this._startingNetworks[i % this._startingNetworks.length];
+            const mutant = parent.mutate();
+            mutant.targetFitness = this._targetStatement;
+            mutant.initialiseStatementTargets([...parent.statementTargets.keys()]);
+            this.networks.push(mutant);
+            i++;
+        }
+        console.log("After mutation: ", this.networks.length)
 
         // Assign each network to a species.
         this.networks.forEach(network => this.speciate(network));

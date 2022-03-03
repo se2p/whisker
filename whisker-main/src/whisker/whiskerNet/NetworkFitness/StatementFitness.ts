@@ -8,7 +8,21 @@ import {Randomness} from "../../utils/Randomness";
 
 export class StatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
-    constructor(private _stableCount: number) {}
+    /**
+     * The seeds used to test if a given statement can be covered reliably.
+     */
+    private readonly repetitionSeeds: number[];
+
+    /**
+     * Random number generator.
+     */
+    private random: Randomness
+
+    constructor(private _stableCount: number) {
+        this.random = Randomness.getInstance();
+        this.repetitionSeeds = Array(this.stableCount).fill(0).map(
+            () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
+    }
 
     /**
      * Fetches the targeted statement of a network and calculates its fitness.
@@ -42,11 +56,13 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
     private async checkStableCoverage(network: NetworkChromosome, timeout, eventSelection): Promise<void> {
         network.fitness = 1;
         const originalSeed = Randomness._scratchSeed;
+        const originalPlayTime = network.playTime;
         // Iterate over each seed and calculate the achieved fitness
-        for (let i = 0; i < this.stableCount; i++) {
-            Randomness.setScratchSeed(Randomness.getInstance().nextInt(0, Number.MAX_SAFE_INTEGER), true);
+        for (const seed of this.repetitionSeeds) {
+            Randomness.setScratchSeed(seed, true);
             const executor = new NetworkExecutor(Container.vmWrapper, timeout, eventSelection);
             await executor.execute(network);
+            executor.resetState();
 
             // Increase the score by 1 if we covered the given statement in the executed scenario as well.
             for (const [statement, coverCount] of network.statementTargets.entries()) {
@@ -59,8 +75,9 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
             }
             executor.resetState();
         }
-        // Reset to the old seed.
+        // Reset to the old Scratch seed and network play time.
         Randomness.setScratchSeed(originalSeed, true);
+        network.playTime = originalPlayTime;
         console.log(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`)
     }
 

@@ -175,15 +175,15 @@ export class ExplorativeNEAT extends NEAT {
     }
 
     protected getPopulation(): NeatPopulation {
-        let startingNetwork: NeatChromosome;
+        let startingNetworks: NeatChromosome[];
         if (this._parentKeyOfTargetStatement === undefined || !this._archive.has(this._parentKeyOfTargetStatement)) {
-            startingNetwork = this._chromosomeGenerator.get();
-            startingNetwork.initialiseStatementTargets([...this._fitnessFunctions.values()]);
+            startingNetworks = [this._chromosomeGenerator.get()];
+            startingNetworks[0].initialiseStatementTargets([...this._fitnessFunctions.values()]);
         } else {
-            startingNetwork = this._archive.get(this._parentKeyOfTargetStatement);
+            startingNetworks = Arrays.distinct(this._archive.values());
         }
         return new TargetStatementPopulation(this._neuroevolutionProperties, this._currentTargetStatement,
-            startingNetwork);
+            startingNetworks);
     }
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {

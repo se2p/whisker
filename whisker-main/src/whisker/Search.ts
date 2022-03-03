@@ -115,18 +115,17 @@ export class Search {
         if (config.getTestGenerator() instanceof NeuroevolutionTestGenerator) {
             let upperBound: number = undefined;
             stoppingCondition = config.neuroevolutionProperties.stoppingCondition;
-            if (stoppingCondition instanceof FitnessEvaluationStoppingCondition) {
-                upperBound = stoppingCondition.maxEvaluations;
+            if (stoppingCondition instanceof FixedTimeStoppingCondition) {
+                upperBound = stoppingCondition.maxTime;
             } else if (stoppingCondition instanceof OneOfStoppingCondition) {
                 for (const d of stoppingCondition.conditions) {
-                    if (d instanceof FitnessEvaluationStoppingCondition) {
-                        if (upperBound == undefined || upperBound > d.maxEvaluations) {
-                            upperBound = d.maxEvaluations;
-                        }
+                    if (d instanceof FixedTimeStoppingCondition) {
+                            upperBound = d.maxTime;
                     }
                 }
             }
-            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(config.neuroevolutionProperties.populationSize, upperBound);
+            // Sample every 15 minutes
+            const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(900000, upperBound);
             console.log(csvOutput);
             return csvOutput;
         } else {
