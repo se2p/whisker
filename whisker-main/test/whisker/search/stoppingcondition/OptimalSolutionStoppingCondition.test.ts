@@ -26,6 +26,7 @@ import {OptimalSolutionStoppingCondition} from "../../../../src/whisker/search/s
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import Arrays from "../../../../src/whisker/utils/Arrays";
+import {StatisticsCollector} from "../../../../src/whisker/utils/StatisticsCollector";
 
 class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
 
@@ -37,44 +38,21 @@ class DummySearchAlgorithm extends RandomSearch<BitstringChromosome> {
 
 describe('OptimalSolutionStoppingCondition', () => {
 
-    test('Optimal value', async () => {
-        const bits = [true, true];
-        const chromosome = new BitstringChromosome(bits,
-            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
-        const fitnessFunction = new OneMaxFitnessFunction(2);
-        const algorithm = new DummySearchAlgorithm();
-        algorithm.setFitnessFunction(fitnessFunction);
-        algorithm.setCurrentSolution(chromosome);
-
-        const stoppingCondition = new OptimalSolutionStoppingCondition();
-
-        expect(await stoppingCondition.isFinished(algorithm)).toBeTruthy();
-    });
-
-    test('Non-Optimal value', async () => {
-        const bits = [false, true];
-        const chromosome = new BitstringChromosome(bits,
-            new BitflipMutation(), new SinglePointCrossover<BitstringChromosome>());
+    test('OptimalSolution found', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         algorithm.setFitnessFunction(fitnessFunction)
-        algorithm.setCurrentSolution(chromosome)
-
+        StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
         const stoppingCondition = new OptimalSolutionStoppingCondition();
-
-        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        expect(stoppingCondition.isFinished(algorithm)).toBeTruthy();
     });
 
-
-    test('Do not fail on empty list', async () => {
+    test('OptimalSolution not found', async () => {
         const fitnessFunction = new OneMaxFitnessFunction(2);
         const algorithm = new DummySearchAlgorithm();
         algorithm.setFitnessFunction(fitnessFunction)
-        // No current solution is set:
-        // algorithm.setCurrentSolution(chromosome)
-
         const stoppingCondition = new OptimalSolutionStoppingCondition();
-
-        expect(await stoppingCondition.isFinished(algorithm)).toBeFalsy();
+        StatisticsCollector.getInstance().coveredFitnessFunctionsCount = 0;
+        expect(stoppingCondition.isFinished(algorithm)).toBeFalsy();
     });
 });
