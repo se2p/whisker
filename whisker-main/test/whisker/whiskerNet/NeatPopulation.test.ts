@@ -184,7 +184,7 @@ describe("Test NeatPopulation", () => {
     test("Test Speciation with a chromosome mutated several times", () => {
         const chromosome = chromosomeGenerator.get();
         let mutant = chromosome.mutate();
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 100; i++) {
             mutant = mutant.mutate();
         }
         population.speciate(mutant);
