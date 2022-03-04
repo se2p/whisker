@@ -81,8 +81,10 @@ describe("regressionNode Tests", () => {
     test("getActivationValue Test", () => {
         regressionNodeNone.nodeValue = 10;
         regressionNodeNone.activationCount = 1;
+        regressionNodeNone.activatedFlag = true;
         regressionNodeRelu.nodeValue = -1;
         regressionNodeRelu.activationCount = 1;
+        regressionNodeRelu.activatedFlag = true;
         expect(regressionNodeNone.activate()).toBe(10);
         expect(regressionNodeNone.activationValue).toBe(10);
         expect(regressionNodeRelu.activate()).toBe(0);
@@ -94,6 +96,7 @@ describe("regressionNode Tests", () => {
         const regressionNodeNone2 = new RegressionNode(2, new WaitEvent(), "Duration", ActivationFunction.NONE);
         regressionNodeNone2.nodeValue = 5;
         regressionNodeNone2.activationCount = 10;
+        regressionNodeNone2.activatedFlag = true;
         expect(regressionNodeNone2.activate()).toBe(5);
         expect(regressionNodeNone2.activationValue).toBe(5);
         regressionNodeNone2.reset();
