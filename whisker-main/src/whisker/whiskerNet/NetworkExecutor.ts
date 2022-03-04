@@ -186,11 +186,22 @@ export class NetworkExecutor {
         const startTime = Date.now();
 
         const eventTrace = network.trace.events;
-        for (const event of eventTrace) {
-            const nextEvent = event.event;
-            const parameter = event.parameters;
-            nextEvent.setParameter(parameter, 'value');
-            await nextEvent.apply();
+        for (let i = 0; i < eventTrace.length; i++) {
+
+            // Stop if project is no longer running.
+            if(!this._projectRunning){
+                break;
+            }
+            // Load input features into the node to record the AT later.
+            const spriteFeatures = InputExtraction.extractSpriteInfo(this._vmWrapper);
+            network.setUpInputs(spriteFeatures);
+
+            // Execute the event
+            const event = eventTrace[i].event;
+            await event.apply();
+
+            // Record Activation trace.
+            NetworkExecutor.recordActivationTrace(network, i);
         }
 
         // Set score and play time.

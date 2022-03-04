@@ -21,6 +21,7 @@
 import {TestChromosome} from "./TestChromosome";
 import {WhiskerTest} from "../testgenerator/WhiskerTest";
 import {Container} from "../utils/Container";
+import {NetworkChromosome} from "../whiskerNet/Networks/NetworkChromosome";
 
 export class JavaScriptConverter {
 
@@ -86,7 +87,9 @@ export class JavaScriptConverter {
             footer += "      categories: [],\n";
             footer += "      type: '" + type + "',\n";
             if (type === "neuroevolution") {
-                footer += "      configs: " + JSON.stringify(configs) + "\n";
+                footer += "      configs: " + JSON.stringify(configs) + ",\n";
+                footer += "      activationTrace: " + JSON.stringify((test.chromosome as unknown as NetworkChromosome).currentActivationTrace.toJSON()) + "\n";
+
             }
             if (i < tests.length - 1) {
                 footer += "  },\n";

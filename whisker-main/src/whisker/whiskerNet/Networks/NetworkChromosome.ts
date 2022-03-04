@@ -394,7 +394,7 @@ export abstract class NetworkChromosome extends Chromosome {
      * Load the given inputs into the input nodes of the network.
      * @param inputs a map which maps each sprite to its input feature vector.
      */
-    private setUpInputs(inputs: Map<string, Map<string, number>>): void {
+    public setUpInputs(inputs: Map<string, Map<string, number>>): void {
 
         // Reset the input nodes' activation flag to only use inputs during activation for which we collected values.
         for (const iNodeMap of this.inputNodes.values()) {

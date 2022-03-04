@@ -147,13 +147,11 @@ export class StaticSuite {
 
             events.push(new EventAndParameters(event, variableParameter));
         }
-        console.log(events)
         return new ExecutionTrace([], events);
     }
 
     private static getSourceParameter(statement: string): string[] {
         let paramArgs = statement.substring(statement.indexOf('(') + 1, statement.indexOf(')'));
-        console.log("ParamArgs: ", paramArgs)
         paramArgs = paramArgs.split("'").join('');
         return paramArgs.split(',');
     }
@@ -169,5 +167,6 @@ interface Test {
     test: () => void,
     type: "neuroevolution"
     configs: Record<string, string | number>,
+    activationTrace: Record<string, number[]>
 }
 
