@@ -104,7 +104,7 @@ async function init () {
         }
         await browser.close();
     }
-    // Standard TestSuite / Model-based testing
+    // Standard TestSuite / Standard TestSuite executed with Networks / Model-based testing /
     else {
         if (csvFile != false && fs.existsSync(csvFile)) {
             console.error(`CSV file already exists, aborting`);
@@ -128,9 +128,15 @@ async function init () {
             csvs.push(...await runTestsOnFile(browser, scratchPath, modelPath));
         }
 
-        if (csvFile != false) {
+        if (csvFile !== false) {
             console.info(`Creating CSV summary in ${csvFile}`);
-            fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
+            // In case of NE Static Suite we already have a csv file and do not need additional processing.
+            if(typeof csvs[0] === 'string'){
+                fs.writeFileSync(csvFile, csvs[0]);
+            }
+            else {
+                fs.writeFileSync(csvFile, CSVConverter.rowsToCsv(csvs));
+            }
         }
         await browser.close();
     }
@@ -148,8 +154,10 @@ async function runTestsOnFile (browser, targetProject, modelPath) {
                 const modelCoverage = results.map(({modelCoverage}) => modelCoverage);
                 csvs.push(...results.map(({csv}) => csv));
 
-                printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
-                    modelCoverage[0]);
+                if(summaries[0] !== undefined) {
+                    printTestResultsFromCoverageGenerator(summaries, CoverageGenerator.mergeCoverage(coverages),
+                        modelCoverage[0]);
+                }
                 logger.debug(`Duration: ${(Date.now() - start) / 1000} Seconds`);
             })
             .catch(errors => logger.error('Error on executing tests: ', errors))
@@ -410,10 +418,15 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
+            // eslint-disable-next-line no-constant-condition
+            const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
+            if (currentLog.includes('projectName,testName,network,fitnessFunctionCount')) {
+                return currentLog.toString();
+            }
+
             if (isLiveLogEnabled) {
                 const currentLog = await (await logOutput.getProperty('innerHTML')).jsonValue();
-                const newInfoFromLog = currentLog.replace(log, '')
-                    .trim();
+                const newInfoFromLog = currentLog.replace(log, '').trim();
 
                 if (newInfoFromLog.length) {
                     logger.log(newInfoFromLog);
@@ -423,8 +436,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
             }
 
             const currentCoverageLog = await (await coverageOutput.getProperty('innerHTML')).jsonValue();
-            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '')
-                .trim();
+            const newInfoFromCoverage = currentCoverageLog.replace(coverageLog, '').trim();
             if (newInfoFromCoverage.length && isLiveOutputCoverage) {
                 logger.log(`Page ${index} | Coverage: `, newInfoFromCoverage);
             } else if (newInfoFromCoverage.includes('not ok ')) {
@@ -441,7 +453,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 
         let csvRow = await CSVConverter.tapToCsvRow(coverageLog);
         csvRow['duration'] = `${(Date.now() - startProject) / 1000}`;
-        return {csvRow, coverageLog};
+        return csvRow;
     }
 
     /**
@@ -497,7 +509,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
         const promise = onFinishedCallback();
         await executeTests();
 
-        const {csvRow, coverageLog} = await readTestOutput();
+        const csvRow = await readTestOutput();
         const {serializableCoverageObject, summary, serializableModelCoverage} = await promise;
         await page.close();
 
@@ -509,7 +521,7 @@ async function runTests (path, browser, index, targetProject, modelPath) {
 }
 
 /**
- * Perpares the test source code, by evaling the tests and returning the source code of the tests without the
+ * Prepares the test source code, by evaluating the tests and returning the source code of the tests without the
  * `modules.export` statement at the end.
  *
  * @param {*} path        The path to the file where the original tests are defined in

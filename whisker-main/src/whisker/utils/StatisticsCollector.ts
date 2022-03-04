@@ -387,8 +387,8 @@ export class StatisticsCollector {
         return [header, body].join("\n");
     }
 
-    public asCsvDynamicSuite(): string {
-        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,score" +
+    public asCsvNetworkSuite(): string {
+        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,score," +
             "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
 
         this.networks.sort((a, b) => b.fitness - a.fitness);
@@ -397,19 +397,6 @@ export class StatisticsCollector {
             const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
                 this._coveredFitnessFunctionsCount, network.score, network.playTime, network.surpriseAdequacyStep,
                 network.surpriseAdequacyNodes, network.surpriseCounterNormalised, network.zScore];
-            const dataRow = data.join(",").concat("\n");
-            csv = csv.concat(dataRow);
-        }
-        return csv;
-    }
-
-    public asCsvStaticSuite(): string {
-        let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,score,playTime\n";
-        this.networks.sort((a, b) => b.fitness - a.fitness);
-        for (let i = 0; i < this.networks.length; i++) {
-            const network = this.networks[i];
-            const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
-                this._coveredFitnessFunctionsCount, network.score, network.playTime];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }

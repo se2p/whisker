@@ -89,8 +89,7 @@ export class DynamicSuite {
             executor.resetState();
             StatisticsCollector.getInstance().networks.push(network);
         }
-        const csvOutput = StatisticsCollector.getInstance().asCsvDynamicSuite();
-        console.log(csvOutput)
+        const csvOutput = StatisticsCollector.getInstance().asCsvNetworkSuite();
         return csvOutput;
     }
 

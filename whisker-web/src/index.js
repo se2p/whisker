@@ -315,6 +315,19 @@ const runAllTests = async function () {
         Whisker.outputRun.println([
             coverageString
         ].join('\n'));
+
+        if (typeof window.messageServantCallback === 'function') {
+            const coveredBlockIdsPerSprite =
+                [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+            const blockIdsPerSprite =
+                [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+
+            const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
+            const modelCoverage = [];
+            const serializableModelCoverage = {modelCoverage};
+            window.messageServantCallback({serializableCoverageObject, undefined, serializableModelCoverage});
+        }
+
     } else { // Normal Static Suite
         for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
             const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);

@@ -73,9 +73,7 @@ export class StaticSuite {
             executor.resetState();
             StatisticsCollector.getInstance().networks.push(network);
         }
-        const csvOutput = StatisticsCollector.getInstance().asCsvStaticSuite();
-        console.log(csvOutput)
-        return csvOutput;
+        return StatisticsCollector.getInstance().asCsvNetworkSuite();
     }
 
     private initialiseFitnessTargets() {
