@@ -280,7 +280,8 @@ const runAllTests = async function () {
         Whisker.outputRun.println([
             coverageString
         ].join('\n'));
-    } else if (Whisker.tests[0].type === 'neuroevolution') { // Static NE Suite
+    } else if (Whisker.tests !== undefined && Whisker.tests.length > 0 && Whisker.tests[0].type === 'neuroevolution') {
+        // Static NE Suite
         let coverage;
         try {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
