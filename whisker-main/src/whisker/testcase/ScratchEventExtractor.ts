@@ -85,16 +85,19 @@ export abstract class ScratchEventExtractor {
     protected traverseBlocks(target: RenderedTarget, block: ScratchBlocks, foundEvents: ScratchEvent[]): void {
 
         while (block) {
+            let inputEntered = false;
             foundEvents.push(...this._extractEventsFromBlock(target, block))
             // first branch (if, forever, repeat, ...)
             if (block.inputs.SUBSTACK) {
                 const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block)
                 this.traverseBlocks(target, branchBlock, foundEvents);
+                inputEntered = true;
             }
             // else branch
             if (block.inputs.SUBSTACK2) {
                 const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block)
                 this.traverseBlocks(target, branchBlock, foundEvents);
+                inputEntered = true;
             }
 
             // look at the block(s) inside a conditional statement
@@ -106,11 +109,19 @@ export abstract class ScratchEventExtractor {
                     // Handle conditional statements with two condition blocks
                     if (condition.inputs.OPERAND1) {
                         this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND1.block), foundEvents);
+                        inputEntered = true;
                     }
                     if (condition.inputs.OPERAND2) {
                         this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
+                        inputEntered = true;
                     }
                     foundEvents.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
+                }
+            }
+
+            else if(block.inputs && !inputEntered){
+                for(const input of Object.values(block.inputs)){
+                    this.traverseBlocks(target, target.blocks.getBlock(input['block']), foundEvents);
                 }
             }
 

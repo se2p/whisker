@@ -44,7 +44,7 @@ export class ClassificationNode extends NodeGene {
      * @returns number activation value of the classification node.
      */
     activate(): number {
-        if (this.activationCount > 0) {
+        if (this.activatedFlag) {
             switch (this.activationFunction) {
                 case ActivationFunction.SIGMOID:
                     // The specified gain value of -4.9 is based on the original NEAT publication.

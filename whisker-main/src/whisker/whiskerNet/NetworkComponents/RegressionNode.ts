@@ -23,7 +23,7 @@ export class RegressionNode extends NodeGene {
      * @param eventParameter specifies the parameter of the event this regression node produces values for.
      * @param activationFunction the activation function of the regression node.
      */
-    constructor(uID: number, event: ScratchEvent, eventParameter: string, activationFunction: ActivationFunction) {
+    constructor(uID: number, event: ScratchEvent, eventParameter: string, activationFunction = ActivationFunction.NONE) {
         super(uID, activationFunction, NodeType.OUTPUT);
         this._event = event;
         this._eventParameter = eventParameter;
@@ -53,7 +53,7 @@ export class RegressionNode extends NodeGene {
      * @returns number activation value of the regression node.
      */
     activate(): number {
-        if (this.activationCount > 0) {
+        if (this.activatedFlag) {
             switch (this.activationFunction) {
                 case ActivationFunction.RELU:
                     this.activationValue = NeuroevolutionUtil.relu(this.nodeValue);
