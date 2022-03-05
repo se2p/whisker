@@ -113,17 +113,26 @@ export class NetworkLoader {
                 }
             }
 
-            network.savedActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
-            for (const [step, nodeTraces] of Object.entries(savedNetwork['AT'])) {
-                const nodeStepTraces = new Map<string, number[]>();
-                for (const [nodeId, activationValues] of Object.entries(nodeTraces)) {
-                    nodeStepTraces.set(nodeId, activationValues);
-                }
-                network.savedActivationTrace.trace.set(Number(step), nodeStepTraces);
-            }
-
+            NetworkLoader.loadActivationTrace(network, savedNetwork['AT']);
             networks.push(network);
         }
         return networks;
+    }
+
+    /**
+     * Loads the activation trace into the savedActivationTrace value.
+     * @param network the network into which the trace will we loaded
+     * @param savedTrace the trace that should be loaded into the network.
+     */
+    public static loadActivationTrace(network: NeatChromosome,
+                                      savedTrace: Record<string, Record<string, number[]>>): void {
+        network.savedActivationTrace = new ActivationTrace(network.allNodes.filter(node => node.type === NodeType.INPUT));
+        for (const [step, nodeTraces] of Object.entries(savedTrace)) {
+            const nodeStepTraces = new Map<string, number[]>();
+            for (const [nodeId, activationValues] of Object.entries(nodeTraces)) {
+                nodeStepTraces.set(nodeId, activationValues);
+            }
+            network.savedActivationTrace.trace.set(Number(step), nodeStepTraces);
+        }
     }
 }

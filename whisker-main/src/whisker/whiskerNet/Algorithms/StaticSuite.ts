@@ -23,6 +23,7 @@ import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {DynamicSuite} from "./DynamicSuite";
+import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 
 export class StaticSuite {
 
@@ -70,6 +71,9 @@ export class StaticSuite {
             const trace = StaticSuite.getTraceFromSource(testSource);
             const network = new NeatChromosome([], [], undefined, undefined);
             network.trace = trace;
+            console.log(test.activationTrace)
+            NetworkLoader.loadActivationTrace(network, test.activationTrace);
+            console.log(network)
             network.recordActivationTrace = true;
             await executor.executeSavedTrace(network);
             this.updateArchive(network);
@@ -176,6 +180,6 @@ interface Test {
     test: () => void,
     type: "neuroevolution"
     configs: Record<string, string | number>,
-    activationTrace: Record<string, number[]>
+    activationTrace: Record<string, Record<string, number[]>>
 }
 
