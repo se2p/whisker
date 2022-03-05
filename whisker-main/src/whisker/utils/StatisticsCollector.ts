@@ -53,7 +53,7 @@ export class StatisticsCollector {
     private _highestNetworkFitness: number;
     private _highestScore: number;
     private _highestPlayTime: number;
-    private _fitnessOverTime: Map<number, [number, number, number]>;
+    private readonly _fitnessOverTime: Map<number, [number, number, number, number]>;
 
     // Dynamic Suite
     private _testName: string;
@@ -85,7 +85,8 @@ export class StatisticsCollector {
         this._numberFitnessEvaluations = 0;
         this._highestNetworkFitness = 0;
         this._covOverTime = new Map<number, number>();
-        this._fitnessOverTime = new Map<number, [number, number, number]>(); // Values are [coverage, score, survive]
+        // Values are [coverage, fitness, score, survive]
+        this._fitnessOverTime = new Map<number, [number, number, number, number]>();
         this.coveredFitnessFunctions = [];
         this._highestScore = 0;
         this._highestPlayTime = 0;
@@ -185,7 +186,7 @@ export class StatisticsCollector {
         }
     }
 
-    public updateFitnessOverTime(timeStamp: number, value: [number, number, number]): void {
+    public updateFitnessOverTime(timeStamp: number, value: [number, number, number, number]): void {
         this._fitnessOverTime.set(timeStamp, value);
     }
 
@@ -403,8 +404,8 @@ export class StatisticsCollector {
         return csv;
     }
 
-    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, [number, number, number]> {
-        const adjusted: Map<number, [number, number, number]> = new Map();
+    private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, [number, number, number, number]> {
+        const adjusted: Map<number, [number, number, number, number]> = new Map();
         let maxEvaluations = 0;
         for (const evaluationSample of this._fitnessOverTime.keys()) {
             const rounded = Math.round(evaluationSample / sampleDistance) * sampleDistance;
@@ -414,7 +415,7 @@ export class StatisticsCollector {
             }
 
         }
-        let maxCov: [number, number, number] = [0, 0, 0];
+        let maxCov: [number, number, number, number] = [0, 0, 0, 0];
         for (let i = 0; i <= maxEvaluations; i = i + sampleDistance) {
             if (adjusted.has(i)) {
                 maxCov = adjusted.get(i);

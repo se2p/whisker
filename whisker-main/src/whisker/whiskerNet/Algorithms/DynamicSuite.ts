@@ -84,7 +84,6 @@ export class DynamicSuite {
                 network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
                 const z = SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
                 network.zScore = z[0];
-                console.log(z[1]);
             }
             executor.resetState();
             StatisticsCollector.getInstance().networks.push(network);
