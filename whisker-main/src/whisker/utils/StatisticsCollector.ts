@@ -351,29 +351,36 @@ export class StatisticsCollector {
     }
 
     public asCsvNeuroevolution(sampleDistance?: number, maxTimeStamp?: number): string {
-        let fitnessHeaders: string;
-        let fitnessValues: string;
+        // Extract timestamps, sorted in ascending order, and the corresponding coverage values.
+        const fitnessOverTimeMap = this._adjustFitnessOverEvaluations(sampleDistance)
+        const timestamps = [...fitnessOverTimeMap.keys()].sort((a, b) => a - b);
+        const timelineValues = timestamps.map((ts) => fitnessOverTimeMap.get(ts).join('|'));
 
-        if (sampleDistance && maxTimeStamp) {
-            const fitnessTimeline = this._adjustFitnessOverEvaluations(sampleDistance);
-            const header = [...fitnessTimeline.keys()];
+        let header = timestamps;
+        let values = timelineValues;
 
-            const values: string[] = []
-            for (const value of fitnessTimeline.values()) {
-                values.push(value.join('|'));
-            }
+        // Truncate the fitness timeline to the given numberOfCoverageValues if necessary.
+        const truncateFitnessTimeline = maxTimeStamp !== undefined && 0 <= maxTimeStamp;
 
-            // Extend the header and corresponding values up to the maxTimeStamp.
-            let latestKey = header[header.length - 1];
-            while (latestKey < maxTimeStamp) {
-                latestKey += sampleDistance;
-                header.push(latestKey);
-                values.push(values[values.length - 1]);
-            }
+        // If the search stops before the maximum time has passed, then the CSV file will only include columns up to
+        // that time, and not until the final time. As a result, experiment data becomes difficult to merge. Therefore,
+        // the number of columns should be padded in this case so that the number of columns is always identical.
+        if (truncateFitnessTimeline) {
+            const nextTimeStamp = timestamps[timestamps.length - 1] + sampleDistance;
+            const nextCoverageValue = timelineValues[timelineValues.length - 1];
 
-            fitnessHeaders = header.join(",");
-            fitnessValues = values.join(",");
+            const lengthDiff = Math.abs(maxTimeStamp - timestamps[timestamps.length - 1]) / sampleDistance;
+
+            const range: (until: number) => number[] = (until) => [...Array(until).keys()];
+            const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance)
+            const valuePadding = Array(lengthDiff).fill(nextCoverageValue);
+
+            header = [...header, ...headerPadding].slice(0, maxTimeStamp);
+            values = [...values, ...valuePadding].slice(0, maxTimeStamp);
         }
+
+        const fitnessHeaders = header.join(",");
+        const fitnessValues = values.join(",");
 
         // Default header and data arrays
         const headers = ["projectName", "configName", "fitnessFunctionCount", "iterationCount", "coveredFitnessFunctionCount",
@@ -383,9 +390,9 @@ export class StatisticsCollector {
             this._timeToReachFullCoverage, this._highestNetworkFitness, this._highestScore, this._highestPlayTime];
 
         // Combine the header and data arrays
-        const header = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
+        const headerCombined = fitnessHeaders === undefined ? headers.join(',') : headers.join(",").concat(",", fitnessHeaders);
         const body = fitnessValues === undefined ? data.join(',') : data.join(",").concat(",", fitnessValues);
-        return [header, body].join("\n");
+        return [headerCombined, body].join("\n");
     }
 
     public asCsvNetworkSuite(): string {
