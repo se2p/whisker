@@ -15,6 +15,7 @@ import {KeyPressEvent} from "../testcase/events/KeyPressEvent";
 import {Container} from "../utils/Container";
 import {ParameterType} from "../testcase/events/ParameterType";
 import {ScoreFitness} from "./NetworkFitness/ScoreFitness";
+import cloneDeep from "lodash.clonedeep";
 
 export class NetworkExecutor {
 
@@ -292,6 +293,7 @@ export class NetworkExecutor {
                 volume: this._vm.runtime.targets[targetsKey]["volume"],
                 x: this._vm.runtime.targets[targetsKey]["x"],
                 y: this._vm.runtime.targets[targetsKey]["y"],
+                variables: cloneDeep(this._vm.runtime.targets[targetsKey]["variables"])
             }
         }
     }
@@ -325,8 +327,10 @@ export class NetworkExecutor {
             this._vm.runtime.targets[targetsKey]["videoTransparency"] = this._initialState[targetsKey]["videoTransparency"];
             this._vm.runtime.targets[targetsKey]["visible"] = this._initialState[targetsKey]["visible"];
             this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
-            this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
-            this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
+            const x = this._initialState[targetsKey]["x"];
+            const y = this._initialState[targetsKey]["y"];
+            this._vm.runtime.targets[targetsKey].setXY(x, y, true, true);
+            this._vm.runtime.targets[targetsKey]["variables"] = this._initialState[targetsKey]["variables"];
             this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop']
         }
     }
