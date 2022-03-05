@@ -21,6 +21,8 @@ import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {SoundEvent} from "../../testcase/events/SoundEvent";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
+import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
+import {DynamicSuite} from "./DynamicSuite";
 
 export class StaticSuite {
 
@@ -68,8 +70,17 @@ export class StaticSuite {
             const trace = StaticSuite.getTraceFromSource(testSource);
             const network = new NeatChromosome([], [], undefined, undefined);
             network.trace = trace;
+            network.recordActivationTrace = true;
             await executor.executeSavedTrace(network);
             this.updateArchive(network);
+            if (network.savedActivationTrace) {
+                network.surpriseAdequacyStep = SurpriseAdequacy.LSA(network.savedActivationTrace, network.currentActivationTrace);
+                const nodeSA = SurpriseAdequacy.LSANodeBased(network.savedActivationTrace, network.currentActivationTrace);
+                network.surpriseAdequacyNodes = nodeSA[0];
+                network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
+                const z = SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
+                network.zScore = z[0];
+            }
             executor.resetState();
             StatisticsCollector.getInstance().networks.push(network);
         }

@@ -168,8 +168,7 @@ export class ExplorativeNEAT extends NEAT {
         // Update TimeLine
         const timeLineValues: [number, number, number, number] = [this._archive.size, highestFitness, highestScore,
             highestSurvive];
-        StatisticsCollector.getInstance().updateFitnessOverTime(
-            StatisticsCollector.getInstance().numberFitnessEvaluations, timeLineValues);
+        StatisticsCollector.getInstance().updateFitnessOverTime(Date.now() - this._startTime, timeLineValues);
 
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
             this._fullCoverageReached = true;

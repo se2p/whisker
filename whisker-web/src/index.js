@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
 import {DynamicSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/DynamicSuite';
-import {StaticSuite} from "whisker-main/src/whisker/whiskerNet/Algorithms/StaticSuite";
+import {StaticSuite} from 'whisker-main/src/whisker/whiskerNet/Algorithms/StaticSuite';
 
 /* Translation resources */
 const indexDE = require('./locales/de/index.json');
@@ -233,6 +233,9 @@ const runTests = async function (tests) {
 
 const runAllTests = async function () {
     $('#run-all-tests').tooltip('hide');
+    // Long tests, for example saved networks in Dynamic Suites, can take some time to be loaded;
+    // Hence we wait a second before checking if tests are loaded.
+    await new Promise(resolve => setTimeout(resolve, 1000));
     if ((Whisker.tests === undefined || Whisker.tests.length === 0) && !Whisker.modelTester.someModelLoaded()) {
         showModal(i18next.t('test-execution'), i18next.t('no-tests'));
         return;

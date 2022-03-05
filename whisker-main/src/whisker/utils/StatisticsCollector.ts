@@ -406,17 +406,17 @@ export class StatisticsCollector {
 
     private _adjustFitnessOverEvaluations(sampleDistance: number): Map<number, [number, number, number, number]> {
         const adjusted: Map<number, [number, number, number, number]> = new Map();
-        let maxEvaluations = 0;
-        for (const evaluationSample of this._fitnessOverTime.keys()) {
-            const rounded = Math.round(evaluationSample / sampleDistance) * sampleDistance;
-            adjusted.set(rounded, this._fitnessOverTime.get(evaluationSample));
-            if (rounded > maxEvaluations) {
-                maxEvaluations = rounded;
+        let maxTime = 0;
+        for (const timeSample of this._fitnessOverTime.keys()) {
+            const rounded = Math.round(timeSample / sampleDistance) * sampleDistance;
+            adjusted.set(rounded, this._fitnessOverTime.get(timeSample));
+            if (rounded > maxTime) {
+                maxTime = rounded;
             }
 
         }
         let maxCov: [number, number, number, number] = [0, 0, 0, 0];
-        for (let i = 0; i <= maxEvaluations; i = i + sampleDistance) {
+        for (let i = 0; i <= maxTime; i = i + sampleDistance) {
             if (adjusted.has(i)) {
                 maxCov = adjusted.get(i);
             } else {

@@ -88,11 +88,10 @@ export class DynamicSuite {
             executor.resetState();
             StatisticsCollector.getInstance().networks.push(network);
         }
-        const csvOutput = StatisticsCollector.getInstance().asCsvNetworkSuite();
-        return csvOutput;
+        return StatisticsCollector.getInstance().asCsvNetworkSuite();
     }
 
-    private static getNumberOfSurprises(surpriseMap: Map<number, Map<string, boolean>>): number {
+    public static getNumberOfSurprises(surpriseMap: Map<number, Map<string, boolean>>): number {
         let surpriseCounter = 0;
         for (const stepTrace of surpriseMap.values()) {
             for (const surprise of stepTrace.values()) {
