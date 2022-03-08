@@ -136,7 +136,11 @@ export class NetworkExecutor {
 
             // Select the event matching, set required parameters and execute it.
             network.codons.push(eventIndex);
-            const nextEvent: ScratchEvent = this.availableEvents[eventIndex];
+            let nextEvent: ScratchEvent = this.availableEvents[eventIndex];
+            // If something goes wrong, e.g. we have a defect network, just insert a Wait.
+            if(nextEvent === undefined){
+                nextEvent = this.availableEvents.find(event => event instanceof WaitEvent);
+            }
             await this.executeNextEvent(network, nextEvent, events);
 
             // Record the activation trace.
