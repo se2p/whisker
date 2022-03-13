@@ -397,14 +397,16 @@ export class StatisticsCollector {
 
     public asCsvNetworkSuite(): string {
         let csv = "projectName,testName,network,fitnessFunctionCount,totalCoveredFitnessFunctionCount,score," +
-            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore\n";
+            "playTime,surpriseStepAdequacy,surpriseNodeAdequacy,surpriseCounterNormalised,zScore,certainty\n";
 
         this.networks.sort((a, b) => b.fitness - a.fitness);
         for (let i = 0; i < this.networks.length; i++) {
             const network = this.networks[i];
+            const certaintyValues = [...network.certainty.values()];
+            const certainty = certaintyValues.reduce((pv, cv) => pv + cv, 0) / certaintyValues.length;
             const data = [this._projectName, this._testName, i, this._fitnessFunctionCount,
                 this._coveredFitnessFunctionsCount, network.score, network.playTime, network.surpriseAdequacyStep,
-                network.surpriseAdequacyNodes, network.surpriseCounterNormalised, network.zScore];
+                network.surpriseAdequacyNodes, network.surpriseCounterNormalised, network.zScore, certainty];
             const dataRow = data.join(",").concat("\n");
             csv = csv.concat(dataRow);
         }

@@ -144,7 +144,7 @@ export class NetworkExecutor {
             await this.executeNextEvent(network, nextEvent, events);
 
             // Record the activation trace.
-            NetworkExecutor.recordActivationTrace(network, stepCount);
+            this.recordActivationTrace(network, stepCount);
 
             stepCount++;
         }
@@ -206,7 +206,7 @@ export class NetworkExecutor {
             await event.apply();
 
             // Record Activation trace.
-            NetworkExecutor.recordActivationTrace(network, i);
+            this.recordActivationTrace(network, i);
         }
 
         // Set score and play time.
@@ -272,9 +272,11 @@ export class NetworkExecutor {
      * @param network the network whose activation trace should be updated.
      * @param stepCount determines whether we want to record the trace at the current step.
      */
-    private static recordActivationTrace(network: NetworkChromosome, stepCount: number) {
+    private recordActivationTrace(network: NetworkChromosome, stepCount: number) {
         if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
             network.updateActivationTrace(stepCount);
+            const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
+            network.certainty.set(stepCount,probabilities.reduce((pv, cv) => pv + Math.pow(cv,2), 0));
         }
     }
 

@@ -96,6 +96,11 @@ export abstract class NetworkChromosome extends Chromosome {
     private _zScore = 0;
 
     /**
+     * Saves the certainty of a softmax classification in at given step.
+     */
+    private _certainty = new Map<number, number>();
+
+    /**
      * Maps each target statement to the number of times it has been covered using different seeds.
      */
     private _statementTargets: Map<FitnessFunction<NetworkChromosome>, number>;
@@ -680,6 +685,14 @@ export abstract class NetworkChromosome extends Chromosome {
 
     set zScore(value: number) {
         this._zScore = value;
+    }
+
+    get certainty(): Map<number, number> {
+        return this._certainty;
+    }
+
+    set certainty(value: Map<number, number>) {
+        this._certainty = value;
     }
 
     get trace(): ExecutionTrace {
