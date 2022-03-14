@@ -17,6 +17,7 @@ import {FitnessFunction} from "../../search/FitnessFunction";
 import {DynamicSuiteParameter} from "../HyperParameter/DynamicSuiteParameter";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NetworkExecutor} from "../NetworkExecutor";
+import Arrays from "../../utils/Arrays";
 
 export class DynamicSuite {
 
@@ -77,6 +78,10 @@ export class DynamicSuite {
             network.recordActivationTrace = true;
             await executor.execute(network);
             this.updateArchive(network);
+            executor.resetState();
+        }
+
+        for (const network of Arrays.distinct(this._archive.values())){
             if (network.savedActivationTrace) {
                 network.surpriseAdequacyStep = SurpriseAdequacy.LSA(network.savedActivationTrace, network.currentActivationTrace);
                 const nodeSA = SurpriseAdequacy.LSANodeBased(network.savedActivationTrace, network.currentActivationTrace);
@@ -92,7 +97,6 @@ export class DynamicSuite {
                 const z = SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
                 network.zScore = z[0];
             }
-            executor.resetState();
             StatisticsCollector.getInstance().networks.push(network);
         }
         return StatisticsCollector.getInstance().asCsvNetworkSuite();
