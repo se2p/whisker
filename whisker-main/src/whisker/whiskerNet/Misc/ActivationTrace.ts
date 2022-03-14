@@ -83,4 +83,8 @@ export class ActivationTrace {
     get trace(): Map<number, Map<string, number[]>> {
         return this._trace;
     }
+
+    get tracedNodes(): NodeGene[] {
+        return this._tracedNodes;
+    }
 }

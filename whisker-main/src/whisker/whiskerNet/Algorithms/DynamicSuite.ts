@@ -81,7 +81,14 @@ export class DynamicSuite {
                 network.surpriseAdequacyStep = SurpriseAdequacy.LSA(network.savedActivationTrace, network.currentActivationTrace);
                 const nodeSA = SurpriseAdequacy.LSANodeBased(network.savedActivationTrace, network.currentActivationTrace);
                 network.surpriseAdequacyNodes = nodeSA[0];
-                network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
+
+                // If the program could not be executed we set all nodes as being suspicious
+                if(nodeSA[1] === undefined){
+                    network.surpriseCounterNormalised = network.savedActivationTrace.tracedNodes.length;
+                }
+                else {
+                    network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
+                }
                 const z = SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
                 network.zScore = z[0];
             }

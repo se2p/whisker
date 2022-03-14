@@ -72,14 +72,14 @@ export class SurpriseAdequacy {
         const surpriseMap = new Map<number, Map<string, boolean>>();
         let sa = 0;
         let stepCount = 0;
-        if (!test) {
+        if (!test || test.trace.size < (training.trace.size / 10)) {
             for (const [step, stepTrace] of training.trace.entries()) {
                 surpriseMap.set(step, new Map<string, boolean>());
                 for (const nodeId of stepTrace.keys()) {
                     surpriseMap.get(step).set(nodeId, true);
                 }
             }
-            return [100, surpriseMap];
+            return [100, undefined];
         }
         // For each step, compare the ATs during training and testing.
         for (const step of test.trace.keys()) {
