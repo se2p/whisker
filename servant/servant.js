@@ -2,6 +2,7 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable func-style */
 /* eslint-disable no-use-before-define */
+/* eslint-disable node/no-unpublished-require */
 
 const fs = require('fs');
 const {basename} = require('path');

@@ -17,5 +17,9 @@
         "build": "if [ -d dist ]; then rm -rf dist; fi && webpack --progress --colors --bail"
     },
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "type": "commonjs",
+    "engines": {
+        "node": ">=16.0.0"
+    }
 }

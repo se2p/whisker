@@ -28,6 +28,12 @@ async function getLogAfterSearch() {
 beforeEach(async () => {
     await jestPuppeteer.resetBrowser();
     page = await browser.newPage();
+    page.on('error', (msg) => console.error(msg.text()))
+        .on('pageerror', async (err) => {
+            console.error(err.message);
+            await page.close(); // Not very graceful, but immediately shuts the test down. There must be a nicer way?
+            return Promise.reject(err);
+        });
     await page.goto(fileUrl(URL), {waitUntil: 'domcontentloaded'});
     await (await page.$('#fileselect-config')).uploadFile("test/integration/testConfigs/defaultMIO.json");
 });

@@ -1,6 +1,5 @@
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {NetworkChromosome} from "../../../../src/whisker/whiskerNet/Networks/NetworkChromosome";
 import {SearchAlgorithm} from "../../../../src/whisker/search/SearchAlgorithm";
 import {SearchAlgorithmProperties} from "../../../../src/whisker/search/SearchAlgorithmProperties";
@@ -69,7 +68,7 @@ describe('Test NEAT', () => {
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
 
-        const builder = new SearchAlgorithmBuilder(SearchAlgorithmType.NEAT);
+        const builder = new SearchAlgorithmBuilder('neat');
         const iterations = 20;
         const populationSize = 150;
         const random = Randomness.getInstance();

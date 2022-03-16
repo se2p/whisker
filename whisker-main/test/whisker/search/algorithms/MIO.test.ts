@@ -27,7 +27,6 @@ import {FixedIterationsStoppingCondition} from "../../../../src/whisker/search/s
 import {BitflipMutation} from "../../../../src/whisker/bitstring/BitflipMutation";
 import {SinglePointCrossover} from "../../../../src/whisker/search/operators/SinglePointCrossover";
 import {SearchAlgorithmBuilder} from "../../../../src/whisker/search/SearchAlgorithmBuilder";
-import {SearchAlgorithmType} from "../../../../src/whisker/search/algorithms/SearchAlgorithmType";
 import {FitnessFunctionType} from "../../../../src/whisker/search/FitnessFunctionType";
 import {VMWrapperMock} from "../../utils/VMWrapperMock";
 import {Container} from "../../../../src/whisker/utils/Container";
@@ -46,17 +45,18 @@ describe('MIO', () => {
         // @ts-ignore
         Container.vmWrapper = mock;
 
-        Container.debugLog = () => { /* suppress output */ };
+        Container.debugLog = () => { /* suppress output */
+        };
 
-        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder(SearchAlgorithmType.MIO);
+        const builder: SearchAlgorithmBuilder<BitstringChromosome> = new SearchAlgorithmBuilder('mio');
 
         const properties = {
             populationSize: null,
             chromosomeLength: 10,
-            selectionProbability: { start: 0.5, focusedPhase: 0 },
-            maxArchiveSize: { start: 10, focusedPhase: 1 },
-            maxMutationCount : { start: 0, focusedPhase: 10 },
-            stoppingCondition : new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations),
+            selectionProbability: {start: 0.5, focusedPhase: 0},
+            maxArchiveSize: {start: 10, focusedPhase: 1},
+            maxMutationCount: {start: 0, focusedPhase: 10},
+            stoppingCondition: new OneOfStoppingCondition(new FixedIterationsStoppingCondition(iterations),
                 new OptimalSolutionStoppingCondition()),
             startOfFocusedPhase: 0.5,
             mutationProbability: undefined,
@@ -117,9 +117,9 @@ describe('MIO', () => {
             crossoverProbability: 1,
             mutationProbability: 1,
             startOfFocusedPhase: start,
-            selectionProbability: { start, focusedPhase },
-            maxArchiveSize: { start, focusedPhase },
-            maxMutationCount: { start, focusedPhase },
+            selectionProbability: {start, focusedPhase},
+            maxArchiveSize: {start, focusedPhase},
+            maxMutationCount: {start, focusedPhase},
             stoppingCondition,
             testGenerator: undefined,
             integerRange: undefined,
