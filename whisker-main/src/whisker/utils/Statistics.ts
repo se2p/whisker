@@ -1,4 +1,6 @@
 import {column, det, exp, inv, Matrix, multiply, pow, transpose, zeros, flatten, index} from "mathjs";
+import {ScratchEvent} from "../testcase/events/ScratchEvent";
+import Arrays from "./Arrays";
 
 /**
  * Provides useful utility methods for calculating all sorts of data distribution metrics.
@@ -48,7 +50,7 @@ export default class Statistics {
             }
         }
 
-        if(upperQuartile.length == 0 || lowerQuartile.length == 0){
+        if (upperQuartile.length == 0 || lowerQuartile.length == 0) {
             return 1;
         }
 
@@ -68,11 +70,11 @@ export default class Statistics {
         return multiply(multiply(left, middle), right) as number;
     }
 
-    public static gaussianKernel(x:number): number{
+    public static gaussianKernel(x: number): number {
         return (1 / (Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow(x, 2));
     }
 
-    public static bandwidthSilverman(values:number[]):number{
+    public static bandwidthSilverman(values: number[]): number {
         const std = this.std(values);
         const iqr = this.iqr(values);
         return 0.9 * Math.min(std, iqr / 1.34) * Math.pow(values.length, -0.2);
@@ -89,6 +91,59 @@ export default class Statistics {
             scottMatrix.subset(index(i, i), Math.sqrt(scottValue));
         }
         return scottMatrix;
+    }
+
+    /**
+     * Calculates the Levenshtein Distance between two arrays of ScratchEvents.
+     * https://gist.github.com/andrei-m/982927
+     * @param a the source string
+     * @param b the target string
+     * @returns number representing the Levenshtein distance between the input arrays.
+     */
+    public static levenshteinDistanceEvents(a: ScratchEvent[], b: ScratchEvent[]): number {
+        // Trivial case: If either one of both strings has a length of 0 return the length of the other string.
+        if (a === undefined || a.length == 0) return b.length;
+        if (b === undefined || b.length == 0) return a.length;
+
+        // Saves a matrix of required operations between substrings having a length of the given row/column indices.
+        const matrix = [];
+
+        // Add values for the trivial cases in the first row/column
+        for (let i = 0; i <= b.length; i++) {
+            matrix[i] = [i];
+        }
+        for (let j = 0; j <= a.length; j++) {
+            matrix[0][j] = j;
+        }
+
+        // Fill in the rest of the matrix
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b[i - 1].toJavaScript() == a[j - 1].toJavaScript()) {
+                    matrix[i][j] = matrix[i - 1][j - 1];    // no operation required
+                } else {
+                    matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution operation
+                        Math.min(matrix[i][j - 1] + 1, // insertion operation
+                            matrix[i - 1][j] + 1)); // deletion operation
+                }
+            }
+        }
+
+        return matrix[b.length][a.length];
+    }
+
+    public static levenshteinDistanceEventsChunks(a: ScratchEvent[], b: ScratchEvent[], chunkSize: number): number {
+        const sourceChunks = Arrays.chunk(a, chunkSize);
+        const targetChunks = Arrays.chunk(b, chunkSize);
+        let distances: number[];
+        if (sourceChunks.length > targetChunks.length) {
+            distances = sourceChunks.map((value, index) =>
+                this.levenshteinDistanceEvents(value, targetChunks[index]))
+        } else {
+            distances = targetChunks.map((value, index) =>
+                this.levenshteinDistanceEvents(value, sourceChunks[index]))
+        }
+        return distances.reduce((pV, cV) => pV + cV, 0);
     }
 }
 

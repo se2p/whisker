@@ -1,6 +1,9 @@
 import Statistics from "../../../src/whisker/utils/Statistics";
 import {matrix, identity, Matrix, index} from "mathjs";
-import {expect} from "@jest/globals";
+import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
+import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
+import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
+import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 
 describe("Distributions", () => {
 
@@ -66,7 +69,7 @@ describe("Distributions", () => {
         expect(Math.round(gaussKernel * 100) / 100).toBe(0.06);
     });
 
-    test("Test scott bandwidth", () => {
+    test("Scott bandwidth", () => {
         const dataMatrix = matrix([[0, 1.6], [0.4, 2], [0.2, 1.8]]);
         const scottBandwidth = Statistics.multivariateBandwidthScott(dataMatrix);
         // We should only get values > 0 on the diagonal of the Matrix.
@@ -74,5 +77,53 @@ describe("Distributions", () => {
         expect(scottBandwidth.subset(index(1, 1))).toBeGreaterThan(0);
         expect(scottBandwidth.subset(index(0, 1))).toBe(0);
         expect(scottBandwidth.subset(index(1, 0))).toBe(0);
+    });
+
+    test("Levenshtein Distance Trivial Case", () => {
+        const testArray = [new MouseMoveEvent(1, 2), new WaitEvent(), new KeyPressEvent('left arrow')];
+        expect(Statistics.levenshteinDistanceEvents(testArray, [])).toBe(testArray.length);
+        expect(Statistics.levenshteinDistanceEvents([], testArray)).toBe(testArray.length);
+    });
+
+    test("Levenshtein Distance Non-Trivial Case", () => {
+        const source = [new MouseMoveEvent(1, 2), new MouseMoveEvent(3, 4), new WaitEvent(),
+            new KeyPressEvent('left arrow')];
+        const target = [new MouseMoveEvent(2, 1), new MouseMoveEvent(1, 2), new WaitEvent(),
+            new KeyPressEvent('right arrow')];
+
+        // The metric is symmetric
+        expect(Statistics.levenshteinDistanceEvents(source, target)).toBe(3);
+        expect(Statistics.levenshteinDistanceEvents(target, source)).toBe(3);
+
+        // Triangle Equation must hold.
+        const third = [new ClickStageEvent()];
+        const leftSide = Statistics.levenshteinDistanceEvents(source, target);
+        const rightSide = Statistics.levenshteinDistanceEvents(source, third) +
+            Statistics.levenshteinDistanceEvents(target, third);
+        expect(leftSide).toBeLessThanOrEqual(rightSide);
+    });
+
+    test("Levenshtein Distance Chunks", () => {
+        const testArray = [new MouseMoveEvent(1, 2), new WaitEvent(), new KeyPressEvent('left arrow')];
+        expect(Statistics.levenshteinDistanceEventsChunks(testArray, [], 2)).toBe(testArray.length);
+        expect(Statistics.levenshteinDistanceEventsChunks([], testArray, 2)).toBe(testArray.length);
+    });
+
+    test("Levenshtein Distance Non-Trivial Case", () => {
+        const source = [new MouseMoveEvent(1, 2), new MouseMoveEvent(3, 4), new WaitEvent(),
+            new KeyPressEvent('left arrow')];
+        const target = [new MouseMoveEvent(2, 1), new MouseMoveEvent(1, 2), new WaitEvent(),
+            new KeyPressEvent('right arrow'), new ClickStageEvent()];
+
+        // The metric is symmetric
+        expect(Statistics.levenshteinDistanceEventsChunks(source, target, 3)).toBe(4);
+        expect(Statistics.levenshteinDistanceEventsChunks(target, source, 3)).toBe(4);
+
+        // Triangle Equation must hold.
+        const third = [new ClickStageEvent()];
+        const leftSide = Statistics.levenshteinDistanceEventsChunks(source, target, 2);
+        const rightSide = Statistics.levenshteinDistanceEventsChunks(source, third, 2) +
+            Statistics.levenshteinDistanceEventsChunks(target, third, 2);
+        expect(leftSide).toBeLessThanOrEqual(rightSide);
     });
 });
