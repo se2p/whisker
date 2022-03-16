@@ -369,8 +369,7 @@ export class StatisticsCollector {
             const nextTimeStamp = timestamps[timestamps.length - 1] + sampleDistance;
             const nextCoverageValue = timelineValues[timelineValues.length - 1];
 
-            const lengthDiff = Math.abs(maxTimeStamp - timestamps[timestamps.length - 1]) / sampleDistance;
-
+            const lengthDiff = Math.ceil(Math.abs(maxTimeStamp - timestamps[timestamps.length - 1]) / sampleDistance);
             const range: (until: number) => number[] = (until) => [...Array(until).keys()];
             const headerPadding = range(lengthDiff).map(x => nextTimeStamp + x * sampleDistance)
             const valuePadding = Array(lengthDiff).fill(nextCoverageValue);

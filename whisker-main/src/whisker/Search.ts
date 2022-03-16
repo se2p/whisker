@@ -124,7 +124,7 @@ export class Search {
                     }
                 }
             }
-            // Sample every 15 minutes
+            // Sample every 10 minutes
             const csvOutput = StatisticsCollector.getInstance().asCsvNeuroevolution(600000, upperBound);
             console.log(csvOutput);
             return csvOutput;
