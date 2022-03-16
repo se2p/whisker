@@ -1,6 +1,6 @@
 {
     "testGenerator": "neuroevolution",
-    "algorithm": "explorativeNeat",
+    "algorithm": "e-neat",
     "populationType": "explorative",
     "eventSelection": "activation",
     "populationSize": 300,

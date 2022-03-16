@@ -91,7 +91,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
         this._fitnessFunctions = this.extractCoverageGoals();
         StatisticsCollector.getInstance().fitnessFunctionCount = this._fitnessFunctions.size;
         this._startTime = Date.now();
-        const stoppingCondition = this._config.properties.stoppingCondition;
+        const stoppingCondition = this._config.searchAlgorithmProperties.stoppingCondition;
 
         const eventExtractor = this._config.getEventExtractor();
         const randomTestExecutor = new TestExecutor(Container.vmWrapper, eventExtractor, null);
@@ -105,7 +105,7 @@ export class RandomTestGenerator extends TestGenerator implements SearchAlgorith
             this._iterations++;
             this.updateStatistics()
         }
-        const testSuite = await this.getTestSuite(this._tests);
+        const testSuite = this.getTestSuite(this._tests);
         this.collectStatistics(testSuite);
         return new WhiskerTestListWithSummary(testSuite, this.summarizeSolution(this._archive));
     }

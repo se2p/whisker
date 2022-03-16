@@ -74,7 +74,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      * @return boolean whether the local search operator can be applied to the given chromosome.
      */
     isApplicable(chromosome: TestChromosome): boolean {
-        return chromosome.getGenes().length < Container.config.properties['chromosomeLength'] && // // FIXME: unsafe access
+        return chromosome.getGenes().length < Container.config.searchAlgorithmProperties['chromosomeLength'] && // // FIXME: unsafe access
             this._originalChromosomes.indexOf(chromosome) < 0 && TestExecutor.calculateUncoveredFitnessValues(chromosome).length > 0;
     }
 
@@ -146,10 +146,10 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
      */
     private async _extendGenes(codons: number[], events: EventAndParameters[],
                                chromosome: TestChromosome): Promise<{ lastImprovedCodon: number, lastImprovedTrace: ExecutionTrace }> {
-        const reservedCodons = Container.config.properties['reservedCodons']; // FIXME: unsafe access
-        const upperLengthBound = Container.config.properties['chromosomeLength'];
-        const lowerCodonValueBound = Container.config.properties['integerRange'].min;
-        const upperCodonValueBound = Container.config.properties['integerRange'].max;
+        const reservedCodons = Container.config.searchAlgorithmProperties['reservedCodons']; // FIXME: unsafe access
+        const upperLengthBound = Container.config.searchAlgorithmProperties['chromosomeLength'];
+        const lowerCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].min;
+        const upperCodonValueBound = Container.config.searchAlgorithmProperties['integerRange'].max;
         let fitnessValues = TestExecutor.calculateUncoveredFitnessValues(chromosome);
         let lastImprovedCodon = chromosome.lastImprovedCodon;
         let lastImprovedTrace = new ExecutionTrace(this._vmWrapper.vm.runtime.traceInfo.tracer.traces, [...events]);

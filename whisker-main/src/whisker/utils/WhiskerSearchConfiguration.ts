@@ -26,7 +26,6 @@ import {StoppingCondition} from "../search/StoppingCondition";
 import {FixedTimeStoppingCondition} from "../search/stoppingconditions/FixedTimeStoppingCondition";
 import {OneOfStoppingCondition} from "../search/stoppingconditions/OneOfStoppingCondition";
 import {OptimalSolutionStoppingCondition} from "../search/stoppingconditions/OptimalSolutionStoppingCondition";
-import {IllegalArgumentException} from "../core/exceptions/IllegalArgumentException";
 import {NeuroevolutionTestGenerator} from "../testgenerator/NeuroevolutionTestGenerator";
 import {NeatMutation} from "../whiskerNet/Operators/NeatMutation";
 import {NeatCrossover} from "../whiskerNet/Operators/NeatCrossover";
@@ -80,8 +79,8 @@ export class WhiskerSearchConfiguration {
         if (this.getTestSuiteType() == 'dynamic') {
             this._properties = this.setDynamicSuiteParameter();
             Container.isNeuroevolution = true;
-        } else if (this.getAlgorithm() === "neat" ||
-            this.getAlgorithm() === "e-neat") {
+        } else if (this.getAlgorithm() === 'neat' ||
+            this.getAlgorithm() === 'e-neat') {
             this._properties = this.setNeuroevolutionProperties();
             Container.isNeuroevolution = true
         } else {
@@ -316,32 +315,32 @@ export class WhiskerSearchConfiguration {
             case 'variableLength':
                 return new VariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.properties['chromosomeLength'],
-                    this.properties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'variableLengthConstrained':
                 return new VariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.properties['chromosomeLength'],
-                    this.properties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLength':
                 return new BiasedVariableLengthMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.properties['chromosomeLength'],
-                    this.properties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'biasedVariableLengthConstrained':
                 return new BiasedVariableLengthConstrainedChromosomeMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.properties['chromosomeLength'],
-                    this.properties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case 'eventBiased':
                 return new EventBiasedMutation(this._config['integerRange']['min'],
                     this._config['integerRange']['max'],
-                    this.properties['chromosomeLength'],
-                    this.properties['reservedCodons'],
+                    this._config['chromosomeLength'],
+                    this._config['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
                 return new NeatMutation(this._config['mutation'])
@@ -360,7 +359,7 @@ export class WhiskerSearchConfiguration {
         const crossoverOperator = this._config['crossover']['operator'];
         switch (crossoverOperator) {
             case 'singlePointRelative':
-                return new SinglePointRelativeCrossover(this.properties['reservedCodons']);
+                return new SinglePointRelativeCrossover(this._config['reservedCodons']);
             case 'neatCrossover':
                 return new NeatCrossover(this._config['crossover']);
             case 'singlePoint':
