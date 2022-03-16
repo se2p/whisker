@@ -47,7 +47,7 @@
         "targets": []
     },
     "networkFitness": {
-        "type": "statement",
+        "type": "reliableStatement",
         "timeout": 15000,
         "stableCount": 10
     },

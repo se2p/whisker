@@ -291,11 +291,7 @@ describe("Surprise Adequacy", () => {
     test("Likelihood based Node Surprise Adequacy; missing test trace", () => {
         const sa = SurpriseAdequacy.LSANodeBased(trainingTrace, null)
         expect(sa[0]).toBe(100);
-        for (const surpriseMap of sa[1].values()) {
-            for (const surprise of surpriseMap.values()) {
-                expect(surprise).toBeTruthy();
-            }
-        }
+        expect(sa[1]).toBe(undefined);
     });
 
     test("Likelihood based Node Surprise Adequacy; equal values in ATs", () => {

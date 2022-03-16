@@ -7,7 +7,7 @@ import {Randomness} from "../../utils/Randomness";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 
 
-export class StatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
+export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkChromosome> {
 
     /**
      * The seeds used to test if a given statement can be covered reliably.
@@ -21,7 +21,7 @@ export class StatementFitness implements NetworkFitnessFunction<NetworkChromosom
 
     constructor(private _stableCount: number) {
         this.random = Randomness.getInstance();
-        this.repetitionSeeds = Array(Math.ceil(this.stableCount * 1.5)).fill(0).map(
+        this.repetitionSeeds = Array(this.stableCount).fill(0).map(
             () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
     }
 

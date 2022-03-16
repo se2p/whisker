@@ -59,7 +59,7 @@ import {NeatChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/Nea
 import {NeatChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorTemplateNetwork";
 import {DynamicSuiteParameter} from "../whiskerNet/HyperParameter/DynamicSuiteParameter";
-import {StatementFitness} from "../whiskerNet/NetworkFitness/StatementFitness";
+import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 
 
 class ConfigException implements Error {
@@ -245,7 +245,7 @@ export class WhiskerSearchConfiguration {
 
         properties.stoppingCondition = this._getStoppingCondition(this._config['stoppingCondition']);
         if (this.getAlgorithm() === "e-neat") {
-            properties.networkFitness = new StatementFitness(coverageStableCount);
+            properties.networkFitness = new ReliableStatementFitness(coverageStableCount);
         } else {
             properties.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']['type']);
         }
@@ -520,9 +520,9 @@ export class WhiskerSearchConfiguration {
                 return new ScoreFitness();
             case 'survive':
                 return new SurviveFitness();
-            case 'statement': {
+            case 'reliableStatement': {
                 const stableCount = fitnessFunction['stableCount'] !== undefined ? fitnessFunction['stableCount'] : 1;
-                return new StatementFitness(stableCount);
+                return new ReliableStatementFitness(stableCount);
             }
             case 'target':
                 return new TargetFitness(fitnessFunction['player'], fitnessFunction['target'],
