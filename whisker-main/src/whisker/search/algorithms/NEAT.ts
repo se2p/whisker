@@ -9,6 +9,7 @@ import {RandomNeuroevolutionPopulation} from "../../whiskerNet/NeuroevolutionPop
 import Arrays from "../../utils/Arrays";
 import {NeatProperties} from "../../whiskerNet/NeatProperties";
 import {NeatChromosome} from "../../whiskerNet/Networks/NeatChromosome";
+import {Container} from "../../utils/Container";
 
 export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
@@ -131,29 +132,29 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
      * @param population the population of networks
      */
     private reportOfCurrentIteration(population: NeatPopulation): void {
-        console.log(`Iteration:  ${this._iterations}`);
-        console.log(`Highest Network Fitness:  ${population.highestFitness}`);
-        console.log(`Current Iteration Highest Network Fitness:  ${population.populationChampion.fitness}`);
-        console.log(`Average Network Fitness: ${population.averageFitness}`)
-        console.log(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
+        Container.debugLog(`Iteration:  ${this._iterations}`);
+        Container.debugLog(`Highest Network Fitness:  ${population.highestFitness}`);
+        Container.debugLog(`Current Iteration Highest Network Fitness:  ${population.populationChampion.fitness}`);
+        Container.debugLog(`Average Network Fitness: ${population.averageFitness}`)
+        Container.debugLog(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
         for (const species of population.species) {
-            console.log(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
+            Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
         }
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             if (!this._archive.has(fitnessFunctionKey)) {
-                console.log(`Not covered: ${this._fitnessFunctions.get(fitnessFunctionKey).toString()}`);
+                Container.debugLog(`Not covered: ${this._fitnessFunctions.get(fitnessFunctionKey).toString()}`);
             }
         }
-        console.log(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
+        Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         const coveredGoals = this._neuroevolutionProperties.testSuiteType === 'dynamic' ?
             this._archive.size - 1 : this._archive.size
-        console.log(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
+        Container.debugLog(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
         if (this._neuroevolutionProperties.doPrintPopulationRecord) {
             const currentPopulationRecord = {}
             currentPopulationRecord[`Generation ${this._iterations}`] = population;
-            console.log(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`)
+            Container.debugLog(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`)
         }
-        console.log("-----------------------------------------------------")
+        Container.debugLog("-----------------------------------------------------")
     }
 
     getStartTime(): number {

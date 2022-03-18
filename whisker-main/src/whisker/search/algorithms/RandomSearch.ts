@@ -24,7 +24,7 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import Arrays from "../../utils/Arrays";
+import {Container} from "../../utils/Container";
 
 export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -77,7 +77,7 @@ export class RandomSearch<C extends Chromosome> extends SearchAlgorithmDefault<C
             }
             this.updateStatistics();
             this._iterations++;
-            console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
+            Container.debugLog(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
         }
         return this._archive;
     }
