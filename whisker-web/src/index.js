@@ -254,15 +254,15 @@ const runAllTests = async function () {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
-            const dynamicSuite = new DynamicSuite();
             const properties = {};
             properties.train = 1;
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
-            const csv = await dynamicSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, Whisker.tests,
-                properties);
+            const dynamicSuite = new DynamicSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
+                Whisker.tests);
+            const csv = await dynamicSuite.execute();
             coverage = CoverageGenerator.getCoverage();
             CoverageGenerator.restoreClasses({Thread});
             Whisker.outputLog.println(csv);
@@ -290,14 +290,14 @@ const runAllTests = async function () {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
-            const staticSuite = new StaticSuite();
             const properties = {};
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
-            const csv = await staticSuite.execute(Whisker.scratch.vm, Whisker.scratch.project, Whisker.tests,
-                properties);
+            const staticSuite = new StaticSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
+                Whisker.tests);
+            const csv = await staticSuite.execute();
             coverage = CoverageGenerator.getCoverage();
             CoverageGenerator.restoreClasses({Thread});
             Whisker.outputLog.println(csv);

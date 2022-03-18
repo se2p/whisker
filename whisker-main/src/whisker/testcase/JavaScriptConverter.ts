@@ -52,10 +52,6 @@ export class JavaScriptConverter {
             // Set necessary configuration parameter for re-executing the dynamic suite.
             configs['testSuiteType'] = 'dynamic';
             configs['timeout'] = Container.config.neuroevolutionProperties.timeout;
-            configs['networkFitness'] = Container.config.neuroevolutionProperties.networkFitness.identifier();
-            if (Container.config.neuroevolutionProperties.networkFitness.identifier() === 'statement') {
-                configs['stableCount'] = Container.config.neuroevolutionProperties.coverageStableCount;
-            }
             configs['eventSelection'] = Container.config.neuroevolutionProperties.eventSelection;
             configs['seed'] = Container.config.getRandomSeed();
             configs['repetitions'] = Container.config.neuroevolutionProperties.repetitions;

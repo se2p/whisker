@@ -5,7 +5,7 @@ import {StoppingCondition} from "../../search/StoppingCondition";
 /**
  * This class stores all relevant properties for a Neuroevolution Algorithm.
  */
-export class DynamicSuiteParameter {
+export class NetworkSuiteParameter {
 
     /**
      * The fitness function with which the network fitness is measured.

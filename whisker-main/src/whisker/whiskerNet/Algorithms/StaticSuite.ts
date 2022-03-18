@@ -1,14 +1,8 @@
 import VirtualMachine from "scratch-vm/src/virtual-machine"
-import WhiskerUtil from "../../../test/whisker-util";
 import {ScratchProject} from "../../scratch/ScratchProject";
 import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
-import {Randomness} from "../../utils/Randomness";
-import {StatisticsCollector} from "../../utils/StatisticsCollector";
-import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
 import {NeatChromosome} from "../Networks/NeatChromosome";
-import {FitnessFunction} from "../../search/FitnessFunction";
 import {EventAndParameters, ExecutionTrace} from "../../testcase/ExecutionTrace";
 import {KeyPressEvent} from "../../testcase/events/KeyPressEvent";
 import {NetworkExecutor} from "../NetworkExecutor";
@@ -21,97 +15,66 @@ import {MouseMoveToEvent} from "../../testcase/events/MouseMoveToEvent";
 import {SoundEvent} from "../../testcase/events/SoundEvent";
 import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
-import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
-import {DynamicSuite} from "./DynamicSuite";
 import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
+import {NetworkSuite} from "./NetworkSuite";
 
-export class StaticSuite {
+export class StaticSuite extends NetworkSuite {
 
-    private _statementMap: Map<number, FitnessFunction<NeatChromosome>>;
-    private _archive = new Map<number, NetworkChromosome>();
+    constructor(project: ScratchProject, vm: VirtualMachine, properties: Record<string, number | string>,
+                private _testFile: Record<number, Test>,) {
+        super(project, vm, properties);
+    }
 
-    public async execute(vm: VirtualMachine, project: ScratchProject, testFile: Record<number, Test>,
-                         properties: Record<string, (number | string)>): Promise<string> {
-
-        const util = new WhiskerUtil(vm, project);
-        const vmWrapper = util.getVMWrapper();
-
-        // Check if a seed has been set.
-        const seedString = properties.seed.toString();
-        if (seedString !== 'undefined' && seedString !== "") {
-            Randomness.setInitialSeeds(properties.seed);
-        }
-        // If not set a random seed.
-        else {
-            Randomness.setInitialSeeds(Date.now());
-        }
-
-        const sampleTest = Object.values(testFile)[0];
+    /**
+     * Initialises the used parameter for test execution.
+     */
+    protected initialiseExecutionParameter(): void {
+        const sampleTest = Object.values(this._testFile)[0];
         const config = new WhiskerSearchConfiguration(sampleTest.configs);
-        const parameter = config.dynamicSuiteParameter;
-        parameter.train = false;
-
-        Container.vm = vm;
-        Container.vmWrapper = vmWrapper;
+        this.parameter = config.dynamicSuiteParameter;
+        this.parameter.train = false;
+        this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation');
         Container.config = config;
-        Container.testDriver = util.getTestDriver({});
-        Container.acceleration = properties['acceleration'] as number;
-        this.initialiseFitnessTargets();
+    }
 
-        StatisticsCollector.getInstance().projectName = properties.projectName as string;
-        StatisticsCollector.getInstance().testName = properties.testName as string;
+    /**
+     * Executes the static test suite of Scratch input sequences loaded within networks.
+     */
+    protected async executeTestCases(): Promise<void> {
+        const tests = this.loadTestCases()
+        for (const test of tests) {
+            test.recordActivationTrace = true;
+            await this.executor.executeSavedTrace(test);
+            this.executor.resetState();
+            this.updateArchive(test);
+            if (test.savedActivationTrace) {
+                this.extractTestCaseResults(test);
+            }
+        }
+    }
 
-        await util.prepare(properties['acceleration'] as number || 1);
-        util.start();
-
-        const executor = new NetworkExecutor(Container.vmWrapper, parameter.timeout, 'activation');
-
-        for (const test of Object.values(testFile)) {
+    /**
+     * Loads the static test cases.
+     */
+    protected loadTestCases(): NeatChromosome[] {
+        const networks: NeatChromosome[] = [];
+        for (const test of Object.values(this._testFile)) {
             const testSource = test.test.toString();
             const trace = StaticSuite.getTraceFromSource(testSource);
             const network = new NeatChromosome([], [], undefined, undefined);
             network.trace = trace;
-            console.log(test.activationTrace)
             NetworkLoader.loadActivationTrace(network, test.activationTrace);
-            console.log(network)
-            network.recordActivationTrace = true;
-            await executor.executeSavedTrace(network);
-            this.updateArchive(network);
-            if (network.savedActivationTrace) {
-                network.surpriseAdequacyStep = SurpriseAdequacy.LSA(network.savedActivationTrace, network.currentActivationTrace);
-                const nodeSA = SurpriseAdequacy.LSANodeBased(network.savedActivationTrace, network.currentActivationTrace);
-                network.surpriseAdequacyNodes = nodeSA[0];
-                network.surpriseCounterNormalised = DynamicSuite.getNumberOfSurprises(nodeSA[1]) / nodeSA[1].size;
-                const z = SurpriseAdequacy.zScore(network.savedActivationTrace, network.currentActivationTrace);
-                network.zScore = z[0];
-            }
-            executor.resetState();
-            StatisticsCollector.getInstance().networks.push(network);
+            networks.push(network);
         }
-        return StatisticsCollector.getInstance().asCsvNetworkSuite();
+        return networks;
     }
 
-    private initialiseFitnessTargets() {
-        this._statementMap = new Map<number, FitnessFunction<NeatChromosome>>();
-        const fitnessFactory = new StatementFitnessFunctionFactory();
-        const fitnessTargets = fitnessFactory.extractFitnessFunctions(Container.vm, []);
-        for (let i = 0; i < fitnessTargets.length; i++) {
-            this._statementMap.set(i, fitnessTargets[i] as unknown as FitnessFunction<NeatChromosome>);
-        }
-        StatisticsCollector.getInstance().fitnessFunctionCount = fitnessTargets.length;
-    }
-
-    private updateArchive(network: NeatChromosome) {
-        for (const statementKey of this._statementMap.keys()) {
-            const fitnessFunction = this._statementMap.get(statementKey);
-            const statementFitness = fitnessFunction.getFitness(network);
-            if (fitnessFunction.isOptimal(statementFitness) && !this._archive.has(statementKey)) {
-                StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
-                this._archive.set(statementKey, network);
-            }
-        }
-    }
-
+    /**
+     * Extracts the static Scratch input sequence that will be executed from the JavaScript source code saved in the
+     * static test case.
+     * @param source JavaScript source code containing the static Scratch input sequence.
+     * @returns the extracted ExecutionTrace that will be executed on the application under test.
+     */
     private static getTraceFromSource(source: string): ExecutionTrace {
         const sourceArray = source.split('\n');
         const events: EventAndParameters[] = [];
@@ -123,7 +86,7 @@ export class StaticSuite {
         for (const statement of sourceArray) {
             let event: ScratchEvent;
             let variableParameter: number[];
-            const parameter = StaticSuite.getSourceParameter(statement);
+            const parameter = StaticSuite.getEventArguments(statement);
 
             if (statement.includes('clickSprite')) {
                 event = new ClickSpriteEvent(parameter[0]);
@@ -163,7 +126,12 @@ export class StaticSuite {
         return new ExecutionTrace([], events);
     }
 
-    private static getSourceParameter(statement: string): string[] {
+    /**
+     * Extracts arguments for an event that requires at least a single parameter from the JavaScript source code.
+     * @param statement the statement whose arguments should be extracted
+     * @returns Array of strings, with each element representing an extracted argument.
+     */
+    private static getEventArguments(statement: string): string[] {
         let paramArgs = statement.substring(statement.indexOf('(') + 1, statement.indexOf(')'));
         paramArgs = paramArgs.split("'").join('');
         return paramArgs.split(',');
@@ -171,6 +139,9 @@ export class StaticSuite {
 
 }
 
+/**
+ * Interface for a static test case.
+ */
 interface Test {
     categories: [],
     description: string

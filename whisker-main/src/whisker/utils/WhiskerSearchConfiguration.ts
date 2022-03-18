@@ -58,7 +58,7 @@ import {NeatProperties} from "../whiskerNet/HyperParameter/NeatProperties";
 import {NeatChromosomeGeneratorSparse} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosomeGeneratorFullyConnected} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorFullyConnected";
 import {NeatChromosomeGeneratorTemplateNetwork} from "../whiskerNet/NetworkGenerators/NeatChromosomeGeneratorTemplateNetwork";
-import {DynamicSuiteParameter} from "../whiskerNet/HyperParameter/DynamicSuiteParameter";
+import {NetworkSuiteParameter} from "../whiskerNet/HyperParameter/NetworkSuiteParameter";
 import {ReliableStatementFitness} from "../whiskerNet/NetworkFitness/ReliableStatementFitness";
 import {NoveltyReliableStatementFitness} from "../whiskerNet/NetworkFitness/NoveltyReliableStatementFitness";
 
@@ -72,7 +72,7 @@ class ConfigException implements Error {
 export class WhiskerSearchConfiguration {
 
     private readonly _config: Record<string, any>;
-    private readonly _properties: (SearchAlgorithmProperties<any> | NeatProperties | DynamicSuiteParameter);
+    private readonly _properties: (SearchAlgorithmProperties<any> | NeatProperties | NetworkSuiteParameter);
 
     constructor(dict: Record<string, (Record<string, (number | string)> | string | number)>) {
         this._config = Preconditions.checkNotUndefined(dict);
@@ -253,10 +253,10 @@ export class WhiskerSearchConfiguration {
         return this._properties as NeatProperties;
     }
 
-    private setDynamicSuiteParameter(): DynamicSuiteParameter {
-        const parameter = new DynamicSuiteParameter();
+    private setDynamicSuiteParameter(): NetworkSuiteParameter {
+        const parameter = new NetworkSuiteParameter();
         parameter.timeout = this._config['timeout'];
-        parameter.networkFitness = this.getNetworkFitnessFunction(this._config['networkFitness']);
+        parameter.networkFitness = new ReliableStatementFitness(1);
         parameter.repetitions = this._config['repetitions'];
 
         // TODO: Think of a nicer way to set re-train parameter without having to introduce config files or new cli
@@ -271,8 +271,8 @@ export class WhiskerSearchConfiguration {
         return parameter;
     }
 
-    get dynamicSuiteParameter(): DynamicSuiteParameter {
-        if (this._properties instanceof DynamicSuiteParameter) {
+    get dynamicSuiteParameter(): NetworkSuiteParameter {
+        if (this._properties instanceof NetworkSuiteParameter) {
             return this._properties;
         }
         return undefined;
