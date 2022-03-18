@@ -13,6 +13,7 @@ import {MouseMoveEvent} from "../../../../src/whisker/testcase/events/MouseMoveE
 import {KeyPressEvent} from "../../../../src/whisker/testcase/events/KeyPressEvent";
 import {NeatChromosomeGeneratorSparse} from "../../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatProperties} from "../../../../src/whisker/whiskerNet/NeatProperties";
+import {Container} from "../../../../src/whisker/utils/Container";
 
 
 describe('Test NEAT', () => {
@@ -46,6 +47,7 @@ describe('Test NEAT', () => {
     };
 
     beforeEach(() => {
+        Container.debugLog = () => { /* suppress output */};
         const mock = new VMWrapperMock();
         mock.init()
 
