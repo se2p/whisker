@@ -23,6 +23,7 @@ import {TestChromosome} from '../TestChromosome';
 import {ControlDependenceGraph, ControlFlowGraph, GraphNode, EventNode, UserEventNode, Graph} from 'scratch-analysis'
 import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
 import {Trace} from "scratch-vm/src/engine/tracing.js";
+import {Container} from "../../utils/Container";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
 
@@ -530,14 +531,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     public static getNextUncoveredNodePairs(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Map<StatementFitnessFunction, StatementFitnessFunction> {
         const nearestUncoveredMap = new Map<StatementFitnessFunction, StatementFitnessFunction>();
-        if (allStatements.length === uncoveredStatements.length) {
-            const flagClicked = allStatements.find(statement => statement.getTargetNode().block.opcode === 'event_whenflagclicked');
-            nearestUncoveredMap.set(flagClicked, undefined);
-            return nearestUncoveredMap;
-        }
-
         const cdg = uncoveredStatements[0]._cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
+        Container.debugLog(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`)
         for (const statement of uncoveredStatements) {
             const parents = StatementFitnessFunction.getCDGParent(statement._targetNode, cdg);
             if (!parents) {
@@ -578,7 +574,13 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     private static getCDGParent(node: GraphNode, cdg: ControlDependenceGraph): GraphNode[] {
         const predecessors = Array.from(cdg.predecessors(node.id)) as GraphNode[];
-        // Get the true parent of event receiver blocks.
+        const flagClickedParent = predecessors.find(node => node.id === 'flagclicked');
+
+        // If we have direct successors of the flagClicked event, use this as a CDG parent since this parent will
+        // always be reached. (Should only evaluate to true when selecting the first statement).
+        if (flagClickedParent !== undefined) {
+            return [flagClickedParent]
+        }
 
         // Parents could be EventNodes, for example when having a block that depends on clone being created.
         if (predecessors.some(pred => pred instanceof EventNode)) {

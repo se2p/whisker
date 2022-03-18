@@ -63,5 +63,6 @@
         "waitStepUpperBound": 50,
         "clickDuration": 1,
         "pressDuration": 50
-    }
+    },
+    "debugLogging": true
 }
