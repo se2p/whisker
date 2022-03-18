@@ -260,8 +260,19 @@ export class NetworkExecutor {
 
     private static getArgs(event: ScratchEvent, network: NetworkChromosome): number[] {
         const args = [];
-        for (const node of network.regressionNodes.get(event.stringIdentifier())) {
-            args.push(node.activationValue);
+        try {
+            for (const node of network.regressionNodes.get(event.stringIdentifier())) {
+                args.push(node.activationValue);
+            }
+        }
+        catch (e) {
+            // TODO: Something fails here time after time (about every 100th run). Remove after problem was fixed...
+            console.error("RegressionNode Error!")
+            console.log("Event: ", event.stringIdentifier())
+            console.log("Keys: ", [...network.regressionNodes.keys()])
+            console.log("Values: ", network.regressionNodes.get(event.stringIdentifier()))
+            args.push(0);
+            args.push(0);
         }
         return args;
     }

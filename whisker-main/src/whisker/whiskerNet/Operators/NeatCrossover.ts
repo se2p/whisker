@@ -147,7 +147,7 @@ export class NeatCrossover extends NetworkCrossover<NeatChromosome> {
 
                 // Matching genes are chosen randomly between the parents
                 if (parent1Innovation === parent2Innovation) {
-                    if (this.random.nextDouble() < 0.5) {
+                    if (this.random.randomBoolean()) {
                         currentConnection = parent1Connection;
                     } else {
                         currentConnection = parent2Connection;

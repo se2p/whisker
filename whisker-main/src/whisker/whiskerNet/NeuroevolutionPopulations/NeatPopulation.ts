@@ -397,10 +397,10 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
         const excessCoefficient = this.hyperParameter.excessCoefficient;
         const weightCoefficient = this.hyperParameter.weightCoefficient;
         if (matching === 0) {
-            return (disjointCoefficient * disjoint + excessCoefficient * excess);
+            return disjointCoefficient * disjoint + excessCoefficient * excess;
         } else {
-            return (disjointCoefficient * disjoint + excessCoefficient * excess
-                + weightCoefficient * (weight_diff / matching));
+            return disjointCoefficient * disjoint + excessCoefficient * excess
+                + weightCoefficient * (weight_diff / matching);
         }
     }
 
