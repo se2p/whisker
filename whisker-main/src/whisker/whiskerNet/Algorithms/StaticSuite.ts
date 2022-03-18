@@ -1,4 +1,3 @@
-import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {ScratchProject} from "../../scratch/ScratchProject";
 import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
@@ -17,6 +16,8 @@ import {TypeTextEvent} from "../../testcase/events/TypeTextEvent";
 import {WaitEvent} from "../../testcase/events/WaitEvent";
 import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NetworkSuite} from "./NetworkSuite";
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+
 
 export class StaticSuite extends NetworkSuite {
 

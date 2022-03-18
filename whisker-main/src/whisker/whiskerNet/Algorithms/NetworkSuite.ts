@@ -2,7 +2,6 @@ import {FitnessFunction} from "../../search/FitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
 import {ScratchProject} from "../../scratch/ScratchProject";
-import VirtualMachine from "scratch-vm";
 import {Randomness} from "../../utils/Randomness";
 import WhiskerUtil from "../../../test/whisker-util";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
@@ -11,6 +10,7 @@ import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
 import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {NetworkExecutor} from "../NetworkExecutor";
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 
 export abstract class NetworkSuite {
 

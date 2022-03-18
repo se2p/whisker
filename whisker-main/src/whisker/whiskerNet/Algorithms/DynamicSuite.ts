@@ -1,5 +1,4 @@
 import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
-import VirtualMachine from "scratch-vm/src/virtual-machine"
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
 import {ScratchProject} from "../../scratch/ScratchProject";
 import {Container} from "../../utils/Container";
@@ -11,6 +10,7 @@ import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
 import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {NetworkExecutor} from "../NetworkExecutor";
 import {NetworkSuite} from "./NetworkSuite";
+import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 
 export class DynamicSuite extends NetworkSuite {
 
