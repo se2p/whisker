@@ -67,7 +67,17 @@ export class NoveltyReliableStatementFitness extends ReliableStatementFitness {
         const statementFitness = await super.getFitness(network, timeout, eventSelection);
         const sparseNess = this.novelty(network);
         this.addToBehaviourArchive(network.trace.events.map(eventAndParameter => eventAndParameter.event), sparseNess);
-        network.fitness = statementFitness + (sparseNess / (sparseNess + 1));
+
+        // If we have already covered the statement, there is no need to reward novel behaviour, since the objective
+        // now is to foster the learned behaviour
+        if (statementFitness >= 1) {
+            network.fitness = 2 * statementFitness;
+        }
+
+        // Otherwise, we have to explore novel strategies, i.e. reward novel behaviour.
+        else {
+            network.fitness = statementFitness + (sparseNess / (sparseNess + 1));
+        }
         return network.fitness;
     }
 

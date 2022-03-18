@@ -1,6 +1,6 @@
 {
     "testGenerator": "neuroevolution",
-    "algorithm": "explorativeNeat",
+    "algorithm": "e-neat",
     "populationType": "explorative",
     "eventSelection": "random",
     "populationSize": 300,
@@ -47,8 +47,8 @@
         "targets": []
     },
     "networkFitness": {
-        "type": "statement",
-        "timeout": 15000,
+        "type": "reliableStatement",
+        "timeout": 30000,
         "stableCount": 10
     },
     "stoppingCondition": {

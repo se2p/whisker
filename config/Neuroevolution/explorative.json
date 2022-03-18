@@ -48,7 +48,7 @@
     },
     "networkFitness": {
         "type": "reliableStatement",
-        "timeout": 15000,
+        "timeout": 30000,
         "stableCount": 10
     },
     "stoppingCondition": {
