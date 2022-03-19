@@ -239,12 +239,10 @@ export abstract class NetworkChromosome extends Chromosome {
             // Check if we also have to add regression nodes.
             if (!this.regressionNodes.has(event.stringIdentifier()) && event.numSearchParameter() > 0) {
                 updated = true;
-                console.log("Added: ", event.stringIdentifier())
                 for (const parameter of event.getSearchParameterNames()) {
                     const featureID = `R:${event.stringIdentifier()}-${parameter}`
                     const id = NetworkChromosome.getNonHiddenNodeId(featureID);
                     const regressionNode = new RegressionNode(id, event, parameter, ActivationFunction.NONE);
-                    console.log(`Parameter: ${parameter}`)
                     this.allNodes.push(regressionNode);
                 }
             }

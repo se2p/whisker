@@ -138,7 +138,7 @@ export class NetworkExecutor {
             network.codons.push(eventIndex);
             let nextEvent: ScratchEvent = this.availableEvents[eventIndex];
             // If something goes wrong, e.g. we have a defect network, just insert a Wait.
-            if(nextEvent === undefined){
+            if (nextEvent === undefined) {
                 nextEvent = this.availableEvents.find(event => event instanceof WaitEvent);
             }
             await this.executeNextEvent(network, nextEvent, events);
@@ -194,7 +194,7 @@ export class NetworkExecutor {
         for (let i = 0; i < eventTrace.length; i++) {
 
             // Stop if project is no longer running.
-            if(!this._projectRunning){
+            if (!this._projectRunning) {
                 break;
             }
             // Load input features into the node to record the AT later.
@@ -264,13 +264,12 @@ export class NetworkExecutor {
             for (const node of network.regressionNodes.get(event.stringIdentifier())) {
                 args.push(node.activationValue);
             }
-        }
-        catch (e) {
+        } catch (e) {
             // TODO: Something fails here time after time (about every 100th run). Remove after problem was fixed...
             console.error("RegressionNode Error!")
-            console.log("Event: ", event.stringIdentifier())
-            console.log("Keys: ", [...network.regressionNodes.keys()])
-            console.log("Values: ", network.regressionNodes.get(event.stringIdentifier()))
+            console.log(`Event: ${event.stringIdentifier()}`)
+            console.log(`Keys: ${[...network.regressionNodes.keys()]}`)
+            console.log(`Values: ${network.regressionNodes.get(event.stringIdentifier())}`)
             args.push(0);
             args.push(0);
         }
@@ -287,7 +286,7 @@ export class NetworkExecutor {
         if (network.recordActivationTrace && stepCount > 0 && (stepCount % 5 == 0 || stepCount == 1)) {
             network.updateActivationTrace(stepCount);
             const probabilities = NeuroevolutionUtil.softmaxEvents(network, this.availableEvents);
-            network.certainty.set(stepCount,probabilities.reduce((pv, cv) => pv + Math.pow(cv,2), 0));
+            network.certainty.set(stepCount, probabilities.reduce((pv, cv) => pv + Math.pow(cv, 2), 0));
         }
     }
 
