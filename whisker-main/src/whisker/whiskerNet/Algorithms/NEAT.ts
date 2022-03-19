@@ -89,7 +89,6 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
     /**
      * Updates the archive of covered block statements. Each chromosome is mapped to the block it covers.
      * Additionally, we save the best performing chromosome regarding the achieved network fitness.
-     *
      * @param candidateChromosome The candidate chromosome to update the archive with.
      */
     protected updateArchive(candidateChromosome: NeatChromosome): void {

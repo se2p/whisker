@@ -5,7 +5,6 @@ import {ConnectionGene} from "../NetworkComponents/ConnectionGene";
 import {ChromosomeGenerator} from "../../search/ChromosomeGenerator";
 import {NeatProperties} from "../HyperParameter/NeatProperties";
 import Arrays from "../../utils/Arrays";
-import {StatementFitnessFunction} from "../../testcase/fitness/StatementFitnessFunction";
 import {Innovation, InnovationType} from "../NetworkComponents/Innovation";
 
 export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
@@ -33,11 +32,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     private _speciesCount = 0;
 
     /**
-     * The targeted Scratch statement, required for statement network fitness.
-     */
-    protected readonly _targetStatement: StatementFitnessFunction;
-
-    /**
      * Saves all encountered innovations.
      */
     public static innovations: Innovation[] = [];
@@ -57,13 +51,10 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
      * Constructs a new NeatPopulation.
      * @param generator the ChromosomeGenerator used for creating the initial population.
      * @param hyperParameter the defined search parameters.
-     * @param targetStatement the targeted Scratch statement, required for statement network fitness.
      */
-    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties,
-                targetStatement?: StatementFitnessFunction) {
+    constructor(generator: ChromosomeGenerator<NeatChromosome>, hyperParameter: NeatProperties) {
         super(generator, hyperParameter);
         this._numberOfSpeciesTargeted = hyperParameter.numberOfSpecies;
-        this._targetStatement = targetStatement;
     }
 
     /**
@@ -72,9 +63,6 @@ export class NeatPopulation extends NeuroevolutionPopulation<NeatChromosome> {
     public generatePopulation(): void {
         while (this.networks.length < this.populationSize) {
             const network = this.generator.get();
-            if (this._targetStatement) {
-                network.targetFitness = this._targetStatement;
-            }
             this.networks.push(network);
             this.speciate(network);
         }
