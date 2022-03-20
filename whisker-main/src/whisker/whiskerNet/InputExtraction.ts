@@ -24,7 +24,8 @@ export class InputExtraction {
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
         for (const target of vmWrapper.vm.runtime.targets) {
-            if (!target.isStage && target.hasOwnProperty('blocks')) {
+            // TODO: Test excluding non-visible sprites (&& target.visible)
+            if ('blocks' in target && !target.isStage) {
                 const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vmWrapper);
                 if (target.isOriginal) {
                     spriteMap.set(target.sprite.name, spriteFeatures);
@@ -72,6 +73,7 @@ export class InputExtraction {
      * generator we add features which might not be informative yet. This helps us to avoid over-speciation.
      * @return 1-dim array with the columns representing the gathered pieces of information
      */
+    // TODO: Add more input features: size of sprite, effects, variables
     private static _extractInfoFromSprite(target: RenderedTarget, cloneMap: Map<string, number[]>, vmWrapper: VMWrapper): Map<string, number> {
         const spriteFeatures = new Map<string, number>();
         // Stage Bounds -> (width: 480, height: 360)
@@ -86,7 +88,7 @@ export class InputExtraction {
         spriteFeatures.set("Y", y);
 
         // Collect direction of Sprite
-        if(target.rotationStyle === 'all around') {
+        if (target.rotationStyle === 'all around') {
             const direction = this.mapValueIntoRange(target.direction, -180, 180);
             spriteFeatures.set("Dir", direction);
         }
@@ -141,7 +143,7 @@ export class InputExtraction {
                     const costumeValue = target.currentCostume;
                     const numberOfCostumes = target.sprite.costumes_.length;
                     // Only add the costume number if there are indeed multiple costumes.
-                    if(numberOfCostumes > 1) {
+                    if (numberOfCostumes > 1) {
                         const costumeNormalized = this.mapValueIntoRange(costumeValue, 0, numberOfCostumes - 1);
                         spriteFeatures.set("Costume", costumeNormalized);
                     }

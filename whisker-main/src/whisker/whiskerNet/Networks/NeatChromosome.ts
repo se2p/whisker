@@ -152,7 +152,13 @@ export class NeatChromosome extends NetworkChromosome {
         }
         network[`Cons`] = connections;
 
-        network['AT'] = this.currentActivationTrace.toJSON();
+        // Save the activation trace if one was recorded.
+        if(this.currentActivationTrace !== undefined) {
+            network['AT'] = this.currentActivationTrace.toJSON();
+        }
+        else{
+            network['AT'] = undefined;
+        }
 
         return network;
     }
