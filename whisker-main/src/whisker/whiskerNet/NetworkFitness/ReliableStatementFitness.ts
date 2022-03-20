@@ -21,7 +21,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
 
     constructor(private _stableCount: number) {
         this.random = Randomness.getInstance();
-        this.repetitionSeeds = Array(this.stableCount).fill(0).map(
+        // Add another seed to ensure that we do not get stuck due to very rare occurring program states that originate
+        // from certain random seeds and in which a targeted statement is simply not reachable.
+        this.repetitionSeeds = Array(this.stableCount + 1).fill(0).map(
             () => this.random.nextInt(0, Number.MAX_SAFE_INTEGER));
     }
 
@@ -93,7 +95,7 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
         network.trace = trace;
         network.coverage = coverage;
         StatisticsCollector.getInstance().numberFitnessEvaluations = trueFitnessEvaluations;
-        console.log(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`)
+        Container.debugLog(`Achieved fitness for ${network.targetFitness}: ${network.fitness}`)
     }
 
     public identifier(): string {
