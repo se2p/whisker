@@ -24,8 +24,7 @@ export class InputExtraction {
         // Go through each sprite and collect input features from them.
         const spriteMap = new Map<string, Map<string, number>>();
         for (const target of vmWrapper.vm.runtime.targets) {
-            // TODO: Test excluding non-visible sprites (&& target.visible)
-            if ('blocks' in target && !target.isStage) {
+            if ('blocks' in target && !target.isStage && target.visible) {
                 const spriteFeatures = this._extractInfoFromSprite(target, cloneMap, vmWrapper);
                 if (target.isOriginal) {
                     spriteMap.set(target.sprite.name, spriteFeatures);
