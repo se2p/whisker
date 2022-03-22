@@ -1,7 +1,9 @@
 import {NeuroevolutionUtil} from "../../../src/whisker/whiskerNet/NeuroevolutionUtil";
 import {ScratchEvent} from "../../../src/whisker/testcase/events/ScratchEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
-import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
+import {
+    NeatChromosomeGeneratorSparse
+} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
 
 describe("NeuroevolutionUtil Tests", () => {
@@ -58,10 +60,10 @@ describe("NeuroevolutionUtil Tests", () => {
         properties.excessCoefficient = 1;
         properties.disjointCoefficient = 1;
         events = [new MouseMoveEvent()];
-        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events,0.4);
+        generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs, events, 0.4);
     });
 
-    test("Test Softmax calculation", () =>{
+    test("Test Softmax calculation", () => {
         const chromosome = generator.get();
         const stabiliseCount = chromosome.updateStabiliseCount(30);
         for (let i = 0; i < stabiliseCount + 1; i++) {
@@ -71,7 +73,7 @@ describe("NeuroevolutionUtil Tests", () => {
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
     });
 
-    test("Test RELU activation functino", () =>{
+    test("Test RELU activation function", () => {
         expect(NeuroevolutionUtil.relu(Math.PI)).toEqual(Math.PI);
         expect(NeuroevolutionUtil.relu(-Math.PI)).toEqual(0);
     });

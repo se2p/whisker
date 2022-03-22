@@ -74,7 +74,8 @@ module.exports = [
             minimizer: [
                 new OptimizeCssAssetsPlugin()
             ]
-        }
+        },
+        stats: 'errors-warnings',
     },
 
     /* JS */
@@ -113,6 +114,7 @@ module.exports = [
         resolve: {
             extensions: ['.ts', '.js']
         },
-        devtool: 'source-map'
+        devtool: 'source-map',
+        stats: 'errors-warnings',
     }
 ];

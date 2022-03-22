@@ -8,6 +8,7 @@ import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChrom
 import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import Arrays from "../../../src/whisker/utils/Arrays";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/NeatProperties";
+import {Container} from "../../../src/whisker/utils/Container";
 
 describe("Species Test", () => {
 
@@ -19,6 +20,7 @@ describe("Species Test", () => {
     let properties: NeatProperties;
 
     beforeEach(() => {
+        Container.debugLog = () => { /* suppress output */};
         const crossoverConfig = {
             "operator": "neatCrossover",
             "crossoverWithoutMutation": 0.2,

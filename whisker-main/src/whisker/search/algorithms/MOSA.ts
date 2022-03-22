@@ -28,6 +28,7 @@ import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
 import {LocalSearch} from "../operators/LocalSearch/LocalSearch";
 import Arrays from "../../utils/Arrays";
+import {Container} from "../../utils/Container";
 
 /**
  * The Many-Objective Sorting Algorithm (MOSA).
@@ -134,7 +135,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
             this.updateStatistics();
         }
         while (!(this._stoppingCondition.isFinished(this))) {
-            console.log(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
+            Container.debugLog(`Iteration ${this._iterations}: covered goals:  ${this._archive.size}/${this._fitnessFunctions.size}`);
             const offspringPopulation = this.generateOffspringPopulation(parentPopulation, this._iterations > 0);
             await this.evaluatePopulation(offspringPopulation);
             this._nonOptimisedObjectives = [...this._fitnessFunctions.keys()].filter(key => !this._archive.has(key));
@@ -159,7 +160,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
         // TODO: This should probably be printed somewhere outside the algorithm, in the TestGenerator
         for (const uncoveredKey of this._nonOptimisedObjectives) {
-            console.log(`Not covered: ${this._fitnessFunctions.get(uncoveredKey).toString()}`);
+            Container.debugLog(`Not covered: ${this._fitnessFunctions.get(uncoveredKey).toString()}`);
         }
         return this._archive;
     }
@@ -269,7 +270,7 @@ export class MOSA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
                     bestFitness = candidateFitness;
                 }
             }
-            console.log(`Best Fitness for ${fitnessFunction.toString()}: ${bestFitness}`);
+            Container.debugLog(`Best Fitness for ${fitnessFunction.toString()}: ${bestFitness}`);
             if (!bestFront.includes(bestChromosome)) {
                 bestFront.push(bestChromosome);
                 Arrays.remove(chromosomesForNonDominatedSorting, bestChromosome);

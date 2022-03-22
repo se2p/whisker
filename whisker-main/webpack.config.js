@@ -42,7 +42,8 @@ module.exports = [
                 }
             ]
         },
-        devtool: 'source-map'
+        devtool: 'source-map',
+        stats: 'errors-warnings',
     },
 
     /* Node */
@@ -76,7 +77,8 @@ module.exports = [
                 }
             ]
         },
-        devtool: 'source-map'
+        devtool: 'source-map',
+        stats: 'errors-warnings',
     }
 
 ];

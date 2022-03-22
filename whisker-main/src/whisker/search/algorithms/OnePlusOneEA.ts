@@ -24,6 +24,7 @@ import {ChromosomeGenerator} from '../ChromosomeGenerator';
 import {FitnessFunction} from "../FitnessFunction";
 import {SearchAlgorithmDefault} from "./SearchAlgorithmDefault";
 import {StatisticsCollector} from "../../utils/StatisticsCollector";
+import {Container} from "../../utils/Container";
 
 export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C> {
 
@@ -60,7 +61,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
         if (!this.isIterativeSearch()) {
             this.initializeStatistics();
         }
-        console.log("1+1 EA started at " + this._startTime);
+        Container.debugLog("1+1 EA started at " + this._startTime);
 
         let bestIndividual = this._chromosomeGenerator.get();
         await bestIndividual.evaluate();
@@ -77,7 +78,7 @@ export class OnePlusOneEA<C extends Chromosome> extends SearchAlgorithmDefault<C
             await candidateChromosome.evaluate();
             this.updateArchive(candidateChromosome);
             const candidateFitness = candidateChromosome.getFitness(this._fitnessFunction);
-            console.log(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
+            Container.debugLog(`Iteration ${this._iterations}: BestChromosome with fitness ${bestFitness} and length ${bestIndividual.getLength()} executed
 ${bestIndividual.toString()}`);
             if (this._fitnessFunction.compare(candidateFitness, bestFitness) >= 0) {
                 if (this._fitnessFunction.isOptimal(candidateFitness)) {
@@ -90,7 +91,7 @@ ${bestIndividual.toString()}`);
             this._iterations++;
             StatisticsCollector.getInstance().incrementIterationCount();
         }
-        console.log("1+1 EA completed at " + Date.now());
+        Container.debugLog("1+1 EA completed at " + Date.now());
         return this._archive;
     }
 
