@@ -87,7 +87,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.regressionNodes.size).toEqual(4);
         expect(chromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(chromosome.inputNodes.get("Sprite2").size).toEqual(4);
-        expect(chromosome.connections.length).toBeGreaterThanOrEqual(36);
+        expect(chromosome.connections.length).toBeGreaterThanOrEqual(9);
         expect(chromosome.getCrossoverOperator() instanceof NeatCrossover).toBeTruthy();
         expect(chromosome.getMutationOperator() instanceof NeatMutation).toBeTruthy();
         expect(chromosome.fitness).toEqual(0);
