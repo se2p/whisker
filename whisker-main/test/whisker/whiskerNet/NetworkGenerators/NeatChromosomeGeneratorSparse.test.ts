@@ -77,6 +77,6 @@ describe('Test NetworkChromosomeGeneratorSparse', () => {
             chromosomes.push(chromosome);
         }
         expect(NeatPopulation.innovations.length).toBeGreaterThanOrEqual(chromosomes[0].connections.length);
-        expect(NeatPopulation.innovations.length).toBeLessThanOrEqual(81); // UpperBound === FullyConnected
+        expect(NeatPopulation.innovations.length).toBeLessThanOrEqual(90); // UpperBound === FullyConnected
     });
 })

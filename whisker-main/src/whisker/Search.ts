@@ -40,7 +40,6 @@ import {NeuroevolutionTestGenerator} from "./testgenerator/NeuroevolutionTestGen
 import {StoppingCondition} from "./search/StoppingCondition";
 import {Chromosome} from "./search/Chromosome";
 import {ScratchProject} from "./scratch/ScratchProject";
-import {FitnessEvaluationStoppingCondition} from "./search/stoppingconditions/FitnessEvaluationStoppingCondition";
 
 export class Search {
 

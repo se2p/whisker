@@ -62,6 +62,7 @@ export class NeatChromosomeGeneratorFullyConnected extends NeatChromosomeGenerat
         // Add the Bias
         const biasNode = new BiasNode(allNodes.length);
         allNodes.push(biasNode);
+        inputList.push([biasNode]);
 
         // Create the classification output nodes and add them to the nodes list
         for (const event of this._scratchEvents) {

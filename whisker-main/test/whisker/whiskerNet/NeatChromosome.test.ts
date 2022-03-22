@@ -14,13 +14,10 @@ import {WaitEvent} from "../../../src/whisker/testcase/events/WaitEvent";
 import {MouseMoveEvent} from "../../../src/whisker/testcase/events/MouseMoveEvent";
 import {ClickStageEvent} from "../../../src/whisker/testcase/events/ClickStageEvent";
 import {KeyPressEvent} from "../../../src/whisker/testcase/events/KeyPressEvent";
-import {
-    NeatChromosomeGeneratorSparse
-} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
+import {NeatChromosomeGeneratorSparse} from "../../../src/whisker/whiskerNet/NetworkGenerators/NeatChromosomeGeneratorSparse";
 import {NeatChromosome} from "../../../src/whisker/whiskerNet/Networks/NeatChromosome";
 import {NeatProperties} from "../../../src/whisker/whiskerNet/HyperParameter/NeatProperties";
 import {NeatPopulation} from "../../../src/whisker/whiskerNet/NeuroevolutionPopulations/NeatPopulation";
-import {expect} from "@jest/globals";
 
 describe('Test NetworkChromosome', () => {
 
@@ -81,7 +78,7 @@ describe('Test NetworkChromosome', () => {
         chromosome = generator.get();
         properties = new NeatProperties();
         properties.populationSize = 10;
-    })
+    });
 
     test('Constructor Test', () => {
         expect(chromosome.allNodes.length).toEqual(19);
@@ -106,7 +103,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.codons.length).toBe(0);
         expect(chromosome.isRecurrent).toBeFalsy();
         expect(chromosome.outputNodes[0].incomingConnections.length).toBeGreaterThanOrEqual(4);
-    })
+    });
 
     test("Test getter and setter", () => {
         const species = new Species(1, true, properties);
@@ -137,7 +134,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.getLength()).toEqual(3);
         expect(chromosome.isRecurrent).toBeTruthy();
         expect(chromosome.coverage).toContain("B");
-    })
+    });
 
     test("Clone Test without hidden Layer", () => {
         chromosome.generateNetwork();
@@ -147,7 +144,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
-    })
+    });
 
     test("Clone Test with given gene without hidden Layer", () => {
         const clone = chromosome.cloneWith(chromosome.connections);
@@ -156,7 +153,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
-    })
+    });
 
     test("Clone Test with hidden Layer", () => {
         const clone = chromosome.cloneStructure(false);
@@ -166,7 +163,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
-    })
+    });
 
     test("Clone Test with given gene and hidden Layer", () => {
         const clone = chromosome.cloneWith(chromosome.connections);
@@ -176,7 +173,7 @@ describe('Test NetworkChromosome', () => {
         expect(clone.inputNodes.size).toEqual(chromosome.inputNodes.size);
         expect(clone.outputNodes.length).toEqual(chromosome.outputNodes.length);
         expect(clone.sharedFitness).toEqual(chromosome.sharedFitness);
-    })
+    });
 
     test('Test generateNetwork with hidden Layer', () => {
         const inputNode = chromosome.inputNodes.get("Sprite1").get("X-Position");
@@ -196,7 +193,7 @@ describe('Test NetworkChromosome', () => {
         expect(deepHiddenNode.incomingConnections.length).toEqual(1);
         expect(chromosome.regressionNodes.get(new WaitEvent().constructor.name).length).toEqual(1);
         expect(chromosome.regressionNodes.get(new MouseMoveEvent().constructor.name).length).toEqual(2);
-    })
+    });
 
     test('Network activation without hidden layer', () => {
         // Create input Nodes
@@ -375,7 +372,7 @@ describe('Test NetworkChromosome', () => {
         expect(nodes[0].activatedFlag).toBeTruthy();
         expect(softmaxOutput).toEqual([0.45, 0.55]);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
-    })
+    });
 
     test('Network activation with hidden layer', () => {
         // Create input Nodes
@@ -438,7 +435,7 @@ describe('Test NetworkChromosome', () => {
         expect(nodes[6].nodeValue).toEqual(0.6);
         expect(softmaxOutput).toEqual([0.382, 0.618]);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toEqual(1);
-    })
+    });
 
     test('Network activation with recurrent connections', () => {
         // Create input Nodes
@@ -499,7 +496,7 @@ describe('Test NetworkChromosome', () => {
         chromosome.activateNetwork(inputs);
         expect(Math.round(firstOutput.reduce((a, b) => a + b))).toEqual(1);
         expect(Math.round(secondOutput.reduce((a, b) => a + b))).toEqual(1);
-    })
+    });
 
     test("Test the recurrent Network check", () => {
         // Create input Nodes
@@ -549,7 +546,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.isRecurrentPath(nodes[0], nodes[4], 0, threshold)).toBeFalsy();
         expect(chromosome.isRecurrentPath(nodes[4], nodes[0], 0, threshold)).toBeTruthy();
         expect(chromosome.isRecurrentPath(nodes[0], nodes[1], 0, threshold)).toBeFalsy();
-    })
+    });
 
     test("Test getRegressionNodes", () => {
         generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
@@ -558,7 +555,7 @@ describe('Test NetworkChromosome', () => {
         const regressionNodes = chromosome.regressionNodes;
         expect(regressionNodes.get("WaitEvent").length).toEqual(1);
         expect(regressionNodes.get("MouseMoveEvent").length).toEqual(2);
-    })
+    });
 
     test("Test updateOutputNodes", () => {
         generator = new NeatChromosomeGeneratorSparse(mutationConfig, crossoverConfig, genInputs,
@@ -581,10 +578,11 @@ describe('Test NetworkChromosome', () => {
             chromosome2.outputNodes[chromosome2.outputNodes.length - 1].uID);
         expect(chromosome.outputNodes[chromosome.outputNodes.length - 1].uID).not.toEqual(
             chromosome3.outputNodes[chromosome3.outputNodes.length - 1].uID);
-    })
+    });
 
     test("Test toString", () => {
-        expect(chromosome.toString()).toContain("NodeGenes");
-        expect(chromosome.toString()).toContain("ConnectionGenes");
-    })
+        const network = generator.get()
+        network.connections[0].isEnabled = false;
+        expect(network.toString().split('\n').length).toBeGreaterThan(network.connections.length)
+    });
 })

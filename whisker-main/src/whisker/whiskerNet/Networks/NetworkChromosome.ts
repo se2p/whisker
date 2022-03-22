@@ -523,16 +523,45 @@ export abstract class NetworkChromosome extends Chromosome {
         return this._trace.events.length;
     }
 
+    /**
+     * Generates a string representation in dot format of the given NetworkChromosome.
+     * @returns string dot format of the given chromosome
+     */
     toString(): string {
-        let outputString = 'NodeGenes: \n';
+        const edges = [];
+        const minNodes: string[] = [];
+        const maxNodes: string[] = [];
+
+        const convertIdentifier = (identifier: string): string => {
+            return identifier
+                .replace(/-/g, '')
+                .replace(/:/, '')
+                .replace(/ /g, '');
+        }
+
         for (const node of this.allNodes) {
-            outputString += node.toString() + '\n';
+            if (node.type === NodeType.INPUT || node.type === NodeType.BIAS) {
+                minNodes.push(convertIdentifier(node.identifier()));
+            } else if (node.type === NodeType.OUTPUT) {
+                maxNodes.push(convertIdentifier(node.identifier()));
+            }
         }
-        outputString += 'ConnectionGenes: \n';
+
+        const minRanks = `\t{ rank = min; ${minNodes.toString()} }`.replace(/,/g, '; ');
+        const maxRanks = `\t{ rank = max; ${maxNodes.toString()} }`.replace(/,/g, '; ')
+
         for (const connection of this.connections) {
-            outputString += connection.toString() + '\n';
+            const source = convertIdentifier(connection.source.identifier());
+            const target = convertIdentifier(connection.target.identifier());
+            const lineStyle = connection.isEnabled ? 'solid' : 'dotted';
+            const weight = connection.weight.toFixed(2);
+            const color = Math.min(11, Math.max(1, Math.round(Number(weight) + 6)));
+            edges.push(`\t"${source}" -> "${target}" [label=${weight} style=${lineStyle} color="/rdylgn11/${color}" penwidth=3];`)
         }
-        return outputString;
+
+        const renderedEdges = edges.join('\n');
+        const graphConfigs = "\trankdir = BT;\n\tranksep = 10;";
+        return `digraph ScratchProgram {\n${graphConfigs}\n${renderedEdges}\n${minRanks}\n${maxRanks}\n}`;
     }
 
     /**

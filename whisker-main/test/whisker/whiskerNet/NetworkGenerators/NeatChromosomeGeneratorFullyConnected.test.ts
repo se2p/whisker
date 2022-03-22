@@ -63,7 +63,7 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         const neatChromosome = generator.get();
         neatChromosome.generateNetwork();
         expect(neatChromosome.allNodes.length).toBe(19);
-        expect(neatChromosome.connections.length).toBe(81);
+        expect(neatChromosome.connections.length).toBe(90);
         expect(neatChromosome.inputNodes.get("Sprite1").size).toEqual(5);
         expect(neatChromosome.inputNodes.get("Sprite2").size).toEqual(4);
         expect(neatChromosome.classificationNodes.size).toBe(4);

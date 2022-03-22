@@ -163,7 +163,7 @@ export class NetworkExecutor {
 
         // Should not happen!
         if (!workingNetwork) {
-            console.error("Found defect Network", network);
+            console.error(`Found defect Network ${network}`);
         }
 
         StatisticsCollector.getInstance().numberFitnessEvaluations++;
