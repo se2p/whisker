@@ -17,7 +17,7 @@ export default class Arrays {
      * @return the new length of the destination array
      */
     static addAll<T>(dst: T[], src: Readonly<T[]>): number {
-        return dst.push(...src)
+        return dst.push(...src);
     }
 
     /**

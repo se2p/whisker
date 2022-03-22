@@ -17,7 +17,7 @@ describe("regressionNode Tests", () => {
         regressionNodeNone.uID = 1;
         regressionNodeRelu = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.RELU);
         regressionNodeRelu.uID = 2;
-    })
+    });
 
     test("Constructor Test", () => {
 
@@ -34,7 +34,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNode.traversed).toBe(false);
         expect(regressionNode.incomingConnections.length).toBe(0);
         expect(regressionNode.eventParameter).toEqual("Duration");
-    })
+    });
 
     test("Reset Node", () => {
         regressionNodeNone.activationCount = 10;
@@ -50,7 +50,7 @@ describe("regressionNode Tests", () => {
         expect(regressionNodeNone.lastActivationValue).toBe(0);
         expect(regressionNodeNone.activatedFlag).toBe(false);
         expect(regressionNodeNone.traversed).toBe(false);
-    })
+    });
 
     test("Equals Test", () => {
         const regressionNode2 = new RegressionNode(new WaitEvent(), "Duration", ActivationFunction.NONE);
@@ -76,16 +76,16 @@ describe("regressionNode Tests", () => {
         const biasNode = new BiasNode();
         biasNode.uID = 1;
         expect(regressionNodeNone.equals(biasNode)).toBeFalsy();
-    })
+    });
 
     test("Clone Test", () => {
         const clone = regressionNodeNone.clone();
         expect(clone.uID).toEqual(regressionNodeNone.uID);
-        expect(clone.eventParameter).toEqual(regressionNodeNone.eventParameter)
-        expect(clone.activationFunction).toEqual(regressionNodeNone.activationFunction)
+        expect(clone.eventParameter).toEqual(regressionNodeNone.eventParameter);
+        expect(clone.activationFunction).toEqual(regressionNodeNone.activationFunction);
         expect(clone.equals(regressionNodeNone)).toBeTruthy();
         expect(clone === regressionNodeNone).toBeFalsy();
-    })
+    });
 
     test("getActivationValue Test", () => {
         regressionNodeNone.nodeValue = 10;
@@ -109,11 +109,11 @@ describe("regressionNode Tests", () => {
         regressionNodeNone2.reset();
         expect(regressionNodeNone2.getActivationValue()).toBe(0);
         expect(regressionNodeNone2.activationValue).toBe(0);
-    })
+    });
 
     test("Test getEventName", () => {
         expect(regressionNodeNone.event).toBeInstanceOf(WaitEvent);
-    })
+    });
 
     test("toString Test", () => {
         const inputNode = new InputNode("Sprite1", "Position-X");
@@ -129,6 +129,6 @@ describe("regressionNode Tests", () => {
 , ActivationFunction: 0\
 , InputConnections: ${connection.toString()}\
 , Event: WaitEvent\
-, Parameter Duration}`)
-    })
-})
+, Parameter Duration}`);
+    });
+});

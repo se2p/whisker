@@ -17,17 +17,17 @@ describe("ConnectionGene Test", () => {
         targetNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
         targetNode.uID = 1;
         connection = new ConnectionGene(sourceNode, targetNode, 0.2, true, ConnectionGene.getNextInnovationNumber(), false);
-    })
+    });
 
     test("Test Constructor", () => {
         expect(connection.source).toBe(sourceNode);
         expect(connection.target).toBe(targetNode);
         expect(connection.weight).toBe(0.2);
         expect(connection.isEnabled).toBe(true);
-        expect(connection.innovation).toBe(1)
+        expect(connection.innovation).toBe(1);
         expect(connection.isRecurrent).toBe(false);
         expect(ConnectionGene.getNextInnovationNumber()).toBe(2);
-    })
+    });
 
     test("Test getter and setter", () => {
         connection.weight = 1;
@@ -37,7 +37,7 @@ describe("ConnectionGene Test", () => {
         expect(connection.weight).toBe(1);
         expect(connection.isEnabled).toBe(false);
         expect(connection.innovation).toBe(30);
-    })
+    });
 
     test("Test cloneWithNodes", () => {
         const inNode = new InputNode("Sprite1", "Y-Position");
@@ -52,7 +52,7 @@ describe("ConnectionGene Test", () => {
         expect(connection.isEnabled).toBe(cloneConnection.isEnabled);
         expect(connection.innovation).toBe(cloneConnection.innovation);
         expect(connection.isRecurrent).toBe(cloneConnection.isRecurrent);
-    })
+    });
 
     test("Test equalsByNodes with equal nodes", () => {
         const inNode = new InputNode("Sprite1", "X-Position");
@@ -62,7 +62,7 @@ describe("ConnectionGene Test", () => {
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1, false);
         expect(connection.equalsByNodes(otherConnection)).toBe(true);
-    })
+    });
 
     test("Test equalsByNodes with differing nodes", () => {
         const inNode = new InputNode("Sprite2", "X-Position");
@@ -72,11 +72,11 @@ describe("ConnectionGene Test", () => {
 
         const otherConnection = new ConnectionGene(inNode, outNode, 0.2, true, 1, false);
         expect(connection.equalsByNodes(otherConnection)).toBe(false);
-    })
+    });
 
     test("Test equalsByNodes with differing classes", () => {
         expect(connection.equalsByNodes(sourceNode)).toBe(false);
-    })
+    });
 
     test("Test toString", () => {
         const expected = `ConnectionGene{FromId: 0\
@@ -84,7 +84,7 @@ describe("ConnectionGene Test", () => {
 , Weight: 0.2\
 , Enabled: true\
 , Recurrent: false\
-, InnovationNumber: ${(ConnectionGene.getNextInnovationNumber() - 1)}}`
+, InnovationNumber: ${(ConnectionGene.getNextInnovationNumber() - 1)}}`;
         expect(connection.toString()).toContain(expected);
-    })
-})
+    });
+});

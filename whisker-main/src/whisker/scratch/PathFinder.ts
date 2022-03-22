@@ -35,7 +35,7 @@ export class PathFinder {
         const startNode = new AStarNode(startingPosition, null, 0, startingDistance);
         openSet.push(startNode);
 
-        console.log(`Starting search for path from ${startingPosition} to ${targetPosition}`)
+        console.log(`Starting search for path from ${startingPosition} to ${targetPosition}`);
         // Within the loop we keep searching for as long as we have nodes worth visiting.
         while (openSet.length > 0) {
             let current = openSet[0];
@@ -53,7 +53,7 @@ export class PathFinder {
                     path.push(current.position);
                 }
                 path.reverse();
-                console.log("Found valid Path!")
+                console.log("Found valid Path!");
                 return path;
             }
             // Keep searching if we haven't found our target yet.
@@ -106,7 +106,7 @@ export class PathFinder {
         // Moving directions.
         const directions = ["NORTH", "EAST", "SOUTH", "WEST"];
         for (const direction of directions) {
-            let neighbourPosition: ScratchPosition
+            let neighbourPosition: ScratchPosition;
             switch (direction) {
                 case "NORTH":
                     neighbourPosition = new ScratchPosition(current.position.x, current.position.y + resolution);
@@ -131,7 +131,7 @@ export class PathFinder {
             const distanceFromStart = current.hopsFromStart + 1;
             const distanceToGoal = Math.round(goal.distanceTo(neighbourPosition));
             const neighbourNode = new AStarNode(neighbourPosition, current, distanceFromStart, distanceToGoal);
-            neighbours.push(neighbourNode)
+            neighbours.push(neighbourNode);
         }
         return neighbours;
     }

@@ -87,7 +87,7 @@ export class ModelNode {
     registerComponents(checkListener: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
         this.edges.forEach(edge => {
             edge.registerComponents(checkListener, testDriver, caseSensitive);
-        })
+        });
     }
 
     /**
@@ -96,13 +96,13 @@ export class ModelNode {
     reset() {
         this.edges.forEach(edge => {
             edge.reset();
-        })
+        });
     }
 
     simplifyForSave() {
         return {
             id: this.id,
             label: this.label
-        }
+        };
     }
 }

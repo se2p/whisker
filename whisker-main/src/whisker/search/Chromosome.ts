@@ -18,10 +18,10 @@
  *
  */
 
-import {FitnessFunction} from "./FitnessFunction"
-import {Pair} from "../utils/Pair"
-import {Mutation} from "./Mutation"
-import {Crossover} from "./Crossover"
+import {FitnessFunction} from "./FitnessFunction";
+import {Pair} from "../utils/Pair";
+import {Mutation} from "./Mutation";
+import {Crossover} from "./Crossover";
 
 /**
  * The Chromosome defines a gene representation for valid solutions to a given optimization problem.

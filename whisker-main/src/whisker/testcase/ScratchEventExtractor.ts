@@ -32,15 +32,15 @@ import {TypeTextEvent} from "./events/TypeTextEvent";
 import {Randomness} from "../utils/Randomness";
 import {DragSpriteEvent} from "./events/DragSpriteEvent";
 import {RenderedTarget} from 'scratch-vm/src/sprites/rendered-target';
-import {Scratch3ControlBlocks} from 'scratch-vm/src/blocks/scratch3_control'
-import {Scratch3DataBlocks} from 'scratch-vm/src/blocks/scratch3_data'
-import {Scratch3EventBlocks} from 'scratch-vm/src/blocks/scratch3_event'
-import {Scratch3LooksBlocks} from 'scratch-vm/src/blocks/scratch3_looks'
-import {Scratch3MotionBlocks} from 'scratch-vm/src/blocks/scratch3_motion'
-import {Scratch3OperatorsBlocks} from 'scratch-vm/src/blocks/scratch3_operators'
-import {Scratch3ProcedureBlocks} from 'scratch-vm/src/blocks/scratch3_procedures'
-import {Scratch3SensingBlocks} from 'scratch-vm/src/blocks/scratch3_sensing'
-import {Scratch3SoundBlocks} from 'scratch-vm/src/blocks/scratch3_sound'
+import {Scratch3ControlBlocks} from 'scratch-vm/src/blocks/scratch3_control';
+import {Scratch3DataBlocks} from 'scratch-vm/src/blocks/scratch3_data';
+import {Scratch3EventBlocks} from 'scratch-vm/src/blocks/scratch3_event';
+import {Scratch3LooksBlocks} from 'scratch-vm/src/blocks/scratch3_looks';
+import {Scratch3MotionBlocks} from 'scratch-vm/src/blocks/scratch3_motion';
+import {Scratch3OperatorsBlocks} from 'scratch-vm/src/blocks/scratch3_operators';
+import {Scratch3ProcedureBlocks} from 'scratch-vm/src/blocks/scratch3_procedures';
+import {Scratch3SensingBlocks} from 'scratch-vm/src/blocks/scratch3_sensing';
+import {Scratch3SoundBlocks} from 'scratch-vm/src/blocks/scratch3_sound';
 import Cast from "scratch-vm/src/util/cast";
 
 const twgl = require('twgl.js');
@@ -85,21 +85,21 @@ export abstract class ScratchEventExtractor {
     protected traverseBlocks(target: RenderedTarget, block: ScratchBlocks, foundEvents: ScratchEvent[]): void {
 
         while (block) {
-            foundEvents.push(...this._extractEventsFromBlock(target, block))
+            foundEvents.push(...this._extractEventsFromBlock(target, block));
             // first branch (if, forever, repeat, ...)
             if (block.inputs.SUBSTACK) {
-                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block)
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK.block);
                 this.traverseBlocks(target, branchBlock, foundEvents);
             }
             // else branch
             if (block.inputs.SUBSTACK2) {
-                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block)
+                const branchBlock = target.blocks.getBlock(block.inputs.SUBSTACK2.block);
                 this.traverseBlocks(target, branchBlock, foundEvents);
             }
 
             // look at the block(s) inside a conditional statement
             if (block.inputs.CONDITION) {
-                const condition = target.blocks.getBlock(block.inputs.CONDITION.block)
+                const condition = target.blocks.getBlock(block.inputs.CONDITION.block);
                 // Check if there is indeed a condition. Some programs may have included a conditional statement
                 // but did not insert a condition.
                 if (condition) {
@@ -110,14 +110,14 @@ export abstract class ScratchEventExtractor {
                     if (condition.inputs.OPERAND2) {
                         this.traverseBlocks(target, target.blocks.getBlock(condition.inputs.OPERAND2.block), foundEvents);
                     }
-                    foundEvents.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)))
+                    foundEvents.push(...this._extractEventsFromBlock(target, target.blocks.getBlock(block.inputs.CONDITION.block)));
                 }
             }
 
             // handle procedure calls by mapping the call to its corresponding procedure_definition
             if (target.blocks.getOpcode(block) === 'procedures_call') {
                 if (this.proceduresMap.has(block.mutation.proccode)) {
-                    foundEvents.push(...this.proceduresMap.get(block.mutation.proccode))
+                    foundEvents.push(...this.proceduresMap.get(block.mutation.proccode));
                 }
             }
             block = target.blocks.getBlock(block.next);
@@ -166,7 +166,7 @@ export abstract class ScratchEventExtractor {
             case 'sensing_touchingobject': {
                 const touchingMenuBlock = target.blocks.getBlock(block.inputs.TOUCHINGOBJECTMENU.block);
                 const field = target.blocks.getFields(touchingMenuBlock);
-                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value
+                const value = field.VARIABLE ? field.Variable.value : field.TOUCHINGOBJECTMENU.value;
 
                 // Target senses Mouse
                 if (value == "_mouse_") {
@@ -192,7 +192,7 @@ export abstract class ScratchEventExtractor {
                     } else {
                         // Snap to upper or lower edge and randomly select the x-coordinate
                         x = random.nextInt(-stageWidth, stageWidth);
-                        y = random.pick([-stageHeight, stageHeight])
+                        y = random.pick([-stageHeight, stageHeight]);
                     }
                     eventList.push(new DragSpriteEvent(target, x, y));
                 }
@@ -236,7 +236,7 @@ export abstract class ScratchEventExtractor {
                     // Only push the event if we actually found the color on the canvas.
                     if (result.colorFound) {
                         const {x, y} = result.coordinates;
-                        eventList.push(new DragSpriteEvent(target, x, y))
+                        eventList.push(new DragSpriteEvent(target, x, y));
                     }
                 }
                 break;
@@ -344,7 +344,7 @@ export abstract class ScratchEventExtractor {
                 try {
                     const operatorBlock = target.blocks.getBlock(block.parent);
                     // Find out on which side of the operator the value which is compared against the volume is placed.
-                    let compareValueOperatorBlock: ScratchBlocks
+                    let compareValueOperatorBlock: ScratchBlocks;
                     let compareValueIsFirstOperand: boolean;
 
                     if (operatorBlock.inputs.OPERAND1.block !== block.id) {
@@ -357,7 +357,7 @@ export abstract class ScratchEventExtractor {
 
                     // Now that we know where to find the value which is compared against the current volume value, we
                     // can set the volume appropriately.
-                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value)
+                    let volumeValue = Number.parseFloat(compareValueOperatorBlock.fields.TEXT.value);
                     // Greater than
                     if (operatorBlock.opcode === 'operator_gt') {
                         compareValueIsFirstOperand ? volumeValue -= 1 : volumeValue += 1;
@@ -366,7 +366,7 @@ export abstract class ScratchEventExtractor {
                     else if (operatorBlock.opcode === 'operator_lt') {
                         compareValueIsFirstOperand ? volumeValue += 1 : volumeValue -= 1;
                     }
-                    eventList.push(new SoundEvent(volumeValue))
+                    eventList.push(new SoundEvent(volumeValue));
                 }
                     // If we cannot infer the correct volume, simply set the volume to the highest possible value.
                 catch (e) {
@@ -410,7 +410,7 @@ export abstract class ScratchEventExtractor {
                     if (!this.proceduresMap.has(proccode)) {
                         const procedureEvents: ScratchEvent[] = [];
                         this.traverseBlocks(target, hatBlock, procedureEvents);
-                        this.proceduresMap.set(proccode, procedureEvents)
+                        this.proceduresMap.set(proccode, procedureEvents);
                     }
                 }
             }
@@ -470,7 +470,7 @@ export abstract class ScratchEventExtractor {
         const typeTextEventList: TypeTextEvent[] = [];
         const length = this.availableTextSnippets.length;
         for (let i = 0; i < length; i++) {
-            typeTextEventList.push(new TypeTextEvent(this.availableTextSnippets[i]))
+            typeTextEventList.push(new TypeTextEvent(this.availableTextSnippets[i]));
         }
         return typeTextEventList;
     }

@@ -100,7 +100,7 @@ describe("Test NeatCrossover", () => {
         parent2Connections.push(new ConnectionGene(iNode6, hiddenNode2, 8, true, 3, false));
         parent2Connections.push(new ConnectionGene(hiddenNode2, oNode2, 10, true, 6, false));
         parent2Connections.push(new ConnectionGene(iNode4, hiddenNode3, 11, true, 9, false));
-    })
+    });
 
 
     test("CrossoverTest with first parent being fitter than second parent", () => {
@@ -112,7 +112,7 @@ describe("Test NeatCrossover", () => {
         const child2 = crossoverOp.applyFromPair([parent1, parent2])[0];
         expect(child1.connections.length).toBe(6);
         expect(child1.connections.length).toEqual(child2.connections.length);
-    })
+    });
 
     test("CrossoverTest with second parent being fitter than first parent", () => {
         const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp);
@@ -123,7 +123,7 @@ describe("Test NeatCrossover", () => {
         const child2 = crossoverOp.applyFromPair([parent1, parent2])[0];
         expect(child1.connections.length).toBe(7);
         expect(child2.connections.length).toEqual(child1.connections.length);
-    })
+    });
 
     test("CrossoverTest with both parents being equivalently fit", () => {
         const parent1 = new NeatChromosome(nodes1, parent1Connections, mutationOp, crossoverOp);
@@ -133,7 +133,7 @@ describe("Test NeatCrossover", () => {
         const child1 = crossoverOp.apply(parent1, parent2)[0];
         expect(child1.connections.length).toBeGreaterThanOrEqual(5);
         expect(child1.connections.length).toBeLessThanOrEqual(6);
-    })
+    });
 
     test("CrossoverTest with deactivated connections", () => {
         const inNode = new InputNode("Sprite1", "X-Position");
@@ -160,7 +160,7 @@ describe("Test NeatCrossover", () => {
             expect(child1.updateStabiliseCount(20)).not.toBe(-1);
             expect(child2.updateStabiliseCount(20)).not.toBe(-1);
         }
-    })
+    });
 
     test("CrossoverTest with excess genes and average weight", () => {
         const crossoverConfig = {
@@ -198,10 +198,10 @@ describe("Test NeatCrossover", () => {
         parent2.fitness = 0;
 
 
-        const child = crossoverOp.apply(parent1, parent2)[0]
+        const child = crossoverOp.apply(parent1, parent2)[0];
 
 
-        expect(child.connections.length).toBe(1)
-        expect(child.connections[0].weight).toBe(1)
-    })
-})
+        expect(child.connections.length).toBe(1);
+        expect(child.connections[0].weight).toBe(1);
+    });
+});

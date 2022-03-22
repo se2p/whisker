@@ -42,9 +42,9 @@ export class MouseMoveToEvent extends ScratchEvent {
     }
 
     public toJSON(): Record<string, any> {
-        const event = {}
+        const event = {};
         event[`type`] = `MouseMoveToEvent`;
-        event[`args`] = {"x": this.x, "y": this.y}
+        event[`args`] = {"x": this.x, "y": this.y};
         return event;
     }
 

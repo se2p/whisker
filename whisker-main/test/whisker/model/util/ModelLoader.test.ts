@@ -21,7 +21,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-graph-id.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).not.toThrow();
     });
 
@@ -29,7 +29,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-node-id.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -37,7 +37,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-dup-edge-id.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).not.toThrow();
     });
 
@@ -45,7 +45,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-edge-condition.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -53,7 +53,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-startnode.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -61,7 +61,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-two-startnodes.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -69,7 +69,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-unknown-node1.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -77,7 +77,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-unknown-node2.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -85,7 +85,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-edge-condition.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -93,7 +93,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-error-no-node-id.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).toThrow();
     });
 
@@ -101,7 +101,7 @@ describe('ModelLoaderjson', () => {
         const text = readFileSync('test/whisker/model/util/SimpleGraph-noterror-no-edge-id.json', 'utf8');
         const loader = new ModelLoader();
         expect(function () {
-            loader.loadModels(text)
+            loader.loadModels(text);
         }).not.toThrow();
     });
 });

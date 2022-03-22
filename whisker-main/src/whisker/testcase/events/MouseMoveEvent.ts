@@ -44,9 +44,9 @@ export class MouseMoveEvent extends ScratchEvent {
     }
 
     public toJSON(): Record<string, any> {
-        const event = {}
+        const event = {};
         event[`type`] = `MouseMoveEvent`;
-        event[`args`] = {"x": this._x, "y": this._y}
+        event[`args`] = {"x": this._x, "y": this._y};
         return event;
     }
 
@@ -63,7 +63,7 @@ export class MouseMoveEvent extends ScratchEvent {
     }
 
     getSearchParameterNames(): string[] {
-        return ["X", "Y"]
+        return ["X", "Y"];
     }
 
     setParameter(args: number[], argType: ParameterType): void {
@@ -78,7 +78,7 @@ export class MouseMoveEvent extends ScratchEvent {
                 break;
             }
             case "codon": {
-                const {x, y} = this.fitCoordinates({x: args[0], y: args[1]})
+                const {x, y} = this.fitCoordinates({x: args[0], y: args[1]});
                 this._x = x;
                 this._y = y;
                 break;

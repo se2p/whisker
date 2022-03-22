@@ -95,8 +95,8 @@ export class TargetFitness implements NetworkFitnessFunction<NetworkChromosome> 
                 (Container.vmWrapper.getStageSize().width / 2),
             y: network.inputNodes.get(playerRenderedTarget.sprite.name).get("Y-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().height / 2)
-        }
-        const playerEndPosition = new ScratchPosition(playerEnd.x, playerEnd.y)
+        };
+        const playerEndPosition = new ScratchPosition(playerEnd.x, playerEnd.y);
 
         // If we've found a valid path from start to the target. The fitness is determined by the index of the
         // closest waypoint with the target representing the last waypoint.

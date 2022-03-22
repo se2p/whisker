@@ -49,7 +49,7 @@ describe('Test NEAT', () => {
     beforeEach(() => {
         Container.debugLog = () => { /* suppress output */};
         const mock = new VMWrapperMock();
-        mock.init()
+        mock.init();
 
         const genInputs = new Map<string, Map<string, number>>();
         const sprite1 = new Map<string, number>();
@@ -92,7 +92,7 @@ describe('Test NEAT', () => {
                 network.fitness = fitness;
                 return Promise.resolve(fitness);
             }
-        }
+        };
         properties.stoppingCondition = new FixedIterationsStoppingCondition(iterations);
         properties.timeout = 25000;
         properties.numberOfSpecies = 5;
@@ -122,14 +122,14 @@ describe('Test NEAT', () => {
         searchAlgorithm = builder.addProperties(properties as unknown as SearchAlgorithmProperties<Chromosome>)
             .addChromosomeGenerator(generator).initializeFitnessFunction(FitnessFunctionType.STATEMENT, null, null)
             .buildSearchAlgorithm();
-    })
+    });
 
     test("Test findSolution()", () => {
         return searchAlgorithm.findSolution().then(() => {
             expect(searchAlgorithm.getNumberOfIterations()).toBe(20);
         });
-    })
-})
+    });
+});
 /*
 //Commented out since it greatly increases the CI-Pipeline duration. However, very useful for sanity checking.
     test("XOR Sanity Test", () => {

@@ -13,33 +13,33 @@ describe("BiasedVariableLengthMutation Test", () => {
 
     test("Test apply mutation", () => {
         const codons = Array.from({length: 10}, () => Math.floor(random.nextInt(min, max)));
-        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
-        let mutant = mutation.apply(chromosome)
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover);
+        let mutant = mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant)
+            mutant = mutation.apply(mutant);
         }
-        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
     });
 
     test("Test apply mutation with minimal chromosome size of 2 (specified virtual space)", () => {
         const codons = Array.from({length: 2}, () => Math.floor(random.nextInt(min, max)));
-        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
-        let mutant = mutation.apply(chromosome)
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover);
+        let mutant = mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant)
+            mutant = mutation.apply(mutant);
         }
-        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
     });
 
     test("Test apply mutation maximum chromosome size", () => {
         const codons = Array.from({length: 20}, () => Math.floor(random.nextInt(min, max)));
-        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
-        let mutant = mutation.apply(chromosome)
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover);
+        let mutant = mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant)
+            mutant = mutation.apply(mutant);
         }
-        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
-    })
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
+    });
 
     // https://dracoblue.net/dev/linear-least-squares-in-javascript/
     function linearLeastSquares(values_y: number[]): number[] {
@@ -115,7 +115,7 @@ describe("BiasedVariableLengthMutation Test", () => {
                     histogram[idx] = histogram[idx] + 1;
                 }
             }
-        }
+        };
 
         const codons = Array.from({length: length}, () => Math.floor(random.nextInt(min, max)));
         for (let i = 0, chromosome = new IntegerListChromosome(codons, mutation, crossover), mutant; i < repetitions; i++, chromosome = mutant) {

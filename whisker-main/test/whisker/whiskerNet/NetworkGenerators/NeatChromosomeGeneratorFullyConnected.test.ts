@@ -53,7 +53,7 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         const events = [new WaitEvent(), new KeyPressEvent("left arrow", 1),
             new KeyPressEvent("right arrow", 1), new MouseMoveEvent()];
         generator = new NeatChromosomeGeneratorFullyConnected(mutationConfig, crossoverConfig, genInputs, events);
-    })
+    });
 
     test('Create initial random Chromosome', () => {
         const neatChromosome = generator.get();
@@ -65,7 +65,7 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
         expect(neatChromosome.classificationNodes.size).toBe(4);
         expect(neatChromosome.regressionNodes.size).toBe(4);
         expect(neatChromosome.outputNodes.length).toBe(9);
-    })
+    });
 
     test('Create several Chromosomes to test if defect chromosomes survive', () => {
         const chromosomes: NetworkChromosome[] = [];
@@ -83,5 +83,5 @@ describe('Test NetworkChromosomeGeneratorFullyConnected', () => {
             }
             expect(chromosome.activateNetwork(genInputs)).toBeTruthy();
         }
-    })
-})
+    });
+});

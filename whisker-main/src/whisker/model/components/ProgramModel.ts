@@ -111,7 +111,7 @@ export class ProgramModel {
         return {
             covered: covered,
             total: Object.keys(this.edges).length
-        }
+        };
     }
 
     /**
@@ -132,7 +132,7 @@ export class ProgramModel {
             covered: covered,
             total: Object.keys(this.edges).length,
             missedEdges: missedEdges
-        }
+        };
     }
 
     /**
@@ -157,7 +157,7 @@ export class ProgramModel {
         this.lastTransitionStep = 0;
         this.secondLastTransitionStep = 0;
         Object.values(this.nodes).forEach(node => {
-            node.reset()
+            node.reset();
         });
         for (const edgesCoveredKey in this.coverageCurrentRun) {
             this.coverageCurrentRun[edgesCoveredKey] = false;
@@ -170,7 +170,7 @@ export class ProgramModel {
     registerComponents(cu: CheckUtility, testDriver: TestDriver, caseSensitive: boolean) {
         Object.values(this.nodes).forEach(node => {
             node.registerComponents(cu, testDriver, caseSensitive);
-        })
+        });
     }
 
     setTransitionsStartTo(steps: number) {
@@ -194,6 +194,6 @@ export class ProgramModel {
             stopAllNodeIds: this.stopAllNodeIds,
             nodes: nodes,
             edges: edges
-        }
+        };
     }
 }

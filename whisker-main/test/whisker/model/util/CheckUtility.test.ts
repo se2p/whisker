@@ -9,13 +9,13 @@ describe('CheckUtility', () => {
         let result = CheckUtility.splitEventString(eventString);
         expect(result.name == CheckName.SpriteColor);
         expect(result.negated == false);
-        expect(result.args == ["255", "0", "0"])
+        expect(result.args == ["255", "0", "0"]);
 
         eventString = "SpriteTouching:Sprite1:Sprite2";
         result = CheckUtility.splitEventString(eventString);
         expect(result.name == CheckName.SpriteTouching);
         expect(result.negated == false);
-        expect(result.args == ["Sprite2"])
+        expect(result.args == ["Sprite2"]);
 
         eventString = "!SpriteTouching:Sprite1:Sprite2";
         result = CheckUtility.splitEventString(eventString);
@@ -28,7 +28,7 @@ describe('CheckUtility', () => {
         expect(result.name == CheckName.AttrComp);
         expect(result.negated == false);
         expect(result.args == ["sprite1", "costume", "=", "costume2"]);
-    })
+    });
 
     test("get event string", () => {
         let name = CheckName.SpriteColor;
@@ -46,9 +46,9 @@ describe('CheckUtility', () => {
         expect(CheckUtility.getEventString(name, negated, args) == "!AttrChange:sprite1:x:>:100");
 
         let check = new Effect("test", "dummy", CheckName.SpriteTouching, false, ["sprite1", "sprite2"]);
-        expect(CheckUtility.getEventString(check.name, check.negated, check.args) == "SpriteTouching:sprite1:sprite2")
+        expect(CheckUtility.getEventString(check.name, check.negated, check.args) == "SpriteTouching:sprite1:sprite2");
 
         check = new Effect("test", "dummy", CheckName.AttrComp, false, ["sprite1", "costume", "=", "costume2"]);
         expect(CheckUtility.getEventString(check.name, check.negated, check.args) == "AttrComp:sprite1:costume:=:costume2");
-    })
-})
+    });
+});

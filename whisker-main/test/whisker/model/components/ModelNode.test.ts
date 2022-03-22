@@ -32,5 +32,5 @@ describe('Model node', () => {
         expect(() => {
             node.simplifyForSave();
         }).not.toThrow();
-    })
-})
+    });
+});

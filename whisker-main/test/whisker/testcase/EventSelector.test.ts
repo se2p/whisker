@@ -42,7 +42,7 @@ class DummyEvent extends ScratchEvent {
     }
 
     public toJSON(): Record<string, number | string> {
-        return undefined
+        return undefined;
     }
 
     toString(): string {
@@ -59,7 +59,7 @@ describe("ClusteringEventSelector Test", () => {
         const event0 = new DummyEvent('event0');
         const events = [event0];
         const expected = Array(15).fill(event0);
-        const actual = []
+        const actual = [];
 
         for (const i of Arrays.range(0,15)) {
             actual.push(selector.selectEvent(codons, i, events));
@@ -112,7 +112,7 @@ describe("ClusteringEventSelector Test", () => {
         const codons = Arrays.range(0,15);
         const expected = Arrays.range(0,15).map((x) => new DummyEvent(`event${x}`));
         const events = expected;
-        const actual = []
+        const actual = [];
 
         for (const i of Arrays.range(0,15)) {
             actual.push(selector.selectEvent(codons, i, events));
@@ -137,7 +137,7 @@ describe("InterleavingEventSelector Test", () => {
             event0, event1, event2,
             event0, event1, event2,
         ];
-        const actual = []
+        const actual = [];
 
         for (const i of Arrays.range(0,15)) {
             actual.push(selector.selectEvent(codons, i, events));

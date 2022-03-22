@@ -55,8 +55,8 @@ export abstract class NeatChromosomeGenerator implements ChromosomeGenerator<Nea
         for (const event of parameterizedEvents) {
             for (const parameter of event.getSearchParameterNames()) {
                 // Create the regression Node and add it to the NodeList
-                const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE)
-                allNodes.push(regressionNode)
+                const regressionNode = new RegressionNode(event, parameter, ActivationFunction.NONE);
+                allNodes.push(regressionNode);
             }
         }
     }

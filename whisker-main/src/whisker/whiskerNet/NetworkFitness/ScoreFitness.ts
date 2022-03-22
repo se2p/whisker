@@ -50,7 +50,7 @@ export class ScoreFitness implements NetworkFitnessFunction<NetworkChromosome> {
                     name === 'progress') // WeightLifter Game
                 {
                     // @ts-ignore
-                    points += Number(value.value)
+                    points += Number(value.value);
                 }
             }
         }

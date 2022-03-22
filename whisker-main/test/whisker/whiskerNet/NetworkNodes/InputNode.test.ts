@@ -5,12 +5,12 @@ import {BiasNode} from "../../../../src/whisker/whiskerNet/NetworkComponents/Bia
 
 
 describe("InputNode Tests", () => {
-    let inputNode: InputNode
+    let inputNode: InputNode;
 
     beforeEach(() => {
         inputNode = new InputNode("Sprite1", "X-Position");
         inputNode.uID = 1;
-    })
+    });
 
     test("Constructor Test", () => {
         expect(inputNode.uID).toEqual(1);
@@ -18,14 +18,14 @@ describe("InputNode Tests", () => {
         expect(inputNode.type).toEqual(NodeType.INPUT);
         expect(inputNode.nodeValue).toEqual(0);
         expect(inputNode.lastActivationValue).toEqual(0);
-        expect(inputNode.activationValue).toEqual(undefined)
+        expect(inputNode.activationValue).toEqual(undefined);
         expect(inputNode.activatedFlag).toBeFalsy();
         expect(inputNode.activationCount).toEqual(0);
         expect(inputNode.traversed).toBeFalsy();
         expect(inputNode.incomingConnections.length).toEqual(0);
         expect(inputNode.sprite).toEqual("Sprite1");
         expect(inputNode.feature).toEqual("X-Position");
-    })
+    });
 
     test("Reset Node", () => {
         inputNode.activationCount = 10;
@@ -42,14 +42,14 @@ describe("InputNode Tests", () => {
         expect(inputNode.activatedFlag).toBeFalsy();
         expect(inputNode.traversed).toBeFalsy();
 
-    })
+    });
 
     test("Clone Test", () => {
         const clone = inputNode.clone();
         expect(clone.uID).toEqual(inputNode.uID);
         expect(clone.equals(inputNode)).toBeTruthy();
         expect(clone === inputNode).toBeFalsy();
-    })
+    });
 
     test("Equals Test", () => {
         const inputNode2 = new InputNode("Sprite1", "X-Position");
@@ -71,15 +71,15 @@ describe("InputNode Tests", () => {
         const biasNode = new BiasNode();
         biasNode.uID = 1;
         expect(biasNode.equals(inputNode)).toBeFalsy();
-    })
+    });
 
     test("getActivationValue Test", () => {
         expect(inputNode.getActivationValue()).toEqual(0);
-        expect(inputNode.activationValue).toEqual(0)
+        expect(inputNode.activationValue).toEqual(0);
         inputNode.nodeValue = 10;
         expect(inputNode.getActivationValue()).toEqual(10);
-        expect(inputNode.activationValue).toEqual(10)
-    })
+        expect(inputNode.activationValue).toEqual(10);
+    });
 
     test("toString Test", () => {
         inputNode.activationValue = 0;
@@ -88,6 +88,6 @@ describe("InputNode Tests", () => {
 , Value: 0\
 , InputConnections: ${[]}\
 , Sprite: Sprite1\
-, Feature: X-Position}`)
-    })
-})
+, Feature: X-Position}`);
+    });
+});

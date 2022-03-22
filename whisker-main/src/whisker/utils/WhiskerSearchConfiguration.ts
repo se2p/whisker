@@ -76,7 +76,7 @@ export class WhiskerSearchConfiguration {
         this._config = Preconditions.checkNotUndefined(dict);
         if (this.getAlgorithm() === "neat") {
             this._searchAlgorithmProperties = this.setNeuroevolutionProperties();
-            Container.isNeuroevolution = true
+            Container.isNeuroevolution = true;
         } else {
             this._searchAlgorithmProperties = this._buildSearchAlgorithmProperties();
             Container.isNeuroevolution = false;
@@ -172,15 +172,15 @@ export class WhiskerSearchConfiguration {
         const numberOfSpecies = this._config['numberOfSpecies'] as number;
         const penalizingAge = this._config['penalizingAge'] as number;
         const ageSignificance = this._config['ageSignificance'] as number;
-        const inputRate = this._config['inputRate'] as number
+        const inputRate = this._config['inputRate'] as number;
 
-        const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number
-        const interspeciesMating = this._config['crossover']['interspeciesRate'] as number
+        const crossoverWithoutMutation = this._config['crossover']['crossoverWithoutMutation'] as number;
+        const interspeciesMating = this._config['crossover']['interspeciesRate'] as number;
 
-        const mutationWithoutCrossover = this._config['mutation']['mutationWithoutCrossover'] as number
-        const mutationAddConnection = this._config['mutation']['mutationAddConnection'] as number
-        const recurrentConnection = this._config['mutation']['recurrentConnection'] as number
-        const addConnectionTries = this._config['mutation']['addConnectionTries'] as number
+        const mutationWithoutCrossover = this._config['mutation']['mutationWithoutCrossover'] as number;
+        const mutationAddConnection = this._config['mutation']['mutationAddConnection'] as number;
+        const recurrentConnection = this._config['mutation']['recurrentConnection'] as number;
+        const addConnectionTries = this._config['mutation']['addConnectionTries'] as number;
         const populationChampionNumberOffspring = this._config['mutation']['populationChampionNumberOffspring'] as number;
         const populationChampionNumberClones = this._config['mutation']['populationChampionNumberClones'] as number;
         const populationChampionConnectionMutation = this._config['mutation']['populationChampionConnectionMutation'] as number;
@@ -191,8 +191,8 @@ export class WhiskerSearchConfiguration {
         const toggleEnableConnectionTimes = this._config['mutation']['toggleEnableConnectionTimes'] as number;
         const mutateEnableConnection = this._config['mutation']['mutateEnableConnection'] as number;
 
-        const distanceThreshold = this._config['compatibility']['distanceThreshold'] as number
-        const disjointCoefficient = this._config['compatibility']['disjointCoefficient'] as number
+        const distanceThreshold = this._config['compatibility']['distanceThreshold'] as number;
+        const disjointCoefficient = this._config['compatibility']['disjointCoefficient'] as number;
         const excessCoefficient = this._config['compatibility']['excessCoefficient'] as number;
         const weightCoefficient = this._config['compatibility']['weightCoefficient'] as number;
 
@@ -247,18 +247,18 @@ export class WhiskerSearchConfiguration {
         const stoppingCond = stoppingCondition["type"];
         switch (stoppingCond) {
             case "fixedIteration":
-                return new FixedIterationsStoppingCondition(stoppingCondition["iterations"])
+                return new FixedIterationsStoppingCondition(stoppingCondition["iterations"]);
             case "fixedTime":
                 return new FixedTimeStoppingCondition(stoppingCondition["duration"]);
             case "optimal":
-                return new OptimalSolutionStoppingCondition()
+                return new OptimalSolutionStoppingCondition();
             case 'events':
                 return new ExecutedEventsStoppingCondition(stoppingCondition['max-events']);
             case 'evaluations':
                 return new FitnessEvaluationStoppingCondition(stoppingCondition['max-evaluations']);
             case "combined": {
                 const conditions = stoppingCondition["conditions"].map((c) => this._getStoppingCondition(c));
-                return new OneOfStoppingCondition(...conditions)
+                return new OneOfStoppingCondition(...conditions);
             }
             default:
                 throw new ConfigException(`Unknown stopping condition ${stoppingCond}`);
@@ -270,7 +270,7 @@ export class WhiskerSearchConfiguration {
         if (!this._config['mutation']) {
             return undefined;
         }
-        const mutationOperator = this._config['mutation']['operator']
+        const mutationOperator = this._config['mutation']['operator'];
         switch (mutationOperator) {
             case 'bitFlip':
                 return new BitflipMutation();
@@ -305,7 +305,7 @@ export class WhiskerSearchConfiguration {
                     this.searchAlgorithmProperties['reservedCodons'],
                     this._config['mutation']['gaussianMutationPower']);
             case'neatMutation':
-                return new NeatMutation(this._config['mutation'])
+                return new NeatMutation(this._config['mutation']);
             case 'integerList':
                 return new IntegerListMutation(this._config['integerRange']['min'], this._config['integerRange']['max']);
             default:
@@ -499,7 +499,7 @@ export class WhiskerSearchConfiguration {
         if (fitnessFunctionDef['targets']) {
             const targets: string[] = [];
             for (const target of fitnessFunctionDef['targets']) {
-                targets.push(target)
+                targets.push(target);
             }
             return targets;
         } else {
@@ -579,7 +579,7 @@ export class WhiskerSearchConfiguration {
         if ("testSuiteType" in this._config) {
             return this._config['testSuiteType'];
         } else {
-            return undefined
+            return undefined;
         }
     }
 }

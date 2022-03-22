@@ -30,7 +30,7 @@ describe("Arrays", () => {
 
     beforeEach(() => {
         array = [1, 2, 3];
-    })
+    });
 
     test("Add array to list", () => {
         Arrays.addAll(array, [4, 5]);
@@ -49,7 +49,7 @@ describe("Arrays", () => {
     });
 
     test("Insert element to array", () => {
-        Arrays.insert(array, 4, 1)
+        Arrays.insert(array, 4, 1);
         expect(array).toEqual([1, 4, 2, 3]);
     });
 
@@ -129,7 +129,7 @@ describe("Arrays", () => {
         expect(chunkArray[0]).toStrictEqual([1,2,3]);
         expect(chunkArray[1]).toStrictEqual([4,5,6]);
         expect(chunkArray[2]).toStrictEqual([7]);
-    })
+    });
 
     test("Sort array", () => {
         const array = [4, 3, 2, 1];
@@ -159,19 +159,19 @@ describe("Arrays", () => {
 
     test("Range function stepSize of 1", () => {
         const rangeArray = Arrays.range(0, 10, 1);
-        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(45)
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(45);
     });
 
     test("Range function stepSize of 100", () => {
         const rangeArray = Arrays.range(0, 850, 100);
-        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(3600)
+        expect(rangeArray.reduce((a, b) => a + b, 0)).toBe(3600);
     });
 
 
     test("Create random Array in range", () =>{
         const minValue = 10;
         const maxValue = 30;
-        const length = 100
+        const length = 100;
         const array = Arrays.getRandomArray(minValue, maxValue, length);
         expect(Math.min(...array)).toBeGreaterThanOrEqual(minValue);
         expect(Math.max(...array)).toBeLessThanOrEqual(maxValue);
