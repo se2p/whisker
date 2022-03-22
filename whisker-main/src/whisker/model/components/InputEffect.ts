@@ -49,7 +49,7 @@ export class InputEffect {
                 }
             }
             return true;
-        }
+        };
         let isOK = true;
         switch (name) {
             case InputEffectName.InputKey:
@@ -89,7 +89,7 @@ export class InputEffect {
             id: this.id,
             name: this.name,
             args: this.args
-        }
+        };
     }
 
     private getInputDataFunction(t: TestDriver, caseSensitive: boolean, arg: any[]) {
@@ -97,11 +97,11 @@ export class InputEffect {
             case InputEffectName.InputKey:
                 return () => {
                     t.inputImmediate({device: "keyboard", key: arg[0], isDown: true, steps: 1});
-                }
+                };
             case InputEffectName.InputMouseMove:
                 arg[0] = ModelUtil.testNumber(arg[0]);
                 arg[1] = ModelUtil.testNumber(arg[1]);
-                let mouseEvent = new MouseMoveEvent(arg[0], arg[1])
+                let mouseEvent = new MouseMoveEvent(arg[0], arg[1]);
                 return () => {
                     mouseEvent.apply();
                 };
@@ -109,24 +109,24 @@ export class InputEffect {
                 let textEvent = new TypeTextEvent(arg[0]);
                 return () => {
                     textEvent.apply();
-                }
+                };
             case InputEffectName.InputMouseDown:
                 let boolVal = arg[0] == "true";
                 let mouseDownEvent = new MouseDownEvent(boolVal);
                 return () => {
                     mouseDownEvent.apply();
-                }
+                };
             case InputEffectName.InputClickStage:
                 let clickStageEvent = new ClickStageEvent();
                 return () => {
                     clickStageEvent.apply();
-                }
+                };
             case InputEffectName.InputClickSprite:
                 let sprite = ModelUtil.checkSpriteExistence(t, caseSensitive, arg[0]);
                 let clickSpriteEvent = new ClickSpriteEvent(sprite._target);
                 return () => {
                     clickSpriteEvent.apply();
-                }
+                };
             default:
                 // should not happen
                 throw new Error("Input type not recognized: " + this.name);

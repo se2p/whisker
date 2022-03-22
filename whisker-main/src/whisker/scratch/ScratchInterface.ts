@@ -32,12 +32,12 @@ export class ScratchInterface {
     }
 
     public static getMousePosition(): ScratchPosition {
-        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`]
+        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`];
         return new ScratchPosition(mouse._x, mouse._y);
     }
 
     public static setMousePosition(position: ScratchPosition): void {
-        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`]
+        const mouse = Container.vmWrapper.vm.runtime.ioDevices[`mouse`];
         mouse._x = position.x;
         mouse._y = position.y;
     }

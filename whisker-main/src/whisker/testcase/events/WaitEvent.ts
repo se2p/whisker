@@ -39,9 +39,9 @@ export class WaitEvent extends ScratchEvent {
     }
 
     public toJSON(): Record<string, any> {
-        const event = {}
+        const event = {};
         event[`type`] = `WaitEvent`;
-        event[`args`] = {"steps": this._steps}
+        event[`args`] = {"steps": this._steps};
         return event;
     }
 

@@ -1,7 +1,7 @@
 import {WhiskerSearchConfiguration} from "./WhiskerSearchConfiguration";
-import VirtualMachine from "scratch-vm/src/virtual-machine"
-import VMWrapper from "../../vm/vm-wrapper"
-import TestDriver from "../../test/test-driver.js"
+import VirtualMachine from "scratch-vm/src/virtual-machine";
+import VMWrapper from "../../vm/vm-wrapper";
+import TestDriver from "../../test/test-driver.js";
 import {ScratchPosition} from "../scratch/ScratchPosition";
 import {StatementFitnessFunction} from "../testcase/fitness/StatementFitnessFunction";
 

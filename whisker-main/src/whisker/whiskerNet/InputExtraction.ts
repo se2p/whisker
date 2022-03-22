@@ -1,7 +1,7 @@
 import {RenderedTarget} from "scratch-vm/src/sprites/rendered-target";
 import Cast from "scratch-vm/src/util/cast";
 import {ScratchInterface} from "../scratch/ScratchInterface";
-import VMWrapper from "../../vm/vm-wrapper"
+import VMWrapper from "../../vm/vm-wrapper";
 import {Container} from "../utils/Container";
 import {Pair} from "../utils/Pair";
 
@@ -181,8 +181,8 @@ export class InputExtraction {
         }
 
         // Clamp within the stage
-        dx = Math.max(-1, Math.min(dx, 1))
-        dy = Math.max(-1, Math.min(dy, 1))
+        dx = Math.max(-1, Math.min(dx, 1));
+        dy = Math.max(-1, Math.min(dy, 1));
 
         return {dx, dy};
     }
@@ -232,7 +232,7 @@ export class InputExtraction {
 
         // Gather required constants
         const targetPosition = ScratchInterface.getPositionOfTarget(target);
-        const rangeFinderAngles = [0, 45, 90, 180, -45, -90]
+        const rangeFinderAngles = [0, 45, 90, 180, -45, -90];
         const rangeFinderDistances = {};
         // Check for each rangeFinder if it can detect an angle. We have 6 sensors attached to our source Sprite:
         // Front (0), Front-Left (-45), Front-Right (45), Left (-90), Right (90) and Back (180)
@@ -323,7 +323,7 @@ export class InputExtraction {
      */
     private static mapValueIntoRange(value: number, input_start: number, input_end: number,
                                      output_start = -1, output_end = 1) {
-        return (value - input_start) / (input_end - input_start) * (output_end - output_start) + output_start
+        return (value - input_start) / (input_end - input_start) * (output_end - output_start) + output_start;
     }
 
     /**
@@ -352,7 +352,7 @@ export class InputExtraction {
 
         // At this point we are way off the path, hence we do not include the waypoint as input.
         if (absoluteX > distanceThreshold || absoluteY > distanceThreshold) {
-            return undefined
+            return undefined;
         }
 
         const xSigned = playerPosition.x < wayPointToReach.x ? absoluteX : -absoluteX;

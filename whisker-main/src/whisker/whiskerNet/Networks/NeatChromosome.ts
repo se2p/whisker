@@ -127,7 +127,7 @@ export class NeatChromosome extends NetworkChromosome {
                         Container.config.getChromosomeGenerator() instanceof NeatChromosomeGeneratorFullyConnected) {
                         this.connectInputNode(iNode);
                     }
-                })
+                });
                 this.inputNodes.set(spriteKey, spriteNodes);
             }
 
@@ -147,9 +147,9 @@ export class NeatChromosome extends NetworkChromosome {
                             this.connectInputNode(iNode);
                         }
                     }
-                })
+                });
             }
-        })
+        });
 
         // If the network's structure has changed generate the new network and update the stabilize count.
         if (updated) {
@@ -180,7 +180,7 @@ export class NeatChromosome extends NetworkChromosome {
         for (const iNodes of this.inputNodes.values()) {
             for (const iNode of iNodes.values()) {
                 const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                    true, 0, false)
+                    true, 0, false);
                 NeatPopulation.assignInnovationNumber(newConnection);
                 this.connections.push(newConnection);
                 oNode.incomingConnections.push(newConnection);
@@ -220,7 +220,7 @@ export class NeatChromosome extends NetworkChromosome {
         network[`eO`] = Number(this.expectedOffspring.toFixed(4));
         network[`k`] = this.isParent;
 
-        const nodes = {}
+        const nodes = {};
         for (let i = 0; i < this.allNodes.length; i++) {
             nodes[`Node ${i}`] = this.allNodes[i].toJSON();
         }

@@ -67,7 +67,7 @@ describe("NeuroevolutionUtil Tests", () => {
         const chromosome = generator.get();
         const stabiliseCount = chromosome.updateStabiliseCount(30);
         for (let i = 0; i < stabiliseCount + 1; i++) {
-            chromosome.activateNetwork(genInputs)
+            chromosome.activateNetwork(genInputs);
         }
         const softmaxOutput = NeuroevolutionUtil.softmaxEvents(chromosome, events);
         expect(Math.round(softmaxOutput.reduce((a, b) => a + b))).toBe(1);
@@ -77,4 +77,4 @@ describe("NeuroevolutionUtil Tests", () => {
         expect(NeuroevolutionUtil.relu(Math.PI)).toEqual(Math.PI);
         expect(NeuroevolutionUtil.relu(-Math.PI)).toEqual(0);
     });
-})
+});

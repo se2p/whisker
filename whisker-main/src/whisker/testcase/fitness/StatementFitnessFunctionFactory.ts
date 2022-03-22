@@ -1,5 +1,5 @@
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
-import {generateCFG, generateCDG, ControlFlowGraph, ControlDependenceGraph} from 'scratch-analysis'
+import {generateCFG, generateCDG, ControlFlowGraph, ControlDependenceGraph} from 'scratch-analysis';
 import {StatementFitnessFunction} from "./StatementFitnessFunction";
 
 export class StatementFitnessFunctionFactory {
@@ -22,7 +22,7 @@ export class StatementFitnessFunctionFactory {
 
                 if (node.hasOwnProperty("userEvent") || node.hasOwnProperty("event")) {
                     // we not need to cover nodes that are not real blocks
-                    continue
+                    continue;
                 }
 
                 // Check if explicit targets are specified
@@ -34,7 +34,7 @@ export class StatementFitnessFunctionFactory {
                 }
 
                 const statementCoverageFitness = new StatementFitnessFunction(node, cdg, cfg);
-                fitnessFunctions.push(statementCoverageFitness)
+                fitnessFunctions.push(statementCoverageFitness);
 
             }
         }

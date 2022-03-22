@@ -116,7 +116,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().incrementIterationCount();
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount =
-            this._neuroevolutionProperties.testSuiteType === 'dynamic' ? this._archive.size - 1 : this._archive.size
+            this._neuroevolutionProperties.testSuiteType === 'dynamic' ? this._archive.size - 1 : this._archive.size;
         StatisticsCollector.getInstance().updateBestNetworkFitnessTimeline(this._iterations, population.populationChampion.fitness);
         StatisticsCollector.getInstance().updateHighestNetworkFitness(population.populationChampion.fitness);
         if (this._archive.size == this._fitnessFunctions.size && !this._fullCoverageReached) {
@@ -135,7 +135,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         Container.debugLog(`Iteration:  ${this._iterations}`);
         Container.debugLog(`Highest Network Fitness:  ${population.highestFitness}`);
         Container.debugLog(`Current Iteration Highest Network Fitness:  ${population.populationChampion.fitness}`);
-        Container.debugLog(`Average Network Fitness: ${population.averageFitness}`)
+        Container.debugLog(`Average Network Fitness: ${population.averageFitness}`);
         Container.debugLog(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
         for (const species of population.species) {
             Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
@@ -147,14 +147,14 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
         }
         Container.debugLog(`Time passed in seconds: ${(Date.now() - this.getStartTime())}`);
         const coveredGoals = this._neuroevolutionProperties.testSuiteType === 'dynamic' ?
-            this._archive.size - 1 : this._archive.size
+            this._archive.size - 1 : this._archive.size;
         Container.debugLog(`Covered goals: ${coveredGoals + "/" + this._fitnessFunctions.size}`);
         if (this._neuroevolutionProperties.doPrintPopulationRecord) {
-            const currentPopulationRecord = {}
+            const currentPopulationRecord = {};
             currentPopulationRecord[`Generation ${this._iterations}`] = population;
-            Container.debugLog(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`)
+            Container.debugLog(`PopulationRecord: \n ${JSON.stringify(currentPopulationRecord, undefined, 4)}`);
         }
-        Container.debugLog("-----------------------------------------------------")
+        Container.debugLog("-----------------------------------------------------");
     }
 
     getStartTime(): number {
@@ -163,7 +163,7 @@ export class NEAT extends SearchAlgorithmDefault<NeatChromosome> {
 
     setProperties(properties: SearchAlgorithmProperties<NeatChromosome>): void {
         this._neuroevolutionProperties = properties as unknown as NeatProperties;
-        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition
+        this._stoppingCondition = this._neuroevolutionProperties.stoppingCondition;
         this._networkFitnessFunction = this._neuroevolutionProperties.networkFitness;
     }
 

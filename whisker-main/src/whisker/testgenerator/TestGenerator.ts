@@ -120,7 +120,7 @@ export abstract class TestGenerator {
             const coveringTests: TestChromosome[] = [];
             for (const test of tests) {
                 if (fitnessFunction.isCovered(test)) {
-                    coveringTests.push(test)
+                    coveringTests.push(test);
                 }
             }
             if (coveringTests.length > 0) {

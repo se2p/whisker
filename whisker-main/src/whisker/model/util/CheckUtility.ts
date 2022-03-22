@@ -176,7 +176,7 @@ export class CheckUtility extends EventEmitter {
                 if (predicateResult) {
                     this.eventStrings.push(eventString);
                 }
-            })
+            });
         }
     }
 
@@ -225,7 +225,7 @@ export class CheckUtility extends EventEmitter {
             negated: negated,
             name: CheckName[splits[0]],
             args: splits.slice(1, splits.length)
-        }
+        };
     }
 
     /**
@@ -236,7 +236,7 @@ export class CheckUtility extends EventEmitter {
     registerEffectCheck(takenEdge: ProgramModelEdge, model: ProgramModel) {
         takenEdge.effects.forEach(effect => {
             this.effectChecks.push({effect: effect, edge: takenEdge, model: model});
-        })
+        });
     }
 
     /**
@@ -305,7 +305,7 @@ export class CheckUtility extends EventEmitter {
      */
     addErrorOutput(edgeLabel: string, graphID: string, e: Error) {
         let output = getErrorOnEdgeOutput(edgeLabel, graphID, e.message);
-        this.failOrError(output, this.errorOutputs)
+        this.failOrError(output, this.errorOutputs);
         this.modelResult.addError(output);
     }
 

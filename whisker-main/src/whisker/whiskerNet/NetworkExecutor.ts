@@ -10,7 +10,7 @@ import {NetworkChromosome} from "./Networks/NetworkChromosome";
 import {InputExtraction} from "./InputExtraction";
 import {NeuroevolutionUtil} from "./NeuroevolutionUtil";
 import {ScratchEventExtractor} from "../testcase/ScratchEventExtractor";
-import Runtime from "scratch-vm/src/engine/runtime"
+import Runtime from "scratch-vm/src/engine/runtime";
 import {NeuroevolutionScratchEventExtractor} from "../testcase/NeuroevolutionScratchEventExtractor";
 
 export class NetworkExecutor {
@@ -120,7 +120,7 @@ export class NetworkExecutor {
         // Play the game until we reach a GameOver state or the timeout
         while (this._projectRunning && timer < this._timeout) {
             // Collect the currently available events.
-            this.availableEvents = this._eventExtractor.extractEvents(this._vm)
+            this.availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;
@@ -210,7 +210,7 @@ export class NetworkExecutor {
         // Initialise Timer for the timeout
         let timer = Date.now();
         this._timeout += Date.now();
-        this.availableEvents = this._eventExtractor.extractEvents(this._vm)
+        this.availableEvents = this._eventExtractor.extractEvents(this._vm);
 
 
         // Play the game until we reach a GameOver state or the timeout
@@ -303,7 +303,7 @@ export class NetworkExecutor {
                 volume: this._vm.runtime.targets[targetsKey]["volume"],
                 x: this._vm.runtime.targets[targetsKey]["x"],
                 y: this._vm.runtime.targets[targetsKey]["y"],
-            }
+            };
         }
     }
 
@@ -338,7 +338,7 @@ export class NetworkExecutor {
             this._vm.runtime.targets[targetsKey]["volume"] = this._initialState[targetsKey]["volume"];
             this._vm.runtime.targets[targetsKey]["x"] = this._initialState[targetsKey]["x"];
             this._vm.runtime.targets[targetsKey]["y"] = this._initialState[targetsKey]["y"];
-            this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop']
+            this._vm._events.PROJECT_RUN_STOP = this._initialState['eventListenerRunStop'];
         }
     }
 }

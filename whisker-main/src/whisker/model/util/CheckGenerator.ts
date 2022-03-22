@@ -33,7 +33,7 @@ export abstract class CheckGenerator {
     static getKeyDownCheck(t: TestDriver, cu: CheckUtility, negated: boolean, key: string): () => boolean {
         return () => {
             return !negated == cu.isKeyDown(key);
-        }
+        };
     }
 
     /**
@@ -56,7 +56,7 @@ export abstract class CheckGenerator {
                 }
             }
             return !negated == anyTouchingMouse;
-        }
+        };
     }
 
     /**
@@ -84,7 +84,7 @@ export abstract class CheckGenerator {
         const spriteName = foundSprite.name;
         const variableName = foundVar.name;
         const eventString = CheckUtility.getEventString(CheckName.VarComp, negated, spriteNameRegex, varNameRegex,
-            comparison, varValue)
+            comparison, varValue);
 
         if (comparison != "==" && comparison != "=" && comparison != ">" && comparison != ">="
             && comparison != "<" && comparison != "<=") {
@@ -159,7 +159,7 @@ export abstract class CheckGenerator {
                 throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
             return negated;
-        }
+        };
     }
 
     private static attributeCompOnVisual(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
@@ -256,7 +256,7 @@ export abstract class CheckGenerator {
         if (varDependencies.length > 0) {
             varDependencies.forEach(({spriteName, varName}) => {
                 cu.registerVarEvent(varName, eventString, edgeLabel, graphID, predicate);
-            })
+            });
         }
         if (attrDependencies.length > 0) {
             attrDependencies.forEach(({spriteName, attrName}) => {
@@ -264,11 +264,11 @@ export abstract class CheckGenerator {
                     cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, predicate);
                 } else if (attrName == "size" || attrName == "direction" || attrName == "effect" || attrName == "visible"
                     || attrName == "currentCostumeName" || attrName == "rotationStyle") {
-                    cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, predicate)
+                    cu.registerOnVisualChange(spriteName, eventString, edgeLabel, graphID, predicate);
                 } else if (attrName == "sayText") {
                     cu.registerOutput(spriteName, eventString, edgeLabel, graphID, predicate);
                 }
-            })
+            });
         }
     }
 
@@ -310,7 +310,7 @@ export abstract class CheckGenerator {
                 }
             }
             return !negated == anyTouchingSprite;
-        }
+        };
     }
 
     /**
@@ -352,7 +352,7 @@ export abstract class CheckGenerator {
                 }
             }
             return !negated == anyTouchingColor;
-        }
+        };
     }
 
     /**
@@ -375,7 +375,7 @@ export abstract class CheckGenerator {
         cu.registerOutput(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             let sayText = !caseSensitive ? sprite.sayText.toLowerCase() : sprite.sayText;
             return !negated == (sayText && sayText.indexOf(eval(expression)(t)) != -1);
-        })
+        });
         return () => {
             const sprites = t.getSprites(sprite => sprite.name == spriteName, false);
             let anySayText = false;
@@ -389,7 +389,7 @@ export abstract class CheckGenerator {
                 }
             }
             return !negated == anySayText;
-        }
+        };
     }
 
     /**
@@ -484,7 +484,7 @@ export abstract class CheckGenerator {
                 throw getErrorForAttribute(spriteNameRegex, attrName, e.message);
             }
             return negated;
-        }
+        };
     }
 
     private static registerOnVisualAttrChange(cu: CheckUtility, edgeLabel: string, graphID: string, negated: boolean,
@@ -538,7 +538,7 @@ export abstract class CheckGenerator {
                 throw getErrorForAttribute("Stage", "costume", e.message);
             }
             return negated;
-        }
+        };
     }
 
     /**
@@ -565,7 +565,7 @@ export abstract class CheckGenerator {
         });
         return () => {
             return !negated == eval(expression)(t);
-        }
+        };
     }
 
     /**
@@ -578,7 +578,7 @@ export abstract class CheckGenerator {
         const prob = ModelUtil.testNumber(probability);
         return () => {
             return !negated == (Randomness.getInstance().nextDouble() <= prob);
-        }
+        };
     }
 
     /**
@@ -592,7 +592,7 @@ export abstract class CheckGenerator {
         const steps = t.vmWrapper.convertFromTimeToSteps(time);
         return () => {
             return !negated == (steps <= t.getTotalStepsExecuted());
-        }
+        };
     }
 
     /**
@@ -606,7 +606,7 @@ export abstract class CheckGenerator {
         const steps = t.vmWrapper.convertFromTimeToSteps(time);
         return (stepsSinceLastTransition) => {
             return !negated == (steps <= stepsSinceLastTransition);
-        }
+        };
     }
 
     /**
@@ -620,7 +620,7 @@ export abstract class CheckGenerator {
         const steps = t.vmWrapper.convertFromTimeToSteps(time);
         return (stepsSinceLastTransition, stepsSinceEnd) => {
             return !negated == (steps <= (t.getTotalStepsExecuted() - stepsSinceEnd));
-        }
+        };
     }
 
     /**
@@ -653,7 +653,7 @@ export abstract class CheckGenerator {
         return () => {
             const sprites = t.getSprites(spriteCondition);
             return !negated == (ModelUtil.compare(sprites.length, toCheckNbr, comparison));
-        }
+        };
     }
 
     /**
@@ -688,7 +688,7 @@ export abstract class CheckGenerator {
 
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, (sprite) => {
             return !negated == check(sprite);
-        })
+        });
         return () => {
             const sprites = t.getSprite(spriteName).getClones(true);
             let anyTouchingEdge = false;
@@ -699,7 +699,7 @@ export abstract class CheckGenerator {
                 }
             }
             return !negated == anyTouchingEdge;
-        }
+        };
     }
 
     /**
@@ -737,7 +737,7 @@ export abstract class CheckGenerator {
             }
             oldValues.push(sprite[attrName]);
             return !negated;
-        }
+        };
         const eventString = CheckUtility.getEventString(CheckName.RandomValue, negated, spriteNameRegex, attrName);
         cu.registerOnMoveEvent(spriteName, eventString, edgeLabel, graphID, check);
 
@@ -755,6 +755,6 @@ export abstract class CheckGenerator {
                 return negated;
             }
             return !negated;
-        }
+        };
     }
 }

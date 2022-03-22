@@ -146,7 +146,7 @@ export abstract class NetworkChromosome extends Chromosome {
                     spriteNodes.set(featureKey, iNode);
                     this.allNodes.push(iNode);
                     this.connectInputNode(iNode);
-                })
+                });
                 this.inputNodes.set(spriteKey, spriteNodes);
             }
 
@@ -162,9 +162,9 @@ export abstract class NetworkChromosome extends Chromosome {
                         this.allNodes.push(iNode);
                         this.connectInputNode(iNode);
                     }
-                })
+                });
             }
-        })
+        });
 
         // If the network's structure has changed generate the new network and update the stabilize count.
         if (updated) {
@@ -220,7 +220,7 @@ export abstract class NetworkChromosome extends Chromosome {
         for (const iNodes of this.inputNodes.values()) {
             for (const iNode of iNodes.values()) {
                 const newConnection = new ConnectionGene(iNode, oNode, this._random.nextDoubleMinMax(-1, 1),
-                    true, 0, false)
+                    true, 0, false);
                 this.connections.push(newConnection);
                 oNode.incomingConnections.push(newConnection);
             }
@@ -322,9 +322,9 @@ export abstract class NetworkChromosome extends Chromosome {
                 const spriteFeatures = new Map<string, number>();
                 sprite.forEach((featureNode, featureKey) => {
                     spriteFeatures.set(featureKey, 1);
-                })
+                });
                 inputs.set(k, spriteFeatures);
-            })
+            });
             this.activateNetwork(inputs);
 
             // If our output nodes got activated check if they changed their values.
@@ -425,8 +425,8 @@ export abstract class NetworkChromosome extends Chromosome {
                 iNode.activatedFlag = true;
                 iNode.nodeValue = featureValue;
                 iNode.activationValue = featureValue;
-            })
-        })
+            });
+        });
     }
 
     /**
@@ -443,8 +443,8 @@ export abstract class NetworkChromosome extends Chromosome {
      * @return true if not a single output node has been activated at least once.
      */
     private outputsOff(): boolean {
-        let activatedOnce = true
-        this.outputNodes
+        let activatedOnce = true;
+        this.outputNodes;
         for (const outputNode of this.outputNodes) {
             if (outputNode.activationCount !== 0)
                 activatedOnce = false;

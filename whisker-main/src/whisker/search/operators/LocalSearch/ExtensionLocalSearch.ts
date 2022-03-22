@@ -181,7 +181,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
                 const typeEventCodon = Arrays.findElement(availableEvents, typeTextEvent);
                 codons.push(typeEventCodon);
                 // Fill reservedCodons codons.
-                codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, reservedCodons - 1))
+                codons.push(...Arrays.getRandomArray(lowerCodonValueBound, upperCodonValueBound, reservedCodons - 1));
                 events.push(new EventAndParameters(typeTextEvent, []));
                 await typeTextEvent.apply();
                 extendWait = false;
@@ -277,7 +277,7 @@ export class ExtensionLocalSearch extends LocalSearch<TestChromosome> {
             }
             // We also stop if we covered all blocks.
             if (newFitnessValues.length === 0) {
-                break
+                break;
             }
 
             fitnessValues = newFitnessValues;

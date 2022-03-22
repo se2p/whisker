@@ -1,165 +1,165 @@
 import {Effect} from "../../../../src/whisker/model/components/Effect";
 import {CheckName} from "../../../../src/whisker/model/components/Check";
 import {CheckUtility} from "../../../../src/whisker/model/util/CheckUtility";
-import {Check} from "../../../../src/whisker/model/components/Check"
+import {Check} from "../../../../src/whisker/model/components/Check";
 
 describe('Effect', () => {
     test("no arguments", () => {
         for (const checkNameKey in CheckName) {
             expect(() => {
                 new Effect("id", "edgeID", CheckName[checkNameKey], true, []);
-            }).toThrow()
+            }).toThrow();
         }
-    })
+    });
 
     test("not enough arguments: sprite events", () => {
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename"])
+            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename"]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1"])
+            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1"]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1", "2"])
+            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1", "2"]);
         }).toThrow();
 
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1", "2", undefined])
+            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1", "2", undefined]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteColor, true, [undefined, "spritename", "1", "2"])
+            new Effect("id", "edgeID", CheckName.SpriteColor, true, [undefined, "spritename", "1", "2"]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", undefined, "1", "2"])
+            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", undefined, "1", "2"]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1", undefined, "2"])
+            new Effect("id", "edgeID", CheckName.SpriteColor, true, ["spritename", "1", undefined, "2"]);
         }).toThrow();
 
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["spritename"])
+            new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["spritename"]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["spritename", undefined])
+            new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["spritename", undefined]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.SpriteTouching, true, [undefined, "spritename"])
+            new Effect("id", "edgeID", CheckName.SpriteTouching, true, [undefined, "spritename"]);
         }).toThrow();
-    })
+    });
 
     test("not enough argument: nbrofclones", () => {
         expect(() => {
-            new Effect("id", "edgeID", CheckName.NbrOfClones, true, ["spritename"])
+            new Effect("id", "edgeID", CheckName.NbrOfClones, true, ["spritename"]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.NbrOfClones, true, ["spritename", "="])
+            new Effect("id", "edgeID", CheckName.NbrOfClones, true, ["spritename", "="]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename"])
+            new Effect("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename"]);
         }).toThrow();
         expect(() => {
-            new Effect("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename", "="])
+            new Effect("id", "edgeID", CheckName.NbrOfVisibleClones, true, ["spritename", "="]);
         }).toThrow();
-    })
+    });
 
     test("not enough arguments: output", () => {
         expect(() => {
-            new Effect("id", "edgeID", CheckName.Output, true, ["test"])
+            new Effect("id", "edgeID", CheckName.Output, true, ["test"]);
         }).toThrow();
 
         expect(() => {
-            new Effect("id", "edgeID", CheckName.Output, true, ["test", undefined])
+            new Effect("id", "edgeID", CheckName.Output, true, ["test", undefined]);
         }).toThrow();
 
         expect(() => {
-            new Effect("id", "edgeID", CheckName.Output, true, [undefined, "test"])
+            new Effect("id", "edgeID", CheckName.Output, true, [undefined, "test"]);
         }).toThrow();
-    })
+    });
 
     test("not enough arguments: variable change", () => {
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarChange, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarChange, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
 
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarChange, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarChange, true, [undefined, "test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarChange, true, ["test", undefined, "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("not enough arguments: attribute change", () => {
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrChange, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrChange, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrChange, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrChange, true, ["test", undefined, "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrChange, true, [undefined, "test", "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("not enough arguments: variable comparison", () => {
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarComp, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarComp, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarComp, true, ["test", "test2", ">"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarComp, true, ["test", "test2", ">", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarComp, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarComp, true, ["test", undefined, "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.VarComp, true, [undefined, "test", "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("not enough arguments: attribute comparison", () => {
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrComp, true, ["test"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrComp, true, ["test", "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrComp, true, ["test", "test2", ">"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrComp, true, ["test", "test2", ">", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrComp, true, ["test", "test2", undefined]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrComp, true, ["test", undefined, "test2"]);
-        }).toThrow()
+        }).toThrow();
         expect(() => {
             new Effect("id", "edgeID", CheckName.AttrComp, true, [undefined, "test", "test2"]);
-        }).toThrow()
-    })
+        }).toThrow();
+    });
 
     test("effects", () => {
         expect(() => {
@@ -213,7 +213,7 @@ describe('Effect', () => {
             let effect = new Effect("id", "edgeID", CheckName.AttrComp, true, ["sprite", "attr", ">", "0"]);
             effect.check(0, 0);
         }).toThrow();
-    })
+    });
 
     test("contradictions I", () => {
         let effects = [];
@@ -241,12 +241,12 @@ describe('Effect', () => {
             for (let j = i + 1; j < effects.length; j++) {
                 expect(() => {
                     if (effects[i].contradicts(effects[j])) {
-                        throw new Error("Effects contradict!\n " + effects[i].toString() + "\n" + effects[j].toString())
+                        throw new Error("Effects contradict!\n " + effects[i].toString() + "\n" + effects[j].toString());
                     }
                 }).not.toThrow();
             }
         }
-    })
+    });
 
     test("contradictions random value", () => {
         let randomValue = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite","x"]);
@@ -265,7 +265,7 @@ describe('Effect', () => {
         otherRandom = new Effect("id","edgeID",CheckName.RandomValue, false, ["sprite2","x"]);
         expect(randomValue.contradicts(otherRandom)).toBeFalsy();
         expect(otherRandom.contradicts(randomValue)).toBeFalsy();
-    })
+    });
 
     test("contradictions output", () => {
         let output = new Effect("id", "edgeID", CheckName.Output, true, ["sprite", "hi"]);
@@ -275,7 +275,7 @@ describe('Effect', () => {
         expect(output.contradicts(output2)).toBeFalsy();
         output2 = new Effect("id", "edgeID", CheckName.Output, true, ["sprite", "hi2"]);
         expect(output.contradicts(output2)).toBeTruthy();
-    })
+    });
 
     test("contradictions function", () => {
         let functionE = new Effect("id", "edgeID", CheckName.Function, true, ["test"]);
@@ -283,7 +283,7 @@ describe('Effect', () => {
         expect(functionE.contradicts(functionE2)).toBeFalsy();
         functionE2 = new Effect("id", "edgeID", CheckName.Function, true, ["test"]);
         expect(functionE.contradicts(functionE2)).toBeFalsy();
-    })
+    });
 
     test("contradictions background", () => {
         let background = new Effect("id", "edgeID", CheckName.BackgroundChange, true, ["test"]);
@@ -291,7 +291,7 @@ describe('Effect', () => {
         expect(background.contradicts(background2)).toBeFalsy();
         background2 = new Effect("id", "edgeID", CheckName.BackgroundChange, true, ["test2"]);
         expect(background.contradicts(background2)).toBeTruthy();
-    })
+    });
 
     test("contradiction: variable change and comparison", () => {
         // not the same sprite
@@ -395,7 +395,7 @@ describe('Effect', () => {
         varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ["sprite", "var", "-="]);
         expect(varChange.contradicts(varComp)).toBeFalsy();
         expect(varComp.contradicts(varChange)).toBeFalsy();
-    })
+    });
 
     test("contradiction: attribute comparison and change", () => {
         // not the same sprite
@@ -500,7 +500,7 @@ describe('Effect', () => {
         attrChange = new Effect("id", "edgeID", CheckName.AttrChange, true, ["sprite", "var", "-="]);
         expect(attrChange.contradicts(attrComp)).toBeFalsy();
         expect(attrComp.contradicts(attrChange)).toBeFalsy();
-    })
+    });
 
     test("contradictions: var/attr change", () => {
         let varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '+']);
@@ -619,7 +619,7 @@ describe('Effect', () => {
         varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '-=']);
         expect(varChange2.contradicts(varChange)).toBeTruthy();
         expect(varChange.contradicts(varChange2)).toBeTruthy();
-    })
+    });
 
     test("contradictions: variable comparison", () => {
         let varComp = new Effect("id", "edgeID", CheckName.VarComp, true, ["sprite", "var", ">", "0"]);
@@ -783,7 +783,7 @@ describe('Effect', () => {
         varComp2 = new Effect("id", "edgeID", CheckName.VarComp, false, ["sprite", "var", ">=", "1"]);
         expect(varComp.contradicts(varComp2)).toBeTruthy();
         expect(varComp2.contradicts(varComp)).toBeTruthy();
-    })
+    });
 
     test("contradiction: click", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.Click, true, ["sprite1"]);
@@ -793,7 +793,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.Click, true, ["sprite1"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     test("contradiction: key", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.Key, true, ["left"]);
@@ -803,7 +803,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.Key, true, ["left"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     test("contradiction: sprite color", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.SpriteColor, true, ["sprite1", "0", "0", "0"]);
@@ -814,7 +814,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.SpriteColor, true, ["sprite1", "0", "0", "1"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     test("contradiction: sprite touching", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["sprite1", "sprite2"]);
@@ -824,7 +824,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.SpriteTouching, true, ["sprite1", "sprite3"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     test("contradiction: expr", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.Expr, true, ["whatever"]);
@@ -834,7 +834,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.Click, true, ["whatever"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     // actually an effect with probability result is quite dumb to have....
     test("contradiction: probability", () => {
@@ -845,7 +845,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.Probability, true, ["1"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     test("contradiction: time", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.TimeElapsed, true, ["1000"]);
@@ -869,7 +869,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.TimeAfterEnd, true, ["1000"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     test("contradiction: clones", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.NbrOfClones, true, ["sprite", "=", "1"]);
@@ -902,7 +902,7 @@ describe('Effect', () => {
         expect(effect2.contradicts(effect1)).toBeFalsy();
 
         // other comparisons are valid as long as AttrComp and VarComp tests are ok (same comparison)
-    })
+    });
 
     test("contradiction: expr", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
@@ -912,7 +912,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
         expect(effect1.contradicts(effect2)).toBeFalsy();
         expect(effect2.contradicts(effect1)).toBeFalsy();
-    })
+    });
 
     test("contradiction negation", () => {
         let effect1 = new Effect("id", "edgeID", CheckName.TouchingEdge, true, ["sprite"]);
@@ -923,7 +923,7 @@ describe('Effect', () => {
         effect2 = new Effect("id", "edgeID", CheckName.TouchingEdge, false, ["sprite"]);
         expect(effect1.contradicts(effect2)).toBeTruthy();
         expect(effect2.contradicts(effect1)).toBeTruthy();
-    })
+    });
 
     test("contradiction negation attr/var change", () => {
         let varChange = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '+5']);
@@ -987,7 +987,7 @@ describe('Effect', () => {
         expect(varChange2.contradicts(varChange)).toBeTruthy();
         varChange2 = new Effect("id", "edgeID", CheckName.VarChange, true, ['sprite', 'var', '=']);
         expect(varChange.contradicts(varChange2)).toBeFalsy();
-        expect(varChange2.contradicts(varChange)).toBeFalsy()
+        expect(varChange2.contradicts(varChange)).toBeFalsy();
         varChange2 = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '=']);
         expect(varChange.contradicts(varChange2)).toBeTruthy();
         expect(varChange2.contradicts(varChange)).toBeTruthy();
@@ -997,7 +997,7 @@ describe('Effect', () => {
         varChange2 = new Effect("id", "edgeID", CheckName.VarChange, false, ['sprite', 'var', '-=']);
         expect(varChange.contradicts(varChange2)).toBeTruthy();
         expect(varChange2.contradicts(varChange)).toBeTruthy();
-    })
+    });
 
     test("contradiction negation attr/var comparison", () => {
         let attrComp = new Effect("id", "edgeID", CheckName.AttrComp, true, ["sprite", "var", ">=", "0"]);

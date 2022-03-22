@@ -20,8 +20,8 @@
 
 import {FitnessFunction} from '../../search/FitnessFunction';
 import {TestChromosome} from '../TestChromosome';
-import {ControlDependenceGraph, ControlFlowGraph, GraphNode, Graph} from 'scratch-analysis'
-import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter'
+import {ControlDependenceGraph, ControlFlowGraph, GraphNode, Graph} from 'scratch-analysis';
+import {ControlFilter, CustomFilter} from 'scratch-analysis/src/block-filter';
 import {Trace} from "scratch-vm/src/engine/tracing.js";
 
 export class StatementFitnessFunction implements FitnessFunction<TestChromosome> {
@@ -74,13 +74,13 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
                 if (n.id in approachLevels) {
                     if (approachLevels[n.id] > currentLevel) {
-                        approachLevels[n.id] = currentLevel
+                        approachLevels[n.id] = currentLevel;
                     }
                 } else {
-                    approachLevels[n.id] = currentLevel
+                    approachLevels[n.id] = currentLevel;
                 }
 
-                workList.push([n, currentLevel])
+                workList.push([n, currentLevel]);
             }
         }
 
@@ -141,17 +141,17 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
     private _approachLevelByTrace(blockTrace, currentMin: number) {
         let min = Number.MAX_SAFE_INTEGER;
         if (this._approachLevels[blockTrace.id] <= currentMin) {
-            min = this._approachLevels[blockTrace.id]
+            min = this._approachLevels[blockTrace.id];
         }
 
         if (blockTrace.id in this._eventMapping) {
             const userEventNode = this._eventMapping[blockTrace.id];
             const userEventMin = this._approachLevels[userEventNode];
             if (userEventMin <= currentMin && userEventMin <= min) {
-                min = this._approachLevels[userEventNode]
+                min = this._approachLevels[userEventNode];
             }
         }
-        return min
+        return min;
     }
 
     getBranchDistance(chromosome: TestChromosome): number {
@@ -201,7 +201,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     const newDistance = blockTrace.distances[0][0];
                     if (traceMin < minBranchApproachLevel ||
                         (traceMin == minBranchApproachLevel && newDistance < branchDistance)) {
-                        minBranchApproachLevel = traceMin
+                        minBranchApproachLevel = traceMin;
                         branchDistance = newDistance;
                     }
                 }
@@ -284,7 +284,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     }
                 }
                 if (res.size > 0) {
-                    return [...res]
+                    return [...res];
                 }
             }
             //the only possibility for the loop to execute to here is that targetNode == unexecutedPredecessor == Event/Entry.
@@ -303,7 +303,7 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                 return Number.MAX_SAFE_INTEGER;
             }
         } else {
-            targetNodeQueue = [this._targetNode]
+            targetNodeQueue = [this._targetNode];
         }
         return bfs(this._cfg, targetNodeQueue, chromosome.coverage);
     }
@@ -415,9 +415,9 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
 
     _matchesBranchStart(statement: GraphNode, controlNode: GraphNode, branchStartId: string): boolean {
         let cur = statement;
-        const traversed = []
+        const traversed = [];
         while (cur && cur.id !== controlNode.id && !traversed.includes(cur)) {
-            traversed.push(cur)
+            traversed.push(cur);
             if (cur.id === branchStartId) {
                 return true;
             }
@@ -467,12 +467,12 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
                     if(node.block.next == undefined){
                         return false;
                     }
-                    const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg)
+                    const childOfNode = StatementFitnessFunction.getChildOfNode(node, fitnessFunction._cdg);
                     if(childOfNode == undefined){
                         return false;
                     }
-                    return ControlFilter.branch(childOfNode.block)
-                }
+                    return ControlFilter.branch(childOfNode.block);
+                };
                 const nestedBranches = mergeNodes.filter(node => node.block !== undefined && filterNestedBranches(node));
 
                 // Now we combine both possibilities.

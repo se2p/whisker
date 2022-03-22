@@ -67,11 +67,11 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
      * @param sparseNess the metric defining the novelty of a given solution.
      */
     protected addToBehaviourArchive(network: NetworkChromosome, sparseNess: number): void {
-        const playerPosition = this.getFinalPosition(network)
+        const playerPosition = this.getFinalPosition(network);
         if (this._behaviourArchive.length < 1 ||
             (sparseNess > this._archiveThreshold && this.isNewPoint(playerPosition))) {
             this._behaviourArchive.push(playerPosition);
-            console.log(`New Point: ${playerPosition.x}/${playerPosition.y}`)
+            console.log(`New Point: ${playerPosition.x}/${playerPosition.y}`);
         }
     }
 
@@ -86,7 +86,7 @@ export class NoveltyTargetNetworkFitness extends NoveltyFitness {
                 (Container.vmWrapper.getStageSize().width / 2),
             y: network.inputNodes.get(this._player.sprite.name).get("Y-Position").nodeValue *
                 (Container.vmWrapper.getStageSize().height / 2)
-        }
+        };
         return new ScratchPosition(playerEnd.x, playerEnd.y);
     }
 

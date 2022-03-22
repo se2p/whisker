@@ -18,13 +18,13 @@ export class NeuroevolutionUtil {
      * @param events the list of available events for which the softmax function should be calculated
      */
     public static softmaxEvents(network: NetworkChromosome, events: ScratchEvent[]): number[] {
-        const result = []
+        const result = [];
         let denominator = 0;
         for (const event of events) {
             denominator += Math.exp(network.classificationNodes.get(event.stringIdentifier()).nodeValue);
         }
         for (const event of events) {
-            result.push(Math.exp(network.classificationNodes.get(event.stringIdentifier()).nodeValue) / denominator)
+            result.push(Math.exp(network.classificationNodes.get(event.stringIdentifier()).nodeValue) / denominator);
         }
         return result;
     }

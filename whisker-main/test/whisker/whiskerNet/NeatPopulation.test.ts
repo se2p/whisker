@@ -70,9 +70,9 @@ describe("Test NeatPopulation", () => {
         properties.weightCoefficient = 0.3;
         properties.distanceThreshold = 3;
         properties.penalizingAge = 10;
-        properties.ageSignificance = 1.0
-        properties.parentsPerSpecies = 0.2
-        properties.mutationWithoutCrossover = 0.3
+        properties.ageSignificance = 1.0;
+        properties.parentsPerSpecies = 0.2;
+        properties.mutationWithoutCrossover = 0.3;
         properties.interspeciesMating = 0.1;
         properties.numberOfSpecies = 5;
         population = new NeatPopulation(chromosomeGenerator, properties);
@@ -83,7 +83,7 @@ describe("Test NeatPopulation", () => {
         for (const c of population.networks) {
             c.fitness = random.nextInt(1, 50);
         }
-    })
+    });
 
     test("Test Constructor", () => {
         expect(population.speciesCount).toBeGreaterThan(0);
@@ -97,7 +97,7 @@ describe("Test NeatPopulation", () => {
         expect(population.networks.length).toBe(size);
         expect(population.hyperParameter).toBeInstanceOf(NeatProperties);
         expect(population.averageFitness).toBe(0);
-    })
+    });
 
     test("Test Getter and Setter", () => {
 
@@ -116,7 +116,7 @@ describe("Test NeatPopulation", () => {
         expect(population.generation).toBe(3);
         expect(population.averageFitness).toBe(3);
         expect(population.populationChampion).toBe(champ);
-    })
+    });
 
     test("Test evolution", () => {
         const oldGeneration = population.networks;
@@ -133,7 +133,7 @@ describe("Test NeatPopulation", () => {
         expect(population.generation).toBe(5);
         expect(population.species.length).toBeGreaterThan(0);
         expect(population.networks.length).toBe(size);
-    })
+    });
 
     test("Test evolution stagnant population with only one species", () => {
         population.highestFitness = 60;
@@ -145,7 +145,7 @@ describe("Test NeatPopulation", () => {
         population.evolve();
         expect(population.species.length).toBe(1);
         expect(population.species[0].networks.length).toBe(size);
-    })
+    });
 
     test("Test evolve with distance Threshold below 1", () => {
         population.generation = 3;
@@ -153,13 +153,13 @@ describe("Test NeatPopulation", () => {
         population.updatePopulationStatistics();
         population.evolve();
         expect(population.hyperParameter.distanceThreshold).toBe(1);
-    })
+    });
 
     test("Test Speciation when a new Population gets created", () => {
         population.generatePopulation();
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);
-    })
+    });
 
     test("Test Speciation when a new Population gets created and a low speciation Threshold", () => {
         properties.distanceThreshold = 0.01;
@@ -167,7 +167,7 @@ describe("Test NeatPopulation", () => {
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeLessThanOrEqual(properties.populationSize);
-    })
+    });
 
     test("Test Speciation when a new Population gets created and a high speciation Threshold", () => {
         properties.distanceThreshold = 1000;
@@ -175,7 +175,7 @@ describe("Test NeatPopulation", () => {
         expect(population.speciesCount).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeGreaterThanOrEqual(1);
         expect(population.species.length).toBeLessThanOrEqual(properties.populationSize);
-    })
+    });
 
     test("Test Speciation with a chromosome mutated several times", () => {
         const chromosome = chromosomeGenerator.get();
@@ -185,14 +185,14 @@ describe("Test NeatPopulation", () => {
             population.speciate(mutant);
         }
         expect(population.speciesCount).toBeGreaterThan(1);
-    })
+    });
 
     test("Test Compatibility Distance of clones", () => {
         const chromosome1 = chromosomeGenerator.get();
         const chromosome2 = chromosome1.cloneStructure(false);
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(0);
-    })
+    });
 
     test("Test Compatibility Distance of Chromosomes with disjoint connections", () => {
         const inputNode1 = new InputNode("Sprite1", "X-Position");
@@ -219,14 +219,14 @@ describe("Test NeatPopulation", () => {
 
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(1);
-    })
+    });
 
     test("Test Compatibility Distance of Chromosomes with disjoint connections switched", () => {
         const inputNode1 = new InputNode("Sprite1", "X-Position");
         const inputNode2 = new InputNode("Sprite2", "Y-Position");
         const outputNode = new ClassificationNode(new WaitEvent(), ActivationFunction.SIGMOID);
 
-        const nodes: NodeGene[] = []
+        const nodes: NodeGene[] = [];
         nodes.push(inputNode1);
         nodes.push(inputNode2);
         nodes.push(outputNode);
@@ -245,8 +245,8 @@ describe("Test NeatPopulation", () => {
         const chromosome2 = new NeatChromosome(nodes, connections1, mutation, crossover);
 
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
-        expect(compatDistance).toBe(1)
-    })
+        expect(compatDistance).toBe(1);
+    });
 
     test("Test Compatibility Distance of Chromosomes with excess connections", () => {
         const chromosome1 = chromosomeGenerator.get();
@@ -257,7 +257,7 @@ describe("Test NeatPopulation", () => {
         chromosome2.connections.push(new ConnectionGene(node1, node2, 1, true, 1000, false));
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(1);
-    })
+    });
 
     test("Test Compatibility Distance of Chromosomes with same connections but different weights", () => {
         const inputNode1 = new InputNode("Sprite1", "X-Position");
@@ -283,14 +283,14 @@ describe("Test NeatPopulation", () => {
         const chromosome2 = new NeatChromosome(nodes, connections2, mutation, crossover);
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(0.3 * 0.5);
-    })
+    });
 
     test("Test Compatibility Distance of undefined chromosome", () => {
         const chromosome1 = chromosomeGenerator.get();
         const chromosome2 = undefined;
         const compatDistance = population.compatibilityDistance(chromosome1, chromosome2);
         expect(compatDistance).toBe(Number.MAX_SAFE_INTEGER);
-    })
+    });
 
     test("Test Assign innovation number of a new connection", () => {
         const inNode = new InputNode("Sprite3", "X-Position");
@@ -300,7 +300,7 @@ describe("Test NeatPopulation", () => {
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
         NeatPopulation.assignInnovationNumber(newConnection);
         expect(newConnection.innovation).toBeGreaterThan(0);
-    })
+    });
 
     test("Test Assign innovation number of a new connection which is similar to an existing one", () => {
         const chromosome = chromosomeGenerator.get();
@@ -314,6 +314,6 @@ describe("Test NeatPopulation", () => {
         const newConnection = new ConnectionGene(inNode, outNode, 1, true, 100, false);
         NeatPopulation.assignInnovationNumber(newConnection);
         expect(newConnection.innovation).toBe(existingConnection.innovation);
-    })
+    });
 
-})
+});

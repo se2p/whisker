@@ -14,7 +14,7 @@ describe('ModelTester', () => {
         expect(modelTester.someModelLoaded() == true);
         expect(() => {
             modelTester.load(faultyModel);
-        }).toThrow()
+        }).toThrow();
         expect(modelTester.programModelsLoaded() == false);
         expect(modelTester.someModelLoaded() == false);
         expect(() => {
@@ -24,7 +24,7 @@ describe('ModelTester', () => {
         expect(modelTester.userModelsLoaded() == true);
         expect(modelTester.someModelLoaded() == true);
         expect(modelTester.running() == false);
-    })
+    });
 
     test("ModelTester get all models", () => {
         let modelTester = new ModelTester();
@@ -33,7 +33,7 @@ describe('ModelTester', () => {
         expect(() => {
             modelTester.getAllModels();
         }).not.toThrow();
-    })
+    });
 
     test("Model Tester coverages", () => {
         let modelTester = new ModelTester();
@@ -41,8 +41,8 @@ describe('ModelTester', () => {
         expect(() => {
             modelTester.getTotalCoverage();
         }).not.toThrow();
-    })
-})
+    });
+});
 
 const model1 = '[{"usage": "program","id": "bowl","startNodeId": "init", "stopNodeIds": ["end"],"stopAllNodeIds":' +
     ' ["end"],"nodeIds": ["init","start","text","end"],"edges": []}]';

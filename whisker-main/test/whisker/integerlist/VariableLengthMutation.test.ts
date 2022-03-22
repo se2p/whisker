@@ -13,31 +13,31 @@ describe("VariableLengthMutation Test", () => {
 
     test("Test apply mutation", () => {
         const codons = Array.from({length: 10}, () => Math.floor(random.nextInt(min, max)));
-        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
-        let mutant = mutation.apply(chromosome)
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover);
+        let mutant = mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant)
+            mutant = mutation.apply(mutant);
         }
-        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
-    })
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
+    });
 
     test("Test apply mutation with minimal chromosome size of 3 (specified virtual space)", () => {
         const codons = Array.from({length: 3}, () => Math.floor(random.nextInt(min, max)));
-        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
-        let mutant = mutation.apply(chromosome)
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover);
+        let mutant = mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant)
+            mutant = mutation.apply(mutant);
         }
-        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes())
-    })
+        expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
+    });
 
     test("Test apply mutation maximum chromosome size", () => {
         const codons = Array.from({length: 20}, () => Math.floor(random.nextInt(min, max)));
-        const chromosome = new IntegerListChromosome(codons, mutation, crossover)
-        let mutant = mutation.apply(chromosome)
+        const chromosome = new IntegerListChromosome(codons, mutation, crossover);
+        let mutant = mutation.apply(chromosome);
         for (let i = 0; i < 30; i++) {
-            mutant = mutation.apply(mutant)
+            mutant = mutation.apply(mutant);
         }
         expect(mutant.getGenes()).not.toEqual(chromosome.getGenes());
-    })
-})
+    });
+});

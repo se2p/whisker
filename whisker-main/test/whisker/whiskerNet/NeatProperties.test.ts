@@ -6,7 +6,7 @@ describe("Test NeuroevolutionProperties", () => {
     test("Test Constructor", () => {
         const properties = new NeatProperties(10);
         expect(properties.populationSize).toBe(10);
-    })
+    });
 
     test("Test Getter and Setter", () => {
         const properties = new NeatProperties(10);
@@ -61,5 +61,5 @@ describe("Test NeuroevolutionProperties", () => {
         expect(properties.stoppingCondition).toBeInstanceOf(OptimalSolutionStoppingCondition);
         expect(properties.networkFitness).toBe(null);
         expect(properties.timeout).toBe(20000);
-    })
-})
+    });
+});

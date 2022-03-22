@@ -29,7 +29,7 @@ export class HiddenNode extends NodeGene {
         clone.activationCount = this.activationCount;
         clone.activatedFlag = this.activatedFlag;
         clone.traversed = this.traversed;
-        return clone
+        return clone;
     }
 
     /**
@@ -58,7 +58,7 @@ export class HiddenNode extends NodeGene {
     }
 
     public toJSON(): Record<string, (number | string)> {
-        const node = {}
+        const node = {};
         node[`id`] = this.uID;
         node[`t`] = "H";
         node[`aF`] = ActivationFunction[this.activationFunction];

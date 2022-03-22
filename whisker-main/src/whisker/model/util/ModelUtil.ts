@@ -267,7 +267,7 @@ export abstract class ModelUtil {
 
             let expr;
             if (!caseSensitive) {
-                expr = "(t) => {return " + toEval.toLowerCase() + "}"
+                expr = "(t) => {return " + toEval.toLowerCase() + "}";
             } else {
                 expr = "(t) => {return " + toEval + "}";
             }
@@ -368,7 +368,7 @@ export abstract class ModelUtil {
                 attrDependencies.push({spriteName, attrName});
                 expression += "sprite" + spriteMap[spriteName] + "." + attrName;
             } else {
-                varDependencies.push({spriteName, varName: attrName})
+                varDependencies.push({spriteName, varName: attrName});
                 inits += this.getVariableString(t, caseSensitive, spriteMap[spriteName], spriteName, attrName);
                 expression += "variable" + spriteMap[spriteName];
             }
@@ -479,9 +479,9 @@ export abstract class ModelUtil {
         for (let spriteName in attrDependencies) {
             let attributes = new Set(attrDependencies[spriteName]);
             attributes.forEach(x => {
-                newAttrDep.push({spriteName, attrName: x})
+                newAttrDep.push({spriteName, attrName: x});
 
-            })
+            });
         }
         for (const spriteName in varDependencies) {
             let variables = new Set(varDependencies[spriteName]);
@@ -490,6 +490,6 @@ export abstract class ModelUtil {
             });
         }
 
-        return {attrDependencies: newAttrDep, varDependencies: newVarDep}
+        return {attrDependencies: newAttrDep, varDependencies: newVarDep};
     }
 }
