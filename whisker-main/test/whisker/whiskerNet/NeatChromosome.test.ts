@@ -102,7 +102,7 @@ describe('Test NetworkChromosome', () => {
         expect(chromosome.coverage.size).toEqual(0);
         expect(chromosome.codons.length).toBe(0);
         expect(chromosome.isRecurrent).toBeFalsy();
-        expect(chromosome.outputNodes[0].incomingConnections.length).toBeGreaterThanOrEqual(4);
+        expect(chromosome.outputNodes[0].incomingConnections.length).toBeGreaterThanOrEqual(1);
     });
 
     test("Test getter and setter", () => {
