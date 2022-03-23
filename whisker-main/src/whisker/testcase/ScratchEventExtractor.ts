@@ -244,8 +244,6 @@ export abstract class ScratchEventExtractor {
                 break;
             }
             case 'sensing_coloristouchingcolor': {
-                console.log("XXX sensing_coloristouchingcolor");
-
                 const getColorFromBlock = (color) =>
                     target.blocks.getBlock(block.inputs[color].block).fields.COLOUR.value;
 
