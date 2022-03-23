@@ -101,9 +101,9 @@ export abstract class NetworkChromosome extends Chromosome {
     private _certainty = new Map<number, number>();
 
     /**
-     * Maps each target statement to the number of times it has been covered using different seeds.
+     * Maps each uncovered target statement to the number of times it has been covered using different seeds.
      */
-    private _statementTargets: Map<FitnessFunction<NetworkChromosome>, number>;
+    private _openStatementTargets: Map<FitnessFunction<NetworkChromosome>, number>;
 
     /**
      * The fitness value of the network.
@@ -596,10 +596,10 @@ export abstract class NetworkChromosome extends Chromosome {
      * Initialises the target statements, setting each coverage count to zero.
      * @param targets all block statements of the given Scratch program.
      */
-    public initialiseStatementTargets(targets: FitnessFunction<NetworkChromosome>[]): void {
-        this.statementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
+    public initialiseOpenStatements(targets: FitnessFunction<NetworkChromosome>[]): void {
+        this.openStatementTargets = new Map<FitnessFunction<NetworkChromosome>, number>();
         for (const t of targets) {
-            this.statementTargets.set(t, 0);
+            this.openStatementTargets.set(t, 0);
         }
     }
 
@@ -762,11 +762,11 @@ export abstract class NetworkChromosome extends Chromosome {
         this._isRecurrent = value;
     }
 
-    get statementTargets(): Map<FitnessFunction<NetworkChromosome>, number> {
-        return this._statementTargets;
+    get openStatementTargets(): Map<FitnessFunction<NetworkChromosome>, number> {
+        return this._openStatementTargets;
     }
 
-    set statementTargets(value: Map<FitnessFunction<NetworkChromosome>, number>) {
-        this._statementTargets = value;
+    set openStatementTargets(value: Map<FitnessFunction<NetworkChromosome>, number>) {
+        this._openStatementTargets = value;
     }
 }

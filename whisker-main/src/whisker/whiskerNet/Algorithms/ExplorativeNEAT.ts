@@ -15,6 +15,11 @@ import {Container} from "../../utils/Container";
 export class ExplorativeNEAT extends NEAT {
 
     /**
+     * The population of networks for the current generation.
+     */
+    private _population: NeatPopulation
+
+    /**
      * Holds the key of the currently targeted statement.
      */
     private _targetKey: number;
@@ -32,40 +37,56 @@ export class ExplorativeNEAT extends NEAT {
     private _targetIterations = 0;
 
     /**
+     * Holds a record of promising targets, i.e. the maximum amount of how often a target has accidentally already been
+     * covered by a network without it actually being the currently targeted statement.
+     */
+    private _promisingTargets = new Map<number, number>();
+
+    /**
      * Searches for a suite of networks that are able to cover all statements of a given Scratch program reliably.
      * @returns a Map mapping a statement's key to the network capable of reaching the given statement reliably.
      */
     async findSolution(): Promise<Map<number, NeatChromosome>> {
-        this._startTime = Date.now();
-        this._iterations = 0;
-        this._fitnessFunctionMap = new Map(this._fitnessFunctions) as unknown as Map<number, StatementFitnessFunction>;
-        StatisticsCollector.getInstance().iterationCount = 0;
+        this.initialise();
         const totalGoals = this._fitnessFunctions.size;
         while (this._archive.size != totalGoals && !(this._stoppingCondition.isFinished(this))) {
             const currentTarget = this.setNextGoal();
             Container.debugLog(`Next goal ${this._archive.size}/${totalGoals}:${currentTarget}`);
-            const population = this.getPopulation();
-            population.generatePopulation();
+            this._population = this.getPopulation();
+            this._population.generatePopulation();
             this._targetIterations = 0;
             while (!this._stoppingCondition.isFinished(this)) {
-                await this.evaluateNetworks(population.networks);
-                this.updateBestIndividualAndStatistics(population);
+                await this.evaluateNetworks();
+                this.updateBestIndividualAndStatistics();
                 if (this._archive.has(this._targetKey)) {
                     Container.debugLog(`Covered Target Statement ${this._targetKey}:${currentTarget}`);
                     break;
                 }
-                population.updatePopulationStatistics();
-                this.reportOfCurrentIteration(population);
-                population.evolve();
-                for (const network of population.networks) {
+                this._population.updatePopulationStatistics();
+                this.reportOfCurrentIteration();
+                this._population.evolve();
+                for (const network of this._population.networks) {
                     network.targetFitness = currentTarget;
-                    network.initialiseStatementTargets([...this._fitnessFunctions.values()]);
+                    network.initialiseOpenStatements([...this._fitnessFunctions.values()]);
                 }
                 this._targetIterations++;
                 this._iterations++;
             }
         }
         return this._archive;
+    }
+
+    /**
+     * Initialises required variables.
+     */
+    private initialise(): void {
+        this._startTime = Date.now();
+        this._iterations = 0;
+        this._fitnessFunctionMap = new Map(this._fitnessFunctions) as unknown as Map<number, StatementFitnessFunction>;
+        for (const fitnessKey of this._fitnessFunctionMap.keys()) {
+            this._promisingTargets.set(fitnessKey, 0);
+        }
+        StatisticsCollector.getInstance().iterationCount = 0;
     }
 
     /**
@@ -85,8 +106,31 @@ export class ExplorativeNEAT extends NEAT {
         }
 
         // Select the next target statement by querying the CDG.
-        const uncoveredPairs = StatementFitnessFunction.getNextUncoveredNodePairs(allStatements, uncoveredStatements);
-        const nextTarget = Randomness.getInstance().pick([...uncoveredPairs.keys()]);
+        const potentialTargets = StatementFitnessFunction.getNextUncoveredNodePairs(allStatements, uncoveredStatements);
+        let nextTarget: StatementFitnessFunction;
+        let currentHighestPotential = 0;
+
+        // Set the next target to be the one with the highest potential.
+        for (const potentialTarget of potentialTargets) {
+
+            // ClickGreenFlag should always be prioritised.
+            if (potentialTarget.getTargetNode().block.opcode === 'event_whenflagclicked') {
+                nextTarget = potentialTarget;
+                break;
+            }
+
+            // Otherwise, prioritise targets we have already reached in the past.
+            const potential = this._promisingTargets.get(this.mapStatementToKey(potentialTarget));
+            if (potential > currentHighestPotential) {
+                currentHighestPotential = potential;
+                nextTarget = potentialTarget;
+            }
+        }
+
+        // If no target looks promising we pick the next target randomly.
+        if (nextTarget === undefined) {
+            nextTarget = Randomness.getInstance().pick(Array.from(potentialTargets));
+        }
         this._targetKey = this.mapStatementToKey(nextTarget);
         return nextTarget;
     }
@@ -107,18 +151,36 @@ export class ExplorativeNEAT extends NEAT {
 
     /**
      * Evaluates the networks by letting them play the given Scratch game.
-     * @param networks the networks to evaluate.
      */
-    protected async evaluateNetworks(networks: NeatChromosome[]): Promise<void> {
-        for (const network of networks) {
+    protected async evaluateNetworks(): Promise<void> {
+        for (const network of this._population.networks) {
             // Evaluate the networks by letting them play the game.
             await this._networkFitnessFunction.getFitness(network, this._neuroevolutionProperties.timeout,
                 this._neuroevolutionProperties.eventSelection);
             // Update the archive and stop in the middle of the evaluation if we covered the targeted statement,
             // or depleted the search budget.
             this.updateArchive(network);
+
+            // Update the map of the most promising fitness targets
+            this.updateMostPromisingMap(network);
+
             if (this._archive.has(this._targetKey) || this._stoppingCondition.isFinished(this)) {
                 return;
+            }
+        }
+    }
+
+    /**
+     * Updates the map of the most promising statement targets.
+     * @param network the network with which the map will be updated.
+     */
+    private updateMostPromisingMap(network: NeatChromosome): void {
+        for (const fitnessFunctionKey of this._promisingTargets.keys()) {
+            const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+            const networkFitness = network.openStatementTargets.get(fitnessFunction);
+            if (this._promisingTargets.has(fitnessFunctionKey) &&
+                networkFitness > this._promisingTargets.get(fitnessFunctionKey)) {
+                this._promisingTargets.set(fitnessFunctionKey, networkFitness);
             }
         }
     }
@@ -130,10 +192,18 @@ export class ExplorativeNEAT extends NEAT {
     protected updateArchive(network: NeatChromosome): void {
         for (const fitnessFunctionKey of this._fitnessFunctions.keys()) {
             const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
+
+            // If we covered a statement update the archive, statistics and the map of open target statements.
             if (this.isCovered(fitnessFunctionKey, network)) {
                 Container.debugLog(`Covered Statement ${fitnessFunctionKey}:${fitnessFunction}`);
                 StatisticsCollector.getInstance().incrementCoveredFitnessFunctionCount(fitnessFunction);
                 this._archive.set(fitnessFunctionKey, network);
+                for (const n of this._population.networks) {
+                    n.openStatementTargets.delete(fitnessFunction);
+                }
+                if (this._promisingTargets.has(fitnessFunctionKey)) {
+                    this._promisingTargets.delete(fitnessFunctionKey);
+                }
             }
         }
         this._bestIndividuals = Arrays.distinctObjects([...this._archive.values()]);
@@ -147,7 +217,7 @@ export class ExplorativeNEAT extends NEAT {
      */
     private isCovered(fitnessFunctionKey: number, network: NeatChromosome): boolean {
         const fitnessFunction = this._fitnessFunctions.get(fitnessFunctionKey);
-        const coverageStableCount = network.statementTargets.get(fitnessFunction);
+        const coverageStableCount = network.openStatementTargets.get(fitnessFunction);
         const statementFitness = fitnessFunction.getFitness(network);
         return (coverageStableCount >= this._neuroevolutionProperties.coverageStableCount &&
                 !this._archive.has(fitnessFunctionKey)) ||
@@ -158,18 +228,17 @@ export class ExplorativeNEAT extends NEAT {
 
     /**
      * Reports the current state of the search.
-     * @param population the population of networks.
      */
-    protected reportOfCurrentIteration(population: NeatPopulation): void {
+    protected reportOfCurrentIteration(): void {
         Container.debugLog(`Total Iteration: ${StatisticsCollector.getInstance().iterationCount}`)
         Container.debugLog(`Intermediate Iteration:  ${this._targetIterations}`);
         Container.debugLog(`Covered Statements: ${this._archive.size}/${this._fitnessFunctions.size}`)
         Container.debugLog(`Current fitness Target: ${this._fitnessFunctions.get(this._targetKey)}`);
-        Container.debugLog(`Best Network Fitness:  ${population.bestFitness}`);
-        Container.debugLog(`Current Iteration Best Network Fitness:  ${population.populationChampion.fitness}`);
-        Container.debugLog(`Average Network Fitness: ${population.averageFitness}`)
-        Container.debugLog(`Generations passed since last improvement: ${population.highestFitnessLastChanged}`);
-        const sortedSpecies = population.species.sort((a, b) => b.averageFitness - a.averageFitness);
+        Container.debugLog(`Best Network Fitness:  ${this._population.bestFitness}`);
+        Container.debugLog(`Current Iteration Best Network Fitness:  ${this._population.populationChampion.fitness}`);
+        Container.debugLog(`Average Network Fitness: ${this._population.averageFitness}`)
+        Container.debugLog(`Generations passed since last improvement: ${this._population.highestFitnessLastChanged}`);
+        const sortedSpecies = this._population.species.sort((a, b) => b.averageFitness - a.averageFitness);
         for (const species of sortedSpecies) {
             Container.debugLog(`Species ${species.uID} has ${species.networks.length} members and an average fitness of ${species.averageFitness}`);
         }
@@ -179,18 +248,17 @@ export class ExplorativeNEAT extends NEAT {
 
     /**
      * Updates the List of the best networks found so far and the statistics used for reporting. Order is important!
-     * @param population the current generation's population of networks.
      */
-    protected updateBestIndividualAndStatistics(population: NeatPopulation): void {
+    protected updateBestIndividualAndStatistics(): void {
         this._bestIndividuals = Arrays.distinct(this._archive.values());
         StatisticsCollector.getInstance().bestTestSuiteSize = this._bestIndividuals.length;
         StatisticsCollector.getInstance().iterationCount = this._iterations;
         StatisticsCollector.getInstance().coveredFitnessFunctionsCount = this._archive.size;
         StatisticsCollector.getInstance().updateHighestNetworkFitness(this._archive.size);
 
-        const highestFitness = Math.max(...population.networks.map(n => n.fitness));
-        const highestScore = Math.max(...population.networks.map(n => n.score));
-        const highestSurvive = Math.max(...population.networks.map(n => n.playTime));
+        const highestFitness = Math.max(...this._population.networks.map(n => n.fitness));
+        const highestScore = Math.max(...this._population.networks.map(n => n.score));
+        const highestSurvive = Math.max(...this._population.networks.map(n => n.playTime));
         StatisticsCollector.getInstance().updateHighestScore(highestScore);
         StatisticsCollector.getInstance().updateHighestPlaytime(highestSurvive);
 

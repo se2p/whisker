@@ -79,9 +79,9 @@ export class ReliableStatementFitness implements NetworkFitnessFunction<NetworkC
             executor.resetState();
 
             // Increase the score by 1 if we covered the given statement in the executed scenario as well.
-            for (const [statement, coverCount] of network.statementTargets.entries()) {
+            for (const [statement, coverCount] of network.openStatementTargets.entries()) {
                 if (statement.isCovered(network)) {
-                    network.statementTargets.set(statement, coverCount + 1);
+                    network.openStatementTargets.set(statement, coverCount + 1);
                     if (statement === network.targetFitness) {
                         network.fitness++;
                     }

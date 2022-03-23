@@ -115,7 +115,7 @@ export class NeatChromosome extends NetworkChromosome {
         clone.fitness = this.fitness;
         clone.sharedFitness = this.sharedFitness;
         clone.targetFitness = this.targetFitness;
-        clone.statementTargets = this.statementTargets;
+        clone.openStatementTargets = this.openStatementTargets;
         clone.species = this.species;
         clone.isSpeciesChampion = this.isSpeciesChampion;
         clone.isPopulationChampion = this.isPopulationChampion;

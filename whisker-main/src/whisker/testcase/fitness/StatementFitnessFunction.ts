@@ -529,8 +529,8 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
         return statementMap;
     }
 
-    public static getNextUncoveredNodePairs(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Map<StatementFitnessFunction, StatementFitnessFunction> {
-        const nearestUncoveredMap = new Map<StatementFitnessFunction, StatementFitnessFunction>();
+    public static getNextUncoveredNodePairs(allStatements: StatementFitnessFunction[], uncoveredStatements: StatementFitnessFunction[]): Set<StatementFitnessFunction> {
+        const nearestUncoveredStatements = new Set<StatementFitnessFunction>();
         const cdg = uncoveredStatements[0]._cdg;
         const uncoveredKeys = uncoveredStatements.map(node => node.getTargetNode().id);
         Container.debugLog(`CDG:\n${cdg.toCoverageDot(uncoveredKeys)}`)
@@ -542,11 +542,11 @@ export class StatementFitnessFunction implements FitnessFunction<TestChromosome>
             for (const parent of parents) {
                 const parentStatement = StatementFitnessFunction.mapNodeToStatement(parent, allStatements);
                 if (!uncoveredStatements.includes(parentStatement) || parentStatement._targetNode.id === statement._targetNode.id) {
-                    nearestUncoveredMap.set(statement, parentStatement);
+                    nearestUncoveredStatements.add(statement);
                 }
             }
         }
-        return nearestUncoveredMap;
+        return nearestUncoveredStatements;
     }
 
     private static mapNodeToStatement(node: GraphNode, allStatements: StatementFitnessFunction[]): StatementFitnessFunction {

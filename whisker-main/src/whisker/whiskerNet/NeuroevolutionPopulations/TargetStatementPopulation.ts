@@ -55,7 +55,7 @@ export class TargetStatementPopulation extends NeatPopulation {
         // Finally, allocate the statementTarget map, set the fitness to the targeted statement and speciate each
         // generated network.
         for (const network of this.networks) {
-            network.initialiseStatementTargets(this._allStatements);
+            network.initialiseOpenStatements(this._allStatements);
             network.targetFitness = this._targetStatementFitness;
             this.speciate(network);
         }
