@@ -98,7 +98,7 @@ export class NetworkExecutor {
         const startTime = Date.now();
         while (this._projectRunning && Date.now() - startTime < this._timeout) {
             // Collect the currently available events.
-            this.availableEvents = this._eventExtractor.extractEvents(this._vm)
+            this.availableEvents = this._eventExtractor.extractEvents(this._vm);
             if (this.availableEvents.length === 0) {
                 console.log("Whisker-Main: No events available for project.");
                 break;

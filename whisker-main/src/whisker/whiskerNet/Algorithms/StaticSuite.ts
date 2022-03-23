@@ -1,4 +1,3 @@
-import {ScratchProject} from "../../scratch/ScratchProject";
 import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {NeatChromosome} from "../Networks/NeatChromosome";
@@ -21,7 +20,7 @@ import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
 
 export class StaticSuite extends NetworkSuite {
 
-    constructor(project: ScratchProject, vm: VirtualMachine, properties: Record<string, number | string>,
+    constructor(project: ArrayBuffer, vm: VirtualMachine, properties: Record<string, number | string | string[]>,
                 private _testFile: Record<number, Test>,) {
         super(project, vm, properties);
     }

@@ -1,7 +1,6 @@
 import {FitnessFunction} from "../../search/FitnessFunction";
 import {NeatChromosome} from "../Networks/NeatChromosome";
 import {NetworkChromosome} from "../Networks/NetworkChromosome";
-import {ScratchProject} from "../../scratch/ScratchProject";
 import {Randomness} from "../../utils/Randomness";
 import WhiskerUtil from "../../../test/whisker-util";
 import {StatementFitnessFunctionFactory} from "../../testcase/fitness/StatementFitnessFunctionFactory";
@@ -11,6 +10,8 @@ import {NetworkSuiteParameter} from "../HyperParameter/NetworkSuiteParameter";
 import {SurpriseAdequacy} from "../Misc/SurpriseAdequacy";
 import {NetworkExecutor} from "../NetworkExecutor";
 import VirtualMachine from 'scratch-vm/src/virtual-machine.js';
+import {Mutator} from "../../scratch/ScratchMutation/Mutator";
+import {KeyOptionMutator} from "../../scratch/ScratchMutation/KeyOptionMutator";
 
 export abstract class NetworkSuite {
 
@@ -34,8 +35,13 @@ export abstract class NetworkSuite {
      */
     protected executor: NetworkExecutor;
 
-    protected constructor(protected project: ScratchProject, protected vm: VirtualMachine,
-                          protected properties: Record<string, (number | string)>) {
+    /**
+     * The Scratch mutation operators that should be applied.
+     */
+    protected mutationOperators: Mutator[]
+
+    protected constructor(protected project: ArrayBuffer, protected vm: VirtualMachine,
+                          protected properties: Record<string, number | string | string[]>) {
     }
 
     /**
@@ -87,6 +93,16 @@ export abstract class NetworkSuite {
         // Set values for the resulting csv file.
         StatisticsCollector.getInstance().projectName = this.properties.projectName as string;
         StatisticsCollector.getInstance().testName = this.properties.testName as string;
+
+        this.mutationOperators = [];
+        const specifiedMutators = this.properties.mutators as string[];
+        for(const mutator of specifiedMutators) {
+            switch (mutator) {
+                case 'Key':
+                    this.mutationOperators.push(new KeyOptionMutator(this.vm));
+                    break;
+            }
+        }
     }
 
     /**
@@ -96,7 +112,7 @@ export abstract class NetworkSuite {
         // Check if a seed has been set.
         const seedString = this.properties.seed.toString();
         if (seedString !== 'undefined' && seedString !== "") {
-            Randomness.setInitialSeeds(this.properties.seed);
+            Randomness.setInitialSeeds(seedString);
         }
         // If not set a random seed.
         else {
@@ -166,5 +182,22 @@ export abstract class NetworkSuite {
             }
         }
         return surpriseCounter;
+    }
+
+    protected getScratchMutations(): any[]{
+        const mutants = [];
+        for(const mutator of this.mutationOperators){
+            for(const generatedMutants of mutator.generateMutants()){
+            mutants.push(generatedMutants)
+            }
+        }
+        return mutants;
+    }
+
+    protected async initialiseMutant(mutant:any):Promise<void>{
+        const util = new WhiskerUtil(this.vm, mutant)
+        await util.prepare(this.properties['acceleration'] as number || 1);
+        const vmWrapper = util.getVMWrapper();
+        this.executor = new NetworkExecutor(vmWrapper, this.parameter.timeout, 'activation');
     }
 }

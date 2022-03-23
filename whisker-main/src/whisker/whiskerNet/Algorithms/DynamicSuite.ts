@@ -1,6 +1,5 @@
 import {NetworkLoader} from "../NetworkGenerators/NetworkLoader";
 import {NeuroevolutionScratchEventExtractor} from "../../testcase/NeuroevolutionScratchEventExtractor";
-import {ScratchProject} from "../../scratch/ScratchProject";
 import {Container} from "../../utils/Container";
 import {WhiskerSearchConfiguration} from "../../utils/WhiskerSearchConfiguration";
 import {NeatChromosome} from "../Networks/NeatChromosome";
@@ -19,7 +18,7 @@ export class DynamicSuite extends NetworkSuite {
      */
     private readonly _testSuiteJSON;
 
-    constructor(project: ScratchProject, vm: VirtualMachine, properties: Record<string, number | string>,
+    constructor(project: ArrayBuffer, vm: VirtualMachine, properties: Record<string, number | string | string[]>,
                 testFile: string) {
         super(project, vm, properties);
         this._testSuiteJSON = JSON.parse(testFile);
@@ -33,6 +32,20 @@ export class DynamicSuite extends NetworkSuite {
         if (this.parameter.train) {
             networks = await this.trainNetworks(networks);
         }
+
+        if (this.mutationOperators.length > 0) {
+            const mutants = this.getScratchMutations();
+            await this.executeMutants(networks, mutants);
+        } else {
+            await this.executeOriginal(networks);
+        }
+    }
+
+    /**
+     * Tests the original Scratch program if no mutation operators have been selected.
+     * @param networks the networks with which the program should be exercised.
+     */
+    private async executeOriginal(networks: NeatChromosome[]): Promise<void> {
         for (const network of networks) {
             network.recordActivationTrace = true;
             await this.executor.execute(network);
@@ -44,13 +57,28 @@ export class DynamicSuite extends NetworkSuite {
         }
     }
 
+    private async executeMutants(networks: NeatChromosome[], mutants: any): Promise<void> {
+        console.log("MutationAnalysis")
+        for (const network of networks) {
+            for (const mutant of mutants) {
+                await this.initialiseMutant(mutant);
+                network.recordActivationTrace = true;
+                await this.executor.execute(network);
+                this.executor.resetState();
+                this.updateArchive(network);
+                if (network.savedActivationTrace) {
+                    this.extractTestCaseResults(network);
+                }
+            }
+        }
+    }
+
     /**
      * Initialises the used parameter for test execution.
      */
     protected initialiseExecutionParameter(): void {
         const config = new WhiskerSearchConfiguration(this._testSuiteJSON['Configs']);
         this.parameter = config.dynamicSuiteParameter;
-        //this.parameter.train = this.properties['train'] == 1;
         this.parameter.train = false;
         this.executor = new NetworkExecutor(Container.vmWrapper, this.parameter.timeout, 'activation');
         Container.config = config;

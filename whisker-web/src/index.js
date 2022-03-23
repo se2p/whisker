@@ -254,12 +254,16 @@ const runAllTests = async function () {
             await Whisker.scratch.vm.loadProject(Whisker.scratch.project);
             CoverageGenerator.prepareClasses({Thread});
             CoverageGenerator.prepareVM(Whisker.scratch.vm);
+            const mutators = document.querySelector('#container').mutators.split(', ');
+
             const properties = {};
-            properties.train = 1;
+            properties.train = false;
             properties.projectName = Whisker.projectFileSelect.getName();
             properties.testName = Whisker.testFileSelect.getName();
             properties.acceleration = $('#acceleration-value').text();
             properties.seed = document.getElementById('seed').value;
+            properties.mutators = mutators;
+
             const dynamicSuite = new DynamicSuite(Whisker.scratch.project, Whisker.scratch.vm, properties,
                 Whisker.tests);
             const csv = await dynamicSuite.execute();
